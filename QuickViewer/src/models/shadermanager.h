@@ -35,7 +35,8 @@ public:
     static qvEnums::ShaderEffect stringToShaderEffect(QString effect)
     {
         QMetaEnum metaEnum = QMetaEnum::fromType<qvEnums::ShaderEffect>();
-        return (qvEnums::ShaderEffect)metaEnum.keysToValue(effect.toLatin1());
+        const int value = metaEnum.keysToValue(effect.toLatin1());
+        return value < 0 ? qvEnums::Bilinear : (qvEnums::ShaderEffect)value;
     }
 
 private:

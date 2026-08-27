@@ -13,7 +13,17 @@ contains(DEFINES, QV_WITHOUT_OPENGL) {
     message(QuickViewer without OpenGL Support)
 } else {
     message(QuickViewer with OpenGL Support)
-    QT += opengl opengl-private
+    greaterThan(QT_MAJOR_VERSION, 5) {
+        QT += opengl openglwidgets
+
+        # QGraphicsShaderEffect was a private Qt 5 API and was removed in Qt 6.
+        # Keep the accelerated OpenGL viewport, but hide the GPU Bicubic/Lanczos
+        # options until they are implemented with a supported Qt 6 rendering API.
+        DEFINES += QV_WITHOUT_OPENGL_SHADER_EFFECTS
+        message(QuickViewer without legacy OpenGL shader effects)
+    } else {
+        QT += opengl opengl-private
+    }
 }
 
 VERSION = 1.2.8
@@ -373,7 +383,7 @@ win32 : !CONFIG(debug, debug|release) {
 
     INSTALLS += install_nsis
 
-    !contains(DEFINES, QV_WITHOUT_OPENGL) {
+    !contains(DEFINES, QV_WITHOUT_OPENGL):!contains(DEFINES, QV_WITHOUT_OPENGL_SHADER_EFFECTS) {
         INSTALLS += install_shaders
     }
     greaterThan(QT_MAJOR_VERSION, 4):greaterThan(QT_MINOR_VERSION, 8):win32 {
@@ -474,7 +484,7 @@ linux : !CONFIG(debug, debug|release) : contains(DEFINES, QV_PORTABLE) {
     install_db.files = $$DBS $$DBBIN
 
     INSTALLS += install_db
-    !contains(DEFINES, QV_WITHOUT_OPENGL) {
+    !contains(DEFINES, QV_WITHOUT_OPENGL):!contains(DEFINES, QV_WITHOUT_OPENGL_SHADER_EFFECTS) {
         INSTALLS += install_shaders
     }
 }
@@ -580,7 +590,7 @@ macos : !CONFIG(debug, debug|release) {
     install_db.files = $$DBS $$DBBIN
 
     INSTALLS += install_db
-    !contains(DEFINES, QV_WITHOUT_OPENGL) {
+    !contains(DEFINES, QV_WITHOUT_OPENGL):!contains(DEFINES, QV_WITHOUT_OPENGL_SHADER_EFFECTS) {
         INSTALLS += install_shaders
     }
 }

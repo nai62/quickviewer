@@ -1,6 +1,9 @@
 #include <QtWidgets>
 #ifndef QV_WITHOUT_OPENGL
 #  include <QtOpenGL>
+#  if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#    include <QOpenGLWidget>
+#  endif
 #endif
 
 #include "imageview.h"
@@ -65,11 +68,7 @@ ImageView::ImageView(QWidget *parent)
 
 }
 
-#ifdef QV_WITHOUT_OPENGL
 QWidget* widgetEngine = nullptr;
-#else
-QGLWidget* widgetEngine = nullptr;
-#endif
 
 void ImageView::setRenderer(RendererType type)
 {
@@ -83,9 +82,19 @@ void ImageView::setRenderer(RendererType type)
     setViewport(w);
 #else
     if (m_renderer == OpenGL) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        QOpenGLWidget* w = new QOpenGLWidget;
+        QSurfaceFormat format = w->format();
+        format.setSamples(4);
+        w->setFormat(format);
+        widgetEngine = w;
+        setViewport(w);
+        setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+#else
         QGLWidget* w = new QGLWidget(QGLFormat(QGL::SampleBuffers));
         widgetEngine = w;
         setViewport(w);
+#endif
     } else {
         setViewport(new QWidget);
     }

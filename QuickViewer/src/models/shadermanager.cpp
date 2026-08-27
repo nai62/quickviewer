@@ -2,7 +2,7 @@
 #include "shadermanager.h"
 #include "qvapplication.h"
 
-#ifndef QV_WITHOUT_OPENGL
+#if !defined(QV_WITHOUT_OPENGL) && !defined(QV_WITHOUT_OPENGL_SHADER_EFFECTS)
 #include <QtOpenGL>
 #include <QtOpenGL/private/qgraphicsshadereffect_p.h>
 #include "pagecontent.h"
@@ -96,7 +96,7 @@ ShaderManager::ShaderManager(QObject *parent)
     , m_oldEffect(qvEnums::Bilinear)
     , pageCnt(0)
 {
-#ifndef QV_WITHOUT_OPENGL
+#if !defined(QV_WITHOUT_OPENGL) && !defined(QV_WITHOUT_OPENGL_SHADER_EFFECTS)
     loadShader(m_bicubic, qApp->BicubicShaderPath());
     loadShader(m_lanczos, qApp->LanczosShaderPath());
 #endif
@@ -113,7 +113,7 @@ void ShaderManager::loadShader(QByteArray& target, QString path)
     }
 }
 
-#ifndef QV_WITHOUT_OPENGL
+#if !defined(QV_WITHOUT_OPENGL) && !defined(QV_WITHOUT_OPENGL_SHADER_EFFECTS)
 void ShaderManager::prepare(QGraphicsPixmapItem *item, const ImageContent &ic, QSize size)
 #else
 void ShaderManager::prepare(QGraphicsPixmapItem *item, const ImageContent &, QSize)
@@ -145,7 +145,7 @@ void ShaderManager::prepare(QGraphicsPixmapItem *item, const ImageContent &, QSi
         if(m_oldEffect > qvEnums::UsingSomeShader)
             item->setGraphicsEffect(nullptr);
         break;
-#ifndef QV_WITHOUT_OPENGL
+#if !defined(QV_WITHOUT_OPENGL) && !defined(QV_WITHOUT_OPENGL_SHADER_EFFECTS)
     case qvEnums::Bicubic:
         if(m_oldEffect == qvEnums::NearestNeighbor)
             item->setTransformationMode(Qt::SmoothTransformation);
@@ -221,4 +221,3 @@ void ShaderManager::prepareFinished()
     pageCnt=0;
     m_oldEffect = qApp->Effect();
 }
-

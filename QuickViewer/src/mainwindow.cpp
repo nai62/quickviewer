@@ -181,14 +181,14 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Shader
     ui->actionShaderBilinearBeforeCpuBicubic->setVisible(false);
-#ifdef QV_WITHOUT_OPENGL
+#if defined(QV_WITHOUT_OPENGL) || defined(QV_WITHOUT_OPENGL_SHADER_EFFECTS)
     ui->actionShaderBicubic->setVisible(false);
     ui->actionShaderLanczos->setVisible(false);
 #endif
     m_shaderMenuGroup
             << ui->actionShaderNearestNeighbor
             << ui->actionShaderBilinear
-           #ifndef QV_WITHOUT_OPENGL
+           #if !defined(QV_WITHOUT_OPENGL) && !defined(QV_WITHOUT_OPENGL_SHADER_EFFECTS)
             << ui->actionShaderBicubic
             << ui->actionShaderLanczos
            #endif
@@ -201,7 +201,7 @@ MainWindow::MainWindow(QWidget *parent)
     switch(qApp->Effect()) {
     case qvEnums::NearestNeighbor: ui->actionShaderNearestNeighbor->setChecked(true); break;
     case qvEnums::Bilinear: ui->actionShaderBilinear->setChecked(true); break;
-#ifndef QV_WITHOUT_OPENGL
+#if !defined(QV_WITHOUT_OPENGL) && !defined(QV_WITHOUT_OPENGL_SHADER_EFFECTS)
     case qvEnums::Bicubic: ui->actionShaderBicubic->setChecked(true); break;
     case qvEnums::Lanczos: ui->actionShaderLanczos->setChecked(true); break;
 #endif
@@ -1723,7 +1723,7 @@ void MainWindow::onActionShaderBilinear_triggered()
 
 void MainWindow::onActionShaderBicubic_triggered()
 {
-#ifndef QV_WITHOUT_OPENGL
+#if !defined(QV_WITHOUT_OPENGL) && !defined(QV_WITHOUT_OPENGL_SHADER_EFFECTS)
     uncheckAllShaderMenus();
     qApp->setEffect(qvEnums::Bicubic);
     ui->actionShaderBicubic->setChecked(true);
@@ -1733,7 +1733,7 @@ void MainWindow::onActionShaderBicubic_triggered()
 
 void MainWindow::onActionShaderLanczos_triggered()
 {
-#ifndef QV_WITHOUT_OPENGL
+#if !defined(QV_WITHOUT_OPENGL) && !defined(QV_WITHOUT_OPENGL_SHADER_EFFECTS)
     uncheckAllShaderMenus();
     qApp->setEffect(qvEnums::Lanczos);
     ui->actionShaderLanczos->setChecked(true);

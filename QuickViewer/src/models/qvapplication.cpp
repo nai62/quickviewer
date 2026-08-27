@@ -289,7 +289,7 @@ void QVApplication::registActions(Ui::MainWindow *ui)
     // Shader
     groupName = tr("Shader", "Shader Action Group");
     m_keyActions.registAction("actionShaderBilinear", ui->actionShaderBilinear, groupName);
-#ifndef QV_WITHOUT_OPENGL
+#if !defined(QV_WITHOUT_OPENGL) && !defined(QV_WITHOUT_OPENGL_SHADER_EFFECTS)
     m_keyActions.registAction("actionShaderBicubic", ui->actionShaderBicubic, groupName);
     m_keyActions.registAction("actionShaderLanczos", ui->actionShaderLanczos, groupName);
 #endif

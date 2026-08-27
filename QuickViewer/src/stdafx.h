@@ -8,6 +8,9 @@
 
 #ifndef QV_WITHOUT_OPENGL
 #  include <QtOpenGL>
+#  if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#    include <QtOpenGLWidgets>
+#  endif
 #endif
 
 #ifdef Q_OS_WIN

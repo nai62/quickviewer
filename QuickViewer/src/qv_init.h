@@ -50,7 +50,7 @@ public:
         BilinearAndCpuLanczos,
 
         UsingSomeShader,
-#ifndef QV_WITHOUT_OPENGL
+#if !defined(QV_WITHOUT_OPENGL) && !defined(QV_WITHOUT_OPENGL_SHADER_EFFECTS)
         Bicubic,
         Lanczos
 #endif
