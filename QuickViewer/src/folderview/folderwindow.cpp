@@ -166,7 +166,7 @@ void FolderWindow::setFolderPath(QString path, bool showParent)
 
         QDir dir;
         if(fileinfo.isDir()) {
-            dir.setPath(QDir::toNativeSeparators(showParent ? fileinfo.canonicalPath() : path));
+            dir.setPath(QDir::toNativeSeparators(showParent ? fileinfo.absolutePath() : path));
         } else {
             dir.setPath(QDir::toNativeSeparators(fileinfo.dir().path()));
         }
@@ -318,9 +318,15 @@ void FolderWindow::onParentButton_clicked()
 {
     if(m_currentPath.isEmpty())
         return;
-    QFileInfo info(m_currentPath);
-    setFolderPath(m_currentPath == info.canonicalPath() ? "" : info.canonicalPath(), false);
-    emit openVolume(info.canonicalPath());
+    QDir dir(m_currentPath);
+    if(!dir.cdUp()) {
+        setFolderPath("", false);
+        emit openVolume("");
+        return;
+    }
+    const QString parentPath = dir.absolutePath();
+    setFolderPath(parentPath, false);
+    emit openVolume(parentPath);
 }
 
 void FolderWindow::onReloadButton_clicked()
@@ -333,7 +339,7 @@ void FolderWindow::onReloadButton_clicked()
 void FolderWindow::onPageManager_volumeChanged(QString path)
 {
     QFileInfo info(QDir::toNativeSeparators(path));
-    if(!info.exists() || m_currentPath != info.canonicalPath())
+    if(!info.exists() || m_currentPath != info.absolutePath())
         return;
     QString name = info.fileName();
     int row = -1;

@@ -489,7 +489,7 @@ void MainWindow::loadVolume(QString path, bool prohibitProhibit2Page)
     QStringList seps = path.split("::");
     if(!IFileLoader::isArchiveFile(seps[0]) && IFileLoader::isImageFile(path)) {
         m_pageManager.loadVolumeWithFile(path, prohibitProhibit2Page);
-        changeFolderPath(m_pageManager.volumePath());
+        changeFolderPath(QFileInfo(QDir::fromNativeSeparators(path)).absolutePath());
         return;
     }
     if(m_pageManager.loadVolume(path)) {

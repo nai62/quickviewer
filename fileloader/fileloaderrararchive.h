@@ -13,7 +13,7 @@ class FileLoaderRarArchive : public IFileLoader
 public:
     FileLoaderRarArchive(QObject* parent, QString rarpath);
 
-    ~FileLoaderRarArchive() {}
+    ~FileLoaderRarArchive();
     /**
      * @brief isArchive
      * @return return true, if the instance treates an archive file

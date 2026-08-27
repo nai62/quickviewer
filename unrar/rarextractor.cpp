@@ -56,6 +56,14 @@ RarExtractor::RarExtractor(const QString &arcName)
     , m_curIndex(0)
 {
 }
+
+RarExtractor::~RarExtractor()
+{
+    if (m_hArc != nullptr) {
+        RARCloseArchive(m_hArc);
+    }
+}
+
 bool RarExtractor::open(OpenMode mode, const QString &password)
 {
     RAROpenArchiveDataEx arcData = {0};
@@ -93,7 +101,7 @@ bool RarExtractor::open(OpenMode mode, const QString &password)
         m_mode = RarExtractor::OpenModeNotOpen;
     }
 
-    delete arcData.CmtBuf;
+    delete[] arcData.CmtBuf;
     return isSuccess;
 }
 
@@ -130,9 +138,14 @@ void RarExtractor::scanFileInfo()
 
     m_fileInfoList.clear();
 
-    RARHeaderDataEx hData;
     int i = 0;
-    while (RARReadHeaderEx(m_hArc, &hData) == ERAR_SUCCESS) {
+    while (true) {
+        // UnRAR treats pointer fields in this structure as optional output
+        // buffers. They must be null unless the caller supplies those buffers.
+        RARHeaderDataEx hData = {};
+        if (RARReadHeaderEx(m_hArc, &hData) != ERAR_SUCCESS) {
+            break;
+        }
         RARFileInfo info;
 
         info.fileName = QString::fromWCharArray(hData.FileNameW);
@@ -218,7 +231,7 @@ QByteArray RarExtractor::fileData(QString fileName)
     m_curIndex = it.value();
 
     for (int i = 0; i < m_curIndex; ++i) {
-        RARHeaderDataEx hData;
+        RARHeaderDataEx hData = {};
         if (RARReadHeaderEx(m_hArc, &hData) == ERAR_SUCCESS) {
             if (RARProcessFile(m_hArc, RAR_SKIP, 0, 0) == ERAR_SUCCESS) {
                 continue;
@@ -233,8 +246,7 @@ QByteArray RarExtractor::fileData(QString fileName)
         }
     }
 
-    RARHeaderDataEx hData;
-    int i = 0;
+    RARHeaderDataEx hData = {};
     if (RARReadHeaderEx(m_hArc, &hData) != ERAR_SUCCESS) {
         qWarning() << "QtRARFile::open: cannot read file meta info";
         return QByteArray();

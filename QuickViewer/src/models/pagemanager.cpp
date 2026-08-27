@@ -45,12 +45,12 @@ bool PageManager::loadVolume(QString path, bool coverOnly)
 bool PageManager::loadVolumeWithFile(QString path, bool prohibitProhibit2Page)
 {
     QString qpath = QDir::fromNativeSeparators(path);
-    QDir dir(qpath);
-    dir.cdUp();
-    QString pathbase = dir.canonicalPath();
+    const QFileInfo imageInfo(qpath);
+    QString pathbase = imageInfo.absolutePath();
+    const QString subfilename = imageInfo.fileName();
     if(m_volumes.contains(pathbase) || (prohibitProhibit2Page && qApp->DualView())) {
         m_prohibit2Pages = !prohibitProhibit2Page;
-        bool result = loadVolume(QString("%1::%2").arg(pathbase).arg(qpath.mid(pathbase.length()+1)));
+        bool result = loadVolume(QString("%1::%2").arg(pathbase).arg(subfilename));
         m_prohibit2Pages = false;
         return result;
     }
@@ -59,7 +59,7 @@ bool PageManager::loadVolumeWithFile(QString path, bool prohibitProhibit2Page)
         VolumeManagerBuilder builder(qpath, this);
         VolumeManager* newer = builder.buildForAssoc();
         if(!newer) {
-            return loadVolume(QString("%1::%2").arg(pathbase).arg(qpath.mid(pathbase.length()+1)));
+            return loadVolume(QString("%1::%2").arg(pathbase).arg(subfilename));
         }
         emit volumeChanged("");
         m_volumes.insert(pathbase, QtConcurrent::run([=]{return newer;}));
