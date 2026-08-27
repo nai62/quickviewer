@@ -12,6 +12,11 @@ FileLoaderRarArchive::FileLoaderRarArchive(QObject* parent, QString rarpath)
         return;
 }
 
+FileLoaderRarArchive::~FileLoaderRarArchive()
+{
+    delete d;
+}
+
 QStringList FileLoaderRarArchive::contents()
 {
     if(m_imageFileList.empty())

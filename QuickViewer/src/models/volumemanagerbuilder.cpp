@@ -59,10 +59,10 @@ VolumeManager* VolumeManagerBuilder::CreateVolume(QObject* parent, QString path,
 //        return new VolumeManager(parent, new FileLoaderRarArchive(parent, path), pageManager);
 //    }
     if(IFileLoader::isImageFile(path)) {
-        dir.cdUp();
-        QString dirpath = dir.canonicalPath();
-        VolumeManager* fvd = new VolumeManager(parent, qApp->ShowSubfolders() ? new FileLoaderSubDirectory(parent, path) : new FileLoaderDirectory(parent, dirpath), pageManager);
-        fvd->findImageByName(path.mid(dirpath.length()+1));
+        const QFileInfo imageInfo(path);
+        const QString dirpath = imageInfo.absolutePath();
+        VolumeManager* fvd = new VolumeManager(parent, qApp->ShowSubfolders() ? new FileLoaderSubDirectory(parent, dirpath) : new FileLoaderDirectory(parent, dirpath), pageManager);
+        fvd->findImageByName(imageInfo.fileName());
         fvd->setOpenedWithSpecifiedImageFile(true);
         return fvd;
     }
@@ -114,15 +114,10 @@ VolumeManager* VolumeManagerBuilder::buildAsync(QString path, PageManager* manag
 
 VolumeManager *VolumeManagerBuilder::buildForAssoc()
 {
-    QDir dir(QDir::toNativeSeparators(Path));
-    dir.cdUp();
-    // If it is the root directory of the Windows drive, the separator will be attached at the end
-    // e.g. "C:/"
-    QString volumeFolder = dir.canonicalPath();
-    m_subfilename = volumeFolder.length()==3 && volumeFolder[1]==':'
-            ? Path.mid(volumeFolder.length())
-            : Path.mid(volumeFolder.length()+1);
-    if(!(m_volumeManager = CreateVolume(nullptr, dir.canonicalPath(), m_pageManager)))
+    const QFileInfo imageInfo(QDir::fromNativeSeparators(Path));
+    const QString volumeFolder = imageInfo.absolutePath();
+    m_subfilename = imageInfo.fileName();
+    if(!(m_volumeManager = CreateVolume(nullptr, volumeFolder, m_pageManager)))
         return m_volumeManager;
     if(m_volumeManager->isArchive()) {
         delete m_volumeManager;
@@ -133,7 +128,10 @@ VolumeManager *VolumeManagerBuilder::buildForAssoc()
     // Ic = m_volumeManager->getImageBeforeEnmumerate(m_subfilename);
     // m_volumeManager->findImageByName(m_subfilename);
     m_volumeManager->enumerate();
-    m_volumeManager->findImageByName(m_subfilename);
+    if(!m_volumeManager->findImageByName(m_subfilename)) {
+        delete m_volumeManager;
+        return m_volumeManager = nullptr;
+    }
     Ic = m_volumeManager->currentImage();
 
     return m_volumeManager;

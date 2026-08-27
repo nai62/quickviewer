@@ -52,6 +52,7 @@ public:
 
     RarExtractor();
     RarExtractor(const QString &arcName);
+    ~RarExtractor();
 
     bool open(OpenMode mode, const QString &password);
     void reset();
