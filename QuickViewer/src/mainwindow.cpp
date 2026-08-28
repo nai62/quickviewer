@@ -38,6 +38,11 @@ MainWindow::MainWindow(QWidget *parent)
     , m_exifDialog(nullptr)
 {
     ui->setupUi(this);
+    // Establish the final window size before further UI initialization can
+    // expose child surfaces created with the designer geometry.
+    if(!qApp->BeginAsFullscreen() && qApp->RestoreWindowState())
+        restoreGeometry(qApp->WindowGeometry());
+
     m_menubarFontSize = ui->menuBar->font().pointSize();
 	m_pageSliderHeight = ui->pageSlider->height();
     m_imageString.initialize(&m_pageManager, ui->graphicsView);
@@ -234,7 +239,6 @@ MainWindow::MainWindow(QWidget *parent)
             ui->graphicsView->setCursor(Qt::BlankCursor);
         showFullScreen();
     } else if(qApp->RestoreWindowState()) {
-        restoreGeometry(qApp->WindowGeometry());
         restoreState(qApp->WindowState());
     }
     if(isFullScreen()) {
