@@ -237,6 +237,7 @@ protected:
     QList<QAction*> m_sortByMenuGroup;
     ThumbnailManager* m_thumbManager;
     FolderWindow* m_folderWindow;
+    QString m_pendingFolderPath;
     CatalogWindow* m_catalogWindow;
     BrightnessWindow* m_brightnessWindow;
     ExifDialog* m_exifDialog;
