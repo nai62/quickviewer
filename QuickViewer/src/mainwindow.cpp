@@ -725,6 +725,10 @@ void MainWindow::createFolderWindow(bool docked, QString path)
         oldpath = m_folderWindow->currentPath();
         onFolderWindow_closed();
     }
+    if(oldpath.isEmpty() && !m_pendingFolderPath.isEmpty())
+        oldpath = m_pendingFolderPath;
+    m_pendingFolderPath.clear();
+
     if(oldpath.isEmpty()) {
         oldpath = m_pageManager.volumePath();
         if(oldpath.isEmpty())
@@ -763,8 +767,12 @@ void MainWindow::createFolderWindow(bool docked, QString path)
 
 bool MainWindow::changeFolderPath(QString path)
 {
-    if(!m_folderWindow)
+    if(!m_folderWindow) {
+        // An image passed on the command line is loaded before setThumbnailManager()
+        // creates the startup FolderWindow. Preserve its directory until then.
+        m_pendingFolderPath = path;
         return false;
+    }
     m_folderWindow->setFolderPath(path, false);
     return true;
 }
