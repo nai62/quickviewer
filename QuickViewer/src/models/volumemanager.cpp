@@ -8,16 +8,37 @@
 #include "qzimg.h"
 #include "pagemanager.h"
 #include "fileloader.h"
+#include "boundedexecutor.h"
 #include "svgnative/SVGDocument.h"
 #include "svgnative/ports/qt/QSVGRenderer.h"
 
 using namespace SVGNative;
-static ImageContent pathThrough(ImageContent ic) { return ic; }
+
+static BoundedExecutor &imagePrefetchExecutor()
+{
+    static constexpr int MaximumPrefetchThreads = 4;
+    static constexpr int MaximumPendingPrefetchJobs = 128;
+    static BoundedExecutor executor(
+        qBound(1, QThread::idealThreadCount(), MaximumPrefetchThreads),
+        MaximumPendingPrefetchJobs);
+    return executor;
+}
+
+static QFuture<ImageContent> readyImageFuture(ImageContent content)
+{
+    QPromise<ImageContent> promise;
+    promise.start();
+    QFuture<ImageContent> future = promise.future();
+    promise.addResult(std::move(content));
+    promise.finish();
+    return future;
+}
 
 VolumeManager::VolumeManager(QObject *parent, IFileLoader* loader, PageManager* pageManager)
     : QObject(parent)
     , m_cnt(0)
     , m_imageCache(qApp->MaxImagesCache())
+    , m_loadContext(new ImageLoadContext(loader))
     , m_loader(loader)
     , m_cacheMode(CacheMode::Normal)
     , m_pageManager(pageManager)
@@ -30,10 +51,38 @@ VolumeManager::VolumeManager(QObject *parent, IFileLoader* loader, PageManager* 
 
 VolumeManager::~VolumeManager() {
     m_imageCache.clear();
-    if(m_loader) {
-        m_loader->deleteLater();
-        m_loader = nullptr;
-    }
+    m_loader = nullptr;
+}
+
+VolumeManager::future_image VolumeManager::scheduleImageLoad(
+    const QString &path, const QSize &pageSize, bool requiredForDisplay)
+{
+    const QSharedPointer<ImageLoadContext> context = m_loadContext;
+    auto submission = imagePrefetchExecutor().submit(
+        [context, path, pageSize] {
+            return futureLoadImageFromFileVolume(context, path, pageSize);
+        });
+    if(submission.accepted)
+        return submission.future;
+
+    if(!requiredForDisplay)
+        return QFuture<ImageContent>();
+
+    return readyImageFuture(
+        futureLoadImageFromFileVolume(context, path, pageSize));
+}
+
+VolumeManager::future_image VolumeManager::scheduleResize(
+    ImageContent content, const QSize &pageSize)
+{
+    auto submission = imagePrefetchExecutor().submit(
+        [content, pageSize]() mutable {
+            return futureReizeImage(std::move(content), pageSize);
+        });
+    if(submission.accepted)
+        return submission.future;
+
+    return QFuture<ImageContent>();
 }
 
 void VolumeManager::enumerate()
@@ -46,7 +95,7 @@ void VolumeManager::enumerate()
 ImageContent VolumeManager::getImageBeforeEnmumerate(QString subfilename)
 {
     m_subfilename = subfilename;
-    m_currentCacheSync = VolumeManager::futureLoadImageFromFileVolume(this, subfilename, QSize());
+    m_currentCacheSync = VolumeManager::futureLoadImageFromFileVolume(m_loadContext, subfilename, QSize());
     enumerate();
     return m_currentCacheSync;
 }
@@ -56,7 +105,7 @@ void VolumeManager::on_enmumerated()
     // foreach(const QString& fl, m_filelist) {
     //     m_imageMetadataList << QvImageMetadata(this, fl);
     // }
-    m_imageCache.insert(m_filelist.indexOf(m_subfilename), QtConcurrent::run(pathThrough, m_currentCacheSync));
+    m_imageCache.insert(m_filelist.indexOf(m_subfilename), readyImageFuture(m_currentCacheSync));
     findImageByName(m_subfilename);
     setCacheMode(VolumeManager::Normal);
     on_ready();
@@ -203,13 +252,15 @@ void VolumeManager::on_ready()
 //    qDebug() << "on_ready: m_cnt" << m_cnt;
     switch(m_cacheMode) {
     case CacheMode::CreateThumbnail:
-        m_currentCacheSync = futureLoadImageFromFileVolume(this, m_filelist[0], QSize());
+        m_currentCacheSync = futureLoadImageFromFileVolume(m_loadContext, m_filelist[0], QSize());
         return;
     case CacheMode::CoverOnly:
         for(int cnt : PrefetchPlanner::indexes(
                 CacheMode::Normal, m_cnt, m_filelist.size(), 2)) {
-            ImageContent ic = futureLoadImageFromFileVolume(this, m_filelist[cnt], QSize());
-            m_imageCache.insert(cnt, QtConcurrent::run(pathThrough, ic));
+            const future_image future = scheduleImageLoad(
+                m_filelist[cnt], QSize(), cnt == m_cnt);
+            if(future.isValid())
+                m_imageCache.insert(cnt, future);
         }
         return;
     default:
@@ -227,20 +278,25 @@ void VolumeManager::on_ready()
 
                 if(ic.ResizedImage.size() != resized && !ic.Image.isNull()) {
                     qDebug() << ic.ResizedImage.size() << resized;
-                    m_imageCache.insert(cnt, QtConcurrent::run(futureReizeImage, ic, m_pageManager->viewportSize()));
+                    const future_image future = scheduleResize(
+                        ic, m_pageManager->viewportSize());
+                    if(future.isValid())
+                        m_imageCache.insert(cnt, future);
                 }
             }
         }
         if(m_imageCache.checkShouldBeInserted(cnt)) {
 //            qDebug() << "on_ready()" << m_filelist[cnt];
-            m_imageCache.insertNoChecked(cnt, QtConcurrent::run(
-                 futureLoadImageFromFileVolume,
-                 this,
-                 getIndexedFileName(cnt),
-                 (m_pageManager && qApp->Effect() < qvEnums::UsingFixedShader)
-                     ? m_pageManager->viewportSize()
-                     : QSize())
-            );
+            const QSize pageSize =
+                (m_pageManager && qApp->Effect() < qvEnums::UsingFixedShader)
+                    ? m_pageManager->viewportSize()
+                    : QSize();
+            const future_image future = scheduleImageLoad(
+                getIndexedFileName(cnt), pageSize, cnt == m_cnt);
+            if(future.isValid())
+                m_imageCache.insertNoChecked(cnt, future);
+            else
+                m_imageCache.remove(cnt);
         }
     }
     m_currentCache = m_imageCache.object(m_cnt);
@@ -553,11 +609,12 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QByteA
 
 
 
-static ImageContent futureLoadImageFromFileVolumeImpl(VolumeManager* volume, QString path, QSize pageSize)
+static ImageContent futureLoadImageFromFileVolumeImpl(
+    const QSharedPointer<ImageLoadContext> &context, QString path, QSize pageSize)
 {
 //    qDebug() << "futureLoadImageFromFileVolume" << path << QThread::currentThread();
 
-    QByteArray bytes = volume->loadByteArrayByName(path);
+    QByteArray bytes = context->load(path);
     if(bytes.isNull() || bytes.isEmpty())
         return ImageContent();
     QString aformat = IFileLoader::isExifJpegImageFile(path)
@@ -574,10 +631,11 @@ static ImageContent futureLoadImageFromFileVolumeImpl(VolumeManager* volume, QSt
     return loadWithSpecifiedFormat(path, pageSize, bytes, aformat, 5);
 }
 
-ImageContent VolumeManager::futureLoadImageFromFileVolume(VolumeManager* volume, QString path, QSize pageSize)
+ImageContent VolumeManager::futureLoadImageFromFileVolume(
+    QSharedPointer<ImageLoadContext> context, QString path, QSize pageSize)
 {
     QElapsedTimer et_load; et_load.start();
-    ImageContent ic = futureLoadImageFromFileVolumeImpl(volume, path, pageSize);
+    ImageContent ic = futureLoadImageFromFileVolumeImpl(context, path, pageSize);
     qint64 t_load = et_load.elapsed();
 
     qDebug() << "futureLoadImageFromFileVolume" << path << t_load << "ms, ResizedImage=" << !ic.ResizedImage.isNull();

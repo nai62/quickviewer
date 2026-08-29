@@ -7,6 +7,8 @@
 
 #include "fileloader.h"
 #include "timeorderdcache.h"
+#include "futurecache.h"
+#include "imageloadcontext.h"
 #include "pagecontent.h"
 #include "qvimagemetadata.h"
 #include "prefetchplanner.h"
@@ -44,7 +46,8 @@ public:
     ImageContent getImageBeforeEnmumerate(QString subfilename);
     IFileLoader* FileLoader() { return m_loader; }
 
-    static ImageContent futureLoadImageFromFileVolume(VolumeManager* volume, QString path, QSize pageSize);
+    static ImageContent futureLoadImageFromFileVolume(
+        QSharedPointer<ImageLoadContext> context, QString path, QSize pageSize);
     static ImageContent futureReizeImage(ImageContent ic, QSize pageSize);
     static QString FullPathToVolumePath(QString path);
     static QString FullPathToSubFilePath(QString path);
@@ -110,7 +113,7 @@ public:
     /**
      * @brief loadImageByName Reads and returns the image corresponding to the file name specified in the file list without advancing the internal counter
      */
-    QByteArray loadByteArrayByName(const QString& name) { return m_loader->getFile(name, m_mutex); }
+    QByteArray loadByteArrayByName(const QString& name) { return m_loadContext->load(name); }
     /**
      * @brief Returns the number of pages the volume has
      */
@@ -134,6 +137,10 @@ public slots:
     void on_enmumerated();
 
 private:
+    future_image scheduleImageLoad(const QString &path, const QSize &pageSize,
+                                   bool requiredForDisplay);
+    future_image scheduleResize(ImageContent content, const QSize &pageSize);
+
     /**
      * @brief m_cnt File counter in the volume
      */
@@ -144,12 +151,11 @@ private:
     future_image m_currentCache;
     ImageContent m_currentCacheSync;
 
-    TimeOrderdCacheFuture<int, ImageContent> m_imageCache;
+    FutureCache<int, ImageContent> m_imageCache;
 //    QMap<int, future_image> m_imageCache;
 //    QList<int> m_pageCache;
 
-    QMutex m_mutex;
-
+    QSharedPointer<ImageLoadContext> m_loadContext;
     IFileLoader* m_loader;
     CacheMode m_cacheMode;
     PageManager* m_pageManager;
