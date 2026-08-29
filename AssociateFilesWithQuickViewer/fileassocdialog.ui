@@ -24,7 +24,7 @@
       <item row="0" column="0">
        <widget class="QCheckBox" name="checkBoxJpeg">
         <property name="text">
-         <string>JPEG Image (*.jpg, *.jpeg)</string>
+         <string>JPEG Image (*.jpg, *.jpeg, *.jpe)</string>
         </property>
        </widget>
       </item>

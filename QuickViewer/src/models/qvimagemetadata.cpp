@@ -32,8 +32,9 @@ QSize QvImageMetadata::getDimension()
 {
     if(!m_dimension.isEmpty())
         return m_dimension;
-    QString aformat = IFileLoader::isExifJpegImageFile(m_filename) && IFileLoader::isImageFile("turbojpeg")
-            ? TURBO_JPEG_FMT : QFileInfo(m_filename.toLower()).suffix();
+    QString aformat = IFileLoader::isExifJpegImageFile(m_filename)
+            ? (IFileLoader::isImageFile("turbojpeg") ? TURBO_JPEG_FMT : "jpg")
+            : QFileInfo(m_filename.toLower()).suffix();
     QByteArray bytes = m_volume->loadByteArrayByName(m_filename);
     QBuffer buffer(&bytes);
     QImageReader reader(&buffer, aformat.toUtf8());

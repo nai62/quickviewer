@@ -19,7 +19,7 @@ QStringList ThumbnailManager::st_heavyImageFormats;
 bool ThumbnailManager::isImageFile(QString path)
 {
     if(st_supportedImageFormats.size() == 0) {
-        st_jpegpegImageFormats << "jpg" << "jpeg";
+        st_jpegpegImageFormats << "jpg" << "jpeg" << "jpe";
         st_heavyImageFormats << "crw" << "cr2" << "arw" << "nef" << "raf" << "dng"; // heavy images
         st_supportedImageFormats = QImageReader::supportedImageFormats();
     }
