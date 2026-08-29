@@ -38,6 +38,7 @@ private Q_SLOTS:
     void testCase6_rar5();
     void testCase7_directoryLinks_data();
     void testCase7_directoryLinks();
+    void testCase8_jpeIsJpegImage();
 };
 
 FileLoaderTest::FileLoaderTest()
@@ -211,6 +212,14 @@ void FileLoaderTest::testCase7_directoryLinks()
     // the target directory.
     QVERIFY(QDir(root.filePath("container")).rmdir("link"));
 #endif
+}
+
+void FileLoaderTest::testCase8_jpeIsJpegImage()
+{
+    QVERIFY(IFileLoader::isImageFile("image.jpe"));
+    QVERIFY(IFileLoader::isImageFile("IMAGE.JPE"));
+    QVERIFY(IFileLoader::isExifJpegImageFile("image.jpe"));
+    QVERIFY(IFileLoader::isExifJpegImageFile("IMAGE.JPE"));
 }
 
 QTEST_MAIN(FileLoaderTest)

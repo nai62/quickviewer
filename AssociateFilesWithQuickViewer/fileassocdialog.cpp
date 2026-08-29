@@ -47,7 +47,7 @@ FileAssocDialog::FileAssocDialog(QWidget *parent) :
     ui->setupUi(this);
 
     m_assocOfActions["Jpeg"] = ui->checkBoxJpeg;
-    m_assocs["Jpeg"] = AssocInfo{"Jpeg", tr("JPEG Image", "description of File format on Explorer(.jpeg)"), "qv_jpeg.ico", {".jpg",".jpeg"}};
+    m_assocs["Jpeg"] = AssocInfo{"Jpeg", tr("JPEG Image", "description of File format on Explorer(.jpeg)"), "qv_jpeg.ico", {".jpg", ".jpeg", ".jpe"}};
 
     m_assocOfActions["Png"] = ui->checkBoxPng;
     m_assocs["Png"] = AssocInfo{"Png", tr("PNG File", "description of File format on Explorer(.png)"), "qv_png.ico", {".png"}};
@@ -275,4 +275,3 @@ QString FileAssocDialog::getIconPath(QString iconName)
             .arg(QDir::toNativeSeparators(qApp->applicationDirPath()))
             .arg(iconName);
 }
-

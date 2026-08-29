@@ -401,7 +401,8 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QByteA
         // The incompatibility with EXIF remains unresolved.
         if (aformat == "jif"
             || aformat == "jfif"
-            || aformat == "jfi") {
+            || aformat == "jfi"
+            || aformat == "jpe") {
             aformat = "jpg";
         }
         QImageReader reader(&buffer, aformat.toUtf8());
@@ -594,8 +595,9 @@ static ImageContent futureLoadImageFromFileVolumeImpl(VolumeManager* volume, QSt
     QByteArray bytes = volume->loadByteArrayByName(path);
     if(bytes.isNull() || bytes.isEmpty())
         return ImageContent();
-    QString aformat = IFileLoader::isExifJpegImageFile(path) && IFileLoader::isImageFile("turbojpeg")
-            ? TURBO_JPEG_FMT : QFileInfo(path.toLower()).suffix();
+    QString aformat = IFileLoader::isExifJpegImageFile(path)
+            ? (IFileLoader::isImageFile("turbojpeg") ? TURBO_JPEG_FMT : "jpg")
+            : QFileInfo(path.toLower()).suffix();
     // extention "png" might be a apng
     if(aformat == "png" && IFileLoader::isImageFile("apng")) {
         aformat = "apng";
