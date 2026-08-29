@@ -31,7 +31,7 @@ public:
     static constexpr CacheMode NormalForward = CacheMode::NormalForward;
     static constexpr CacheMode NormalBackward = CacheMode::NormalBackward;
     static constexpr CacheMode FastForward = CacheMode::FastForward;
-    static constexpr CacheMode FastBackrard = CacheMode::FastBackrard;
+    static constexpr CacheMode FastBackward = CacheMode::FastBackward;
     static constexpr CacheMode CoverOnly = CacheMode::CoverOnly;
     static constexpr CacheMode CreateThumbnail = CacheMode::CreateThumbnail;
 

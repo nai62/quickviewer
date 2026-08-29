@@ -32,7 +32,12 @@ QList<int> PrefetchPlanner::offsets(PrefetchMode mode, int cacheCapacity)
         }
         break;
     case PrefetchMode::FastForward:
-        result = {0, 1, 10, 11, -10, -9, 20, 21, -20, 19};
+        result = {0, 1, 10, 11, -10, -9, 20, 21, -20, -19};
+        while(result.size() > cacheCapacity)
+            result.removeLast();
+        break;
+    case PrefetchMode::FastBackward:
+        result = {0, 1, -10, -9, 10, 11, -20, -19, 20, 21};
         while(result.size() > cacheCapacity)
             result.removeLast();
         break;

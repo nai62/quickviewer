@@ -10,7 +10,7 @@ enum class PrefetchMode
     NormalForward,
     NormalBackward,
     FastForward,
-    FastBackrard,
+    FastBackward,
     CoverOnly,
     CreateThumbnail,
 };

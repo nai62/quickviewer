@@ -314,7 +314,7 @@ void PageManager::fastBackwardPage()
     m_currentPage -= PAGE_INTERVAL;
     if(m_currentPage < 0)
         m_currentPage = 0;
-    selectPage(m_currentPage, VolumeManager::FastForward);
+    selectPage(m_currentPage, VolumeManager::FastBackward);
 }
 
 void PageManager::selectPage(int idx, VolumeManager::CacheMode cacheMode)
