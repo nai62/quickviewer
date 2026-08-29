@@ -12,6 +12,7 @@ PageManager::PageManager(QObject* parent)
     , m_volumes(qApp->MaxVolumesCache())
     , m_fileVolume(nullptr)
     , m_imaveView(nullptr)
+    , m_volumeLoads()
 //    , m_builderForAssoc("", this)
 {
     installEventFilter(this);
@@ -19,6 +20,7 @@ PageManager::PageManager(QObject* parent)
 
 bool PageManager::loadVolume(QString path, bool coverOnly)
 {
+    m_volumeLoads.invalidate();
     if(m_fileVolume && m_pages.size() == 2) {
         m_fileVolume->prevPage();
     }
@@ -55,19 +57,34 @@ bool PageManager::loadVolumeWithFile(QString path, bool prohibitProhibit2Page)
         return result;
     }
 
-    QtConcurrent::run([=]{
-        VolumeManagerBuilder builder(qpath, this);
-        VolumeManager* newer = builder.buildForAssoc();
-        if(!newer) {
-            return loadVolume(QString("%1::%2").arg(pathbase).arg(subfilename));
-        }
-        emit volumeChanged("");
-        m_volumes.insert(pathbase, QtConcurrent::run([=]{return newer;}));
-        m_fileVolume = newer;
-        clearPages();
-        m_currentPage = newer->pageCount();
-        qApp->postEvent(this, new ReloadedEvent());
+    QThread *guiThread = thread();
+    const QFuture<VolumeManager*> future = QtConcurrent::run([qpath, guiThread]{
+        VolumeManagerBuilder builder(qpath, nullptr);
+        VolumeManager *newer = builder.buildForAssoc();
+        if(newer)
+            newer->moveToThread(guiThread);
+        return newer;
     });
+    m_volumeLoads.submit(future,
+        [this, pathbase, subfilename](VolumeManager *newer) {
+            if(!newer) {
+                loadVolume(QString("%1::%2").arg(pathbase).arg(subfilename));
+                return;
+            }
+            newer->setPageManager(this);
+            emit volumeChanged("");
+            m_volumes.insert(pathbase, QtConcurrent::run([newer]{ return newer; }));
+            m_fileVolume = newer;
+            clearPages();
+            m_currentPage = newer->pageCount();
+            reloadCurrentPage(true);
+            emit pageChanged();
+            emit volumeChanged(m_fileVolume->volumePath());
+        },
+        [](VolumeManager *newer) {
+            if(newer)
+                newer->deleteLater();
+        });
     return true;
 }
 

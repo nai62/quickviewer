@@ -127,6 +127,7 @@ public:
     const ImageContent getIndexedImageContent(int idx);
     bool openedWithSpecifiedImageFile() { return m_openedWithSpecifiedImageFile; }
     void setOpenedWithSpecifiedImageFile(bool openedWithSpecifiedImageFile) { m_openedWithSpecifiedImageFile = openedWithSpecifiedImageFile; }
+    void setPageManager(PageManager *pageManager) { m_pageManager = pageManager; }
     void moveToThread(QThread *targetThread);
 
 public slots:

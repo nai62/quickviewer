@@ -158,6 +158,7 @@ HEADERS  += \
     src/models/bookprogressmanager.h \
     src/models/pagecontent.h \
     src/models/pagemanager.h \
+    src/models/latestresultdispatcher.h \
     src/models/prefetchplanner.h \
     src/models/qvapplication.h \
     src/models/shadermanager.h \
