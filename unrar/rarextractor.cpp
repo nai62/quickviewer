@@ -44,6 +44,7 @@ RarExtractor::RarExtractor()
     , m_isFilesEncrypted(false)
     , m_hasScaned(false)
     , m_curIndex(0)
+    , m_dataCache(MAX_DATA_CACHE_KIB)
 {}
 RarExtractor::RarExtractor(const QString &arcName)
     : m_hArc(nullptr)
@@ -54,6 +55,7 @@ RarExtractor::RarExtractor(const QString &arcName)
     , m_isFilesEncrypted(false)
     , m_hasScaned(false)
     , m_curIndex(0)
+    , m_dataCache(MAX_DATA_CACHE_KIB)
 {
 }
 
@@ -108,6 +110,9 @@ bool RarExtractor::open(OpenMode mode, const QString &password)
 void RarExtractor::reset()
 {
     m_fileInfoList.clear();
+    m_fileNameToIndexSensitive.clear();
+    m_fileNameToIndexInsensitive.clear();
+    m_dataCache.clear();
     m_comment.clear();
     m_isHeadersEncrypted = false;
     m_isFilesEncrypted = false;
@@ -137,6 +142,8 @@ void RarExtractor::scanFileInfo()
     }
 
     m_fileInfoList.clear();
+    m_fileNameToIndexSensitive.clear();
+    m_fileNameToIndexInsensitive.clear();
 
     int i = 0;
     while (true) {
@@ -209,12 +216,6 @@ QByteArray RarExtractor::fileData(QString fileName)
     if(m_mode==OpenModeExtract) {
         return getFileInfo(fileName).data;
     }
-    // Move unrar cursor to this index
-    if (!reopen()) {
-        qWarning() << "QtRAR::setCurrentFile: fail to reopen to reset cursor";
-        return QByteArray();
-    }
-
     QHash<QString, int>::const_iterator it;
     if (cs == Qt::CaseSensitive) {
         it = m_fileNameToIndexSensitive.find(fileName);
@@ -228,20 +229,34 @@ QByteArray RarExtractor::fileData(QString fileName)
         }
     }
 
-    m_curIndex = it.value();
+    const int targetIndex = it.value();
+    if(const QByteArray *cached = m_dataCache.object(targetIndex))
+        return *cached;
 
-    for (int i = 0; i < m_curIndex; ++i) {
+    // UnRAR is sequential. Continue from the current archive cursor for
+    // forward reads and reopen only when an uncached read moves backwards.
+    if(targetIndex < m_curIndex && !reopen()) {
+        qWarning() << "QtRAR::setCurrentFile: fail to reopen to reset cursor";
+        return QByteArray();
+    }
+    RARSetCallback(m_hArc, nullptr, 0);
+
+    while (m_curIndex < targetIndex) {
         RARHeaderDataEx hData = {};
         if (RARReadHeaderEx(m_hArc, &hData) == ERAR_SUCCESS) {
             if (RARProcessFile(m_hArc, RAR_SKIP, 0, 0) == ERAR_SUCCESS) {
+                ++m_curIndex;
                 continue;
             } else {
                 qWarning() << "QtRAR::setCurrentFile: fail to skip file at index"
-                           << i;
+                           << m_curIndex;
+                reopen();
+                return QByteArray();
             }
         } else {
             qWarning() << "QtRAR:setCurrentFile: fail to read head at index"
-                       << i;
+                       << m_curIndex;
+            reopen();
             return QByteArray();
         }
     }
@@ -249,6 +264,7 @@ QByteArray RarExtractor::fileData(QString fileName)
     RARHeaderDataEx hData = {};
     if (RARReadHeaderEx(m_hArc, &hData) != ERAR_SUCCESS) {
         qWarning() << "QtRARFile::open: cannot read file meta info";
+        reopen();
         return QByteArray();
     }
     RARFileInfo info;
@@ -276,10 +292,21 @@ QByteArray RarExtractor::fileData(QString fileName)
         m_isFilesEncrypted = true;
     }
 
-    if (RARProcessFile(m_hArc, RAR_TEST, NULL, NULL) != ERAR_SUCCESS) {
+    const int processResult = RARProcessFile(m_hArc, RAR_TEST, NULL, NULL);
+    RARSetCallback(m_hArc, nullptr, 0);
+    if (processResult != ERAR_SUCCESS) {
+        reopen();
         return QByteArray();
     }
     writer.commit();
+    ++m_curIndex;
+
+    const qsizetype cacheCost = qMax<qsizetype>(
+        1, (info.data.size() + 1023) / 1024);
+    if(cacheCost <= MAX_DATA_CACHE_KIB) {
+        m_dataCache.insert(targetIndex, new QByteArray(info.data),
+                           static_cast<int>(cacheCost));
+    }
 
     return info.data;
 }

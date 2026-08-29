@@ -49,6 +49,7 @@ public:
     };
     static const int MAX_COMMENT_SIZE = 64 * 1024;
     static const int MAX_ARC_NAME_SIZE = 2048;
+    static const int MAX_DATA_CACHE_KIB = 64 * 1024;
 
     RarExtractor();
     RarExtractor(const QString &arcName);
@@ -82,6 +83,7 @@ public:
 
     QHash<QString, int> m_fileNameToIndexSensitive;
     QHash<QString, int> m_fileNameToIndexInsensitive;
+    QCache<int, QByteArray> m_dataCache;
 };
 
 

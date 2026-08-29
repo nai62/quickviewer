@@ -132,8 +132,28 @@ static void verifyRarArchive(const QString &archivePath, const QString &firstNam
     QCOMPARE(files.length(), 6);
     QCOMPARE(QDir::fromNativeSeparators(files.first()), firstName);
 
-    const QByteArray bytes = rar.fileData(files.first());
-    QCOMPARE(bytes.length(), 462336);
+    QList<int> nonEmptyFiles;
+    for(int index = 0; index < rar.m_fileInfoList.size(); ++index) {
+        if(rar.m_fileInfoList.at(index).unpSize > 0)
+            nonEmptyFiles.append(index);
+    }
+    QVERIFY(nonEmptyFiles.size() >= 2);
+
+    const int firstIndex = nonEmptyFiles.at(0);
+    const int secondIndex = nonEmptyFiles.at(1);
+    const QByteArray firstBytes = rar.fileData(files.at(firstIndex));
+    QCOMPARE(firstBytes.length(), 462336);
+    QCOMPARE(rar.m_curIndex, firstIndex + 1);
+
+    const QByteArray secondBytes = rar.fileData(files.at(secondIndex));
+    QCOMPARE(secondBytes.size(), static_cast<qsizetype>(
+                 rar.m_fileInfoList.at(secondIndex).unpSize));
+    QCOMPARE(rar.m_curIndex, secondIndex + 1);
+
+    // A cached backward read must not reset the sequential archive cursor.
+    const int cursorAfterSecondFile = rar.m_curIndex;
+    QCOMPARE(rar.fileData(files.at(firstIndex)), firstBytes);
+    QCOMPARE(rar.m_curIndex, cursorAfterSecondFile);
 }
 
 void FileLoaderTest::testCase5_rar4()
