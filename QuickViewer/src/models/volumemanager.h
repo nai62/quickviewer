@@ -48,6 +48,7 @@ public:
 
     static ImageContent futureLoadImageFromFileVolume(
         QSharedPointer<ImageLoadContext> context, QString path, QSize pageSize);
+    static ImageContent loadImageFromFile(QString path, QSize pageSize);
     static ImageContent futureReizeImage(ImageContent ic, QSize pageSize);
     static QString FullPathToVolumePath(QString path);
     static QString FullPathToSubFilePath(QString path);

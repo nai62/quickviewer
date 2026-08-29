@@ -609,12 +609,9 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QByteA
 
 
 
-static ImageContent futureLoadImageFromFileVolumeImpl(
-    const QSharedPointer<ImageLoadContext> &context, QString path, QSize pageSize)
+static ImageContent loadImageFromBytes(
+    QString path, QSize pageSize, const QByteArray &bytes)
 {
-//    qDebug() << "futureLoadImageFromFileVolume" << path << QThread::currentThread();
-
-    QByteArray bytes = context->load(path);
     if(bytes.isNull() || bytes.isEmpty())
         return ImageContent();
     QString aformat = IFileLoader::isExifJpegImageFile(path)
@@ -631,6 +628,14 @@ static ImageContent futureLoadImageFromFileVolumeImpl(
     return loadWithSpecifiedFormat(path, pageSize, bytes, aformat, 5);
 }
 
+static ImageContent futureLoadImageFromFileVolumeImpl(
+    const QSharedPointer<ImageLoadContext> &context, QString path, QSize pageSize)
+{
+//    qDebug() << "futureLoadImageFromFileVolume" << path << QThread::currentThread();
+
+    return loadImageFromBytes(path, pageSize, context->load(path));
+}
+
 ImageContent VolumeManager::futureLoadImageFromFileVolume(
     QSharedPointer<ImageLoadContext> context, QString path, QSize pageSize)
 {
@@ -640,6 +645,15 @@ ImageContent VolumeManager::futureLoadImageFromFileVolume(
 
     qDebug() << "futureLoadImageFromFileVolume" << path << t_load << "ms, ResizedImage=" << !ic.ResizedImage.isNull();
     return ic;
+}
+
+ImageContent VolumeManager::loadImageFromFile(QString path, QSize pageSize)
+{
+    QFile file(path);
+    if(!file.open(QIODevice::ReadOnly))
+        return ImageContent();
+
+    return loadImageFromBytes(path, pageSize, file.readAll());
 }
 
 ImageContent VolumeManager::futureReizeImage(ImageContent ic, QSize pageSize)
