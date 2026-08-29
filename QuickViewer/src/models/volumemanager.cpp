@@ -201,47 +201,13 @@ void VolumeManager::on_ready()
         return;
 
 //    qDebug() << "on_ready: m_cnt" << m_cnt;
-    QList<int> offsets;
     switch(m_cacheMode) {
-    case CacheMode::Normal:
-        offsets = {0, 1, 2, 3, -1, -2, 4, 5, -3, -4, 6, 7, -5, -6};
-        while(offsets.size() > qApp->MaxImagesCache())
-            offsets.removeLast();
-        break;
-    case CacheMode::NormalForward:
-        offsets = {10, 11, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7};
-        if(offsets.size() > qApp->MaxImagesCache())  {
-            QMutableListIterator<int> i(offsets);
-            while (i.hasNext()) {
-                if (i.next() >= qApp->MaxImagesCache())
-                    i.remove();
-            }
-        }
-        break;
-    case CacheMode::NormalBackward:
-        offsets = {-9, -10, -7, -8, 0, 1, -1, -2, -3, -4, -5, -6};
-        if(offsets.size() > qApp->MaxImagesCache())  {
-            QMutableListIterator<int> i(offsets);
-            while (i.hasNext()) {
-                if (i.next() < -qApp->MaxImagesCache()+2)
-                    i.remove();
-            }
-        }
-        break;
-    case CacheMode::FastForward:
-        offsets = {0, 1, 10, 11, -10, -9, 20, 21, -20, 19};
-        while(offsets.size() > qApp->MaxImagesCache())
-            offsets.removeLast();
-        break;
     case CacheMode::CreateThumbnail:
         m_currentCacheSync = futureLoadImageFromFileVolume(this, m_filelist[0], QSize());
         return;
     case CacheMode::CoverOnly:
-        offsets = {0, 1};
-        foreach (const int of, offsets) {
-            int cnt = m_cnt+of;
-            if(cnt < 0 || cnt >= m_filelist.size())
-                continue;
+        for(int cnt : PrefetchPlanner::indexes(
+                CacheMode::Normal, m_cnt, m_filelist.size(), 2)) {
             ImageContent ic = futureLoadImageFromFileVolume(this, m_filelist[cnt], QSize());
             m_imageCache.insert(cnt, QtConcurrent::run(pathThrough, ic));
         }
@@ -249,10 +215,9 @@ void VolumeManager::on_ready()
     default:
         break;
     }
-    foreach (const int of, offsets) {
-        int cnt = m_cnt+of;
-        if(cnt < 0 || cnt >= m_filelist.size())
-            continue;
+    const QList<int> indexes = PrefetchPlanner::indexes(
+        m_cacheMode, m_cnt, m_filelist.size(), qApp->MaxImagesCache());
+    for(int cnt : indexes) {
         if(qApp->Effect() < qvEnums::UsingFixedShader && m_imageCache.contains(cnt) && m_imageCache.object(cnt).isFinished() ) {
             ImageContent ic = m_imageCache.object(cnt).result();
             if(ic.ImportSize.isValid()) {

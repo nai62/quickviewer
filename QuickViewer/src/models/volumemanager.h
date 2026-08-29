@@ -9,6 +9,7 @@
 #include "timeorderdcache.h"
 #include "pagecontent.h"
 #include "qvimagemetadata.h"
+#include "prefetchplanner.h"
 
 class PageManager;
 class VolumeManagerBuilder;
@@ -25,16 +26,14 @@ class VolumeManager : public QObject
     Q_OBJECT
 //    Q_DISABLE_COPY(IFileVolume)
 public:
-    enum CacheMode
-    {
-        Normal,
-        NormalForward,
-        NormalBackward,
-        FastForward,
-        FastBackrard,
-        CoverOnly,
-        CreateThumbnail,
-    };
+    using CacheMode = PrefetchMode;
+    static constexpr CacheMode Normal = CacheMode::Normal;
+    static constexpr CacheMode NormalForward = CacheMode::NormalForward;
+    static constexpr CacheMode NormalBackward = CacheMode::NormalBackward;
+    static constexpr CacheMode FastForward = CacheMode::FastForward;
+    static constexpr CacheMode FastBackrard = CacheMode::FastBackrard;
+    static constexpr CacheMode CoverOnly = CacheMode::CoverOnly;
+    static constexpr CacheMode CreateThumbnail = CacheMode::CreateThumbnail;
 
     typedef QFuture<ImageContent> future_image;
 
