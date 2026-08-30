@@ -76,7 +76,6 @@ public:
 protected:
     void dragEnterEvent(QDragEnterEvent *e) override;
     void dropEvent(QDropEvent *e) override;
-    void showEvent(QShowEvent *event) override;
 //    void paintEvent( QPaintEvent *event ) override;
     void wheelEvent(QWheelEvent *e) override;
     void keyPressEvent(QKeyEvent *event);
@@ -222,7 +221,6 @@ protected:
     bool m_viewerWindowStateMaximized;
     bool m_sliderChanging;
     bool m_onWindowClosing;
-    bool m_revealInitialFullscreen;
 
     /**
      * @brief m_contextMenu Define on the context menu mainwindow.ui for the main screen and separate at startup
