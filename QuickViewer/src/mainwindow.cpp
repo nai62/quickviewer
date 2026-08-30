@@ -30,6 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_sliderChanging(false)
     , m_onWindowClosing(false)
     , m_viewerWindowStateMaximized(false)
+    , m_revealInitialFullscreen(false)
 //    , contextMenu(this)
     , m_pageManager(this)
     , m_folderWindow(nullptr)
@@ -42,6 +43,9 @@ MainWindow::MainWindow(QWidget *parent)
     // expose child surfaces created with the designer geometry.
     if(!qApp->BeginAsFullscreen() && qApp->RestoreWindowState())
         restoreGeometry(qApp->WindowGeometry());
+    m_revealInitialFullscreen = qApp->BeginAsFullscreen() || isFullScreen();
+    if(m_revealInitialFullscreen)
+        setWindowOpacity(0.0);
 
     m_menubarFontSize = ui->menuBar->font().pointSize();
 	m_pageSliderHeight = ui->pageSlider->height();
@@ -263,6 +267,41 @@ MainWindow::MainWindow(QWidget *parent)
         loadVolume(bookmark, true);
         makeBookmarkMenu();
     }
+}
+
+void MainWindow::showEvent(QShowEvent *event)
+{
+    QMainWindow::showEvent(event);
+    if(!m_revealInitialFullscreen)
+        return;
+    if(!isFullScreen()) {
+        m_revealInitialFullscreen = false;
+        setWindowOpacity(1.0);
+        return;
+    }
+
+    // Let the full-screen resize and layout requests settle while the window
+    // is transparent. Paint the resulting full-size backing store once, then
+    // reveal it without ever exposing the designer-size startup surface.
+    QTimer::singleShot(0, this, [this]() {
+        if(!m_revealInitialFullscreen)
+            return;
+        if(!isFullScreen()) {
+            m_revealInitialFullscreen = false;
+            setWindowOpacity(1.0);
+            return;
+        }
+        if(layout())
+            layout()->activate();
+        ui->graphicsView->readyForPaint();
+        repaint();
+        QTimer::singleShot(0, this, [this]() {
+            if(!m_revealInitialFullscreen)
+                return;
+            m_revealInitialFullscreen = false;
+            setWindowOpacity(1.0);
+        });
+    });
 }
 
 
