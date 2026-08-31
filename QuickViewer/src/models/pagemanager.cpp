@@ -12,6 +12,8 @@ PageManager::PageManager(QObject* parent)
     , m_volumes(qApp->MaxVolumesCache())
     , m_fileVolume(nullptr)
     , m_imaveView(nullptr)
+    , m_initialImageLoads()
+    , m_volumeLoads()
 //    , m_builderForAssoc("", this)
 {
     installEventFilter(this);
@@ -19,6 +21,8 @@ PageManager::PageManager(QObject* parent)
 
 bool PageManager::loadVolume(QString path, bool coverOnly)
 {
+    m_initialImageLoads.invalidate();
+    m_volumeLoads.invalidate();
     if(m_fileVolume && m_pages.size() == 2) {
         m_fileVolume->prevPage();
     }
@@ -55,20 +59,61 @@ bool PageManager::loadVolumeWithFile(QString path, bool prohibitProhibit2Page)
         return result;
     }
 
-    QtConcurrent::run([=]{
-        VolumeManagerBuilder builder(qpath, this);
-        VolumeManager* newer = builder.buildForAssoc();
-        if(!newer) {
-            return loadVolume(QString("%1::%2").arg(pathbase).arg(subfilename));
-        }
-        emit volumeChanged("");
-        m_volumes.insert(pathbase, QtConcurrent::run([=]{return newer;}));
-        m_fileVolume = newer;
-        clearPages();
-        m_currentPage = newer->pageCount();
-        qApp->postEvent(this, new ReloadedEvent());
-    });
+    m_initialImageLoads.invalidate();
+    m_volumeLoads.invalidate();
+    const QSize pageSize = m_imaveView ? viewportSize() : QSize();
+    const QFuture<ImageContent> initialImage = QtConcurrent::run(
+        [qpath, pageSize] {
+            return VolumeManager::loadImageFromFile(qpath, pageSize);
+        });
+    m_initialImageLoads.submit(initialImage,
+        [this, qpath, pathbase, subfilename](ImageContent content) mutable {
+            if(!content.Image.isNull() || !content.ResizedImage.isNull()
+                    || !content.Movie.isNull()) {
+                m_fileVolume = nullptr;
+                clearPages();
+                m_currentPage = 0;
+                addNewPage(std::move(content), true);
+                emit readyForPaint();
+            }
+            startAssociatedVolumeBuild(qpath, pathbase, subfilename);
+        },
+        [](ImageContent) {});
     return true;
+}
+
+void PageManager::startAssociatedVolumeBuild(const QString &qpath,
+                                             const QString &pathbase,
+                                             const QString &subfilename)
+{
+    QThread *guiThread = thread();
+    const QFuture<VolumeManager*> future = QtConcurrent::run([qpath, guiThread]{
+        VolumeManagerBuilder builder(qpath, nullptr);
+        VolumeManager *newer = builder.buildForAssoc();
+        if(newer)
+            newer->moveToThread(guiThread);
+        return newer;
+    });
+    m_volumeLoads.submit(future,
+        [this, pathbase, subfilename](VolumeManager *newer) {
+            if(!newer) {
+                loadVolume(QString("%1::%2").arg(pathbase).arg(subfilename));
+                return;
+            }
+            newer->setPageManager(this);
+            emit volumeChanged("");
+            m_volumes.insert(pathbase, QtConcurrent::run([newer]{ return newer; }));
+            m_fileVolume = newer;
+            clearPages();
+            m_currentPage = newer->pageCount();
+            reloadCurrentPage(true);
+            emit pageChanged();
+            emit volumeChanged(m_fileVolume->volumePath());
+        },
+        [](VolumeManager *newer) {
+            if(newer)
+                newer->deleteLater();
+        });
 }
 
 
@@ -314,7 +359,7 @@ void PageManager::fastBackwardPage()
     m_currentPage -= PAGE_INTERVAL;
     if(m_currentPage < 0)
         m_currentPage = 0;
-    selectPage(m_currentPage, VolumeManager::FastForward);
+    selectPage(m_currentPage, VolumeManager::FastBackward);
 }
 
 void PageManager::selectPage(int idx, VolumeManager::CacheMode cacheMode)
@@ -459,6 +504,8 @@ bool PageManager::eventFilter(QObject *obj, QEvent *event)
 
 QString PageManager::currentPageNumAsString() const
 {
+    if(!m_fileVolume)
+        return "";
     if(m_pages.size() == 2) {
         return QString("(%1-%2/%3)").arg(m_currentPage+1).arg(m_currentPage+2).arg(m_fileVolume->size());
     } else {
@@ -494,7 +541,7 @@ QString PageManager::currentPageStatusAsString() const
 
 QString PageManager::pageSignage(int page) const
 {
-    if(m_pages.size() <= page)
+    if(!m_fileVolume || m_pages.size() <= page)
         return "";
     return QString("%1 (%2/%3)")
             .arg(QDir::toNativeSeparators(m_fileVolume->getPathByFileName(m_pages[page].Path)))

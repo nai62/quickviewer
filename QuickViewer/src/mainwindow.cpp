@@ -42,6 +42,7 @@ MainWindow::MainWindow(QWidget *parent)
     // expose child surfaces created with the designer geometry.
     if(!qApp->BeginAsFullscreen() && qApp->RestoreWindowState())
         restoreGeometry(qApp->WindowGeometry());
+    setWindowOpacity(0.0);
 
     m_menubarFontSize = ui->menuBar->font().pointSize();
 	m_pageSliderHeight = ui->pageSlider->height();
@@ -251,6 +252,18 @@ MainWindow::MainWindow(QWidget *parent)
         ui->graphicsView->readyForPaint();
     }
 
+    // Build and paint the initial window at its final geometry while it is
+    // transparent. Reveal the configured viewer background before starting
+    // any potentially blocking image or archive load.
+    if(!isVisible())
+        show();
+    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+    if(layout())
+        layout()->activate();
+    ui->graphicsView->readyForPaint();
+    repaint();
+    setWindowOpacity(1.0);
+
     // when drop a folder/archive icon to this app
     if(qApp->arguments().length() >= 2) {
         loadVolume(qApp->arguments().last());
@@ -264,7 +277,6 @@ MainWindow::MainWindow(QWidget *parent)
         makeBookmarkMenu();
     }
 }
-
 
 MainWindow::~MainWindow()
 {

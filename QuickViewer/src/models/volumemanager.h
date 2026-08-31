@@ -7,8 +7,11 @@
 
 #include "fileloader.h"
 #include "timeorderdcache.h"
+#include "futurecache.h"
+#include "imageloadcontext.h"
 #include "pagecontent.h"
 #include "qvimagemetadata.h"
+#include "prefetchplanner.h"
 
 class PageManager;
 class VolumeManagerBuilder;
@@ -25,16 +28,14 @@ class VolumeManager : public QObject
     Q_OBJECT
 //    Q_DISABLE_COPY(IFileVolume)
 public:
-    enum CacheMode
-    {
-        Normal,
-        NormalForward,
-        NormalBackward,
-        FastForward,
-        FastBackrard,
-        CoverOnly,
-        CreateThumbnail,
-    };
+    using CacheMode = PrefetchMode;
+    static constexpr CacheMode Normal = CacheMode::Normal;
+    static constexpr CacheMode NormalForward = CacheMode::NormalForward;
+    static constexpr CacheMode NormalBackward = CacheMode::NormalBackward;
+    static constexpr CacheMode FastForward = CacheMode::FastForward;
+    static constexpr CacheMode FastBackward = CacheMode::FastBackward;
+    static constexpr CacheMode CoverOnly = CacheMode::CoverOnly;
+    static constexpr CacheMode CreateThumbnail = CacheMode::CreateThumbnail;
 
     typedef QFuture<ImageContent> future_image;
 
@@ -45,7 +46,9 @@ public:
     ImageContent getImageBeforeEnmumerate(QString subfilename);
     IFileLoader* FileLoader() { return m_loader; }
 
-    static ImageContent futureLoadImageFromFileVolume(VolumeManager* volume, QString path, QSize pageSize);
+    static ImageContent futureLoadImageFromFileVolume(
+        QSharedPointer<ImageLoadContext> context, QString path, QSize pageSize);
+    static ImageContent loadImageFromFile(QString path, QSize pageSize);
     static ImageContent futureReizeImage(ImageContent ic, QSize pageSize);
     static QString FullPathToVolumePath(QString path);
     static QString FullPathToSubFilePath(QString path);
@@ -111,7 +114,7 @@ public:
     /**
      * @brief loadImageByName Reads and returns the image corresponding to the file name specified in the file list without advancing the internal counter
      */
-    QByteArray loadByteArrayByName(const QString& name) { return m_loader->getFile(name, m_mutex); }
+    QByteArray loadByteArrayByName(const QString& name) { return m_loadContext->load(name); }
     /**
      * @brief Returns the number of pages the volume has
      */
@@ -128,12 +131,17 @@ public:
     const ImageContent getIndexedImageContent(int idx);
     bool openedWithSpecifiedImageFile() { return m_openedWithSpecifiedImageFile; }
     void setOpenedWithSpecifiedImageFile(bool openedWithSpecifiedImageFile) { m_openedWithSpecifiedImageFile = openedWithSpecifiedImageFile; }
+    void setPageManager(PageManager *pageManager) { m_pageManager = pageManager; }
     void moveToThread(QThread *targetThread);
 
 public slots:
     void on_enmumerated();
 
 private:
+    future_image scheduleImageLoad(const QString &path, const QSize &pageSize,
+                                   bool requiredForDisplay);
+    future_image scheduleResize(ImageContent content, const QSize &pageSize);
+
     /**
      * @brief m_cnt File counter in the volume
      */
@@ -144,12 +152,11 @@ private:
     future_image m_currentCache;
     ImageContent m_currentCacheSync;
 
-    TimeOrderdCacheFuture<int, ImageContent> m_imageCache;
+    FutureCache<int, ImageContent> m_imageCache;
 //    QMap<int, future_image> m_imageCache;
 //    QList<int> m_pageCache;
 
-    QMutex m_mutex;
-
+    QSharedPointer<ImageLoadContext> m_loadContext;
     IFileLoader* m_loader;
     CacheMode m_cacheMode;
     PageManager* m_pageManager;

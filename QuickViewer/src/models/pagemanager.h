@@ -4,6 +4,7 @@
 #include <QtGui>
 #include "volumemanager.h"
 #include "volumemanagerbuilder.h"
+#include "latestresultdispatcher.h"
 
 class VolumeManager;
 class ImageView;
@@ -102,6 +103,8 @@ public:
     int size() override { return m_fileVolume ? m_fileVolume->size() : 0; }
     bool canDualView() const;
     void dispose() {
+        m_initialImageLoads.invalidate();
+        m_volumeLoads.invalidate();
 //        if(m_fileVolume && m_volumes.empty()) {
 //            delete m_fileVolume;
 //            m_pages.resize(0);
@@ -140,6 +143,9 @@ public slots:
 
 
 private:
+    void startAssociatedVolumeBuild(const QString &qpath,
+                                    const QString &pathbase,
+                                    const QString &subfilename);
     VolumeManager* addVolumeCache(QString path, bool onlyCover, bool immediate);
     VolumeManager* createVolume(QString path, bool onlyCover);
     VolumeManager* passThrough(VolumeManager* vol) { return vol; }
@@ -158,6 +164,9 @@ private:
     ImageView * m_imaveView;
 
     bool m_waitForReloaded;
+
+    LatestResultDispatcher<ImageContent> m_initialImageLoads;
+    LatestResultDispatcher<VolumeManager*> m_volumeLoads;
 
 //    VolumeManagerBuilder m_builderForAssoc;
 };

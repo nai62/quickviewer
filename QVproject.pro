@@ -10,7 +10,14 @@ SUBDIRS = \
     zimg \
     qsvgrenderer \
     QuickViewer \
-    qvtest
+    qvtest \
+    prefetchplannertest \
+    latestresultdispatchertest \
+    asynccachetest
+
+prefetchplannertest.subdir = qvtest/prefetchplanner
+latestresultdispatchertest.subdir = qvtest/latestresultdispatcher
+asynccachetest.subdir = qvtest/asynccache
 
 fileloader.depends = Qt7z/Qt7z unrar
 QuickViewer.depends = ResizeHalf easyexif fileloader zimg qsvgrenderer

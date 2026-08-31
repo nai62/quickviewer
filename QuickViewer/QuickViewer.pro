@@ -113,8 +113,10 @@ SOURCES += \
     src/main.cpp \
     src/mainwindow.cpp \
     src/models/bookprogressmanager.cpp \
+    src/models/boundedexecutor.cpp \
     src/models/pagecontent.cpp \
     src/models/pagemanager.cpp \
+    src/models/prefetchplanner.cpp \
     src/models/qvapplication.cpp \
     src/models/shadermanager.cpp \
     src/models/thumbnailmanager.cpp \
@@ -155,8 +157,13 @@ HEADERS  += \
     src/imageview.h \
     src/mainwindow.h \
     src/models/bookprogressmanager.h \
+    src/models/boundedexecutor.h \
+    src/models/futurecache.h \
+    src/models/imageloadcontext.h \
     src/models/pagecontent.h \
     src/models/pagemanager.h \
+    src/models/latestresultdispatcher.h \
+    src/models/prefetchplanner.h \
     src/models/qvapplication.h \
     src/models/shadermanager.h \
     src/models/thumbnailmanager.h \
