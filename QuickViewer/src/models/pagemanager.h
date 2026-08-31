@@ -54,6 +54,9 @@ public:
     void clearPages();
     QSize viewportSize();
     void setImageView(ImageView* view){m_imaveView = view;}
+    bool initialImagePaintPending() const { return m_initialImagePaintPending; }
+    void deferFolderWorkUntilNextPaint();
+    void notifyInitialImagePainted();
     void bookProgress();
     void sort(qvEnums::ImageSortBy sortBy);
     virtual bool eventFilter(QObject *obj, QEvent *event) override;
@@ -103,6 +106,13 @@ public:
     int size() override { return m_fileVolume ? m_fileVolume->size() : 0; }
     bool canDualView() const;
     void dispose() {
+        ++m_initialDisplayGeneration;
+        m_initialImagePaintPending = false;
+        m_initialPaintCompletionQueued = false;
+        m_initialImageReadyForPaint = false;
+        m_pendingAssociatedPath.clear();
+        m_pendingAssociatedPathbase.clear();
+        m_pendingAssociatedFilename.clear();
         m_initialImageLoads.invalidate();
         m_volumeLoads.invalidate();
 //        if(m_fileVolume && m_volumes.empty()) {
@@ -131,6 +141,11 @@ signals:
      */
     void volumeChanged(QString path);
     /**
+     * Emitted after the directly opened image has had a chance to paint. Heavy
+     * folder-related GUI work can resume after this signal.
+     */
+    void initialImageDisplayFinished();
+    /**
      * @brief addNewPage add a new page. if it is dual view, 2 times called
      * @param pageNum
      */
@@ -146,6 +161,7 @@ private:
     void startAssociatedVolumeBuild(const QString &qpath,
                                     const QString &pathbase,
                                     const QString &subfilename);
+    void finishInitialImageDisplay(quint64 generation);
     VolumeManager* addVolumeCache(QString path, bool onlyCover, bool immediate);
     VolumeManager* createVolume(QString path, bool onlyCover);
     VolumeManager* passThrough(VolumeManager* vol) { return vol; }
@@ -167,6 +183,13 @@ private:
 
     LatestResultDispatcher<ImageContent> m_initialImageLoads;
     LatestResultDispatcher<VolumeManager*> m_volumeLoads;
+    bool m_initialImagePaintPending;
+    bool m_initialPaintCompletionQueued;
+    bool m_initialImageReadyForPaint;
+    quint64 m_initialDisplayGeneration;
+    QString m_pendingAssociatedPath;
+    QString m_pendingAssociatedPathbase;
+    QString m_pendingAssociatedFilename;
 
 //    VolumeManagerBuilder m_builderForAssoc;
 };

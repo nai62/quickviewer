@@ -214,6 +214,7 @@ public slots:
 
 private slots:
     void onGraphicsView_fittingChanged(qvEnums::FitMode mode);
+    void onInitialImageDisplayFinished();
 
 
 protected:

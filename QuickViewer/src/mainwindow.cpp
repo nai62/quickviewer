@@ -32,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_viewerWindowStateMaximized(false)
 //    , contextMenu(this)
     , m_pageManager(this)
+    , m_thumbManager(nullptr)
     , m_folderWindow(nullptr)
     , m_catalogWindow(nullptr)
     , m_brightnessWindow(nullptr)
@@ -64,6 +65,8 @@ MainWindow::MainWindow(QWidget *parent)
 #endif
 
     ui->graphicsView->setPageManager(&m_pageManager);
+    connect(&m_pageManager, &PageManager::initialImageDisplayFinished,
+            this, &MainWindow::onInitialImageDisplayFinished);
     setAcceptDrops(true);
 
     // Mapping to Key-Action Table and Key Config Dialog
@@ -509,6 +512,8 @@ void MainWindow::loadVolume(QString path, bool prohibitProhibit2Page)
         return;
     }
     if(m_pageManager.loadVolume(path)) {
+        if(m_pageManager.isArchive())
+            m_pageManager.deferFolderWorkUntilNextPaint();
         changeFolderPath(m_pageManager.volumePath());
         return;
     }
@@ -732,6 +737,7 @@ void MainWindow::onFolderWindow_openVolume(QString path)
 
 void MainWindow::createFolderWindow(bool docked, QString path)
 {
+    const bool deferFolderLoad = m_pageManager.initialImagePaintPending();
     QString oldpath = path;
     if(m_folderWindow) {
         oldpath = m_folderWindow->currentPath();
@@ -739,7 +745,10 @@ void MainWindow::createFolderWindow(bool docked, QString path)
     }
     if(oldpath.isEmpty() && !m_pendingFolderPath.isEmpty())
         oldpath = m_pendingFolderPath;
-    m_pendingFolderPath.clear();
+    if(deferFolderLoad)
+        m_pendingFolderPath = oldpath;
+    else
+        m_pendingFolderPath.clear();
 
     if(oldpath.isEmpty()) {
         oldpath = m_pageManager.volumePath();
@@ -751,7 +760,8 @@ void MainWindow::createFolderWindow(bool docked, QString path)
         closeAllDockedWindow();
         int lastwidth = qApp->FolderViewWidth();
         m_folderWindow = new FolderWindow(nullptr, ui);
-        m_folderWindow->setFolderPath(oldpath, false);
+        if(!deferFolderLoad)
+            m_folderWindow->setFolderPath(oldpath, false);
         connect(m_folderWindow, SIGNAL(closed()), this, SLOT(onFolderWindow_closed()));
         connect(m_folderWindow, SIGNAL(openVolume(QString)), this, SLOT(onFolderWindow_openVolume(QString)));
         connect(&m_pageManager, SIGNAL(volumeChanged(QString)), m_folderWindow, SLOT(onPageManager_volumeChanged(QString)));
@@ -768,7 +778,8 @@ void MainWindow::createFolderWindow(bool docked, QString path)
         QRect self = geometry();
         m_folderWindow->setGeometry(self.left()-100, self.top()+100, self.width(), self.height());
         m_folderWindow->setAsToplevelWindow();
-        m_folderWindow->setFolderPath(oldpath, false);
+        if(!deferFolderLoad)
+            m_folderWindow->setFolderPath(oldpath, false);
         connect(m_folderWindow, SIGNAL(closed()), this, SLOT(onFolderWindow_closed()));
         connect(m_folderWindow, SIGNAL(openVolume(QString)), this, SLOT(onFolderWindow_openVolume(QString)));
         connect(&m_pageManager, SIGNAL(volumeChanged(QString)), m_folderWindow, SLOT(onPageManager_volumeChanged(QString)));
@@ -779,6 +790,10 @@ void MainWindow::createFolderWindow(bool docked, QString path)
 
 bool MainWindow::changeFolderPath(QString path)
 {
+    if(m_pageManager.initialImagePaintPending()) {
+        m_pendingFolderPath = path;
+        return false;
+    }
     if(!m_folderWindow) {
         // An image passed on the command line is loaded before setThumbnailManager()
         // creates the startup FolderWindow. Preserve its directory until then.
@@ -787,6 +802,24 @@ bool MainWindow::changeFolderPath(QString path)
     }
     m_folderWindow->setFolderPath(path, false);
     return true;
+}
+
+void MainWindow::onInitialImageDisplayFinished()
+{
+    if(m_pendingFolderPath.isEmpty())
+        return;
+
+    if(m_folderWindow) {
+        const QString path = m_pendingFolderPath;
+        m_pendingFolderPath.clear();
+        m_folderWindow->setFolderPath(path, false);
+        return;
+    }
+
+    if(m_thumbManager && qApp->ShowOptionViewOnStartup() == qvEnums::FolderStartup) {
+        const QString path = m_pendingFolderPath;
+        createFolderWindow(!qApp->ShowPanelSeparateWindow(), path);
+    }
 }
 
 ////////////////////////////
