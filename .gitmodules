@@ -19,9 +19,6 @@
 [submodule "QuickViewer/src/qnamedpipe"]
 	path = QuickViewer/src/qnamedpipe
 	url = https://github.com/kanryu/qnamedpipe
-[submodule "libexpat/libexpat"]
-	path = libexpat/libexpat
-	url = https://github.com/libexpat/libexpat
 [submodule "easyexif/easyexif"]
 	path = easyexif/easyexif
 	url = https://github.com/mayanklahiri/easyexif
