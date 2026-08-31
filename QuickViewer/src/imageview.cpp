@@ -404,11 +404,12 @@ void ImageView::setCursor(const QCursor &cursor)
     }
 }
 
-//void ImageView::paintEvent(QPaintEvent *event)
-//{
-////    readyForPaint();
-//    QGraphicsView::paintEvent(event);
-//}
+void ImageView::paintEvent(QPaintEvent *event)
+{
+    QGraphicsView::paintEvent(event);
+    if(m_pageManager)
+        m_pageManager->notifyInitialImagePainted();
+}
 
 void ImageView::resizeEvent(QResizeEvent *event)
 {
