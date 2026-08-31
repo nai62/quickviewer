@@ -6,10 +6,6 @@
 #include "pagemanager.h"
 #include "qvapplication.h"
 
-#ifndef Q_OS_WIN
-#include "fileloaderziparchive.h"
-#endif
-
 VolumeManager* VolumeManagerBuilder::CreateVolume(QObject* parent, QString path, PageManager* pageManager)
 {
     QDir dir(path);
@@ -39,25 +35,6 @@ VolumeManager* VolumeManagerBuilder::CreateVolume(QObject* parent, QString path,
     if(FileLoader7zArchive::st_supportedArchiveFormats.contains(fmt)) {
         return new VolumeManager(parent, new FileLoader7zArchive(parent, path, fmt, qApp->ExtractSolidArchiveToTemporaryDir()), pageManager);
     }
-
-
-
-
-//    QString lower = path.toLower();
-//    if(lower.endsWith(".zip") || lower.endsWith(".cbz")) {
-////#ifdef Q_OS_WIN
-////        return new VolumeManager(parent, new FileLoader7zArchive(parent, path), pageManager);
-////#else
-////        return new VolumeManager(parent, new FileLoaderZipArchive(parent, path), pageManager);
-////#endif
-//        return new VolumeManager(parent, new FileLoader7zArchive(parent, path, "zip", qApp->ExtractSolidArchiveToTemporaryDir()), pageManager);
-//    }
-//    if(lower.endsWith(".7z")) {
-//        return new VolumeManager(parent, new FileLoader7zArchive(parent, path, "7z", qApp->ExtractSolidArchiveToTemporaryDir()), pageManager);
-//    }
-//    if(lower.endsWith(".rar") || lower.endsWith(".cbr")) {
-//        return new VolumeManager(parent, new FileLoaderRarArchive(parent, path), pageManager);
-//    }
     if(IFileLoader::isImageFile(path)) {
         const QFileInfo imageInfo(path);
         const QString dirpath = imageInfo.absolutePath();

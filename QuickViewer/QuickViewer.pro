@@ -46,7 +46,6 @@ INCLUDEPATH += ./src/qfullscreenframe ./src/qlanguageselector ./src/qnamedpipe .
 
 LIBDIR = ../lib
 
-#LIBS += -L$${LIBDIR}  -leasyexif -lresizehalf -lfileloader -lQt7z -lunrar -lzimg -lzlib -lquazip
 LIBS += -L$${LIBDIR}  -leasyexif -lresizehalf -lfileloader -lQt7z -lunrar -lzimg
 
 contains(DEFINES, QV_WITH_LUMINOR) {
