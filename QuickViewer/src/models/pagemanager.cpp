@@ -16,6 +16,7 @@ PageManager::PageManager(QObject* parent)
     , m_volumeLoads()
     , m_initialImagePaintPending(false)
     , m_initialPaintCompletionQueued(false)
+    , m_initialImageReadyForPaint(false)
     , m_initialDisplayGeneration(0)
 //    , m_builderForAssoc("", this)
 {
@@ -27,6 +28,7 @@ bool PageManager::loadVolume(QString path, bool coverOnly)
     ++m_initialDisplayGeneration;
     m_initialImagePaintPending = false;
     m_initialPaintCompletionQueued = false;
+    m_initialImageReadyForPaint = false;
     m_pendingAssociatedPath.clear();
     m_pendingAssociatedPathbase.clear();
     m_pendingAssociatedFilename.clear();
@@ -73,6 +75,7 @@ bool PageManager::loadVolumeWithFile(QString path, bool prohibitProhibit2Page)
     const quint64 displayGeneration = ++m_initialDisplayGeneration;
     m_initialImagePaintPending = true;
     m_initialPaintCompletionQueued = false;
+    m_initialImageReadyForPaint = false;
     m_pendingAssociatedPath.clear();
     m_pendingAssociatedPathbase.clear();
     m_pendingAssociatedFilename.clear();
@@ -88,6 +91,7 @@ bool PageManager::loadVolumeWithFile(QString path, bool prohibitProhibit2Page)
             m_pendingAssociatedFilename = subfilename;
             if(!content.Image.isNull() || !content.ResizedImage.isNull()
                     || !content.Movie.isNull()) {
+                m_initialImageReadyForPaint = true;
                 m_fileVolume = nullptr;
                 clearPages();
                 m_currentPage = 0;
@@ -106,12 +110,27 @@ bool PageManager::loadVolumeWithFile(QString path, bool prohibitProhibit2Page)
     return true;
 }
 
+void PageManager::deferFolderWorkUntilNextPaint()
+{
+    const quint64 displayGeneration = ++m_initialDisplayGeneration;
+    m_initialImagePaintPending = true;
+    m_initialPaintCompletionQueued = false;
+    m_initialImageReadyForPaint = true;
+    m_pendingAssociatedPath.clear();
+    m_pendingAssociatedPathbase.clear();
+    m_pendingAssociatedFilename.clear();
+
+    QTimer::singleShot(1000, this, [this, displayGeneration] {
+        finishInitialImageDisplay(displayGeneration);
+    });
+}
+
 void PageManager::notifyInitialImagePainted()
 {
     // Paints of the empty/background view can happen while the image is still
     // decoding. Only release work after the decoded page has been installed.
     if(!m_initialImagePaintPending || m_initialPaintCompletionQueued
-            || m_pendingAssociatedPath.isEmpty())
+            || !m_initialImageReadyForPaint)
         return;
 
     m_initialPaintCompletionQueued = true;
@@ -130,6 +149,7 @@ void PageManager::finishInitialImageDisplay(quint64 generation)
 
     m_initialImagePaintPending = false;
     m_initialPaintCompletionQueued = false;
+    m_initialImageReadyForPaint = false;
     const QString qpath = m_pendingAssociatedPath;
     const QString pathbase = m_pendingAssociatedPathbase;
     const QString subfilename = m_pendingAssociatedFilename;

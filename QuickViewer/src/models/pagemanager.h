@@ -55,6 +55,7 @@ public:
     QSize viewportSize();
     void setImageView(ImageView* view){m_imaveView = view;}
     bool initialImagePaintPending() const { return m_initialImagePaintPending; }
+    void deferFolderWorkUntilNextPaint();
     void notifyInitialImagePainted();
     void bookProgress();
     void sort(qvEnums::ImageSortBy sortBy);
@@ -108,6 +109,7 @@ public:
         ++m_initialDisplayGeneration;
         m_initialImagePaintPending = false;
         m_initialPaintCompletionQueued = false;
+        m_initialImageReadyForPaint = false;
         m_pendingAssociatedPath.clear();
         m_pendingAssociatedPathbase.clear();
         m_pendingAssociatedFilename.clear();
@@ -183,6 +185,7 @@ private:
     LatestResultDispatcher<VolumeManager*> m_volumeLoads;
     bool m_initialImagePaintPending;
     bool m_initialPaintCompletionQueued;
+    bool m_initialImageReadyForPaint;
     quint64 m_initialDisplayGeneration;
     QString m_pendingAssociatedPath;
     QString m_pendingAssociatedPathbase;

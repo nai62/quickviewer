@@ -512,6 +512,8 @@ void MainWindow::loadVolume(QString path, bool prohibitProhibit2Page)
         return;
     }
     if(m_pageManager.loadVolume(path)) {
+        if(m_pageManager.isArchive())
+            m_pageManager.deferFolderWorkUntilNextPaint();
         changeFolderPath(m_pageManager.volumePath());
         return;
     }
