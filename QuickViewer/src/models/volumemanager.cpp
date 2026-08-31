@@ -87,6 +87,11 @@ VolumeManager::future_image VolumeManager::scheduleResize(
 
 void VolumeManager::enumerate()
 {
+    if(!m_loader) {
+        m_filelist.clear();
+        m_enumerated = true;
+        return;
+    }
     m_filelist = m_loader->contents();
     m_enumerated = true;
     sortForReady(qApp->ImageSortBy());
@@ -105,11 +110,15 @@ void VolumeManager::on_enmumerated()
     // foreach(const QString& fl, m_filelist) {
     //     m_imageMetadataList << QvImageMetadata(this, fl);
     // }
-    m_imageCache.insert(m_filelist.indexOf(m_subfilename), readyImageFuture(m_currentCacheSync));
-    findImageByName(m_subfilename);
+    const int index = m_filelist.indexOf(m_subfilename);
+    if(index >= 0) {
+        m_imageCache.insert(index, readyImageFuture(m_currentCacheSync));
+        findImageByIndex(index);
+    }
     setCacheMode(VolumeManager::Normal);
     on_ready();
-    m_pageManager->on_pageEnumerated();
+    if(m_pageManager)
+        m_pageManager->on_pageEnumerated();
 }
 
 // #ifdef Q_OS_WIN
@@ -237,8 +246,9 @@ QString VolumeManager::getIndexedFileName(int idx) {
     if(qApp->ImageSortBy() == qvEnums::SortByFileName
         || qApp->ImageSortBy() == qvEnums::SortByFileNameDescending)
         return m_filelist[idx];
-    else
+    else if(idx < m_imageMetadataList.size())
         return m_imageMetadataList[idx].filename();
+    return "";
 }
 
 
@@ -246,7 +256,8 @@ void VolumeManager::on_ready()
 {
     if(!m_enumerated)
         enumerate();
-    if(m_cnt < 0 || m_cnt >= m_filelist.size() || m_loader->contents().size()==0)
+    if(!m_loader || m_cnt < 0 || m_cnt >= m_filelist.size()
+            || m_loader->contents().isEmpty())
         return;
 
 //    qDebug() << "on_ready: m_cnt" << m_cnt;
@@ -272,14 +283,14 @@ void VolumeManager::on_ready()
         if(qApp->Effect() < qvEnums::UsingFixedShader && m_imageCache.contains(cnt) && m_imageCache.object(cnt).isFinished() ) {
             ImageContent ic = m_imageCache.object(cnt).result();
             if(ic.ImportSize.isValid()) {
-                QSize pageSize = m_pageManager->viewportSize();
+                QSize pageSize = m_pageManager ? m_pageManager->viewportSize() : QSize();
                 QSize resized = ic.Info.Orientation==6 || ic.Info.Orientation==8 ? QSize(pageSize.height(), pageSize.width()) : pageSize;
                 resized.setWidth(ic.ImportSize.width()*resized.height()/ic.ImportSize.height());
 
                 if(ic.ResizedImage.size() != resized && !ic.Image.isNull()) {
                     qDebug() << ic.ResizedImage.size() << resized;
                     const future_image future = scheduleResize(
-                        ic, m_pageManager->viewportSize());
+                        ic, pageSize);
                     if(future.isValid())
                         m_imageCache.insert(cnt, future);
                 }
@@ -304,23 +315,29 @@ void VolumeManager::on_ready()
 
 const ImageContent VolumeManager::getIndexedImageContent(int idx)
 {
+    if(idx < 0 || idx >= m_filelist.size() || !m_imageCache.contains(idx))
+        return ImageContent();
 //    future_image cache = m_imageCache[idx];
     future_image& cache = m_imageCache.object(idx);
 //    if(!cache.isFinished())
 //        cache.waitForFinished();
-    return cache.result();
+    return cache.isValid() ? cache.result() : ImageContent();
 }
 
 void VolumeManager::moveToThread(QThread *targetThread)
 {
+    if(!targetThread)
+        return;
     QObject::moveToThread(targetThread);
-    m_loader->moveToThread(targetThread);
+    if(m_loader)
+        m_loader->moveToThread(targetThread);
 }
 
 bool VolumeManager::nextPage()
 {
 //    qDebug() << "nextPage: " << m_cnt << m_filelist.size() <<  "prevCache.size()" << m_prevCache.size() << "nextCache.size()" << m_nextCache.size();
-    if(m_cnt >= m_filelist.size() || m_loader->contents().size()==0)
+    if(!m_loader || m_cnt < 0 || m_cnt >= m_filelist.size() - 1
+            || m_loader->contents().isEmpty())
         return false;
     m_cnt++;
     on_ready();
@@ -330,7 +347,8 @@ bool VolumeManager::nextPage()
 bool VolumeManager::prevPage()
 {
 //    qDebug() << "prevPage: " << m_cnt << m_filelist.size() <<  "prevCache.size()" << m_prevCache.size() << "nextCache.size()" << m_nextCache.size();
-    if(m_cnt <= 0 || m_loader->contents().size()==0)
+    if(!m_loader || m_cnt <= 0 || m_cnt >= m_filelist.size()
+            || m_loader->contents().isEmpty())
         return false;
     m_cnt--;
     on_ready();
@@ -339,10 +357,10 @@ bool VolumeManager::prevPage()
 
 bool VolumeManager::findPageByIndex(int idx)
 {
-    if(m_cnt == idx)
-        return true;
     if(idx < 0 || idx >= m_filelist.size())
         return false;
+    if(m_cnt == idx)
+        return true;
     m_cnt = idx;
 //    bool result = findImageByIndex(idx);
     on_ready();

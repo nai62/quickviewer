@@ -35,21 +35,21 @@ public:
     // Volumes
     bool loadVolume(QString path, bool coverOnly=false);
     bool loadVolumeWithFile(QString path, bool prohibitProhibit2Page=false);
-    void nextVolume();
-    void prevVolume();
+    bool nextVolume();
+    bool prevVolume();
     void reloadVolumeAfterRemoveImage();
 
     // Pages
     bool nextPage();
     bool prevPage();
-    void fastForwardPage();
-    void fastBackwardPage();
-    void selectPage(int pageNum, VolumeManager::CacheMode cacheMode=VolumeManager::Normal);
-    void firstPage();
-    void lastPage();
-    void nextOnlyOnePage();
-    void prevOnlyOnePage();
-    void reloadCurrentPage(bool pageNext = true);
+    bool fastForwardPage();
+    bool fastBackwardPage();
+    bool selectPage(int pageNum, VolumeManager::CacheMode cacheMode=VolumeManager::Normal);
+    bool firstPage();
+    bool lastPage();
+    bool nextOnlyOnePage();
+    bool prevOnlyOnePage();
+    bool reloadCurrentPage(bool pageNext = true);
     void addNewPage(ImageContent ic, bool pageNext);
     void clearPages();
     QSize viewportSize();
@@ -66,7 +66,7 @@ public:
     int currentPage() override { return m_currentPage; }
     QVector<ImageContent>& currentPageContent() { return m_pages; }
     QString currentPagePath() override {
-        if(!m_fileVolume)
+        if(!m_fileVolume || m_pages.isEmpty())
             return "";
         return QDir::toNativeSeparators(m_fileVolume->getPathByFileName(m_pages[0].Path));
     }
@@ -76,7 +76,7 @@ public:
         int idx = m_fileVolume->size()-1==m_currentPage ? m_currentPage-1 : m_currentPage+1;
         return QDir::toNativeSeparators(m_fileVolume->getPathByIndex(idx));
     }
-    QString currentPageName() { return m_pages[0].Path; }
+    QString currentPageName() { return m_pages.isEmpty() ? QString() : m_pages[0].Path; }
 
     /**
      * @brief currentPageNumAsString: for the label text on PageBar

@@ -199,6 +199,8 @@ void PageManager::startAssociatedVolumeBuild(const QString &qpath,
 
 void PageManager::on_pageEnumerated()
 {
+    if(!m_fileVolume)
+        return;
     m_currentPage = m_fileVolume->pageCount();
     emit volumeChanged(m_fileVolume->volumePath());
     emit pageChanged();
@@ -206,6 +208,8 @@ void PageManager::on_pageEnumerated()
 
 void PageManager::onSlideShowStarted()
 {
+    if(!m_fileVolume)
+        return;
     m_fileVolume->startSlideShow();
     if(qApp->SlideShowRandomly())
         firstPage();
@@ -213,24 +217,27 @@ void PageManager::onSlideShowStarted()
 
 void PageManager::onSlideShowStopped()
 {
+    if(!m_fileVolume)
+        return;
     m_fileVolume->stopSlideShow();
     if(qApp->SlideShowRandomly())
         firstPage();
 }
 
-void PageManager::nextVolume()
+bool PageManager::nextVolume()
 {
     if(!m_fileVolume)
-        return;
+        return false;
     QDir dir(m_fileVolume->volumePath());
     QFileInfo fileinfo(m_fileVolume->volumePath());
     QString current = fileinfo.fileName();
     if(!dir.cdUp())
-        return;
+        return false;
     if(m_volumenames.size() == 0) {
         m_volumenames = enumVolumes(dir);
     }
     bool beforeMatch = true;
+    bool loaded = false;
     int preloadCount = 0;
     foreach (const QString& name, m_volumenames) {
         if(beforeMatch) {
@@ -243,6 +250,8 @@ void PageManager::nextVolume()
             // if load new volume failed, search continue
             if(!loadVolume(path, true))
                 preloadCount = 0;
+            else
+                loaded = true;
         } else {
             addVolumeCache(path, true, false);
         }
@@ -260,18 +269,20 @@ void PageManager::nextVolume()
         if(preloadCount >= (qApp->MaxVolumesCache()-1)*2/3)
             break;
     }
+    return loaded;
 }
 
-void PageManager::prevVolume()
+bool PageManager::prevVolume()
 {
     if(!m_fileVolume)
-        return;
+        return false;
     QDir dir(m_fileVolume->volumePath());
     QFileInfo fileinfo(m_fileVolume->volumePath());
     QString current = fileinfo.fileName();
     if(!dir.cdUp())
-        return;
+        return false;
     int matchCount = 0;
+    bool loaded = false;
     if(m_volumenames.size() == 0) {
         m_volumenames = enumVolumes(dir);
     }
@@ -289,6 +300,8 @@ void PageManager::prevVolume()
             // if load new volume failed, search continue
             if(!loadVolume(path, true))
                 matchCount = 0;
+            else
+                loaded = true;
         } else {
             addVolumeCache(path, true, false);
         }
@@ -306,6 +319,7 @@ void PageManager::prevVolume()
         if(matchCount >= (qApp->MaxVolumesCache()-1)*2/3)
             break;
     }
+    return loaded;
 }
 
 void PageManager::reloadVolumeAfterRemoveImage()
@@ -341,7 +355,7 @@ VolumeManager* PageManager::addVolumeCache(QString path, bool onlyCover, bool im
         VolumeManagerBuilder builder(path, this);
         VolumeManager* imm = builder.build(onlyCover);
         qDebug() << "addVolumeCache:imm" << imm;
-        m_volumes.insert(pathbase, QtConcurrent::run([&]{return passThrough(imm);}));
+        m_volumes.insert(pathbase, QtConcurrent::run([this, imm]{return passThrough(imm);}));
     }
     QFuture<VolumeManager*> future = m_volumes.object(pathbase);
     if(!immediate && !future.isFinished())
@@ -420,58 +434,63 @@ bool PageManager::prevPage()
 
 #define PAGE_INTERVAL 10
 
-void PageManager::fastForwardPage()
+bool PageManager::fastForwardPage()
 {
-    if(m_fileVolume == nullptr) return;
-    if(m_fileVolume->pageCount() == m_fileVolume->size() -1) return;
+    if(m_fileVolume == nullptr || m_fileVolume->size() == 0) return false;
+    if(m_fileVolume->pageCount() == m_fileVolume->size() -1) return false;
     m_currentPage += PAGE_INTERVAL;
     if(m_currentPage >= m_fileVolume->size() -1)
         m_currentPage = m_fileVolume->size() -1;
 
-    selectPage(m_currentPage, VolumeManager::FastForward);
+    return selectPage(m_currentPage, VolumeManager::FastForward);
 }
 
-void PageManager::fastBackwardPage()
+bool PageManager::fastBackwardPage()
 {
-    if(m_fileVolume == nullptr) return;
-    if(m_fileVolume->pageCount() < m_pages.size()) return;
+    if(m_fileVolume == nullptr || m_fileVolume->size() == 0) return false;
+    if(m_fileVolume->pageCount() < m_pages.size()) return false;
 
     m_currentPage -= PAGE_INTERVAL;
     if(m_currentPage < 0)
         m_currentPage = 0;
-    selectPage(m_currentPage, VolumeManager::FastBackward);
+    return selectPage(m_currentPage, VolumeManager::FastBackward);
 }
 
-void PageManager::selectPage(int idx, VolumeManager::CacheMode cacheMode)
+bool PageManager::selectPage(int idx, VolumeManager::CacheMode cacheMode)
 {
     //qDebug() << "PageManager::selectPage()" << idx;
-    if(m_fileVolume == nullptr) return;
+    if(m_fileVolume == nullptr || idx < 0 || idx >= m_fileVolume->size()) return false;
     m_fileVolume->setCacheMode(cacheMode);
     bool result = m_fileVolume->findPageByIndex(idx);
-    if(!result) return;
+    if(!result) return false;
     m_currentPage = idx;
 
     reloadCurrentPage();
     emit pageChanged();
+    return true;
 }
 
-void PageManager::firstPage()
+bool PageManager::firstPage()
 {
+    if(!m_fileVolume || m_fileVolume->size() == 0)
+        return false;
     m_fileVolume->setCacheMode(VolumeManager::Normal);
-    selectPage(0);
+    return selectPage(0);
 }
 
-void PageManager::lastPage()
+bool PageManager::lastPage()
 {
     if(m_fileVolume && m_fileVolume->size() > 0) {
         m_fileVolume->setCacheMode(VolumeManager::Normal);
-        selectPage(m_fileVolume->size()-1);
+        return selectPage(m_fileVolume->size()-1);
     }
+    return false;
 }
 
-void PageManager::nextOnlyOnePage()
+bool PageManager::nextOnlyOnePage()
 {
-    if(m_fileVolume == nullptr || m_fileVolume->pageCount() == m_fileVolume->size() -1) return;
+    if(m_fileVolume == nullptr || m_fileVolume->size() == 0
+            || m_fileVolume->pageCount() == m_fileVolume->size() -1) return false;
     m_fileVolume->setCacheMode(VolumeManager::Normal);
     if(m_pages.size() == 1) {
         m_fileVolume->nextPage();
@@ -481,26 +500,28 @@ void PageManager::nextOnlyOnePage()
         m_currentPage = m_fileVolume->size() - 1;
     reloadCurrentPage();
     emit pageChanged();
+    return true;
 }
 
-void PageManager::prevOnlyOnePage()
+bool PageManager::prevOnlyOnePage()
 {
-    if(m_fileVolume == nullptr) return;
+    if(m_fileVolume == nullptr || m_fileVolume->size() == 0) return false;
 
-    if(m_fileVolume->pageCount() < m_pages.size()) return;
+    if(m_fileVolume->pageCount() < m_pages.size()) return false;
     m_fileVolume->setCacheMode(VolumeManager::Normal);
 
     //QVApplication* app = qApp;
     m_currentPage--;
     if(m_currentPage < 0)
         m_currentPage = 0;
-    selectPage(m_currentPage);
+    return selectPage(m_currentPage);
 }
 
-void PageManager::reloadCurrentPage(bool )
+bool PageManager::reloadCurrentPage(bool )
 {
     //qDebug() << "ImageView::reloadCurrentPage()";
-    if(m_fileVolume == nullptr) return;
+    if(m_fileVolume == nullptr || m_currentPage < 0
+            || m_currentPage >= m_fileVolume->size()) return false;
     clearPages();
 
     const ImageContent ic0 = m_fileVolume->getIndexedImageContent(m_currentPage);
@@ -516,6 +537,7 @@ void PageManager::reloadCurrentPage(bool )
         }
     }
     emit readyForPaint();
+    return true;
 }
 
 
@@ -537,11 +559,14 @@ void PageManager::clearPages()
 
 QSize PageManager::viewportSize()
 {
-    return m_imaveView->viewport()->size();
+    return m_imaveView && m_imaveView->viewport()
+            ? m_imaveView->viewport()->size() : QSize();
 }
 
 void PageManager::bookProgress()
 {
+    if(!m_fileVolume || m_pages.isEmpty() || !qApp->bookshelfManager())
+        return;
     QString path = QDir::fromNativeSeparators(m_fileVolume->volumePath());
     BookProgress book = {
         QFileInfo(m_fileVolume->volumePath()).fileName(),
@@ -571,6 +596,8 @@ bool PageManager::eventFilter(QObject *obj, QEvent *event)
 {
     switch (event->type()) {
     case ReloadedEventType:
+        if(!m_fileVolume)
+            return true;
         reloadCurrentPage(true);
         emit pageChanged();
         emit volumeChanged(m_fileVolume->volumePath());
@@ -584,7 +611,7 @@ bool PageManager::eventFilter(QObject *obj, QEvent *event)
 
 QString PageManager::currentPageNumAsString() const
 {
-    if(!m_fileVolume)
+    if(!m_fileVolume || m_fileVolume->size() == 0 || m_pages.isEmpty())
         return "";
     if(m_pages.size() == 2) {
         return QString("(%1-%2/%3)").arg(m_currentPage+1).arg(m_currentPage+2).arg(m_fileVolume->size());
@@ -621,7 +648,7 @@ QString PageManager::currentPageStatusAsString() const
 
 QString PageManager::pageSignage(int page) const
 {
-    if(!m_fileVolume || m_pages.size() <= page)
+    if(!m_fileVolume || page < 0 || m_pages.size() <= page)
         return "";
     return QString("%1 (%2/%3)")
             .arg(QDir::toNativeSeparators(m_fileVolume->getPathByFileName(m_pages[page].Path)))

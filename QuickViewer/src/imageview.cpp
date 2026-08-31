@@ -95,6 +95,8 @@ void ImageView::setRenderer(RendererType type)
 
 void ImageView::setPageManager(PageManager *manager)
 {
+    if(!manager)
+        return;
     m_pageManager = manager;
     m_pageManager->setImageView(this);
     connect(manager, SIGNAL(pagesNolongerNeeded()), this, SLOT(on_clearImages_triggered()));
@@ -142,12 +144,14 @@ void ImageView::resetBackgroundColor()
 
 void ImageView::on_volumeChanged_triggered(QString )
 {
+    if(!m_pageManager)
+        return;
     m_pageRotations = QVector<int>(m_pageManager->size());
 }
 
 bool ImageView::on_addImage_triggered(ImageContent ic, bool pageNext)
 {
-    if(m_pageManager == nullptr) return false;
+    if(m_pageManager == nullptr || m_pages.size() >= 2) return false;
     m_ptLeftTop.reset();
     QGraphicsScene *s = scene();
     QSize size = ic.Image.size();
@@ -170,7 +174,6 @@ bool ImageView::on_addImage_triggered(ImageContent ic, bool pageNext)
 
 void ImageView::on_clearImages_triggered()
 {
-    if(m_pageManager == nullptr) return;
 //    QGraphicsScene *s = scene();
     for(int i = 0; i < m_pages.length(); i++) {
         m_pages[i].dispose();
@@ -185,7 +188,7 @@ void ImageView::readyForPaint() {
 //    qDebug() << "readyForPaint " << paintCnt++;
     if(qApp->Effect() > qvEnums::UsingFixedShader)
         setRenderer(OpenGL);
-    if(!m_pages.empty()) {
+    if(!m_pages.empty() && m_pageManager) {
         int pageCount = m_pageManager->currentPage();
         QRect sceneRect;
         qvEnums::FitMode fitMode = qApp->Fitting() ? qApp->ImageFitMode() : qvEnums::NoFitting;
@@ -212,11 +215,11 @@ void ImageView::readyForPaint() {
             if(fitMode != qvEnums::NoFitting) {
                 drawRect = m_pages[i].setPageLayoutFitting(
                             pageRect, pageAlign, fitMode, scalefactor,
-                            m_pageRotations.isEmpty() ? 0 : m_pageRotations[pageCount+i]);
+                            m_pageRotations.value(pageCount+i, 0));
             } else {
                 drawRect = m_pages[i].setPageLayoutManual(
                             pageRect, pageAlign, getZoomScale() * scalefactor,
-                            m_pageRotations.isEmpty() ? 0 : m_pageRotations[pageCount+i],
+                            m_pageRotations.value(pageCount+i, 0),
                             m_loupeEnable);
             }
             m_pages[i].Text = qApp->ShowFullscreenSignage() && m_isFullScreen ? m_pageManager->pageSignage(i) : "";
@@ -290,7 +293,7 @@ void ImageView::setSceneRectMode(bool scrolled, const QRect &sceneRect)
 
     // Correct the scroll bar so that it keep at the center of the viewport
     // when the image display magnification is changed.
-    if (m_readyStack == 1) {
+    if (m_readyStack == 1 && !m_pages.isEmpty()) {
         qreal newScale = m_pages[0].DrawScale;
         if(!qApp->Fitting()) {
             if (!m_loupeEnable && m_beforeScale > 0 && m_beforeScale != newScale) {
@@ -328,6 +331,9 @@ void ImageView::scrollOnLoupeMode()
     QPoint V = m_scrollBaseValues;
     K.moveTo(K.left()-V.x(), K.top()-V.y());
     QPoint S = m_loupeBasePos;
+    if(K.width() == 0 || K.height() == 0 || S.x() == 0 || S.y() == 0
+            || width() == S.x() || height() == S.y())
+        return;
     QPoint R((S.x()-K.left())*L.width()/K.width()+L.left(),
              (S.y()-K.top())*L.height()/K.height()+L.top());
     QPoint Q = R-S;
@@ -345,6 +351,8 @@ void ImageView::scrollOnLoupeMode()
 
 void ImageView::scrollOnZoomMode()
 {
+    if(width() <= 0 || height() <= 0)
+        return;
     QPoint cursorPos = QCursor::pos();
     cursorPos = mapFromGlobal(cursorPos);
     cursorPos = QPoint(cursorPos.x() < width()/4 ? 0 : (cursorPos.x()- width()/4)*4/2,
@@ -427,7 +435,7 @@ void ImageView::resizeEvent(QResizeEvent *event)
             setTransform(scaling);
             m_lastScreenPixelRatio = newRatio;
         }
-        if(!m_skipResizeEvent) {
+        if(!m_skipResizeEvent && m_pageManager) {
             readyForPaint();
             m_pageManager->pageChanged();
         }
@@ -437,7 +445,8 @@ void ImageView::resizeEvent(QResizeEvent *event)
 
 void ImageView::on_nextPage_triggered()
 {
-    if(qApp->SeparatePagesWhenWideImage() && m_pages[0].Separation == PageContent::FirstSeparated) {
+    if(!m_pages.empty() && qApp->SeparatePagesWhenWideImage()
+            && m_pages[0].Separation == PageContent::FirstSeparated) {
         m_pages[0].Separation = PageContent::SecondSeparated;
         readyForPaint();
         return;
@@ -450,7 +459,8 @@ void ImageView::on_nextPage_triggered()
 
 void ImageView::on_prevPage_triggered()
 {
-    if(qApp->SeparatePagesWhenWideImage() && m_pages[0].Separation == PageContent::SecondSeparated) {
+    if(!m_pages.empty() && qApp->SeparatePagesWhenWideImage()
+            && m_pages[0].Separation == PageContent::SecondSeparated) {
         m_pages[0].Separation = PageContent::FirstSeparated;
         readyForPaint();
         return;
@@ -465,14 +475,14 @@ void ImageView::on_prevPage_triggered()
 
 void ImageView::onActionNextPageOrVolume_triggered()
 {
-    if(qApp->SeparatePagesWhenWideImage() && m_pages[0].Separation == PageContent::FirstSeparated) {
+    if(!m_pages.empty() && qApp->SeparatePagesWhenWideImage()
+            && m_pages[0].Separation == PageContent::FirstSeparated) {
         m_pages[0].Separation = PageContent::SecondSeparated;
         readyForPaint();
         return;
     }
     if(m_pageManager)
-        if(!m_pageManager->nextPage()) {
-            m_pageManager->nextVolume();
+        if(!m_pageManager->nextPage() && m_pageManager->nextVolume()) {
             m_pageManager->firstPage();
         }
     if(isSlideShow())
@@ -481,14 +491,14 @@ void ImageView::onActionNextPageOrVolume_triggered()
 
 void ImageView::onActionPrevPageOrVolume_triggered()
 {
-    if(qApp->SeparatePagesWhenWideImage() && m_pages[0].Separation == PageContent::SecondSeparated) {
+    if(!m_pages.empty() && qApp->SeparatePagesWhenWideImage()
+            && m_pages[0].Separation == PageContent::SecondSeparated) {
         m_pages[0].Separation = PageContent::FirstSeparated;
         readyForPaint();
         return;
     }
     if(m_pageManager)
-        if(!m_pageManager->prevPage()) {
-            m_pageManager->prevVolume();
+        if(!m_pageManager->prevPage() && m_pageManager->prevVolume()) {
             m_pageManager->lastPage();
         }
     if(isSlideShow())
@@ -543,13 +553,18 @@ void ImageView::on_rotatePage_triggered()
 {
     if(!m_pageManager || m_pageRotations.empty())
         return;
-    m_pageRotations[m_pageManager->currentPage()] += 90;
+    const int page = m_pageManager->currentPage();
+    if(page < 0 || page >= m_pageRotations.size())
+        return;
+    m_pageRotations[page] += 90;
     readyForPaint();
 }
 
 void ImageView::on_showSubfolders_triggered(bool enable)
 {
     qApp->setShowSubfolders(enable);
+    if(!m_pageManager)
+        return;
     if(m_pageManager->isFolder()) {
         m_pageManager->reloadVolumeAfterRemoveImage();
     }
@@ -557,6 +572,8 @@ void ImageView::on_showSubfolders_triggered(bool enable)
 
 void ImageView::on_slideShowChanging_triggered()
 {
+    if(!m_pageManager)
+        return;
     int page = m_pageManager->currentPage();
     m_pageManager->nextPage();
     if(page == m_pageManager->currentPage())
@@ -740,7 +757,8 @@ void ImageView::on_dualView_triggered(bool viewdual)
 {
     qApp->setDualView(viewdual);
 
-    m_pageManager->reloadCurrentPage();
+    if(m_pageManager)
+        m_pageManager->reloadCurrentPage();
     readyForPaint();
 }
 
@@ -792,14 +810,16 @@ void ImageView::on_scaleDown_triggered()
 void ImageView::on_wideImageAsOneView_triggered(bool wideImage)
 {
     qApp->setWideImageAsOnePageInDualView(wideImage);
-    m_pageManager->reloadCurrentPage();
+    if(m_pageManager)
+        m_pageManager->reloadCurrentPage();
     readyForPaint();
 }
 
 void ImageView::on_firstImageAsOneView_triggered(bool firstImage)
 {
     qApp->setFirstImageAsOnePageInDualView(firstImage);
-    m_pageManager->reloadCurrentPage();
+    if(m_pageManager)
+        m_pageManager->reloadCurrentPage();
     readyForPaint();
 }
 
@@ -882,9 +902,14 @@ void ImageView::on_copyPage_triggered()
 
 void ImageView::on_copyFile_triggered()
 {
+    if(!m_pageManager)
+        return;
+    const QString currentPath = m_pageManager->currentPagePath();
+    if(currentPath.isEmpty())
+        return;
     QClipboard* clipboard = qApp->clipboard();
     QMimeData* mimeData = new QMimeData();
-    QString path = QString("file:///%1").arg(m_pageManager->currentPagePath());
+    QString path = QString("file:///%1").arg(currentPath);
     mimeData->setData("text/uri-list", path.toUtf8());
     clipboard->setMimeData(mimeData);
 }

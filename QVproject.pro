@@ -13,15 +13,18 @@ SUBDIRS = \
     qvtest \
     prefetchplannertest \
     latestresultdispatchertest \
-    asynccachetest
+    asynccachetest \
+    viewernavigationtest
 
 prefetchplannertest.subdir = qvtest/prefetchplanner
 latestresultdispatchertest.subdir = qvtest/latestresultdispatcher
 asynccachetest.subdir = qvtest/asynccache
+viewernavigationtest.subdir = qvtest/viewernavigation
 
 fileloader.depends = Qt7z/Qt7z unrar
 QuickViewer.depends = ResizeHalf easyexif fileloader zimg qsvgrenderer
 qvtest.depends = fileloader
+viewernavigationtest.depends = ResizeHalf easyexif fileloader zimg qsvgrenderer
 
 contains(DEFINES, QV_WITH_LUMINOR) {
     SUBDIRS += luminor
