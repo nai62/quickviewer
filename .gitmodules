@@ -4,9 +4,6 @@
 [submodule "zimg/zimg"]
 	path = zimg/zimg
 	url = https://github.com/sekrit-twc/zimg
-[submodule "zlib/zlib"]
-	path = zlib/zlib
-	url = https://github.com/madler/zlib
 [submodule "QuickViewer/src/qfullscreenframe"]
 	path = QuickViewer/src/qfullscreenframe
 	url = https://github.com/kanryu/qfullscreenframe
