@@ -12,7 +12,7 @@ ImageString::ImageString()
 void ImageString::initialize(PageManagerProtocol *pm, PageContentProtocol *view)
 {
     m_pageManager = pm;
-    m_pages = view->pages();
+    m_pages = view;
 }
 
 QString ImageString::getTitleBarText()
@@ -26,7 +26,8 @@ QString ImageString::getTitleBarText()
 
 QString ImageString::getStatusBarText()
 {
-    return m_pages->isEmpty() ? "" : formatString(qApp->StatusTextFormat());
+    return !m_pages || m_pages->renderedPageCount() == 0
+            ? "" : formatString(qApp->StatusTextFormat());
 }
 
 static void addString(QStringList& tags, QString key, QString value)
@@ -66,15 +67,21 @@ QString ImageString::formatString(QString fmt)
             continue;
         }
         c = fmt.at(++i);
-        const PageContent& page = !m_pages->isEmpty()
-                ? m_pages->at(m_pages->size() == 2 ? pages[p] : 0)
-                : PageContent(nullptr, nullptr,
-                              ImageContent(
-                                  QImage(1000, 1200, QImage::Format_RGB32),
-                                  "page11.jpg",
-                                  QSize(1000,1200),
-                                  easyexif::EXIFInfo(),
-                                  1234567));
+        PageItem fallback(nullptr, nullptr,
+                          ImageContent(
+                              QImage(1000, 1200, QImage::Format_RGB32),
+                              "page11.jpg",
+                              QSize(1000,1200),
+                              easyexif::EXIFInfo(),
+                              1234567));
+        const int pageCount = m_pages ? m_pages->renderedPageCount() : 0;
+        const int requestedPage = pageCount == 2 && p < pages.size()
+                ? pages[p] : 0;
+        const PageItem* page = pageCount > 0
+                ? m_pages->renderedPageAt(requestedPage)
+                : &fallback;
+        if(!page)
+            page = &fallback;
         switch(c.toLatin1()) {
             // Volume name (only folder/archive name), e.g. 'Sample Book')
         case 'v':
@@ -88,24 +95,24 @@ QString ImageString::formatString(QString fmt)
             // Image file name (only file name), e.g. 'page01.jpg'
         case 'p':
         {
-            QFileInfo info(page.Ic.Path);
+            QFileInfo info(page->Ic.Path);
             result << info.fileName();
             break;
         }
             // Image file path in volume, e.g. 'subpath/page01.jpg'
-        case 'P': result << page.Ic.Path; break;
+        case 'P': result << page->Ic.Path; break;
             // Image file full path in volume, e.g. 'C:/Users/qv/Desktop/Sample Book/subpath/page01.jpg'
         case 'Q':
         {
             result << m_pageManager->currentPagePath(); break;
         }
             // Image size, e.g. '1920x1080'
-        case 's': result << QString("%1x%2").arg(page.Ic.BaseSize.width()).arg(page.Ic.BaseSize.height()); break;
+        case 's': result << QString("%1x%2").arg(page->Ic.BaseSize.width()).arg(page->Ic.BaseSize.height()); break;
             // Display magnification of image, e.g. '25%'
-        case 'm': result << QString("%1%").arg((int)(100*page.NotationalScale)); break;
+        case 'm': result << QString("%1%").arg((int)(100*page->NotationalScale)); break;
             // Image file size with usefull, e.g. '63.23 KB'
         case 'f': {
-            double filelength = page.Ic.FileLength;
+            double filelength = page->Ic.FileLength;
             if(filelength < 1024)
                 result << QString(tr("%1 Bytes")).arg(filelength);
             else if(filelength < 1024*1024)
@@ -115,10 +122,10 @@ QString ImageString::formatString(QString fmt)
             break;
         }
             // Image file size as correct number of bytes, e.g. '1,154,340 Bytes'
-        case 'F': result << QString(tr("%L1 Bytes")).arg(page.Ic.FileLength); break;
+        case 'F': result << QString(tr("%L1 Bytes")).arg(page->Ic.FileLength); break;
             // Image bitmap size with useful, e.g. '1.59 MB'
         case 'b': {
-            double filelength = page.Ic.Image.sizeInBytes();
+            double filelength = page->Ic.Image.sizeInBytes();
             if(filelength < 1024)
                 result << QString(tr("%1 Bytes")).arg(filelength);
             else if(filelength < 1024*1024)
@@ -129,7 +136,7 @@ QString ImageString::formatString(QString fmt)
         }
             // Current page number of the volume e.g. '33/100' or '33-34/100'
         case 'n': {
-            if(m_pages->size()==2)
+            if(pageCount == 2)
                 result << QString("%1-%2/%3").arg(m_pageManager->currentPage()+1).arg(m_pageManager->currentPage()+2).arg(m_pageManager->size());
             else
                 result << QString("%1/%2").arg(m_pageManager->currentPage()+1).arg(m_pageManager->size());
@@ -137,7 +144,7 @@ QString ImageString::formatString(QString fmt)
         }
             // Second image format separator(when 2 page spread viewing is valid)
         case '2': {
-            if(m_pages->size() < 2)
+            if(pageCount < 2)
                 i = fmt.length();
             p++;
             break;

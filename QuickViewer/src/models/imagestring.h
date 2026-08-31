@@ -10,7 +10,7 @@
  * @brief The ImageString class
  * Return outline information of the currently displayed image as text.
  *
- * These information are input as PageManager and PageContent,
+ * These information are input as PageManager and PageItem,
  *  and are outputted as a model format character string dedicated to them.
  */
 class ImageString : QObject
@@ -27,7 +27,7 @@ public:
 
 private:
     PageManagerProtocol* m_pageManager;
-    QVector<PageContent>* m_pages;
+    PageContentProtocol* m_pages;
 };
 
 

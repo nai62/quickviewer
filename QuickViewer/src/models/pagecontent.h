@@ -105,10 +105,10 @@ public:
 };
 
 /**
- * @brief PageContent
+ * @brief PageItem
  * contains the informations of a Page
  */
-class PageContent : public QObject
+class PageItem : public QObject
 {
     Q_OBJECT
 public:
@@ -162,10 +162,10 @@ public:
     qreal NotationalScale;
     SeparationState Separation;
 
-    PageContent(QObject* parent=nullptr);
-    PageContent(QObject* parent, QGraphicsScene *s, ImageContent ic);
-    PageContent(const PageContent& rhs);
-    PageContent& operator=(const PageContent& rhs);
+    PageItem(QObject* parent=nullptr);
+    PageItem(QObject* parent, QGraphicsScene *s, ImageContent ic);
+    ~PageItem() override;
+    Q_DISABLE_COPY_MOVE(PageItem)
 
     QPoint Offset(int rotateOffset=0);
     QSize CurrentSize(int rotateOffset=0);
@@ -182,7 +182,7 @@ public:
     void applyResize(qreal scale, int rotateOffset, QPoint pos, QSize newsize, bool loupe=false);
     QImage& applyRetouched();
     void initializePage(bool resetResized=false);
-    void resetSignage(QRect viewport, PageContent::PageAlign fitting);
+    void resetSignage(QRect viewport, PageItem::PageAlign fitting);
     void resetScene(QGraphicsScene* scene);
     void checkInitialize();
     void dispose();
@@ -205,7 +205,9 @@ private:
 class PageContentProtocol
 {
 public:
-    virtual QVector<PageContent>* pages()=0;
+    virtual ~PageContentProtocol() = default;
+    virtual int renderedPageCount() const = 0;
+    virtual const PageItem* renderedPageAt(int index) const = 0;
 };
 
 

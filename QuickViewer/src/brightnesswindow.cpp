@@ -39,8 +39,7 @@ int BrightnessWindow::floatToSlider(float value)
 void BrightnessWindow::setImageView(ImageView *imageView)
 {
     m_imageView = imageView;
-    auto pages = m_imageView->pages();
-    if(pages->isEmpty())
+    if(!m_imageView || m_imageView->renderedPageCount() == 0)
         return;
 
     m_retouchParams = m_imageView->brightness();
@@ -110,4 +109,3 @@ void BrightnessWindow::onResetButton_clicked()
     resetSliders();
     emit brightnessChanged(m_retouchParams);
 }
-

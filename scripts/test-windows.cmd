@@ -6,7 +6,7 @@ if not defined QV_BUILD_DIR (
     if /I "%~1"=="--release-only" (
         set "QV_BUILD_DIR=C:\build\quickviewer-msvc2022_64-release"
     ) else (
-        set "QV_BUILD_DIR=C:\build\quickviewer-msvc2022_64"
+        set "QV_BUILD_DIR=C:\build\quickviewer-msvc2022_64-debug"
     )
 )
 if not defined QV_QT_DIR set "QV_QT_DIR=C:\Qt\6.11.2\msvc2022_64"

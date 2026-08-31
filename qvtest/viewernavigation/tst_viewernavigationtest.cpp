@@ -1,5 +1,7 @@
 #include <QtTest>
 
+#include <type_traits>
+
 #include "imageview.h"
 #include "models/pagemanager.h"
 #include "models/qvapplication.h"
@@ -110,6 +112,39 @@ private slots:
         view.onActionNextPageOrVolume_triggered();
         view.onActionPrevPageOrVolume_triggered();
         QCOMPARE(manager.currentPageName(), QString("preview.png"));
+    }
+
+    void renderedPageItemsHaveSingleOwnership()
+    {
+        static_assert(!std::is_copy_constructible_v<PageItem>);
+        static_assert(!std::is_copy_assignable_v<PageItem>);
+
+        PageManager manager(nullptr);
+        ImageView view;
+        view.setPageManager(&manager);
+
+        // The legacy return value reports whether the accepted image is wide,
+        // so use a wide image to distinguish acceptance from rejection.
+        const QImage image(8, 4, QImage::Format_ARGB32);
+        QVERIFY(view.on_addImage_triggered(
+                    ImageContent(image, "first.png", image.size(), {}, 0), true));
+        QCOMPARE(view.renderedPageCount(), 1);
+        QVERIFY(view.renderedPageAt(0));
+
+        QVERIFY(view.on_addImage_triggered(
+                    ImageContent(image, "second.png", image.size(), {}, 0), true));
+        QCOMPARE(view.renderedPageCount(), 2);
+        QVERIFY(view.renderedPageAt(1));
+        QVERIFY(!view.on_addImage_triggered(
+                    ImageContent(image, "third.png", image.size(), {}, 0), true));
+
+        view.on_clearImages_triggered();
+        QCOMPARE(view.renderedPageCount(), 0);
+        QVERIFY(!view.renderedPageAt(0));
+
+        QVERIFY(view.on_addImage_triggered(
+                    ImageContent(image, "replacement.png", image.size(), {}, 0), false));
+        QCOMPARE(view.renderedPageCount(), 1);
     }
 
     void emptyDirectoryNavigationIsSafe()

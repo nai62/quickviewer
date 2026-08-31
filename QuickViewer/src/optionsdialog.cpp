@@ -12,28 +12,31 @@ public:
         , m_currentPage(10)
         , m_volumePath("C:\\SampleBook")
     {
-        m_pages = {PageContent(nullptr, nullptr,
-                        ImageContent(
-                            QImage(1000, 1200, QImage::Format_RGB32),
-                            "page11.jpg",
-                            QSize(1000,1200),
-                            easyexif::EXIFInfo(),
-                            1234567)),
-                   PageContent(nullptr, nullptr,
-                        ImageContent(
-                            QImage(1000, 1200, QImage::Format_RGB32),
-                            "page12.jpg",
-                            QSize(1000,1200),
-                            easyexif::EXIFInfo(),
-                            1234567))
-                  };
-        m_pages[0].NotationalScale = 0.5;
-        m_pages[1].NotationalScale = 0.5;
+        m_pages[0] = std::make_unique<PageItem>(nullptr, nullptr,
+                    ImageContent(
+                        QImage(1000, 1200, QImage::Format_RGB32),
+                        "page11.jpg",
+                        QSize(1000,1200),
+                        easyexif::EXIFInfo(),
+                        1234567));
+        m_pages[1] = std::make_unique<PageItem>(nullptr, nullptr,
+                    ImageContent(
+                        QImage(1000, 1200, QImage::Format_RGB32),
+                        "page12.jpg",
+                        QSize(1000,1200),
+                        easyexif::EXIFInfo(),
+                        1234567));
+        m_pages[0]->NotationalScale = 0.5;
+        m_pages[1]->NotationalScale = 0.5;
     }
     int size() { return m_size; }
     int currentPage() { return m_currentPage; }
     QString volumePath() { return m_volumePath; }
-    QVector<PageContent>* pages() { return &m_pages; }
+    int renderedPageCount() const override { return 2; }
+    const PageItem* renderedPageAt(int index) const override {
+        return index >= 0 && index < renderedPageCount()
+                ? m_pages[index].get() : nullptr;
+    }
     QString currentPagePath() override {
         return QString("%1\\%2")
             .arg(m_volumePath)
@@ -44,7 +47,7 @@ private:
     int m_size;
     int m_currentPage;
     QString m_volumePath;
-    QVector<PageContent> m_pages;
+    std::array<std::unique_ptr<PageItem>, 2> m_pages;
 };
 
 static SamplePageContent *stSamplePageContent;

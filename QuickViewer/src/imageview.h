@@ -1,6 +1,9 @@
 #ifndef IMAGEVIEW_H
 #define IMAGEVIEW_H
 
+#include <array>
+#include <memory>
+
 #include <QtCore>
 #include <QtWidgets>
 
@@ -59,7 +62,8 @@ public:
     void scrollOnLoupeMode();
     void scrollOnZoomMode();
     bool isScrollMode() { return m_scrollMode; }
-    QVector<PageContent>* pages() override {return &m_pages; }
+    int renderedPageCount() const override;
+    const PageItem* renderedPageAt(int index) const override;
     void updateViewportOffset(QPointF moved);
     void updateViewportFactors(qreal currentScale, qreal currentRotate);
     void commitViewportFactors();
@@ -145,7 +149,7 @@ private:
     qreal getZoomScale();
 
     RendererType m_renderer;
-    QVector<PageContent> m_pages;
+    std::array<std::unique_ptr<PageItem>, 2> m_pages;
 
     SavedPoint m_ptLeftTop;
     QGraphicsScene* m_scene;
