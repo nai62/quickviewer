@@ -73,7 +73,6 @@
 // fileloader
 #include "fileloaderdirectory.h"
 #include "fileloadersubdirectory.h"
-#include "fileloaderziparchive.h"
 #include "fileloader7zarchive.h"
 #include "fileloaderrararchive.h"
 

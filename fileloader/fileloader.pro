@@ -57,12 +57,3 @@ LIBS += -lunrar
 #DEFINES += QT7Z_STATIC
 INCLUDEPATH += ../Qt7z/Qt7z
 LIBS += -lQt7z
-
-unix {
-#    SOURCES += $$PWD/fileloaderziparchive.cpp
-#    HEADERS += $$PWD/fileloaderziparchive.h
-#    DEFINES += QUAZIP_STATIC
-#    INCLUDEPATH += $$PWD/../quazip/quazip/quazip $$PWD/../zlib/zlib
-#    LIBS += -lquazip -lzlib
-}
-

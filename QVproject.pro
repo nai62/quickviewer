@@ -33,9 +33,6 @@ win32 {
 }
 
 unix {
-#    SUBDIRS += zlib quazip Qt7z/lib7z/lib7z.pro
-#    quazip.depends = zlib
-#    fileloader.depends += quazip zlib
 #    SUBDIRS += Qt7z/lib7z/lib7z.pro
 #    fileloader.depends += Qt7z/lib7z/lib7z.pro
 }
