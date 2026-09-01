@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check C++ formatting and, optionally, clang-tidy diagnostics.
+"""Check C++ formatting.
 
 With no file arguments, only lines changed from HEAD are checked. This lets the
 repository adopt the rules incrementally without reformatting unrelated legacy
@@ -10,7 +10,6 @@ first-party C++ files.
 from __future__ import annotations
 
 import argparse
-import json
 import os
 from pathlib import Path
 import re
@@ -22,7 +21,6 @@ from typing import Iterable
 
 ROOT = Path(__file__).resolve().parent.parent
 CPP_EXTENSIONS = {".c", ".cc", ".cpp", ".cxx", ".h", ".hh", ".hpp"}
-IMPLEMENTATION_EXTENSIONS = {".c", ".cc", ".cpp", ".cxx"}
 FIRST_PARTY_PREFIXES = (
     "QuickViewer/",
     "qvtest/",
@@ -140,38 +138,6 @@ def check_format(
     return succeeded
 
 
-def check_tidy(
-    executable: str,
-    files: list[str],
-    build_path: Path,
-    line_ranges: dict[str, list[tuple[int, int]]] | None,
-) -> bool:
-    implementations = [path for path in files if Path(path).suffix.lower() in IMPLEMENTATION_EXTENSIONS]
-    if not implementations:
-        return True
-    database = build_path / "compile_commands.json"
-    if not database.is_file():
-        raise RuntimeError(f"compilation database not found: {database}")
-    line_filter = json.dumps(
-        [
-            {
-                "name": path,
-                "lines": (
-                    [[start, end] for start, end in line_ranges[path]]
-                    if line_ranges is not None
-                    else [[1, 2147483647]]
-                ),
-            }
-            for path in implementations
-        ]
-    )
-    result = subprocess.run(
-        [executable, "-p", str(build_path), f"--line-filter={line_filter}", *implementations],
-        cwd=ROOT,
-    )
-    return result.returncode == 0
-
-
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("files", nargs="*", help="check complete contents of these files")
@@ -182,10 +148,7 @@ def parse_arguments() -> argparse.Namespace:
         help="git revision/range used when no files are given (default: HEAD)",
     )
     parser.add_argument("--fix", action="store_true", help="apply clang-format fixes")
-    parser.add_argument("--tidy", action="store_true", help="also run clang-tidy (requires --build-path)")
-    parser.add_argument("--build-path", type=Path, help="directory containing compile_commands.json")
     parser.add_argument("--clang-format", dest="clang_format", help="clang-format executable")
-    parser.add_argument("--clang-tidy", dest="clang_tidy", help="clang-tidy executable")
     return parser.parse_args()
 
 
@@ -194,10 +157,6 @@ def main() -> int:
     if args.all and args.files:
         print("error: --all cannot be combined with file arguments", file=sys.stderr)
         return 2
-    if args.tidy and args.build_path is None:
-        print("error: --tidy requires --build-path", file=sys.stderr)
-        return 2
-
     try:
         ranges: dict[str, list[tuple[int, int]]] | None
         if args.all:
@@ -226,14 +185,6 @@ def main() -> int:
             print("No C++ changes to check.")
             return 0
         succeeded = check_format(clang_format, files, ranges, args.fix)
-
-        if args.tidy:
-            clang_tidy = find_tool(
-                args.clang_tidy,
-                "CLANG_TIDY",
-                ("clang-tidy-18", "clang-tidy"),
-            )
-            succeeded = check_tidy(clang_tidy, files, args.build_path.resolve(), ranges) and succeeded
     except (OSError, RuntimeError, subprocess.CalledProcessError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 2

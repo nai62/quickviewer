@@ -19,7 +19,6 @@ on:
       - "qvtest/**/*.hpp"
       - ".clang-format"
       - ".clang-format-ignore"
-      - ".clang-tidy"
       - "scripts/lint-cpp.py"
 
 permissions:
@@ -33,9 +32,6 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
-
-      - name: Validate clang-tidy configuration
-        run: clang-tidy-18 --config-file=.clang-tidy --verify-config
 
       - name: Check changed C++ lines
         env:

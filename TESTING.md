@@ -108,16 +108,8 @@ spaces around binary and assignment operators, and braces around `if`, `for`,
 `while`, and related statement bodies. Member-access operators (`.` and `->`)
 remain unspaced.
 
-The root `.clang-tidy` independently diagnoses unbraced control statements.
-Because clang-tidy needs the real compiler arguments, first generate a
-`compile_commands.json`, then run:
-
-```bash
-python3 scripts/lint-cpp.py --tidy --build-path path/to/build [files ...]
-```
-
-Set `CLANG_FORMAT` or `CLANG_TIDY` when the executables have nonstandard names,
-or pass `--clang-format` or `--clang-tidy` explicitly.
+Set `CLANG_FORMAT` when the executable has a nonstandard name, or pass
+`--clang-format` explicitly.
 
 On Windows, use `py -3` in place of `python3` when Python is installed through
 the standard Windows launcher. Pull requests run the changed-line format check
