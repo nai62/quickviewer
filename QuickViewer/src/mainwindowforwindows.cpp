@@ -221,6 +221,7 @@ LRESULT CALLBACK MainWindowForWindows::StaticProc(HWND hwnd, UINT msg, WPARAM wp
             }
             return 0;
         }
+        break;
     }
     return CallWindowProc(DefStaticProc, hwnd, msg, wp, lp);
 }
