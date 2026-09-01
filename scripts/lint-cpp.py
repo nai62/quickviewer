@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 """Check C++ formatting.
 
-With no file arguments, only lines changed from HEAD are checked. This lets the
-repository adopt the rules incrementally without reformatting unrelated legacy
-code. Pass files explicitly to check each complete file, or use --all for all
-first-party C++ files.
+With no file arguments, C++ files changed from HEAD are checked in full. Pass
+files explicitly to check them, or use --all for all first-party C++ files.
 """
 
 from __future__ import annotations
@@ -31,7 +29,6 @@ EXCLUDED_PREFIXES = (
     "QuickViewer/src/qlanguageselector/",
     "QuickViewer/src/qnamedpipe/",
 )
-HUNK_PATTERN = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@")
 VERSION_PATTERN = re.compile(r"version\s+(\d+)", re.IGNORECASE)
 
 
@@ -51,33 +48,18 @@ def is_first_party(path: str) -> bool:
     return normalized.startswith(FIRST_PARTY_PREFIXES) and not normalized.startswith(EXCLUDED_PREFIXES)
 
 
-def changed_lines(diff_ref: str) -> dict[str, list[tuple[int, int]]]:
-    output = run_git(
-        "diff", "--unified=0", "--no-ext-diff", "--diff-filter=ACMR", diff_ref, "--"
-    )
-    ranges: dict[str, list[tuple[int, int]]] = {}
-    current_path: str | None = None
-    for line in output.splitlines():
-        if line.startswith("+++ b/"):
-            candidate = line[6:]
-            current_path = candidate if is_cpp(candidate) and is_first_party(candidate) else None
-            continue
-        if current_path is None:
-            continue
-        match = HUNK_PATTERN.match(line)
-        if not match:
-            continue
-        start = int(match.group(1))
-        count = int(match.group(2) or "1")
-        if count:
-            ranges.setdefault(current_path, []).append((start, start + count - 1))
+def changed_files(diff_ref: str) -> list[str]:
+    changed = run_git(
+        "diff", "--name-only", "-z", "--no-ext-diff", "--diff-filter=ACMR", diff_ref, "--"
+    ).split("\0")
     untracked = run_git("ls-files", "--others", "--exclude-standard", "-z").split("\0")
-    for path in untracked:
-        if not path or not is_cpp(path) or not is_first_party(path):
-            continue
-        line_count = max(1, len((ROOT / path).read_bytes().splitlines()))
-        ranges[path] = [(1, line_count)]
-    return ranges
+    return sorted(
+        {
+            path
+            for path in (*changed, *untracked)
+            if path and is_cpp(path) and is_first_party(path)
+        }
+    )
 
 
 def tracked_first_party_files() -> list[str]:
@@ -119,7 +101,6 @@ def validate_clang_format_config(executable: str) -> None:
 def check_format(
     executable: str,
     files: list[str],
-    line_ranges: dict[str, list[tuple[int, int]]] | None,
     fix: bool,
 ) -> bool:
     succeeded = True
@@ -129,9 +110,6 @@ def check_format(
             command.append("-i")
         else:
             command.extend(("--dry-run", "--Werror"))
-        if line_ranges is not None:
-            for start, end in line_ranges[path]:
-                command.append(f"--lines={start}:{end}")
         command.append(path)
         result = subprocess.run(command, cwd=ROOT)
         succeeded = result.returncode == 0 and succeeded
@@ -158,10 +136,8 @@ def main() -> int:
         print("error: --all cannot be combined with file arguments", file=sys.stderr)
         return 2
     try:
-        ranges: dict[str, list[tuple[int, int]]] | None
         if args.all:
             files = tracked_first_party_files()
-            ranges = None
         elif args.files:
             files = sorted({str(Path(path).as_posix()) for path in args.files if is_cpp(path)})
             out_of_scope = [path for path in files if not is_first_party(path)]
@@ -169,10 +145,8 @@ def main() -> int:
                 raise RuntimeError(
                     "files outside the QuickViewer/qvtest lint scope: " + ", ".join(out_of_scope)
                 )
-            ranges = None
         else:
-            ranges = changed_lines(args.diff_ref)
-            files = sorted(ranges)
+            files = changed_files(args.diff_ref)
 
         clang_format = find_tool(
             args.clang_format,
@@ -184,7 +158,7 @@ def main() -> int:
         if not files:
             print("No C++ changes to check.")
             return 0
-        succeeded = check_format(clang_format, files, ranges, args.fix)
+        succeeded = check_format(clang_format, files, args.fix)
     except (OSError, RuntimeError, subprocess.CalledProcessError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 2

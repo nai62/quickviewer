@@ -33,10 +33,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check changed C++ lines
-        env:
-          BASE_REF: ${{ github.base_ref }}
+      - name: Check all C++ files
         run: >-
           python3 scripts/lint-cpp.py
-          --diff-ref "origin/${BASE_REF}...HEAD"
+          --all
           --clang-format clang-format-18
