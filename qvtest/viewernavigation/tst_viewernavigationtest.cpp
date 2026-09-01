@@ -109,16 +109,33 @@ private slots:
     void visiblePagesAreReadOnlySnapshots()
     {
         PageManager manager(nullptr);
-        manager.addNewPage(ImageContent("first.bmp", 0), true);
+        int notificationCount = 0;
+        VisiblePages latest;
+        connect(&manager, &PageManager::visiblePagesChanged,
+                this, [&](VisiblePages pages) {
+            ++notificationCount;
+            latest = std::move(pages);
+        });
+        QVERIFY(manager.addNewPage(ImageContent("first.bmp", 0), true));
 
         const VisiblePages pages = manager.visiblePages();
+        QCOMPARE(notificationCount, 1);
+        QCOMPARE(latest.count(), 1);
         QCOMPARE(pages.count(), 1);
         QVERIFY(pages.at(-1) == nullptr);
         QVERIFY(pages.at(1) == nullptr);
         QVERIFY(pages.first() != nullptr);
         QCOMPARE(pages.first()->Path, QString("first.bmp"));
 
+        QVERIFY(manager.addNewPage(ImageContent("second.bmp", 0), true));
+        QCOMPARE(notificationCount, 2);
+        QCOMPARE(latest.count(), 2);
+        QVERIFY(!manager.addNewPage(ImageContent("third.bmp", 0), true));
+        QCOMPARE(notificationCount, 2);
+
         manager.clearPages();
+        QCOMPARE(notificationCount, 3);
+        QVERIFY(latest.isEmpty());
         QVERIFY(manager.visiblePages().isEmpty());
         QCOMPARE(pages.count(), 1);
         QCOMPARE(pages.first()->Path, QString("first.bmp"));

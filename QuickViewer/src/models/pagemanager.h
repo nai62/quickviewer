@@ -9,8 +9,6 @@
 #include "viewerstate.h"
 
 class VolumeManager;
-class ImageView;
-
 class PageManagerProtocol
 {
 public:
@@ -52,10 +50,10 @@ public:
     bool nextOnlyOnePage();
     bool prevOnlyOnePage();
     bool reloadCurrentPage(bool pageNext = true);
-    void addNewPage(ImageContent ic, bool pageNext);
+    bool addNewPage(ImageContent ic, bool pageNext);
     void clearPages();
-    QSize viewportSize();
-    void setImageView(ImageView* view){m_imaveView = view;}
+    QSize viewportSize() const { return m_viewportSize; }
+    void setViewportSize(QSize size) { m_viewportSize = size; }
     bool initialImagePaintPending() const;
     ViewerStateKind stateKind() const { return viewerStateKind(m_state); }
     void deferFolderWorkUntilNextPaint();
@@ -127,17 +125,13 @@ public:
         m_pendingAssociatedFilename.clear();
         m_initialImageLoads.invalidate();
         m_volumeLoads.invalidate();
-        m_pages.resize(0);
+        clearPages();
         m_volumes.clear();
     }
     QStringList enumVolumes(QDir dir);
 
 signals:
-    /**
-     * @brief pagesNolongerNeeded pages is no longer needed. page will be cleared
-     */
-    void pagesNolongerNeeded();
-
+    void visiblePagesChanged(VisiblePages pages);
     void readyForPaint();
     /**
      * @brief pageChanged pages have been changed
@@ -152,12 +146,6 @@ signals:
      * folder-related GUI work can resume after this signal.
      */
     void initialImageDisplayFinished();
-    /**
-     * @brief addNewPage add a new page. if it is dual view, 2 times called
-     * @param pageNum
-     */
-    void pageAdded(ImageContent ic, bool pageNext);
-
 public slots:
     void on_pageEnumerated();
     void onSlideShowStarted();
@@ -173,6 +161,7 @@ private:
     VolumeHandle activeVolumeHandle() const;
     VolumeManager *activeVolume() const;
     void setVolumeReady(VolumeHandle volume);
+    void replaceVisiblePages(QVector<ImageContent> pages);
     /**
      * @brief younger page number
      */
@@ -185,7 +174,7 @@ private:
     QStringList m_volumenames;
 
     ViewerState m_state;
-    ImageView * m_imaveView;
+    QSize m_viewportSize;
 
     bool m_waitForReloaded;
 

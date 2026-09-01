@@ -95,6 +95,7 @@ public slots:
     void on_volumeChanged_triggered(QString path);
     bool on_addImage_triggered(ImageContent image, bool pageNext);
     void on_clearImages_triggered();
+    void on_visiblePagesChanged(VisiblePages pages);
     void readyForPaint();
 
     // Navigation

@@ -108,13 +108,14 @@ void ImageView::setPageManager(PageManager *manager)
     if(!manager)
         return;
     m_pageManager = manager;
-    m_pageManager->setImageView(this);
-    connect(manager, SIGNAL(pagesNolongerNeeded()), this, SLOT(on_clearImages_triggered()));
+    m_pageManager->setViewportSize(viewport()->size());
+    connect(manager, &PageManager::visiblePagesChanged,
+            this, &ImageView::on_visiblePagesChanged);
     connect(manager, SIGNAL(readyForPaint()), this, SLOT(readyForPaint()));
     connect(manager, SIGNAL(volumeChanged(QString)), this, SLOT(on_volumeChanged_triggered(QString)));
-    connect(manager, SIGNAL(pageAdded(ImageContent, bool)), this, SLOT(on_addImage_triggered(ImageContent, bool)));
     connect(this, SIGNAL(slideShowStarted()), manager, SLOT(onSlideShowStarted()));
     connect(this, SIGNAL(slideShowStopped()), manager, SLOT(onSlideShowStopped()));
+    on_visiblePagesChanged(manager->visiblePages());
 }
 
 void ImageView::toggleSlideShow()
@@ -184,6 +185,16 @@ void ImageView::on_clearImages_triggered()
     m_renderedPages.clear();
     // horizontalScrollBar()->setValue(0);
     // verticalScrollBar()->setValue(0);
+}
+
+void ImageView::on_visiblePagesChanged(VisiblePages pages)
+{
+    on_clearImages_triggered();
+    for(int index = 0; index < pages.count(); ++index) {
+        const ImageContent *content = pages.at(index);
+        if(content)
+            on_addImage_triggered(*content, true);
+    }
 }
 //static int paintCnt=0;
 void ImageView::readyForPaint() {
@@ -429,6 +440,8 @@ void ImageView::resizeEvent(QResizeEvent *event)
         scene()->setSceneRect(QRect(QPoint(), event->size()));
     }
     QGraphicsView::resizeEvent(event);
+    if(m_pageManager)
+        m_pageManager->setViewportSize(event->size());
     if (resizeCount == 0) {
         resizeCount++;
         qreal newRatio = screen()->devicePixelRatio();

@@ -1,6 +1,5 @@
 #include "pagemanager.h"
 #include "qvapplication.h"
-#include "imageview.h"
 #include "fileloadersubdirectory.h"
 #include "volumemanagerbuilder.h"
 
@@ -21,7 +20,7 @@ PageManager::PageManager(QObject* parent)
     , m_prohibit2Pages(false)
     , m_volumes(qApp->MaxVolumesCache())
     , m_state(EmptyViewerState{})
-    , m_imaveView(nullptr)
+    , m_viewportSize()
     , m_initialImageLoads()
     , m_volumeLoads()
     , m_initialDisplayGeneration(0)
@@ -119,7 +118,7 @@ bool PageManager::loadVolumeWithFile(QString path, bool prohibitProhibit2Page)
     m_pendingAssociatedPath.clear();
     m_pendingAssociatedPathbase.clear();
     m_pendingAssociatedFilename.clear();
-    const QSize pageSize = m_imaveView ? viewportSize() : QSize();
+    const QSize pageSize = viewportSize();
     const QFuture<ImageContent> initialImage = QtConcurrent::run(
         [qpath, pageSize] {
             return VolumeManager::loadImageFromFile(qpath, pageSize);
@@ -134,9 +133,8 @@ bool PageManager::loadVolumeWithFile(QString path, bool prohibitProhibit2Page)
             m_state = StandalonePreviewViewerState{
                 displayGeneration, imageReady, false, false};
             if(imageReady) {
-                clearPages();
                 m_currentPage = 0;
-                addNewPage(std::move(content), true);
+                replaceVisiblePages({std::move(content)});
                 emit readyForPaint();
                 // Normally paintEvent releases the deferred folder work. Keep
                 // a fallback for hidden/minimized windows that may not paint.
@@ -614,51 +612,58 @@ bool PageManager::reloadCurrentPage(bool )
     VolumeManager *volume = volumeHandle.get();
     if(!volume || m_currentPage < 0
             || m_currentPage >= volume->size()) return false;
-    clearPages();
-    if(activeVolume() != volume)
-        return false;
-
-    const ImageContent ic0 = volume->getIndexedImageContent(m_currentPage);
-    addNewPage(ic0, true);
+    QVector<ImageContent> pages;
+    ImageContent ic0 = volume->getIndexedImageContent(m_currentPage);
+    ic0.initialize();
+    pages.push_back(ic0);
     if(activeVolume() != volume)
         return false;
     m_wideImage = ic0.wideImage();
     if(!(m_currentPage==0 && qApp->FirstImageAsOnePageInDualView()) && canDualView()) {
         if(!m_prohibit2Pages && volume->pageCount() < volume->size()-1) {
-            const ImageContent ic1 = volume->getIndexedImageContent(m_currentPage+1);
+            ImageContent ic1 = volume->getIndexedImageContent(m_currentPage+1);
             if(!qApp->WideImageAsOnePageInDualView() || (!ic0.wideImage() && !ic1.wideImage())) {
                 volume->nextPage();
-                addNewPage(ic1, true);
+                ic1.initialize();
+                pages.push_back(ic1);
                 if(activeVolume() != volume)
                     return false;
             }
         }
     }
+    replaceVisiblePages(std::move(pages));
     emit readyForPaint();
     return true;
 }
 
 
-void PageManager::addNewPage(ImageContent ic, bool pageNext)
+bool PageManager::addNewPage(ImageContent ic, bool pageNext)
 {
+    if(m_pages.size() >= VisiblePages::Capacity)
+        return false;
     ic.initialize();
     if(pageNext)
         m_pages.push_back(ic);
     else
         m_pages.push_front(ic);
-    emit pageAdded(ic, pageNext);
+    emit visiblePagesChanged(visiblePages());
+    return true;
 }
 
 void PageManager::clearPages()
 {
-    m_pages.resize(0);;
-    emit pagesNolongerNeeded();
+    m_pages.clear();
+    emit visiblePagesChanged({});
 }
 
-QSize PageManager::viewportSize()
+void PageManager::replaceVisiblePages(QVector<ImageContent> pages)
 {
-    return m_imaveView && m_imaveView->viewport()
-            ? m_imaveView->viewport()->size() : QSize();
+    if(pages.size() > VisiblePages::Capacity)
+        pages.resize(VisiblePages::Capacity);
+    for(ImageContent &page : pages)
+        page.initialize();
+    m_pages = std::move(pages);
+    emit visiblePagesChanged(visiblePages());
 }
 
 void PageManager::bookProgress()
