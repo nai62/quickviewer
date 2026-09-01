@@ -3,10 +3,10 @@
 #include <QRunnable>
 
 BoundedExecutor::BoundedExecutor(int maximumConcurrency, int maximumPendingJobs)
-    : m_activeJobs(0)
-    , m_maximumConcurrency(qMax(1, maximumConcurrency))
-    , m_maximumPendingJobs(qMax(0, maximumPendingJobs))
-    , m_acceptingJobs(true)
+    : m_activeJobs(0),
+      m_maximumConcurrency(qMax(1, maximumConcurrency)),
+      m_maximumPendingJobs(qMax(0, maximumPendingJobs)),
+      m_acceptingJobs(true)
 {
     m_pool.setMaxThreadCount(m_maximumConcurrency);
 }
@@ -26,24 +26,25 @@ bool BoundedExecutor::enqueue(Job job)
     bool rejected = false;
     {
         QMutexLocker locker(&m_mutex);
-        if(!m_acceptingJobs) {
+        if (!m_acceptingJobs) {
             rejected = true;
-        } else if(m_activeJobs < m_maximumConcurrency) {
+        } else if (m_activeJobs < m_maximumConcurrency) {
             ++m_activeJobs;
             launchImmediately = true;
-        } else if(m_pendingJobs.size() < m_maximumPendingJobs) {
+        } else if (m_pendingJobs.size() < m_maximumPendingJobs) {
             m_pendingJobs.enqueue(std::move(job));
             return true;
         } else {
             rejected = true;
         }
     }
-    if(rejected) {
+    if (rejected) {
         job.cancel();
         return false;
     }
-    if(launchImmediately)
+    if (launchImmediately) {
         launch(std::move(job));
+    }
     return true;
 }
 
@@ -62,14 +63,15 @@ void BoundedExecutor::jobFinished()
     {
         QMutexLocker locker(&m_mutex);
         --m_activeJobs;
-        if(!m_pendingJobs.isEmpty()) {
+        if (!m_pendingJobs.isEmpty()) {
             next = m_pendingJobs.dequeue();
             ++m_activeJobs;
             hasNext = true;
         }
     }
-    if(hasNext)
+    if (hasNext) {
         launch(std::move(next));
+    }
 }
 
 int BoundedExecutor::activeCount() const

@@ -21,7 +21,7 @@ public:
      *
      * Generate VolumeManager synchronously.
      */
-    VolumeManager* build(bool onlyCover);
+    VolumeManager *build(bool onlyCover);
 
     /**
      * @brief build
@@ -29,7 +29,7 @@ public:
      *
      * Generate VolumeManager asynchronously.
      */
-    static VolumeManager* buildAsync(QString path, bool onlyCover);
+    static VolumeManager *buildAsync(QString path, bool onlyCover);
 
     /**
      * @brief buildForAssoc
@@ -37,7 +37,7 @@ public:
      * Special initialization method to skip the enumeration of image files
      * in the Volume and read the first image faster.
      */
-    VolumeManager* buildForAssoc();
+    VolumeManager *buildForAssoc();
 
     /**
      * @brief thumbnail
@@ -51,16 +51,15 @@ public:
      * @brief A factory function that returns an instance of IFileVolume from the path of the specified file or directory
      * @return An object that inherits the IFileVolume interface. It is null if generation failed
      */
-    static VolumeManager* CreateVolume(QObject* parent, QString path);
+    static VolumeManager *CreateVolume(QObject *parent, QString path);
 
 //public slots:
 //    void on_enumerated();
 
 private:
-    VolumeManager* m_volumeManager;
+    VolumeManager *m_volumeManager;
 //    QFutureWatcher<void> m_watcher;
     QString m_subfilename;
 };
-
 
 #endif // VOLUMEMANAGERBUILDER_H

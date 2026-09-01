@@ -16,8 +16,9 @@ public:
 
     ~ImageLoadContext()
     {
-        if(m_loader)
+        if (m_loader) {
             m_loader->deleteLater();
+        }
     }
 
     QByteArray load(const QString &name)

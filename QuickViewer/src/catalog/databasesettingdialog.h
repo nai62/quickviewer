@@ -9,15 +9,14 @@ namespace Ui {
 class DatabaseSettingDialog;
 }
 
-
 class DatabaseSettingDialog : public QDialog
 {
     Q_OBJECT
 public:
-    DatabaseSettingDialog(QWidget* parent=nullptr);
+    DatabaseSettingDialog(QWidget *parent = nullptr);
     ~DatabaseSettingDialog();
-    QString name() const { return m_name;}
-    QString path() const { return m_path;}
+    QString name() const { return m_name; }
+    QString path() const { return m_path; }
     void setName(QString name) { m_name = name; }
     void setPath(QString path) { m_path = path; }
     void setForEditing(bool editing) { m_editing = editing; }
@@ -29,7 +28,11 @@ public:
 
 public slots:
     void onNameEdit_textChanged(QString name);
-    void onPathEdit_textChanged(QString path) {setPath(path);checkAcceptable();}
+    void onPathEdit_textChanged(QString path)
+    {
+        setPath(path);
+        checkAcceptable();
+    }
     void onSelectFolderButton_clicked();
 
 private:

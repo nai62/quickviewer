@@ -8,7 +8,7 @@
 
 #include <functional>
 
-template<typename T>
+template <typename T>
 class LatestResultDispatcher : public QObject
 {
 public:
@@ -16,8 +16,8 @@ public:
     using ResultHandler = std::function<void(T)>;
 
     explicit LatestResultDispatcher(QObject *parent = nullptr)
-        : QObject(parent)
-        , m_requestId(0)
+        : QObject(parent),
+          m_requestId(0)
     {
     }
 
@@ -30,15 +30,13 @@ public:
         auto *watcher = new QFutureWatcher<T>();
         const QPointer<LatestResultDispatcher<T>> guard(this);
 
-        QObject::connect(watcher, &QFutureWatcher<T>::finished, watcher,
-                         [watcher, guard, requestId,
-                          apply = std::move(apply),
-                          discard = std::move(discard)]() mutable {
+        QObject::connect(watcher, &QFutureWatcher<T>::finished, watcher, [watcher, guard, requestId, apply = std::move(apply), discard = std::move(discard)]() mutable {
             T result = watcher->result();
-            if(guard && guard->isCurrent(requestId))
+            if (guard && guard->isCurrent(requestId)) {
                 apply(std::move(result));
-            else
+            } else {
                 discard(std::move(result));
+            }
             watcher->deleteLater();
         });
         watcher->setFuture(future);

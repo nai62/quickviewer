@@ -17,7 +17,7 @@ public:
     explicit ExifDialog(QWidget *parent = 0);
     ~ExifDialog();
 
-    void setExif(const ImageContent& content);
+    void setExif(const ImageContent &content);
     void closeEvent(QCloseEvent *event) override;
 
 signals:

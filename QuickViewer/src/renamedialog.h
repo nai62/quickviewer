@@ -11,7 +11,7 @@ class RenameDialog : public QDialog
 {
     Q_OBJECT
 public:
-    RenameDialog(QWidget* parent, QString path, QString filename);
+    RenameDialog(QWidget *parent, QString path, QString filename);
     QString newName();
 
 public slots:

@@ -1,8 +1,8 @@
 #include "qvmovie.h"
 
-QvMovie::QvMovie(QByteArray bytes, QString format, QObject* parent)
-    : QObject(parent)
-    , m_format(format)
+QvMovie::QvMovie(QByteArray bytes, QString format, QObject *parent)
+    : QObject(parent),
+      m_format(format)
 {
     m_bytes.reset(new QByteArray(bytes));
 }
@@ -10,7 +10,6 @@ QvMovie::QvMovie(QByteArray bytes, QString format, QObject* parent)
 QvMovie::QvMovie(QObject *parent)
     : QObject(parent)
 {
-
 }
 
 void QvMovie::load()

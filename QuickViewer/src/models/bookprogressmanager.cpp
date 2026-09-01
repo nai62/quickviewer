@@ -15,15 +15,14 @@ static QString getProgressIniPath()
     return qApp->getFilePathOfApplicationSetting(PROGRESS_INI);
 }
 
-
 void BookProgressManager::save()
 {
     QSettings settings(getProgressIniPath(), QSettings::IniFormat, this);
     //settings.setIniCodec(QTextCodec::codecForName("UTF-8"));
 
     QStringList titles;
-    foreach(const BookProgress& book, m_books.values()) {
-        QString group = QString("Volume_%1").arg(titles.size()+1,4,10,QChar('0'));
+    foreach (const BookProgress &book, m_books.values()) {
+        QString group = QString("Volume_%1").arg(titles.size() + 1, 4, 10, QChar('0'));
         settings.beginGroup(group);
         settings.setValue("Title", book.Title);
         settings.setValue("Path", book.Path);
@@ -44,19 +43,19 @@ BookProgressManager::BookProgressMap BookProgressManager::initializeAsync()
 
     BookProgressMap result;
     QStringList groups = settings.childGroups();
-    foreach(const QString g, groups) {
+    foreach (const QString g, groups) {
         settings.beginGroup(g);
         QString path = settings.value("Path", "").toString();
-        if(path.isEmpty())
+        if (path.isEmpty()) {
             continue;
+        }
         QString title = settings.value("Title", "").toString();
         QString currentPage = settings.value("CurrenPage", "").toString();
         int pages = settings.value("Pages", 0).toInt();
         int current = settings.value("Current", 0).toInt();
         bool completed = settings.value("Completed", false).toBool();
         BookProgress book = {
-          title, path, currentPage, pages, current, completed
-        };
+            title, path, currentPage, pages, current, completed};
         result[path] = book;
         settings.endGroup();
     }
@@ -67,4 +66,3 @@ void BookProgressManager::on_Initialized_triggered()
 {
     m_books = m_initializeWatcher.result();
 }
-

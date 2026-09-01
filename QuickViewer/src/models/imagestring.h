@@ -21,7 +21,7 @@ public:
     ImageString();
     using MetricsProvider = std::function<RenderedPageMetrics()>;
 
-    void initialize(PageManagerProtocol* pm, MetricsProvider metricsProvider);
+    void initialize(PageManagerProtocol *pm, MetricsProvider metricsProvider);
 
     QString getTitleBarText();
     QString getStatusBarText();
@@ -29,10 +29,8 @@ public:
     QString formatString(QString fmt);
 
 private:
-    PageManagerProtocol* m_pageManager;
+    PageManagerProtocol *m_pageManager;
     MetricsProvider m_metricsProvider;
 };
-
-
 
 #endif // IMAGESTRING_H

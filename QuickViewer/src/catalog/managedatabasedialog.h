@@ -13,15 +13,15 @@ class ManageDatabaseDialog : public QDialog
 {
     Q_OBJECT
 public:
-    ManageDatabaseDialog(QWidget* parent=nullptr);
+    ManageDatabaseDialog(QWidget *parent = nullptr);
     ~ManageDatabaseDialog();
     void normalButtonStates();
     void progressButtonStates();
-    void setThumbnailManager(ThumbnailManager* manager);
+    void setThumbnailManager(ThumbnailManager *manager);
     void resetCatalogList();
     void dragEnterEvent(QDragEnterEvent *e);
     void dropEvent(QDropEvent *e);
-    bool databaseSettingDialog(CatalogRecord& catalog, bool editing);
+    bool databaseSettingDialog(CatalogRecord &catalog, bool editing);
     void createCatalog();
 
 protected:
@@ -44,9 +44,9 @@ private:
     Ui::ManageDatabaseDialog *ui;
     QMap<int, CatalogRecord> m_catalogs;
     QList<CatalogRecord> m_makeCatalogs;
-    ThumbnailManager* m_thumbManager;
+    ThumbnailManager *m_thumbManager;
 
-    QFutureWatcher<QList<CatalogRecord>>* m_catalogWatcher;
+    QFutureWatcher<QList<CatalogRecord>> *m_catalogWatcher;
 };
 
 #endif // MANAGEDATABASEDIALOG_H

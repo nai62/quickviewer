@@ -38,12 +38,12 @@ public:
 
     typedef QFuture<ImageContent> future_image;
 
-    explicit VolumeManager(QObject *parent, IFileLoader* loader);
+    explicit VolumeManager(QObject *parent, IFileLoader *loader);
     ~VolumeManager();
     void enumerate();
     bool enumerated() { return m_enumerated; }
     ImageContent getImageBeforeEnmumerate(QString subfilename);
-    IFileLoader* FileLoader() { return m_loader; }
+    IFileLoader *FileLoader() { return m_loader; }
 
     static ImageContent futureLoadImageFromFileVolume(
         QSharedPointer<ImageLoadContext> context, QString path, QSize pageSize);
@@ -60,47 +60,58 @@ public:
     void startSlideShow();
     void stopSlideShow();
 
-    QString currentPath() {
-        if(!m_loader || m_cnt < 0 || m_cnt >= m_filelist.size())
+    QString currentPath()
+    {
+        if (!m_loader || m_cnt < 0 || m_cnt >= m_filelist.size()) {
             return "";
-        if(m_loader->isArchive())
+        }
+        if (m_loader->isArchive()) {
             return QString("%1::%2")
-                    .arg(QDir::fromNativeSeparators(m_loader->volumePath()))
-                    .arg(m_filelist[m_cnt]);
-        else
-            return QDir::fromNativeSeparators(QDir(m_loader->volumePath()).absoluteFilePath(m_filelist[m_cnt]));
-    }
-    QString currentPathWithSeparator() {
-        if(!m_loader || m_cnt < 0 || m_cnt >= m_filelist.size())
-            return "";
-        return QString("%1::%2")
                 .arg(QDir::fromNativeSeparators(m_loader->volumePath()))
                 .arg(m_filelist[m_cnt]);
+        } else {
+            return QDir::fromNativeSeparators(QDir(m_loader->volumePath()).absoluteFilePath(m_filelist[m_cnt]));
+        }
+    }
+    QString currentPathWithSeparator()
+    {
+        if (!m_loader || m_cnt < 0 || m_cnt >= m_filelist.size()) {
+            return "";
+        }
+        return QString("%1::%2")
+            .arg(QDir::fromNativeSeparators(m_loader->volumePath()))
+            .arg(m_filelist[m_cnt]);
     }
 
-    QString getPathByFileName(QString name) {
-        if(!m_loader || name.isEmpty())
+    QString getPathByFileName(QString name)
+    {
+        if (!m_loader || name.isEmpty()) {
             return "";
-        if(m_loader->isArchive())
+        }
+        if (m_loader->isArchive()) {
             return QString("%1::%2")
-                    .arg(QDir::fromNativeSeparators(m_loader->volumePath()))
-                    .arg(name);
-        else
+                .arg(QDir::fromNativeSeparators(m_loader->volumePath()))
+                .arg(name);
+        } else {
             return QDir(m_loader->realVolumePath()).absoluteFilePath(name);
+        }
     }
     QString getIndexedFileName(int idx);
-    QString getPathByIndex(int idx) {
-        if(idx < 0 || idx >= m_filelist.size())
+    QString getPathByIndex(int idx)
+    {
+        if (idx < 0 || idx >= m_filelist.size()) {
             return "";
+        }
         return QDir(m_loader->volumePath()).absoluteFilePath(m_filelist[idx]);
     }
     void setCacheMode(CacheMode cachemode) { m_cacheMode = cachemode; }
     CacheMode cacheMode() const { return m_cacheMode; }
 
-
-    const ImageContent currentImage() {
-        if(m_cacheMode == CreateThumbnail)
+    const ImageContent currentImage()
+    {
+        if (m_cacheMode == CreateThumbnail) {
             return m_currentCacheSync;
+        }
         return m_currentCache.isValid() ? m_currentCache.result() : ImageContent();
     }
     QString volumePath() { return m_loader ? m_loader->volumePath() : QString(); }
@@ -123,7 +134,8 @@ public:
     /**
      * @brief loadImageByName Reads and returns the image corresponding to the file name specified in the file list without advancing the internal counter
      */
-    QByteArray loadByteArrayByName(const QString& name) {
+    QByteArray loadByteArrayByName(const QString &name)
+    {
         return m_loadContext && !name.isEmpty() ? m_loadContext->load(name) : QByteArray();
     }
     /**
@@ -152,8 +164,7 @@ public slots:
     void on_enmumerated();
 
 private:
-    future_image scheduleImageLoad(const QString &path, const QSize &pageSize,
-                                   bool requiredForDisplay);
+    future_image scheduleImageLoad(const QString &path, const QSize &pageSize, bool requiredForDisplay);
     future_image scheduleResize(ImageContent content, const QSize &pageSize);
 
     /**
@@ -171,7 +182,7 @@ private:
 //    QList<int> m_pageCache;
 
     QSharedPointer<ImageLoadContext> m_loadContext;
-    IFileLoader* m_loader;
+    IFileLoader *m_loader;
     CacheMode m_cacheMode;
     QSize m_viewportSize;
     bool m_enumerated;
@@ -184,6 +195,5 @@ private:
 
     friend class VolumeManagerBuilder;
 };
-
 
 #endif // VOLUMEMANAGER_H

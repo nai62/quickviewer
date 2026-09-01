@@ -7,29 +7,30 @@ class SamplePageContent : public PageManagerProtocol
 {
 public:
     SamplePageContent()
-        : m_size(20)
-        , m_currentPage(10)
-        , m_volumePath("C:\\SampleBook")
+        : m_size(20),
+          m_currentPage(10),
+          m_volumePath("C:\\SampleBook")
     {
         m_pages = VisiblePages(QVector<ImageContent>{
-                    ImageContent(
-                        QImage(1000, 1200, QImage::Format_RGB32),
-                        "page11.jpg",
-                        QSize(1000,1200),
-                        easyexif::EXIFInfo(),
-                        1234567),
-                    ImageContent(
-                        QImage(1000, 1200, QImage::Format_RGB32),
-                        "page12.jpg",
-                        QSize(1000,1200),
-                        easyexif::EXIFInfo(),
-                        1234567)});
+            ImageContent(
+                QImage(1000, 1200, QImage::Format_RGB32),
+                "page11.jpg",
+                QSize(1000, 1200),
+                easyexif::EXIFInfo(),
+                1234567),
+            ImageContent(
+                QImage(1000, 1200, QImage::Format_RGB32),
+                "page12.jpg",
+                QSize(1000, 1200),
+                easyexif::EXIFInfo(),
+                1234567)});
     }
     int size() const override { return m_size; }
     int currentPage() const override { return m_currentPage; }
     VisiblePages visiblePages() const override { return m_pages; }
     QString volumePath() const override { return m_volumePath; }
-    QString currentPagePath() const override {
+    QString currentPagePath() const override
+    {
         return QString("%1\\%2")
             .arg(m_volumePath)
             .arg("page11.jpg");
@@ -45,12 +46,13 @@ private:
 static SamplePageContent *stSamplePageContent;
 
 OptionsDialog::OptionsDialog(QWidget *parent)
-    : QDialog(parent)
-    , ui(new Ui::OptionsDialog)
+    : QDialog(parent),
+      ui(new Ui::OptionsDialog)
 {
     ui->setupUi(this);
-    if(!stSamplePageContent)
+    if (!stSamplePageContent) {
         stSamplePageContent = new SamplePageContent;
+    }
     m_imageString.initialize(stSamplePageContent, [] {
         return RenderedPageMetrics(QVector<qreal>{0.5, 0.5});
     });
@@ -97,27 +99,29 @@ OptionsDialog::OptionsDialog(QWidget *parent)
 
     ui->lineEditWindowTitleUserStyle->setText(qApp->TitleTextFormat());
     ui->labelWindowTitleSample->setText(m_imageString.formatString(qApp->TitleTextFormat()));
-    if(qApp->TitleTextFormat() == QV_WINDOWTITLE_FORMAT) {
+    if (qApp->TitleTextFormat() == QV_WINDOWTITLE_FORMAT) {
         ui->radioButtonWindowTitleNormalStyle->setChecked(true);
-    } else if(qApp->TitleTextFormat() == IRFANVIEW_WINDOWTITLE_FORMAT) {
+    } else if (qApp->TitleTextFormat() == IRFANVIEW_WINDOWTITLE_FORMAT) {
         ui->radioButtonWindowTitleIrfanViewStyle->setChecked(true);
     } else {
         ui->radioButtonWindowTitleUserDefined->setChecked(true);
     }
-    if(!ui->radioButtonWindowTitleUserDefined->isChecked())
+    if (!ui->radioButtonWindowTitleUserDefined->isChecked()) {
         ui->lineEditWindowTitleUserStyle->setEnabled(false);
+    }
 
     ui->lineEditStatusBarUserStyle->setText(qApp->StatusTextFormat());
     ui->labelStatusBarSample->setText(m_imageString.formatString(qApp->StatusTextFormat()));
-    if(qApp->StatusTextFormat() == QV_STATUSBAR_FORMAT)
+    if (qApp->StatusTextFormat() == QV_STATUSBAR_FORMAT) {
         ui->radioButtonStatusBarNormalStyle->setChecked(true);
-    else if(qApp->StatusTextFormat() == IRFANVIEW_STATUSBAR_FORMAT)
+    } else if (qApp->StatusTextFormat() == IRFANVIEW_STATUSBAR_FORMAT) {
         ui->radioButtonStatusBarIrfanViewStyle->setChecked(true);
-    else
+    } else {
         ui->radioButtonStatusBarUserDefined->setChecked(true);
-    if(!ui->radioButtonStatusBarUserDefined->isChecked())
+    }
+    if (!ui->radioButtonStatusBarUserDefined->isChecked()) {
         ui->lineEditStatusBarUserStyle->setEnabled(false);
-
+    }
 
     ui->comboBoxHowToLoadSVG->setCurrentText(qApp->HowToLoadSVG());
     ui->comboBoxThemeSelector->setCurrentText(qApp->UiTheme());
@@ -125,7 +129,6 @@ OptionsDialog::OptionsDialog(QWidget *parent)
 
 OptionsDialog::~OptionsDialog()
 {
-
 }
 
 void OptionsDialog::reflectResults()
@@ -156,25 +159,27 @@ void OptionsDialog::reflectResults()
     qApp->setTopWindowWhenRunWithAssoc(ui->checkBoxTopWindowWhenRunWithAssoc->isChecked());
     qApp->setTopWindowWhenDropped(ui->checkBoxTopWindowWhenDropped->isChecked());
 
-    if(ui->radioButtonWindowTitleNormalStyle->isChecked())
+    if (ui->radioButtonWindowTitleNormalStyle->isChecked()) {
         qApp->setTitleTextFormat(QV_WINDOWTITLE_FORMAT);
-    else if(ui->radioButtonWindowTitleIrfanViewStyle->isChecked())
+    } else if (ui->radioButtonWindowTitleIrfanViewStyle->isChecked()) {
         qApp->setTitleTextFormat(IRFANVIEW_WINDOWTITLE_FORMAT);
-    else
+    } else {
         qApp->setTitleTextFormat(ui->lineEditWindowTitleUserStyle->text());
+    }
 
-    if(ui->radioButtonStatusBarNormalStyle->isChecked())
+    if (ui->radioButtonStatusBarNormalStyle->isChecked()) {
         qApp->setStatusTextFormat(QV_STATUSBAR_FORMAT);
-    else if(ui->radioButtonStatusBarIrfanViewStyle->isChecked())
+    } else if (ui->radioButtonStatusBarIrfanViewStyle->isChecked()) {
         qApp->setStatusTextFormat(IRFANVIEW_STATUSBAR_FORMAT);
-    else
+    } else {
         qApp->setStatusTextFormat(ui->lineEditStatusBarUserStyle->text());
+    }
 
     qApp->setHowToLoadSVG(ui->comboBoxHowToLoadSVG->currentText());
     qApp->setUiTheme(ui->comboBoxThemeSelector->currentText());
 }
 
-void OptionsDialog::resetColorButton(QPushButton* btn, QColor color)
+void OptionsDialog::resetColorButton(QPushButton *btn, QColor color)
 {
     QPixmap pix(16, 16);
     pix.fill(color);
@@ -186,7 +191,7 @@ void OptionsDialog::resetColorBox()
 {
     QPixmap pattern(48, 48);
     QBrush brush;
-    if(!m_useCheckeredPattern) {
+    if (!m_useCheckeredPattern) {
         brush = QBrush(m_backgroundColor, Qt::SolidPattern);
 
         ui->labelColor2->setEnabled(false);
@@ -211,19 +216,18 @@ void OptionsDialog::resetColorBox()
 void OptionsDialog::resetWindowTitleSample()
 {
     QString format;
-    format = ui->radioButtonWindowTitleNormalStyle->isChecked()    ? QV_WINDOWTITLE_FORMAT
-           : ui->radioButtonWindowTitleIrfanViewStyle->isChecked() ? IRFANVIEW_WINDOWTITLE_FORMAT
-           : ui->lineEditWindowTitleUserStyle->text();
+    format = ui->radioButtonWindowTitleNormalStyle->isChecked()      ? QV_WINDOWTITLE_FORMAT
+             : ui->radioButtonWindowTitleIrfanViewStyle->isChecked() ? IRFANVIEW_WINDOWTITLE_FORMAT
+                                                                     : ui->lineEditWindowTitleUserStyle->text();
     ui->labelWindowTitleSample->setText(m_imageString.formatString(format));
-
 }
 
 void OptionsDialog::resetStatusbarSample()
 {
     QString format;
-    format = ui->radioButtonStatusBarNormalStyle->isChecked()    ? QV_STATUSBAR_FORMAT
-           : ui->radioButtonStatusBarIrfanViewStyle->isChecked() ? IRFANVIEW_STATUSBAR_FORMAT
-           : ui->lineEditStatusBarUserStyle->text();
+    format = ui->radioButtonStatusBarNormalStyle->isChecked()      ? QV_STATUSBAR_FORMAT
+             : ui->radioButtonStatusBarIrfanViewStyle->isChecked() ? IRFANVIEW_STATUSBAR_FORMAT
+                                                                   : ui->lineEditStatusBarUserStyle->text();
     ui->labelStatusBarSample->setText(m_imageString.formatString(format));
 }
 
@@ -231,7 +235,7 @@ void OptionsDialog::onBtnColorSelect_clicked()
 {
     QColorDialog dialog(this);
     dialog.setCurrentColor(m_backgroundColor);
-    if(dialog.exec() == QDialog::Accepted) {
+    if (dialog.exec() == QDialog::Accepted) {
         m_backgroundColor = dialog.currentColor();
         resetColorButton(ui->btnColorSelect, m_backgroundColor);
         resetColorBox();
@@ -242,7 +246,7 @@ void OptionsDialog::onBtnColorSelect2_clicked()
 {
     QColorDialog dialog(this);
     dialog.setCurrentColor(m_backgroundColor2);
-    if(dialog.exec() == QDialog::Accepted) {
+    if (dialog.exec() == QDialog::Accepted) {
         m_backgroundColor2 = dialog.currentColor();
         resetColorButton(ui->btnColorSelect2, m_backgroundColor2);
         resetColorBox();
@@ -284,4 +288,3 @@ void OptionsDialog::onCheckBoxShowUsage_clicked(bool enabled)
 void OptionsDialog::onCheckBoxDontShrinkForLargeImage_clicked(bool enabled)
 {
 }
-

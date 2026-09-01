@@ -5,10 +5,10 @@
 #include "ui_cataloglist.h"
 #include "qc_init.h"
 
-ManageDatabaseDialog::ManageDatabaseDialog(QWidget* parent)
-    : QDialog(parent)
-    , ui(new Ui::ManageDatabaseDialog)
-    , m_catalogWatcher(nullptr)
+ManageDatabaseDialog::ManageDatabaseDialog(QWidget *parent)
+    : QDialog(parent),
+      ui(new Ui::ManageDatabaseDialog),
+      m_catalogWatcher(nullptr)
 {
     ui->setupUi(this);
     ui->progressBar->setVisible(false);
@@ -27,7 +27,6 @@ ManageDatabaseDialog::ManageDatabaseDialog(QWidget* parent)
     ui->updateButton->setVisible(false);
 
     resetCatalogList();
-
 }
 
 ManageDatabaseDialog::~ManageDatabaseDialog()
@@ -35,18 +34,18 @@ ManageDatabaseDialog::~ManageDatabaseDialog()
     delete ui;
 }
 
-void ManageDatabaseDialog::setThumbnailManager(ThumbnailManager* manager)
+void ManageDatabaseDialog::setThumbnailManager(ThumbnailManager *manager)
 {
-     m_thumbManager = manager;
-     m_catalogs = m_thumbManager->catalogs();
-     resetCatalogList();
-     normalButtonStates();
+    m_thumbManager = manager;
+    m_catalogs = m_thumbManager->catalogs();
+    resetCatalogList();
+    normalButtonStates();
 }
 
 void ManageDatabaseDialog::normalButtonStates()
 {
     ui->addButton->setEnabled(true);
-    if(m_catalogs.isEmpty() && m_makeCatalogs.isEmpty()) {
+    if (m_catalogs.isEmpty() && m_makeCatalogs.isEmpty()) {
         ui->editButton->setEnabled(false);
         ui->deleteButton->setEnabled(false);
         ui->updateButton->setEnabled(false);
@@ -61,7 +60,7 @@ void ManageDatabaseDialog::normalButtonStates()
     }
     ui->buttonBox->setEnabled(true);
 
-    if(m_makeCatalogs.size() == 0) {
+    if (m_makeCatalogs.size() == 0) {
         ui->cancelButton->setVisible(false);
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
     } else {
@@ -93,9 +92,9 @@ void ManageDatabaseDialog::resetCatalogList()
 {
     ui->treeWidget->clear();
     // Existing catalogs
-    foreach(int id, m_catalogs.keys()) {
-        const CatalogRecord& catalog = m_catalogs[id];
-        QTreeWidgetItem* item = new QTreeWidgetItem;
+    foreach (int id, m_catalogs.keys()) {
+        const CatalogRecord &catalog = m_catalogs[id];
+        QTreeWidgetItem *item = new QTreeWidgetItem;
         item->setText(0, catalog.name);
         item->setText(1, ThumbnailManager::DateTimeToIsoString(catalog.created_at));
         item->setText(2, catalog.path);
@@ -105,9 +104,9 @@ void ManageDatabaseDialog::resetCatalogList()
     // Making catalogs
     {
         int cnt = -100;
-        foreach(const CatalogRecord& catalog, m_makeCatalogs) {
-            QTreeWidgetItem* item = new QTreeWidgetItem;
-            item->setText(0, "* "  + catalog.name);
+        foreach (const CatalogRecord &catalog, m_makeCatalogs) {
+            QTreeWidgetItem *item = new QTreeWidgetItem;
+            item->setText(0, "* " + catalog.name);
             item->setText(1, tr("approach to", "Representation of time indicating that the catalog is not currently created and will be generated from now"));
             item->setText(2, catalog.path);
             item->setData(0, Qt::UserRole, cnt--);
@@ -122,8 +121,7 @@ void ManageDatabaseDialog::resetCatalogList()
 
 void ManageDatabaseDialog::dragEnterEvent(QDragEnterEvent *e)
 {
-    if(e->mimeData()->hasFormat("text/uri-list"))
-    {
+    if (e->mimeData()->hasFormat("text/uri-list")) {
         e->acceptProposedAction();
     }
 }
@@ -131,8 +129,9 @@ void ManageDatabaseDialog::dragEnterEvent(QDragEnterEvent *e)
 void ManageDatabaseDialog::onAddButton_clicked()
 {
     CatalogRecord catalog = {0};
-    if(!databaseSettingDialog(catalog, false))
+    if (!databaseSettingDialog(catalog, false)) {
         return;
+    }
     m_makeCatalogs << catalog;
 
     resetCatalogList();
@@ -141,18 +140,19 @@ void ManageDatabaseDialog::onAddButton_clicked()
 
 void ManageDatabaseDialog::dropEvent(QDropEvent *e)
 {
-    if(!e->mimeData()->hasUrls())
+    if (!e->mimeData()->hasUrls()) {
         return;
+    }
     QList<QUrl> urlList = e->mimeData()->urls();
     for (int i = 0; i < urlList.size(); i++) {
         QUrl url = urlList[i];
         QFileInfo info(url.toLocalFile());
         CatalogRecord catalog = {0};
-        if(info.isDir()) {
+        if (info.isDir()) {
 //            createCatalog(info.fileName(), QDir::toNativeSeparators(info.absoluteFilePath()));
             catalog.name = info.fileName();
             catalog.path = QDir::toNativeSeparators(info.absoluteFilePath());
-        } else if(info.isFile()) {
+        } else if (info.isFile()) {
 //            createCatalog(info.baseName(), QDir::toNativeSeparators(info.path()));
             catalog.name = info.baseName();
             catalog.path = QDir::toNativeSeparators(info.path());
@@ -164,17 +164,18 @@ void ManageDatabaseDialog::dropEvent(QDropEvent *e)
     normalButtonStates();
 }
 
-bool ManageDatabaseDialog::databaseSettingDialog(CatalogRecord& catalog, bool editing)
+bool ManageDatabaseDialog::databaseSettingDialog(CatalogRecord &catalog, bool editing)
 {
     DatabaseSettingDialog dialog(this);
     dialog.setName(catalog.name);
     dialog.setPath(catalog.path);
     dialog.setForEditing(editing);
-    if(editing)
+    if (editing) {
         dialog.setWindowTitle(tr("Edit Catalog", "Button for editing contents of already created catalog"));
+    }
 
     int result = dialog.exec();
-    if(result == QDialog::Rejected) {
+    if (result == QDialog::Rejected) {
         return false;
     }
     catalog.name = dialog.name();
@@ -184,22 +185,25 @@ bool ManageDatabaseDialog::databaseSettingDialog(CatalogRecord& catalog, bool ed
 
 void ManageDatabaseDialog::createCatalog()
 {
-    if(!m_thumbManager)
+    if (!m_thumbManager) {
         return;
+    }
 }
 
 void ManageDatabaseDialog::on_catalogCreated(const CatalogRecord cr)
 {
-    if(!cr.created)
+    if (!cr.created) {
         return;
+    }
     m_catalogs[cr.id] = cr;
     int i = 0;
-    foreach(const CatalogRecord& c, m_makeCatalogs) {
-        if(cr.path == c.path)
+    foreach (const CatalogRecord &c, m_makeCatalogs) {
+        if (cr.path == c.path) {
             break;
+        }
         i++;
     }
-    if(i < m_makeCatalogs.size()) {
+    if (i < m_makeCatalogs.size()) {
         m_makeCatalogs.removeAt(i);
     }
 
@@ -208,11 +212,12 @@ void ManageDatabaseDialog::on_catalogCreated(const CatalogRecord cr)
 
 void ManageDatabaseDialog::on_catalogCreateFinished()
 {
-    if(!m_catalogWatcher)
+    if (!m_catalogWatcher) {
         return;
+    }
     disconnect(m_thumbManager, SIGNAL(catalogCreated(CatalogRecord)), this, SLOT(on_catalogCreated(CatalogRecord)));
     disconnect(m_catalogWatcher, SIGNAL(finished()), this, SLOT(on_catalogCreateFinished()));
-    disconnect(m_catalogWatcher, SIGNAL(progressRangeChanged(int,int)), ui->progressBar, SLOT(setRange(int,int)));
+    disconnect(m_catalogWatcher, SIGNAL(progressRangeChanged(int, int)), ui->progressBar, SLOT(setRange(int, int)));
     disconnect(m_catalogWatcher, SIGNAL(progressValueChanged(int)), ui->progressBar, SLOT(setValue(int)));
   //  disconnect(m_catalogWatcher, SIGNAL(progressTextChanged(QString)), ui->progressBar, SLOT(setWindowTitle(QString)));
     disconnect(m_catalogWatcher, SIGNAL(progressTextChanged(QString)), ui->volumeNameLabel, SLOT(setText(QString)));
@@ -232,13 +237,14 @@ void ManageDatabaseDialog::on_catalogCreateFinished()
 
 void ManageDatabaseDialog::onCancelButton_clicked()
 {
-    if(!m_thumbManager)
+    if (!m_thumbManager) {
         return;
-    if(!m_catalogWatcher) {
+    }
+    if (!m_catalogWatcher) {
         connect(m_thumbManager, SIGNAL(catalogCreated(CatalogRecord)), this, SLOT(on_catalogCreated(CatalogRecord)));
         m_catalogWatcher = m_thumbManager->createCatalogAsync(m_makeCatalogs);
         connect(m_catalogWatcher, SIGNAL(finished()), this, SLOT(on_catalogCreateFinished()));
-        connect(m_catalogWatcher, SIGNAL(progressRangeChanged(int,int)), ui->progressBar, SLOT(setRange(int,int)));
+        connect(m_catalogWatcher, SIGNAL(progressRangeChanged(int, int)), ui->progressBar, SLOT(setRange(int, int)));
         connect(m_catalogWatcher, SIGNAL(progressValueChanged(int)), ui->progressBar, SLOT(setValue(int)));
         connect(m_catalogWatcher, SIGNAL(progressTextChanged(QString)), ui->volumeNameLabel, SLOT(setText(QString)));
 
@@ -246,7 +252,7 @@ void ManageDatabaseDialog::onCancelButton_clicked()
     } else {
         disconnect(m_thumbManager, SIGNAL(catalogCreated(CatalogRecord)), this, SLOT(on_catalogCreated(CatalogRecord)));
         disconnect(m_catalogWatcher, SIGNAL(finished()), this, SLOT(on_catalogCreateFinished()));
-        disconnect(m_catalogWatcher, SIGNAL(progressRangeChanged(int,int)), ui->progressBar, SLOT(setRange(int,int)));
+        disconnect(m_catalogWatcher, SIGNAL(progressRangeChanged(int, int)), ui->progressBar, SLOT(setRange(int, int)));
         disconnect(m_catalogWatcher, SIGNAL(progressValueChanged(int)), ui->progressBar, SLOT(setValue(int)));
         m_thumbManager->cancelCreateCatalogAsync();
         m_catalogWatcher = nullptr;
@@ -262,7 +268,6 @@ void ManageDatabaseDialog::onCancelButton_clicked()
     }
 }
 
-
 void ManageDatabaseDialog::closeEvent(QCloseEvent *)
 {
     m_thumbManager->vacuum();
@@ -270,24 +275,27 @@ void ManageDatabaseDialog::closeEvent(QCloseEvent *)
 
 void ManageDatabaseDialog::onEditButton_clicked()
 {
-    if(!m_thumbManager)
+    if (!m_thumbManager) {
         return;
+    }
     QTreeWidgetItem *current = ui->treeWidget->currentItem();
-    if(!current)
+    if (!current) {
         return;
+    }
 
     int id = current->data(0, Qt::UserRole).toInt();
     CatalogRecord catalog;
     bool editing = false;
-    if(id >= 0) {
+    if (id >= 0) {
         catalog = m_catalogs[id];
         editing = true;
     } else {
         id = -100 - id;
         catalog = m_makeCatalogs[id];
     }
-    if(!databaseSettingDialog(catalog, editing))
+    if (!databaseSettingDialog(catalog, editing)) {
         return;
+    }
     m_thumbManager->updateCatalogName(id, catalog.name);
     m_catalogs[id] = catalog;
 
@@ -296,19 +304,22 @@ void ManageDatabaseDialog::onEditButton_clicked()
 
 void ManageDatabaseDialog::onDeleteButton_clicked()
 {
-    if(!m_thumbManager)
+    if (!m_thumbManager) {
         return;
+    }
     QTreeWidgetItem *current = ui->treeWidget->currentItem();
-    if(!current)
+    if (!current) {
         return;
+    }
     int id = current->data(0, Qt::UserRole).toInt();
-    if(id >= 0) {
+    if (id >= 0) {
         m_thumbManager->deleteCatalog(id);
         m_catalogs.remove(id);
     } else {
         id = -100 - id;
-        if(id < m_makeCatalogs.size())
+        if (id < m_makeCatalogs.size()) {
             m_makeCatalogs.removeAt(id);
+        }
     }
 
     resetCatalogList();
@@ -317,13 +328,13 @@ void ManageDatabaseDialog::onDeleteButton_clicked()
 
 void ManageDatabaseDialog::onUpdateButton_clicked()
 {
-
 }
 
 void ManageDatabaseDialog::onDeleteAllButton_clicked()
 {
-    if(!m_thumbManager)
+    if (!m_thumbManager) {
         return;
+    }
     m_thumbManager->deleteAllCatalogs();
     m_catalogs.clear();
     m_makeCatalogs.clear();
@@ -334,6 +345,4 @@ void ManageDatabaseDialog::onDeleteAllButton_clicked()
 
 void ManageDatabaseDialog::onUpdateAllButton_clicked()
 {
-
 }
-

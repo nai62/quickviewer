@@ -32,7 +32,7 @@ public:
     QDateTime created_at;
     QDateTime updated_at;
     bool created;
-    bool operator ==(const CatalogRecord& rhs) {return id == rhs.id;}
+    bool operator==(const CatalogRecord &rhs) { return id == rhs.id; }
 };
 Q_DECLARE_METATYPE(CatalogRecord)
 
@@ -83,9 +83,19 @@ public:
     QString nameNoCase;
     int type_id; // (0:Normal, 1:Publisher(Author), 2:Publisher, 3:Author, 4:Rate)
     int count;
-    TagRecord():id(-1), type_id(0), count(0){}
-    TagRecord(QString nm, int tpid):id(-1), name(nm), type_id(tpid), count(0){}
-    inline const TagRecord& operator =(const TagRecord& rhs){
+    TagRecord()
+        : id(-1),
+          type_id(0),
+          count(0)
+    {}
+    TagRecord(QString nm, int tpid)
+        : id(-1),
+          name(nm),
+          type_id(tpid),
+          count(0)
+    {}
+    inline const TagRecord &operator=(const TagRecord &rhs)
+    {
         id = rhs.id;
         name = rhs.name;
         nameNoCase = rhs.nameNoCase;
@@ -152,22 +162,20 @@ public:
     QStringList subpaths;
 };
 
-
 class ThumbnailManager : public QObject
 {
     Q_OBJECT
 public:
-    ThumbnailManager(QObject* parent, QString dbpath);
-    void SetFrontPageOnly(bool only) { m_frontPageOnly=only; }
+    ThumbnailManager(QObject *parent, QString dbpath);
+    void SetFrontPageOnly(bool only) { m_frontPageOnly = only; }
     void vacuum();
     void dispose();
-
 
     /* Catalogs */
     QMap<int, CatalogRecord> catalogs();
 
     CatalogRecord createCatalog(QString name, QString path);
-    QFutureWatcher<QList<CatalogRecord>>* createCatalogAsync(QList<CatalogRecord> newers);
+    QFutureWatcher<QList<CatalogRecord>> *createCatalogAsync(QList<CatalogRecord> newers);
     void cancelCreateCatalogAsync();
 
     void deleteCatalog(int id);
@@ -181,8 +189,8 @@ public:
 
     /* Tags */
     void loadTags();
-    QMap<int, TagRecord*> tags() const{return m_tags2;}
-    QMap<int, TagRecord*> tagsByCount();
+    QMap<int, TagRecord *> tags() const { return m_tags2; }
+    QMap<int, TagRecord *> tagsByCount();
     QList<TagRecord> getTagsFromVolumeId(int volume_id);
 
     /**
@@ -203,7 +211,7 @@ public:
      * @param filenames
      * @return
      */
-    static void sortFiles(QStringList& filenames);
+    static void sortFiles(QStringList &filenames);
     static bool caseInsensitiveLessThan(const QString &s1, const QString &s2);
     static bool caseInsensitiveLessThanWString(const std::wstring &s1, const std::wstring &s2);
 
@@ -223,7 +231,7 @@ private:
     QList<VolumeThumbRecord> m_volumesCacne;
     bool m_volumesDurty;
     QMap<QString, TagRecord> m_tags; // key is 'type_id:lower(name)' e.g. "0:tagname"
-    QMap<int, TagRecord*> m_tags2;
+    QMap<int, TagRecord *> m_tags2;
     QMultiMap<int, int> m_volumetags;
 
     static QList<QByteArray> st_supportedImageFormats;
@@ -231,25 +239,25 @@ private:
     static QStringList st_heavyImageFormats;
 
     /* Basical */
-    bool execInsertQuery(QSqlQuery& query, const QString& tablename);
+    bool execInsertQuery(QSqlQuery &query, const QString &tablename);
     void transaction();
     void forceTransaction();
     void commit();
     void rollback();
 
     /* Volumes/Files */
-    int createSubVolumes(QString dirpath, int catalog_id, int parent_id=-1);
-    int createVolumeContent(QString dirpath, int parent_id=-1);
-    int createVolumeInternal(QString dirpath, int catalog_id, int parent_id=-1);
+    int createSubVolumes(QString dirpath, int catalog_id, int parent_id = -1);
+    int createVolumeContent(QString dirpath, int parent_id = -1);
+    int createVolumeInternal(QString dirpath, int catalog_id, int parent_id = -1);
     void updateVolumeOrders();
 
     int createVolumesFrontPageOnly(QString dirpath, int catalog_id);
     VolumeWorker createSubVolumesConcurrent(QString dirpath, int volume_id, int parent_id);
     FileWorker createFileRecord(QString filename, QString filepath, int filename_asc);
-    FileWorker createFileRecordFromArchive(QString archivePath, ImageContent& ic, int filename_asc);
+    FileWorker createFileRecordFromArchive(QString archivePath, ImageContent &ic, int filename_asc);
 
     /* Catalogs */
-    QList<CatalogRecord> callCreateCatalog(const QList<CatalogRecord>& newers);
+    QList<CatalogRecord> callCreateCatalog(const QList<CatalogRecord> &newers);
 };
 
 #endif // THUMBNAILMANAGER_H

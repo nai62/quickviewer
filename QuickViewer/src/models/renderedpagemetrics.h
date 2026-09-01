@@ -12,8 +12,9 @@ public:
     explicit RenderedPageMetrics(QVector<qreal> notationalScales)
         : m_notationalScales(std::move(notationalScales))
     {
-        if(m_notationalScales.size() > Capacity)
+        if (m_notationalScales.size() > Capacity) {
             m_notationalScales.resize(Capacity);
+        }
     }
 
     int count() const { return m_notationalScales.size(); }
@@ -21,7 +22,8 @@ public:
     qreal notationalScaleAt(int index) const
     {
         return index >= 0 && index < count()
-                ? m_notationalScales[index] : 1.0;
+                   ? m_notationalScales[index]
+                   : 1.0;
     }
 
 private:

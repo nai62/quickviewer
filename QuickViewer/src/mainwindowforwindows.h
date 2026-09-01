@@ -22,9 +22,9 @@ private:
     bool bFirstView;
     HMENU m_showMainMenu; // HMENU
 
-    static MainWindowForWindows* MainWindowForWindows_self;
+    static MainWindowForWindows *MainWindowForWindows_self;
     static WNDPROC DefStaticProc;
-    static LRESULT CALLBACK StaticProc(HWND hwnd , UINT msg , WPARAM wp , LPARAM lp);
+    static LRESULT CALLBACK StaticProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp);
 };
 
 #endif // MAINWINDOWFORWINDOWS_H

@@ -47,8 +47,7 @@ using ViewerState = std::variant<EmptyViewerState,
                                  VolumeReadyViewerState,
                                  FailedViewerState>;
 
-enum class ViewerStateKind
-{
+enum class ViewerStateKind {
     Empty,
     Loading,
     StandalonePreview,
@@ -58,14 +57,18 @@ enum class ViewerStateKind
 
 inline ViewerStateKind viewerStateKind(const ViewerState &state)
 {
-    if(std::holds_alternative<LoadingViewerState>(state))
+    if (std::holds_alternative<LoadingViewerState>(state)) {
         return ViewerStateKind::Loading;
-    if(std::holds_alternative<StandalonePreviewViewerState>(state))
+    }
+    if (std::holds_alternative<StandalonePreviewViewerState>(state)) {
         return ViewerStateKind::StandalonePreview;
-    if(std::holds_alternative<VolumeReadyViewerState>(state))
+    }
+    if (std::holds_alternative<VolumeReadyViewerState>(state)) {
         return ViewerStateKind::VolumeReady;
-    if(std::holds_alternative<FailedViewerState>(state))
+    }
+    if (std::holds_alternative<FailedViewerState>(state)) {
         return ViewerStateKind::Failed;
+    }
     return ViewerStateKind::Empty;
 }
 

@@ -11,7 +11,9 @@
 class EmptyFileLoader final : public IFileLoader
 {
 public:
-    explicit EmptyFileLoader(QObject *parent = nullptr) : IFileLoader(parent) {}
+    explicit EmptyFileLoader(QObject *parent = nullptr)
+        : IFileLoader(parent)
+    {}
 
     QString volumePath() override { return "empty"; }
     QString realVolumePath() override { return "empty"; }
@@ -115,8 +117,7 @@ private slots:
         PageManager manager(nullptr);
         int notificationCount = 0;
         VisiblePages latest;
-        connect(&manager, &PageManager::visiblePagesChanged,
-                this, [&](VisiblePages pages) {
+        connect(&manager, &PageManager::visiblePagesChanged, this, [&](VisiblePages pages) {
             ++notificationCount;
             latest = std::move(pages);
         });
@@ -153,8 +154,8 @@ private slots:
         PageManager manager(nullptr);
         QImage image(100, 200, QImage::Format_RGB32);
         QVERIFY(manager.addNewPage(
-                    ImageContent(image, "sample.png", image.size(), {}, 1024),
-                    true));
+            ImageContent(image, "sample.png", image.size(), {}, 1024),
+            true));
         imageString.initialize(&manager, [] {
             return RenderedPageMetrics(QVector<qreal>{0.5});
         });
@@ -169,20 +170,19 @@ private slots:
         QImage image(100, 100, QImage::Format_RGB32);
         image.fill(Qt::red);
         StubPageRenderContext context;
-        PageItem page(nullptr, &scene,
-                      ImageContent(image, "page.bmp", image.size(), {}, 0),
-                      &context);
+        PageItem page(nullptr, &scene, ImageContent(image, "page.bmp", image.size(), {}, 0), &context);
 
         page.setPageLayoutFitting(QRect(0, 0, 100, 100),
                                   PageItem::PageCenter,
-                                  qvEnums::FitToRect, 1.0);
+                                  qvEnums::FitToRect,
+                                  1.0);
         QCOMPARE(context.pixelRatioRequests, 1);
 
-        PageItem pageWithoutContext(nullptr, &scene,
-                      ImageContent(image, "preview.bmp", image.size(), {}, 0));
+        PageItem pageWithoutContext(nullptr, &scene, ImageContent(image, "preview.bmp", image.size(), {}, 0));
         pageWithoutContext.setPageLayoutFitting(QRect(0, 0, 100, 100),
-                                  PageItem::PageCenter,
-                                  qvEnums::FitToRect, 1.0);
+                                                PageItem::PageCenter,
+                                                qvEnums::FitToRect,
+                                                1.0);
     }
 
     void emptyVolumeManagerOperationsAreSafe()
@@ -211,10 +211,7 @@ private slots:
         auto *loader = new EmptyFileLoader;
         auto *volume = new VolumeManager(nullptr, loader);
         QThread *destructionThread = nullptr;
-        QObject::connect(volume, &QObject::destroyed, this,
-                         [&destructionThread] {
-            destructionThread = QThread::currentThread();
-        }, Qt::DirectConnection);
+        QObject::connect(volume, &QObject::destroyed, this, [&destructionThread] { destructionThread = QThread::currentThread(); }, Qt::DirectConnection);
 
         VolumeHandle handle = makeVolumeHandle(volume);
         QFuture<void> release = QtConcurrent::run(
@@ -240,8 +237,7 @@ private slots:
         auto *volume = new VolumeManager(
             nullptr, new EmptyFileLoader);
         bool destroyed = false;
-        QObject::connect(volume, &QObject::destroyed, this,
-                         [&destroyed] { destroyed = true; });
+        QObject::connect(volume, &QObject::destroyed, this, [&destroyed] { destroyed = true; });
 
         VolumeHandle active = makeVolumeHandle(volume);
         TimeOrderdCacheFutureSharedPtr<QString, VolumeManager> cache(1);
@@ -306,28 +302,28 @@ private slots:
         // so use a wide image to distinguish acceptance from rejection.
         const QImage image(8, 4, QImage::Format_ARGB32);
         QVERIFY(view.on_addImage_triggered(
-                    ImageContent(image, "first.png", image.size(), {}, 0), true));
+            ImageContent(image, "first.png", image.size(), {}, 0), true));
         QCOMPARE(view.renderedPageCount(), 1);
         QCOMPARE(view.renderedPageContents().count(), 1);
 
         QVERIFY(view.on_addImage_triggered(
-                    ImageContent(image, "second.png", image.size(), {}, 0), true));
+            ImageContent(image, "second.png", image.size(), {}, 0), true));
         QCOMPARE(view.renderedPageCount(), 2);
         VisiblePages contents = view.renderedPageContents();
         QCOMPARE(contents.at(0)->Path, QString("first.png"));
         QCOMPARE(contents.at(1)->Path, QString("second.png"));
         QVERIFY(!view.on_addImage_triggered(
-                    ImageContent(image, "third.png", image.size(), {}, 0), true));
+            ImageContent(image, "third.png", image.size(), {}, 0), true));
 
         view.on_clearImages_triggered();
         QCOMPARE(view.renderedPageCount(), 0);
         QVERIFY(view.renderedPageContents().isEmpty());
 
         QVERIFY(view.on_addImage_triggered(
-                    ImageContent(image, "replacement.png", image.size(), {}, 0), false));
+            ImageContent(image, "replacement.png", image.size(), {}, 0), false));
         QCOMPARE(view.renderedPageCount(), 1);
         QVERIFY(view.on_addImage_triggered(
-                    ImageContent(image, "prepended.png", image.size(), {}, 0), false));
+            ImageContent(image, "prepended.png", image.size(), {}, 0), false));
         QCOMPARE(view.renderedPageCount(), 2);
         contents = view.renderedPageContents();
         QCOMPARE(contents.at(0)->Path, QString("prepended.png"));
@@ -346,8 +342,8 @@ private slots:
         QImage image(640, 480, QImage::Format_ARGB32);
         image.fill(Qt::red);
         QVERIFY(manager.addNewPage(
-                    ImageContent(image, "fitting.png", image.size(), {}, 0),
-                    true));
+            ImageContent(image, "fitting.png", image.size(), {}, 0),
+            true));
 
         qApp->setFitting(false);
         view.readyForPaint();
@@ -367,22 +363,21 @@ private slots:
 
         QAction fittingAction;
         fittingAction.setCheckable(true);
-        connect(&fittingAction, &QAction::triggered,
-                &view, &ImageView::on_fitting_triggered);
+        connect(&fittingAction, &QAction::triggered, &view, &ImageView::on_fitting_triggered);
         QAction *previousAction =
-                qApp->keyActions().actions().value("actionFitting", nullptr);
+            qApp->keyActions().actions().value("actionFitting", nullptr);
         auto restoreAction = qScopeGuard([previousAction]() {
             qApp->keyActions().actions()["actionFitting"] = previousAction;
         });
         QAction *fittingActionPtr = &fittingAction;
         qApp->keyActions().registAction(
-                    "actionFitting", fittingActionPtr, "Image");
+            "actionFitting", fittingActionPtr, "Image");
 
         QImage image(640, 480, QImage::Format_ARGB32);
         image.fill(Qt::red);
         QVERIFY(manager.addNewPage(
-                    ImageContent(image, "shortcut.png", image.size(), {}, 0),
-                    true));
+            ImageContent(image, "shortcut.png", image.size(), {}, 0),
+            true));
 
         qApp->setFitting(false);
         fittingAction.setChecked(false);
@@ -430,7 +425,8 @@ private slots:
         QVERIFY(archive.open(QIODevice::WriteOnly));
         // Empty ZIP end-of-central-directory record.
         QCOMPARE(archive.write(QByteArray::fromHex(
-                     "504b0506000000000000000000000000000000000000")), qint64(22));
+                     "504b0506000000000000000000000000000000000000")),
+                 qint64(22));
         archive.close();
 
         PageManager manager(nullptr);

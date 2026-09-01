@@ -6,9 +6,9 @@
 #include "qnamedpipe.h"
 
 #if defined(Q_OS_WIN)
-  #include "mainwindowforwindows.h"
+#    include "mainwindowforwindows.h"
 #else
-  #include "mainwindow.h"
+#    include "mainwindow.h"
 #endif
 
 int main(int argc, char *argv[])
@@ -18,17 +18,18 @@ int main(int argc, char *argv[])
         // Activate the direct2d QPA plugin when 'UseDirect2D' of quickviewer.ini is true.
         // Since initialization of QPA is processed in the constructor of QGuiApplication,
         // it must be set to the QT_QPA_PLATFORM environment variable before that.
-#  ifdef QV_PORTABLE
+#    ifdef QV_PORTABLE
         QString inipath = QDir::toNativeSeparators(QFileInfo(argv[0]).path());
         inipath += "\\" APP_INI;
-#  else
+#    else
         QString inipath = QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).filePath(APP_INI);
-#  endif
+#    endif
         std::wstring winipath = inipath.toStdWString();
         WCHAR value[128];
-        qDebug() << ::GetPrivateProfileString(L"View", L"UseDirect2D", L"false", value, sizeof(value)-1, winipath.c_str());
-        if(::lstrcmp(value, L"true")==0)
+        qDebug() << ::GetPrivateProfileString(L"View", L"UseDirect2D", L"false", value, sizeof(value) - 1, winipath.c_str());
+        if (::lstrcmp(value, L"true") == 0) {
             qputenv("QT_QPA_PLATFORM", "direct2d");
+        }
     }
 #elif defined(Q_OS_MAC)
     {
@@ -43,12 +44,13 @@ int main(int argc, char *argv[])
     int result = 0;
     {
         QNamedPipe pipe(app.applicationName(), qApp->ProhibitMultipleRunning());
-        if(!pipe.isServerMode()) {
+        if (!pipe.isServerMode()) {
             qDebug() << app.arguments();
-            if(app.arguments().length() > 1) {
+            if (app.arguments().length() > 1) {
                 pipe.send(app.arguments()[1].toUtf8());
-            } else
+            } else {
                 pipe.send("b");
+            }
             return 0;
         }
         pipe.waitAsync();
@@ -62,15 +64,14 @@ int main(int argc, char *argv[])
         ThumbnailManager manager(&w, dbpath);
         w.setThumbnailManager(&manager);
         w.connect(&pipe, &QNamedPipe::received, &w, [&](QByteArray bytes) {
-            if(bytes.size() == 1) {
+            if (bytes.size() == 1) {
                 w.setWindowTop(false);
-            }
-            else if(bytes.size() > 0) {
+            } else if (bytes.size() > 0) {
                 auto string = QString::fromUtf8(bytes);
                 w.loadVolumeWithAssoc(string);
             }
         });
-        if(app.BeginAsFullscreen()){
+        if (app.BeginAsFullscreen()) {
             w.showFullScreen();
         } else {
             w.show();

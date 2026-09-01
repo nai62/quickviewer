@@ -4,7 +4,6 @@
 #include <QtWidgets>
 #include "imageview.h"
 
-
 namespace Ui {
 class BrightnessWindow;
 class MainWindow;
@@ -15,11 +14,11 @@ class BrightnessWindow : public QWidget
     Q_OBJECT
 
 public:
-    explicit BrightnessWindow(QWidget *parent, Ui::MainWindow* uiMain);
+    explicit BrightnessWindow(QWidget *parent, Ui::MainWindow *uiMain);
     ~BrightnessWindow();
     float sliderToFloat(int value);
     int floatToSlider(float value);
-    void setImageView(ImageView* imageView);
+    void setImageView(ImageView *imageView);
     void resetSliders();
 
 signals:
@@ -36,7 +35,7 @@ public slots:
 
 private:
     Ui::BrightnessWindow *ui;
-    ImageView* m_imageView;
+    ImageView *m_imageView;
     ImageRetouch m_retouchParams;
     bool ignoreTextChange;
 };

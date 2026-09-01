@@ -20,12 +20,16 @@ public:
      * @brief prepare shader for each page
      * @param ic
      */
-    void prepare(QGraphicsPixmapItem* item, const ImageContent& ic, QSize size);
+    void prepare(QGraphicsPixmapItem *item, const ImageContent &ic, QSize size);
     /**
      * @brief prepareFinished must be called once after all prepare()
      */
     void prepareFinished();
-    void prepareInitialize() { m_oldEffect = qvEnums::UnPrepared; pageCnt=0;}
+    void prepareInitialize()
+    {
+        m_oldEffect = qvEnums::UnPrepared;
+        pageCnt = 0;
+    }
 
     static QString shaderEffectToString(qvEnums::ShaderEffect effect)
     {
@@ -39,7 +43,7 @@ public:
     }
 
 private:
-    void loadShader(QByteArray& target, QString path);
+    void loadShader(QByteArray &target, QString path);
 
 //    ShaderEffect m_effect;
     qvEnums::ShaderEffect m_oldEffect;

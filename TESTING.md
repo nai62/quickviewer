@@ -88,6 +88,33 @@ These commands speed up iteration but do not replace the complete verification
 required before handoff. Under WSL, pass the same option after the quoted
 script path in the `cmd.exe` command shown above.
 
+## C++ lint
+
+Install Python 3 and clang-format 18. From the repository root, check C++ files
+changed from `HEAD`:
+
+```bash
+python3 scripts/lint-cpp.py
+```
+
+Apply formatting fixes to those files with `--fix`. Pass one or more paths to
+check specific files, or use `--all` to check the C++ files tracked under
+`QuickViewer` and `qvtest`. Submodules under `QuickViewer/src` are deliberately
+excluded. The root `.clang-format-ignore` applies the same exclusions when
+clang-format is invoked directly or through an editor integration.
+
+The root `.clang-format` requires a space before control-statement parentheses,
+spaces around binary and assignment operators, and braces around `if`, `for`,
+`while`, and related statement bodies. Member-access operators (`.` and `->`)
+remain unspaced.
+
+Set `CLANG_FORMAT` when the executable has a nonstandard name, or pass
+`--clang-format` explicitly.
+
+On Windows, use `py -3` in place of `python3` when Python is installed through
+the standard Windows launcher. Pull requests check all files in the lint scope
+automatically.
+
 ## Interactive checks
 
 Startup painting, fullscreen, OpenGL, input timing, and other visual behavior
