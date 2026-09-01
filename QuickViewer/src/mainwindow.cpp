@@ -1390,7 +1390,7 @@ void MainWindow::touchEvent(QTouchEvent *e)
                     QLineF(touchPoint0.pos(), touchPoint1.pos()).length() / QLineF(touchPoint0.startPos(), touchPoint1.startPos()).length();
                 QLineF line0(touchPoint0.startPos(), touchPoint1.startPos());
                 QLineF line1(touchPoint0.scenePos(), touchPoint1.scenePos());
-                ui->graphicsView->updateViewportFactors(currentScale, line1.angleTo(line0));
+                ui->graphicsView->updateGestureTransform(currentScale, line1.angleTo(line0));
             }
         }
         break;
@@ -1409,11 +1409,11 @@ void MainWindow::touchEvent(QTouchEvent *e)
         if (touchCount == 2) {
             if (twoFingersCount >= 2) {
                 // Double tap with 2 fingers to cancel scale
-                ui->graphicsView->resetViewportFactors();
+                ui->graphicsView->resetGestureTransform();
                 twoFingersCount = 0;
             } else if (rescaling) {
                 // Confirm scale with the last input content
-                ui->graphicsView->commitViewportFactors();
+                ui->graphicsView->commitGestureTransform();
                 twoFingersCount = 0;
             } else if (ofsY < -30 && endy < 0.25) {
                 ui->actionFullscreen->trigger();

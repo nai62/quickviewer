@@ -275,6 +275,24 @@ private slots:
         view.on_copyFile_triggered();
     }
 
+    void gestureStateIsIndependentBetweenViews()
+    {
+        ImageView firstView;
+        ImageView secondView;
+
+        firstView.updateGestureTransform(2.0, 0.0);
+        secondView.updateGestureTransform(3.0, 0.0);
+        firstView.commitGestureTransform();
+        firstView.updateGestureTransform(1.0, 0.0);
+
+        QCOMPARE(firstView.transform().m11(), 2.0);
+        QCOMPARE(secondView.transform().m11(), 3.0);
+
+        firstView.resetGestureTransform();
+        QVERIFY(firstView.transform().isIdentity());
+        QCOMPARE(secondView.transform().m11(), 3.0);
+    }
+
     void standalonePreviewNavigationIsSafe()
     {
         PageManager manager(nullptr);

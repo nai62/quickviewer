@@ -9,22 +9,27 @@
 ImageView::ImageView(QWidget *parent)
     : QGraphicsView(parent),
       m_renderer(Native),
+      m_rendererViewport(nullptr),
       m_hoverState(Qt::AnchorHorizontalCenter),
       m_loupeCursor(QCursor(QPixmap(":/icons/loupe_cursor"), 20, 23)),
       m_pageManager(nullptr),
       m_shaderManager(this),
       m_slideshowTimer(nullptr),
-      m_beginScaleFactor(1.0),
-      m_beginRotateFactor(0.0),
+      m_committedGestureScale(1.0),
+      m_committedGestureRotationDegrees(0.0),
+      m_pendingGestureScale(1.0),
+      m_pendingGestureRotationDegrees(0.0),
       m_loupeFactor(3.0),
       m_sceneRectUpdateDepth(0),
+      m_resizeEventDepth(0),
       m_previousDrawScale(0),
       m_lastScreenPixelRatio(1.0),
       m_skipResizeEvent(false),
       m_isFullScreen(false),
       m_scrollMode(false),
       m_openSeparatedPageFromEnd(false),
-      m_loupeActive(false)
+      m_loupeActive(false),
+      m_wasLoupeActive(false)
 {
     m_zoomLevels
         << ZoomFraction(1, 6)    //  16.6%
@@ -77,32 +82,24 @@ RenderedPageMetrics ImageView::renderedPageMetrics() const
     return m_renderedPages.metrics();
 }
 
-#ifdef QV_WITHOUT_OPENGL
-QWidget *widgetEngine = nullptr;
-#else
-QGLWidget *widgetEngine = nullptr;
-#endif
-
 void ImageView::setRenderer(RendererType type)
 {
-    m_renderer = type;
-    if (widgetEngine) {
-        return;
-    }
 #ifdef QV_WITHOUT_OPENGL
     type = RendererType::Native;
-    QWidget *w = new QWidget;
-    widgetEngine = w;
-    setViewport(w);
-#else
-    if (m_renderer == OpenGL) {
-        QGLWidget *w = new QGLWidget(QGLFormat(QGL::SampleBuffers));
-        widgetEngine = w;
-        setViewport(w);
-    } else {
-        setViewport(new QWidget);
-    }
 #endif
+    m_renderer = type;
+    if (m_rendererViewport) {
+        return;
+    }
+#ifndef QV_WITHOUT_OPENGL
+    if (m_renderer == OpenGL) {
+        m_rendererViewport = new QGLWidget(QGLFormat(QGL::SampleBuffers));
+    } else
+#endif
+    {
+        m_rendererViewport = new QWidget;
+    }
+    setViewport(m_rendererViewport);
 }
 
 void ImageView::setPageManager(PageManager *manager)
@@ -242,8 +239,6 @@ void ImageView::refreshRenderedPages()
     m_shaderManager.prepareFinished();
 }
 
-static bool s_lastLoupeMode;
-
 void ImageView::setSceneRectMode(bool scrolled, const QRect &sceneRect)
 {
     // refreshRenderedPages() and setSceneRectMode() may be called multiple times, and the scroll value from the second time onwards will not be accurate.
@@ -255,11 +250,11 @@ void ImageView::setSceneRectMode(bool scrolled, const QRect &sceneRect)
     if (!m_loupeActive) {
         m_sceneRectBeforeLoupe = sceneRect;
     }
-    bool afterLoupe = !m_loupeActive && s_lastLoupeMode;
-    if (m_loupeActive && !s_lastLoupeMode) {
+    bool afterLoupe = !m_loupeActive && m_wasLoupeActive;
+    if (m_loupeActive && !m_wasLoupeActive) {
         m_scrollPositionBeforeLoupe = QPoint(horizontalScrollBar()->value(), verticalScrollBar()->value());
     }
-    s_lastLoupeMode = m_loupeActive;
+    m_wasLoupeActive = m_loupeActive;
     // if Size of Image overs Size of View, use Image's size
     bool newMode = scrolled && (size().width() < sceneRect.width() || size().height() < sceneRect.height());
     QRectF oldrect = scene()->sceneRect();
@@ -364,29 +359,30 @@ void ImageView::scrollOnZoomMode()
     horizontalScrollBar()->setValue(horizontalScrollBar()->minimum() + cursorPos.x() * (horizontalScrollBar()->maximum() - horizontalScrollBar()->minimum()) / width());
     verticalScrollBar()->setValue(verticalScrollBar()->minimum() + cursorPos.y() * (verticalScrollBar()->maximum() - verticalScrollBar()->minimum()) / height());
 }
-static qreal s_lastScale;
-static qreal s_lastRotate;
-
-void ImageView::updateViewportFactors(qreal currentScale, qreal currentRotate)
+void ImageView::updateGestureTransform(qreal scale, qreal rotationDegrees)
 {
-    s_lastScale = currentScale;
-    s_lastRotate = currentRotate;
+    m_pendingGestureScale = scale;
+    m_pendingGestureRotationDegrees = rotationDegrees;
     setTransform(
         QTransform()
-            .scale(m_beginScaleFactor * currentScale, m_beginScaleFactor * currentScale)
-            .rotate(m_beginRotateFactor + currentRotate));
+            .scale(m_committedGestureScale * scale, m_committedGestureScale * scale)
+            .rotate(m_committedGestureRotationDegrees + rotationDegrees));
 }
 
-void ImageView::commitViewportFactors()
+void ImageView::commitGestureTransform()
 {
-    m_beginScaleFactor *= s_lastScale;
-    m_beginRotateFactor += s_lastRotate;
+    m_committedGestureScale *= m_pendingGestureScale;
+    m_committedGestureRotationDegrees += m_pendingGestureRotationDegrees;
+    m_pendingGestureScale = 1.0;
+    m_pendingGestureRotationDegrees = 0.0;
 }
 
-void ImageView::resetViewportFactors()
+void ImageView::resetGestureTransform()
 {
-    m_beginScaleFactor = 1.0;
-    m_beginRotateFactor = 0.0;
+    m_committedGestureScale = 1.0;
+    m_committedGestureRotationDegrees = 0.0;
+    m_pendingGestureScale = 1.0;
+    m_pendingGestureRotationDegrees = 0.0;
     setTransform(QTransform());
 }
 
@@ -410,7 +406,6 @@ void ImageView::paintEvent(QPaintEvent *event)
 
 void ImageView::resizeEvent(QResizeEvent *event)
 {
-    static int resizeCount = 0;
     if (scene() && !m_isFullScreen) {
         scene()->setSceneRect(QRect(QPoint(), event->size()));
     }
@@ -418,8 +413,8 @@ void ImageView::resizeEvent(QResizeEvent *event)
     if (m_pageManager) {
         m_pageManager->setViewportSize(event->size());
     }
-    if (resizeCount == 0) {
-        resizeCount++;
+    if (m_resizeEventDepth == 0) {
+        m_resizeEventDepth++;
         qreal newRatio = screen()->devicePixelRatio();
         if (m_lastScreenPixelRatio != newRatio) {
 
@@ -431,7 +426,7 @@ void ImageView::resizeEvent(QResizeEvent *event)
             refreshRenderedPages();
             m_pageManager->pageChanged();
         }
-        resizeCount--;
+        m_resizeEventDepth--;
     }
 }
 

@@ -47,9 +47,9 @@ public:
     int renderedPageCount() const;
     VisiblePages renderedPageContents() const;
     RenderedPageMetrics renderedPageMetrics() const;
-    void updateViewportFactors(qreal currentScale, qreal currentRotate);
-    void commitViewportFactors();
-    void resetViewportFactors();
+    void updateGestureTransform(qreal scale, qreal rotationDegrees);
+    void commitGestureTransform();
+    void resetGestureTransform();
     ImageRetouch retouchParameters() const override { return m_retouchParams; }
     qreal currentPixelRatio() const override { return m_lastScreenPixelRatio; }
     void setCursor(const QCursor &cursor);
@@ -131,6 +131,7 @@ private:
     qreal manualZoomScale() const;
 
     RendererType m_renderer;
+    QPointer<QWidget> m_rendererViewport;
     RenderedPages m_renderedPages;
 
     Qt::AnchorPoint m_hoverState;
@@ -146,12 +147,15 @@ private:
     ShaderManager m_shaderManager;
     QTimer *m_slideshowTimer;
 
-    // rotate or scale with touchEvents
-    qreal m_beginScaleFactor;
-    qreal m_beginRotateFactor;
+    // Rotation and scale applied by touch gestures.
+    qreal m_committedGestureScale;
+    qreal m_committedGestureRotationDegrees;
+    qreal m_pendingGestureScale;
+    qreal m_pendingGestureRotationDegrees;
     qreal m_loupeFactor;
 
     int m_sceneRectUpdateDepth;
+    int m_resizeEventDepth;
     qreal m_previousDrawScale;
     qreal m_lastScreenPixelRatio;
 
@@ -160,6 +164,7 @@ private:
     bool m_scrollMode;
     bool m_openSeparatedPageFromEnd;
     bool m_loupeActive;
+    bool m_wasLoupeActive;
 
     // Loupe
     QPoint m_loupeAnchorPosition;
