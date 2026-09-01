@@ -40,9 +40,6 @@ public:
     bool isFullscreen() const { return m_isFullScreen; }
     void setFullscreenState(bool fullscreen) { m_isFullScreen = fullscreen; }
     void resetBackgroundColor();
-    void setSceneRectMode(bool scrolled, const QRect &sceneRect);
-    void scrollOnLoupeMode();
-    void scrollOnZoomMode();
     bool isScrollMode() const { return m_scrollMode; }
     int renderedPageCount() const;
     VisiblePages renderedPageContents() const;
@@ -129,6 +126,11 @@ public slots:
 
 private:
     qreal manualZoomScale() const;
+    void updateSceneForContent(bool allowScrolling, const QRect &contentRect);
+    void configureScrollInteraction(bool scrollable, bool leavingLoupe, const QRect &contentRect);
+    void preserveViewportCenter(qreal newScale, int previousHorizontalScroll, int previousVerticalScroll);
+    void updateLoupeScrollFromCursor();
+    void updateZoomScrollFromCursor();
 
     RendererType m_renderer;
     QPointer<QWidget> m_rendererViewport;

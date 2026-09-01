@@ -4,6 +4,7 @@
 #endif
 
 #include "imageview.h"
+#include "models/cursorscrollmapping.h"
 #include "qvapplication.h"
 
 ImageView::ImageView(QWidget *parent)
@@ -228,7 +229,7 @@ void ImageView::refreshRenderedPages()
                 m_shaderManager.prepare(item, content, drawSize);
             });
         // if Size of Image overs Size of View, use Image's size
-        setSceneRectMode(
+        updateSceneForContent(
             !(qApp->Fitting() && qApp->ImageFitMode() == qvEnums::FitToRect) || m_loupeActive || m_lastScreenPixelRatio > 1.0, sceneRect);
     }
     // QGraphicsView updates the cursor internally,
@@ -239,125 +240,110 @@ void ImageView::refreshRenderedPages()
     m_shaderManager.prepareFinished();
 }
 
-void ImageView::setSceneRectMode(bool scrolled, const QRect &sceneRect)
+void ImageView::updateSceneForContent(bool allowScrolling, const QRect &contentRect)
 {
-    // refreshRenderedPages() and setSceneRectMode() may be called multiple times, and the scroll value from the second time onwards will not be accurate.
+    // refreshRenderedPages() and updateSceneForContent() may be called multiple times, and the scroll value from the second time onwards will not be accurate.
     // Therefore, the original scroll value is traced the first time, and the scroll value is corrected when the last call is completed.
-    int sx = horizontalScrollBar()->value();
-    int sy = verticalScrollBar()->value();
+    const int previousHorizontalScroll = horizontalScrollBar()->value();
+    const int previousVerticalScroll = verticalScrollBar()->value();
     m_sceneRectUpdateDepth++;
 
     if (!m_loupeActive) {
-        m_sceneRectBeforeLoupe = sceneRect;
+        m_sceneRectBeforeLoupe = contentRect;
     }
-    bool afterLoupe = !m_loupeActive && m_wasLoupeActive;
+    const bool leavingLoupe = !m_loupeActive && m_wasLoupeActive;
     if (m_loupeActive && !m_wasLoupeActive) {
         m_scrollPositionBeforeLoupe = QPoint(horizontalScrollBar()->value(), verticalScrollBar()->value());
     }
     m_wasLoupeActive = m_loupeActive;
-    // if Size of Image overs Size of View, use Image's size
-    bool newMode = scrolled && (size().width() < sceneRect.width() || size().height() < sceneRect.height());
-    QRectF oldrect = scene()->sceneRect();
-    QRectF newrect = newMode ? QRectF(QPoint(qMin(0, sceneRect.left()), 0), QSize(qMax(size().width(), sceneRect.width()), qMax(size().height(), sceneRect.height())))
-                             : QRectF(QPoint(), size());
-    scene()->setSceneRect(newrect);
-    if (newMode) {
-        if (m_loupeActive) {
-            m_loupeAnchorPosition = mapFromGlobal(QCursor::pos());
-            setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-            setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-            setDragMode(QGraphicsView::NoDrag);
-            scrollOnLoupeMode();
-        } else if (qApp->ScrollWithCursorWhenZooming()) {
-            setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-            setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-            setDragMode(QGraphicsView::NoDrag);
-            scrollOnZoomMode();
-        } else {
-            // Since Qt :: ScrollBarAsNeeded does not work correctly, judge the display state on its own and switch.
-            bool willBeHide = m_isFullScreen && qApp->HideScrollBarInFullscreen();
-            setHorizontalScrollBarPolicy(!willBeHide && size().width() < sceneRect.width() + verticalScrollBar()->width() ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
-            setVerticalScrollBarPolicy(!willBeHide && size().height() < sceneRect.height() + horizontalScrollBar()->height() ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
-            setDragMode(QGraphicsView::ScrollHandDrag);
-            if (afterLoupe) {
-                horizontalScrollBar()->setValue(m_scrollPositionBeforeLoupe.x());
-                verticalScrollBar()->setValue(m_scrollPositionBeforeLoupe.y());
-            }
-        }
-    } else {
-        setDragMode(QGraphicsView::NoDrag);
-    }
+    const bool scrollable = allowScrolling && (size().width() < contentRect.width() || size().height() < contentRect.height());
+    const QRectF previousSceneRect = scene()->sceneRect();
+    const QRectF updatedSceneRect = scrollable
+                                        ? QRectF(QPoint(qMin(0, contentRect.left()), 0), QSize(qMax(size().width(), contentRect.width()), qMax(size().height(), contentRect.height())))
+                                        : QRectF(QPoint(), size());
+    scene()->setSceneRect(updatedSceneRect);
+    configureScrollInteraction(scrollable, leavingLoupe, contentRect);
 
     // Correct the scroll bar so that it keep at the center of the viewport
     // when the image display magnification is changed.
     const std::optional<qreal> firstDrawScale = m_renderedPages.firstDrawScale();
     if (m_sceneRectUpdateDepth == 1 && firstDrawScale) {
-        const qreal newScale = *firstDrawScale;
-        if (!qApp->Fitting()) {
-            if (!m_loupeActive && m_previousDrawScale > 0 && m_previousDrawScale != newScale) {
-                int vw = 0.5 * viewport()->width();
-                int vh = 0.5 * viewport()->height();
-                int sx2 = (sx + vw) / m_previousDrawScale * newScale - vw;
-                int sy2 = (sy + vh) / m_previousDrawScale * newScale - vh;
-
-                horizontalScrollBar()->setValue(sx2);
-                verticalScrollBar()->setValue(sy2);
-            }
-        }
-        m_previousDrawScale = newScale;
+        preserveViewportCenter(*firstDrawScale, previousHorizontalScroll, previousVerticalScroll);
     }
 
-    if (m_scrollMode != newMode) {
-        emit scrollModeChanged(m_scrollMode = newMode);
+    if (m_scrollMode != scrollable) {
+        emit scrollModeChanged(m_scrollMode = scrollable);
     }
-    if (oldrect != newrect) {
+    if (previousSceneRect != updatedSceneRect) {
         emit zoomingChanged();
     }
 
     m_sceneRectUpdateDepth--;
 }
 
-void ImageView::scrollOnLoupeMode()
+void ImageView::configureScrollInteraction(bool scrollable, bool leavingLoupe, const QRect &contentRect)
 {
-    QPoint cursorPos = QCursor::pos();
-//    QPoint cursorPos0 = QCursor::pos();
-    cursorPos = mapFromGlobal(cursorPos);
-    const QRectF sceneRect = scene()->sceneRect();
-
-    // The scrolling of the enlarged image is completed by moving the cursor
-    // at a distance of half the distance from the first clicked coordinate to the edge of the window
-    QRectF L = sceneRect;
-    QRect K = m_sceneRectBeforeLoupe;
-    QPoint V = m_scrollPositionBeforeLoupe;
-    K.moveTo(K.left() - V.x(), K.top() - V.y());
-    QPoint S = m_loupeAnchorPosition;
-    if (K.width() == 0 || K.height() == 0 || S.x() == 0 || S.y() == 0 || width() == S.x() || height() == S.y()) {
+    if (!scrollable) {
+        setDragMode(QGraphicsView::NoDrag);
         return;
     }
-    QPoint R((S.x() - K.left()) * L.width() / K.width() + L.left(),
-             (S.y() - K.top()) * L.height() / K.height() + L.top());
-    QPoint Q = R - S;
+    if (m_loupeActive) {
+        m_loupeAnchorPosition = mapFromGlobal(QCursor::pos());
+        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        setDragMode(QGraphicsView::NoDrag);
+        updateLoupeScrollFromCursor();
+        return;
+    }
+    if (qApp->ScrollWithCursorWhenZooming()) {
+        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        setDragMode(QGraphicsView::NoDrag);
+        updateZoomScrollFromCursor();
+        return;
+    }
 
-    horizontalScrollBar()->setValue(cursorPos.x() < S.x()
-                                        ? L.left() + (Q.x() - L.left()) * (2 * cursorPos.x() - S.x()) / S.x()
-                                        : L.right() - (L.right() - Q.x()) * (S.x() + width() - 2 * cursorPos.x()) / (width() - S.x()));
-    verticalScrollBar()->setValue(cursorPos.y() < S.y()
-                                      ? L.top() + (Q.y() - L.top()) * (2 * cursorPos.y() - S.y()) / S.y()
-                                      : L.bottom() - (L.bottom() - Q.y()) * (S.y() + height() - 2 * cursorPos.y()) / (height() - S.y()));
-//    qDebug() << "S" << S << "K" << K << "L" << L << "R" << R << "scrollBase" << m_scrollPositionBeforeLoupe;
+    const bool hideScrollBars = m_isFullScreen && qApp->HideScrollBarInFullscreen();
+    setHorizontalScrollBarPolicy(!hideScrollBars && size().width() < contentRect.width() + verticalScrollBar()->width() ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(!hideScrollBars && size().height() < contentRect.height() + horizontalScrollBar()->height() ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
+    setDragMode(QGraphicsView::ScrollHandDrag);
+    if (leavingLoupe) {
+        horizontalScrollBar()->setValue(m_scrollPositionBeforeLoupe.x());
+        verticalScrollBar()->setValue(m_scrollPositionBeforeLoupe.y());
+    }
 }
 
-void ImageView::scrollOnZoomMode()
+void ImageView::preserveViewportCenter(qreal newScale, int previousHorizontalScroll, int previousVerticalScroll)
+{
+    if (!qApp->Fitting() && !m_loupeActive && m_previousDrawScale > 0 && m_previousDrawScale != newScale) {
+        const int halfViewportWidth = 0.5 * viewport()->width();
+        const int halfViewportHeight = 0.5 * viewport()->height();
+        horizontalScrollBar()->setValue((previousHorizontalScroll + halfViewportWidth) / m_previousDrawScale * newScale - halfViewportWidth);
+        verticalScrollBar()->setValue((previousVerticalScroll + halfViewportHeight) / m_previousDrawScale * newScale - halfViewportHeight);
+    }
+    m_previousDrawScale = newScale;
+}
+
+void ImageView::updateLoupeScrollFromCursor()
+{
+    const std::optional<QPoint> scrollPosition = CursorScrollMapping::loupeScrollPosition(
+        mapFromGlobal(QCursor::pos()), m_loupeAnchorPosition, size(), m_sceneRectBeforeLoupe, scene()->sceneRect(), m_scrollPositionBeforeLoupe);
+    if (!scrollPosition) {
+        return;
+    }
+    horizontalScrollBar()->setValue(scrollPosition->x());
+    verticalScrollBar()->setValue(scrollPosition->y());
+}
+
+void ImageView::updateZoomScrollFromCursor()
 {
     if (width() <= 0 || height() <= 0) {
         return;
     }
-    QPoint cursorPos = QCursor::pos();
-    cursorPos = mapFromGlobal(cursorPos);
-    cursorPos = QPoint(cursorPos.x() < width() / 4 ? 0 : (cursorPos.x() - width() / 4) * 4 / 2,
-                       cursorPos.y() < height() / 4 ? 0 : (cursorPos.y() - height() / 4) * 4 / 2);
-    horizontalScrollBar()->setValue(horizontalScrollBar()->minimum() + cursorPos.x() * (horizontalScrollBar()->maximum() - horizontalScrollBar()->minimum()) / width());
-    verticalScrollBar()->setValue(verticalScrollBar()->minimum() + cursorPos.y() * (verticalScrollBar()->maximum() - verticalScrollBar()->minimum()) / height());
+    const QPoint scrollPosition = CursorScrollMapping::zoomScrollPosition(
+        mapFromGlobal(QCursor::pos()), size(), QPoint(horizontalScrollBar()->minimum(), verticalScrollBar()->minimum()), QPoint(horizontalScrollBar()->maximum(), verticalScrollBar()->maximum()));
+    horizontalScrollBar()->setValue(scrollPosition.x());
+    verticalScrollBar()->setValue(scrollPosition.y());
 }
 void ImageView::updateGestureTransform(qreal scale, qreal rotationDegrees)
 {
@@ -650,9 +636,9 @@ void ImageView::mouseMoveEvent(QMouseEvent *e)
     }
 //    qDebug() << qApp->ScrollWithCursorWhenZooming() << scene()->sceneRect() << size();
     if (m_loupeActive) {
-        scrollOnLoupeMode();
+        updateLoupeScrollFromCursor();
     } else if (qApp->ScrollWithCursorWhenZooming() && (scene()->sceneRect().width() > width() || scene()->sceneRect().height() > height())) {
-        scrollOnZoomMode();
+        updateZoomScrollFromCursor();
     }
 
     if (e->pos().y() < hover_border) {

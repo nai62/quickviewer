@@ -3,6 +3,7 @@
 #include <type_traits>
 
 #include "imageview.h"
+#include "models/cursorscrollmapping.h"
 #include "models/imagestring.h"
 #include "models/pagemanager.h"
 #include "models/qvapplication.h"
@@ -291,6 +292,34 @@ private slots:
         firstView.resetGestureTransform();
         QVERIFY(firstView.transform().isIdentity());
         QCOMPARE(secondView.transform().m11(), 3.0);
+    }
+
+    void cursorZoomMappingUsesBothScrollBarRanges()
+    {
+        const QSize viewportSize(400, 200);
+        const QPoint minimum(10, 20);
+        const QPoint maximum(110, 220);
+
+        QCOMPARE(CursorScrollMapping::zoomScrollPosition(
+                     QPoint(100, 50), viewportSize, minimum, maximum),
+                 minimum);
+        QCOMPARE(CursorScrollMapping::zoomScrollPosition(
+                     QPoint(200, 100), viewportSize, minimum, maximum),
+                 QPoint(60, 120));
+        QCOMPARE(CursorScrollMapping::zoomScrollPosition(
+                     QPoint(300, 150), viewportSize, minimum, maximum),
+                 maximum);
+    }
+
+    void cursorLoupeMappingKeepsAnchorStable()
+    {
+        const std::optional<QPoint> position = CursorScrollMapping::loupeScrollPosition(
+            QPoint(200, 150), QPoint(200, 150), QSize(400, 300), QRect(0, 0, 400, 300), QRectF(0, 0, 800, 600), QPoint());
+
+        QVERIFY(position);
+        QCOMPARE(*position, QPoint(200, 150));
+        QVERIFY(!CursorScrollMapping::loupeScrollPosition(
+            QPoint(200, 150), QPoint(0, 150), QSize(400, 300), QRect(0, 0, 400, 300), QRectF(0, 0, 800, 600), QPoint()));
     }
 
     void standalonePreviewNavigationIsSafe()

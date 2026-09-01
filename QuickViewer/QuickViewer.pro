@@ -159,6 +159,7 @@ HEADERS  += \
     src/mainwindow.h \
     src/models/bookprogressmanager.h \
     src/models/boundedexecutor.h \
+    src/models/cursorscrollmapping.h \
     src/models/futurecache.h \
     src/models/imageloadcontext.h \
     src/models/pagecontent.h \
