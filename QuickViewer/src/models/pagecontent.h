@@ -8,8 +8,6 @@
 #include "qvmovie.h"
 #include "qv_init.h"
 
-class ImageView;
-
 struct ImageRetouch
 {
     float Brightness;
@@ -17,15 +15,23 @@ struct ImageRetouch
     float Gamma;
     ImageRetouch(float brightness=0.0f, float contrast=1.0f, float gamma=1.0f)
         :Brightness(brightness), Contrast(contrast), Gamma(gamma){}
-    bool isDefault() {
+    bool isDefault() const {
         return *this == ImageRetouch();
     }
-    bool operator==(const ImageRetouch& rhs)
+    bool operator==(const ImageRetouch& rhs) const
     {
         return Brightness == rhs.Brightness
                 && Contrast == rhs.Contrast
                 && Gamma == rhs.Gamma;
     }
+};
+
+class PageRenderContext
+{
+public:
+    virtual ~PageRenderContext() = default;
+    virtual qreal currentPixelRatio() const = 0;
+    virtual ImageRetouch brightness() const = 0;
 };
 
 /**
@@ -162,8 +168,9 @@ public:
     qreal NotationalScale;
     SeparationState Separation;
 
-    PageItem(QObject* parent=nullptr);
-    PageItem(QObject* parent, QGraphicsScene *s, ImageContent ic);
+    explicit PageItem(QObject* parent=nullptr, const PageRenderContext* renderContext=nullptr);
+    PageItem(QObject* parent, QGraphicsScene *s, ImageContent ic,
+             const PageRenderContext* renderContext=nullptr);
     ~PageItem() override;
     Q_DISABLE_COPY_MOVE(PageItem)
 
@@ -198,7 +205,8 @@ public slots:
 private:
     int m_resizeGeneratingState;
     bool initialized;
-    ImageView* m_imageView;
+    // Non-owning. The context must outlive this page item.
+    const PageRenderContext* m_renderContext;
 };
 
 

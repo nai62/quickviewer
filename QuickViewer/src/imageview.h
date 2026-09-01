@@ -40,7 +40,7 @@ private:
  * It provides to show 1 or 2 images once, using OpenGL.
  * It is made on QGraphicView, each images is used as QGraphicsItem
  */
-class ImageView : public QGraphicsView, public PageContentProtocol
+class ImageView : public QGraphicsView, public PageContentProtocol, public PageRenderContext
 {
     Q_OBJECT
 public:
@@ -66,8 +66,8 @@ public:
     void updateViewportFactors(qreal currentScale, qreal currentRotate);
     void commitViewportFactors();
     void resetViewportFactors();
-    ImageRetouch brightness() { return m_retouchParams; }
-    qreal currentPixelRatio() { return m_lastScreenPixelRatio; }
+    ImageRetouch brightness() const override { return m_retouchParams; }
+    qreal currentPixelRatio() const override { return m_lastScreenPixelRatio; }
     void setCursor(const QCursor& cursor);
 
 signals:

@@ -23,6 +23,20 @@ public:
     InflateCacheMode getCacheMode() override { return InflateNoCached; }
 };
 
+class StubPageRenderContext final : public PageRenderContext
+{
+public:
+    qreal currentPixelRatio() const override
+    {
+        ++pixelRatioRequests;
+        return 2.0;
+    }
+
+    ImageRetouch brightness() const override { return {}; }
+
+    mutable int pixelRatioRequests = 0;
+};
+
 class ViewerNavigationTest : public QObject
 {
     Q_OBJECT
@@ -108,6 +122,28 @@ private slots:
         QVERIFY(manager.visiblePages().isEmpty());
         QCOMPARE(pages.count(), 1);
         QCOMPARE(pages.first()->Path, QString("first.bmp"));
+    }
+
+    void pageItemUsesOnlyItsRenderContext()
+    {
+        QGraphicsScene scene;
+        QImage image(100, 100, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        StubPageRenderContext context;
+        PageItem page(nullptr, &scene,
+                      ImageContent(image, "page.bmp", image.size(), {}, 0),
+                      &context);
+
+        page.setPageLayoutFitting(QRect(0, 0, 100, 100),
+                                  PageItem::PageCenter,
+                                  qvEnums::FitToRect, 1.0);
+        QCOMPARE(context.pixelRatioRequests, 1);
+
+        PageItem pageWithoutContext(nullptr, &scene,
+                      ImageContent(image, "preview.bmp", image.size(), {}, 0));
+        pageWithoutContext.setPageLayoutFitting(QRect(0, 0, 100, 100),
+                                  PageItem::PageCenter,
+                                  qvEnums::FitToRect, 1.0);
     }
 
     void emptyVolumeManagerOperationsAreSafe()

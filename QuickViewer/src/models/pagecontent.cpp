@@ -3,7 +3,6 @@
 #include "pagecontent.h"
 #include "qvapplication.h"
 #include "qzimg.h"
-#include "imageview.h"
 
 #ifdef QV_WITH_LUMINOR
 #  include "qluminor.h"
@@ -21,7 +20,7 @@ void ImageContent::initialize()
     }
 }
 
-PageItem::PageItem(QObject* parent)
+PageItem::PageItem(QObject* parent, const PageRenderContext* renderContext)
     : QObject(parent)
     , Scene(nullptr)
     , Ic()
@@ -35,12 +34,13 @@ PageItem::PageItem(QObject* parent)
     , Separation(NoSeparated)
     , m_resizeGeneratingState(0)
     , initialized(false)
-    , m_imageView(qobject_cast<ImageView*>(parent))
+    , m_renderContext(renderContext)
 {
 
 }
 
-PageItem::PageItem(QObject* parent, QGraphicsScene *s, ImageContent ic)
+PageItem::PageItem(QObject* parent, QGraphicsScene *s, ImageContent ic,
+                   const PageRenderContext* renderContext)
     : QObject(parent)
     , Scene(s)
     , Ic(ic)
@@ -54,7 +54,7 @@ PageItem::PageItem(QObject* parent, QGraphicsScene *s, ImageContent ic)
     , Separation(Ic.wideImage() && qApp->SeparatePagesWhenWideImage() ? FirstSeparated : NoSeparated)
     , m_resizeGeneratingState(0)
     , initialized(false)
-    , m_imageView(qobject_cast<ImageView*>(parent))
+    , m_renderContext(renderContext)
 {
 //    qDebug() << Ic.wideImage() << qApp->SeparatePagesWhenWideImage();
     if(!Ic.ImportSize.width()) {
@@ -99,11 +99,11 @@ QSize PageItem::CurrentSize(int rotateOffset) {
 
 QRect PageItem::setPageLayoutFitting(QRect viewport, PageItem::PageAlign align, qvEnums::FitMode fitMode, qreal loupe, int rotateOffset) {
     QRect viewport1 = viewport;
-    if (m_imageView->currentPixelRatio() != 1.0) {
+    const qreal pixelRatio = m_renderContext ? m_renderContext->currentPixelRatio() : 1.0;
+    if (pixelRatio != 1.0) {
         // If pixelRatio > 1, you are changing the worldTransport and need to compensate the viewport
-        qreal ratio = m_imageView->currentPixelRatio();
-        viewport1 = QRect(viewport.left()*ratio,viewport.top()*ratio,
-                         viewport.width()*ratio,viewport.height()*ratio);
+        viewport1 = QRect(viewport.left()*pixelRatio,viewport.top()*pixelRatio,
+                         viewport.width()*pixelRatio,viewport.height()*pixelRatio);
     }
 
     if(!Ic.ImportSize.width()) {
@@ -136,18 +136,18 @@ QRect PageItem::setPageLayoutFitting(QRect viewport, PageItem::PageAlign align, 
         } else { // fitting on left and right
             int ofsinviewportX = align==PageRight ? 0 : align==PageCenter ? (viewport.width()-newsize.width())/2 : viewport.width()-newsize.width();
             int ofsinviewportY = (viewport.height()-newsize.height())/2;
-            ofsinviewportY = m_imageView->currentPixelRatio() != 1.0 ? 0 : ofsinviewportY; // If pixelRatio > 1, no correction is required
+            ofsinviewportY = pixelRatio != 1.0 ? 0 : ofsinviewportY; // If pixelRatio > 1, no correction is required
             drawRect = QRect(QPoint(of.x() + viewport.x() + ofsinviewportX, of.y() + ofsinviewportY), newsize);
         }
     } else {
         if(viewport.height() < newsize.height() && newsize.height() < viewport1.height()) {
             // Display magnification is automatically corrected, so special correction is required.
             int ofsinviewportX = align==PageRight ? 0 : align==PageCenter ? (viewport.width()-newsize.width())/2 : viewport.width()-newsize.width();
-            int ofsinviewportY = m_imageView->currentPixelRatio() == 1.0 ? 0 :  (-viewport1.height()+newsize.height())/2;
+            int ofsinviewportY = pixelRatio == 1.0 ? 0 :  (-viewport1.height()+newsize.height())/2;
             drawRect = QRect(QPoint(of.x() + viewport.x() + ofsinviewportX, of.y() + ofsinviewportY), newsize);
         } else {
             int ofsinviewportX = align==PageRight ? 0 : align==PageCenter ? (viewport.width()-newsize.width())/2 : viewport.width()-newsize.width();
-            int ofsinviewportY = m_imageView->currentPixelRatio() == 1.0 ? 0 : (viewport.height() - viewport1.height())/2;
+            int ofsinviewportY = pixelRatio == 1.0 ? 0 : (viewport.height() - viewport1.height())/2;
             drawRect = QRect(QPoint(of.x() + viewport.x() + ofsinviewportX, of.y() + ofsinviewportY), newsize);
         }
     }
@@ -217,19 +217,6 @@ void PageItem::applyResize(qreal scale, int rotateOffset, QPoint pos, QSize news
 //    QSize newsize2 = Ic.Info.Orientation==6 || Ic.Info.Orientation==8 ? QSize(newsize.height(), newsize.width()) : newsize;
     QSize newsize2 = (Rotate+rotateOffset) % 180 ? QSize(newsize.height(), newsize.width()) : newsize;
     qvEnums::ShaderEffect effect = Ic.Movie.isNull() ? qApp->Effect() : qvEnums::Bilinear;
-//    bool retouched = false;
-//    auto params = m_imageView->brightness();
-//    QImage* srcImage = nullptr;
-//    if(params.isDefault())
-//        srcImage = &Ic.Image;
-//    if(!(Ic.RetouchParam == params)) {
-//        Ic.RetouchedImage = QLuminor::toLuminor(Ic.Image, params.Brightness, params.Contrast, params.Gamma);
-//        Ic.RetouchParam = params;
-//        Ic.ResizedImage = QImage();
-//        srcImage = &Ic.RetouchedImage;
-//        retouched = true;
-//    }
-
     QImage& srcImage = applyRetouched();
     qreal retouchedScale = srcImage.size() == Ic.ImportSize ? scale : scale * Ic.ImportSize.width() / srcImage.width();
     // only CPU resizing
@@ -288,7 +275,7 @@ QImage &PageItem::applyRetouched()
 #ifndef QV_WITH_LUMINOR
     return Ic.Image;
 #else
-    auto params = m_imageView->brightness();
+    const ImageRetouch params = m_renderContext ? m_renderContext->brightness() : ImageRetouch();
     if(Ic.RetouchParam == params) {
         return params.isDefault() ? Ic.Image : Ic.RetouchedImage;
     }

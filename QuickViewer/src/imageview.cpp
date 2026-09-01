@@ -166,7 +166,7 @@ bool ImageView::on_addImage_triggered(ImageContent ic, bool pageNext)
     m_ptLeftTop.reset();
     QGraphicsScene *s = scene();
     QSize size = ic.Image.size();
-    auto page = std::make_unique<PageItem>(this, s, std::move(ic));
+    auto page = std::make_unique<PageItem>(this, s, std::move(ic), this);
     if(m_pageBacking && page->Separation == PageItem::FirstSeparated)
         page->Separation = PageItem::SecondSeparated;
     connect(page.get(), SIGNAL(resizeFinished()), this, SLOT(readyForPaint()));
