@@ -2,8 +2,3 @@
 QuickViewer-*
 .svn
 build/*
-
-# Local agent instructions and test documentation
-/AGENTS.md
-/TEST_PROMPT.md
-/TESTING.md
