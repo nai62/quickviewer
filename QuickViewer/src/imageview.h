@@ -50,9 +50,11 @@ class ImageView : public QGraphicsView, public PageRenderContext
 {
     Q_OBJECT
 public:
-    enum RendererType { Native,
-                        OpenGL,
-                        Image };
+    enum RendererType {
+        Native,
+        OpenGL,
+        Image,
+    };
     typedef QPair<uint, uint> ZoomFraction;
     explicit ImageView(QWidget *parent = Q_NULLPTR);
     void setRenderer(RendererType type = Native);
