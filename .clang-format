@@ -43,6 +43,7 @@ IndentWidth: 4
 ContinuationIndentWidth: 4
 ConstructorInitializerIndentWidth: 4
 UseTab: Never
+LineEnding: LF
 Standard: c++17
 PointerAlignment: Right
 DerivePointerAlignment: false
