@@ -39,6 +39,7 @@ private slots:
     {
         PageManager manager(nullptr);
 
+        QCOMPARE(manager.stateKind(), ViewerStateKind::Empty);
         QVERIFY(!manager.nextPage());
         QVERIFY(!manager.prevPage());
         QVERIFY(!manager.fastForwardPage());
@@ -56,6 +57,39 @@ private slots:
         QCOMPARE(manager.currentPageStatusAsString(), QString());
         QCOMPARE(manager.pageSignage(0), QString());
         QCOMPARE(manager.pageSignage(-1), QString());
+    }
+
+    void directImageTransitionsThroughStandalonePreview()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const QString imagePath = directory.filePath("preview.bmp");
+        QImage image(8, 8, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        QVERIFY(image.save(imagePath));
+
+        PageManager manager(nullptr);
+        ImageView view;
+        view.setPageManager(&manager);
+
+        QVERIFY(manager.loadVolumeWithFile(imagePath));
+        QCOMPARE(manager.stateKind(), ViewerStateKind::Loading);
+        QVERIFY(manager.initialImagePaintPending());
+
+        QTRY_COMPARE(manager.stateKind(), ViewerStateKind::StandalonePreview);
+        QCOMPARE(QFileInfo(manager.currentPageName()).fileName(),
+                 QString("preview.bmp"));
+        QVERIFY(manager.initialImagePaintPending());
+
+        // Navigation while the parent folder is not ready must remain a no-op.
+        QVERIFY(!manager.nextPage());
+        QVERIFY(!manager.prevPage());
+        QVERIFY(!manager.nextVolume());
+        QVERIFY(!manager.prevVolume());
+
+        manager.notifyInitialImagePainted();
+        QTRY_COMPARE(manager.stateKind(), ViewerStateKind::VolumeReady);
+        QVERIFY(!manager.initialImagePaintPending());
     }
 
     void emptyVolumeManagerOperationsAreSafe()
@@ -207,11 +241,15 @@ private slots:
         view.setPageManager(&manager);
 
         QVERIFY(!manager.loadVolume(directory.path()));
+        QCOMPARE(manager.stateKind(), ViewerStateKind::Failed);
         QCOMPARE(manager.size(), 0);
         QVERIFY(!manager.firstPage());
         QVERIFY(!manager.lastPage());
         view.onActionNextPageOrVolume_triggered();
         view.onActionPrevPageOrVolume_triggered();
+
+        manager.dispose();
+        QCOMPARE(manager.stateKind(), ViewerStateKind::Empty);
     }
 
     void emptyArchiveNavigationIsSafe()
@@ -232,6 +270,7 @@ private slots:
         view.setPageManager(&manager);
 
         QVERIFY(!manager.loadVolume(archivePath));
+        QCOMPARE(manager.stateKind(), ViewerStateKind::Failed);
         QCOMPARE(manager.size(), 0);
         QVERIFY(!manager.isArchive());
         QVERIFY(!manager.firstPage());

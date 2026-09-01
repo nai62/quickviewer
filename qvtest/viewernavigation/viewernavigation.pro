@@ -69,6 +69,7 @@ HEADERS += \
     ../../QuickViewer/src/models/shadermanager.h \
     ../../QuickViewer/src/models/timeorderdcache.h \
     ../../QuickViewer/src/models/volumehandle.h \
+    ../../QuickViewer/src/models/viewerstate.h \
     ../../QuickViewer/src/models/volumemanager.h \
     ../../QuickViewer/src/models/volumemanagerbuilder.h \
     ../../QuickViewer/src/qactionmanager/keyconfigdialog.h \

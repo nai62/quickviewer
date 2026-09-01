@@ -5,7 +5,7 @@
 #include "volumemanager.h"
 #include "volumemanagerbuilder.h"
 #include "latestresultdispatcher.h"
-#include "volumehandle.h"
+#include "viewerstate.h"
 
 class VolumeManager;
 class ImageView;
@@ -55,7 +55,8 @@ public:
     void clearPages();
     QSize viewportSize();
     void setImageView(ImageView* view){m_imaveView = view;}
-    bool initialImagePaintPending() const { return m_initialImagePaintPending; }
+    bool initialImagePaintPending() const;
+    ViewerStateKind stateKind() const { return viewerStateKind(m_state); }
     void deferFolderWorkUntilNextPaint();
     void notifyInitialImagePainted();
     void bookProgress();
@@ -67,15 +68,17 @@ public:
     int currentPage() override { return m_currentPage; }
     QVector<ImageContent>& currentPageContent() { return m_pages; }
     QString currentPagePath() override {
-        if(!m_fileVolume || m_pages.isEmpty())
+        VolumeManager *volume = activeVolume();
+        if(!volume || m_pages.isEmpty())
             return "";
-        return QDir::toNativeSeparators(m_fileVolume->getPathByFileName(m_pages[0].Path));
+        return QDir::toNativeSeparators(volume->getPathByFileName(m_pages[0].Path));
     }
     QString nextPagePathAfterDeleted() {
-        if(!m_fileVolume || m_fileVolume->isArchive() || m_fileVolume->size() <= 1)
+        VolumeManager *volume = activeVolume();
+        if(!volume || volume->isArchive() || volume->size() <= 1)
             return "";
-        int idx = m_fileVolume->size()-1==m_currentPage ? m_currentPage-1 : m_currentPage+1;
-        return QDir::toNativeSeparators(m_fileVolume->getPathByIndex(idx));
+        int idx = volume->size()-1==m_currentPage ? m_currentPage-1 : m_currentPage+1;
+        return QDir::toNativeSeparators(volume->getPathByIndex(idx));
     }
     QString currentPageName() { return m_pages.isEmpty() ? QString() : m_pages[0].Path; }
 
@@ -93,35 +96,37 @@ public:
     QString currentPageStatusAsString() const;
     QString pageSignage(int page) const;
 
-    QString volumePath() override { return m_fileVolume ? m_fileVolume->volumePath() : ""; }
-    QString realVolumePath() { return m_fileVolume ? m_fileVolume->realVolumePath() : ""; }
+    QString volumePath() override {
+        VolumeManager *volume = activeVolume();
+        return volume ? volume->volumePath() : "";
+    }
+    QString realVolumePath() {
+        VolumeManager *volume = activeVolume();
+        return volume ? volume->realVolumePath() : "";
+    }
     bool isArchive() {
-        if(!m_fileVolume) return false;
-        return m_fileVolume->isArchive();
+        VolumeManager *volume = activeVolume();
+        return volume && volume->isArchive();
     }
     bool isFolder() {
-        if(!m_fileVolume) return false;
-        return !m_fileVolume->isArchive();
+        VolumeManager *volume = activeVolume();
+        return volume && !volume->isArchive();
     }
 
-    int size() override { return m_fileVolume ? m_fileVolume->size() : 0; }
+    int size() override {
+        VolumeManager *volume = activeVolume();
+        return volume ? volume->size() : 0;
+    }
     bool canDualView() const;
     void dispose() {
         ++m_initialDisplayGeneration;
-        m_initialImagePaintPending = false;
-        m_initialPaintCompletionQueued = false;
-        m_initialImageReadyForPaint = false;
+        m_state = EmptyViewerState{};
         m_pendingAssociatedPath.clear();
         m_pendingAssociatedPathbase.clear();
         m_pendingAssociatedFilename.clear();
         m_initialImageLoads.invalidate();
         m_volumeLoads.invalidate();
-//        if(m_fileVolume && m_volumes.empty()) {
-//            delete m_fileVolume;
-//            m_pages.resize(0);
-//        }
         m_pages.resize(0);
-        m_fileVolume = nullptr;
         m_volumes.clear();
     }
     QStringList enumVolumes(QDir dir);
@@ -164,6 +169,9 @@ private:
                                     const QString &subfilename);
     void finishInitialImageDisplay(quint64 generation);
     VolumeHandle addVolumeCache(QString path, bool onlyCover, bool immediate);
+    VolumeHandle activeVolumeHandle() const;
+    VolumeManager *activeVolume() const;
+    void setVolumeReady(VolumeHandle volume);
     /**
      * @brief younger page number
      */
@@ -175,16 +183,13 @@ private:
     TimeOrderdCacheFutureSharedPtr<QString, VolumeManager> m_volumes;
     QStringList m_volumenames;
 
-    VolumeHandle m_fileVolume;
+    ViewerState m_state;
     ImageView * m_imaveView;
 
     bool m_waitForReloaded;
 
     LatestResultDispatcher<ImageContent> m_initialImageLoads;
     LatestResultDispatcher<VolumeHandle> m_volumeLoads;
-    bool m_initialImagePaintPending;
-    bool m_initialPaintCompletionQueued;
-    bool m_initialImageReadyForPaint;
     quint64 m_initialDisplayGeneration;
     QString m_pendingAssociatedPath;
     QString m_pendingAssociatedPathbase;
