@@ -92,6 +92,24 @@ private slots:
         QVERIFY(!manager.initialImagePaintPending());
     }
 
+    void visiblePagesAreReadOnlySnapshots()
+    {
+        PageManager manager(nullptr);
+        manager.addNewPage(ImageContent("first.bmp", 0), true);
+
+        const VisiblePages pages = manager.visiblePages();
+        QCOMPARE(pages.count(), 1);
+        QVERIFY(pages.at(-1) == nullptr);
+        QVERIFY(pages.at(1) == nullptr);
+        QVERIFY(pages.first() != nullptr);
+        QCOMPARE(pages.first()->Path, QString("first.bmp"));
+
+        manager.clearPages();
+        QVERIFY(manager.visiblePages().isEmpty());
+        QCOMPARE(pages.count(), 1);
+        QCOMPARE(pages.first()->Path, QString("first.bmp"));
+    }
+
     void emptyVolumeManagerOperationsAreSafe()
     {
         EmptyFileLoader loader;

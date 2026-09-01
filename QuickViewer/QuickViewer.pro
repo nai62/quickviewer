@@ -170,6 +170,7 @@ HEADERS  += \
     src/models/timeorderdcache.h \
     src/models/volumehandle.h \
     src/models/viewerstate.h \
+    src/models/visiblepages.h \
     src/optionsdialog.h \
     src/qv_init.h \
     src/renamedialog.h \

@@ -5,6 +5,7 @@
 #include "volumemanager.h"
 #include "volumemanagerbuilder.h"
 #include "latestresultdispatcher.h"
+#include "visiblepages.h"
 #include "viewerstate.h"
 
 class VolumeManager;
@@ -64,9 +65,9 @@ public:
     virtual bool eventFilter(QObject *obj, QEvent *event) override;
 
     // Get String
-    int currentPageCount() { return m_pages.size(); }
+    int currentPageCount() const { return m_pages.size(); }
     int currentPage() override { return m_currentPage; }
-    QVector<ImageContent>& currentPageContent() { return m_pages; }
+    VisiblePages visiblePages() const { return VisiblePages(m_pages); }
     QString currentPagePath() override {
         VolumeManager *volume = activeVolume();
         if(!volume || m_pages.isEmpty())
