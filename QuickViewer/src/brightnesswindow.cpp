@@ -43,7 +43,7 @@ void BrightnessWindow::setImageView(ImageView *imageView)
         return;
     }
 
-    m_retouchParams = m_imageView->brightness();
+    m_retouchParams = m_imageView->retouchParameters();
     resetSliders();
 }
 

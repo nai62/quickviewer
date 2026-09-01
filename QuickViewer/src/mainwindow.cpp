@@ -299,8 +299,8 @@ MainWindow::MainWindow(QWidget *parent)
         ui->pageFrame->hide();
         statusBar()->hide();
         ui->actionFullscreen->setChecked(true);
-        ui->graphicsView->setWillFullscreen(true);
-        ui->graphicsView->readyForPaint();
+        ui->graphicsView->setFullscreenState(true);
+        ui->graphicsView->refreshRenderedPages();
     }
 
     // Build and paint the initial window at its final geometry while it is
@@ -313,7 +313,7 @@ MainWindow::MainWindow(QWidget *parent)
     if (layout()) {
         layout()->activate();
     }
-    ui->graphicsView->readyForPaint();
+    ui->graphicsView->refreshRenderedPages();
     repaint();
     setWindowOpacity(1.0);
 
@@ -726,7 +726,7 @@ void MainWindow::onGraphicsView_anchorHovered(Qt::AnchorPoint anchor)
     if (anchor == Qt::AnchorHorizontalCenter) {
 //        ui->pageFrame->hide();
     }
-    ui->graphicsView->readyForPaint();
+    ui->graphicsView->refreshRenderedPages();
 }
 
 void MainWindow::onScrollModeChanged(bool scrolled)
@@ -1079,8 +1079,8 @@ void MainWindow::onActionFullscreen_triggered()
     qDebug() << "on_fullscreen_triggered";
     if (isFullScreen()) {
         emit changingFullscreen(false);
-        ui->graphicsView->setWillFullscreen(false);
-        ui->graphicsView->skipRisizeEvent(true);
+        ui->graphicsView->setFullscreenState(false);
+        ui->graphicsView->setResizeEventsSkipped(true);
         if (qApp->ShowMenuBar()) {
             menuBar()->show();
         }
@@ -1094,7 +1094,7 @@ void MainWindow::onActionFullscreen_triggered()
             statusBar()->show();
         }
         ui->actionFullscreen->setChecked(false);
-        ui->graphicsView->skipRisizeEvent(false);
+        ui->graphicsView->setResizeEventsSkipped(false);
         ui->graphicsView->setCursor(Qt::ArrowCursor);
 
         if (m_viewerWindowStateMaximized) {
@@ -1107,8 +1107,8 @@ void MainWindow::onActionFullscreen_triggered()
         }
     } else {
         emit changingFullscreen(true);
-        ui->graphicsView->setWillFullscreen(true);
-        ui->graphicsView->skipRisizeEvent(true);
+        ui->graphicsView->setFullscreenState(true);
+        ui->graphicsView->setResizeEventsSkipped(true);
         m_viewerWindowStateMaximized = isMaximized();
         if (qApp->HideMouseCursorInFullscreen()) {
             ui->graphicsView->setCursor(Qt::BlankCursor);
@@ -1121,7 +1121,7 @@ void MainWindow::onActionFullscreen_triggered()
         ui->actionFullscreen->setChecked(true);
         showFullScreen();
     }
-    ui->graphicsView->readyForPaint();
+    ui->graphicsView->refreshRenderedPages();
 }
 
 void MainWindow::onActionStayOnTop_triggered(bool top)
@@ -1895,7 +1895,7 @@ void MainWindow::onActionShaderNearestNeighbor_triggered()
     uncheckAllShaderMenus();
     qApp->setEffect(qvEnums::NearestNeighbor);
     ui->actionShaderNearestNeighbor->setChecked(true);
-    ui->graphicsView->readyForPaint();
+    ui->graphicsView->refreshRenderedPages();
 }
 
 void MainWindow::onActionShaderBilinear_triggered()
@@ -1903,7 +1903,7 @@ void MainWindow::onActionShaderBilinear_triggered()
     uncheckAllShaderMenus();
     ui->actionShaderBilinear->setChecked(true);
     qApp->setEffect(qvEnums::Bilinear);
-    ui->graphicsView->readyForPaint();
+    ui->graphicsView->refreshRenderedPages();
 }
 
 void MainWindow::onActionShaderBicubic_triggered()
@@ -1912,7 +1912,7 @@ void MainWindow::onActionShaderBicubic_triggered()
     uncheckAllShaderMenus();
     qApp->setEffect(qvEnums::Bicubic);
     ui->actionShaderBicubic->setChecked(true);
-    ui->graphicsView->readyForPaint();
+    ui->graphicsView->refreshRenderedPages();
 #endif
 }
 
@@ -1922,7 +1922,7 @@ void MainWindow::onActionShaderLanczos_triggered()
     uncheckAllShaderMenus();
     qApp->setEffect(qvEnums::Lanczos);
     ui->actionShaderLanczos->setChecked(true);
-    ui->graphicsView->readyForPaint();
+    ui->graphicsView->refreshRenderedPages();
 #endif
 }
 
@@ -1931,7 +1931,7 @@ void MainWindow::onActionShaderBilinearBeforeCpuBicubic_triggered()
     uncheckAllShaderMenus();
     qApp->setEffect(qvEnums::BilinearAndCpuBicubic);
     ui->actionShaderBilinearBeforeCpuBicubic->setChecked(true);
-    ui->graphicsView->readyForPaint();
+    ui->graphicsView->refreshRenderedPages();
 }
 
 void MainWindow::onActionShaderCpuBicubic_triggered()
@@ -1939,7 +1939,7 @@ void MainWindow::onActionShaderCpuBicubic_triggered()
     uncheckAllShaderMenus();
     qApp->setEffect(qvEnums::CpuBicubic);
     ui->actionShaderCpuBicubic->setChecked(true);
-    ui->graphicsView->readyForPaint();
+    ui->graphicsView->refreshRenderedPages();
 }
 
 void MainWindow::onActionShaderCpuSpline16_triggered()
@@ -1947,7 +1947,7 @@ void MainWindow::onActionShaderCpuSpline16_triggered()
     uncheckAllShaderMenus();
     qApp->setEffect(qvEnums::CpuSpline16);
     ui->actionShaderCpuSpline16->setChecked(true);
-    ui->graphicsView->readyForPaint();
+    ui->graphicsView->refreshRenderedPages();
 }
 
 void MainWindow::onActionShaderCpuSpline36_triggered()
@@ -1955,7 +1955,7 @@ void MainWindow::onActionShaderCpuSpline36_triggered()
     uncheckAllShaderMenus();
     qApp->setEffect(qvEnums::CpuSpline36);
     ui->actionShaderCpuSpline36->setChecked(true);
-    ui->graphicsView->readyForPaint();
+    ui->graphicsView->refreshRenderedPages();
 }
 
 void MainWindow::onActionShaderCpuLanczos3_triggered()
@@ -1963,7 +1963,7 @@ void MainWindow::onActionShaderCpuLanczos3_triggered()
     uncheckAllShaderMenus();
     qApp->setEffect(qvEnums::CpuLanczos3);
     ui->actionShaderCpuLanczos3->setChecked(true);
-    ui->graphicsView->readyForPaint();
+    ui->graphicsView->refreshRenderedPages();
 }
 
 void MainWindow::onActionShaderCpuLanczos4_triggered()
@@ -1971,7 +1971,7 @@ void MainWindow::onActionShaderCpuLanczos4_triggered()
     uncheckAllShaderMenus();
     qApp->setEffect(qvEnums::CpuLanczos4);
     ui->actionShaderCpuLanczos4->setChecked(true);
-    ui->graphicsView->readyForPaint();
+    ui->graphicsView->refreshRenderedPages();
 }
 
 void MainWindow::onActionSaveBookmark_triggered()
