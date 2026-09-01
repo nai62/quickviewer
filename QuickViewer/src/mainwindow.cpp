@@ -47,7 +47,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_menubarFontSize = ui->menuBar->font().pointSize();
 	m_pageSliderHeight = ui->pageSlider->height();
-    m_imageString.initialize(&m_pageManager, ui->graphicsView);
+    m_imageString.initialize(&m_pageManager, [view = ui->graphicsView] {
+        return view->renderedPageMetrics();
+    });
 
 #ifndef Q_OS_WIN
     ui->actionRegistAssocsUAC->setVisible(false);
@@ -914,7 +916,7 @@ void MainWindow::createBrightnessWindow(bool docked)
 {
     if(m_brightnessWindow)
         onBrightnessWindow_closed();
-    if(m_pageManager.currentPageContent().isEmpty())
+    if(m_pageManager.visiblePages().isEmpty())
         return;
     qApp->setShowOptionViewOnStartup(qvEnums::RetouchStartup);
     if(docked) {
@@ -950,8 +952,9 @@ void MainWindow::onActionOpenExif_triggered()
 {
     if(m_exifDialog || m_pageManager.currentPageCount()==0)
         return;
-    const easyexif::EXIFInfo& info = m_pageManager.currentPageContent()[0].Info;
-    if(info.ImageWidth == 0)
+    const VisiblePages pages = m_pageManager.visiblePages();
+    const ImageContent *page = pages.first();
+    if(!page || page->Info.ImageWidth == 0)
         return;
     if(m_catalogWindow && m_catalogWindow->parent())
         onCatalogWindow_closed();
@@ -960,7 +963,7 @@ void MainWindow::onActionOpenExif_triggered()
 
     m_exifDialog = new ExifDialog();
     ui->actionOpenExif->setChecked(true);
-    m_exifDialog->setExif(m_pageManager.currentPageContent()[0]);
+    m_exifDialog->setExif(*page);
     connect(m_exifDialog, SIGNAL(closed()), this, SLOT(onExifDialog_closed()));
 
     ui->catalogSplitter->insertWidget(1, m_exifDialog);
@@ -1095,8 +1098,10 @@ void MainWindow::onPageManager_pageChanged()
     if(!qApp->ShowStatusBar())
         setWindowTitle(QString("%1 - %2").arg(m_pageCaption).arg(qApp->applicationName()));
 
-    if(m_exifDialog && m_pageManager.currentPageCount() > 0) {
-        m_exifDialog->setExif(m_pageManager.currentPageContent()[0]);
+    if(m_exifDialog) {
+        const VisiblePages pages = m_pageManager.visiblePages();
+        if(const ImageContent *page = pages.first())
+            m_exifDialog->setExif(*page);
     }
 }
 
@@ -1680,8 +1685,11 @@ void MainWindow::onActionRecyclePage_triggered()
         msgBox.setText(message);
 
         //icon
-        QVector<ImageContent> ic = m_pageManager.currentPageContent();
-        QImage image = ic[0].Image;
+        const VisiblePages pages = m_pageManager.visiblePages();
+        const ImageContent *page = pages.first();
+        if(!page)
+            return;
+        QImage image = page->Image;
         image = image.scaled(QSize(100, 100), Qt::KeepAspectRatio);
         msgBox.setIconPixmap(QPixmap::fromImage(image));
 
@@ -1716,8 +1724,11 @@ void MainWindow::onActionDeletePage_triggered()
         msgBox.setText(message);
 
         //icon
-        QVector<ImageContent> ic = m_pageManager.currentPageContent();
-        QImage image = ic[0].Image;
+        const VisiblePages pages = m_pageManager.visiblePages();
+        const ImageContent *page = pages.first();
+        if(!page)
+            return;
+        QImage image = page->Image;
         image = image.scaled(QSize(100, 100), Qt::KeepAspectRatio);
         msgBox.setIconPixmap(QPixmap::fromImage(image));
 

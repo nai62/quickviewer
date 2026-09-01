@@ -118,7 +118,11 @@ QString QVApplication::getTranslationPath()
 {
     // ATTENTION:
     // default 'QLibraryInfo::location(TranslationsPath)' is "[QTDIR]/translations"
-#ifdef _DEBUG
+#if defined(Q_OS_WIN) || defined(_DEBUG)
+    // Windows packages and local out-of-source builds deploy QuickViewer's
+    // own catalogs beside the executable. The Qt installation directory only
+    // contains Qt's catalogs, so using it makes Release builds fall back to
+    // the untranslated English UI.
     return getApplicationFilePath("translations");
 #else
     return QLibraryInfo::location(QLibraryInfo::TranslationsPath);

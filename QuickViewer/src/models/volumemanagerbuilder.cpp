@@ -3,16 +3,15 @@
 #include "fileloadersubdirectory.h"
 #include "fileloader7zarchive.h"
 #include "fileloaderrararchive.h"
-#include "pagemanager.h"
 #include "qvapplication.h"
 
-VolumeManager* VolumeManagerBuilder::CreateVolume(QObject* parent, QString path, PageManager* pageManager)
+VolumeManager* VolumeManagerBuilder::CreateVolume(QObject* parent, QString path)
 {
     QDir dir(path);
 
     //    if(dir.exists() && dir.entryList(QDir::Files, QDir::Name).size() > 0) {
     if(dir.exists()) {
-        return new VolumeManager(parent, qApp->ShowSubfolders() ? new FileLoaderSubDirectory(parent, path) : new FileLoaderDirectory(parent, path), pageManager);
+        return new VolumeManager(parent, qApp->ShowSubfolders() ? new FileLoaderSubDirectory(parent, path) : new FileLoaderDirectory(parent, path));
     }
 
     QFileInfo pathinfo(path);
@@ -29,16 +28,16 @@ VolumeManager* VolumeManagerBuilder::CreateVolume(QObject* parent, QString path,
 
     // RAR deploys using unrar directly
     if(fmt == "rar") {
-        return new VolumeManager(parent, new FileLoaderRarArchive(parent, path), pageManager);
+        return new VolumeManager(parent, new FileLoaderRarArchive(parent, path));
     }
     // Automatically recognizes various archive formats that SevenZip can deploy
     if(FileLoader7zArchive::st_supportedArchiveFormats.contains(fmt)) {
-        return new VolumeManager(parent, new FileLoader7zArchive(parent, path, fmt, qApp->ExtractSolidArchiveToTemporaryDir()), pageManager);
+        return new VolumeManager(parent, new FileLoader7zArchive(parent, path, fmt, qApp->ExtractSolidArchiveToTemporaryDir()));
     }
     if(IFileLoader::isImageFile(path)) {
         const QFileInfo imageInfo(path);
         const QString dirpath = imageInfo.absolutePath();
-        VolumeManager* fvd = new VolumeManager(parent, qApp->ShowSubfolders() ? new FileLoaderSubDirectory(parent, dirpath) : new FileLoaderDirectory(parent, dirpath), pageManager);
+        VolumeManager* fvd = new VolumeManager(parent, qApp->ShowSubfolders() ? new FileLoaderSubDirectory(parent, dirpath) : new FileLoaderDirectory(parent, dirpath));
         fvd->findImageByName(imageInfo.fileName());
         fvd->setOpenedWithSpecifiedImageFile(true);
         return fvd;
@@ -46,10 +45,9 @@ VolumeManager* VolumeManagerBuilder::CreateVolume(QObject* parent, QString path,
     return nullptr;
 }
 
-VolumeManagerBuilder::VolumeManagerBuilder(QString path, PageManager *pageManager)
+VolumeManagerBuilder::VolumeManagerBuilder(QString path)
     : QObject(nullptr)
     , Path(path)
-    , m_pageManager(pageManager)
     , m_volumeManager(nullptr)
 {
 //    connect(&m_watcher, SIGNAL(finished()), this, SLOT(on_enumerated()));
@@ -64,7 +62,7 @@ VolumeManager *VolumeManagerBuilder::build(bool onlyCover)
         pathbase = seps[0];
         subfilename = seps[1];
     }
-    if(!(m_volumeManager = CreateVolume(nullptr, pathbase, m_pageManager)))
+    if(!(m_volumeManager = CreateVolume(nullptr, pathbase)))
         return m_volumeManager;
     m_volumeManager->moveToThread(QThread::currentThread());
     m_volumeManager->enumerate();
@@ -83,9 +81,9 @@ VolumeManager *VolumeManagerBuilder::build(bool onlyCover)
     return m_volumeManager;
 }
 
-VolumeManager* VolumeManagerBuilder::buildAsync(QString path, PageManager* manager, bool onlyCover)
+VolumeManager* VolumeManagerBuilder::buildAsync(QString path, bool onlyCover)
 {
-    VolumeManagerBuilder builder(path, manager);
+    VolumeManagerBuilder builder(path);
     return builder.build(onlyCover);
 }
 
@@ -94,7 +92,7 @@ VolumeManager *VolumeManagerBuilder::buildForAssoc()
     const QFileInfo imageInfo(QDir::fromNativeSeparators(Path));
     const QString volumeFolder = imageInfo.absolutePath();
     m_subfilename = imageInfo.fileName();
-    if(!(m_volumeManager = CreateVolume(nullptr, volumeFolder, m_pageManager)))
+    if(!(m_volumeManager = CreateVolume(nullptr, volumeFolder)))
         return m_volumeManager;
     if(m_volumeManager->isArchive()) {
         delete m_volumeManager;
@@ -116,7 +114,7 @@ VolumeManager *VolumeManagerBuilder::buildForAssoc()
 
 ImageContent VolumeManagerBuilder::thumbnail()
 {
-    if(!(m_volumeManager = CreateVolume(nullptr, Path, m_pageManager)))
+    if(!(m_volumeManager = CreateVolume(nullptr, Path)))
         return ImageContent();
     checkBookProgress();
     m_volumeManager->setCacheMode(VolumeManager::CreateThumbnail);

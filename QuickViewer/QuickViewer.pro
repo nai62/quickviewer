@@ -114,12 +114,14 @@ SOURCES += \
     src/models/bookprogressmanager.cpp \
     src/models/boundedexecutor.cpp \
     src/models/pagecontent.cpp \
+    src/models/renderedpages.cpp \
     src/models/pagemanager.cpp \
     src/models/prefetchplanner.cpp \
     src/models/qvapplication.cpp \
     src/models/shadermanager.cpp \
     src/models/thumbnailmanager.cpp \
     src/models/timeorderdcache.cpp \
+    src/models/volumehandle.cpp \
     src/optionsdialog.cpp \
     src/renamedialog.cpp \
     src/widgets/flowlayout.cpp \
@@ -167,6 +169,11 @@ HEADERS  += \
     src/models/shadermanager.h \
     src/models/thumbnailmanager.h \
     src/models/timeorderdcache.h \
+    src/models/volumehandle.h \
+    src/models/viewerstate.h \
+    src/models/visiblepages.h \
+    src/models/renderedpages.h \
+    src/models/renderedpagemetrics.h \
     src/optionsdialog.h \
     src/qv_init.h \
     src/renamedialog.h \

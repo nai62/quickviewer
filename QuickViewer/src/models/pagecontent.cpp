@@ -3,7 +3,6 @@
 #include "pagecontent.h"
 #include "qvapplication.h"
 #include "qzimg.h"
-#include "imageview.h"
 
 #ifdef QV_WITH_LUMINOR
 #  include "qluminor.h"
@@ -21,33 +20,41 @@ void ImageContent::initialize()
     }
 }
 
-PageContent::PageContent(QObject* parent)
+PageItem::PageItem(QObject* parent, const PageRenderContext* renderContext)
     : QObject(parent)
+    , Scene(nullptr)
     , Ic()
     , GrItem(nullptr)
     , Rotate(0)
-    , m_resizeGeneratingState(0)
-    , initialized(false)
+    , Text()
     , GText(nullptr)
     , GTextSurface(nullptr)
+    , DrawScale(1.0)
+    , NotationalScale(1.0)
     , Separation(NoSeparated)
-    , m_imageView((ImageView*)parent)
+    , m_resizeGeneratingState(0)
+    , initialized(false)
+    , m_renderContext(renderContext)
 {
 
 }
 
-PageContent::PageContent(QObject* parent, QGraphicsScene *s, ImageContent ic)
+PageItem::PageItem(QObject* parent, QGraphicsScene *s, ImageContent ic,
+                   const PageRenderContext* renderContext)
     : QObject(parent)
     , Scene(s)
     , Ic(ic)
     , GrItem(nullptr)
     , Rotate(0)
-    , m_resizeGeneratingState(0)
-    , initialized(false)
+    , Text()
     , GText(nullptr)
     , GTextSurface(nullptr)
+    , DrawScale(1.0)
+    , NotationalScale(1.0)
     , Separation(Ic.wideImage() && qApp->SeparatePagesWhenWideImage() ? FirstSeparated : NoSeparated)
-    , m_imageView((ImageView*)parent)
+    , m_resizeGeneratingState(0)
+    , initialized(false)
+    , m_renderContext(renderContext)
 {
 //    qDebug() << Ic.wideImage() << qApp->SeparatePagesWhenWideImage();
     if(!Ic.ImportSize.width()) {
@@ -70,42 +77,12 @@ PageContent::PageContent(QObject* parent, QGraphicsScene *s, ImageContent ic)
     initializePage();
 }
 
-PageContent::PageContent(const PageContent &rhs)
-    : QObject(rhs.parent())
-    , Scene(rhs.Scene)
-    , Ic(rhs.Ic)
-//    , ResizedPage(rhs.ResizedPage)
-    , GrItem(rhs.GrItem)
-    , Rotate(rhs.Rotate)
-    , m_resizeGeneratingState(0)
-    , initialized(false)
-    , GText(rhs.GText)
-    , GTextSurface(rhs.GTextSurface)
-    , DrawScale(rhs.DrawScale)
-    , NotationalScale(rhs.NotationalScale)
-    , Separation(rhs.Separation)
-    , m_imageView(rhs.m_imageView)
+PageItem::~PageItem()
 {
-
+    dispose();
 }
 
-PageContent &PageContent::operator=(const PageContent &rhs) {
-    Scene = rhs.Scene;
-    Ic = rhs.Ic;
-//    ResizedPage = rhs.ResizedPage;
-    GrItem = rhs.GrItem;
-    Rotate = rhs.Rotate;
-    GText  = rhs.GText;
-    GTextSurface  = rhs.GTextSurface;
-    m_resizeGeneratingState = 0;
-    DrawScale = rhs.DrawScale;
-    NotationalScale = rhs.NotationalScale;
-    Separation = rhs.Separation;
-    m_imageView = rhs.m_imageView;
-    return *this;
-}
-
-QPoint PageContent::Offset(int rotateOffset) {
+QPoint PageItem::Offset(int rotateOffset) {
     int rot = (Rotate+rotateOffset) % 360;
     switch(rot) {
     case 90:  return QPoint(Ic.Image.height(), 0);
@@ -115,18 +92,18 @@ QPoint PageContent::Offset(int rotateOffset) {
     }
 }
 
-QSize PageContent::CurrentSize(int rotateOffset) {
+QSize PageItem::CurrentSize(int rotateOffset) {
     int rot = (Rotate+rotateOffset) % 360;
     return rot==90 || rot==270 ? QSize(Ic.Image.height(), Ic.Image.width()) : Ic.Image.size();
 }
 
-QRect PageContent::setPageLayoutFitting(QRect viewport, PageContent::PageAlign align, qvEnums::FitMode fitMode, qreal loupe, int rotateOffset) {
+QRect PageItem::setPageLayoutFitting(QRect viewport, PageItem::PageAlign align, qvEnums::FitMode fitMode, qreal loupe, int rotateOffset) {
     QRect viewport1 = viewport;
-    if (m_imageView->currentPixelRatio() != 1.0) {
+    const qreal pixelRatio = m_renderContext ? m_renderContext->currentPixelRatio() : 1.0;
+    if (pixelRatio != 1.0) {
         // If pixelRatio > 1, you are changing the worldTransport and need to compensate the viewport
-        qreal ratio = m_imageView->currentPixelRatio();
-        viewport1 = QRect(viewport.left()*ratio,viewport.top()*ratio,
-                         viewport.width()*ratio,viewport.height()*ratio);
+        viewport1 = QRect(viewport.left()*pixelRatio,viewport.top()*pixelRatio,
+                         viewport.width()*pixelRatio,viewport.height()*pixelRatio);
     }
 
     if(!Ic.ImportSize.width()) {
@@ -159,18 +136,18 @@ QRect PageContent::setPageLayoutFitting(QRect viewport, PageContent::PageAlign a
         } else { // fitting on left and right
             int ofsinviewportX = align==PageRight ? 0 : align==PageCenter ? (viewport.width()-newsize.width())/2 : viewport.width()-newsize.width();
             int ofsinviewportY = (viewport.height()-newsize.height())/2;
-            ofsinviewportY = m_imageView->currentPixelRatio() != 1.0 ? 0 : ofsinviewportY; // If pixelRatio > 1, no correction is required
+            ofsinviewportY = pixelRatio != 1.0 ? 0 : ofsinviewportY; // If pixelRatio > 1, no correction is required
             drawRect = QRect(QPoint(of.x() + viewport.x() + ofsinviewportX, of.y() + ofsinviewportY), newsize);
         }
     } else {
         if(viewport.height() < newsize.height() && newsize.height() < viewport1.height()) {
             // Display magnification is automatically corrected, so special correction is required.
             int ofsinviewportX = align==PageRight ? 0 : align==PageCenter ? (viewport.width()-newsize.width())/2 : viewport.width()-newsize.width();
-            int ofsinviewportY = m_imageView->currentPixelRatio() == 1.0 ? 0 :  (-viewport1.height()+newsize.height())/2;
+            int ofsinviewportY = pixelRatio == 1.0 ? 0 :  (-viewport1.height()+newsize.height())/2;
             drawRect = QRect(QPoint(of.x() + viewport.x() + ofsinviewportX, of.y() + ofsinviewportY), newsize);
         } else {
             int ofsinviewportX = align==PageRight ? 0 : align==PageCenter ? (viewport.width()-newsize.width())/2 : viewport.width()-newsize.width();
-            int ofsinviewportY = m_imageView->currentPixelRatio() == 1.0 ? 0 : (viewport.height() - viewport1.height())/2;
+            int ofsinviewportY = pixelRatio == 1.0 ? 0 : (viewport.height() - viewport1.height())/2;
             drawRect = QRect(QPoint(of.x() + viewport.x() + ofsinviewportX, of.y() + ofsinviewportY), newsize);
         }
     }
@@ -186,7 +163,7 @@ QRect PageContent::setPageLayoutFitting(QRect viewport, PageContent::PageAlign a
     return drawRect;
 }
 
-QRect PageContent::setPageLayoutManual(QRect viewport, PageContent::PageAlign align, qreal scale, int rotateOffset, bool loupe) {
+QRect PageItem::setPageLayoutManual(QRect viewport, PageItem::PageAlign align, qreal scale, int rotateOffset, bool loupe) {
     if(!Ic.ImportSize.width()) {
         applyResize(1.0, 0, viewport.topLeft(), QSize(100,100));
         return QRect(viewport.topLeft(), QSize(100, 100));
@@ -234,25 +211,12 @@ static QZimg::FilterMode ShaderEffect2FilterMode(qvEnums::ShaderEffect effect)
 }
 
 
-void PageContent::applyResize(qreal scale, int rotateOffset, QPoint pos, QSize newsize, bool loupe)
+void PageItem::applyResize(qreal scale, int rotateOffset, QPoint pos, QSize newsize, bool loupe)
 {
     checkInitialize();
 //    QSize newsize2 = Ic.Info.Orientation==6 || Ic.Info.Orientation==8 ? QSize(newsize.height(), newsize.width()) : newsize;
     QSize newsize2 = (Rotate+rotateOffset) % 180 ? QSize(newsize.height(), newsize.width()) : newsize;
     qvEnums::ShaderEffect effect = Ic.Movie.isNull() ? qApp->Effect() : qvEnums::Bilinear;
-//    bool retouched = false;
-//    auto params = m_imageView->brightness();
-//    QImage* srcImage = nullptr;
-//    if(params.isDefault())
-//        srcImage = &Ic.Image;
-//    if(!(Ic.RetouchParam == params)) {
-//        Ic.RetouchedImage = QLuminor::toLuminor(Ic.Image, params.Brightness, params.Contrast, params.Gamma);
-//        Ic.RetouchParam = params;
-//        Ic.ResizedImage = QImage();
-//        srcImage = &Ic.RetouchedImage;
-//        retouched = true;
-//    }
-
     QImage& srcImage = applyRetouched();
     qreal retouchedScale = srcImage.size() == Ic.ImportSize ? scale : scale * Ic.ImportSize.width() / srcImage.width();
     // only CPU resizing
@@ -306,12 +270,12 @@ void PageContent::applyResize(qreal scale, int rotateOffset, QPoint pos, QSize n
     GrItem->setPos(pos);
 }
 
-QImage &PageContent::applyRetouched()
+QImage &PageItem::applyRetouched()
 {
 #ifndef QV_WITH_LUMINOR
     return Ic.Image;
 #else
-    auto params = m_imageView->brightness();
+    const ImageRetouch params = m_renderContext ? m_renderContext->brightness() : ImageRetouch();
     if(Ic.RetouchParam == params) {
         return params.isDefault() ? Ic.Image : Ic.RetouchedImage;
     }
@@ -327,7 +291,7 @@ QImage &PageContent::applyRetouched()
 #endif
 }
 
-void PageContent::initializePage(bool resetResized)
+void PageItem::initializePage(bool resetResized)
 {
     if(GrItem) {
         Scene->removeItem(GrItem);
@@ -343,7 +307,7 @@ void PageContent::initializePage(bool resetResized)
     m_resizeGeneratingState = 0;
 }
 
-void PageContent::resetSignage(QRect viewport, PageContent::PageAlign fitting)
+void PageItem::resetSignage(QRect viewport, PageItem::PageAlign fitting)
 {
     if(Text.isEmpty()) {
         if(GText) {
@@ -359,7 +323,7 @@ void PageContent::resetSignage(QRect viewport, PageContent::PageAlign fitting)
     if(GText)
         return;
     GText = Scene->addText(Text);
-    GText->setPos(fitting == PageContent::PageRight ? viewport.right()-GText->boundingRect().width() : 0, 0);
+    GText->setPos(fitting == PageItem::PageRight ? viewport.right()-GText->boundingRect().width() : 0, 0);
 //qDebug() << GText->pos() << Text;
     GText->setDefaultTextColor(Qt::green);
     GText->setZValue(1);
@@ -368,7 +332,7 @@ void PageContent::resetSignage(QRect viewport, PageContent::PageAlign fitting)
     GTextSurface->setPos(GText->pos());
 }
 
-void PageContent::dispose()
+void PageItem::dispose()
 {
     if(GrItem) {
         Scene->removeItem(GrItem);
@@ -385,12 +349,12 @@ void PageContent::dispose()
     }
 }
 
-void PageContent::resetScene(QGraphicsScene *)
+void PageItem::resetScene(QGraphicsScene *)
 {
 
 }
 
-void PageContent::on_resizeFinished_trigger()
+void PageItem::on_resizeFinished_trigger()
 {
     Ic.ResizedImage = generateWatcher.result();
 
@@ -399,7 +363,7 @@ void PageContent::on_resizeFinished_trigger()
     emit resizeFinished();
 }
 
-void PageContent::checkInitialize()
+void PageItem::checkInitialize()
 {
     if(initialized)
         return;
@@ -412,7 +376,7 @@ void PageContent::checkInitialize()
     initialized = true;
 }
 
-void PageContent::on_animateFinished_trigger()
+void PageItem::on_animateFinished_trigger()
 {
     QGraphicsPixmapItem *pi = dynamic_cast<QGraphicsPixmapItem *>(GrItem);
     QMovie* movie = Ic.Movie.data();
@@ -422,7 +386,7 @@ void PageContent::on_animateFinished_trigger()
     movie->start();
 }
 
-void PageContent::on_animateFrameChanged_trigger(int frameNumber)
+void PageItem::on_animateFrameChanged_trigger(int frameNumber)
 {
 //    qDebug() << frameNumber;
     QGraphicsPixmapItem *pi = dynamic_cast<QGraphicsPixmapItem *>(GrItem);
@@ -432,13 +396,13 @@ void PageContent::on_animateFrameChanged_trigger(int frameNumber)
 }
 
 
-void PageContent::on_brightnessChanged_trigger(ImageRetouch param)
+void PageItem::on_brightnessChanged_trigger(ImageRetouch param)
 {
 #ifdef QV_WITH_LUMINOR
 #endif
 }
 
-void PageContent::on_brightnessReset_trigger()
+void PageItem::on_brightnessReset_trigger()
 {
 #ifdef QV_WITH_LUMINOR
 #endif

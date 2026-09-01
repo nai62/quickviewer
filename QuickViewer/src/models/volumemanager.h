@@ -13,7 +13,6 @@
 #include "qvimagemetadata.h"
 #include "prefetchplanner.h"
 
-class PageManager;
 class VolumeManagerBuilder;
 /**
  * @brief The VolumeManager class
@@ -39,7 +38,7 @@ public:
 
     typedef QFuture<ImageContent> future_image;
 
-    explicit VolumeManager(QObject *parent, IFileLoader* loader, PageManager* pageManager);
+    explicit VolumeManager(QObject *parent, IFileLoader* loader);
     ~VolumeManager();
     void enumerate();
     bool enumerated() { return m_enumerated; }
@@ -53,8 +52,8 @@ public:
     static QString FullPathToVolumePath(QString path);
     static QString FullPathToSubFilePath(QString path);
 
-    bool isArchive() const { return m_loader->isArchive(); }
-    bool hasSubDirectories() const { return m_loader->hasSubDirectories(); }
+    bool isArchive() const { return m_loader && m_loader->isArchive(); }
+    bool hasSubDirectories() const { return m_loader && m_loader->hasSubDirectories(); }
 
     void sort(qvEnums::ImageSortBy sortBy);
     void sortForReady(qvEnums::ImageSortBy sortBy);
@@ -62,6 +61,8 @@ public:
     void stopSlideShow();
 
     QString currentPath() {
+        if(!m_loader || m_cnt < 0 || m_cnt >= m_filelist.size())
+            return "";
         if(m_loader->isArchive())
             return QString("%1::%2")
                     .arg(QDir::fromNativeSeparators(m_loader->volumePath()))
@@ -70,12 +71,16 @@ public:
             return QDir::fromNativeSeparators(QDir(m_loader->volumePath()).absoluteFilePath(m_filelist[m_cnt]));
     }
     QString currentPathWithSeparator() {
+        if(!m_loader || m_cnt < 0 || m_cnt >= m_filelist.size())
+            return "";
         return QString("%1::%2")
                 .arg(QDir::fromNativeSeparators(m_loader->volumePath()))
                 .arg(m_filelist[m_cnt]);
     }
 
     QString getPathByFileName(QString name) {
+        if(!m_loader || name.isEmpty())
+            return "";
         if(m_loader->isArchive())
             return QString("%1::%2")
                     .arg(QDir::fromNativeSeparators(m_loader->volumePath()))
@@ -93,9 +98,13 @@ public:
     CacheMode cacheMode() const { return m_cacheMode; }
 
 
-    const ImageContent currentImage() { return m_cacheMode == CreateThumbnail ? m_currentCacheSync : m_currentCache.result(); }
-    QString volumePath() { return m_loader->volumePath(); }
-    QString realVolumePath() { return m_loader->realVolumePath(); }
+    const ImageContent currentImage() {
+        if(m_cacheMode == CreateThumbnail)
+            return m_currentCacheSync;
+        return m_currentCache.isValid() ? m_currentCache.result() : ImageContent();
+    }
+    QString volumePath() { return m_loader ? m_loader->volumePath() : QString(); }
+    QString realVolumePath() { return m_loader ? m_loader->realVolumePath() : QString(); }
 
     bool nextPage();
     bool prevPage();
@@ -114,7 +123,9 @@ public:
     /**
      * @brief loadImageByName Reads and returns the image corresponding to the file name specified in the file list without advancing the internal counter
      */
-    QByteArray loadByteArrayByName(const QString& name) { return m_loadContext->load(name); }
+    QByteArray loadByteArrayByName(const QString& name) {
+        return m_loadContext && !name.isEmpty() ? m_loadContext->load(name) : QByteArray();
+    }
     /**
      * @brief Returns the number of pages the volume has
      */
@@ -131,8 +142,11 @@ public:
     const ImageContent getIndexedImageContent(int idx);
     bool openedWithSpecifiedImageFile() { return m_openedWithSpecifiedImageFile; }
     void setOpenedWithSpecifiedImageFile(bool openedWithSpecifiedImageFile) { m_openedWithSpecifiedImageFile = openedWithSpecifiedImageFile; }
-    void setPageManager(PageManager *pageManager) { m_pageManager = pageManager; }
+    void setViewportSize(QSize size) { m_viewportSize = size; }
     void moveToThread(QThread *targetThread);
+
+signals:
+    void enumerationFinished();
 
 public slots:
     void on_enmumerated();
@@ -159,7 +173,7 @@ private:
     QSharedPointer<ImageLoadContext> m_loadContext;
     IFileLoader* m_loader;
     CacheMode m_cacheMode;
-    PageManager* m_pageManager;
+    QSize m_viewportSize;
     bool m_enumerated;
     bool m_openedWithSpecifiedImageFile;
     QString m_volumePath;

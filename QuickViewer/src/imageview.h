@@ -8,7 +8,8 @@
 #include "exifdialog.h"
 #include "models/pagemanager.h"
 #include "models/shadermanager.h"
-#include "models/pagecontent.h"
+#include "models/renderedpages.h"
+#include "models/renderedpagemetrics.h"
 
 class SavedPoint : public QPoint
 {
@@ -39,7 +40,7 @@ private:
  * It provides to show 1 or 2 images once, using OpenGL.
  * It is made on QGraphicView, each images is used as QGraphicsItem
  */
-class ImageView : public QGraphicsView, public PageContentProtocol
+class ImageView : public QGraphicsView, public PageRenderContext
 {
     Q_OBJECT
 public:
@@ -59,13 +60,15 @@ public:
     void scrollOnLoupeMode();
     void scrollOnZoomMode();
     bool isScrollMode() { return m_scrollMode; }
-    QVector<PageContent>* pages() override {return &m_pages; }
+    int renderedPageCount() const;
+    VisiblePages renderedPageContents() const;
+    RenderedPageMetrics renderedPageMetrics() const;
     void updateViewportOffset(QPointF moved);
     void updateViewportFactors(qreal currentScale, qreal currentRotate);
     void commitViewportFactors();
     void resetViewportFactors();
-    ImageRetouch brightness() { return m_retouchParams; }
-    qreal currentPixelRatio() { return m_lastScreenPixelRatio; }
+    ImageRetouch brightness() const override { return m_retouchParams; }
+    qreal currentPixelRatio() const override { return m_lastScreenPixelRatio; }
     void setCursor(const QCursor& cursor);
 
 signals:
@@ -93,6 +96,7 @@ public slots:
     void on_volumeChanged_triggered(QString path);
     bool on_addImage_triggered(ImageContent image, bool pageNext);
     void on_clearImages_triggered();
+    void on_visiblePagesChanged(VisiblePages pages);
     void readyForPaint();
 
     // Navigation
@@ -145,7 +149,7 @@ private:
     qreal getZoomScale();
 
     RendererType m_renderer;
-    QVector<PageContent> m_pages;
+    RenderedPages m_renderedPages;
 
     SavedPoint m_ptLeftTop;
     QGraphicsScene* m_scene;
@@ -173,7 +177,6 @@ private:
     qreal m_lastScreenPixelRatio;
 
     bool m_isMouseDown;
-    bool m_wideImage;
     bool m_skipResizeEvent;
     bool m_isFullScreen;
     bool m_scrollMode;
