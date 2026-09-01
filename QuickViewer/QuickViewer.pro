@@ -114,6 +114,7 @@ SOURCES += \
     src/models/bookprogressmanager.cpp \
     src/models/boundedexecutor.cpp \
     src/models/pagecontent.cpp \
+    src/models/renderedpages.cpp \
     src/models/pagemanager.cpp \
     src/models/prefetchplanner.cpp \
     src/models/qvapplication.cpp \

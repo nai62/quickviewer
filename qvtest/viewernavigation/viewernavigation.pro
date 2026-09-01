@@ -37,6 +37,7 @@ SOURCES += \
     ../../QuickViewer/src/models/boundedexecutor.cpp \
     ../../QuickViewer/src/models/imagestring.cpp \
     ../../QuickViewer/src/models/pagecontent.cpp \
+    ../../QuickViewer/src/models/renderedpages.cpp \
     ../../QuickViewer/src/models/pagemanager.cpp \
     ../../QuickViewer/src/models/prefetchplanner.cpp \
     ../../QuickViewer/src/models/qvapplication.cpp \

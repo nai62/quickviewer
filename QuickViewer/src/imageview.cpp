@@ -18,7 +18,6 @@ ImageView::ImageView(QWidget *parent)
     , m_beginRotateFactor(0.0)
     , m_loupeFactor(3.0)
     , m_isMouseDown(false)
-    , m_wideImage(false)
     , m_skipResizeEvent(false)
     , m_isFullScreen(false)
     , m_scrollMode(false)
@@ -70,22 +69,14 @@ int ImageView::renderedPageCount() const
     return m_renderedPages.count();
 }
 
-const PageItem* ImageView::renderedPageAt(int index) const
+VisiblePages ImageView::renderedPageContents() const
 {
-    return m_renderedPages.at(index);
+    return m_renderedPages.contents();
 }
 
 RenderedPageMetrics ImageView::renderedPageMetrics() const
 {
-    QVector<qreal> scales;
-    const int pageCount = m_renderedPages.count();
-    scales.reserve(pageCount);
-    for(int index = 0; index < pageCount; ++index) {
-        const PageItem *page = m_renderedPages.at(index);
-        if(page)
-            scales.push_back(page->NotationalScale);
-    }
-    return RenderedPageMetrics(std::move(scales));
+    return m_renderedPages.metrics();
 }
 
 #ifdef QV_WITHOUT_OPENGL
@@ -178,19 +169,16 @@ bool ImageView::on_addImage_triggered(ImageContent ic, bool pageNext)
     const int pageCount = renderedPageCount();
     if(m_pageManager == nullptr || pageCount >= 2) return false;
     m_ptLeftTop.reset();
-    QGraphicsScene *s = scene();
-    QSize size = ic.Image.size();
-    auto page = std::make_unique<PageItem>(this, s, std::move(ic), this);
-    if(m_pageBacking && page->Separation == PageItem::FirstSeparated)
-        page->Separation = PageItem::SecondSeparated;
-    connect(page.get(), SIGNAL(resizeFinished()), this, SLOT(readyForPaint()));
-
-    if(!m_renderedPages.add(std::move(page), pageNext))
+    const bool wideImage = ic.Image.width() > ic.Image.height();
+    if(!m_renderedPages.add(
+                std::move(ic), pageNext, this, scene(), this, m_pageBacking,
+                this, [this] { readyForPaint(); })) {
         return false;
+    }
 
     m_effectManager.prepareInitialize();
 
-    return size.width() > size.height();
+    return wideImage;
 }
 
 void ImageView::on_clearImages_triggered()
@@ -217,43 +205,27 @@ void ImageView::readyForPaint() {
     const int renderedCount = renderedPageCount();
     if(renderedCount > 0 && m_pageManager) {
         const int currentPage = m_pageManager->currentPage();
-        QRect sceneRect;
-        qvEnums::FitMode fitMode = qApp->Fitting() ? qApp->ImageFitMode() : qvEnums::NoFitting;
-        m_renderedPages.forEach([&](PageItem& page, int i) {
-            if(qApp->SeparatePagesWhenWideImage() && page.Ic.wideImage()) {
-                if(page.Separation == PageItem::NoSeparated && viewport()->width() < viewport()->height())
-                    page.Separation = PageItem::FirstSeparated;
-                if(page.Separation != PageItem::NoSeparated && viewport()->width() > viewport()->height())
-                    page.Separation = PageItem::NoSeparated;
-            }
-            PageItem::PageAlign pageAlign = PageItem::PageCenter;
-            QRect pageRect = QRect(QPoint(), viewport()->size());
-            // if(m_lastScreenPixelRatio != 1.0) {
-            //     pageRect = QRect(pageRect.left()*m_lastScreenPixelRatio,pageRect.top()*m_lastScreenPixelRatio,
-            //                      pageRect.width()*m_lastScreenPixelRatio,pageRect.height()*m_lastScreenPixelRatio);
-            // }
-            if(renderedCount == 2) {
-                pageAlign = ((i==0 && !qApp->RightSideBook()) || (i==1 && qApp->RightSideBook()))
-                            ? PageItem::PageLeft : PageItem::PageRight;
-                pageRect = QRect(QPoint(pageAlign==PageItem::PageRight ? pageRect.width()/2 : 0 , 0), QSize(pageRect.width()/2,pageRect.height()));
-            }
-            QRect drawRect;
-            qreal scalefactor = m_loupeEnable ? m_loupeFactor : 1.0;
-            if(fitMode != qvEnums::NoFitting) {
-                drawRect = page.setPageLayoutFitting(
-                            pageRect, pageAlign, fitMode, scalefactor,
-                            m_pageRotations.value(currentPage+i, 0));
-            } else {
-                drawRect = page.setPageLayoutManual(
-                            pageRect, pageAlign, getZoomScale() * scalefactor,
-                            m_pageRotations.value(currentPage+i, 0),
-                            m_loupeEnable);
-            }
-            page.Text = qApp->ShowFullscreenSignage() && m_isFullScreen ? m_pageManager->pageSignage(i) : "";
-            page.resetSignage(QRect(QPoint(), viewport()->size()), pageAlign);
-            m_effectManager.prepare(dynamic_cast<QGraphicsPixmapItem*>(page.GrItem), page.Ic, drawRect.size());
-            sceneRect = sceneRect.united(drawRect);
-        });
+        RenderedPageLayout layout;
+        layout.viewport = QRect(QPoint(), viewport()->size());
+        layout.fitMode = qApp->Fitting()
+                ? qApp->ImageFitMode() : qvEnums::NoFitting;
+        layout.manualScale = getZoomScale();
+        layout.scaleFactor = m_loupeEnable ? m_loupeFactor : 1.0;
+        layout.loupe = m_loupeEnable;
+        layout.separateWideImages = qApp->SeparatePagesWhenWideImage();
+        layout.rightSideBook = qApp->RightSideBook();
+        for(int index = 0; index < renderedCount; ++index) {
+            layout.rotations.push_back(
+                        m_pageRotations.value(currentPage + index, 0));
+            layout.signage.push_back(
+                qApp->ShowFullscreenSignage() && m_isFullScreen
+                    ? m_pageManager->pageSignage(index) : QString());
+        }
+        const QRect sceneRect = m_renderedPages.layout(
+            layout, [this](QGraphicsPixmapItem *item,
+                           const ImageContent &content, QSize drawSize) {
+                m_effectManager.prepare(item, content, drawSize);
+            });
         // if Size of Image overs Size of View, use Image's size
         setSceneRectMode(
           !(qApp->Fitting() && qApp->ImageFitMode() == qvEnums::FitToRect)
@@ -320,9 +292,9 @@ void ImageView::setSceneRectMode(bool scrolled, const QRect &sceneRect)
 
     // Correct the scroll bar so that it keep at the center of the viewport
     // when the image display magnification is changed.
-    PageItem *firstPage = m_renderedPages.first();
-    if (m_readyStack == 1 && firstPage) {
-        qreal newScale = firstPage->DrawScale;
+    const std::optional<qreal> firstDrawScale = m_renderedPages.firstDrawScale();
+    if (m_readyStack == 1 && firstDrawScale) {
+        const qreal newScale = *firstDrawScale;
         if(!qApp->Fitting()) {
             if (!m_loupeEnable && m_beforeScale > 0 && m_beforeScale != newScale) {
                 int vw = 0.5*viewport()->width();
@@ -432,10 +404,7 @@ void ImageView::setCursor(const QCursor &cursor)
     QGraphicsView::setCursor(cursor);
     if (m_isFullScreen && qApp->HideMouseCursorInFullscreen()){
         viewport()->setCursor(cursor);
-        m_renderedPages.forEach([&](PageItem& page, int) {
-            if(page.GrItem != nullptr)
-                page.GrItem->setCursor(cursor);
-        });
+        m_renderedPages.setCursor(cursor);
     }
 }
 
@@ -474,10 +443,8 @@ void ImageView::resizeEvent(QResizeEvent *event)
 
 void ImageView::on_nextPage_triggered()
 {
-    PageItem *firstPage = m_renderedPages.first();
-    if(firstPage && qApp->SeparatePagesWhenWideImage()
-            && firstPage->Separation == PageItem::FirstSeparated) {
-        firstPage->Separation = PageItem::SecondSeparated;
+    if(qApp->SeparatePagesWhenWideImage()
+            && m_renderedPages.advanceSeparatedPage()) {
         readyForPaint();
         return;
     }
@@ -489,10 +456,8 @@ void ImageView::on_nextPage_triggered()
 
 void ImageView::on_prevPage_triggered()
 {
-    PageItem *firstPage = m_renderedPages.first();
-    if(firstPage && qApp->SeparatePagesWhenWideImage()
-            && firstPage->Separation == PageItem::SecondSeparated) {
-        firstPage->Separation = PageItem::FirstSeparated;
+    if(qApp->SeparatePagesWhenWideImage()
+            && m_renderedPages.rewindSeparatedPage()) {
         readyForPaint();
         return;
     }
@@ -506,10 +471,8 @@ void ImageView::on_prevPage_triggered()
 
 void ImageView::onActionNextPageOrVolume_triggered()
 {
-    PageItem *firstPage = m_renderedPages.first();
-    if(firstPage && qApp->SeparatePagesWhenWideImage()
-            && firstPage->Separation == PageItem::FirstSeparated) {
-        firstPage->Separation = PageItem::SecondSeparated;
+    if(qApp->SeparatePagesWhenWideImage()
+            && m_renderedPages.advanceSeparatedPage()) {
         readyForPaint();
         return;
     }
@@ -523,10 +486,8 @@ void ImageView::onActionNextPageOrVolume_triggered()
 
 void ImageView::onActionPrevPageOrVolume_triggered()
 {
-    PageItem *firstPage = m_renderedPages.first();
-    if(firstPage && qApp->SeparatePagesWhenWideImage()
-            && firstPage->Separation == PageItem::SecondSeparated) {
-        firstPage->Separation = PageItem::FirstSeparated;
+    if(qApp->SeparatePagesWhenWideImage()
+            && m_renderedPages.rewindSeparatedPage()) {
         readyForPaint();
         return;
     }
@@ -803,13 +764,13 @@ void ImageView::on_rightSideBook_triggered(bool rightSideBook)
 
 void ImageView::on_scaleUp_triggered()
 {
-    PageItem *firstPage = m_renderedPages.first();
-    if(!firstPage)
+    const std::optional<qreal> firstDrawScale = m_renderedPages.firstDrawScale();
+    if(!firstDrawScale)
         return;
     if(qApp->Fitting()) {
         qApp->setFitting(false);
         emit fittingChanged(qApp->ImageFitMode());
-        qreal scale = firstPage->DrawScale;
+        const qreal scale = *firstDrawScale;
         viewSizeIdx = 0;
         qDebug() << viewSizeIdx << (viewSizeList.size()-1) << scale << getZoomScale();
         while(viewSizeIdx < viewSizeList.size()-1 && getZoomScale() < scale)
@@ -824,13 +785,13 @@ void ImageView::on_scaleUp_triggered()
 
 void ImageView::on_scaleDown_triggered()
 {
-    PageItem *firstPage = m_renderedPages.first();
-    if(!firstPage)
+    const std::optional<qreal> firstDrawScale = m_renderedPages.firstDrawScale();
+    if(!firstDrawScale)
         return;
     if(qApp->Fitting()) {
         qApp->setFitting(false);
         emit fittingChanged(qApp->ImageFitMode());
-        qreal scale = firstPage->DrawScale;
+        const qreal scale = *firstDrawScale;
         viewSizeIdx = viewSizeList.size()-1;
         while(viewSizeIdx > 0 && getZoomScale() > scale)
             viewSizeIdx--;
@@ -929,11 +890,11 @@ void ImageView::on_openFiler_triggered()
 
 void ImageView::on_copyPage_triggered()
 {
-    const PageItem *firstPage = m_renderedPages.first();
-    if(!firstPage)
+    const QImage image = m_renderedPages.firstImage();
+    if(image.isNull())
         return;
     QClipboard* clipboard = qApp->clipboard();
-    clipboard->setImage(firstPage->Ic.Image);
+    clipboard->setImage(image);
 }
 
 void ImageView::on_copyFile_triggered()

@@ -8,7 +8,6 @@
 #include "exifdialog.h"
 #include "models/pagemanager.h"
 #include "models/shadermanager.h"
-#include "models/pagecontent.h"
 #include "models/renderedpages.h"
 #include "models/renderedpagemetrics.h"
 
@@ -62,7 +61,7 @@ public:
     void scrollOnZoomMode();
     bool isScrollMode() { return m_scrollMode; }
     int renderedPageCount() const;
-    const PageItem* renderedPageAt(int index) const;
+    VisiblePages renderedPageContents() const;
     RenderedPageMetrics renderedPageMetrics() const;
     void updateViewportOffset(QPointF moved);
     void updateViewportFactors(qreal currentScale, qreal currentRotate);
@@ -178,7 +177,6 @@ private:
     qreal m_lastScreenPixelRatio;
 
     bool m_isMouseDown;
-    bool m_wideImage;
     bool m_skipResizeEvent;
     bool m_isFullScreen;
     bool m_scrollMode;

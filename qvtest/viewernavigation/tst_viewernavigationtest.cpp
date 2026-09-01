@@ -290,7 +290,7 @@ private slots:
         QCOMPARE(manager.currentPageName(), QString("preview.png"));
     }
 
-    void renderedPageItemsHaveSingleOwnership()
+    void renderedPagesOwnItemsAndExposeSnapshots()
     {
         static_assert(!std::is_copy_constructible_v<PageItem>);
         static_assert(!std::is_copy_assignable_v<PageItem>);
@@ -305,20 +305,20 @@ private slots:
         QVERIFY(view.on_addImage_triggered(
                     ImageContent(image, "first.png", image.size(), {}, 0), true));
         QCOMPARE(view.renderedPageCount(), 1);
-        QVERIFY(view.renderedPageAt(0));
+        QCOMPARE(view.renderedPageContents().count(), 1);
 
         QVERIFY(view.on_addImage_triggered(
                     ImageContent(image, "second.png", image.size(), {}, 0), true));
         QCOMPARE(view.renderedPageCount(), 2);
-        QVERIFY(view.renderedPageAt(1));
-        QCOMPARE(view.renderedPageAt(0)->Ic.Path, QString("first.png"));
-        QCOMPARE(view.renderedPageAt(1)->Ic.Path, QString("second.png"));
+        VisiblePages contents = view.renderedPageContents();
+        QCOMPARE(contents.at(0)->Path, QString("first.png"));
+        QCOMPARE(contents.at(1)->Path, QString("second.png"));
         QVERIFY(!view.on_addImage_triggered(
                     ImageContent(image, "third.png", image.size(), {}, 0), true));
 
         view.on_clearImages_triggered();
         QCOMPARE(view.renderedPageCount(), 0);
-        QVERIFY(!view.renderedPageAt(0));
+        QVERIFY(view.renderedPageContents().isEmpty());
 
         QVERIFY(view.on_addImage_triggered(
                     ImageContent(image, "replacement.png", image.size(), {}, 0), false));
@@ -326,10 +326,11 @@ private slots:
         QVERIFY(view.on_addImage_triggered(
                     ImageContent(image, "prepended.png", image.size(), {}, 0), false));
         QCOMPARE(view.renderedPageCount(), 2);
-        QCOMPARE(view.renderedPageAt(0)->Ic.Path, QString("prepended.png"));
-        QCOMPARE(view.renderedPageAt(1)->Ic.Path, QString("replacement.png"));
-        QVERIFY(!view.renderedPageAt(-1));
-        QVERIFY(!view.renderedPageAt(2));
+        contents = view.renderedPageContents();
+        QCOMPARE(contents.at(0)->Path, QString("prepended.png"));
+        QCOMPARE(contents.at(1)->Path, QString("replacement.png"));
+        QVERIFY(!contents.at(-1));
+        QVERIFY(!contents.at(2));
     }
 
     void emptyDirectoryNavigationIsSafe()

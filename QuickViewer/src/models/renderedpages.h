@@ -2,67 +2,61 @@
 #define RENDEREDPAGES_H
 
 #include <array>
+#include <functional>
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include "pagecontent.h"
+#include "renderedpagemetrics.h"
+#include "visiblepages.h"
+
+struct RenderedPageLayout
+{
+    QRect viewport;
+    qvEnums::FitMode fitMode = qvEnums::NoFitting;
+    qreal manualScale = 1.0;
+    qreal scaleFactor = 1.0;
+    bool loupe = false;
+    bool separateWideImages = false;
+    bool rightSideBook = false;
+    QVector<int> rotations;
+    QStringList signage;
+};
 
 class RenderedPages
 {
 public:
     static constexpr int Capacity = 2;
+    using EffectPreparer = std::function<void(
+        QGraphicsPixmapItem *, const ImageContent &, QSize)>;
 
-    int count() const
-    {
-        if(m_pages[1])
-            return 2;
-        return m_pages[0] ? 1 : 0;
-    }
+    RenderedPages() = default;
+    ~RenderedPages();
+    Q_DISABLE_COPY_MOVE(RenderedPages)
 
-    bool add(std::unique_ptr<PageItem> page, bool append)
-    {
-        const int pageCount = count();
-        if(!page || pageCount >= Capacity)
-            return false;
+    int count() const;
+    bool add(ImageContent content, bool append, QObject *owner,
+             QGraphicsScene *scene, const PageRenderContext *renderContext,
+             bool backing, QObject *resizeReceiver,
+             std::function<void()> resizeCallback);
+    void clear();
 
-        if(append) {
-            m_pages[pageCount] = std::move(page);
-        } else {
-            if(pageCount == 1)
-                m_pages[1] = std::move(m_pages[0]);
-            m_pages[0] = std::move(page);
-        }
-        return true;
-    }
+    QRect layout(const RenderedPageLayout &layout,
+                 const EffectPreparer &prepareEffect);
+    bool advanceSeparatedPage();
+    bool rewindSeparatedPage();
+    void setCursor(const QCursor &cursor);
 
-    void clear()
-    {
-        m_pages[1].reset();
-        m_pages[0].reset();
-    }
-
-    PageItem *at(int index)
-    {
-        return index >= 0 && index < count() ? m_pages[index].get() : nullptr;
-    }
-
-    const PageItem *at(int index) const
-    {
-        return index >= 0 && index < count() ? m_pages[index].get() : nullptr;
-    }
-
-    PageItem *first() { return at(0); }
-    const PageItem *first() const { return at(0); }
-
-    template<typename Function>
-    void forEach(Function &&function)
-    {
-        const int pageCount = count();
-        for(int index = 0; index < pageCount; ++index)
-            function(*m_pages[index], index);
-    }
+    std::optional<qreal> firstDrawScale() const;
+    QImage firstImage() const;
+    VisiblePages contents() const;
+    RenderedPageMetrics metrics() const;
 
 private:
+    PageItem *at(int index);
+    const PageItem *at(int index) const;
+
     std::array<std::unique_ptr<PageItem>, Capacity> m_pages;
 };
 
