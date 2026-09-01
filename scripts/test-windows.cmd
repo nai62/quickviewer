@@ -30,7 +30,13 @@ cd /d "%QV_BUILD_DIR%"
 if errorlevel 1 exit /b 2
 
 if /I "%~1"=="--tests-only" goto run_tests
-if /I "%~1"=="--viewer-only" goto run_viewer_test
+if /I "%~1"=="--viewer-only" (
+    set "PATH=%QV_QT_DIR%\bin;%QV_BUILD_DIR%\lib;%PATH%"
+    set "QV_TEST_FAILED=0"
+    call :run_test tst_viewernavigationtest.exe %~2
+    if not "!QV_TEST_FAILED!"=="0" exit /b 1
+    exit /b 0
+)
 if /I "%~1"=="--release-only" goto build_release
 
 echo === Regenerating Debug build ===
@@ -39,6 +45,8 @@ if errorlevel 1 exit /b 2
 
 echo === Building Debug targets ===
 nmake /f Makefile debug
+if errorlevel 1 exit /b 2
+call :stage_translations
 if errorlevel 1 exit /b 2
 
 goto run_tests
@@ -50,6 +58,8 @@ if errorlevel 1 exit /b 2
 
 echo === Building Release targets ===
 nmake /f Makefile release
+if errorlevel 1 exit /b 2
+call :stage_translations
 if errorlevel 1 exit /b 2
 exit /b 0
 
@@ -71,13 +81,6 @@ if not "!QV_TEST_FAILED!"=="0" (
 echo === All tests passed ===
 exit /b 0
 
-:run_viewer_test
-set "PATH=%QV_QT_DIR%\bin;%QV_BUILD_DIR%\lib;%PATH%"
-set "QV_TEST_FAILED=0"
-call :run_test tst_viewernavigationtest.exe %~2
-if not "!QV_TEST_FAILED!"=="0" exit /b 1
-exit /b 0
-
 :run_test
 set "QV_TEST_EXE=%QV_BUILD_DIR%\lib\%~1"
 set "QV_TEST_RESULT_DIR=%QV_BUILD_DIR%\test-results"
@@ -94,4 +97,18 @@ if exist "!QV_TEST_RESULT!" del /Q "!QV_TEST_RESULT!"
 set "QV_TEST_EXIT=!ERRORLEVEL!"
 if exist "!QV_TEST_RESULT!" type "!QV_TEST_RESULT!"
 if not "!QV_TEST_EXIT!"=="0" set "QV_TEST_FAILED=1"
+exit /b 0
+
+:stage_translations
+set "QV_TRANSLATION_SOURCE=%QV_SOURCE_DIR%\QuickViewer\translations"
+set "QV_TRANSLATION_DEST=%QV_BUILD_DIR%\bin\translations"
+if not exist "!QV_TRANSLATION_DEST!" mkdir "!QV_TRANSLATION_DEST!"
+if errorlevel 1 exit /b 1
+copy /Y "!QV_TRANSLATION_SOURCE!\languages.ini" "!QV_TRANSLATION_DEST!\" >nul
+if errorlevel 1 exit /b 1
+copy /Y "!QV_TRANSLATION_SOURCE!\quickviewer_*.qm" "!QV_TRANSLATION_DEST!\" >nul
+if errorlevel 1 exit /b 1
+copy /Y "!QV_TRANSLATION_SOURCE!\qt_el.qm" "!QV_TRANSLATION_DEST!\" >nul
+if errorlevel 1 exit /b 1
+if not exist "!QV_TRANSLATION_DEST!\quickviewer_ja.qm" exit /b 1
 exit /b 0

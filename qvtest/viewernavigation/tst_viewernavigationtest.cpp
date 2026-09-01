@@ -79,12 +79,13 @@ private slots:
         QTemporaryDir directory;
         QVERIFY(directory.isValid());
         const QString imagePath = directory.filePath("preview.bmp");
-        QImage image(8, 8, QImage::Format_RGB32);
+        QImage image(640, 480, QImage::Format_RGB32);
         image.fill(Qt::red);
         QVERIFY(image.save(imagePath));
 
         PageManager manager(nullptr);
         ImageView view;
+        view.resize(320, 240);
         view.setPageManager(&manager);
 
         QVERIFY(manager.loadVolumeWithFile(imagePath));
@@ -95,6 +96,7 @@ private slots:
         QCOMPARE(QFileInfo(manager.currentPageName()).fileName(),
                  QString("preview.bmp"));
         QVERIFY(manager.initialImagePaintPending());
+        QVERIFY(view.renderedPageMetrics().notationalScaleAt(0) < 1.0);
 
         // Navigation while the parent folder is not ready must remain a no-op.
         QVERIFY(!manager.nextPage());
@@ -105,6 +107,7 @@ private slots:
         manager.notifyInitialImagePainted();
         QTRY_COMPARE(manager.stateKind(), ViewerStateKind::VolumeReady);
         QVERIFY(!manager.initialImagePaintPending());
+        QVERIFY(view.renderedPageMetrics().notationalScaleAt(0) < 1.0);
     }
 
     void visiblePagesAreReadOnlySnapshots()
@@ -331,6 +334,69 @@ private slots:
         QCOMPARE(contents.at(1)->Path, QString("replacement.png"));
         QVERIFY(!contents.at(-1));
         QVERIFY(!contents.at(2));
+    }
+
+    void fittingModeRelayoutsRenderedPage()
+    {
+        PageManager manager(nullptr);
+        ImageView view;
+        view.resize(320, 240);
+        view.setPageManager(&manager);
+
+        QImage image(640, 480, QImage::Format_ARGB32);
+        image.fill(Qt::red);
+        QVERIFY(manager.addNewPage(
+                    ImageContent(image, "fitting.png", image.size(), {}, 0),
+                    true));
+
+        qApp->setFitting(false);
+        view.readyForPaint();
+        QCOMPARE(view.renderedPageMetrics().notationalScaleAt(0), 1.0);
+
+        view.on_fitting_triggered(true);
+        QVERIFY(qApp->Fitting());
+        QVERIFY(view.renderedPageMetrics().notationalScaleAt(0) < 1.0);
+    }
+
+    void fittingShortcutTriggersViewAction()
+    {
+        PageManager manager(nullptr);
+        ImageView view;
+        view.resize(320, 240);
+        view.setPageManager(&manager);
+
+        QAction fittingAction;
+        fittingAction.setCheckable(true);
+        connect(&fittingAction, &QAction::triggered,
+                &view, &ImageView::on_fitting_triggered);
+        QAction *previousAction =
+                qApp->keyActions().actions().value("actionFitting", nullptr);
+        auto restoreAction = qScopeGuard([previousAction]() {
+            qApp->keyActions().actions()["actionFitting"] = previousAction;
+        });
+        QAction *fittingActionPtr = &fittingAction;
+        qApp->keyActions().registAction(
+                    "actionFitting", fittingActionPtr, "Image");
+
+        QImage image(640, 480, QImage::Format_ARGB32);
+        image.fill(Qt::red);
+        QVERIFY(manager.addNewPage(
+                    ImageContent(image, "shortcut.png", image.size(), {}, 0),
+                    true));
+
+        qApp->setFitting(false);
+        fittingAction.setChecked(false);
+        view.readyForPaint();
+        QCOMPARE(view.renderedPageMetrics().notationalScaleAt(0), 1.0);
+
+        QKeySequence fittingKey("M");
+        QAction *mappedAction = qApp->keyActions().getActionByKey(fittingKey);
+        QCOMPARE(mappedAction, &fittingAction);
+        mappedAction->trigger();
+
+        QVERIFY(fittingAction.isChecked());
+        QVERIFY(qApp->Fitting());
+        QVERIFY(view.renderedPageMetrics().notationalScaleAt(0) < 1.0);
     }
 
     void emptyDirectoryNavigationIsSafe()
