@@ -3,7 +3,7 @@
 #include "fileloader7zarchive.h"
 
 #ifdef Q_OS_WIN
-#include <shlobj.h>
+#    include <shlobj.h>
 #endif
 
 #include "qvapplication.h"
@@ -11,19 +11,20 @@
 #include "ui_mainwindow.h"
 
 QVApplication::QVApplication(int &argc, char **argv)
-    : QApplication(argc, argv)
-    , m_mainThread(QThread::currentThread())
-    , m_maxTextureSize(4096)
-    , m_imageSortBy(qvEnums::SortByFileName)
-    , m_innerFrameShowing(false)
-    , m_effect(qvEnums::Bilinear)
-    , m_translator(nullptr)
-    , m_settings(nullptr)
-    , m_bookshelfManager(nullptr)
-    , m_languageSelector("quickviewer_", getTranslationPath())
-    , m_qtbaseLanguageSelector("qt_", getTranslationPath())
+    : QApplication(argc, argv),
+      m_mainThread(QThread::currentThread()),
+      m_maxTextureSize(4096),
+      m_imageSortBy(qvEnums::SortByFileName),
+      m_innerFrameShowing(false),
+      m_effect(qvEnums::Bilinear),
+      m_translator(nullptr),
+      m_settings(nullptr),
+      m_bookshelfManager(nullptr),
+      m_languageSelector("quickviewer_", getTranslationPath()),
+      m_qtbaseLanguageSelector("qt_", getTranslationPath())
 #if defined(Q_OS_WIN)
-    , m_portable(true)
+      ,
+      m_portable(true)
 #endif
 {
     setApplicationVersion(APP_VERSION);
@@ -36,36 +37,37 @@ QVApplication::QVApplication(int &argc, char **argv)
     // Once assuming that it is a Portable environment, if there is QuickViewer in "C:/Program Files", it corresponds by denying it.
     QByteArray programFiles = qgetenv("ProgramFiles");
     QString appdir = applicationDirPath();
-    if(QDir::toNativeSeparators(appdir).startsWith(programFiles))
+    if (QDir::toNativeSeparators(appdir).startsWith(programFiles)) {
         m_portable = false;
+    }
 
-    if(!m_portable)
+    if (!m_portable)
 #endif
     {
         // In a non-portable environment, QuickViewer creates a directory for the application
         // in a fixed PATH inside the user directory, and stores data files in it.
-#  if    defined(Q_OS_MAC) || defined(Q_OS_LINUX)
+#if defined(Q_OS_MAC) || defined(Q_OS_LINUX)
         QString datapath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)).filePath(QV_DATADIR);
-#  elif  defined(Q_OS_WIN)
+#elif defined(Q_OS_WIN)
         QString datapath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
 //        qDebug() << datapath;
-#  endif
+#endif
         QDir dir(datapath);
         QFile filedatabase(dir.filePath(QV_THUMBNAILS));
-        if(!filedatabase.exists()) {
-            if(!dir.exists())
+        if (!filedatabase.exists()) {
+            if (!dir.exists()) {
                 dir.mkpath(".");
+            }
             // write out thumbnail database from the resource into Application data directory
             QFile resdatabase(QStringLiteral(":/databases/thumbnail_database"));
             qDebug() << resdatabase.exists();
-            if(resdatabase.open(QIODevice::ReadOnly)) {
+            if (resdatabase.open(QIODevice::ReadOnly)) {
                 auto dat = resdatabase.readAll();
-                if(filedatabase.open(QIODevice::WriteOnly)) {
+                if (filedatabase.open(QIODevice::WriteOnly)) {
                     filedatabase.write(dat);
                     filedatabase.close();
                 }
             }
-
         }
     }
 //#endif
@@ -99,7 +101,7 @@ QString QVApplication::getApplicationFilePath(QString subFilePath)
 QString QVApplication::getFilePathOfApplicationSetting(QString subFilePath)
 {
 #ifdef Q_OS_WIN
-    if(m_portable) {
+    if (m_portable) {
         return getApplicationFilePath(subFilePath);
     } else {
         return QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).filePath(subFilePath);
@@ -139,8 +141,9 @@ void QVApplication::myInstallTranslator()
     m_languageSelector.resetTranslator(UiLanguage());
     // It is "" when it is started for the first time,
     // but it is better to set the value in order to cause unnecessary processing
-    if(m_uiLanguage.isEmpty())
+    if (m_uiLanguage.isEmpty()) {
         setUiLanguage(m_languageSelector.language());
+    }
 }
 
 void QVApplication::registDefaultKeyMap()
@@ -196,7 +199,6 @@ void QVApplication::registActions(Ui::MainWindow *ui)
     m_keyActions.registAction("actionClearHistory", ui->actionClearHistory, groupName);
     m_keyActions.registAction("actionAutoLoaded", ui->actionAutoLoaded, groupName);
     m_keyActions.registAction("actionExit", ui->actionExit, groupName);
-
 
     // Bookmark
     groupName = tr("Bookmark", "Bookmark Action Group");
@@ -321,29 +323,30 @@ void QVApplication::registActions(Ui::MainWindow *ui)
 void QVApplication::addHistory(QString path)
 {
     const QString unixpath = QDir::fromNativeSeparators(path);
-    if(m_history.contains(unixpath)) {
+    if (m_history.contains(unixpath)) {
         m_history.removeOne(unixpath);
     }
     m_history.push_front(unixpath);
-    while(m_history.size() > m_maxHistoryCount)
+    while (m_history.size() > m_maxHistoryCount) {
         m_history.pop_back();
+    }
 }
 
 void QVApplication::addBookMark(QString path, bool canDumplication)
 {
     const QString unixpath = QDir::fromNativeSeparators(path);
-    if(canDumplication) {
+    if (canDumplication) {
         m_bookmarks.push_front(unixpath);
         return;
     }
-    if(m_bookmarks.contains(unixpath)) {
+    if (m_bookmarks.contains(unixpath)) {
         m_bookmarks.removeOne(unixpath);
     }
     m_bookmarks.push_front(unixpath);
-    while(m_bookmarks.size() > m_maxBookmarkCount)
+    while (m_bookmarks.size() > m_maxBookmarkCount) {
         m_bookmarks.pop_back();
+    }
 }
-
 
 QString QVApplication::getDefaultPictureFolderPath()
 {
@@ -354,13 +357,12 @@ QString QVApplication::getDefaultPictureFolderPath()
     LPITEMIDLIST pidl;
     std::string str;
     IMalloc *pMalloc;
-    WCHAR szPath[MAX_PATH+1];
+    WCHAR szPath[MAX_PATH + 1];
 
     SHGetMalloc(&pMalloc);
     result = ::SHGetSpecialFolderLocation(NULL, nFolder, &pidl);
 
-    if (SUCCEEDED(result))
-    {
+    if (SUCCEEDED(result)) {
         ::SHGetPathFromIDList(pidl, szPath);
         path = QString::fromWCharArray(szPath);
         pMalloc->Free(pidl);
@@ -382,7 +384,7 @@ void QVApplication::loadSettings()
         QString sortByString = m_settings->value("ImageSortBy", "SortByFileName").toString();
         int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("ImageSortBy");
         m_imageSortBy = (qvEnums::ImageSortBy)qvEnums::staticMetaObject.enumerator(enumIdx)
-                .keysToValue(sortByString.toLatin1().data());
+                            .keysToValue(sortByString.toLatin1().data());
     }
     m_fitting = m_settings->value("Fitting", true).toBool();
     {
@@ -406,7 +408,7 @@ void QVApplication::loadSettings()
     m_slideShowWait = m_settings->value("SlideShowWait", 5000).toInt();
     QRect rec = QGuiApplication::primaryScreen()->geometry();
     uint32_t desktop_width = rec.width();
-    uint32_t maxTextureSize = desktop_width < 2048 ? 4096 : (uint32_t)(desktop_width*2.1);
+    uint32_t maxTextureSize = desktop_width < 2048 ? 4096 : (uint32_t)(desktop_width * 2.1);
     qDebug() << "desktop width:" << rec.width();
     m_maxTextureSize = m_settings->value("MaxTextureSize", maxTextureSize).toInt();
 #ifdef Q_PROCESSOR_X86_64
@@ -418,24 +420,24 @@ void QVApplication::loadSettings()
 #endif
     m_backgroundColor = QColor(m_settings->value("BackgroundColor", "0x797979").toString().toUInt(nullptr, 16));
     m_backgroundColor2 = QColor(m_settings->value("BackgroundColor2", "0x5e5e5e").toString().toUInt(nullptr, 16));
-    m_useCheckeredPattern  = m_settings->value("UseCheckeredPattern", true).toBool();
-    m_dontEnlargeSmallImagesOnFitting  = m_settings->value("DontEnlargeSmallImagesOnFitting", true).toBool();
-    m_showFullscreenSignage  = m_settings->value("ShowFullscreenSignage", false).toBool();
-    m_dontShrinkForLargeImage  = m_settings->value("DontShrinkForLargeImage", false).toBool();
+    m_useCheckeredPattern = m_settings->value("UseCheckeredPattern", true).toBool();
+    m_dontEnlargeSmallImagesOnFitting = m_settings->value("DontEnlargeSmallImagesOnFitting", true).toBool();
+    m_showFullscreenSignage = m_settings->value("ShowFullscreenSignage", false).toBool();
+    m_dontShrinkForLargeImage = m_settings->value("DontShrinkForLargeImage", false).toBool();
 //    m_showFullscreenTitleBar = m_settings->value("ShowFullscreenTitleBar", true).toBool();
     m_useDirect2D = m_settings->value("UseDirect2D", false).toBool();
     m_useFastDCTForJPEG = m_settings->value("UseFastDCTForJPEG", true).toBool();
     m_howToLoadSVG = m_settings->value("HowToLoadSVG", "imageformat").toString();
-    m_showPanelSeparateWindow  = m_settings->value("ShowPanelSeparateWindow", false).toBool();
-    m_largeToolbarIcons  = m_settings->value("LargeToolbarIcons", false).toBool();
+    m_showPanelSeparateWindow = m_settings->value("ShowPanelSeparateWindow", false).toBool();
+    m_largeToolbarIcons = m_settings->value("LargeToolbarIcons", false).toBool();
 
-    m_hideMenuBarParmanently   = m_settings->value("HideMenuBarParmanently",   false).toBool();
-    m_hideToolBarParmanently   = m_settings->value("HideToolBarParmanently",   false).toBool();
-    m_hidePageBarParmanently   = m_settings->value("HidePageBarParmanently",   false).toBool();
+    m_hideMenuBarParmanently = m_settings->value("HideMenuBarParmanently", false).toBool();
+    m_hideToolBarParmanently = m_settings->value("HideToolBarParmanently", false).toBool();
+    m_hidePageBarParmanently = m_settings->value("HidePageBarParmanently", false).toBool();
 
-    m_hideMenuBarInFullscreen   = m_settings->value("HideMenuBarInFullscreen", false).toBool();
-    m_hideToolBarInFullscreen   = m_settings->value("HideToolBarInFullscreen", false).toBool();
-    m_hidePageBarInFullscreen   = m_settings->value("HidePageBarInFullscreen", false).toBool();
+    m_hideMenuBarInFullscreen = m_settings->value("HideMenuBarInFullscreen", false).toBool();
+    m_hideToolBarInFullscreen = m_settings->value("HideToolBarInFullscreen", false).toBool();
+    m_hidePageBarInFullscreen = m_settings->value("HidePageBarInFullscreen", false).toBool();
     m_hideScrollBarInFullscreen = m_settings->value("HideScrollBarInFullscreen", true).toBool();
     m_hideMouseCursorInFullscreen = m_settings->value("HideMouseCursorInFullscreen", false).toBool();
 
@@ -449,7 +451,7 @@ void QVApplication::loadSettings()
         QString showOptionstring = m_settings->value("ShowOptionViewOnStartup", "FolderStartup").toString();
         int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("OptionViewOnStartup");
         m_showOptionViewOnStartup = (qvEnums::OptionViewOnStartup)qvEnums::staticMetaObject.enumerator(enumIdx)
-                .keysToValue(showOptionstring.toLatin1().data());
+                                        .keysToValue(showOptionstring.toLatin1().data());
     }
     m_slideShowOnNormalWindow = m_settings->value("SlideShowOnNormalWindow", true).toBool();
     m_slideShowRandomly = m_settings->value("SlideshowRandomly", false).toBool();
@@ -457,22 +459,22 @@ void QVApplication::loadSettings()
 
     // WindowState
     m_settings->beginGroup("WindowState");
-    m_restoreWindowState  = m_settings->value("RestoreWindowState", false).toBool();
-    m_windowGeometry  = m_settings->value("WindowGeometry", "").toByteArray();
-    m_windowState  = m_settings->value("WindowState", "").toByteArray();
-    m_beginAsFullscreen  = m_settings->value("BeginAsFullscreen", false).toBool();
+    m_restoreWindowState = m_settings->value("RestoreWindowState", false).toBool();
+    m_windowGeometry = m_settings->value("WindowGeometry", "").toByteArray();
+    m_windowState = m_settings->value("WindowState", "").toByteArray();
+    m_beginAsFullscreen = m_settings->value("BeginAsFullscreen", false).toBool();
     m_settings->endGroup();
 
     // File
     m_settings->beginGroup("File");
-    m_autoLoaded  = m_settings->value("AutoLoaded", false).toBool();
+    m_autoLoaded = m_settings->value("AutoLoaded", false).toBool();
     m_history = m_settings->value("History", QStringList()).value<QStringList>();
     m_maxHistoryCount = m_settings->value("MaxHistoryCount", 36).toInt();
     m_bookmarks = m_settings->value("Bookmarks", QStringList()).value<QStringList>();
     m_maxBookmarkCount = m_settings->value("MaxBookmarkCount", 20).toInt();
-    m_prohibitMultipleRunning  = m_settings->value("ProhibitMultipleRunning", false).toBool();
+    m_prohibitMultipleRunning = m_settings->value("ProhibitMultipleRunning", false).toBool();
     m_lastViewPath = m_settings->value("LastViewPath", "").toString();
-    m_dontSavingHistory  = m_settings->value("DontSavingHistory", false).toBool();
+    m_dontSavingHistory = m_settings->value("DontSavingHistory", false).toBool();
     m_extractSolidArchiveToTemporaryDir = m_settings->value("ExtractSolidArchiveToTemporaryDir", true).toBool();
     m_lastOpenedFolderPath = m_settings->value("LastOpenedFolderPath", "").toString();
     m_settings->endGroup();
@@ -501,7 +503,7 @@ void QVApplication::loadSettings()
         m_catalogViewModeSetting = (qvEnums::CatalogViewMode)qvEnums::staticMetaObject.enumerator(enumIdx).keysToValue(viewModestring.toLatin1().data());
     }
 #ifdef Q_OS_WIN
-    if(m_portable) {
+    if (m_portable) {
         m_catalogDatabasePath = m_settings->value("CatalogDatabasePath", "database/thumbnail.sqlite3.db").toString();
     } else {
         m_catalogDatabasePath = m_settings->value("CatalogDatabasePath", "thumbnail.sqlite3.db").toString();
@@ -521,15 +523,15 @@ void QVApplication::loadSettings()
 
     // KeyConfig
     m_settings->beginGroup("KeyConfig");
-    foreach(const QString& action, m_settings->childKeys()) {
+    foreach (const QString &action, m_settings->childKeys()) {
         QString str = m_settings->value(action, "").toString();
-        m_keyActions.updateKey(action,  QKeySequence(str), true);
+        m_keyActions.updateKey(action, QKeySequence(str), true);
     }
     m_settings->endGroup();
 
     // MouseConfig
     m_settings->beginGroup("MouseConfig");
-    foreach(const QString& action, m_settings->childKeys()) {
+    foreach (const QString &action, m_settings->childKeys()) {
         QString str = m_settings->value(action, "").toString();
         m_mouseActions.updateKey(action, QMouseSequence(str), true);
     }
@@ -552,7 +554,7 @@ void QVApplication::loadSettings()
     m_settings->beginGroup("Appearance");
     m_uiTheme = m_settings->value("UiTheme", "Default").toString();
     //QString themeFilePath = getApplicationFilePath(":/themes/"+m_uiTheme+".qss"); //Local files
-    QString themeFilePath(":/themes/"+m_uiTheme+".qss"); // Resource files
+    QString themeFilePath(":/themes/" + m_uiTheme + ".qss"); // Resource files
     QFile File(themeFilePath);
     File.open(QFile::ReadOnly);
     QString styleSheet = QString(File.readAll());
@@ -628,7 +630,7 @@ void QVApplication::saveSettings()
     {
         int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("OptionViewOnStartup");
         QString optionViewstring = QString(qvEnums::staticMetaObject.enumerator(enumIdx)
-                                           .valueToKey(m_showOptionViewOnStartup));
+                                               .valueToKey(m_showOptionViewOnStartup));
         m_settings->setValue("ShowOptionViewOnStartup", optionViewstring);
     }
     m_settings->setValue("SlideShowOnNormalWindow", m_slideShowOnNormalWindow);
@@ -686,14 +688,14 @@ void QVApplication::saveSettings()
     m_settings->endGroup();
 
     m_settings->beginGroup("KeyConfig");
-    foreach(const QString& action, m_keyActions.keyMaps().keys()) {
+    foreach (const QString &action, m_keyActions.keyMaps().keys()) {
         QKeySequence seqs = m_keyActions.keyMaps()[action];
         m_settings->setValue(action, seqs.toString());
     }
     m_settings->endGroup();
 
     m_settings->beginGroup("MouseConfig");
-    foreach(const QString& action, m_mouseActions.keyMaps().keys()) {
+    foreach (const QString &action, m_mouseActions.keyMaps().keys()) {
         QMouseSequence seqs = m_mouseActions.keyMaps()[action];
         m_settings->setValue(action, seqs.toString());
     }
@@ -715,6 +717,7 @@ void QVApplication::saveSettings()
     m_settings->endGroup();
 
     m_settings->sync();
-    if(qApp->SaveReadProgress())
+    if (qApp->SaveReadProgress()) {
         m_bookshelfManager->save();
+    }
 }

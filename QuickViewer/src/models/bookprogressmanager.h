@@ -32,14 +32,14 @@ class BookProgressManager : QObject
 public:
     typedef QMap<QString, BookProgress> BookProgressMap;
 
-    BookProgressManager(QObject* parent);
+    BookProgressManager(QObject *parent);
     void save();
 
     static BookProgressMap initializeAsync();
 
     bool contains(QString path) { return m_books.contains(path); }
     BookProgress at(QString path) { return m_books[path]; }
-    void insert(QString path, BookProgress& value) { m_books.insert(path, value); }
+    void insert(QString path, BookProgress &value) { m_books.insert(path, value); }
     void moveToThread(QThread *targetThread);
 
 public slots:

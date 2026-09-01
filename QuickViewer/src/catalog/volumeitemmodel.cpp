@@ -1,34 +1,36 @@
 #include "volumeitemmodel.h"
 #include "qvapplication.h"
 
-VolumeItemModel::VolumeItemModel(QObject* parent)
-    : QAbstractItemModel(parent)
-    , m_volumeSearch(nullptr)
-    , m_catalogViewMode(qvEnums::Icon)
+VolumeItemModel::VolumeItemModel(QObject *parent)
+    : QAbstractItemModel(parent),
+      m_volumeSearch(nullptr),
+      m_catalogViewMode(qvEnums::Icon)
 {
-
 }
 
 QVariant VolumeItemModel::data(const QModelIndex &index, int role) const
 {
     int row = index.row();
-    if(!m_volumeSearch)
+    if (!m_volumeSearch) {
         return QVariant();
-    const VolumeThumbRecord* vtr = m_volumeSearch->at(row);
-    switch(role) {
+    }
+    const VolumeThumbRecord *vtr = m_volumeSearch->at(row);
+    switch (role) {
     case Qt::DisplayRole:
-        if(m_catalogViewMode == qvEnums::IconNoText)
-           return QVariant();
-        return qApp->TitleWithoutOptions() ? vtr->name :  vtr->realname;
+        if (m_catalogViewMode == qvEnums::IconNoText) {
+            return QVariant();
+        }
+        return qApp->TitleWithoutOptions() ? vtr->name : vtr->realname;
     case Qt::DecorationRole:
         return QIcon(QPixmap::fromImage(QImage::fromData(vtr->thumbnail)));
     case Qt::SizeHintRole:
-        if(qApp->IconLongText())
-            return m_catalogViewMode == qvEnums::List ? QSize(300, 100) :
-                   m_catalogViewMode == qvEnums::Icon ? QSize(150, 170) : QSize(100, 100);
-        else
-            return m_catalogViewMode == qvEnums::List ? QSize(200, 100) :
-                   m_catalogViewMode == qvEnums::Icon ? QSize(150, 120) : QSize(100, 100);
+        if (qApp->IconLongText()) {
+            return m_catalogViewMode == qvEnums::List ? QSize(300, 100) : m_catalogViewMode == qvEnums::Icon ? QSize(150, 170)
+                                                                                                             : QSize(100, 100);
+        } else {
+            return m_catalogViewMode == qvEnums::List ? QSize(200, 100) : m_catalogViewMode == qvEnums::Icon ? QSize(150, 120)
+                                                                                                             : QSize(100, 100);
+        }
     }
     return QVariant();
 }
@@ -40,8 +42,9 @@ int VolumeItemModel::rowCount(const QModelIndex &) const
 
 QModelIndex VolumeItemModel::index(int row, int column, const QModelIndex &) const
 {
-    if(column > 1 || !m_volumeSearch)
+    if (column > 1 || !m_volumeSearch) {
         return QModelIndex();
+    }
     return row < m_volumeSearch->size() ? createIndex(row, column, m_volumeSearch->at(row)) : QModelIndex();
 }
 

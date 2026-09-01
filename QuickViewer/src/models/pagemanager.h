@@ -22,21 +22,23 @@ public:
 
 #define ReloadedEventType (QEvent::Type)(QEvent::Type::User + 50)
 
-class ReloadedEvent : public QEvent {
+class ReloadedEvent : public QEvent
+{
 public:
-    ReloadedEvent() : QEvent(ReloadedEventType) {}
+    ReloadedEvent()
+        : QEvent(ReloadedEventType)
+    {}
 };
-
 
 class PageManager : public QObject, public PageManagerProtocol
 {
     Q_OBJECT
 public:
-    PageManager(QObject* parent);
+    PageManager(QObject *parent);
 
     // Volumes
-    bool loadVolume(QString path, bool coverOnly=false);
-    bool loadVolumeWithFile(QString path, bool prohibitProhibit2Page=false);
+    bool loadVolume(QString path, bool coverOnly = false);
+    bool loadVolumeWithFile(QString path, bool prohibitProhibit2Page = false);
     bool nextVolume();
     bool prevVolume();
     void reloadVolumeAfterRemoveImage();
@@ -46,7 +48,7 @@ public:
     bool prevPage();
     bool fastForwardPage();
     bool fastBackwardPage();
-    bool selectPage(int pageNum, VolumeManager::CacheMode cacheMode=VolumeManager::Normal);
+    bool selectPage(int pageNum, VolumeManager::CacheMode cacheMode = VolumeManager::Normal);
     bool firstPage();
     bool lastPage();
     bool nextOnlyOnePage();
@@ -68,17 +70,21 @@ public:
     int currentPageCount() const { return m_pages.size(); }
     int currentPage() const override { return m_currentPage; }
     VisiblePages visiblePages() const override { return VisiblePages(m_pages); }
-    QString currentPagePath() const override {
+    QString currentPagePath() const override
+    {
         VolumeManager *volume = activeVolume();
-        if(!volume || m_pages.isEmpty())
+        if (!volume || m_pages.isEmpty()) {
             return "";
+        }
         return QDir::toNativeSeparators(volume->getPathByFileName(m_pages[0].Path));
     }
-    QString nextPagePathAfterDeleted() {
+    QString nextPagePathAfterDeleted()
+    {
         VolumeManager *volume = activeVolume();
-        if(!volume || volume->isArchive() || volume->size() <= 1)
+        if (!volume || volume->isArchive() || volume->size() <= 1) {
             return "";
-        int idx = volume->size()-1==m_currentPage ? m_currentPage-1 : m_currentPage+1;
+        }
+        int idx = volume->size() - 1 == m_currentPage ? m_currentPage - 1 : m_currentPage + 1;
         return QDir::toNativeSeparators(volume->getPathByIndex(idx));
     }
     QString currentPageName() { return m_pages.isEmpty() ? QString() : m_pages[0].Path; }
@@ -97,29 +103,35 @@ public:
     QString currentPageStatusAsString() const;
     QString pageSignage(int page) const;
 
-    QString volumePath() const override {
+    QString volumePath() const override
+    {
         VolumeManager *volume = activeVolume();
         return volume ? volume->volumePath() : "";
     }
-    QString realVolumePath() {
+    QString realVolumePath()
+    {
         VolumeManager *volume = activeVolume();
         return volume ? volume->realVolumePath() : "";
     }
-    bool isArchive() {
+    bool isArchive()
+    {
         VolumeManager *volume = activeVolume();
         return volume && volume->isArchive();
     }
-    bool isFolder() {
+    bool isFolder()
+    {
         VolumeManager *volume = activeVolume();
         return volume && !volume->isArchive();
     }
 
-    int size() const override {
+    int size() const override
+    {
         VolumeManager *volume = activeVolume();
         return volume ? volume->size() : 0;
     }
     bool canDualView() const;
-    void dispose() {
+    void dispose()
+    {
         ++m_initialDisplayGeneration;
         m_state = EmptyViewerState{};
         m_pendingAssociatedPath.clear();
@@ -152,7 +164,6 @@ public slots:
     void on_pageEnumerated();
     void onSlideShowStarted();
     void onSlideShowStopped();
-
 
 private:
     void startAssociatedVolumeBuild(const QString &qpath,

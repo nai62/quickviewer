@@ -10,37 +10,43 @@ template <typename Key, typename T>
 class TimeOrderdCache
 {
 public:
-    TimeOrderdCache(int maxsize=30) {m_maxSize = maxsize;}
+    TimeOrderdCache(int maxsize = 30) { m_maxSize = maxsize; }
 
-    void insert(const Key &key, T object) {
+    void insert(const Key &key, T object)
+    {
 //        qDebug("add cached: %d", key);
         checkShouldBeInserted(key);
         insertNoChecked(key, object);
     }
-    void insertNoChecked(const Key &key, T object) {
+    void insertNoChecked(const Key &key, T object)
+    {
         m_cache.insert(key, object);
-        while(size() > m_maxSize) {
+        while (size() > m_maxSize) {
             Key last = m_newerOrders.takeLast();
     //            qDebug("remove cached: %d", last);
             trash(m_cache.take(last));
         }
     }
-    void remove(const Key& key) {
-        if(m_newerOrders.contains(key)) {
+    void remove(const Key &key)
+    {
+        if (m_newerOrders.contains(key)) {
             m_newerOrders.removeOne(key);
             trash(m_cache.take(key));
         }
     }
 
-    bool checkShouldBeInserted(const Key& key) {
+    bool checkShouldBeInserted(const Key &key)
+    {
         bool contains = m_newerOrders.contains(key);
-        if(contains)
+        if (contains) {
             m_newerOrders.removeOne(key);
+        }
         m_newerOrders.push_front(key);
         return !contains;
     }
-    void retain(const Key& key) {
-        if(m_newerOrders.contains(key)) {
+    void retain(const Key &key)
+    {
+        if (m_newerOrders.contains(key)) {
             m_newerOrders.removeOne(key);
             m_newerOrders.push_front(key);
         }
@@ -49,18 +55,19 @@ public:
     int size() const { return m_cache.size(); }
     int count() const { return m_cache.size(); }
     bool empty() const { return m_cache.empty(); }
-    bool contains(Key& key) const {return m_newerOrders.contains(key); }
-    T& object(Key &key) { return m_cache[key]; }
-    void clear() {
-        foreach(const Key& key, m_cache.keys()) {
+    bool contains(Key &key) const { return m_newerOrders.contains(key); }
+    T &object(Key &key) { return m_cache[key]; }
+    void clear()
+    {
+        foreach (const Key &key, m_cache.keys()) {
             trash(m_cache.take(key));
         }
         m_cache.clear();
         m_newerOrders.clear();
     }
-    virtual void trash(T ) {
+    virtual void trash(T)
+    {
     }
-
 
 protected:
     QMap<Key, T> m_cache;
@@ -69,34 +76,39 @@ protected:
 };
 
 template <typename Key, class T>
-class TimeOrderdCachePtr : public TimeOrderdCache<Key, T*>
+class TimeOrderdCachePtr : public TimeOrderdCache<Key, T *>
 {
 public:
-     TimeOrderdCachePtr(int maxsize=30)
-         : TimeOrderdCache<Key, T*>(maxsize){}
-    void trash(T* oldest) {
+    TimeOrderdCachePtr(int maxsize = 30)
+        : TimeOrderdCache<Key, T *>(maxsize)
+    {}
+    void trash(T *oldest)
+    {
         delete oldest;
     }
 };
 
 template <typename Key, class T>
-class TimeOrderdCacheFuture : public TimeOrderdCache<Key, QFuture<T> >
+class TimeOrderdCacheFuture : public TimeOrderdCache<Key, QFuture<T>>
 {
 public:
-    TimeOrderdCacheFuture(int maxsize=30)
-         : TimeOrderdCache<Key, QFuture<T> >(maxsize){}
-    void trash(QFuture<T> oldest) {
+    TimeOrderdCacheFuture(int maxsize = 30)
+        : TimeOrderdCache<Key, QFuture<T>>(maxsize)
+    {}
+    void trash(QFuture<T> oldest)
+    {
         oldest.waitForFinished();
     }
 };
 
 template <typename Key, class T>
 class TimeOrderdCacheFutureSharedPtr
-    : public TimeOrderdCache<Key, QFuture<std::shared_ptr<T>> >
+    : public TimeOrderdCache<Key, QFuture<std::shared_ptr<T>>>
 {
 public:
-    TimeOrderdCacheFutureSharedPtr(int maxsize=30)
-        : TimeOrderdCache<Key, QFuture<std::shared_ptr<T>> >(maxsize){}
+    TimeOrderdCacheFutureSharedPtr(int maxsize = 30)
+        : TimeOrderdCache<Key, QFuture<std::shared_ptr<T>>>(maxsize)
+    {}
 
     void trash(QFuture<std::shared_ptr<T>> oldest) override
     {

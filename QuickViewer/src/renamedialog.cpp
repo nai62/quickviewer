@@ -2,8 +2,8 @@
 #include "ui_renamedialog.h"
 
 RenameDialog::RenameDialog(QWidget *parent, QString path, QString filename)
-    : QDialog(parent)
-    , ui(new Ui::RenameDialog)
+    : QDialog(parent),
+      ui(new Ui::RenameDialog)
 {
     ui->setupUi(this);
     m_path = QDir::toNativeSeparators(path);
@@ -22,7 +22,7 @@ void RenameDialog::on_textChanged_triggered(QString text)
 //    QDir dir(m_path);
 //    QFileInfo info(QDir::toNativeSeparators(dir.absoluteFilePath(text)));
 //    info.exists();
-    if(text.isEmpty()) {
+    if (text.isEmpty()) {
         ui->labelErrorMessage->setText(tr("Filename is required.", "An error message to be displayed when the file name is set to the empty character in the file name change dialog"));
         ui->labelErrorMessage->setVisible(true);
     } else {
@@ -33,7 +33,7 @@ void RenameDialog::on_textChanged_triggered(QString text)
 void RenameDialog::on_tryChangingFilenameAndAccept_triggered()
 {
     QDir dir(m_path);
-    if(dir.rename(m_filename, ui->editFilename->text())) {
+    if (dir.rename(m_filename, ui->editFilename->text())) {
         accept();
         return;
     }

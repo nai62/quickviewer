@@ -53,13 +53,16 @@
 #include "flowlayout.h"
 //! [1]
 FlowLayout::FlowLayout(QWidget *parent, int margin, int hSpacing, int vSpacing)
-    : QLayout(parent), m_hSpace(hSpacing), m_vSpace(vSpacing)
+    : QLayout(parent),
+      m_hSpace(hSpacing),
+      m_vSpace(vSpacing)
 {
     setContentsMargins(margin, margin, margin, margin);
 }
 
 FlowLayout::FlowLayout(int margin, int hSpacing, int vSpacing)
-    : m_hSpace(hSpacing), m_vSpace(vSpacing)
+    : m_hSpace(hSpacing),
+      m_vSpace(vSpacing)
 {
     setContentsMargins(margin, margin, margin, margin);
 }
@@ -69,8 +72,9 @@ FlowLayout::FlowLayout(int margin, int hSpacing, int vSpacing)
 FlowLayout::~FlowLayout()
 {
     QLayoutItem *item;
-    while ((item = takeAt(0)))
+    while ((item = takeAt(0))) {
         delete item;
+    }
 }
 //! [2]
 
@@ -114,10 +118,11 @@ QLayoutItem *FlowLayout::itemAt(int index) const
 
 QLayoutItem *FlowLayout::takeAt(int index)
 {
-    if (index >= 0 && index < itemList.size())
+    if (index >= 0 && index < itemList.size()) {
         return itemList.takeAt(index);
-    else
+    } else {
         return 0;
+    }
 }
 
 //QSize FlowLayout::maximumSize() const
@@ -172,11 +177,12 @@ QSize FlowLayout::minimumSize() const
 {
     QSize size;
     QLayoutItem *item;
-    foreach (item, itemList)
+    foreach (item, itemList) {
         size = size.expandedTo(item->minimumSize());
+    }
 
     QMargins m = contentsMargins();
-    size += QSize(m.left()+m.right(), m.top()+m.bottom());
+    size += QSize(m.left() + m.right(), m.top() + m.bottom());
     return size;
 }
 //! [8]
@@ -197,13 +203,15 @@ int FlowLayout::doLayout(const QRect &rect, bool testOnly) const
     foreach (item, itemList) {
         QWidget *wid = item->widget();
         int spaceX = horizontalSpacing();
-        if (spaceX == -1)
+        if (spaceX == -1) {
             spaceX = wid->style()->layoutSpacing(
                 QSizePolicy::PushButton, QSizePolicy::PushButton, Qt::Horizontal);
+        }
         int spaceY = verticalSpacing();
-        if (spaceY == -1)
+        if (spaceY == -1) {
             spaceY = wid->style()->layoutSpacing(
                 QSizePolicy::PushButton, QSizePolicy::PushButton, Qt::Vertical);
+        }
 //! [10]
 //! [11]
         int nextX = x + item->sizeHint().width() + spaceX;
@@ -214,8 +222,9 @@ int FlowLayout::doLayout(const QRect &rect, bool testOnly) const
             lineHeight = 0;
         }
 
-        if (!testOnly)
+        if (!testOnly) {
             item->setGeometry(QRect(QPoint(x, y), item->sizeHint()));
+        }
 
         x = nextX;
         lineHeight = qMax(lineHeight, item->sizeHint().height());

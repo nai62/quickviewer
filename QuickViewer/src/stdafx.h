@@ -7,13 +7,13 @@
 #include <QtConcurrent>
 
 #ifndef QV_WITHOUT_OPENGL
-#  include <QtOpenGL>
+#    include <QtOpenGL>
 #endif
 
 #ifdef Q_OS_WIN
-#include <Windows.h>
-#include <mapi.h>
-#include <Shellapi.h>
+#    include <Windows.h>
+#    include <mapi.h>
+#    include <Shellapi.h>
 #endif
 
 // local headers

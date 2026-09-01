@@ -14,11 +14,13 @@
 class SavedPoint : public QPoint
 {
 public:
-    void start(QPoint ptStart) {
+    void start(QPoint ptStart)
+    {
         m_ptStart = ptStart;
-        m_ptSaved = QPoint(x(),y());
+        m_ptSaved = QPoint(x(), y());
     }
-    void step(QPoint ptStep) {
+    void step(QPoint ptStep)
+    {
 //        qDebug("before: pt:(%d,%d) step:(%d,%d) start:(%d,%d)",
 //               x(),y(),
 //               ptStep.x(),ptStep.y(),
@@ -28,7 +30,11 @@ public:
 //        qDebug("after:  pt:(%d,%d)", x(),y());
     }
     QPoint pt() const { return QPoint(x(), y()); }
-    void reset() { setX(0);setY(0);}
+    void reset()
+    {
+        setX(0);
+        setY(0);
+    }
 
 private:
     QPoint m_ptStart;
@@ -44,11 +50,13 @@ class ImageView : public QGraphicsView, public PageRenderContext
 {
     Q_OBJECT
 public:
-    enum RendererType { Native, OpenGL, Image };
+    enum RendererType { Native,
+                        OpenGL,
+                        Image };
     typedef QPair<uint, uint> ZoomFraction;
     explicit ImageView(QWidget *parent = Q_NULLPTR);
     void setRenderer(RendererType type = Native);
-    void setPageManager(PageManager* manager);
+    void setPageManager(PageManager *manager);
     Qt::AnchorPoint hoverState() const { return m_hoverState; }
     void skipRisizeEvent(bool skipped) { m_skipResizeEvent = skipped; }
     bool isSlideShow() const { return m_slideshowTimer != nullptr; }
@@ -56,7 +64,7 @@ public:
     bool isFullscreen() { return m_isFullScreen; }
     void setWillFullscreen(bool fullscreen) { m_isFullScreen = fullscreen; }
     void resetBackgroundColor();
-    void setSceneRectMode(bool scrolled, const QRect& sceneRect);
+    void setSceneRectMode(bool scrolled, const QRect &sceneRect);
     void scrollOnLoupeMode();
     void scrollOnZoomMode();
     bool isScrollMode() { return m_scrollMode; }
@@ -69,7 +77,7 @@ public:
     void resetViewportFactors();
     ImageRetouch brightness() const override { return m_retouchParams; }
     qreal currentPixelRatio() const override { return m_lastScreenPixelRatio; }
-    void setCursor(const QCursor& cursor);
+    void setCursor(const QCursor &cursor);
 
 signals:
     /**
@@ -152,7 +160,7 @@ private:
     RenderedPages m_renderedPages;
 
     SavedPoint m_ptLeftTop;
-    QGraphicsScene* m_scene;
+    QGraphicsScene *m_scene;
     Qt::AnchorPoint m_hoverState;
     /**
      * @brief for manual ZoomIn or ZoomOut
@@ -163,9 +171,9 @@ private:
     QFont m_font;
     QCursor m_loupeCursor;
 
-    PageManager* m_pageManager;
+    PageManager *m_pageManager;
     ShaderManager m_effectManager;
-    QTimer* m_slideshowTimer;
+    QTimer *m_slideshowTimer;
 
     // rotate or scale with touchEvents
     qreal m_beginScaleFactor;
@@ -191,7 +199,5 @@ private:
     // Brightness
     ImageRetouch m_retouchParams;
 };
-
-
 
 #endif // IMAGEVIEW_H

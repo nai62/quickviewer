@@ -22,39 +22,42 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    virtual bool moveToTrush(QString ) {return false;}
-    virtual bool setStayOnTop(bool ) {return false;}
-    virtual void setWindowTop(bool ) {}
-    virtual void setMailAttachment(QString ) {}
+    virtual bool moveToTrush(QString) { return false; }
+    virtual bool setStayOnTop(bool) { return false; }
+    virtual void setWindowTop(bool) {}
+    virtual void setMailAttachment(QString) {}
     virtual bool eventFilter(QObject *obj, QEvent *event);
 
     /**
      * @brief loadVolume
      * @param prohibitProhibit2Page prohbit 2 page viewing
      */
-    void loadVolume(QString path, bool prohibitProhibit2Page=false);
+    void loadVolume(QString path, bool prohibitProhibit2Page = false);
     void loadVolumeWithAssoc(QString path);
 
     void resetShortcutKeys();
     void makeHistoryMenu();
-    void resetVolume(VolumeManager* newer);
-    void uncheckAllShaderMenus() {
-        foreach(QAction* action, m_shaderMenuGroup) {
+    void resetVolume(VolumeManager *newer);
+    void uncheckAllShaderMenus()
+    {
+        foreach (QAction *action, m_shaderMenuGroup) {
             action->setChecked(false);
         }
     }
-    void uncheckAllLanguageMenus() {
-        foreach(QAction* action, m_languageMenuGroup) {
+    void uncheckAllLanguageMenus()
+    {
+        foreach (QAction *action, m_languageMenuGroup) {
             action->setChecked(false);
         }
     }
-    void uncheckAllSortByMenus() {
-        foreach(QAction* action, m_sortByMenuGroup) {
+    void uncheckAllSortByMenus()
+    {
+        foreach (QAction *action, m_sortByMenuGroup) {
             action->setChecked(false);
         }
     }
     void makeBookmarkMenu();
-    void setThumbnailManager(ThumbnailManager* manager);
+    void setThumbnailManager(ThumbnailManager *manager);
     void resetVolumeCaption();
     void resetShortCut(const QString name, const QString shortcuttext, bool removed);
 
@@ -62,7 +65,7 @@ public:
 
     // FolderWindow
     bool isFolderSearching();
-    void createFolderWindow(bool docked, QString path="");
+    void createFolderWindow(bool docked, QString path = "");
     bool changeFolderPath(QString path);
 
     // CatalogWindow
@@ -71,7 +74,6 @@ public:
 
     // BrightnessWindow
     void createBrightnessWindow(bool docked);
-
 
 protected:
     void dragEnterEvent(QDragEnterEvent *e) override;
@@ -84,7 +86,7 @@ protected:
     void closeEvent(QCloseEvent *e) override;
     void resizeEvent(QResizeEvent *e) override;
     void on_pageNolongerNeeded_triggered();
-	void touchEvent(QTouchEvent* e);
+    void touchEvent(QTouchEvent *e);
 
 signals:
     void changingFullscreen(bool);
@@ -216,7 +218,6 @@ private slots:
     void onGraphicsView_fittingChanged(qvEnums::FitMode mode);
     void onInitialImageDisplayFinished();
 
-
 protected:
     Ui::MainWindow *ui;
     bool m_viewerWindowStateMaximized;
@@ -226,26 +227,25 @@ protected:
     /**
      * @brief m_contextMenu Define on the context menu mainwindow.ui for the main screen and separate at startup
      */
-    QMenu* m_contextMenu;
+    QMenu *m_contextMenu;
 
     QString m_volumeCaption;
     QString m_pageCaption;
 
     PageManager m_pageManager;
     ImageString m_imageString;
-    QList<QAction*> m_shaderMenuGroup;
-    QList<QAction*> m_languageMenuGroup;
-    QList<QAction*> m_sortByMenuGroup;
-    ThumbnailManager* m_thumbManager;
-    FolderWindow* m_folderWindow;
+    QList<QAction *> m_shaderMenuGroup;
+    QList<QAction *> m_languageMenuGroup;
+    QList<QAction *> m_sortByMenuGroup;
+    ThumbnailManager *m_thumbManager;
+    FolderWindow *m_folderWindow;
     QString m_pendingFolderPath;
-    CatalogWindow* m_catalogWindow;
-    BrightnessWindow* m_brightnessWindow;
-    ExifDialog* m_exifDialog;
-    QToolButton* m_fullscreenButton;
+    CatalogWindow *m_catalogWindow;
+    BrightnessWindow *m_brightnessWindow;
+    ExifDialog *m_exifDialog;
+    QToolButton *m_fullscreenButton;
     uint m_menubarFontSize;
-	uint m_pageSliderHeight;
+    uint m_pageSliderHeight;
 };
-
 
 #endif // MAINWINDOW_H

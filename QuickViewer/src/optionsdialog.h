@@ -6,8 +6,7 @@
 #include "imagestring.h"
 
 #define IRFANVIEW_WINDOWTITLE_FORMAT "%p %2| %p"
-#define IRFANVIEW_STATUSBAR_FORMAT   "%s %n %m %f / %b %2| %s %m %f / %b"
-
+#define IRFANVIEW_STATUSBAR_FORMAT "%s %n %m %f / %b %2| %s %m %f / %b"
 
 namespace Ui {
 class OptionsDialog;
@@ -20,7 +19,7 @@ public:
     OptionsDialog(QWidget *parent);
     ~OptionsDialog();
     void reflectResults();
-    void resetColorButton(QPushButton* btn, QColor color);
+    void resetColorButton(QPushButton *btn, QColor color);
     void resetColorBox();
     void resetWindowTitleSample();
     void resetStatusbarSample();

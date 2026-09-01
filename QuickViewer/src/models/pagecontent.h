@@ -13,16 +13,18 @@ struct ImageRetouch
     float Brightness;
     float Contrast;
     float Gamma;
-    ImageRetouch(float brightness=0.0f, float contrast=1.0f, float gamma=1.0f)
-        :Brightness(brightness), Contrast(contrast), Gamma(gamma){}
-    bool isDefault() const {
+    ImageRetouch(float brightness = 0.0f, float contrast = 1.0f, float gamma = 1.0f)
+        : Brightness(brightness),
+          Contrast(contrast),
+          Gamma(gamma)
+    {}
+    bool isDefault() const
+    {
         return *this == ImageRetouch();
     }
-    bool operator==(const ImageRetouch& rhs) const
+    bool operator==(const ImageRetouch &rhs) const
     {
-        return Brightness == rhs.Brightness
-                && Contrast == rhs.Contrast
-                && Gamma == rhs.Gamma;
+        return Brightness == rhs.Brightness && Contrast == rhs.Contrast && Gamma == rhs.Gamma;
     }
 };
 
@@ -78,22 +80,36 @@ public:
     ImageRetouch RetouchParam;
     qvEnums::ShaderEffect ResizeMode;
 
-    ImageContent():FileLength(0),ResizeMode(qvEnums::Bilinear){}
-    ImageContent(QString path, size_t length):Path(path),FileLength(length),ResizeMode(qvEnums::Bilinear){}
-    ImageContent(QImage image, QString path, QSize size, easyexif::EXIFInfo info, size_t length)
-        : Image(image), BaseSize(size), ImportSize(image.size()), Path(path), Info(info), FileLength(length),ResizeMode(qvEnums::Bilinear) {}
-    ImageContent(const ImageContent& rhs)
-        : Image(rhs.Image)
-        , ResizedImage(rhs.ResizedImage)
-        , Movie(rhs.Movie)
-        , BaseSize(rhs.BaseSize)
-        , ImportSize(rhs.ImportSize)
-        , Path(rhs.Path)
-        , Info(rhs.Info)
-        , FileLength(rhs.FileLength)
-        , ResizeMode(rhs.ResizeMode)
+    ImageContent()
+        : FileLength(0),
+          ResizeMode(qvEnums::Bilinear)
     {}
-    inline ImageContent& operator=(const ImageContent &rhs)
+    ImageContent(QString path, size_t length)
+        : Path(path),
+          FileLength(length),
+          ResizeMode(qvEnums::Bilinear)
+    {}
+    ImageContent(QImage image, QString path, QSize size, easyexif::EXIFInfo info, size_t length)
+        : Image(image),
+          BaseSize(size),
+          ImportSize(image.size()),
+          Path(path),
+          Info(info),
+          FileLength(length),
+          ResizeMode(qvEnums::Bilinear)
+    {}
+    ImageContent(const ImageContent &rhs)
+        : Image(rhs.Image),
+          ResizedImage(rhs.ResizedImage),
+          Movie(rhs.Movie),
+          BaseSize(rhs.BaseSize),
+          ImportSize(rhs.ImportSize),
+          Path(rhs.Path),
+          Info(rhs.Info),
+          FileLength(rhs.FileLength),
+          ResizeMode(rhs.ResizeMode)
+    {}
+    inline ImageContent &operator=(const ImageContent &rhs)
     {
         Image = rhs.Image;
         ResizedImage = rhs.ResizedImage;
@@ -106,7 +122,7 @@ public:
         ResizeMode = rhs.ResizeMode;
         return *this;
     }
-    bool wideImage() const {return BaseSize.width() > BaseSize.height(); }
+    bool wideImage() const { return BaseSize.width() > BaseSize.height(); }
     void initialize();
 };
 
@@ -141,7 +157,7 @@ public:
      * @brief GrItem
      * Page image is used as a QGraphicsItem. it will be registed to the scene
      */
-    QGraphicsItem* GrItem;
+    QGraphicsItem *GrItem;
 //    /**
 //     * @brief Resized
 //     * Store the image changed to the specified size (newsize)
@@ -156,8 +172,8 @@ public:
      * @brief GText is information as a text on fullscreen
      */
     QString Text;
-    QGraphicsTextItem* GText;
-    QGraphicsRectItem* GTextSurface;
+    QGraphicsTextItem *GText;
+    QGraphicsRectItem *GTextSurface;
     /**
      * @brief Actual drawing scale
      */
@@ -168,29 +184,26 @@ public:
     qreal NotationalScale;
     SeparationState Separation;
 
-    explicit PageItem(QObject* parent=nullptr, const PageRenderContext* renderContext=nullptr);
-    PageItem(QObject* parent, QGraphicsScene *s, ImageContent ic,
-             const PageRenderContext* renderContext=nullptr);
+    explicit PageItem(QObject *parent = nullptr, const PageRenderContext *renderContext = nullptr);
+    PageItem(QObject *parent, QGraphicsScene *s, ImageContent ic, const PageRenderContext *renderContext = nullptr);
     ~PageItem() override;
     Q_DISABLE_COPY_MOVE(PageItem)
 
-    QPoint Offset(int rotateOffset=0);
-    QSize CurrentSize(int rotateOffset=0);
+    QPoint Offset(int rotateOffset = 0);
+    QSize CurrentSize(int rotateOffset = 0);
 
     /**
      * @brief setPageLayout set each image on the page
      * @param viewport: the image must be inscribed in the viewport area
      */
-    QRect setPageLayoutFitting(QRect viewport, PageAlign align, qvEnums::FitMode fitMode, qreal loupe, int rotateOffset=0);
-    QRect setPageLayoutManual(QRect viewport, PageAlign align, qreal scale, int rotateOffset=0, bool loupe=false);
+    QRect setPageLayoutFitting(QRect viewport, PageAlign align, qvEnums::FitMode fitMode, qreal loupe, int rotateOffset = 0);
+    QRect setPageLayoutManual(QRect viewport, PageAlign align, qreal scale, int rotateOffset = 0, bool loupe = false);
 
-
-
-    void applyResize(qreal scale, int rotateOffset, QPoint pos, QSize newsize, bool loupe=false);
-    QImage& applyRetouched();
-    void initializePage(bool resetResized=false);
+    void applyResize(qreal scale, int rotateOffset, QPoint pos, QSize newsize, bool loupe = false);
+    QImage &applyRetouched();
+    void initializePage(bool resetResized = false);
     void resetSignage(QRect viewport, PageItem::PageAlign fitting);
-    void resetScene(QGraphicsScene* scene);
+    void resetScene(QGraphicsScene *scene);
     void checkInitialize();
     void dispose();
 signals:
@@ -206,8 +219,7 @@ private:
     int m_resizeGeneratingState;
     bool initialized;
     // Non-owning. The context must outlive this page item.
-    const PageRenderContext* m_renderContext;
+    const PageRenderContext *m_renderContext;
 };
-
 
 #endif // PAGECONTENT_H

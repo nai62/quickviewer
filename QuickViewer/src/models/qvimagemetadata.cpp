@@ -2,7 +2,7 @@
 #include "volumemanager.h"
 
 QvImageMetadata::QvImageMetadata(VolumeManager *volume, QString filename)
-    :QObject (volume)
+    : QObject(volume)
 {
     m_volume = volume;
     m_filename = filename;
@@ -10,31 +10,34 @@ QvImageMetadata::QvImageMetadata(VolumeManager *volume, QString filename)
 
 QDateTime QvImageMetadata::getMTime()
 {
-    if(m_volume->isArchive()) {
+    if (m_volume->isArchive()) {
         return m_volume->FileLoader()->getFileModified(m_filename);
     }
-    if(m_info.fileName().isEmpty())
+    if (m_info.fileName().isEmpty()) {
         initFileInfo();
+    }
     return m_info.lastModified();
 }
 
 qint64 QvImageMetadata::getFileSize()
 {
-    if(m_volume->isArchive()) {
+    if (m_volume->isArchive()) {
         return m_volume->FileLoader()->getFileSize(m_filename);
     }
-    if(m_info.fileName().isEmpty())
+    if (m_info.fileName().isEmpty()) {
         initFileInfo();
+    }
     return m_info.size();
 }
 
 QSize QvImageMetadata::getDimension()
 {
-    if(!m_dimension.isEmpty())
+    if (!m_dimension.isEmpty()) {
         return m_dimension;
+    }
     QString aformat = IFileLoader::isExifJpegImageFile(m_filename)
-            ? (IFileLoader::isImageFile("turbojpeg") ? TURBO_JPEG_FMT : "jpg")
-            : QFileInfo(m_filename.toLower()).suffix();
+                          ? (IFileLoader::isImageFile("turbojpeg") ? TURBO_JPEG_FMT : "jpg")
+                          : QFileInfo(m_filename.toLower()).suffix();
     QByteArray bytes = m_volume->loadByteArrayByName(m_filename);
     QBuffer buffer(&bytes);
     QImageReader reader(&buffer, aformat.toUtf8());
@@ -43,6 +46,7 @@ QSize QvImageMetadata::getDimension()
 
 void QvImageMetadata::initFileInfo()
 {
-    if(!m_volume->isArchive())
+    if (!m_volume->isArchive()) {
         m_info = QFileInfo(m_volume->getPathByFileName(m_filename));
+    }
 }

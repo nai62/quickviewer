@@ -55,25 +55,25 @@ void PrefetchPlannerTest::respectsCacheCapacity_data()
     QTest::addColumn<QList<int>>("expected");
 
     QTest::newRow("normal-6") << PrefetchMode::Normal << 6
-        << QList<int>({0, 1, 2, 3, -1, -2});
+                              << QList<int>({0, 1, 2, 3, -1, -2});
     QTest::newRow("forward-6") << PrefetchMode::NormalForward << 6
-        << QList<int>({0, 1, 2, 3, 4, 5});
+                               << QList<int>({0, 1, 2, 3, 4, 5});
     QTest::newRow("backward-6") << PrefetchMode::NormalBackward << 6
-        << QList<int>({0, 1, -1, -2, -3, -4});
+                                << QList<int>({0, 1, -1, -2, -3, -4});
     QTest::newRow("fast-forward-6") << PrefetchMode::FastForward << 6
-        << QList<int>({0, 1, 10, 11, -10, -9});
+                                    << QList<int>({0, 1, 10, 11, -10, -9});
     QTest::newRow("fast-backward-6") << PrefetchMode::FastBackward << 6
-        << QList<int>({0, 1, -10, -9, 10, 11});
+                                     << QList<int>({0, 1, -10, -9, 10, 11});
     QTest::newRow("normal-minimum-dual-page") << PrefetchMode::Normal << 2
-        << QList<int>({0, 1});
+                                              << QList<int>({0, 1});
     QTest::newRow("forward-minimum-dual-page") << PrefetchMode::NormalForward << 2
-        << QList<int>({0, 1});
+                                               << QList<int>({0, 1});
     QTest::newRow("backward-minimum-dual-page") << PrefetchMode::NormalBackward << 2
-        << QList<int>({0, 1});
+                                                << QList<int>({0, 1});
     QTest::newRow("fast-minimum-dual-page") << PrefetchMode::FastForward << 2
-        << QList<int>({0, 1});
+                                            << QList<int>({0, 1});
     QTest::newRow("fast-backward-minimum-dual-page") << PrefetchMode::FastBackward << 2
-        << QList<int>({0, 1});
+                                                     << QList<int>({0, 1});
 }
 
 void PrefetchPlannerTest::respectsCacheCapacity()

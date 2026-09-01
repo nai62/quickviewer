@@ -46,7 +46,7 @@ void AsyncCacheTest::boundsActiveAndPendingJobs()
     BoundedExecutor executor(2, 2);
     QSemaphore gate;
     QList<QFuture<int>> futures;
-    for(int value = 1; value <= 4; ++value) {
+    for (int value = 1; value <= 4; ++value) {
         auto submission = executor.submit([&gate, value] {
             gate.acquire();
             return value;
@@ -64,8 +64,9 @@ void AsyncCacheTest::boundsActiveAndPendingJobs()
     QCOMPARE(executor.pendingCount(), 2);
 
     gate.release(4);
-    for(QFuture<int> &future : futures)
+    for (QFuture<int> &future : futures) {
         future.waitForFinished();
+    }
     QTRY_COMPARE(executor.activeCount(), 0);
     QCOMPARE(executor.pendingCount(), 0);
 }

@@ -15,12 +15,12 @@ class QvImageMetadata : QObject
 {
     Q_OBJECT
 public:
-    QvImageMetadata(VolumeManager* volume, QString filename);
-    QvImageMetadata(const QvImageMetadata& rhs)
+    QvImageMetadata(VolumeManager *volume, QString filename);
+    QvImageMetadata(const QvImageMetadata &rhs)
     {
         *this = rhs;
     }
-    QvImageMetadata& operator=(const QvImageMetadata& rhs)
+    QvImageMetadata &operator=(const QvImageMetadata &rhs)
     {
         m_volume = rhs.m_volume;
         m_filename = rhs.m_filename;
@@ -29,15 +29,14 @@ public:
         return *this;
     }
 
-    QString filename() const {return m_filename;}
+    QString filename() const { return m_filename; }
     QDateTime getMTime();
     qint64 getFileSize();
     QSize getDimension();
 
-
 private:
     void initFileInfo();
-    VolumeManager* m_volume;
+    VolumeManager *m_volume;
     QString m_filename;
     QFileInfo m_info;
     QSize m_dimension;

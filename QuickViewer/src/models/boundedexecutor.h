@@ -15,7 +15,7 @@
 class BoundedExecutor
 {
 public:
-    template<typename T>
+    template <typename T>
     struct Submission
     {
         bool accepted = false;
@@ -28,8 +28,8 @@ public:
     BoundedExecutor(const BoundedExecutor &) = delete;
     BoundedExecutor &operator=(const BoundedExecutor &) = delete;
 
-    template<typename Function,
-             typename T = std::invoke_result_t<std::decay_t<Function>>>
+    template <typename Function,
+              typename T = std::invoke_result_t<std::decay_t<Function>>>
     Submission<T> submit(Function &&function)
     {
         auto promise = QSharedPointer<QPromise<T>>::create();
@@ -40,12 +40,12 @@ public:
         Job job;
         job.run = [promise, function = std::forward<Function>(function)]() mutable {
             try {
-                if constexpr(std::is_void_v<T>) {
+                if constexpr (std::is_void_v<T>) {
                     function();
                 } else {
                     promise->addResult(function());
                 }
-            } catch(...) {
+            } catch (...) {
                 promise->setException(std::current_exception());
             }
             promise->finish();

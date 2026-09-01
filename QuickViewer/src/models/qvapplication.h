@@ -12,11 +12,9 @@
 #include "qactionmanager.h"
 
 #if defined(qApp)
-#undef qApp
+#    undef qApp
 #endif
 #define qApp (static_cast<QVApplication *>(QCoreApplication::instance()))
-
-
 
 namespace Ui {
 class MainWindow;
@@ -24,7 +22,6 @@ class MainWindow;
 
 class QAction;
 //typedef QList<QKeySequence> QKeySequenceList;
-
 
 class QVApplication : public QApplication
 {
@@ -101,8 +98,8 @@ class QVApplication : public QApplication
     Q_PROPERTY(QString UiTheme READ UiTheme WRITE setUiTheme)
 
 public:
-    typedef QActionManager<QKeySequence, QKeyCombination, QAction*> KeyActionManager;
-    typedef QActionManager<QMouseSequence, QMouseValue, QAction*> MouseActionManager;
+    typedef QActionManager<QKeySequence, QKeyCombination, QAction *> KeyActionManager;
+    typedef QActionManager<QMouseSequence, QMouseValue, QAction *> MouseActionManager;
     explicit QVApplication(int &argc, char **argv);
     ~QVApplication();
     QString getApplicationFilePath(QString subFilePath);
@@ -119,13 +116,13 @@ public:
 
     // Image
     int SlideShowWait() { return m_slideShowWait; }
-    void setSlideShowWait (int slideShowWait) { m_slideShowWait = slideShowWait; }
+    void setSlideShowWait(int slideShowWait) { m_slideShowWait = slideShowWait; }
     int MaxVolumesCache() { return m_maxVolumesCache; }
-    void setMaxVolumesCache (int maxVolumesCache) { m_maxVolumesCache = maxVolumesCache; }
+    void setMaxVolumesCache(int maxVolumesCache) { m_maxVolumesCache = maxVolumesCache; }
     int MaxImagesCache() { return m_maxImagesCache; }
-    void setMaxImagesCache (int maxImagesCache) { m_maxImagesCache = maxImagesCache; }
+    void setMaxImagesCache(int maxImagesCache) { m_maxImagesCache = maxImagesCache; }
     bool DontEnlargeSmallImagesOnFitting() { return m_dontEnlargeSmallImagesOnFitting; }
-    void setDontEnlargeSmallImagesOnFitting (bool dontEnlargeSmallImagesOnFitting) { m_dontEnlargeSmallImagesOnFitting = dontEnlargeSmallImagesOnFitting; }
+    void setDontEnlargeSmallImagesOnFitting(bool dontEnlargeSmallImagesOnFitting) { m_dontEnlargeSmallImagesOnFitting = dontEnlargeSmallImagesOnFitting; }
     int MaxTextureSize() { return m_maxTextureSize; }
     void setMaxTextureSize(int maxTextureSize) { m_maxTextureSize = maxTextureSize; }
     bool UseFastDCTForJPEG() { return m_useFastDCTForJPEG; }
@@ -139,19 +136,19 @@ public:
     qvEnums::ImageSortBy ImageSortBy() { return m_imageSortBy; }
     void setImageSortBy(qvEnums::ImageSortBy sortBy) { m_imageSortBy = sortBy; }
     bool Fitting() { return m_fitting; }
-    void setFitting (bool fitting) { m_fitting = fitting; }
+    void setFitting(bool fitting) { m_fitting = fitting; }
     qvEnums::FitMode ImageFitMode() { return m_fitMode; }
     void setImageFitMode(qvEnums::FitMode fitMode) { m_fitMode = fitMode; }
     QColor BackgroundColor() { return m_backgroundColor; }
-    void setBackgroundColor (QColor backgroundColor) { m_backgroundColor = backgroundColor; }
+    void setBackgroundColor(QColor backgroundColor) { m_backgroundColor = backgroundColor; }
     QColor BackgroundColor2() { return m_backgroundColor2; }
-    void setBackgroundColor2 (QColor backgroundColor) { m_backgroundColor2 = backgroundColor; }
+    void setBackgroundColor2(QColor backgroundColor) { m_backgroundColor2 = backgroundColor; }
     bool UseCheckeredPattern() { return m_useCheckeredPattern; }
-    void setUseCheckeredPattern (bool useCheckeredPattern) { m_useCheckeredPattern = useCheckeredPattern; }
+    void setUseCheckeredPattern(bool useCheckeredPattern) { m_useCheckeredPattern = useCheckeredPattern; }
     bool ShowFullscreenSignage() { return m_showFullscreenSignage; }
-    void setShowFullscreenSignage (bool showFullscreenSignage) { m_showFullscreenSignage = showFullscreenSignage; }
+    void setShowFullscreenSignage(bool showFullscreenSignage) { m_showFullscreenSignage = showFullscreenSignage; }
     bool DontShrinkForLargeImage() { return m_dontShrinkForLargeImage; }
-    void setDontShrinkForLargeImage (bool dontShrinkForLargeImage) { m_dontShrinkForLargeImage = dontShrinkForLargeImage; }
+    void setDontShrinkForLargeImage(bool dontShrinkForLargeImage) { m_dontShrinkForLargeImage = dontShrinkForLargeImage; }
     bool UseDirect2D() { return m_useDirect2D; }
     void setUseDirect2D(bool useDirect2D) { m_useDirect2D = useDirect2D; }
     bool ShowPanelSeparateWindow() { return m_showPanelSeparateWindow; }
@@ -199,48 +196,47 @@ public:
     bool SlideShowRandomly() { return m_slideShowRandomly; }
     void setSlideShowRandomly(bool slideshowRandomly) { m_slideShowRandomly = slideshowRandomly; }
 
-
     // DualView
     bool DualView() { return m_dualView; }
-    void setDualView (bool dualView) { m_dualView = dualView; }
+    void setDualView(bool dualView) { m_dualView = dualView; }
     bool StayOnTop() { return m_stayOnTop; }
-    void setStayOnTop (bool stayOnTop) { m_stayOnTop = stayOnTop; }
+    void setStayOnTop(bool stayOnTop) { m_stayOnTop = stayOnTop; }
     bool RightSideBook() { return m_rightSideBook; }
-    void setRightSideBook (bool rightSideBook) { m_rightSideBook = rightSideBook; }
+    void setRightSideBook(bool rightSideBook) { m_rightSideBook = rightSideBook; }
     bool WideImageAsOnePageInDualView() { return m_wideImageAsOnePageInDualView; }
-    void setWideImageAsOnePageInDualView (bool wideImageAsOnePageInDualView) { m_wideImageAsOnePageInDualView = wideImageAsOnePageInDualView; }
+    void setWideImageAsOnePageInDualView(bool wideImageAsOnePageInDualView) { m_wideImageAsOnePageInDualView = wideImageAsOnePageInDualView; }
     bool FirstImageAsOnePageInDualView() { return m_firstImageAsOnePageInDualView; }
-    void setFirstImageAsOnePageInDualView (bool firstImageAsOnePageInDualView) { m_firstImageAsOnePageInDualView = firstImageAsOnePageInDualView; }
+    void setFirstImageAsOnePageInDualView(bool firstImageAsOnePageInDualView) { m_firstImageAsOnePageInDualView = firstImageAsOnePageInDualView; }
     bool SeparatePagesWhenWideImage() { return m_separatePagesWhenWideImage; }
     void setSeparatePagesWhenWideImage(bool separatePagesWhenWideImage) { m_separatePagesWhenWideImage = separatePagesWhenWideImage; }
 
     // Show Bars
     bool ShowToolBar() { return m_showToolBar; }
-    void setShowToolBar (bool showToolBar) { m_showToolBar = showToolBar; }
+    void setShowToolBar(bool showToolBar) { m_showToolBar = showToolBar; }
     bool ShowSliderBar() { return m_showSliderBar; }
-    void setShowSliderBar (bool showSliderBar) { m_showSliderBar = showSliderBar; }
+    void setShowSliderBar(bool showSliderBar) { m_showSliderBar = showSliderBar; }
     bool ShowStatusBar() { return m_showStatusBar; }
-    void setShowStatusBar (bool showStatusBar) { m_showStatusBar = showStatusBar; }
+    void setShowStatusBar(bool showStatusBar) { m_showStatusBar = showStatusBar; }
     bool ShowMenuBar() { return m_showMenuBar; }
-    void setShowMenuBar (bool showMenuBar) { m_showMenuBar = showMenuBar; }
+    void setShowMenuBar(bool showMenuBar) { m_showMenuBar = showMenuBar; }
 
     // RestoreWindowState
     bool RestoreWindowState() { return m_restoreWindowState; }
-    void setRestoreWindowState (bool restoreWindowState) { m_restoreWindowState = restoreWindowState; }
+    void setRestoreWindowState(bool restoreWindowState) { m_restoreWindowState = restoreWindowState; }
     QByteArray WindowGeometry() { return m_windowGeometry; }
-    void setWindowGeometry (QByteArray windowGeometry) { m_windowGeometry = windowGeometry; }
+    void setWindowGeometry(QByteArray windowGeometry) { m_windowGeometry = windowGeometry; }
     QByteArray WindowState() { return m_windowState; }
-    void setWindowState (QByteArray windowState) { m_windowState = windowState; }
+    void setWindowState(QByteArray windowState) { m_windowState = windowState; }
     bool BeginAsFullscreen() { return m_beginAsFullscreen; }
-    void setBeginAsFullscreen (bool beginAsFullscreen) { m_beginAsFullscreen = beginAsFullscreen; }
+    void setBeginAsFullscreen(bool beginAsFullscreen) { m_beginAsFullscreen = beginAsFullscreen; }
 
     // File
     bool AutoLoaded() { return m_autoLoaded; }
     void setAutoLoaded(bool autoLoaded) { m_autoLoaded = autoLoaded; }
     bool ProhibitMultipleRunning() { return m_prohibitMultipleRunning; }
-    void setProhibitMultipleRunning (bool prohibitMultipleRunning) { m_prohibitMultipleRunning = prohibitMultipleRunning; }
+    void setProhibitMultipleRunning(bool prohibitMultipleRunning) { m_prohibitMultipleRunning = prohibitMultipleRunning; }
     QString LastViewPath() { return m_lastViewPath; }
-    void setLastViewPath (QString lastViewPath) { m_lastViewPath = lastViewPath; }
+    void setLastViewPath(QString lastViewPath) { m_lastViewPath = lastViewPath; }
     bool DontSavingHistory() { return m_dontSavingHistory; }
     void setDontSavingHistory(bool savingHistory) { m_dontSavingHistory = savingHistory; }
     bool ExtractSolidArchiveToTemporaryDir() { return m_extractSolidArchiveToTemporaryDir; }
@@ -250,8 +246,8 @@ public:
 
     // History
     int MaxHistoryCount() { return m_maxHistoryCount; }
-    void setMaxHistoryCount (int maxHistoryCount) { m_maxHistoryCount = maxHistoryCount; }
-    const QStringList& History() const { return m_history; }
+    void setMaxHistoryCount(int maxHistoryCount) { m_maxHistoryCount = maxHistoryCount; }
+    const QStringList &History() const { return m_history; }
     void clearHistory() { m_history.clear(); }
     /**
      * @brief addHistory add a path int History. if it is already in History, it will be top of this.
@@ -260,9 +256,9 @@ public:
     void addHistory(QString path);
 
     // BookMark
-    QStringList& Bookmarks() { return m_bookmarks; }
+    QStringList &Bookmarks() { return m_bookmarks; }
     void clearBookmarks() { m_bookmarks.clear(); }
-    void addBookMark(QString path, bool canDumplication=false);
+    void addBookMark(QString path, bool canDumplication = false);
 
     // Folder
     QString getDefaultPictureFolderPath();
@@ -270,67 +266,68 @@ public:
     void setHomeFolderPath(QString path) { m_homeFolderPath = path; }
     qvEnums::FolderViewSort FolderSortMode() { return m_folderSortMode; }
     void setFolderSortMode(qvEnums::FolderViewSort mode) { m_folderSortMode = mode; }
-    BookProgressManager* bookshelfManager() { return m_bookshelfManager; }
+    BookProgressManager *bookshelfManager() { return m_bookshelfManager; }
     bool OpenVolumeWithProgress() { return m_openVolumeWithProgress; }
-    void setOpenVolumeWithProgress (bool openVolumeWithProgress) { m_openVolumeWithProgress = openVolumeWithProgress; }
+    void setOpenVolumeWithProgress(bool openVolumeWithProgress) { m_openVolumeWithProgress = openVolumeWithProgress; }
     bool ShowReadProgress() { return m_showReadProgress; }
-    void setShowReadProgress (bool showReadProgress) { m_showReadProgress = showReadProgress; }
+    void setShowReadProgress(bool showReadProgress) { m_showReadProgress = showReadProgress; }
     bool ShowSubfolders() { return m_showSubfolders; }
-    void setShowSubfolders (bool showSubfolders) { m_showSubfolders = showSubfolders; }
+    void setShowSubfolders(bool showSubfolders) { m_showSubfolders = showSubfolders; }
     bool SaveReadProgress() { return m_saveReadProgress; }
     void setSaveReadProgress(bool saveReadProgress) { m_saveReadProgress = saveReadProgress; }
     bool SaveFolderViewWidth() { return m_saveFolderViewWidth; }
-    void setSaveFolderViewWidth (bool saveFolderViewWidth) { m_saveFolderViewWidth = saveFolderViewWidth; }
+    void setSaveFolderViewWidth(bool saveFolderViewWidth) { m_saveFolderViewWidth = saveFolderViewWidth; }
     int FolderViewWidth() { return m_folderViewWidth; }
     void setFolderViewWidth(int folderViewWidth) { m_folderViewWidth = folderViewWidth; }
 
     // Catalog
     qvEnums::CatalogViewMode CatalogViewModeSetting() { return m_catalogViewModeSetting; }
-    void setCatalogViewModeSetting (qvEnums::CatalogViewMode catalogViewModeSetting) { m_catalogViewModeSetting = catalogViewModeSetting; }
+    void setCatalogViewModeSetting(qvEnums::CatalogViewMode catalogViewModeSetting) { m_catalogViewModeSetting = catalogViewModeSetting; }
     QString CatalogDatabasePath();
-    void setCatalogDatabasePath (QString catalogDatabasePath) { m_catalogDatabasePath = catalogDatabasePath; }
+    void setCatalogDatabasePath(QString catalogDatabasePath) { m_catalogDatabasePath = catalogDatabasePath; }
     int MaxSearchByCharChanged() { return m_maxSearchByCharChanged; }
-    void setMaxSearchByCharChanged (int maxSearchByCharChanged) { m_maxSearchByCharChanged = maxSearchByCharChanged; }
+    void setMaxSearchByCharChanged(int maxSearchByCharChanged) { m_maxSearchByCharChanged = maxSearchByCharChanged; }
     int MaxShowFrontpage() { return m_maxShowFrontpage; }
-    void setMaxShowFrontpage (int maxShowFrontpage) { m_maxShowFrontpage = maxShowFrontpage; }
+    void setMaxShowFrontpage(int maxShowFrontpage) { m_maxShowFrontpage = maxShowFrontpage; }
     bool TitleWithoutOptions() { return m_titleWithoutOptions; }
-    void setTitleWithoutOptions (bool titleWithoutOptions) { m_titleWithoutOptions = titleWithoutOptions; }
+    void setTitleWithoutOptions(bool titleWithoutOptions) { m_titleWithoutOptions = titleWithoutOptions; }
     bool SearchTitleWithOptions() { return m_searchTitleWithOptions; }
-    void setSearchTitleWithOptions (bool searchTitleWithOptions) { m_searchTitleWithOptions = searchTitleWithOptions; }
+    void setSearchTitleWithOptions(bool searchTitleWithOptions) { m_searchTitleWithOptions = searchTitleWithOptions; }
     bool ShowTagBar() { return m_showTagBar; }
-    void setShowTagBar (bool showTagBar) { m_showTagBar = showTagBar; }
+    void setShowTagBar(bool showTagBar) { m_showTagBar = showTagBar; }
     bool IconLongText() { return m_iconLongText; }
-    void setIconLongText (bool iconLongText) { m_iconLongText = iconLongText; }
+    void setIconLongText(bool iconLongText) { m_iconLongText = iconLongText; }
     bool SaveCatalogViewWidth() { return m_saveCatalogViewWidth; }
-    void setSaveCatalogViewWidth (bool saveCatalogViewWidth) { m_saveCatalogViewWidth = saveCatalogViewWidth; }
+    void setSaveCatalogViewWidth(bool saveCatalogViewWidth) { m_saveCatalogViewWidth = saveCatalogViewWidth; }
     int CatalogViewWidth() { return m_catalogViewWidth; }
     void setCatalogViewWidth(int catalogViewWidth) { m_catalogViewWidth = catalogViewWidth; }
 
     // ShaderEffect
     qvEnums::ShaderEffect Effect() { return m_effect; }
-    void setEffect (qvEnums::ShaderEffect shaderEffect) { m_effect = shaderEffect; }
+    void setEffect(qvEnums::ShaderEffect shaderEffect) { m_effect = shaderEffect; }
     QString BicubicShaderPath() { return getApplicationFilePath(m_bicubicShaderPath); }
-    void setBicubicShaderPath (QString bicubicShaderPath) { m_bicubicShaderPath = bicubicShaderPath; }
+    void setBicubicShaderPath(QString bicubicShaderPath) { m_bicubicShaderPath = bicubicShaderPath; }
     QString LanczosShaderPath() { return getApplicationFilePath(m_lanczosShaderPath); }
-    void setLanczosShaderPath (QString lanczosShaderPath) { m_lanczosShaderPath = lanczosShaderPath; }
+    void setLanczosShaderPath(QString lanczosShaderPath) { m_lanczosShaderPath = lanczosShaderPath; }
 
     // Others
     QString UiLanguage() { return m_uiLanguage; }
-    void setUiLanguage (QString uiLanguage) { m_uiLanguage = uiLanguage; }
-    QLanguageSelector* languageSelector() { return &m_languageSelector; }
+    void setUiLanguage(QString uiLanguage) { m_uiLanguage = uiLanguage; }
+    QLanguageSelector *languageSelector() { return &m_languageSelector; }
     bool ConfirmDeletePage() { return m_confirmDeletePage; }
     void setConfirmDeletePage(bool confirmDeletePage) { m_confirmDeletePage = confirmDeletePage; }
 
     // Key Config
-    KeyActionManager& keyActions() { return m_keyActions; }
-    MouseActionManager& mouseActions() { return m_mouseActions; }
+    KeyActionManager &keyActions() { return m_keyActions; }
+    MouseActionManager &mouseActions() { return m_mouseActions; }
 
     // Appearance
     QString UiTheme() { return m_uiTheme; }
-    void setUiTheme (QString uiTheme) {
+    void setUiTheme(QString uiTheme)
+    {
         m_uiTheme = uiTheme;
         //QString themeFilePath = getApplicationFilePath(":/themes/"+m_uiTheme+".qss"); //Local files
-        QString themeFilePath(":/themes/"+m_uiTheme+".qss"); // Resource files
+        QString themeFilePath(":/themes/" + m_uiTheme + ".qss"); // Resource files
         QFile File(themeFilePath);
         File.open(QFile::ReadOnly);
         QString styleSheet = QString(File.readAll());
@@ -339,7 +336,7 @@ public:
 
     void registDefaultKeyMap();
     void registDefaultMouseMap();
-    void registActions(Ui::MainWindow* ui);
+    void registActions(Ui::MainWindow *ui);
 
     /**
      * @brief load settings from "quickviewer.ini"
@@ -349,10 +346,10 @@ public:
      * @brief save settings int "quickviewer.ini"
      */
     void saveSettings();
-    QThread* mainThread() { return m_mainThread; }
+    QThread *mainThread() { return m_mainThread; }
 
 private:
-    QThread* m_mainThread;
+    QThread *m_mainThread;
     int m_maxTextureSize;
 
     // Navigations
@@ -462,7 +459,6 @@ private:
     KeyActionManager m_keyActions;
     MouseActionManager m_mouseActions;
 
-
     // Shader Effect
     qvEnums::ShaderEffect m_effect;
     QString m_bicubicShaderPath;
@@ -476,8 +472,8 @@ private:
     // Appearance
     QString m_uiTheme;
 
-    QSettings* m_settings;
-    BookProgressManager* m_bookshelfManager;
+    QSettings *m_settings;
+    BookProgressManager *m_bookshelfManager;
 
     QLanguageSelector m_languageSelector;
     QLanguageSelector m_qtbaseLanguageSelector;

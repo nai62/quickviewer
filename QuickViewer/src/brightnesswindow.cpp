@@ -2,10 +2,10 @@
 #include "ui_brightnesswindow.h"
 #include "pagemanager.h"
 
-BrightnessWindow::BrightnessWindow(QWidget *parent, Ui::MainWindow* uiMain) :
-    QWidget(parent)
-    , ui(new Ui::BrightnessWindow)
-    , ignoreTextChange(false)
+BrightnessWindow::BrightnessWindow(QWidget *parent, Ui::MainWindow *uiMain)
+    : QWidget(parent),
+      ui(new Ui::BrightnessWindow),
+      ignoreTextChange(false)
 {
     ui->setupUi(this);
     ui->checkBoxForAll->setVisible(false);
@@ -23,7 +23,7 @@ float BrightnessWindow::sliderToFloat(int value)
     //   0 ->   1.0
     //  10 ->  10
     //  20 -> 100
-    return powf(10, 0.1f/8*value);
+    return powf(10, 0.1f / 8 * value);
 }
 
 int BrightnessWindow::floatToSlider(float value)
@@ -33,14 +33,15 @@ int BrightnessWindow::floatToSlider(float value)
     //   1.0  ->   0
     //  10    ->  10
     // 100    ->  20
-    return (int)(10*8*log10f(value));
+    return (int)(10 * 8 * log10f(value));
 }
 
 void BrightnessWindow::setImageView(ImageView *imageView)
 {
     m_imageView = imageView;
-    if(!m_imageView || m_imageView->renderedPageCount() == 0)
+    if (!m_imageView || m_imageView->renderedPageCount() == 0) {
         return;
+    }
 
     m_retouchParams = m_imageView->brightness();
     resetSliders();
@@ -61,21 +62,27 @@ void BrightnessWindow::resetSliders()
 void BrightnessWindow::onSliderBrightness_valueChanged(int value)
 {
     m_retouchParams.Brightness = value;
-    if(!ignoreTextChange) ui->lineBrightness->setText(QString::number(value));
+    if (!ignoreTextChange) {
+        ui->lineBrightness->setText(QString::number(value));
+    }
     emit brightnessChanged(m_retouchParams);
 }
 
 void BrightnessWindow::onSliderContrast_valueChanged(int value)
 {
     m_retouchParams.Contrast = sliderToFloat(value);
-    if(!ignoreTextChange) ui->lineContrast->setText(QString::number(value));
+    if (!ignoreTextChange) {
+        ui->lineContrast->setText(QString::number(value));
+    }
     emit brightnessChanged(m_retouchParams);
 }
 
 void BrightnessWindow::onSliderGamma_valueChanged(int value)
 {
     m_retouchParams.Gamma = sliderToFloat(value);
-    if(!ignoreTextChange) ui->lineGamma->setText(QString::number(value));
+    if (!ignoreTextChange) {
+        ui->lineGamma->setText(QString::number(value));
+    }
     emit brightnessChanged(m_retouchParams);
 }
 

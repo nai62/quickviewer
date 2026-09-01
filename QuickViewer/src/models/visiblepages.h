@@ -16,8 +16,9 @@ public:
     explicit VisiblePages(QVector<ImageContent> pages)
         : m_pages(std::move(pages))
     {
-        if(m_pages.size() > Capacity)
+        if (m_pages.size() > Capacity) {
             m_pages.resize(Capacity);
+        }
     }
 
     bool isEmpty() const { return m_pages.isEmpty(); }

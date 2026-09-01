@@ -133,9 +133,10 @@ static void verifyRarArchive(const QString &archivePath, const QString &firstNam
     QCOMPARE(QDir::fromNativeSeparators(files.first()), firstName);
 
     QList<int> nonEmptyFiles;
-    for(int index = 0; index < rar.m_fileInfoList.size(); ++index) {
-        if(rar.m_fileInfoList.at(index).unpSize > 0)
+    for (int index = 0; index < rar.m_fileInfoList.size(); ++index) {
+        if (rar.m_fileInfoList.at(index).unpSize > 0) {
             nonEmptyFiles.append(index);
+        }
     }
     QVERIFY(nonEmptyFiles.size() >= 2);
 
@@ -146,8 +147,7 @@ static void verifyRarArchive(const QString &archivePath, const QString &firstNam
     QCOMPARE(rar.m_curIndex, firstIndex + 1);
 
     const QByteArray secondBytes = rar.fileData(files.at(secondIndex));
-    QCOMPARE(secondBytes.size(), static_cast<qsizetype>(
-                 rar.m_fileInfoList.at(secondIndex).unpSize));
+    QCOMPARE(secondBytes.size(), static_cast<qsizetype>(rar.m_fileInfoList.at(secondIndex).unpSize));
     QCOMPARE(rar.m_curIndex, secondIndex + 1);
 
     // A cached backward read must not reset the sequential archive cursor.
@@ -200,17 +200,14 @@ void FileLoaderTest::testCase7_directoryLinks()
     const QString targetPath = root.filePath("target");
     const QString linkPath = root.filePath("container/link");
     QProcess mklink;
-    mklink.start("cmd.exe", {"/c", "mklink", mklinkOption,
-                              QDir::toNativeSeparators(linkPath),
-                              QDir::toNativeSeparators(targetPath)});
+    mklink.start("cmd.exe", {"/c", "mklink", mklinkOption, QDir::toNativeSeparators(linkPath), QDir::toNativeSeparators(targetPath)});
     QVERIFY(mklink.waitForFinished());
-    const QByteArray output = mklink.readAllStandardOutput()
-            + mklink.readAllStandardError();
-    if(mklink.exitCode() != 0 && mklinkOption == "/D") {
+    const QByteArray output = mklink.readAllStandardOutput() + mklink.readAllStandardError();
+    if (mklink.exitCode() != 0 && mklinkOption == "/D") {
         QSKIP(qPrintable(QString("Cannot create a directory symbolic link. "
                                  "Enable Windows Developer Mode or run the test "
                                  "with elevated privileges. mklink output: %1")
-                          .arg(QString::fromLocal8Bit(output).trimmed())));
+                             .arg(QString::fromLocal8Bit(output).trimmed())));
     }
     QVERIFY2(mklink.exitCode() == 0, output.constData());
 

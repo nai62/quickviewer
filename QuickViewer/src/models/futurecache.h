@@ -5,7 +5,7 @@
 #include <QList>
 #include <QMap>
 
-template<typename Key, typename T>
+template <typename Key, typename T>
 class FutureCache
 {
 public:
@@ -23,7 +23,7 @@ public:
     void insertNoChecked(const Key &key, const QFuture<T> &future)
     {
         m_cache.insert(key, future);
-        while(m_cache.size() > m_maximumSize) {
+        while (m_cache.size() > m_maximumSize) {
             const Key oldest = m_usageOrder.takeLast();
             m_cache.remove(oldest);
         }
@@ -38,16 +38,18 @@ public:
     bool checkShouldBeInserted(const Key &key)
     {
         const bool containsKey = m_usageOrder.contains(key);
-        if(containsKey)
+        if (containsKey) {
             m_usageOrder.removeOne(key);
+        }
         m_usageOrder.push_front(key);
         return !containsKey;
     }
 
     void retain(const Key &key)
     {
-        if(m_usageOrder.removeOne(key))
+        if (m_usageOrder.removeOne(key)) {
             m_usageOrder.push_front(key);
+        }
     }
 
     int size() const { return m_cache.size(); }
