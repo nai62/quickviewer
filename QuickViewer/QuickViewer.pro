@@ -120,6 +120,7 @@ SOURCES += \
     src/models/shadermanager.cpp \
     src/models/thumbnailmanager.cpp \
     src/models/timeorderdcache.cpp \
+    src/models/volumehandle.cpp \
     src/optionsdialog.cpp \
     src/renamedialog.cpp \
     src/widgets/flowlayout.cpp \
@@ -167,6 +168,7 @@ HEADERS  += \
     src/models/shadermanager.h \
     src/models/thumbnailmanager.h \
     src/models/timeorderdcache.h \
+    src/models/volumehandle.h \
     src/optionsdialog.h \
     src/qv_init.h \
     src/renamedialog.h \

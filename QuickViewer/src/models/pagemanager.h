@@ -5,6 +5,7 @@
 #include "volumemanager.h"
 #include "volumemanagerbuilder.h"
 #include "latestresultdispatcher.h"
+#include "volumehandle.h"
 
 class VolumeManager;
 class ImageView;
@@ -162,9 +163,7 @@ private:
                                     const QString &pathbase,
                                     const QString &subfilename);
     void finishInitialImageDisplay(quint64 generation);
-    VolumeManager* addVolumeCache(QString path, bool onlyCover, bool immediate);
-    VolumeManager* createVolume(QString path, bool onlyCover);
-    VolumeManager* passThrough(VolumeManager* vol) { return vol; }
+    VolumeHandle addVolumeCache(QString path, bool onlyCover, bool immediate);
     /**
      * @brief younger page number
      */
@@ -173,16 +172,16 @@ private:
     bool m_wideImage;
     bool m_prohibit2Pages;
     QVector<ImageContent> m_pages;
-    TimeOrderdCacheFuturePtr<QString, VolumeManager> m_volumes;
+    TimeOrderdCacheFutureSharedPtr<QString, VolumeManager> m_volumes;
     QStringList m_volumenames;
 
-    VolumeManager* m_fileVolume;
+    VolumeHandle m_fileVolume;
     ImageView * m_imaveView;
 
     bool m_waitForReloaded;
 
     LatestResultDispatcher<ImageContent> m_initialImageLoads;
-    LatestResultDispatcher<VolumeManager*> m_volumeLoads;
+    LatestResultDispatcher<VolumeHandle> m_volumeLoads;
     bool m_initialImagePaintPending;
     bool m_initialPaintCompletionQueued;
     bool m_initialImageReadyForPaint;

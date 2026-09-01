@@ -329,6 +329,7 @@ void VolumeManager::moveToThread(QThread *targetThread)
     if(!targetThread)
         return;
     QObject::moveToThread(targetThread);
+    m_watcher.moveToThread(targetThread);
     if(m_loader)
         m_loader->moveToThread(targetThread);
 }

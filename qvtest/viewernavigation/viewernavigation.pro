@@ -43,6 +43,7 @@ SOURCES += \
     ../../QuickViewer/src/models/qvmovie.cpp \
     ../../QuickViewer/src/models/shadermanager.cpp \
     ../../QuickViewer/src/models/timeorderdcache.cpp \
+    ../../QuickViewer/src/models/volumehandle.cpp \
     ../../QuickViewer/src/models/volumemanager.cpp \
     ../../QuickViewer/src/models/volumemanagerbuilder.cpp \
     ../../QuickViewer/src/qactionmanager/keyconfigdialog.cpp \
@@ -67,6 +68,7 @@ HEADERS += \
     ../../QuickViewer/src/models/qvmovie.h \
     ../../QuickViewer/src/models/shadermanager.h \
     ../../QuickViewer/src/models/timeorderdcache.h \
+    ../../QuickViewer/src/models/volumehandle.h \
     ../../QuickViewer/src/models/volumemanager.h \
     ../../QuickViewer/src/models/volumemanagerbuilder.h \
     ../../QuickViewer/src/qactionmanager/keyconfigdialog.h \

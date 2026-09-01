@@ -5,6 +5,7 @@
 #include "imageview.h"
 #include "models/pagemanager.h"
 #include "models/qvapplication.h"
+#include "models/volumehandle.h"
 
 class EmptyFileLoader final : public IFileLoader
 {
@@ -74,6 +75,55 @@ private slots:
         QVERIFY(!volume.findImageByName("missing.png"));
         volume.on_enmumerated();
         volume.moveToThread(nullptr);
+    }
+
+    void volumeHandleDestroysOnOwnerThread()
+    {
+        auto *loader = new EmptyFileLoader;
+        auto *volume = new VolumeManager(nullptr, loader, nullptr);
+        QThread *destructionThread = nullptr;
+        QObject::connect(volume, &QObject::destroyed, this,
+                         [&destructionThread] {
+            destructionThread = QThread::currentThread();
+        }, Qt::DirectConnection);
+
+        VolumeHandle handle = makeVolumeHandle(volume);
+        QFuture<void> release = QtConcurrent::run(
+            [workerHandle = std::move(handle)]() mutable {
+                workerHandle.reset();
+            });
+        release.waitForFinished();
+
+        QTRY_COMPARE(destructionThread, QThread::currentThread());
+    }
+
+    void activeVolumeSurvivesCacheEviction()
+    {
+        auto readyFuture = [](VolumeHandle handle) {
+            QPromise<VolumeHandle> promise;
+            promise.start();
+            QFuture<VolumeHandle> future = promise.future();
+            promise.addResult(std::move(handle));
+            promise.finish();
+            return future;
+        };
+
+        auto *volume = new VolumeManager(
+            nullptr, new EmptyFileLoader, nullptr);
+        bool destroyed = false;
+        QObject::connect(volume, &QObject::destroyed, this,
+                         [&destroyed] { destroyed = true; });
+
+        VolumeHandle active = makeVolumeHandle(volume);
+        TimeOrderdCacheFutureSharedPtr<QString, VolumeManager> cache(1);
+        QString first = "first";
+        QString second = "second";
+        cache.insert(first, readyFuture(active));
+        cache.insert(second, readyFuture({}));
+
+        QVERIFY(!destroyed);
+        active.reset();
+        QTRY_VERIFY(destroyed);
     }
 
     void emptyImageViewNavigationIsSafe()

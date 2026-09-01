@@ -4,6 +4,8 @@
 #include <QtCore>
 #include <QtConcurrent>
 
+#include <memory>
+
 template <typename Key, typename T>
 class TimeOrderdCache
 {
@@ -81,24 +83,30 @@ template <typename Key, class T>
 class TimeOrderdCacheFuture : public TimeOrderdCache<Key, QFuture<T> >
 {
 public:
-     TimeOrderdCacheFuture(int maxsize=30)
+    TimeOrderdCacheFuture(int maxsize=30)
          : TimeOrderdCache<Key, QFuture<T> >(maxsize){}
     void trash(QFuture<T> oldest) {
-        oldest.result();
+        oldest.waitForFinished();
     }
 };
 
-
 template <typename Key, class T>
-class TimeOrderdCacheFuturePtr : public TimeOrderdCache<Key, QFuture<T*> >
+class TimeOrderdCacheFutureSharedPtr
+    : public TimeOrderdCache<Key, QFuture<std::shared_ptr<T>> >
 {
 public:
-     TimeOrderdCacheFuturePtr(int maxsize=30)
-         : TimeOrderdCache<Key, QFuture<T*> >(maxsize){}
-    void trash(QFuture<T*> oldest) {
-        QtConcurrent::run([=]{
-            delete oldest.result();
-        });
+    TimeOrderdCacheFutureSharedPtr(int maxsize=30)
+        : TimeOrderdCache<Key, QFuture<std::shared_ptr<T>> >(maxsize){}
+
+    void trash(QFuture<std::shared_ptr<T>> oldest) override
+    {
+        // Do not block the UI while an evicted prefetch is still running. The
+        // shared pointer's deleter remains responsible for thread-safe object
+        // destruction after the future releases its result.
+        QThreadPool::globalInstance()->start(
+            [oldest = std::move(oldest)]() mutable {
+                oldest.waitForFinished();
+            });
     }
 };
 
