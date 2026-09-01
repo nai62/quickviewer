@@ -1,0 +1,20 @@
+---
+Checks: >
+  -*,
+  readability-braces-around-statements
+WarningsAsErrors: >
+  readability-braces-around-statements
+CheckOptions:
+  readability-braces-around-statements.ShortStatementLines: '0'
+FormatStyle: file
+HeaderFileExtensions:
+  - h
+  - hh
+  - hpp
+ImplementationFileExtensions:
+  - c
+  - cc
+  - cpp
+  - cxx
+SystemHeaders: false
+...

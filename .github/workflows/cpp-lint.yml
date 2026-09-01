@@ -1,0 +1,46 @@
+name: C++ lint
+
+on:
+  pull_request:
+    paths:
+      - "QuickViewer/**/*.c"
+      - "QuickViewer/**/*.cc"
+      - "QuickViewer/**/*.cpp"
+      - "QuickViewer/**/*.cxx"
+      - "QuickViewer/**/*.h"
+      - "QuickViewer/**/*.hh"
+      - "QuickViewer/**/*.hpp"
+      - "qvtest/**/*.c"
+      - "qvtest/**/*.cc"
+      - "qvtest/**/*.cpp"
+      - "qvtest/**/*.cxx"
+      - "qvtest/**/*.h"
+      - "qvtest/**/*.hh"
+      - "qvtest/**/*.hpp"
+      - ".clang-format"
+      - ".clang-format-ignore"
+      - ".clang-tidy"
+      - "scripts/lint-cpp.py"
+
+permissions:
+  contents: read
+
+jobs:
+  clang-format:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Validate clang-tidy configuration
+        run: clang-tidy-18 --config-file=.clang-tidy --verify-config
+
+      - name: Check changed C++ lines
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: >-
+          python3 scripts/lint-cpp.py
+          --diff-ref "origin/${BASE_REF}...HEAD"
+          --clang-format clang-format-18
