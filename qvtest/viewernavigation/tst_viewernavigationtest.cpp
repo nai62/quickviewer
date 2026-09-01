@@ -237,6 +237,8 @@ private slots:
                     ImageContent(image, "second.png", image.size(), {}, 0), true));
         QCOMPARE(view.renderedPageCount(), 2);
         QVERIFY(view.renderedPageAt(1));
+        QCOMPARE(view.renderedPageAt(0)->Ic.Path, QString("first.png"));
+        QCOMPARE(view.renderedPageAt(1)->Ic.Path, QString("second.png"));
         QVERIFY(!view.on_addImage_triggered(
                     ImageContent(image, "third.png", image.size(), {}, 0), true));
 
@@ -247,6 +249,13 @@ private slots:
         QVERIFY(view.on_addImage_triggered(
                     ImageContent(image, "replacement.png", image.size(), {}, 0), false));
         QCOMPARE(view.renderedPageCount(), 1);
+        QVERIFY(view.on_addImage_triggered(
+                    ImageContent(image, "prepended.png", image.size(), {}, 0), false));
+        QCOMPARE(view.renderedPageCount(), 2);
+        QCOMPARE(view.renderedPageAt(0)->Ic.Path, QString("prepended.png"));
+        QCOMPARE(view.renderedPageAt(1)->Ic.Path, QString("replacement.png"));
+        QVERIFY(!view.renderedPageAt(-1));
+        QVERIFY(!view.renderedPageAt(2));
     }
 
     void emptyDirectoryNavigationIsSafe()

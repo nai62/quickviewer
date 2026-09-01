@@ -171,6 +171,7 @@ HEADERS  += \
     src/models/volumehandle.h \
     src/models/viewerstate.h \
     src/models/visiblepages.h \
+    src/models/renderedpages.h \
     src/optionsdialog.h \
     src/qv_init.h \
     src/renamedialog.h \

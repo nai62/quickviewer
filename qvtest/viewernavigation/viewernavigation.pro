@@ -66,6 +66,7 @@ HEADERS += \
     ../../QuickViewer/src/models/qvapplication.h \
     ../../QuickViewer/src/models/qvimagemetadata.h \
     ../../QuickViewer/src/models/qvmovie.h \
+    ../../QuickViewer/src/models/renderedpages.h \
     ../../QuickViewer/src/models/shadermanager.h \
     ../../QuickViewer/src/models/timeorderdcache.h \
     ../../QuickViewer/src/models/volumehandle.h \

@@ -1,9 +1,6 @@
 #ifndef IMAGEVIEW_H
 #define IMAGEVIEW_H
 
-#include <array>
-#include <memory>
-
 #include <QtCore>
 #include <QtWidgets>
 
@@ -12,6 +9,7 @@
 #include "models/pagemanager.h"
 #include "models/shadermanager.h"
 #include "models/pagecontent.h"
+#include "models/renderedpages.h"
 
 class SavedPoint : public QPoint
 {
@@ -149,7 +147,7 @@ private:
     qreal getZoomScale();
 
     RendererType m_renderer;
-    std::array<std::unique_ptr<PageItem>, 2> m_pages;
+    RenderedPages m_renderedPages;
 
     SavedPoint m_ptLeftTop;
     QGraphicsScene* m_scene;
