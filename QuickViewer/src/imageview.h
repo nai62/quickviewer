@@ -10,6 +10,7 @@
 #include "models/shadermanager.h"
 #include "models/pagecontent.h"
 #include "models/renderedpages.h"
+#include "models/renderedpagemetrics.h"
 
 class SavedPoint : public QPoint
 {
@@ -40,7 +41,7 @@ private:
  * It provides to show 1 or 2 images once, using OpenGL.
  * It is made on QGraphicView, each images is used as QGraphicsItem
  */
-class ImageView : public QGraphicsView, public PageContentProtocol, public PageRenderContext
+class ImageView : public QGraphicsView, public PageRenderContext
 {
     Q_OBJECT
 public:
@@ -60,8 +61,9 @@ public:
     void scrollOnLoupeMode();
     void scrollOnZoomMode();
     bool isScrollMode() { return m_scrollMode; }
-    int renderedPageCount() const override;
-    const PageItem* renderedPageAt(int index) const override;
+    int renderedPageCount() const;
+    const PageItem* renderedPageAt(int index) const;
+    RenderedPageMetrics renderedPageMetrics() const;
     void updateViewportOffset(QPointF moved);
     void updateViewportFactors(qreal currentScale, qreal currentRotate);
     void commitViewportFactors();

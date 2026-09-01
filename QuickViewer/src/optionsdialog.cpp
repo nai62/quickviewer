@@ -1,10 +1,9 @@
 #include "optionsdialog.h"
 #include "ui_optionsdialog.h"
 #include "qvapplication.h"
-#include "imageview.h"
 #include "pagemanager.h"
 
-class SamplePageContent : public PageContentProtocol, public PageManagerProtocol
+class SamplePageContent : public PageManagerProtocol
 {
 public:
     SamplePageContent()
@@ -12,32 +11,25 @@ public:
         , m_currentPage(10)
         , m_volumePath("C:\\SampleBook")
     {
-        m_pages[0] = std::make_unique<PageItem>(nullptr, nullptr,
+        m_pages = VisiblePages(QVector<ImageContent>{
                     ImageContent(
                         QImage(1000, 1200, QImage::Format_RGB32),
                         "page11.jpg",
                         QSize(1000,1200),
                         easyexif::EXIFInfo(),
-                        1234567));
-        m_pages[1] = std::make_unique<PageItem>(nullptr, nullptr,
+                        1234567),
                     ImageContent(
                         QImage(1000, 1200, QImage::Format_RGB32),
                         "page12.jpg",
                         QSize(1000,1200),
                         easyexif::EXIFInfo(),
-                        1234567));
-        m_pages[0]->NotationalScale = 0.5;
-        m_pages[1]->NotationalScale = 0.5;
+                        1234567)});
     }
-    int size() { return m_size; }
-    int currentPage() { return m_currentPage; }
-    QString volumePath() { return m_volumePath; }
-    int renderedPageCount() const override { return 2; }
-    const PageItem* renderedPageAt(int index) const override {
-        return index >= 0 && index < renderedPageCount()
-                ? m_pages[index].get() : nullptr;
-    }
-    QString currentPagePath() override {
+    int size() const override { return m_size; }
+    int currentPage() const override { return m_currentPage; }
+    VisiblePages visiblePages() const override { return m_pages; }
+    QString volumePath() const override { return m_volumePath; }
+    QString currentPagePath() const override {
         return QString("%1\\%2")
             .arg(m_volumePath)
             .arg("page11.jpg");
@@ -47,7 +39,7 @@ private:
     int m_size;
     int m_currentPage;
     QString m_volumePath;
-    std::array<std::unique_ptr<PageItem>, 2> m_pages;
+    VisiblePages m_pages;
 };
 
 static SamplePageContent *stSamplePageContent;
@@ -59,7 +51,9 @@ OptionsDialog::OptionsDialog(QWidget *parent)
     ui->setupUi(this);
     if(!stSamplePageContent)
         stSamplePageContent = new SamplePageContent;
-    m_imageString.initialize(stSamplePageContent, stSamplePageContent);
+    m_imageString.initialize(stSamplePageContent, [] {
+        return RenderedPageMetrics(QVector<qreal>{0.5, 0.5});
+    });
 #ifndef Q_OS_WIN
     ui->checkBoxUseDirect2D->setVisible(false);
 #endif

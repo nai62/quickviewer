@@ -3,6 +3,7 @@
 #include <type_traits>
 
 #include "imageview.h"
+#include "models/imagestring.h"
 #include "models/pagemanager.h"
 #include "models/qvapplication.h"
 #include "models/volumehandle.h"
@@ -139,6 +140,24 @@ private slots:
         QVERIFY(manager.visiblePages().isEmpty());
         QCOMPARE(pages.count(), 1);
         QCOMPARE(pages.first()->Path, QString("first.bmp"));
+    }
+
+    void imageStringUsesValueSnapshots()
+    {
+        ImageString imageString;
+        QCOMPARE(imageString.formatString("%p"), QString());
+
+        PageManager manager(nullptr);
+        QImage image(100, 200, QImage::Format_RGB32);
+        QVERIFY(manager.addNewPage(
+                    ImageContent(image, "sample.png", image.size(), {}, 1024),
+                    true));
+        imageString.initialize(&manager, [] {
+            return RenderedPageMetrics(QVector<qreal>{0.5});
+        });
+
+        QCOMPARE(imageString.formatString("%p|%s|%m"),
+                 QString("sample.png|100x200|50%"));
     }
 
     void pageItemUsesOnlyItsRenderContext()

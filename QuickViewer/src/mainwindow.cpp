@@ -47,7 +47,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_menubarFontSize = ui->menuBar->font().pointSize();
 	m_pageSliderHeight = ui->pageSlider->height();
-    m_imageString.initialize(&m_pageManager, ui->graphicsView);
+    m_imageString.initialize(&m_pageManager, [view = ui->graphicsView] {
+        return view->renderedPageMetrics();
+    });
 
 #ifndef Q_OS_WIN
     ui->actionRegistAssocsUAC->setVisible(false);

@@ -35,6 +35,7 @@ SOURCES += \
     ../../QuickViewer/src/imageview.cpp \
     ../../QuickViewer/src/models/bookprogressmanager.cpp \
     ../../QuickViewer/src/models/boundedexecutor.cpp \
+    ../../QuickViewer/src/models/imagestring.cpp \
     ../../QuickViewer/src/models/pagecontent.cpp \
     ../../QuickViewer/src/models/pagemanager.cpp \
     ../../QuickViewer/src/models/prefetchplanner.cpp \
@@ -59,6 +60,7 @@ HEADERS += \
     ../../QuickViewer/src/imageview.h \
     ../../QuickViewer/src/models/bookprogressmanager.h \
     ../../QuickViewer/src/models/boundedexecutor.h \
+    ../../QuickViewer/src/models/imagestring.h \
     ../../QuickViewer/src/models/latestresultdispatcher.h \
     ../../QuickViewer/src/models/pagecontent.h \
     ../../QuickViewer/src/models/pagemanager.h \
@@ -67,6 +69,7 @@ HEADERS += \
     ../../QuickViewer/src/models/qvimagemetadata.h \
     ../../QuickViewer/src/models/qvmovie.h \
     ../../QuickViewer/src/models/renderedpages.h \
+    ../../QuickViewer/src/models/renderedpagemetrics.h \
     ../../QuickViewer/src/models/shadermanager.h \
     ../../QuickViewer/src/models/timeorderdcache.h \
     ../../QuickViewer/src/models/volumehandle.h \

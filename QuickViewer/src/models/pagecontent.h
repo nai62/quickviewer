@@ -210,13 +210,4 @@ private:
 };
 
 
-class PageContentProtocol
-{
-public:
-    virtual ~PageContentProtocol() = default;
-    virtual int renderedPageCount() const = 0;
-    virtual const PageItem* renderedPageAt(int index) const = 0;
-};
-
-
 #endif // PAGECONTENT_H

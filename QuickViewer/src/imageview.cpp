@@ -75,6 +75,19 @@ const PageItem* ImageView::renderedPageAt(int index) const
     return m_renderedPages.at(index);
 }
 
+RenderedPageMetrics ImageView::renderedPageMetrics() const
+{
+    QVector<qreal> scales;
+    const int pageCount = m_renderedPages.count();
+    scales.reserve(pageCount);
+    for(int index = 0; index < pageCount; ++index) {
+        const PageItem *page = m_renderedPages.at(index);
+        if(page)
+            scales.push_back(page->NotationalScale);
+    }
+    return RenderedPageMetrics(std::move(scales));
+}
+
 #ifdef QV_WITHOUT_OPENGL
 QWidget* widgetEngine = nullptr;
 #else

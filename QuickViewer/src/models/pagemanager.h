@@ -12,10 +12,12 @@ class VolumeManager;
 class PageManagerProtocol
 {
 public:
-    virtual int size()=0;
-    virtual int currentPage()=0;
-    virtual QString volumePath()=0;
-    virtual QString currentPagePath()=0;
+    virtual ~PageManagerProtocol() = default;
+    virtual int size() const = 0;
+    virtual int currentPage() const = 0;
+    virtual VisiblePages visiblePages() const = 0;
+    virtual QString volumePath() const = 0;
+    virtual QString currentPagePath() const = 0;
 };
 
 #define ReloadedEventType (QEvent::Type)(QEvent::Type::User + 50)
@@ -64,9 +66,9 @@ public:
 
     // Get String
     int currentPageCount() const { return m_pages.size(); }
-    int currentPage() override { return m_currentPage; }
-    VisiblePages visiblePages() const { return VisiblePages(m_pages); }
-    QString currentPagePath() override {
+    int currentPage() const override { return m_currentPage; }
+    VisiblePages visiblePages() const override { return VisiblePages(m_pages); }
+    QString currentPagePath() const override {
         VolumeManager *volume = activeVolume();
         if(!volume || m_pages.isEmpty())
             return "";
@@ -95,7 +97,7 @@ public:
     QString currentPageStatusAsString() const;
     QString pageSignage(int page) const;
 
-    QString volumePath() override {
+    QString volumePath() const override {
         VolumeManager *volume = activeVolume();
         return volume ? volume->volumePath() : "";
     }
@@ -112,7 +114,7 @@ public:
         return volume && !volume->isArchive();
     }
 
-    int size() override {
+    int size() const override {
         VolumeManager *volume = activeVolume();
         return volume ? volume->size() : 0;
     }
