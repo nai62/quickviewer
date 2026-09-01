@@ -13,7 +13,7 @@ public:
     QStringList Filenames;
     ImageContent Ic;
 
-    VolumeManagerBuilder(QString path, PageManager* pageManager=nullptr);
+    explicit VolumeManagerBuilder(QString path);
 
     /**
      * @brief build
@@ -29,7 +29,7 @@ public:
      *
      * Generate VolumeManager asynchronously.
      */
-    static VolumeManager* buildAsync(QString path, PageManager* manager, bool onlyCover);
+    static VolumeManager* buildAsync(QString path, bool onlyCover);
 
     /**
      * @brief buildForAssoc
@@ -51,13 +51,12 @@ public:
      * @brief A factory function that returns an instance of IFileVolume from the path of the specified file or directory
      * @return An object that inherits the IFileVolume interface. It is null if generation failed
      */
-    static VolumeManager* CreateVolume(QObject* parent, QString path, PageManager* pageManager);
+    static VolumeManager* CreateVolume(QObject* parent, QString path);
 
 //public slots:
 //    void on_enumerated();
 
 private:
-    PageManager* m_pageManager;
     VolumeManager* m_volumeManager;
 //    QFutureWatcher<void> m_watcher;
     QString m_subfilename;

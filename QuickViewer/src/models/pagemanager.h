@@ -53,7 +53,7 @@ public:
     bool addNewPage(ImageContent ic, bool pageNext);
     void clearPages();
     QSize viewportSize() const { return m_viewportSize; }
-    void setViewportSize(QSize size) { m_viewportSize = size; }
+    void setViewportSize(QSize size);
     bool initialImagePaintPending() const;
     ViewerStateKind stateKind() const { return viewerStateKind(m_state); }
     void deferFolderWorkUntilNextPaint();
@@ -161,6 +161,7 @@ private:
     VolumeHandle activeVolumeHandle() const;
     VolumeManager *activeVolume() const;
     void setVolumeReady(VolumeHandle volume);
+    void configureVolume(VolumeManager *volume);
     void replaceVisiblePages(QVector<ImageContent> pages);
     /**
      * @brief younger page number

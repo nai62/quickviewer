@@ -13,7 +13,6 @@
 #include "qvimagemetadata.h"
 #include "prefetchplanner.h"
 
-class PageManager;
 class VolumeManagerBuilder;
 /**
  * @brief The VolumeManager class
@@ -39,7 +38,7 @@ public:
 
     typedef QFuture<ImageContent> future_image;
 
-    explicit VolumeManager(QObject *parent, IFileLoader* loader, PageManager* pageManager);
+    explicit VolumeManager(QObject *parent, IFileLoader* loader);
     ~VolumeManager();
     void enumerate();
     bool enumerated() { return m_enumerated; }
@@ -143,8 +142,11 @@ public:
     const ImageContent getIndexedImageContent(int idx);
     bool openedWithSpecifiedImageFile() { return m_openedWithSpecifiedImageFile; }
     void setOpenedWithSpecifiedImageFile(bool openedWithSpecifiedImageFile) { m_openedWithSpecifiedImageFile = openedWithSpecifiedImageFile; }
-    void setPageManager(PageManager *pageManager) { m_pageManager = pageManager; }
+    void setViewportSize(QSize size) { m_viewportSize = size; }
     void moveToThread(QThread *targetThread);
+
+signals:
+    void enumerationFinished();
 
 public slots:
     void on_enmumerated();
@@ -171,7 +173,7 @@ private:
     QSharedPointer<ImageLoadContext> m_loadContext;
     IFileLoader* m_loader;
     CacheMode m_cacheMode;
-    PageManager* m_pageManager;
+    QSize m_viewportSize;
     bool m_enumerated;
     bool m_openedWithSpecifiedImageFile;
     QString m_volumePath;

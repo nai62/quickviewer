@@ -166,7 +166,8 @@ private slots:
     void emptyVolumeManagerOperationsAreSafe()
     {
         EmptyFileLoader loader;
-        VolumeManager volume(nullptr, &loader, nullptr);
+        VolumeManager volume(nullptr, &loader);
+        QSignalSpy enumerationSpy(&volume, &VolumeManager::enumerationFinished);
 
         QCOMPARE(volume.currentPath(), QString());
         QCOMPARE(volume.currentPathWithSeparator(), QString());
@@ -179,13 +180,14 @@ private slots:
         QVERIFY(!volume.findImageByIndex(0));
         QVERIFY(!volume.findImageByName("missing.png"));
         volume.on_enmumerated();
+        QCOMPARE(enumerationSpy.count(), 1);
         volume.moveToThread(nullptr);
     }
 
     void volumeHandleDestroysOnOwnerThread()
     {
         auto *loader = new EmptyFileLoader;
-        auto *volume = new VolumeManager(nullptr, loader, nullptr);
+        auto *volume = new VolumeManager(nullptr, loader);
         QThread *destructionThread = nullptr;
         QObject::connect(volume, &QObject::destroyed, this,
                          [&destructionThread] {
@@ -214,7 +216,7 @@ private slots:
         };
 
         auto *volume = new VolumeManager(
-            nullptr, new EmptyFileLoader, nullptr);
+            nullptr, new EmptyFileLoader);
         bool destroyed = false;
         QObject::connect(volume, &QObject::destroyed, this,
                          [&destroyed] { destroyed = true; });

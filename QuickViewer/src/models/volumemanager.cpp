@@ -6,7 +6,6 @@
 #include "ResizeHalf.h"
 #include "qvapplication.h"
 #include "qzimg.h"
-#include "pagemanager.h"
 #include "fileloader.h"
 #include "boundedexecutor.h"
 #include "svgnative/SVGDocument.h"
@@ -34,14 +33,14 @@ static QFuture<ImageContent> readyImageFuture(ImageContent content)
     return future;
 }
 
-VolumeManager::VolumeManager(QObject *parent, IFileLoader* loader, PageManager* pageManager)
+VolumeManager::VolumeManager(QObject *parent, IFileLoader* loader)
     : QObject(parent)
     , m_cnt(0)
     , m_imageCache(qApp->MaxImagesCache())
     , m_loadContext(new ImageLoadContext(loader))
     , m_loader(loader)
     , m_cacheMode(CacheMode::Normal)
-    , m_pageManager(pageManager)
+    , m_viewportSize()
     , m_enumerated(false)
     , m_openedWithSpecifiedImageFile(false)
 {
@@ -117,8 +116,7 @@ void VolumeManager::on_enmumerated()
     }
     setCacheMode(VolumeManager::Normal);
     on_ready();
-    if(m_pageManager)
-        m_pageManager->on_pageEnumerated();
+    emit enumerationFinished();
 }
 
 // #ifdef Q_OS_WIN
@@ -283,7 +281,7 @@ void VolumeManager::on_ready()
         if(qApp->Effect() < qvEnums::UsingFixedShader && m_imageCache.contains(cnt) && m_imageCache.object(cnt).isFinished() ) {
             ImageContent ic = m_imageCache.object(cnt).result();
             if(ic.ImportSize.isValid()) {
-                QSize pageSize = m_pageManager ? m_pageManager->viewportSize() : QSize();
+                const QSize pageSize = m_viewportSize;
                 QSize resized = ic.Info.Orientation==6 || ic.Info.Orientation==8 ? QSize(pageSize.height(), pageSize.width()) : pageSize;
                 resized.setWidth(ic.ImportSize.width()*resized.height()/ic.ImportSize.height());
 
@@ -298,10 +296,8 @@ void VolumeManager::on_ready()
         }
         if(m_imageCache.checkShouldBeInserted(cnt)) {
 //            qDebug() << "on_ready()" << m_filelist[cnt];
-            const QSize pageSize =
-                (m_pageManager && qApp->Effect() < qvEnums::UsingFixedShader)
-                    ? m_pageManager->viewportSize()
-                    : QSize();
+            const QSize pageSize = qApp->Effect() < qvEnums::UsingFixedShader
+                    ? m_viewportSize : QSize();
             const future_image future = scheduleImageLoad(
                 getIndexedFileName(cnt), pageSize, cnt == m_cnt);
             if(future.isValid())

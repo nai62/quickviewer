@@ -49,6 +49,23 @@ void PageManager::setVolumeReady(VolumeHandle volume)
         m_state = FailedViewerState{};
 }
 
+void PageManager::configureVolume(VolumeManager *volume)
+{
+    if(!volume)
+        return;
+    volume->setViewportSize(m_viewportSize);
+    connect(volume, &VolumeManager::enumerationFinished,
+            this, &PageManager::on_pageEnumerated,
+            Qt::UniqueConnection);
+}
+
+void PageManager::setViewportSize(QSize size)
+{
+    m_viewportSize = size;
+    if(VolumeManager *volume = activeVolume())
+        volume->setViewportSize(size);
+}
+
 bool PageManager::initialImagePaintPending() const
 {
     if(std::holds_alternative<LoadingViewerState>(m_state))
@@ -230,7 +247,7 @@ void PageManager::startAssociatedVolumeBuild(const QString &qpath,
 {
     QThread *guiThread = thread();
     const QFuture<VolumeHandle> future = QtConcurrent::run([qpath, guiThread]{
-        VolumeManagerBuilder builder(qpath, nullptr);
+        VolumeManagerBuilder builder(qpath);
         VolumeManager *newer = builder.buildForAssoc();
         if(newer)
             newer->moveToThread(guiThread);
@@ -242,7 +259,7 @@ void PageManager::startAssociatedVolumeBuild(const QString &qpath,
                 loadVolume(QString("%1::%2").arg(pathbase).arg(subfilename));
                 return;
             }
-            newer->setPageManager(this);
+            configureVolume(newer.get());
             emit volumeChanged("");
             m_volumes.insert(pathbase, readyVolumeFuture(newer));
             setVolumeReady(newer);
@@ -265,6 +282,10 @@ void PageManager::startAssociatedVolumeBuild(const QString &qpath,
 
 void PageManager::on_pageEnumerated()
 {
+    if(auto *source = qobject_cast<VolumeManager *>(sender())) {
+        if(source != activeVolume())
+            return;
+    }
     VolumeManager *volume = activeVolume();
     if(!volume)
         return;
@@ -424,7 +445,7 @@ VolumeHandle PageManager::addVolumeCache(QString path, bool onlyCover, bool imme
             m_volumes.insert(pathbase, QtConcurrent::run(
                 [path, onlyCover, guiThread] {
                     VolumeManager *volume =
-                        VolumeManagerBuilder::buildAsync(path, nullptr, onlyCover);
+                        VolumeManagerBuilder::buildAsync(path, onlyCover);
                     if(volume)
                         volume->moveToThread(guiThread);
                     return makeVolumeHandle(volume);
@@ -432,7 +453,7 @@ VolumeHandle PageManager::addVolumeCache(QString path, bool onlyCover, bool imme
             return {};
         }
         qDebug() << "addVolumeCache:immediate" << path;
-        VolumeManagerBuilder builder(path, this);
+        VolumeManagerBuilder builder(path);
         VolumeHandle imm = makeVolumeHandle(builder.build(onlyCover));
         qDebug() << "addVolumeCache:imm" << imm.get();
         m_volumes.insert(pathbase, readyVolumeFuture(imm));
@@ -448,7 +469,7 @@ VolumeHandle PageManager::addVolumeCache(QString path, bool onlyCover, bool imme
         m_volumes.remove(pathbase);
         return nullptr;
     }
-    newer->setPageManager(this);
+    configureVolume(newer.get());
     // If the subdirectory search is switched valid, we need to recreate the instance
     if(!newer->isArchive() &&
         ((qApp->ShowSubfolders() && !newer->hasSubDirectories())
