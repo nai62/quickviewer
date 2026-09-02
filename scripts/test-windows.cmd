@@ -48,9 +48,6 @@ nmake /f Makefile debug
 if errorlevel 1 exit /b 2
 call :stage_translations
 if errorlevel 1 exit /b 2
-call :stage_heif_plugin
-if errorlevel 1 exit /b 2
-
 goto run_tests
 
 :build_release
@@ -63,13 +60,15 @@ nmake /f Makefile release
 if errorlevel 1 exit /b 2
 call :stage_translations
 if errorlevel 1 exit /b 2
-call :stage_heif_plugin
+call :stage_heif_plugin release
 if errorlevel 1 exit /b 2
 exit /b 0
 
 :run_tests
 set "PATH=%QV_QT_DIR%\bin;%QV_BUILD_DIR%\lib;%PATH%"
 set "QV_TEST_FAILED=0"
+call :stage_heif_plugin debug
+if errorlevel 1 exit /b 2
 
 call :run_test tst_prefetchplannertest.exe
 call :run_test tst_asynccachetest.exe
@@ -104,11 +103,15 @@ if not "!QV_TEST_EXIT!"=="0" set "QV_TEST_FAILED=1"
 exit /b 0
 
 :stage_heif_plugin
-set "QV_HEIF_SOURCE=%QV_SOURCE_DIR%\..\..\qt-heic-image-plugin"
-set "QV_HEIF_PLUGIN=%QV_HEIF_SOURCE%\qtbuild_6.11.2\kimg_heif6.dll"
+if not defined QV_HEIF_SOURCE set "QV_HEIF_SOURCE=%QV_SOURCE_DIR%\..\..\qt-heic-image-plugin"
+if /I "%~1"=="debug" (
+    set "QV_HEIF_PLUGIN=%QV_HEIF_SOURCE%\qtbuild_6.11.2-debug\kimg_heif6.dll"
+) else (
+    set "QV_HEIF_PLUGIN=%QV_HEIF_SOURCE%\qtbuild_6.11.2\kimg_heif6.dll"
+)
 if not exist "%QV_HEIF_PLUGIN%" (
-    echo === HEIF plug-in not found; decoder test will be skipped ===
-    exit /b 0
+    echo ERROR: HEIF %~1 plug-in not found: %QV_HEIF_PLUGIN%
+    exit /b 2
 )
 for %%D in ("%QV_BUILD_DIR%\bin" "%QV_BUILD_DIR%\lib") do (
     if not exist "%%~D\imageformats" mkdir "%%~D\imageformats"

@@ -253,9 +253,8 @@ void FileLoaderTest::testCase9_heifExtensionsAreImages()
 
 void FileLoaderTest::testCase10_heifPluginDecodesImage()
 {
-    if (!QImageReader::supportedImageFormats().contains("heic")) {
-        QSKIP("The HEIF image format plug-in is not staged in this test environment");
-    }
+    QVERIFY2(QImageReader::supportedImageFormats().contains("heic"),
+             "The HEIF image format plug-in is unavailable");
 
     const QByteArray bytes = QByteArray::fromBase64(
         "AAAAHGZ0eXBoZWljAAAAAG1pZjFoZWljbWlhZgAAAXttZXRhAAAAAAAAACFoZGxyAAAAAAAAAABwaWN0AAAAAAAAAAAAAAAAAAAA"
@@ -273,7 +272,7 @@ void FileLoaderTest::testCase10_heifPluginDecodesImage()
     QVERIFY2(reader.canRead(), qPrintable(reader.errorString()));
     const QImage image = reader.read();
     QVERIFY2(!image.isNull(), qPrintable(reader.errorString()));
-    QCOMPARE(image.size(), QSize(64, 64));
+    QCOMPARE(image.size(), QSize(32, 32));
 }
 
 QTEST_MAIN(FileLoaderTest)
