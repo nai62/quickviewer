@@ -68,8 +68,8 @@ static QModelIndex selectedIdx;
 
 bool FolderWindow::eventFilter(QObject *obj, QEvent *event)
 {
-//    qDebug() << obj << event << event->type();
-//    QMouseEvent *mouseEvent = NULL;
+    //    qDebug() << obj << event << event->type();
+    //    QMouseEvent *mouseEvent = NULL;
     QContextMenuEvent *contextEvent = nullptr;
     switch (event->type()) {
     default:
@@ -84,7 +84,7 @@ bool FolderWindow::eventFilter(QObject *obj, QEvent *event)
     return QObject::eventFilter(obj, event);
 }
 
-void FolderWindow::onActionSetAsHomeFolder_triggered()
+void FolderWindow::handleSetAsHomeFolderActionTriggered()
 {
     int row = selectedIdx.row();
     if (row < 0 || row >= m_volumes.size()) {
@@ -204,7 +204,7 @@ void FolderWindow::setFolderPath(QString path, bool showParent)
             std::sort(m_volumes.begin(), m_volumes.end(), filenameLessThan);
         } else {
             typedef std::reverse_iterator<QList<QvFolderItem>::iterator> reverse_iterator;
-//            qSort(m_volumes.rbegin(), m_volumes.rend(), updatedAtLessThan);
+            //            qSort(m_volumes.rbegin(), m_volumes.rend(), updatedAtLessThan);
             std::sort(reverse_iterator(m_volumes.end()), reverse_iterator(m_volumes.begin()), updatedAtLessThan);
         }
     }
@@ -236,10 +236,10 @@ void FolderWindow::resetSortMode()
 
 void FolderWindow::resetPathLabel(int)
 {
-//    QFontMetrics fontMetrics(ui->pathLabel->font());
-//    QString pathLabelTxt = fontMetrics.elidedText(
-//                QDir::toNativeSeparators(m_currentPath), Qt::ElideMiddle, maxWidth-10);
-//    ui->pathLabel->setText(pathLabelTxt);
+    //    QFontMetrics fontMetrics(ui->pathLabel->font());
+    //    QString pathLabelTxt = fontMetrics.elidedText(
+    //                QDir::toNativeSeparators(m_currentPath), Qt::ElideMiddle, maxWidth-10);
+    //    ui->pathLabel->setText(pathLabelTxt);
     ui->pathLabel->setText(m_currentPath);
 }
 
@@ -418,14 +418,14 @@ void FolderWindow::onSortModeButton_clicked()
     m_sortModeMenu->exec(p);
 }
 
-void FolderWindow::onActionOrderByName_triggered()
+void FolderWindow::handleOrderByNameActionTriggered()
 {
     qApp->setFolderSortMode(qvEnums::OrderByName);
     resetSortMode();
     onReloadButton_clicked();
 }
 
-void FolderWindow::onActionOrderByUpdatedAt_triggered()
+void FolderWindow::handleOrderByUpdatedAtActionTriggered()
 {
     qApp->setFolderSortMode(qvEnums::OrderByUpdatedAt);
     resetSortMode();

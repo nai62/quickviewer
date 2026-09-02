@@ -1521,7 +1521,7 @@ void MainWindow::handleShowTagBarActionTriggered(bool checked)
 {
     qApp->setShowTagBar(checked);
     if (m_catalogWindow) {
-        m_catalogWindow->on_showTagBar_triggered(checked);
+        m_catalogWindow->handleShowTagBarActionTriggered(checked);
     }
 }
 

@@ -43,10 +43,10 @@ public slots:
     void onPageManager_volumeChanged(QString);
     void on_itemSingleClicked(const QModelIndex &index);
     void on_itemDoubleClicked(const QModelIndex &index);
-    void onActionSetAsHomeFolder_triggered();
+    void handleSetAsHomeFolderActionTriggered();
     void onSortModeButton_clicked();
-    void onActionOrderByName_triggered();
-    void onActionOrderByUpdatedAt_triggered();
+    void handleOrderByNameActionTriggered();
+    void handleOrderByUpdatedAtActionTriggered();
 
 signals:
     void openVolume(QString path);

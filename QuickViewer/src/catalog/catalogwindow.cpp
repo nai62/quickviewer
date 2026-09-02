@@ -96,13 +96,13 @@ void CatalogWindow::resetViewMode()
 {
     switch (qApp->CatalogViewModeSetting()) {
     case qvEnums::List:
-        onActionFolderViewList_triggered();
+        handleFolderViewListActionTriggered();
         break;
     case qvEnums::Icon:
-        onActionFolderViewIcon_triggered();
+        handleFolderViewIconActionTriggered();
         break;
     case qvEnums::IconNoText:
-        onActionFolderViewNotext_triggered();
+        handleFolderViewIconNoTextActionTriggered();
         break;
     }
 }
@@ -205,7 +205,7 @@ void CatalogWindow::searchByWord(bool doForce)
     }
     m_lastSearchWord = search;
 
-//    int cnt = 0;
+    //    int cnt = 0;
     m_volumeSearch.clear();
     SearchWords searchwords(search.toLower());
     foreach (const VolumeThumbRecord &vtr, m_volumes) {
@@ -216,8 +216,8 @@ void CatalogWindow::searchByWord(bool doForce)
         if (!searchwords.match(title)) {
             continue;
         }
-//        if(qApp->MaxShowFrontpage() < ++cnt)
-//            break;
+        //        if(qApp->MaxShowFrontpage() < ++cnt)
+        //            break;
         m_volumeSearch.append(const_cast<VolumeThumbRecord *>(&vtr));
     }
     resetVolumes();
@@ -263,7 +263,7 @@ void CatalogWindow::onFolderViewButton_clicked()
     m_folderViewMenu.exec(p);
 }
 
-void CatalogWindow::onActionFolderViewList_triggered()
+void CatalogWindow::handleFolderViewListActionTriggered()
 {
     qApp->setCatalogViewModeSetting(qvEnums::List);
     ui->actionFolderViewList->setChecked(true);
@@ -284,7 +284,7 @@ void CatalogWindow::onActionFolderViewList_triggered()
     resetVolumes();
 }
 
-void CatalogWindow::onActionFolderViewIcon_triggered()
+void CatalogWindow::handleFolderViewIconActionTriggered()
 {
     qApp->setCatalogViewModeSetting(qvEnums::Icon);
     ui->actionFolderViewList->setChecked(false);
@@ -305,7 +305,7 @@ void CatalogWindow::onActionFolderViewIcon_triggered()
     resetVolumes();
 }
 
-void CatalogWindow::onActionFolderViewNotext_triggered()
+void CatalogWindow::handleFolderViewIconNoTextActionTriggered()
 {
     qApp->setCatalogViewModeSetting(qvEnums::IconNoText);
     ui->actionFolderViewList->setChecked(false);
@@ -334,7 +334,7 @@ void CatalogWindow::onManageCatalogButton_clicked()
 void CatalogWindow::onSearchCombo_editTextChanged(QString search)
 {
     qDebug() << search;
-//    if(m_volumes.size() < qApp->MaxSearchByCharChanged())
+    //    if(m_volumes.size() < qApp->MaxSearchByCharChanged())
     searchByWord();
     return;
 }
@@ -369,15 +369,15 @@ void CatalogWindow::on_itemDoubleClicked(const QModelIndex &index)
     resetTagButtons(tagtxt, getTagWords());
 }
 
-void CatalogWindow::onActionSearchTitleWithOptions_triggered(bool enable)
+void CatalogWindow::handleSearchTitleWithOptionsActionTriggered(bool checked)
 {
-    qApp->setSearchTitleWithOptions(enable);
+    qApp->setSearchTitleWithOptions(checked);
     searchByWord(true);
 }
 
-void CatalogWindow::onActionCatalogTitleWithoutOptions_triggered(bool enable)
+void CatalogWindow::handleCatalogTitleWithoutOptionsActionTriggered(bool checked)
 {
-    qApp->setTitleWithoutOptions(enable);
+    qApp->setTitleWithoutOptions(checked);
     searchByWord(true);
 }
 
@@ -386,11 +386,11 @@ void CatalogWindow::on_tagButtonClicked(bool)
     searchByWord();
 }
 
-void CatalogWindow::on_showTagBar_triggered(bool enable)
+void CatalogWindow::handleShowTagBarActionTriggered(bool checked)
 {
-    qApp->setShowTagBar(enable);
-    ui->tagFrame->setVisible(enable);
-    if (enable) {
+    qApp->setShowTagBar(checked);
+    ui->tagFrame->setVisible(checked);
+    if (checked) {
         initTagButtons();
     } else {
         resetTagButtons(QStringList(), QStringList());
