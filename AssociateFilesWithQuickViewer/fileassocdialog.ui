@@ -223,7 +223,7 @@
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
    <receiver>FileAssocDialog</receiver>
-   <slot>on_tryRegist_triggered()</slot>
+   <slot>handleButtonBoxAccepted()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>248</x>
@@ -255,7 +255,7 @@
    <sender>btnAllOff</sender>
    <signal>clicked()</signal>
    <receiver>FileAssocDialog</receiver>
-   <slot>on_allOff_triggered()</slot>
+   <slot>handleAllOffButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>152</x>
@@ -271,7 +271,7 @@
    <sender>btnAllOn</sender>
    <signal>clicked()</signal>
    <receiver>FileAssocDialog</receiver>
-   <slot>on_allOn_triggered()</slot>
+   <slot>handleAllOnButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>54</x>
@@ -286,8 +286,8 @@
  </connections>
  <slots>
   <signal>closed()</signal>
-  <slot>on_allOn_triggered()</slot>
-  <slot>on_allOff_triggered()</slot>
-  <slot>on_tryRegist_triggered()</slot>
+  <slot>handleAllOnButtonClicked()</slot>
+  <slot>handleAllOffButtonClicked()</slot>
+  <slot>handleButtonBoxAccepted()</slot>
  </slots>
 </ui>

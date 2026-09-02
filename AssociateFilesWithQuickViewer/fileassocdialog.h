@@ -28,17 +28,17 @@ public:
     ~FileAssocDialog();
     //    void closeEvent(QCloseEvent *event) override;
     QStringList enumrateFormats();
-    void registEntries(QStringList formats);
-    void unregistEntries();
+    void registerEntries(QStringList formats);
+    void unregisterEntries();
     QString getExecuteApplication();
     QString getIconPath(QString iconName);
 
     static QSettings::Format RegFormat;
 
 public slots:
-    void on_allOn_triggered();
-    void on_allOff_triggered();
-    void on_tryRegist_triggered();
+    void handleAllOnButtonClicked();
+    void handleAllOffButtonClicked();
+    void handleButtonBoxAccepted();
 
 signals:
     void closed();

@@ -59,7 +59,7 @@ void BrightnessWindow::resetSliders()
     ui->lineGamma->setText(QString::number(ui->sliderGamma->value()));
 }
 
-void BrightnessWindow::onSliderBrightness_valueChanged(int value)
+void BrightnessWindow::handleBrightnessSliderValueChanged(int value)
 {
     m_retouchParams.Brightness = value;
     if (!ignoreTextChange) {
@@ -68,7 +68,7 @@ void BrightnessWindow::onSliderBrightness_valueChanged(int value)
     emit retouchParametersChanged(m_retouchParams);
 }
 
-void BrightnessWindow::onSliderContrast_valueChanged(int value)
+void BrightnessWindow::handleContrastSliderValueChanged(int value)
 {
     m_retouchParams.Contrast = sliderToFloat(value);
     if (!ignoreTextChange) {
@@ -77,7 +77,7 @@ void BrightnessWindow::onSliderContrast_valueChanged(int value)
     emit retouchParametersChanged(m_retouchParams);
 }
 
-void BrightnessWindow::onSliderGamma_valueChanged(int value)
+void BrightnessWindow::handleGammaSliderValueChanged(int value)
 {
     m_retouchParams.Gamma = sliderToFloat(value);
     if (!ignoreTextChange) {
@@ -86,7 +86,7 @@ void BrightnessWindow::onSliderGamma_valueChanged(int value)
     emit retouchParametersChanged(m_retouchParams);
 }
 
-void BrightnessWindow::onLineBrightness_textChanged(QString text)
+void BrightnessWindow::handleBrightnessLineEditTextChanged(QString text)
 {
     int value = text.toInt();
     ignoreTextChange = true;
@@ -94,7 +94,7 @@ void BrightnessWindow::onLineBrightness_textChanged(QString text)
     ignoreTextChange = false;
 }
 
-void BrightnessWindow::onLineContrast_textChanged(QString text)
+void BrightnessWindow::handleContrastLineEditTextChanged(QString text)
 {
     int value = text.toInt();
     ignoreTextChange = true;
@@ -102,7 +102,7 @@ void BrightnessWindow::onLineContrast_textChanged(QString text)
     ignoreTextChange = false;
 }
 
-void BrightnessWindow::onLineGamma_textChanged(QString text)
+void BrightnessWindow::handleGammaLineEditTextChanged(QString text)
 {
     int value = text.toInt();
     ignoreTextChange = true;
@@ -110,7 +110,7 @@ void BrightnessWindow::onLineGamma_textChanged(QString text)
     ignoreTextChange = false;
 }
 
-void BrightnessWindow::onResetButton_clicked()
+void BrightnessWindow::handleResetButtonClicked()
 {
     m_retouchParams = ImageRetouch();
     resetSliders();

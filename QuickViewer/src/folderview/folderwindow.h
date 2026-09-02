@@ -35,16 +35,16 @@ public:
     void handleCurrentFolderItemTriggered();
 
 public slots:
-    void onHomeButton_clicked();
-    void onPrevButton_clicked();
-    void onNextButton_clicked();
-    void onParentButton_clicked();
-    void onReloadButton_clicked();
+    void handleHomeButtonClicked();
+    void handlePreviousButtonClicked();
+    void handleNextButtonClicked();
+    void handleParentButtonClicked();
+    void handleReloadButtonClicked();
     void handlePageManagerVolumeChanged(QString);
     void handleFolderViewItemSelected(const QModelIndex &index);
     void handleFolderViewItemDoubleClicked(const QModelIndex &index);
     void handleSetAsHomeFolderActionTriggered();
-    void onSortModeButton_clicked();
+    void handleSortModeButtonClicked();
     void handleOrderByNameActionTriggered();
     void handleOrderByUpdatedAtActionTriggered();
 

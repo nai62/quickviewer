@@ -208,7 +208,7 @@
    <sender>sliderBrightness</sender>
    <signal>valueChanged(int)</signal>
    <receiver>BrightnessWindow</receiver>
-   <slot>onSliderBrightness_valueChanged(int)</slot>
+   <slot>handleBrightnessSliderValueChanged(int)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>116</x>
@@ -224,7 +224,7 @@
    <sender>sliderContrast</sender>
    <signal>valueChanged(int)</signal>
    <receiver>BrightnessWindow</receiver>
-   <slot>onSliderContrast_valueChanged(int)</slot>
+   <slot>handleContrastSliderValueChanged(int)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>116</x>
@@ -240,7 +240,7 @@
    <sender>sliderGamma</sender>
    <signal>valueChanged(int)</signal>
    <receiver>BrightnessWindow</receiver>
-   <slot>onSliderGamma_valueChanged(int)</slot>
+   <slot>handleGammaSliderValueChanged(int)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>116</x>
@@ -256,7 +256,7 @@
    <sender>resetButton</sender>
    <signal>clicked()</signal>
    <receiver>BrightnessWindow</receiver>
-   <slot>onResetButton_clicked()</slot>
+   <slot>handleResetButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>116</x>
@@ -272,7 +272,7 @@
    <sender>lineBrightness</sender>
    <signal>textChanged(QString)</signal>
    <receiver>BrightnessWindow</receiver>
-   <slot>onLineBrightness_textChanged(QString)</slot>
+   <slot>handleBrightnessLineEditTextChanged(QString)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>182</x>
@@ -288,7 +288,7 @@
    <sender>lineContrast</sender>
    <signal>textChanged(QString)</signal>
    <receiver>BrightnessWindow</receiver>
-   <slot>onLineContrast_textChanged(QString)</slot>
+   <slot>handleContrastLineEditTextChanged(QString)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>182</x>
@@ -304,7 +304,7 @@
    <sender>lineGamma</sender>
    <signal>textChanged(QString)</signal>
    <receiver>BrightnessWindow</receiver>
-   <slot>onLineGamma_textChanged(QString)</slot>
+   <slot>handleGammaLineEditTextChanged(QString)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>182</x>
@@ -318,12 +318,12 @@
   </connection>
  </connections>
  <slots>
-  <slot>onSliderBrightness_valueChanged(int)</slot>
-  <slot>onSliderContrast_valueChanged(int)</slot>
-  <slot>onSliderGamma_valueChanged(int)</slot>
-  <slot>onResetButton_clicked()</slot>
-  <slot>onLineBrightness_textChanged(QString)</slot>
-  <slot>onLineContrast_textChanged(QString)</slot>
-  <slot>onLineGamma_textChanged(QString)</slot>
+  <slot>handleBrightnessSliderValueChanged(int)</slot>
+  <slot>handleContrastSliderValueChanged(int)</slot>
+  <slot>handleGammaSliderValueChanged(int)</slot>
+  <slot>handleResetButtonClicked()</slot>
+  <slot>handleBrightnessLineEditTextChanged(QString)</slot>
+  <slot>handleContrastLineEditTextChanged(QString)</slot>
+  <slot>handleGammaLineEditTextChanged(QString)</slot>
  </slots>
 </ui>

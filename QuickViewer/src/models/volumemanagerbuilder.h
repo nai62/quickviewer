@@ -53,12 +53,9 @@ public:
      */
     static VolumeManager *CreateVolume(QObject *parent, QString path);
 
-//public slots:
-//    void on_enumerated();
-
 private:
     VolumeManager *m_volumeManager;
-//    QFutureWatcher<void> m_watcher;
+    //    QFutureWatcher<void> m_watcher;
     QString m_subfilename;
 };
 

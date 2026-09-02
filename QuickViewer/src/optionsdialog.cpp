@@ -249,7 +249,7 @@ void OptionsDialog::resetStatusbarSample()
     ui->labelStatusBarSample->setText(m_imageString.formatString(format));
 }
 
-void OptionsDialog::onBtnColorSelect_clicked()
+void OptionsDialog::handlePrimaryColorButtonClicked()
 {
     QColorDialog dialog(this);
     dialog.setCurrentColor(m_backgroundColor);
@@ -260,7 +260,7 @@ void OptionsDialog::onBtnColorSelect_clicked()
     }
 }
 
-void OptionsDialog::onBtnColorSelect2_clicked()
+void OptionsDialog::handleSecondaryColorButtonClicked()
 {
     QColorDialog dialog(this);
     dialog.setCurrentColor(m_backgroundColor2);
@@ -271,7 +271,7 @@ void OptionsDialog::onBtnColorSelect2_clicked()
     }
 }
 
-void OptionsDialog::onCheckBoxCheckeredPattern_clicked(bool checked)
+void OptionsDialog::handleCheckeredPatternCheckBoxClicked(bool checked)
 {
     m_useCheckeredPattern = checked;
     resetColorBox();
@@ -297,17 +297,17 @@ void OptionsDialog::handleStatusBarUserDefinedRadioButtonToggled(bool checked)
     ui->lineEditStatusBarUserStyle->setEnabled(checked);
 }
 
-void OptionsDialog::onLineEditWindowTitleUserStyle_textEdited(QString text)
+void OptionsDialog::handleWindowTitleUserStyleLineEditTextEdited(QString text)
 {
     resetWindowTitleSample();
 }
 
-void OptionsDialog::onLineEditStatusBarUserStyle_textEdited(QString text)
+void OptionsDialog::handleStatusBarUserStyleLineEditTextEdited(QString text)
 {
     resetStatusbarSample();
 }
 
-void OptionsDialog::onCheckBoxShowUsage_clicked(bool checked)
+void OptionsDialog::handleShowUsageCheckBoxClicked(bool checked)
 {
     ui->labelFormatUsage->setVisible(checked);
 }

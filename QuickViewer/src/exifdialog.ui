@@ -104,7 +104,7 @@
    <sender>btnClipboard</sender>
    <signal>clicked()</signal>
    <receiver>ExifDialog</receiver>
-   <slot>onBtnClipbard_clicked()</slot>
+   <slot>handleClipboardButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>58</x>
@@ -118,7 +118,6 @@
   </connection>
  </connections>
  <slots>
-  <slot>on_willclose_trigger()</slot>
-  <slot>onBtnClipbard_clicked()</slot>
+  <slot>handleClipboardButtonClicked()</slot>
  </slots>
 </ui>

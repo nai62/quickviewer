@@ -32,11 +32,11 @@ public:
 signals:
 
 public slots:
-    void onTreeWidget_currentItemChanged(QTreeWidgetItem *item, QTreeWidgetItem *previous);
-    void onRecordButton_keySequenceChanged(QKeySequence key);
-    void onResetButton_clicked();
-    void onShortcutEdit_textChanged(QString text);
-    void onStandardButton_clicked(QAbstractButton *button);
+    void handleTreeWidgetCurrentItemChanged(QTreeWidgetItem *item, QTreeWidgetItem *previous);
+    void handleRecordButtonKeySequenceChanged(QKeySequence key);
+    void handleResetButtonClicked();
+    void handleShortcutLineEditTextChanged(QString text);
+    void handleButtonBoxClicked(QAbstractButton *button);
 
 private:
     Ui::KeyConfigDialog *ui;

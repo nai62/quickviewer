@@ -27,7 +27,7 @@ protected:
 
 private:
     void updateText();
-    void handleToggleChange(bool toggleState);
+    void handleToggleChange(bool checked);
 
     QString m_checkedText;
     QString m_uncheckedText;

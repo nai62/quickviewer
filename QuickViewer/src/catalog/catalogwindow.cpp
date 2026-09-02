@@ -47,7 +47,7 @@ CatalogWindow::CatalogWindow(QWidget *parent, Ui::MainWindow *uiMain)
     ui->volumeList->setModel(&m_itemModel);
 
     // SearchCombo
-    connect(ui->searchCombo->lineEdit(), SIGNAL(editingFinished()), this, SLOT(onLineEdit_editingFinished()));
+    connect(ui->searchCombo->lineEdit(), SIGNAL(editingFinished()), this, SLOT(handleSearchLineEditEditingFinished()));
     ui->searchCombo->lineEdit()->setPlaceholderText(tr("Field the search term and press enter key to search by the title.", "Gray text that prompts a keyword search of Volume"));
 
     // TagFrame
@@ -250,7 +250,7 @@ void CatalogWindow::resizeEvent(QResizeEvent *event)
     qApp->setCatalogViewWidth(event->size().width());
 }
 
-void CatalogWindow::onFolderViewButton_clicked()
+void CatalogWindow::handleFolderViewButtonClicked()
 {
     QWidget *widget = ui->folderViewButton;
 
@@ -315,7 +315,7 @@ void CatalogWindow::handleFolderViewIconNoTextActionTriggered()
     resetVolumes();
 }
 
-void CatalogWindow::onManageCatalogButton_clicked()
+void CatalogWindow::handleManageCatalogButtonClicked()
 {
     ManageDatabaseDialog dialog(this);
     dialog.setThumbnailManager(m_thumbManager);
@@ -326,7 +326,7 @@ void CatalogWindow::onManageCatalogButton_clicked()
     searchByWord(true);
 }
 
-void CatalogWindow::onSearchCombo_editTextChanged(QString search)
+void CatalogWindow::handleSearchComboBoxEditTextChanged(QString search)
 {
     qDebug() << search;
     //    if(m_volumes.size() < qApp->MaxSearchByCharChanged())
@@ -334,15 +334,15 @@ void CatalogWindow::onSearchCombo_editTextChanged(QString search)
     return;
 }
 
-void CatalogWindow::onSearchCombo_currentIndexChanged(QString search)
+void CatalogWindow::handleSearchComboBoxCurrentIndexChanged(QString search)
 {
-    qDebug() << "on_searchTextIndexChanged: " << search;
+    qDebug() << "handleSearchComboBoxCurrentIndexChanged: " << search;
     searchByWord();
 }
 
-void CatalogWindow::onLineEdit_editingFinished()
+void CatalogWindow::handleSearchLineEditEditingFinished()
 {
-    qDebug() << "onLineEdit_editingFinished:";
+    qDebug() << "handleSearchLineEditEditingFinished:";
     searchByWord();
 }
 

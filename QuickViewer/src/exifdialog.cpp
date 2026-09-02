@@ -47,8 +47,8 @@ QString ExifDialog::generateFlash(char flash)
     switch (flash) {
     default:
         break;
-//    case 0x0: return notflash;
-//    case 0x1: return tr("Flash fired", "JPEG EXIF Flash setting value (0x1)");
+        //    case 0x0: return notflash;
+        //    case 0x1: return tr("Flash fired", "JPEG EXIF Flash setting value (0x1)");
     case 0x0000:
         return notflash;
     case 0x0001:
@@ -195,7 +195,7 @@ void ExifDialog::closeEvent(QCloseEvent *e)
     emit closed();
 }
 
-void ExifDialog::onBtnClipbard_clicked()
+void ExifDialog::handleClipboardButtonClicked()
 {
     QClipboard *clipboard = QApplication::clipboard();
     clipboard->setText(m_exif);

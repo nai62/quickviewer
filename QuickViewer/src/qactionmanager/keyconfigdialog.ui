@@ -354,11 +354,4 @@
  </customwidgets>
  <resources/>
  <connections/>
- <slots>
-  <slot>on_currentCommandChanged(QTreeWidgetItem*,QTreeWidgetItem*)</slot>
-  <slot>on_keySequence_changed(QKeySequence)</slot>
-  <slot>on_resetToDefault()</slot>
-  <slot>on_shortcutClearButton_triggerd()</slot>
-  <slot>on_shortcutEdit_changed(QString)</slot>
- </slots>
 </ui>

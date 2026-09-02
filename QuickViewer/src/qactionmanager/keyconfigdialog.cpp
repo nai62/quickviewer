@@ -148,11 +148,11 @@ void ShortcutButton::updateText()
     setText(isChecked() ? m_checkedText : m_uncheckedText);
 }
 
-void ShortcutButton::handleToggleChange(bool toogleState)
+void ShortcutButton::handleToggleChange(bool checked)
 {
     updateText();
     m_keyNum = m_key[0] = m_key[1] = m_key[2] = m_key[3] = 0;
-    if (toogleState) {
+    if (checked) {
         if (qApp->focusWidget()) {
             qApp->focusWidget()->clearFocus(); // funny things happen otherwise
         }
@@ -174,12 +174,12 @@ KeyConfigDialog::KeyConfigDialog(KeyConfigDialog::KeyActionManager &keyActions, 
     ui->addSequenceButton->setVisible(false);
     connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(ui->buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
-    connect(ui->buttonBox, SIGNAL(clicked(QAbstractButton *)), this, SLOT(onStandardButton_clicked(QAbstractButton *)));
-    connect(ui->treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)), this, SLOT(onTreeWidget_currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)));
-    connect(ui->resetButton, SIGNAL(clicked()), this, SLOT(onResetButton_clicked()));
-    connect(ui->shortcutEdit, SIGNAL(textChanged(QString)), this, SLOT(onShortcutEdit_textChanged(QString)));
+    connect(ui->buttonBox, SIGNAL(clicked(QAbstractButton *)), this, SLOT(handleButtonBoxClicked(QAbstractButton *)));
+    connect(ui->treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)), this, SLOT(handleTreeWidgetCurrentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)));
+    connect(ui->resetButton, SIGNAL(clicked()), this, SLOT(handleResetButtonClicked()));
+    connect(ui->shortcutEdit, SIGNAL(textChanged(QString)), this, SLOT(handleShortcutLineEditTextChanged(QString)));
 
-    connect(ui->recordButton, &ShortcutButton::keySequenceChanged, this, &KeyConfigDialog::onRecordButton_keySequenceChanged);
+    connect(ui->recordButton, &ShortcutButton::keySequenceChanged, this, &KeyConfigDialog::handleRecordButtonKeySequenceChanged);
 
     ui->treeWidget->sortByColumn(0, Qt::AscendingOrder);
     QTreeWidgetItem *header = ui->treeWidget->headerItem();
@@ -246,7 +246,7 @@ void KeyConfigDialog::setEditTextWithoutSignal(QString text)
     m_ignoreEdited = false;
 }
 
-void KeyConfigDialog::onTreeWidget_currentItemChanged(QTreeWidgetItem *item, QTreeWidgetItem *)
+void KeyConfigDialog::handleTreeWidgetCurrentItemChanged(QTreeWidgetItem *item, QTreeWidgetItem *)
 {
     if (item) {
         //        m_actionName = item->text(0);
@@ -256,7 +256,7 @@ void KeyConfigDialog::onTreeWidget_currentItemChanged(QTreeWidgetItem *item, QTr
     }
 }
 
-void KeyConfigDialog::onRecordButton_keySequenceChanged(QKeySequence key)
+void KeyConfigDialog::handleRecordButtonKeySequenceChanged(QKeySequence key)
 {
     QString shortcutText = keySequenceToEditString(key);
     setEditTextWithoutSignal(shortcutText);
@@ -275,7 +275,7 @@ void KeyConfigDialog::onRecordButton_keySequenceChanged(QKeySequence key)
     m_keyActions.updateKey(m_actionName, key);
 }
 
-void KeyConfigDialog::onResetButton_clicked()
+void KeyConfigDialog::handleResetButtonClicked()
 {
     QKeySequence key = m_keyActions.getKeyDefault(m_actionName);
     QString shortcutText = keySequenceToEditString(key);
@@ -291,7 +291,7 @@ void KeyConfigDialog::onResetButton_clicked()
     m_keyActions.updateKey(m_actionName, key);
 }
 
-void KeyConfigDialog::onShortcutEdit_textChanged(QString text)
+void KeyConfigDialog::handleShortcutLineEditTextChanged(QString text)
 {
     if (!m_ignoreEdited) {
         QKeySequence key(text);
@@ -299,11 +299,11 @@ void KeyConfigDialog::onShortcutEdit_textChanged(QString text)
             ui->warningLabel->setText(tr("Invalid key sequence.", "Message when rejecting input contents of inappropriate shortcut key"));
             return;
         }
-        onRecordButton_keySequenceChanged(key);
+        handleRecordButtonKeySequenceChanged(key);
     }
 }
 
-void KeyConfigDialog::onStandardButton_clicked(QAbstractButton *button)
+void KeyConfigDialog::handleButtonBoxClicked(QAbstractButton *button)
 {
     switch (ui->buttonBox->standardButton(button)) {
     case QDialogButtonBox::RestoreDefaults:

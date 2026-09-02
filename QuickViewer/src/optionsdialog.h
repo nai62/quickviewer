@@ -26,16 +26,16 @@ public:
     void initFormatUsage();
 
 public slots:
-    void onBtnColorSelect_clicked();
-    void onBtnColorSelect2_clicked();
-    void onCheckBoxCheckeredPattern_clicked(bool checked);
+    void handlePrimaryColorButtonClicked();
+    void handleSecondaryColorButtonClicked();
+    void handleCheckeredPatternCheckBoxClicked(bool checked);
     void handleWindowTitleStyleRadioButtonToggled();
     void handleWindowTitleUserDefinedRadioButtonToggled(bool checked);
     void handleStatusBarStyleRadioButtonToggled();
     void handleStatusBarUserDefinedRadioButtonToggled(bool checked);
-    void onLineEditWindowTitleUserStyle_textEdited(QString text);
-    void onLineEditStatusBarUserStyle_textEdited(QString text);
-    void onCheckBoxShowUsage_clicked(bool checked);
+    void handleWindowTitleUserStyleLineEditTextEdited(QString text);
+    void handleStatusBarUserStyleLineEditTextEdited(QString text);
+    void handleShowUsageCheckBoxClicked(bool checked);
 
 private:
     Ui::OptionsDialog *ui;

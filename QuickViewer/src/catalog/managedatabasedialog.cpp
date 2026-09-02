@@ -126,7 +126,7 @@ void ManageDatabaseDialog::dragEnterEvent(QDragEnterEvent *e)
     }
 }
 
-void ManageDatabaseDialog::onAddButton_clicked()
+void ManageDatabaseDialog::handleAddButtonClicked()
 {
     CatalogRecord catalog = {0};
     if (!databaseSettingDialog(catalog, false)) {
@@ -235,7 +235,7 @@ void ManageDatabaseDialog::handleCatalogCreationFinished()
     msgBox.exec();
 }
 
-void ManageDatabaseDialog::onCancelButton_clicked()
+void ManageDatabaseDialog::handleCancelButtonClicked()
 {
     if (!m_thumbManager) {
         return;
@@ -273,7 +273,7 @@ void ManageDatabaseDialog::closeEvent(QCloseEvent *)
     m_thumbManager->vacuum();
 }
 
-void ManageDatabaseDialog::onEditButton_clicked()
+void ManageDatabaseDialog::handleEditButtonClicked()
 {
     if (!m_thumbManager) {
         return;
@@ -302,7 +302,7 @@ void ManageDatabaseDialog::onEditButton_clicked()
     resetCatalogList();
 }
 
-void ManageDatabaseDialog::onDeleteButton_clicked()
+void ManageDatabaseDialog::handleDeleteButtonClicked()
 {
     if (!m_thumbManager) {
         return;
@@ -326,11 +326,11 @@ void ManageDatabaseDialog::onDeleteButton_clicked()
     normalButtonStates();
 }
 
-void ManageDatabaseDialog::onUpdateButton_clicked()
+void ManageDatabaseDialog::handleUpdateButtonClicked()
 {
 }
 
-void ManageDatabaseDialog::onDeleteAllButton_clicked()
+void ManageDatabaseDialog::handleDeleteAllButtonClicked()
 {
     if (!m_thumbManager) {
         return;
@@ -343,6 +343,6 @@ void ManageDatabaseDialog::onDeleteAllButton_clicked()
     normalButtonStates();
 }
 
-void ManageDatabaseDialog::onUpdateAllButton_clicked()
+void ManageDatabaseDialog::handleUpdateAllButtonClicked()
 {
 }

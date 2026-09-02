@@ -111,9 +111,9 @@ FileAssocDialog::~FileAssocDialog()
 //    if(result() == QDialog::Accepted) {
 //        auto formats = enumrateFormats();
 //        if(formats.isEmpty())
-//            unregistEntries();
+//            unregisterEntries();
 //        else
-//            registEntries(formats);
+//            registerEntries(formats);
 //    }
 
 //    emit closed();
@@ -132,7 +132,7 @@ QStringList FileAssocDialog::enumrateFormats()
     return result;
 }
 
-void FileAssocDialog::on_allOn_triggered()
+void FileAssocDialog::handleAllOnButtonClicked()
 {
     foreach (QCheckBox *c, m_assocOfActions.values()) {
         if (c) {
@@ -141,7 +141,7 @@ void FileAssocDialog::on_allOn_triggered()
     }
 }
 
-void FileAssocDialog::on_allOff_triggered()
+void FileAssocDialog::handleAllOffButtonClicked()
 {
     foreach (QCheckBox *c, m_assocOfActions.values()) {
         if (c) {
@@ -150,21 +150,21 @@ void FileAssocDialog::on_allOff_triggered()
     }
 }
 
-void FileAssocDialog::on_tryRegist_triggered()
+void FileAssocDialog::handleButtonBoxAccepted()
 {
     auto formats = enumrateFormats();
     if (formats.isEmpty()) {
-        unregistEntries();
+        unregisterEntries();
     } else {
-        registEntries(formats);
+        registerEntries(formats);
     }
     accept();
     return;
 }
 
-void FileAssocDialog::registEntries(QStringList formats)
+void FileAssocDialog::registerEntries(QStringList formats)
 {
-    //    qDebug() << "registEntries()";
+    //    qDebug() << "registerEntries()";
     {
         // assoiation for each extension
         foreach (const QString &fmt, formats) {
@@ -234,7 +234,7 @@ void FileAssocDialog::registEntries(QStringList formats)
     }
 }
 
-void FileAssocDialog::unregistEntries()
+void FileAssocDialog::unregisterEntries()
 {
     {
         // assoiation for each extension

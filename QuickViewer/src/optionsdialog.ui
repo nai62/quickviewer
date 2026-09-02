@@ -2459,7 +2459,7 @@
    <sender>btnColorSelect</sender>
    <signal>clicked()</signal>
    <receiver>OptionsDialog</receiver>
-   <slot>onBtnColorSelect_clicked()</slot>
+   <slot>handlePrimaryColorButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>402</x>
@@ -2475,7 +2475,7 @@
    <sender>btnColorSelect2</sender>
    <signal>clicked()</signal>
    <receiver>OptionsDialog</receiver>
-   <slot>onBtnColorSelect2_clicked()</slot>
+   <slot>handleSecondaryColorButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>218</x>
@@ -2491,7 +2491,7 @@
    <sender>checkBoxCheckeredPattern</sender>
    <signal>clicked(bool)</signal>
    <receiver>OptionsDialog</receiver>
-   <slot>onCheckBoxCheckeredPattern_clicked(bool)</slot>
+   <slot>handleCheckeredPatternCheckBoxClicked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>122</x>
@@ -2555,7 +2555,7 @@
    <sender>lineEditStatusBarUserStyle</sender>
    <signal>textEdited(QString)</signal>
    <receiver>OptionsDialog</receiver>
-   <slot>onLineEditStatusBarUserStyle_textEdited(QString)</slot>
+   <slot>handleStatusBarUserStyleLineEditTextEdited(QString)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>284</x>
@@ -2571,7 +2571,7 @@
    <sender>lineEditWindowTitleUserStyle</sender>
    <signal>textEdited(QString)</signal>
    <receiver>OptionsDialog</receiver>
-   <slot>onLineEditWindowTitleUserStyle_textEdited(QString)</slot>
+   <slot>handleWindowTitleUserStyleLineEditTextEdited(QString)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>284</x>
@@ -2635,7 +2635,7 @@
    <sender>checkBoxShowUsage</sender>
    <signal>clicked(bool)</signal>
    <receiver>OptionsDialog</receiver>
-   <slot>onCheckBoxShowUsage_clicked(bool)</slot>
+   <slot>handleShowUsageCheckBoxClicked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>227</x>
@@ -2649,13 +2649,13 @@
   </connection>
  </connections>
  <slots>
-  <slot>onBtnColorSelect_clicked()</slot>
-  <slot>onBtnColorSelect2_clicked()</slot>
-  <slot>onCheckBoxCheckeredPattern_clicked(bool)</slot>
+  <slot>handlePrimaryColorButtonClicked()</slot>
+  <slot>handleSecondaryColorButtonClicked()</slot>
+  <slot>handleCheckeredPatternCheckBoxClicked(bool)</slot>
   <slot>handleWindowTitleStyleRadioButtonToggled()</slot>
-  <slot>onLineEditWindowTitleUserStyle_textEdited(QString)</slot>
-  <slot>onLineEditStatusBarUserStyle_textEdited(QString)</slot>
+  <slot>handleWindowTitleUserStyleLineEditTextEdited(QString)</slot>
+  <slot>handleStatusBarUserStyleLineEditTextEdited(QString)</slot>
   <slot>handleStatusBarStyleRadioButtonToggled()</slot>
-  <slot>onCheckBoxShowUsage_clicked(bool)</slot>
+  <slot>handleShowUsageCheckBoxClicked(bool)</slot>
  </slots>
 </ui>

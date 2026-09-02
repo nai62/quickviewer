@@ -27,13 +27,13 @@ public:
     void checkAcceptable();
 
 public slots:
-    void onNameEdit_textChanged(QString name);
-    void onPathEdit_textChanged(QString path)
+    void handleNameLineEditTextChanged(QString name);
+    void handlePathLineEditTextChanged(QString path)
     {
         setPath(path);
         checkAcceptable();
     }
-    void onSelectFolderButton_clicked();
+    void handleSelectFolderButtonClicked();
 
 private:
     Ui::DatabaseSettingDialog *ui;

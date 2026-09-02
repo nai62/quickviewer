@@ -1228,7 +1228,7 @@ void MainWindow::handlePageManagerVolumeChanged(QString path)
 
 void MainWindow::handlePageSliderValueChanged(int value)
 {
-    //qDebug() << "on_pageSlider_changed " << value << m_sliderChanging;
+    //qDebug() << "handlePageSliderValueChanged " << value << m_sliderChanging;
     if (m_sliderChanging) {
         return;
     }

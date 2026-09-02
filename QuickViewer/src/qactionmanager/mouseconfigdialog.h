@@ -32,13 +32,13 @@ public:
     MouseActionManager &mouseActions() { return m_mouseActions; }
 
 public slots:
-    void onTreeWidget_currentItemChanged(QTreeWidgetItem *item, QTreeWidgetItem *previous);
-    void onRecordButton_keySequenceChanged(QMouseSequence key);
-    void onAddSequenceButton_clicked();
-    void onResetButton_clicked();
-    void onShortcutEdit_textChanged(QString text);
-    void onCheckBox_toggled();
-    void onStandardButton_clicked(QAbstractButton *button);
+    void handleTreeWidgetCurrentItemChanged(QTreeWidgetItem *item, QTreeWidgetItem *previous);
+    void handleRecordButtonKeySequenceChanged(QMouseSequence key);
+    void handleAddSequenceButtonClicked();
+    void handleResetButtonClicked();
+    void handleShortcutLineEditTextChanged(QString text);
+    void handleInputOptionToggled();
+    void handleButtonBoxClicked(QAbstractButton *button);
 
 private:
     Ui::KeyConfigDialog *ui;

@@ -399,7 +399,7 @@ QFrame.layout {
    <sender>folderViewButton</sender>
    <signal>clicked()</signal>
    <receiver>CatalogWindow</receiver>
-   <slot>onFolderViewButton_clicked()</slot>
+   <slot>handleFolderViewButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>86</x>
@@ -415,7 +415,7 @@ QFrame.layout {
    <sender>searchCombo</sender>
    <signal>editTextChanged(QString)</signal>
    <receiver>CatalogWindow</receiver>
-   <slot>onSearchCombo_editTextChanged(QString)</slot>
+   <slot>handleSearchComboBoxEditTextChanged(QString)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>589</x>
@@ -479,7 +479,7 @@ QFrame.layout {
    <sender>manageCatalogButton</sender>
    <signal>clicked()</signal>
    <receiver>CatalogWindow</receiver>
-   <slot>onManageCatalogButton_clicked()</slot>
+   <slot>handleManageCatalogButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>456</x>
@@ -495,7 +495,7 @@ QFrame.layout {
    <sender>searchCombo</sender>
    <signal>currentIndexChanged(QString)</signal>
    <receiver>CatalogWindow</receiver>
-   <slot>onSearchCombo_currentIndexChanged(QString)</slot>
+   <slot>handleSearchComboBoxCurrentIndexChanged(QString)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>388</x>
@@ -557,15 +557,15 @@ QFrame.layout {
   </connection>
  </connections>
  <slots>
-  <slot>onFolderViewButton_clicked()</slot>
-  <slot>onSearchCombo_editTextChanged(QString)</slot>
+  <slot>handleFolderViewButtonClicked()</slot>
+  <slot>handleSearchComboBoxEditTextChanged(QString)</slot>
   <slot>handleFolderViewListActionTriggered()</slot>
   <slot>handleFolderViewIconActionTriggered()</slot>
   <slot>handleFolderViewIconNoTextActionTriggered()</slot>
-  <slot>onSearchCombo_currentIndexChanged(QString)</slot>
+  <slot>handleSearchComboBoxCurrentIndexChanged(QString)</slot>
   <slot>handleSearchTitleWithOptionsActionTriggered(bool)</slot>
   <slot>handleCatalogTitleWithoutOptionsActionTriggered(bool)</slot>
   <slot>handleVolumeListItemDoubleClicked(QModelIndex)</slot>
-  <slot>onManageCatalogButton_clicked()</slot>
+  <slot>handleManageCatalogButtonClicked()</slot>
  </slots>
 </ui>

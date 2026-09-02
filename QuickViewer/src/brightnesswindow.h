@@ -25,13 +25,13 @@ signals:
     void retouchParametersChanged(ImageRetouch params);
 
 public slots:
-    void onSliderBrightness_valueChanged(int value);
-    void onSliderContrast_valueChanged(int value);
-    void onSliderGamma_valueChanged(int value);
-    void onLineBrightness_textChanged(QString text);
-    void onLineContrast_textChanged(QString text);
-    void onLineGamma_textChanged(QString text);
-    void onResetButton_clicked();
+    void handleBrightnessSliderValueChanged(int value);
+    void handleContrastSliderValueChanged(int value);
+    void handleGammaSliderValueChanged(int value);
+    void handleBrightnessLineEditTextChanged(QString text);
+    void handleContrastLineEditTextChanged(QString text);
+    void handleGammaLineEditTextChanged(QString text);
+    void handleResetButtonClicked();
 
 private:
     Ui::BrightnessWindow *ui;
