@@ -40,9 +40,9 @@ public slots:
     void onNextButton_clicked();
     void onParentButton_clicked();
     void onReloadButton_clicked();
-    void onPageManager_volumeChanged(QString);
-    void on_itemSingleClicked(const QModelIndex &index);
-    void on_itemDoubleClicked(const QModelIndex &index);
+    void handlePageManagerVolumeChanged(QString);
+    void handleFolderViewItemSelected(const QModelIndex &index);
+    void handleFolderViewItemDoubleClicked(const QModelIndex &index);
     void handleSetAsHomeFolderActionTriggered();
     void onSortModeButton_clicked();
     void handleOrderByNameActionTriggered();

@@ -427,7 +427,7 @@ QPushButton:hover {
    <sender>folderView</sender>
    <signal>selected(QModelIndex)</signal>
    <receiver>FolderWindow</receiver>
-   <slot>on_itemSingleClicked(QModelIndex)</slot>
+   <slot>handleFolderViewItemSelected(QModelIndex)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>359</x>
@@ -443,7 +443,7 @@ QPushButton:hover {
    <sender>folderView</sender>
    <signal>doubleClicked(QModelIndex)</signal>
    <receiver>FolderWindow</receiver>
-   <slot>on_itemDoubleClicked(QModelIndex)</slot>
+   <slot>handleFolderViewItemDoubleClicked(QModelIndex)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>359</x>
@@ -601,8 +601,8 @@ QPushButton:hover {
   </connection>
  </connections>
  <slots>
-  <slot>on_itemSingleClicked(QModelIndex)</slot>
-  <slot>on_itemDoubleClicked(QModelIndex)</slot>
+  <slot>handleFolderViewItemSelected(QModelIndex)</slot>
+  <slot>handleFolderViewItemDoubleClicked(QModelIndex)</slot>
   <slot>onPrevButton_clicked()</slot>
   <slot>onNextButton_clicked()</slot>
   <slot>onParentButton_clicked()</slot>

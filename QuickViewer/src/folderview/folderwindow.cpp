@@ -215,7 +215,7 @@ void FolderWindow::setFolderPath(QString path, bool showParent)
     m_itemModel.setVolumes(&m_volumes);
 
     if (showParent) {
-        onPageManager_volumeChanged(path);
+        handlePageManagerVolumeChanged(path);
     }
 }
 
@@ -349,7 +349,7 @@ void FolderWindow::onReloadButton_clicked()
     setFolderPath(m_currentPath, false);
 }
 
-void FolderWindow::onPageManager_volumeChanged(QString path)
+void FolderWindow::handlePageManagerVolumeChanged(QString path)
 {
     QFileInfo info(QDir::toNativeSeparators(path));
     if (!info.exists() || m_currentPath != info.absolutePath()) {
@@ -369,7 +369,7 @@ void FolderWindow::onPageManager_volumeChanged(QString path)
     }
 }
 
-void FolderWindow::on_itemSingleClicked(const QModelIndex &index)
+void FolderWindow::handleFolderViewItemSelected(const QModelIndex &index)
 {
     int row = index.row();
     if (row >= m_volumes.size()) {
@@ -384,7 +384,7 @@ void FolderWindow::on_itemSingleClicked(const QModelIndex &index)
     emit openVolume(subpath);
 }
 
-void FolderWindow::on_itemDoubleClicked(const QModelIndex &index)
+void FolderWindow::handleFolderViewItemDoubleClicked(const QModelIndex &index)
 {
     int row = index.row();
     if (row >= m_volumes.size()) {
@@ -407,7 +407,7 @@ void FolderWindow::on_itemDoubleClicked(const QModelIndex &index)
 
 void FolderWindow::handleCurrentFolderItemTriggered()
 {
-    on_itemDoubleClicked(ui->folderView->currentIndex());
+    handleFolderViewItemDoubleClicked(ui->folderView->currentIndex());
 }
 
 void FolderWindow::onSortModeButton_clicked()

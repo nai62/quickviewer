@@ -543,7 +543,7 @@ QFrame.layout {
    <sender>volumeList</sender>
    <signal>doubleClicked(QModelIndex)</signal>
    <receiver>CatalogWindow</receiver>
-   <slot>on_itemDoubleClicked(QModelIndex)</slot>
+   <slot>handleVolumeListItemDoubleClicked(QModelIndex)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>356</x>
@@ -557,18 +557,16 @@ QFrame.layout {
   </connection>
  </connections>
  <slots>
-  <slot>on_treeItemChanged(QString)</slot>
+  <slot>handleTreeItemChanged(QString)</slot>
   <slot>onFolderViewButton_clicked()</slot>
   <slot>onSearchCombo_editTextChanged(QString)</slot>
   <slot>handleFolderViewListActionTriggered()</slot>
   <slot>handleFolderViewIconActionTriggered()</slot>
   <slot>handleFolderViewIconNoTextActionTriggered()</slot>
-  <slot>on_itemDoubleClicked(QListWidgetItem*)</slot>
-  <slot>on_searchTextFinished()</slot>
   <slot>onSearchCombo_currentIndexChanged(QString)</slot>
   <slot>handleSearchTitleWithOptionsActionTriggered(bool)</slot>
   <slot>handleCatalogTitleWithoutOptionsActionTriggered(bool)</slot>
-  <slot>on_itemDoubleClicked(QModelIndex)</slot>
+  <slot>handleVolumeListItemDoubleClicked(QModelIndex)</slot>
   <slot>onManageCatalogButton_clicked()</slot>
  </slots>
 </ui>

@@ -46,7 +46,7 @@ public:
     void handleShowTagBarActionTriggered(bool checked);
 
 public slots:
-    void on_treeItemChanged(QString path);
+    void handleTreeItemChanged(QString path);
     void onFolderViewButton_clicked();
     void handleFolderViewListActionTriggered();
     void handleFolderViewIconActionTriggered();
@@ -55,10 +55,10 @@ public slots:
     void onSearchCombo_editTextChanged(QString search);
     void onSearchCombo_currentIndexChanged(QString search);
     void onLineEdit_editingFinished();
-    void on_itemDoubleClicked(const QModelIndex &index);
+    void handleVolumeListItemDoubleClicked(const QModelIndex &index);
     void handleSearchTitleWithOptionsActionTriggered(bool checked);
     void handleCatalogTitleWithoutOptionsActionTriggered(bool checked);
-    void on_tagButtonClicked(bool checked);
+    void handleTagButtonClicked(bool checked);
 
 signals:
     void openVolume(QString path);

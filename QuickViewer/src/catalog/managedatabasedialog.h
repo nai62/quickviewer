@@ -37,8 +37,8 @@ public slots:
     void onCancelButton_clicked();
 
 private slots:
-    void on_catalogCreated(const CatalogRecord cr);
-    void on_catalogCreateFinished();
+    void handleCatalogCreated(const CatalogRecord cr);
+    void handleCatalogCreationFinished();
 
 private:
     Ui::ManageDatabaseDialog *ui;

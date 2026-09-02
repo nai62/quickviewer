@@ -137,7 +137,7 @@ void CatalogWindow::resetTagButtons(QStringList buttons, QStringList checks)
         if (checks.contains(name)) {
             b->setChecked(true);
         }
-        connect(b, SIGNAL(clicked(bool)), this, SLOT(on_tagButtonClicked(bool)));
+        connect(b, SIGNAL(clicked(bool)), this, SLOT(handleTagButtonClicked(bool)));
         ui->tagFrame->layout()->addWidget(b);
     }
 }
@@ -250,8 +250,10 @@ void CatalogWindow::resizeEvent(QResizeEvent *event)
     qApp->setCatalogViewWidth(event->size().width());
 }
 
-void CatalogWindow::on_treeItemChanged(QString)
+void CatalogWindow::handleTreeItemChanged(QString path)
 {
+    Q_UNUSED(path);
+
     //ui->pathCombo->setCurrentText(QDir::toNativeSeparators(path));
 }
 
@@ -347,11 +349,11 @@ void CatalogWindow::onSearchCombo_currentIndexChanged(QString search)
 
 void CatalogWindow::onLineEdit_editingFinished()
 {
-    qDebug() << "on_searchTextFinished:";
+    qDebug() << "onLineEdit_editingFinished:";
     searchByWord();
 }
 
-void CatalogWindow::on_itemDoubleClicked(const QModelIndex &index)
+void CatalogWindow::handleVolumeListItemDoubleClicked(const QModelIndex &index)
 {
     int row = index.row();
     if (row >= m_volumeSearch.size()) {
@@ -381,8 +383,10 @@ void CatalogWindow::handleCatalogTitleWithoutOptionsActionTriggered(bool checked
     searchByWord(true);
 }
 
-void CatalogWindow::on_tagButtonClicked(bool)
+void CatalogWindow::handleTagButtonClicked(bool checked)
 {
+    Q_UNUSED(checked);
+
     searchByWord();
 }
 
