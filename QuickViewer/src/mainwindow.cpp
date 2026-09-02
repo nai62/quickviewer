@@ -47,9 +47,7 @@ MainWindow::MainWindow(QWidget *parent)
         restoreGeometry(qApp->WindowGeometry());
     }
     m_revealInitialFullscreen = qApp->BeginAsFullscreen() || isFullScreen();
-    if (m_revealInitialFullscreen) {
-        setWindowOpacity(0.0);
-    }
+    setWindowOpacity(0.0);
 
     m_menubarFontSize = ui->menuBar->font().pointSize();
     m_pageSliderHeight = ui->pageSlider->height();
@@ -320,6 +318,7 @@ MainWindow::MainWindow(QWidget *parent)
         }
         ui->graphicsView->refreshRenderedPages();
         repaint();
+        setWindowOpacity(1.0);
     }
 
     // when drop a folder/archive icon to this app
