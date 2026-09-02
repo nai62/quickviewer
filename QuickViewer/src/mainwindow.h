@@ -81,6 +81,7 @@ protected:
     //    void paintEvent( QPaintEvent *event ) override;
     void wheelEvent(QWheelEvent *e) override;
     void keyPressEvent(QKeyEvent *event);
+    void showEvent(QShowEvent *event) override;
     //    void contextMenuEvent(QContextMenuEvent *e) override;
     //    void mousePressEvent(QMouseEvent *e) override;
     void closeEvent(QCloseEvent *e) override;
@@ -219,6 +220,7 @@ protected:
     bool m_viewerWindowStateMaximized;
     bool m_sliderChanging;
     bool m_onWindowClosing;
+    bool m_revealInitialFullscreen;
 
     /**
      * @brief m_contextMenu Define on the context menu mainwindow.ui for the main screen and separate at startup
