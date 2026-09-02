@@ -91,7 +91,7 @@ public slots:
     void handleNextOnePageActionTriggered();
     void handlePrevOnePageActionTriggered();
     void handleRotateActionTriggered();
-    void handleShowSubfoldersActionTriggered(bool enable);
+    void handleShowSubfoldersActionTriggered(bool checked);
 
     // SlideShow
     void handleSlideShowTimerTimeout();
@@ -101,19 +101,19 @@ public slots:
     void handlePrevVolumeActionTriggered();
 
     // View
-    void handleFittingActionTriggered(bool maximized);
-    void handleFitToWindowActionTriggered(bool enable);
-    void handleFitToWidthActionTriggered(bool enable);
-    void handleDualViewActionTriggered(bool viewdual);
-    void handleRightSideBookActionTriggered(bool rightSideBook);
-    void handleWideImageAsOneViewActionTriggered(bool wideImage);
-    void handleFirstImageAsOneViewActionTriggered(bool firstImage);
-    void handleDontEnlargeSmallImagesOnFittingActionTriggered(bool enable);
-    void handleSeparatePagesWhenWideImageActionTriggered(bool enable);
-    void handleLoupeToolActionTriggered(bool enable);
-    void handleScrollWithCursorWhenZoomingActionTriggered(bool enable);
-    void handleShowFullscreenSignageActionTriggered(bool enable);
-    void handleHideMouseCursorInFullscreenActionTriggered(bool enable);
+    void handleFittingActionTriggered(bool checked);
+    void handleFitToWindowActionTriggered(bool checked);
+    void handleFitToWidthActionTriggered(bool checked);
+    void handleDualViewActionTriggered(bool checked);
+    void handleRightSideBookActionTriggered(bool checked);
+    void handleWideImageAsOneViewActionTriggered(bool checked);
+    void handleFirstImageAsOneViewActionTriggered(bool checked);
+    void handleDontEnlargeSmallImagesOnFittingActionTriggered(bool checked);
+    void handleSeparatePagesWhenWideImageActionTriggered(bool checked);
+    void handleLoupeToolActionTriggered(bool checked);
+    void handleScrollWithCursorWhenZoomingActionTriggered(bool checked);
+    void handleShowFullscreenSignageActionTriggered(bool checked);
+    void handleHideMouseCursorInFullscreenActionTriggered(bool checked);
 
     void handleZoomInActionTriggered();
     void handleZoomOutActionTriggered();

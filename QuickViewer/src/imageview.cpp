@@ -545,9 +545,9 @@ void ImageView::handleRotateActionTriggered()
     refreshRenderedPages();
 }
 
-void ImageView::handleShowSubfoldersActionTriggered(bool enable)
+void ImageView::handleShowSubfoldersActionTriggered(bool checked)
 {
-    qApp->setShowSubfolders(enable);
+    qApp->setShowSubfolders(checked);
     if (!m_pageManager) {
         return;
     }
@@ -582,15 +582,15 @@ void ImageView::handlePrevVolumeActionTriggered()
     }
 }
 
-void ImageView::handleShowFullscreenSignageActionTriggered(bool enable)
+void ImageView::handleShowFullscreenSignageActionTriggered(bool checked)
 {
-    qApp->setShowFullscreenSignage(enable);
+    qApp->setShowFullscreenSignage(checked);
     refreshRenderedPages();
 }
 
-void ImageView::handleHideMouseCursorInFullscreenActionTriggered(bool enable)
+void ImageView::handleHideMouseCursorInFullscreenActionTriggered(bool checked)
 {
-    qApp->setHideMouseCursorInFullscreen(enable);
+    qApp->setHideMouseCursorInFullscreen(checked);
 }
 
 #define HOVER_BORDER 20
@@ -719,10 +719,10 @@ void ImageView::mouseReleaseEvent(QMouseEvent *event)
     refreshRenderedPages();
 }
 
-void ImageView::handleFittingActionTriggered(bool enable)
+void ImageView::handleFittingActionTriggered(bool checked)
 {
-    if (enable) {
-        qApp->setFitting(enable);
+    if (checked) {
+        qApp->setFitting(checked);
         refreshRenderedPages();
     } else {
         // When turning off fitting mode, use the scale up event handler instead.
@@ -730,9 +730,9 @@ void ImageView::handleFittingActionTriggered(bool enable)
     }
 }
 
-void ImageView::handleFitToWindowActionTriggered(bool enable)
+void ImageView::handleFitToWindowActionTriggered(bool checked)
 {
-    if (!enable) {
+    if (!checked) {
         return;
     }
     qApp->setImageFitMode(qvEnums::FitToRect);
@@ -741,9 +741,9 @@ void ImageView::handleFitToWindowActionTriggered(bool enable)
     refreshRenderedPages();
 }
 
-void ImageView::handleFitToWidthActionTriggered(bool enable)
+void ImageView::handleFitToWidthActionTriggered(bool checked)
 {
-    if (!enable) {
+    if (!checked) {
         return;
     }
     qApp->setImageFitMode(qvEnums::FitToWidth);
@@ -752,9 +752,9 @@ void ImageView::handleFitToWidthActionTriggered(bool enable)
     refreshRenderedPages();
 }
 
-void ImageView::handleDualViewActionTriggered(bool viewdual)
+void ImageView::handleDualViewActionTriggered(bool checked)
 {
-    qApp->setDualView(viewdual);
+    qApp->setDualView(checked);
 
     if (m_pageManager) {
         m_pageManager->reloadCurrentPage();
@@ -762,9 +762,9 @@ void ImageView::handleDualViewActionTriggered(bool viewdual)
     refreshRenderedPages();
 }
 
-void ImageView::handleRightSideBookActionTriggered(bool rightSideBook)
+void ImageView::handleRightSideBookActionTriggered(bool checked)
 {
-    qApp->setRightSideBook(rightSideBook);
+    qApp->setRightSideBook(checked);
     refreshRenderedPages();
 }
 
@@ -815,48 +815,48 @@ void ImageView::handleZoomOutActionTriggered()
     refreshRenderedPages();
 }
 
-void ImageView::handleWideImageAsOneViewActionTriggered(bool wideImage)
+void ImageView::handleWideImageAsOneViewActionTriggered(bool checked)
 {
-    qApp->setWideImageAsOnePageInDualView(wideImage);
+    qApp->setWideImageAsOnePageInDualView(checked);
     if (m_pageManager) {
         m_pageManager->reloadCurrentPage();
     }
     refreshRenderedPages();
 }
 
-void ImageView::handleFirstImageAsOneViewActionTriggered(bool firstImage)
+void ImageView::handleFirstImageAsOneViewActionTriggered(bool checked)
 {
-    qApp->setFirstImageAsOnePageInDualView(firstImage);
+    qApp->setFirstImageAsOnePageInDualView(checked);
     if (m_pageManager) {
         m_pageManager->reloadCurrentPage();
     }
     refreshRenderedPages();
 }
 
-void ImageView::handleDontEnlargeSmallImagesOnFittingActionTriggered(bool enable)
+void ImageView::handleDontEnlargeSmallImagesOnFittingActionTriggered(bool checked)
 {
-    qApp->setDontEnlargeSmallImagesOnFitting(enable);
+    qApp->setDontEnlargeSmallImagesOnFitting(checked);
     refreshRenderedPages();
 }
 
-void ImageView::handleSeparatePagesWhenWideImageActionTriggered(bool enable)
+void ImageView::handleSeparatePagesWhenWideImageActionTriggered(bool checked)
 {
-    qApp->setSeparatePagesWhenWideImage(enable);
+    qApp->setSeparatePagesWhenWideImage(checked);
     refreshRenderedPages();
 }
 
-void ImageView::handleLoupeToolActionTriggered(bool enable)
+void ImageView::handleLoupeToolActionTriggered(bool checked)
 {
-    qApp->setLoupeTool(enable);
-    if (!enable) {
+    qApp->setLoupeTool(checked);
+    if (!checked) {
         m_loupeActive = false;
         refreshRenderedPages();
     }
 }
 
-void ImageView::handleScrollWithCursorWhenZoomingActionTriggered(bool enable)
+void ImageView::handleScrollWithCursorWhenZoomingActionTriggered(bool checked)
 {
-    qApp->setScrollWithCursorWhenZooming(enable);
+    qApp->setScrollWithCursorWhenZooming(checked);
     refreshRenderedPages();
 }
 
