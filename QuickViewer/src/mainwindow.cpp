@@ -26,9 +26,10 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
+      m_viewerWindowStateMaximized(false),
       m_sliderChanging(false),
       m_onWindowClosing(false),
-      m_viewerWindowStateMaximized(false)
+      m_revealInitialFullscreen(false)
       //    , contextMenu(this)
       ,
       m_pageManager(this),
@@ -36,7 +37,8 @@ MainWindow::MainWindow(QWidget *parent)
       m_folderWindow(nullptr),
       m_catalogWindow(nullptr),
       m_brightnessWindow(nullptr),
-      m_exifDialog(nullptr)
+      m_exifDialog(nullptr),
+      m_fullscreenButton(nullptr)
 {
     ui->setupUi(this);
     // Establish the final window size before further UI initialization can
@@ -44,6 +46,7 @@ MainWindow::MainWindow(QWidget *parent)
     if (!qApp->BeginAsFullscreen() && qApp->RestoreWindowState()) {
         restoreGeometry(qApp->WindowGeometry());
     }
+    m_revealInitialFullscreen = qApp->BeginAsFullscreen() || isFullScreen();
     setWindowOpacity(0.0);
 
     m_menubarFontSize = ui->menuBar->font().pointSize();
@@ -303,19 +306,20 @@ MainWindow::MainWindow(QWidget *parent)
         ui->graphicsView->refreshRenderedPages();
     }
 
-    // Build and paint the initial window at its final geometry while it is
-    // transparent. Reveal the configured viewer background before starting
-    // any potentially blocking image or archive load.
-    if (!isVisible()) {
-        show();
+    if (!m_revealInitialFullscreen) {
+        // Build and paint a normal window before starting any potentially
+        // blocking image or archive load.
+        if (!isVisible()) {
+            show();
+        }
+        QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+        if (layout()) {
+            layout()->activate();
+        }
+        ui->graphicsView->refreshRenderedPages();
+        repaint();
+        setWindowOpacity(1.0);
     }
-    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-    if (layout()) {
-        layout()->activate();
-    }
-    ui->graphicsView->refreshRenderedPages();
-    repaint();
-    setWindowOpacity(1.0);
 
     // when drop a folder/archive icon to this app
     if (qApp->arguments().length() >= 2) {
@@ -329,6 +333,40 @@ MainWindow::MainWindow(QWidget *parent)
         loadVolume(bookmark, true);
         makeBookmarkMenu();
     }
+}
+
+void MainWindow::showEvent(QShowEvent *event)
+{
+    QMainWindow::showEvent(event);
+    if (!m_revealInitialFullscreen) {
+        return;
+    }
+
+    // Full-screen state and geometry are applied asynchronously by the native
+    // window system. Keep the initial designer-sized surface transparent until
+    // the full-screen show has crossed event-loop boundaries and been painted.
+    QTimer::singleShot(0, this, [this]() {
+        if (!m_revealInitialFullscreen) {
+            return;
+        }
+        if (!isFullScreen()) {
+            m_revealInitialFullscreen = false;
+            setWindowOpacity(1.0);
+            return;
+        }
+        if (layout()) {
+            layout()->activate();
+        }
+        ui->graphicsView->refreshRenderedPages();
+        repaint();
+        QTimer::singleShot(0, this, [this]() {
+            if (!m_revealInitialFullscreen) {
+                return;
+            }
+            m_revealInitialFullscreen = false;
+            setWindowOpacity(1.0);
+        });
+    });
 }
 
 MainWindow::~MainWindow()
