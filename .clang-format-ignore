@@ -1,5 +1,4 @@
-# Only parent-repository sources under QuickViewer and qvtest are formatted.
-AssociateFilesWithQuickViewer/**
+# Third-party and externally maintained sources are not formatted.
 Qt7z/**
 ResizeHalf/**
 easyexif/**
