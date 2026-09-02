@@ -557,7 +557,6 @@ QFrame.layout {
   </connection>
  </connections>
  <slots>
-  <slot>handleTreeItemChanged(QString)</slot>
   <slot>onFolderViewButton_clicked()</slot>
   <slot>onSearchCombo_editTextChanged(QString)</slot>
   <slot>handleFolderViewListActionTriggered()</slot>

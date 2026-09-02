@@ -1386,12 +1386,12 @@
     <slot>handleNextPageOrVolumeActionTriggered()</slot>
     <slot>handlePrevPageOrVolumeActionTriggered()</slot>
     <slot>handleHideMouseCursorInFullscreenActionTriggered(bool)</slot>
-    <slot>handleSortByFileNameActionTriggered(bool)</slot>
-    <slot>handleSortByFileNameDescendingActionTriggered(bool)</slot>
-    <slot>handleSortByFileSizeActionTriggered(bool)</slot>
-    <slot>handleSortByFileSizeDescendingActionTriggered(bool)</slot>
-    <slot>handleSortByModifiedTimeActionTriggered(bool)</slot>
-    <slot>handleSortByModifiedTimeDescendingActionTriggered(bool)</slot>
+    <slot>handleSortByFileNameActionTriggered()</slot>
+    <slot>handleSortByFileNameDescendingActionTriggered()</slot>
+    <slot>handleSortByFileSizeActionTriggered()</slot>
+    <slot>handleSortByFileSizeDescendingActionTriggered()</slot>
+    <slot>handleSortByModifiedTimeActionTriggered()</slot>
+    <slot>handleSortByModifiedTimeDescendingActionTriggered()</slot>
    </slots>
   </customwidget>
   <customwidget>
@@ -2080,7 +2080,7 @@
    <sender>actionSlideShow</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>handleSlideShowActionTriggered(bool)</slot>
+   <slot>handleSlideShowActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2784,7 +2784,7 @@
    <sender>actionShowRetouchWindow</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>handleShowRetouchWindowActionTriggered(bool)</slot>
+   <slot>handleShowRetouchWindowActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2960,7 +2960,7 @@
    <sender>actionSortByFileName</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>handleSortByFileNameActionTriggered(bool)</slot>
+   <slot>handleSortByFileNameActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2976,7 +2976,7 @@
    <sender>actionSortByFileNameDescending</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>handleSortByFileNameDescendingActionTriggered(bool)</slot>
+   <slot>handleSortByFileNameDescendingActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2992,7 +2992,7 @@
    <sender>actionSortByFileSize</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>handleSortByFileSizeActionTriggered(bool)</slot>
+   <slot>handleSortByFileSizeActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -3008,7 +3008,7 @@
    <sender>actionSortByFileSizeDescending</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>handleSortByFileSizeDescendingActionTriggered(bool)</slot>
+   <slot>handleSortByFileSizeDescendingActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -3024,7 +3024,7 @@
    <sender>actionSortByModifiedTime</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>handleSortByModifiedTimeActionTriggered(bool)</slot>
+   <slot>handleSortByModifiedTimeActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -3040,7 +3040,7 @@
    <sender>actionSortByModifiedTimeDescending</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>handleSortByModifiedTimeDescendingActionTriggered(bool)</slot>
+   <slot>handleSortByModifiedTimeDescendingActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -3081,7 +3081,7 @@
   <slot>handleShaderLanczosActionTriggered()</slot>
   <slot>handleMaximizeOrNormalActionTriggered()</slot>
   <slot>handleRestoreWindowStateActionTriggered(bool)</slot>
-  <slot>handleSlideShowActionTriggered(bool)</slot>
+  <slot>handleSlideShowActionTriggered()</slot>
   <slot>handleSaveBookmarkActionTriggered()</slot>
   <slot>handleClearBookmarksActionTriggered()</slot>
   <slot>handleLoadBookmarkActionTriggered()</slot>
@@ -3118,7 +3118,7 @@
   <slot>handleLargeToolbarIconsActionTriggered(bool)</slot>
   <slot>handleTurnPageOnLeftActionTriggered()</slot>
   <slot>handleTurnPageOnRightActionTriggered()</slot>
-  <slot>handleShowRetouchWindowActionTriggered(bool)</slot>
+  <slot>handleShowRetouchWindowActionTriggered()</slot>
   <slot>handleShaderCpuSpline16ActionTriggered()</slot>
   <slot>handleShaderCpuSpline36ActionTriggered()</slot>
   <slot>handleShaderCpuLanczos3ActionTriggered()</slot>
@@ -3127,11 +3127,11 @@
   <slot>handleSaveFolderViewWidthActionTriggered(bool)</slot>
   <slot>handleDisableCreationProgressActionTriggered(bool)</slot>
   <slot>handleSaveReadProgressActionTriggered(bool)</slot>
-  <slot>handleSortByFileNameActionTriggered(bool)</slot>
-  <slot>handleSortByFileNameDescendingActionTriggered(bool)</slot>
-  <slot>handleSortByFileSizeActionTriggered(bool)</slot>
-  <slot>handleSortByFileSizeDescendingActionTriggered(bool)</slot>
-  <slot>handleSortByModifiedTimeActionTriggered(bool)</slot>
-  <slot>handleSortByModifiedTimeDescendingActionTriggered(bool)</slot>
+  <slot>handleSortByFileNameActionTriggered()</slot>
+  <slot>handleSortByFileNameDescendingActionTriggered()</slot>
+  <slot>handleSortByFileSizeActionTriggered()</slot>
+  <slot>handleSortByFileSizeDescendingActionTriggered()</slot>
+  <slot>handleSortByModifiedTimeActionTriggered()</slot>
+  <slot>handleSortByModifiedTimeDescendingActionTriggered()</slot>
  </slots>
 </ui>

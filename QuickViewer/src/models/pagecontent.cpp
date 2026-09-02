@@ -414,17 +414,3 @@ void PageItem::handleAnimationFrameChanged(int frameNumber)
     movie->jumpToFrame(frameNumber);
     pi->setPixmap(movie->currentPixmap());
 }
-
-void PageItem::handleRetouchParametersChanged(ImageRetouch params)
-{
-    Q_UNUSED(params);
-
-#ifdef QV_WITH_LUMINOR
-#endif
-}
-
-void PageItem::handleBrightnessReset()
-{
-#ifdef QV_WITH_LUMINOR
-#endif
-}

@@ -975,10 +975,8 @@ void MainWindow::createCatalogWindow(bool docked)
 ////////////////////////////
 //// BrightnessWindow
 ////////////////////////////
-void MainWindow::handleShowRetouchWindowActionTriggered(bool checked)
+void MainWindow::handleShowRetouchWindowActionTriggered()
 {
-    Q_UNUSED(checked);
-
     if (m_brightnessWindow) {
         handleBrightnessWindowClosed();
         return;
@@ -1873,10 +1871,8 @@ void MainWindow::handleRestoreWindowStateActionTriggered(bool checked)
     qApp->setRestoreWindowState(checked);
 }
 
-void MainWindow::handleSlideShowActionTriggered(bool checked)
+void MainWindow::handleSlideShowActionTriggered()
 {
-    Q_UNUSED(checked);
-
     if (m_pageManager.size() == 0) {
         return;
     }
@@ -2009,10 +2005,8 @@ void MainWindow::handleLoadBookmarkMenuTriggered(QAction *action)
     m_pageManager.loadVolume(QDir::toNativeSeparators(path));
 }
 
-void MainWindow::handleSortByFileNameActionTriggered(bool checked)
+void MainWindow::handleSortByFileNameActionTriggered()
 {
-    Q_UNUSED(checked);
-
     uncheckAllSortByMenus();
     ui->actionSortByFileName->setChecked(true);
     if (qApp->ImageSortBy() == qvEnums::SortByFileName) {
@@ -2022,10 +2016,8 @@ void MainWindow::handleSortByFileNameActionTriggered(bool checked)
     m_pageManager.sort(qvEnums::SortByFileName);
 }
 
-void MainWindow::handleSortByFileNameDescendingActionTriggered(bool checked)
+void MainWindow::handleSortByFileNameDescendingActionTriggered()
 {
-    Q_UNUSED(checked);
-
     uncheckAllSortByMenus();
     ui->actionSortByFileNameDescending->setChecked(true);
     if (qApp->ImageSortBy() == qvEnums::SortByFileNameDescending) {
@@ -2035,10 +2027,8 @@ void MainWindow::handleSortByFileNameDescendingActionTriggered(bool checked)
     m_pageManager.sort(qvEnums::SortByFileNameDescending);
 }
 
-void MainWindow::handleSortByFileSizeActionTriggered(bool checked)
+void MainWindow::handleSortByFileSizeActionTriggered()
 {
-    Q_UNUSED(checked);
-
     uncheckAllSortByMenus();
     ui->actionSortByFileSize->setChecked(true);
     if (qApp->ImageSortBy() == qvEnums::SortByFileSize) {
@@ -2048,10 +2038,8 @@ void MainWindow::handleSortByFileSizeActionTriggered(bool checked)
     m_pageManager.sort(qvEnums::SortByFileSize);
 }
 
-void MainWindow::handleSortByFileSizeDescendingActionTriggered(bool checked)
+void MainWindow::handleSortByFileSizeDescendingActionTriggered()
 {
-    Q_UNUSED(checked);
-
     uncheckAllSortByMenus();
     ui->actionSortByFileSizeDescending->setChecked(true);
     if (qApp->ImageSortBy() == qvEnums::SortByFileSizeDescending) {
@@ -2061,10 +2049,8 @@ void MainWindow::handleSortByFileSizeDescendingActionTriggered(bool checked)
     m_pageManager.sort(qvEnums::SortByFileSizeDescending);
 }
 
-void MainWindow::handleSortByModifiedTimeActionTriggered(bool checked)
+void MainWindow::handleSortByModifiedTimeActionTriggered()
 {
-    Q_UNUSED(checked);
-
     uncheckAllSortByMenus();
     ui->actionSortByModifiedTime->setChecked(true);
     if (qApp->ImageSortBy() == qvEnums::SortByModifiedTime) {
@@ -2074,10 +2060,8 @@ void MainWindow::handleSortByModifiedTimeActionTriggered(bool checked)
     m_pageManager.sort(qvEnums::SortByModifiedTime);
 }
 
-void MainWindow::handleSortByModifiedTimeDescendingActionTriggered(bool checked)
+void MainWindow::handleSortByModifiedTimeDescendingActionTriggered()
 {
-    Q_UNUSED(checked);
-
     uncheckAllSortByMenus();
     ui->actionSortByModifiedTimeDescending->setChecked(true);
     if (qApp->ImageSortBy() == qvEnums::SortByModifiedTimeDescending) {

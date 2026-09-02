@@ -46,7 +46,6 @@ public:
     void handleShowTagBarActionTriggered(bool checked);
 
 public slots:
-    void handleTreeItemChanged(QString path);
     void onFolderViewButton_clicked();
     void handleFolderViewListActionTriggered();
     void handleFolderViewIconActionTriggered();
@@ -58,7 +57,7 @@ public slots:
     void handleVolumeListItemDoubleClicked(const QModelIndex &index);
     void handleSearchTitleWithOptionsActionTriggered(bool checked);
     void handleCatalogTitleWithoutOptionsActionTriggered(bool checked);
-    void handleTagButtonClicked(bool checked);
+    void handleTagButtonClicked();
 
 signals:
     void openVolume(QString path);

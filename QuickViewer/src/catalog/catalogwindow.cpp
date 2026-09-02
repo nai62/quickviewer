@@ -137,7 +137,7 @@ void CatalogWindow::resetTagButtons(QStringList buttons, QStringList checks)
         if (checks.contains(name)) {
             b->setChecked(true);
         }
-        connect(b, SIGNAL(clicked(bool)), this, SLOT(handleTagButtonClicked(bool)));
+        connect(b, &QPushButton::clicked, this, &CatalogWindow::handleTagButtonClicked);
         ui->tagFrame->layout()->addWidget(b);
     }
 }
@@ -248,13 +248,6 @@ void CatalogWindow::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
     qApp->setCatalogViewWidth(event->size().width());
-}
-
-void CatalogWindow::handleTreeItemChanged(QString path)
-{
-    Q_UNUSED(path);
-
-    //ui->pathCombo->setCurrentText(QDir::toNativeSeparators(path));
 }
 
 void CatalogWindow::onFolderViewButton_clicked()
@@ -383,10 +376,8 @@ void CatalogWindow::handleCatalogTitleWithoutOptionsActionTriggered(bool checked
     searchByWord(true);
 }
 
-void CatalogWindow::handleTagButtonClicked(bool checked)
+void CatalogWindow::handleTagButtonClicked()
 {
-    Q_UNUSED(checked);
-
     searchByWord();
 }
 

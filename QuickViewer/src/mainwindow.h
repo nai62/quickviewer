@@ -122,7 +122,7 @@ public slots:
     void handleSaveCatalogViewWidthActionTriggered(bool checked);
 
     // RetouchWindow
-    void handleShowRetouchWindowActionTriggered(bool checked);
+    void handleShowRetouchWindowActionTriggered();
     void handleBrightnessWindowClosed();
 
     // Navigation
@@ -150,7 +150,7 @@ public slots:
     void handleLargeToolbarIconsActionTriggered(bool checked);
 
     // SlideShow
-    void handleSlideShowActionTriggered(bool checked);
+    void handleSlideShowActionTriggered();
     void handleSlideShowStopped();
 
     // Toolbars
@@ -199,12 +199,12 @@ public slots:
     void handleLoadBookmarkMenuTriggered(QAction *action);
 
     // Sort by
-    void handleSortByFileNameActionTriggered(bool checked);
-    void handleSortByFileNameDescendingActionTriggered(bool checked);
-    void handleSortByFileSizeActionTriggered(bool checked);
-    void handleSortByFileSizeDescendingActionTriggered(bool checked);
-    void handleSortByModifiedTimeActionTriggered(bool checked);
-    void handleSortByModifiedTimeDescendingActionTriggered(bool checked);
+    void handleSortByFileNameActionTriggered();
+    void handleSortByFileNameDescendingActionTriggered();
+    void handleSortByFileSizeActionTriggered();
+    void handleSortByFileSizeDescendingActionTriggered();
+    void handleSortByModifiedTimeActionTriggered();
+    void handleSortByModifiedTimeDescendingActionTriggered();
 
     // Others
     virtual void handleGraphicsViewAnchorHovered(Qt::AnchorPoint anchor);
