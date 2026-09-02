@@ -30,9 +30,9 @@ public:
 
     /**
      * @brief loadVolume
-     * @param prohibitProhibit2Page prohibit 2 page viewing
+     * @param allowSecondPage whether an adjacent page may be shown in dual view
      */
-    void loadVolume(QString path, bool prohibitProhibit2Page = false);
+    void loadVolume(QString path, bool allowSecondPage = false);
     void loadVolumeWithAssoc(QString path);
 
     void resetShortcutKeys();

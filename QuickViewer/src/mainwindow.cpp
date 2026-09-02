@@ -561,11 +561,11 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     return QObject::eventFilter(obj, event);
 }
 
-void MainWindow::loadVolume(QString path, bool prohibitProhibit2Page)
+void MainWindow::loadVolume(QString path, bool allowSecondPage)
 {
     QStringList seps = path.split("::");
     if (!IFileLoader::isArchiveFile(seps[0]) && IFileLoader::isImageFile(path)) {
-        m_pageManager.loadVolumeWithFile(path, prohibitProhibit2Page);
+        m_pageManager.loadVolumeWithFile(path, allowSecondPage);
         changeFolderPath(QFileInfo(QDir::fromNativeSeparators(path)).absolutePath());
         return;
     }

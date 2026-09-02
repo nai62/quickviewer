@@ -38,7 +38,7 @@ public:
 
     // Volumes
     bool loadVolume(QString path, bool coverOnly = false);
-    bool loadVolumeWithFile(QString path, bool prohibitProhibit2Page = false);
+    bool loadVolumeWithFile(QString path, bool allowSecondPage = false);
     bool nextVolume();
     bool prevVolume();
     void reloadVolumeAfterRemoveImage();
@@ -182,7 +182,7 @@ private:
     int m_currentPage;
 
     bool m_wideImage;
-    bool m_prohibit2Pages;
+    bool m_allowSecondPage;
     QVector<ImageContent> m_pages;
     TimeOrderdCacheFutureSharedPtr<QString, VolumeManager> m_volumes;
     QStringList m_volumenames;
