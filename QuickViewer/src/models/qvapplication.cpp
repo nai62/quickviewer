@@ -30,7 +30,7 @@ QVApplication::QVApplication(int &argc, char **argv)
     setApplicationVersion(APP_VERSION);
     setApplicationName(APP_NAME);
     //setOrganizationName(APP_ORGANIZATION);
-//    qDebug() << "TranslationsPath" << QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+    //    qDebug() << "TranslationsPath" << QLibraryInfo::location(QLibraryInfo::TranslationsPath);
 
 #if defined(Q_OS_WIN)
     // Since there is an evil implementation that forcibly installs QuickViewer in Windows "C:/Program Files", the specification is changed as follows.
@@ -70,7 +70,7 @@ QVApplication::QVApplication(int &argc, char **argv)
             }
         }
     }
-//#endif
+    //#endif
     m_settings = new QSettings(getFilePathOfApplicationSetting(APP_INI), QSettings::IniFormat, this);
 
     m_languageSelector.initialize();
@@ -424,7 +424,7 @@ void QVApplication::loadSettings()
     m_dontEnlargeSmallImagesOnFitting = m_settings->value("DontEnlargeSmallImagesOnFitting", true).toBool();
     m_showFullscreenSignage = m_settings->value("ShowFullscreenSignage", false).toBool();
     m_dontShrinkForLargeImage = m_settings->value("DontShrinkForLargeImage", false).toBool();
-//    m_showFullscreenTitleBar = m_settings->value("ShowFullscreenTitleBar", true).toBool();
+    //    m_showFullscreenTitleBar = m_settings->value("ShowFullscreenTitleBar", true).toBool();
     m_useDirect2D = m_settings->value("UseDirect2D", false).toBool();
     m_useFastDCTForJPEG = m_settings->value("UseFastDCTForJPEG", true).toBool();
     m_howToLoadSVG = m_settings->value("HowToLoadSVG", "imageformat").toString();
@@ -604,7 +604,7 @@ void QVApplication::saveSettings()
     m_settings->setValue("DontEnlargeSmallImagesOnFitting", m_dontEnlargeSmallImagesOnFitting);
     m_settings->setValue("ShowFullscreenSignage", m_showFullscreenSignage);
     m_settings->setValue("DontShrinkForLargeImage", m_dontShrinkForLargeImage);
-//    m_settings->setValue("ShowFullscreenTitleBar", m_showFullscreenTitleBar);
+    //    m_settings->setValue("ShowFullscreenTitleBar", m_showFullscreenTitleBar);
     m_settings->setValue("UseDirect2D", m_useDirect2D);
     m_settings->setValue("UseFastDCTForJPEG", m_useFastDCTForJPEG);
     m_settings->setValue("HowToLoadSVG", m_howToLoadSVG);

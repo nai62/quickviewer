@@ -64,7 +64,7 @@ void MainWindowForWindows::setWindowTop(bool signalOnly)
     if (!isMaximized()) {
         ::ShowWindow(hwnd, SW_RESTORE);
     }
-//    ::SwitchToThisWindow(hwnd, false);
+    //    ::SwitchToThisWindow(hwnd, false);
     int foregroundID;
     if (!signalOnly) {
         foregroundID = ::GetWindowThreadProcessId(::GetForegroundWindow(), NULL);
@@ -119,14 +119,14 @@ void MainWindowForWindows::setMailAttachment(QString path)
     if (LPMAPISENDMAILW mapi = LPMAPISENDMAILW(lib.resolve("MAPISendMailW"))) {
         QString filePath = QDir::toNativeSeparators(path);
         QString fileName = QFileInfo(path).fileName();
-//        QString subject = q.queryItemValue( "subject", QUrl::FullyDecoded );
+        //        QString subject = q.queryItemValue( "subject", QUrl::FullyDecoded );
         MapiFileDescW doc = {0, 0, 0, 0, 0, 0};
         doc.nPosition = -1;
         doc.lpszPathName = PWSTR(filePath.utf16());
         doc.lpszFileName = PWSTR(fileName.utf16());
         MapiMessageW message = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-//        message.lpszSubject = PWSTR(subject.utf16());
-//        message.lpszNoteText = L"";
+        //        message.lpszSubject = PWSTR(subject.utf16());
+        //        message.lpszNoteText = L"";
         message.nFileCount = 1;
         message.lpFiles = lpMapiFileDescW(&doc);
         switch (mapi(NULL, 0, &message, MAPI_LOGON_UI | MAPI_DIALOG, 0)) {
@@ -142,7 +142,7 @@ void MainWindowForWindows::setMailAttachment(QString path)
         if (LPMAPISENDMAIL mapi = LPMAPISENDMAIL(lib.resolve("MAPISendMail"))) {
         QByteArray filePath = QDir::toNativeSeparators(path).toLocal8Bit();
         QByteArray fileName = QFileInfo(path).fileName().toLocal8Bit();
-//        QByteArray subject = q.queryItemValue( "subject", QUrl::FullyDecoded ).toLocal8Bit();
+        //        QByteArray subject = q.queryItemValue( "subject", QUrl::FullyDecoded ).toLocal8Bit();
         MapiFileDesc doc = {0, 0, 0, 0, 0, 0};
         doc.nPosition = -1;
         std::string flpath = filePath.toStdString();
@@ -150,8 +150,8 @@ void MainWindowForWindows::setMailAttachment(QString path)
         doc.lpszPathName = LPSTR(flpath.c_str());
         doc.lpszFileName = LPSTR(flname.c_str());
         MapiMessage message = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-//        message.lpszSubject = LPSTR(subject.constData());
-//        message.lpszNoteText = "";
+        //        message.lpszSubject = LPSTR(subject.constData());
+        //        message.lpszNoteText = "";
         message.nFileCount = 1;
         message.lpFiles = lpMapiFileDesc(&doc);
         switch (mapi(NULL, 0, &message, MAPI_LOGON_UI | MAPI_DIALOG, 0)) {
@@ -169,10 +169,10 @@ bool MainWindowForWindows::eventFilter(QObject *obj, QEvent *event)
 {
     switch (event->type()) {
     case QEvent::Leave:
-//        if(obj == ui->pageFrame && isFullScreen()) {
-//            ui->pageFrame->hide();
-//            return true;
-//        }
+        //        if(obj == ui->pageFrame && isFullScreen()) {
+        //            ui->pageFrame->hide();
+        //            return true;
+        //        }
         return QObject::eventFilter(obj, event);
     default:
         break;
