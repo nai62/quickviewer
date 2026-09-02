@@ -32,7 +32,7 @@ public:
     QString itemPath(const QModelIndex &index);
     void keyPressEvent(QKeyEvent *event);
     void mousePressEvent(QMouseEvent *event);
-    void on_currentItem_triggered();
+    void handleCurrentFolderItemTriggered();
 
 public slots:
     void onHomeButton_clicked();

@@ -1078,7 +1078,7 @@ void MainWindow::handleExifDialogClosed()
 
 void MainWindow::handleFullscreenActionTriggered()
 {
-    qDebug() << "on_fullscreen_triggered";
+    qDebug() << "handleFullscreenActionTriggered";
     if (isFullScreen()) {
         emit changingFullscreen(false);
         ui->graphicsView->setFullscreenState(false);
@@ -1165,7 +1165,7 @@ void MainWindow::handleGraphicsViewFittingChanged(qvEnums::FitMode mode)
 
 void MainWindow::handlePageManagerPageChanged()
 {
-    //qDebug() << "on_pageChanged_triggered";
+    //qDebug() << "handlePageManagerPageChanged";
     int maxVolume = m_pageManager.size();
     if (maxVolume <= 0) {
         return;

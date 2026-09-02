@@ -607,12 +607,11 @@ QPushButton:hover {
   <slot>onNextButton_clicked()</slot>
   <slot>onParentButton_clicked()</slot>
   <slot>onReloadButton_clicked()</slot>
-  <slot>on_pathChanged_triggered(QString)</slot>
   <slot>onHomeButton_clicked()</slot>
   <slot>onSortModeButton_clicked()</slot>
   <slot>handleOrderByNameActionTriggered()</slot>
   <slot>handleOrderByUpdatedAtActionTriggered()</slot>
   <slot>handleSetAsHomeFolderActionTriggered()</slot>
-  <slot>on_currentItem_triggered()</slot>
+  <slot>handleCurrentFolderItemTriggered()</slot>
  </slots>
 </ui>

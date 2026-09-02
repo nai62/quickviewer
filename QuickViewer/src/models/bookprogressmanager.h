@@ -43,7 +43,7 @@ public:
     void moveToThread(QThread *targetThread);
 
 public slots:
-    void on_Initialized_triggered();
+    void handleInitializationFinished();
 
 private:
     BookProgressMap m_books;

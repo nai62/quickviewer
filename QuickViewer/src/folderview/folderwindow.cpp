@@ -259,7 +259,7 @@ void FolderWindow::keyPressEvent(QKeyEvent *event)
     QKeySequence seq(event->key() | event->modifiers());
     qDebug() << seq;
     if (seq == seqReturn || seq == seqEnter) {
-        on_currentItem_triggered();
+        handleCurrentFolderItemTriggered();
         return;
     }
     if (seq == seqBackspace) {
@@ -405,7 +405,7 @@ void FolderWindow::on_itemDoubleClicked(const QModelIndex &index)
     setFolderPath(subpath, false);
 }
 
-void FolderWindow::on_currentItem_triggered()
+void FolderWindow::handleCurrentFolderItemTriggered()
 {
     on_itemDoubleClicked(ui->folderView->currentIndex());
 }

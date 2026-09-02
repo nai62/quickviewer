@@ -165,10 +165,6 @@ public slots:
     void handleProjectWebActionTriggered();
     void handleCheckVersionActionTriggered();
     void handleAppVersionActionTriggered();
-    //    void on_languageEnglish_triggered();
-    //    void on_languageJapanese_triggered();
-    //    void on_languageSpanish_triggered();
-    //    void on_languageChinese_triggered();
     void handleLanguageSelectorLanguageChanged(QString language);
     void handleLanguageSelectorOpenTextEditorForLanguage(LanguageInfo info);
     void handleRegisterFileAssociationsActionTriggered();
