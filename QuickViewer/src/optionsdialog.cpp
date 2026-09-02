@@ -50,6 +50,16 @@ OptionsDialog::OptionsDialog(QWidget *parent)
       ui(new Ui::OptionsDialog)
 {
     ui->setupUi(this);
+    connect(
+        ui->radioButtonWindowTitleUserDefined,
+        &QRadioButton::toggled,
+        this,
+        &OptionsDialog::handleWindowTitleUserDefinedRadioButtonToggled);
+    connect(
+        ui->radioButtonStatusBarUserDefined,
+        &QRadioButton::toggled,
+        this,
+        &OptionsDialog::handleStatusBarUserDefinedRadioButtonToggled);
     if (!stSamplePageContent) {
         stSamplePageContent = new SamplePageContent;
     }
@@ -253,26 +263,30 @@ void OptionsDialog::onBtnColorSelect2_clicked()
     }
 }
 
-void OptionsDialog::onCheckBoxCheckeredPattern_clicked(bool enabled)
+void OptionsDialog::onCheckBoxCheckeredPattern_clicked(bool checked)
 {
-    m_useCheckeredPattern = enabled;
+    m_useCheckeredPattern = checked;
     resetColorBox();
 }
 
-void OptionsDialog::handleWindowTitleRadioButtonToggled(bool checked)
+void OptionsDialog::handleWindowTitleStyleRadioButtonToggled()
 {
-    Q_UNUSED(checked);
-
     resetWindowTitleSample();
-    ui->lineEditWindowTitleUserStyle->setEnabled(ui->radioButtonWindowTitleUserDefined->isChecked());
 }
 
-void OptionsDialog::handleStatusBarRadioButtonToggled(bool checked)
+void OptionsDialog::handleWindowTitleUserDefinedRadioButtonToggled(bool checked)
 {
-    Q_UNUSED(checked);
+    ui->lineEditWindowTitleUserStyle->setEnabled(checked);
+}
 
+void OptionsDialog::handleStatusBarStyleRadioButtonToggled()
+{
     resetStatusbarSample();
-    ui->lineEditStatusBarUserStyle->setEnabled(ui->radioButtonStatusBarUserDefined->isChecked());
+}
+
+void OptionsDialog::handleStatusBarUserDefinedRadioButtonToggled(bool checked)
+{
+    ui->lineEditStatusBarUserStyle->setEnabled(checked);
 }
 
 void OptionsDialog::onLineEditWindowTitleUserStyle_textEdited(QString text)
@@ -285,10 +299,7 @@ void OptionsDialog::onLineEditStatusBarUserStyle_textEdited(QString text)
     resetStatusbarSample();
 }
 
-void OptionsDialog::onCheckBoxShowUsage_clicked(bool enabled)
+void OptionsDialog::onCheckBoxShowUsage_clicked(bool checked)
 {
-    ui->labelFormatUsage->setVisible(enabled);
-}
-void OptionsDialog::onCheckBoxDontShrinkForLargeImage_clicked(bool enabled)
-{
+    ui->labelFormatUsage->setVisible(checked);
 }
