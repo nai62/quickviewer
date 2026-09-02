@@ -171,8 +171,8 @@ public slots:
 //    void on_languageChinese_triggered();
     void onLanguageSelector_languageChanged(QString language);
     void onLanguageSelector_openTextEditorForLanguage(LanguageInfo info);
-    void onActionRegistAssocs_triggered();
-    void onActionRegistAssocsUAC_triggered();
+    void handleRegisterFileAssociationsActionTriggered();
+    void handleRegisterFileAssociationsAsAdministratorActionTriggered();
 
     // ContextMenus
     void onActionContextMenu_triggered();

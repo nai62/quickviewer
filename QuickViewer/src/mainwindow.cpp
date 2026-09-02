@@ -53,8 +53,8 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
 #ifndef Q_OS_WIN
-    ui->actionRegistAssocsUAC->setVisible(false);
-    ui->actionRegistAssocs->setVisible(false);
+    ui->actionRegisterFileAssociationsAsAdministrator->setVisible(false);
+    ui->actionRegisterFileAssociations->setVisible(false);
 #endif
 
 #ifdef Q_OS_MACOS
@@ -1279,18 +1279,15 @@ void MainWindow::onLanguageSelector_openTextEditorForLanguage(LanguageInfo info)
     msgBox.exec();
 }
 
-void MainWindow::onActionRegistAssocs_triggered()
+void MainWindow::handleRegisterFileAssociationsActionTriggered()
 {
 #ifdef Q_OS_WIN
     FileAssocDialog dialog(this);
-    int result = dialog.exec();
-    if (result == QDialog::Rejected) {
-    } else {
-    }
+    dialog.exec();
 #endif
 }
 
-void MainWindow::onActionRegistAssocsUAC_triggered()
+void MainWindow::handleRegisterFileAssociationsAsAdministratorActionTriggered()
 {
     QProcess::startDetached(qApp->getApplicationFilePath("AssociateFilesWithQuickViewer.exe"),
                             QStringList(),

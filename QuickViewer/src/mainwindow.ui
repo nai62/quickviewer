@@ -314,8 +314,8 @@
     <addaction name="actionOpenKeyConfig"/>
     <addaction name="actionOpenMouseConfig"/>
     <addaction name="actionOpenOptionsDialog"/>
-    <addaction name="actionRegistAssocsUAC"/>
-    <addaction name="actionRegistAssocs"/>
+    <addaction name="actionRegisterFileAssociationsAsAdministrator"/>
+    <addaction name="actionRegisterFileAssociations"/>
     <addaction name="separator"/>
     <addaction name="actionProjectWeb"/>
     <addaction name="actionCheckVersion"/>
@@ -1090,7 +1090,7 @@
     <string extracomment="A function to display a confirmation screen when moving the currently displayed image to Recycle Bin">Confirm moving image to &amp;Recycle Bin</string>
    </property>
   </action>
-  <action name="actionRegistAssocsUAC">
+  <action name="actionRegisterFileAssociationsAsAdministrator">
    <property name="text">
     <string extracomment="Ability to associate QuickViewer and image files on Explorer (Host Global)">Image Associations (requires Admin)</string>
    </property>
@@ -1110,7 +1110,7 @@
     <string>Delete the image</string>
    </property>
   </action>
-  <action name="actionRegistAssocs">
+  <action name="actionRegisterFileAssociations">
    <property name="text">
     <string extracomment="Ability to associate QuickViewer and image files on Explorer (Host Global)">Image Associations (only you)</string>
    </property>
@@ -2542,10 +2542,10 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionRegistAssocsUAC</sender>
+   <sender>actionRegisterFileAssociationsAsAdministrator</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionRegistAssocsUAC_triggered()</slot>
+   <slot>handleRegisterFileAssociationsAsAdministratorActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2606,10 +2606,10 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionRegistAssocs</sender>
+   <sender>actionRegisterFileAssociations</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionRegistAssocs_triggered()</slot>
+   <slot>handleRegisterFileAssociationsActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -3112,13 +3112,13 @@
   <slot>onActionBeginAsFullscreen_triggered(bool)</slot>
   <slot>onActionShowFullscreenSignage_triggered(bool)</slot>
   <slot>onActionConfirmDeletePage_triggered(bool)</slot>
-  <slot>onActionRegistAssocsUAC_triggered()</slot>
+  <slot>handleRegisterFileAssociationsAsAdministratorActionTriggered()</slot>
   <slot>onActionShowFullscreenTitleBar_triggered(bool)</slot>
   <slot>onActionContextMenu_triggered()</slot>
   <slot>onActionOpenMouseConfig_triggered()</slot>
   <slot>onActionRecyclePage_triggered()</slot>
   <slot>onActionSuppressKeyRepeat_triggered(bool)</slot>
-  <slot>onActionRegistAssocs_triggered()</slot>
+  <slot>handleRegisterFileAssociationsActionTriggered()</slot>
   <slot>onSavingHistory_triggered(bool)</slot>
   <slot>onShowFullpathOfVolume_triggered(bool)</slot>
   <slot>onActionShowPanelSeparateWindow_triggered(bool)</slot>
