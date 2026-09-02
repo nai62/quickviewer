@@ -33,7 +33,7 @@ class PageRenderContext
 public:
     virtual ~PageRenderContext() = default;
     virtual qreal currentPixelRatio() const = 0;
-    virtual ImageRetouch brightness() const = 0;
+    virtual ImageRetouch retouchParameters() const = 0;
 };
 
 /**

@@ -3,6 +3,7 @@
 #include <type_traits>
 
 #include "imageview.h"
+#include "models/cursorscrollmapping.h"
 #include "models/imagestring.h"
 #include "models/pagemanager.h"
 #include "models/qvapplication.h"
@@ -35,7 +36,7 @@ public:
         return 2.0;
     }
 
-    ImageRetouch brightness() const override { return {}; }
+    ImageRetouch retouchParameters() const override { return {}; }
 
     mutable int pixelRatioRequests = 0;
 };
@@ -275,6 +276,52 @@ private slots:
         view.on_copyFile_triggered();
     }
 
+    void gestureStateIsIndependentBetweenViews()
+    {
+        ImageView firstView;
+        ImageView secondView;
+
+        firstView.updateGestureTransform(2.0, 0.0);
+        secondView.updateGestureTransform(3.0, 0.0);
+        firstView.commitGestureTransform();
+        firstView.updateGestureTransform(1.0, 0.0);
+
+        QCOMPARE(firstView.transform().m11(), 2.0);
+        QCOMPARE(secondView.transform().m11(), 3.0);
+
+        firstView.resetGestureTransform();
+        QVERIFY(firstView.transform().isIdentity());
+        QCOMPARE(secondView.transform().m11(), 3.0);
+    }
+
+    void cursorZoomMappingUsesBothScrollBarRanges()
+    {
+        const QSize viewportSize(400, 200);
+        const QPoint minimum(10, 20);
+        const QPoint maximum(110, 220);
+
+        QCOMPARE(CursorScrollMapping::zoomScrollPosition(
+                     QPoint(100, 50), viewportSize, minimum, maximum),
+                 minimum);
+        QCOMPARE(CursorScrollMapping::zoomScrollPosition(
+                     QPoint(200, 100), viewportSize, minimum, maximum),
+                 QPoint(60, 120));
+        QCOMPARE(CursorScrollMapping::zoomScrollPosition(
+                     QPoint(300, 150), viewportSize, minimum, maximum),
+                 maximum);
+    }
+
+    void cursorLoupeMappingKeepsAnchorStable()
+    {
+        const std::optional<QPoint> position = CursorScrollMapping::loupeScrollPosition(
+            QPoint(200, 150), QPoint(200, 150), QSize(400, 300), QRect(0, 0, 400, 300), QRectF(0, 0, 800, 600), QPoint());
+
+        QVERIFY(position);
+        QCOMPARE(*position, QPoint(200, 150));
+        QVERIFY(!CursorScrollMapping::loupeScrollPosition(
+            QPoint(200, 150), QPoint(0, 150), QSize(400, 300), QRect(0, 0, 400, 300), QRectF(0, 0, 800, 600), QPoint()));
+    }
+
     void standalonePreviewNavigationIsSafe()
     {
         PageManager manager(nullptr);
@@ -298,32 +345,35 @@ private slots:
         ImageView view;
         view.setPageManager(&manager);
 
-        // The legacy return value reports whether the accepted image is wide,
-        // so use a wide image to distinguish acceptance from rejection.
         const QImage image(8, 4, QImage::Format_ARGB32);
-        QVERIFY(view.on_addImage_triggered(
-            ImageContent(image, "first.png", image.size(), {}, 0), true));
+        QCOMPARE(view.addRenderedPage(
+                     ImageContent(image, "first.png", image.size(), {}, 0), true),
+                 ImageView::AddRenderedPageResult::AddedLandscape);
         QCOMPARE(view.renderedPageCount(), 1);
         QCOMPARE(view.renderedPageContents().count(), 1);
 
-        QVERIFY(view.on_addImage_triggered(
-            ImageContent(image, "second.png", image.size(), {}, 0), true));
+        QCOMPARE(view.addRenderedPage(
+                     ImageContent(image, "second.png", image.size(), {}, 0), true),
+                 ImageView::AddRenderedPageResult::AddedLandscape);
         QCOMPARE(view.renderedPageCount(), 2);
         VisiblePages contents = view.renderedPageContents();
         QCOMPARE(contents.at(0)->Path, QString("first.png"));
         QCOMPARE(contents.at(1)->Path, QString("second.png"));
-        QVERIFY(!view.on_addImage_triggered(
-            ImageContent(image, "third.png", image.size(), {}, 0), true));
+        QCOMPARE(view.addRenderedPage(
+                     ImageContent(image, "third.png", image.size(), {}, 0), true),
+                 ImageView::AddRenderedPageResult::Rejected);
 
-        view.on_clearImages_triggered();
+        view.clearRenderedPages();
         QCOMPARE(view.renderedPageCount(), 0);
         QVERIFY(view.renderedPageContents().isEmpty());
 
-        QVERIFY(view.on_addImage_triggered(
-            ImageContent(image, "replacement.png", image.size(), {}, 0), false));
+        QCOMPARE(view.addRenderedPage(
+                     ImageContent(image, "replacement.png", image.size(), {}, 0), false),
+                 ImageView::AddRenderedPageResult::AddedLandscape);
         QCOMPARE(view.renderedPageCount(), 1);
-        QVERIFY(view.on_addImage_triggered(
-            ImageContent(image, "prepended.png", image.size(), {}, 0), false));
+        QCOMPARE(view.addRenderedPage(
+                     ImageContent(image, "prepended.png", image.size(), {}, 0), false),
+                 ImageView::AddRenderedPageResult::AddedLandscape);
         QCOMPARE(view.renderedPageCount(), 2);
         contents = view.renderedPageContents();
         QCOMPARE(contents.at(0)->Path, QString("prepended.png"));
@@ -346,7 +396,7 @@ private slots:
             true));
 
         qApp->setFitting(false);
-        view.readyForPaint();
+        view.refreshRenderedPages();
         QCOMPARE(view.renderedPageMetrics().notationalScaleAt(0), 1.0);
 
         view.on_fitting_triggered(true);
@@ -381,7 +431,7 @@ private slots:
 
         qApp->setFitting(false);
         fittingAction.setChecked(false);
-        view.readyForPaint();
+        view.refreshRenderedPages();
         QCOMPARE(view.renderedPageMetrics().notationalScaleAt(0), 1.0);
 
         QKeySequence fittingKey("M");

@@ -293,7 +293,7 @@ QImage &PageItem::applyRetouched()
 #ifndef QV_WITH_LUMINOR
     return Ic.Image;
 #else
-    const ImageRetouch params = m_renderContext ? m_renderContext->brightness() : ImageRetouch();
+    const ImageRetouch params = m_renderContext ? m_renderContext->retouchParameters() : ImageRetouch();
     if (Ic.RetouchParam == params) {
         return params.isDefault() ? Ic.Image : Ic.RetouchedImage;
     }

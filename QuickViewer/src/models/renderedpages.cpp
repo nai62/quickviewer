@@ -20,7 +20,7 @@ const PageItem *RenderedPages::at(int index) const
     return index >= 0 && index < count() ? m_pages[index].get() : nullptr;
 }
 
-bool RenderedPages::add(ImageContent content, bool append, QObject *owner, QGraphicsScene *scene, const PageRenderContext *renderContext, bool backing, QObject *resizeReceiver, std::function<void()> resizeCallback)
+bool RenderedPages::add(ImageContent content, bool append, QObject *owner, QGraphicsScene *scene, const PageRenderContext *renderContext, bool openSeparatedPageFromEnd, QObject *resizeReceiver, std::function<void()> resizeCallback)
 {
     const int pageCount = count();
     if (pageCount >= Capacity || !scene) {
@@ -29,7 +29,7 @@ bool RenderedPages::add(ImageContent content, bool append, QObject *owner, QGrap
 
     auto page = std::make_unique<PageItem>(
         owner, scene, std::move(content), renderContext);
-    if (backing && page->Separation == PageItem::FirstSeparated) {
+    if (openSeparatedPageFromEnd && page->Separation == PageItem::FirstSeparated) {
         page->Separation = PageItem::SecondSeparated;
     }
     if (resizeReceiver && resizeCallback) {

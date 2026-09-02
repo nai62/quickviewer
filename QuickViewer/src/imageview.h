@@ -11,36 +11,6 @@
 #include "models/renderedpages.h"
 #include "models/renderedpagemetrics.h"
 
-class SavedPoint : public QPoint
-{
-public:
-    void start(QPoint ptStart)
-    {
-        m_ptStart = ptStart;
-        m_ptSaved = QPoint(x(), y());
-    }
-    void step(QPoint ptStep)
-    {
-//        qDebug("before: pt:(%d,%d) step:(%d,%d) start:(%d,%d)",
-//               x(),y(),
-//               ptStep.x(),ptStep.y(),
-//               m_ptStart.x(),m_ptStart.y() );
-        setX(m_ptSaved.x() + ptStep.x() - m_ptStart.x());
-        setY(m_ptSaved.y() + ptStep.y() - m_ptStart.y());
-//        qDebug("after:  pt:(%d,%d)", x(),y());
-    }
-    QPoint pt() const { return QPoint(x(), y()); }
-    void reset()
-    {
-        setX(0);
-        setY(0);
-    }
-
-private:
-    QPoint m_ptStart;
-    QPoint m_ptSaved;
-};
-
 /**
  * @brief The ImageView class
  * It provides to show 1 or 2 images once, using OpenGL.
@@ -53,33 +23,35 @@ public:
     enum RendererType {
         Native,
         OpenGL,
-        Image,
+    };
+    enum class AddRenderedPageResult {
+        Rejected,
+        AddedPortrait,
+        AddedLandscape,
     };
     typedef QPair<uint, uint> ZoomFraction;
     explicit ImageView(QWidget *parent = Q_NULLPTR);
     void setRenderer(RendererType type = Native);
     void setPageManager(PageManager *manager);
     Qt::AnchorPoint hoverState() const { return m_hoverState; }
-    void skipRisizeEvent(bool skipped) { m_skipResizeEvent = skipped; }
+    void setResizeEventsSkipped(bool skipped) { m_skipResizeEvent = skipped; }
     bool isSlideShow() const { return m_slideshowTimer != nullptr; }
     void toggleSlideShow();
-    bool isFullscreen() { return m_isFullScreen; }
-    void setWillFullscreen(bool fullscreen) { m_isFullScreen = fullscreen; }
+    bool isFullscreen() const { return m_isFullScreen; }
+    void setFullscreenState(bool fullscreen) { m_isFullScreen = fullscreen; }
     void resetBackgroundColor();
-    void setSceneRectMode(bool scrolled, const QRect &sceneRect);
-    void scrollOnLoupeMode();
-    void scrollOnZoomMode();
-    bool isScrollMode() { return m_scrollMode; }
+    bool isScrollMode() const { return m_scrollMode; }
     int renderedPageCount() const;
     VisiblePages renderedPageContents() const;
     RenderedPageMetrics renderedPageMetrics() const;
-    void updateViewportOffset(QPointF moved);
-    void updateViewportFactors(qreal currentScale, qreal currentRotate);
-    void commitViewportFactors();
-    void resetViewportFactors();
-    ImageRetouch brightness() const override { return m_retouchParams; }
+    void updateGestureTransform(qreal scale, qreal rotationDegrees);
+    void commitGestureTransform();
+    void resetGestureTransform();
+    ImageRetouch retouchParameters() const override { return m_retouchParams; }
     qreal currentPixelRatio() const override { return m_lastScreenPixelRatio; }
     void setCursor(const QCursor &cursor);
+    AddRenderedPageResult addRenderedPage(ImageContent content, bool append);
+    void clearRenderedPages();
 
 signals:
     /**
@@ -104,10 +76,8 @@ protected:
 
 public slots:
     void on_volumeChanged_triggered(QString path);
-    bool on_addImage_triggered(ImageContent image, bool pageNext);
-    void on_clearImages_triggered();
     void on_visiblePagesChanged(VisiblePages pages);
-    void readyForPaint();
+    void refreshRenderedPages();
 
     // Navigation
     void on_nextPage_triggered();
@@ -155,50 +125,54 @@ public slots:
     void onBrightness_valueChanged(ImageRetouch params);
 
 private:
-//    qreal getZoomScale() {return 1.0*viewSizeList[viewSizeIdx].first/viewSizeList[viewSizeIdx].second;}
-    qreal getZoomScale();
+    qreal manualZoomScale() const;
+    void updateSceneForContent(bool allowScrolling, const QRect &contentRect);
+    void configureScrollInteraction(bool scrollable, bool leavingLoupe, const QRect &contentRect);
+    void preserveViewportCenter(qreal newScale, int previousHorizontalScroll, int previousVerticalScroll);
+    void updateLoupeScrollFromCursor();
+    void updateZoomScrollFromCursor();
 
     RendererType m_renderer;
+    QPointer<QWidget> m_rendererViewport;
     RenderedPages m_renderedPages;
 
-    SavedPoint m_ptLeftTop;
-    QGraphicsScene *m_scene;
     Qt::AnchorPoint m_hoverState;
     /**
      * @brief for manual ZoomIn or ZoomOut
      */
-    QList<ZoomFraction> viewSizeList;
+    QList<ZoomFraction> m_zoomLevels;
     QVector<int> m_pageRotations;
-    int viewSizeIdx;
-    QFont m_font;
+    int m_zoomLevelIndex;
     QCursor m_loupeCursor;
 
     PageManager *m_pageManager;
-    ShaderManager m_effectManager;
+    ShaderManager m_shaderManager;
     QTimer *m_slideshowTimer;
 
-    // rotate or scale with touchEvents
-    qreal m_beginScaleFactor;
-    qreal m_beginRotateFactor;
+    // Rotation and scale applied by touch gestures.
+    qreal m_committedGestureScale;
+    qreal m_committedGestureRotationDegrees;
+    qreal m_pendingGestureScale;
+    qreal m_pendingGestureRotationDegrees;
     qreal m_loupeFactor;
 
-    int m_readyStack;
-    qreal m_beforeScale;
+    int m_sceneRectUpdateDepth;
+    int m_resizeEventDepth;
+    qreal m_previousDrawScale;
     qreal m_lastScreenPixelRatio;
 
-    bool m_isMouseDown;
     bool m_skipResizeEvent;
     bool m_isFullScreen;
     bool m_scrollMode;
-    bool m_pageBacking;
-    bool m_loupeEnable;
+    bool m_openSeparatedPageFromEnd;
+    bool m_loupeActive;
+    bool m_wasLoupeActive;
 
     // Loupe
-    QPoint m_loupeBasePos;
-    QRect m_sceneRect;
-    QPoint m_scrollBaseValues;
+    QPoint m_loupeAnchorPosition;
+    QRect m_sceneRectBeforeLoupe;
+    QPoint m_scrollPositionBeforeLoupe;
 
-    // Brightness
     ImageRetouch m_retouchParams;
 };
 
