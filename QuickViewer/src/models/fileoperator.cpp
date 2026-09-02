@@ -36,11 +36,13 @@ QVariant FileOperator::toVariant()
 {
     QJsonObject obj;
     obj["as"] = m_operateAs == OperateAs::AsFile ? "file" : "volume";
-    QString modeName = "command";
+    QString modeName;
     if (m_mode == OperateMode::CopyMode) {
         modeName = "copy";
     } else if (m_mode == OperateMode::MoveMode) {
         modeName = "move";
+    } else {
+        modeName = "command";
     }
     obj["mode"] = modeName;
     obj["command"] = m_command;

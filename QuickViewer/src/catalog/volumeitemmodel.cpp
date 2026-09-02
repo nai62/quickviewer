@@ -23,14 +23,16 @@ QVariant VolumeItemModel::data(const QModelIndex &index, int role) const
         return qApp->TitleWithoutOptions() ? vtr->name : vtr->realname;
     case Qt::DecorationRole:
         return QIcon(QPixmap::fromImage(QImage::fromData(vtr->thumbnail)));
-    case Qt::SizeHintRole:
+    case Qt::SizeHintRole: {
+        const bool iconLongText = qApp->IconLongText();
         if (m_catalogViewMode == qvEnums::List) {
-            return qApp->IconLongText() ? QSize(300, 100) : QSize(200, 100);
+            return iconLongText ? QSize(300, 100) : QSize(200, 100);
         }
         if (m_catalogViewMode == qvEnums::Icon) {
-            return qApp->IconLongText() ? QSize(150, 170) : QSize(150, 120);
+            return iconLongText ? QSize(150, 170) : QSize(150, 120);
         }
         return QSize(100, 100);
+    }
     }
     return QVariant();
 }

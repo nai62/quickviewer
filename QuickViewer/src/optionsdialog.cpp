@@ -225,22 +225,26 @@ void OptionsDialog::resetColorBox()
 
 void OptionsDialog::resetWindowTitleSample()
 {
-    QString format = ui->lineEditWindowTitleUserStyle->text();
+    QString format;
     if (ui->radioButtonWindowTitleNormalStyle->isChecked()) {
         format = QV_WINDOWTITLE_FORMAT;
     } else if (ui->radioButtonWindowTitleIrfanViewStyle->isChecked()) {
         format = IRFANVIEW_WINDOWTITLE_FORMAT;
+    } else {
+        format = ui->lineEditWindowTitleUserStyle->text();
     }
     ui->labelWindowTitleSample->setText(m_imageString.formatString(format));
 }
 
 void OptionsDialog::resetStatusbarSample()
 {
-    QString format = ui->lineEditStatusBarUserStyle->text();
+    QString format;
     if (ui->radioButtonStatusBarNormalStyle->isChecked()) {
         format = QV_STATUSBAR_FORMAT;
     } else if (ui->radioButtonStatusBarIrfanViewStyle->isChecked()) {
         format = IRFANVIEW_STATUSBAR_FORMAT;
+    } else {
+        format = ui->lineEditStatusBarUserStyle->text();
     }
     ui->labelStatusBarSample->setText(m_imageString.formatString(format));
 }

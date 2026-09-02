@@ -10,18 +10,19 @@
 
 static int horizontalOffsetForAlignment(
     PageItem::PageAlign alignment,
-    int viewportWidth,
-    int contentWidth,
+    const QRect &viewport,
+    const QSize &contentSize,
     bool clampCenteredOffset = false)
 {
     if (alignment == PageItem::PageRight) {
         return 0;
     }
+    const int offset = viewport.width() - contentSize.width();
     if (alignment == PageItem::PageCenter) {
-        const int centeredOffset = (viewportWidth - contentWidth) / 2;
+        const int centeredOffset = offset / 2;
         return clampCenteredOffset ? qMax(0, centeredOffset) : centeredOffset;
     }
-    return viewportWidth - contentWidth;
+    return offset;
 }
 
 void ImageContent::initialize()
@@ -154,11 +155,11 @@ QRect PageItem::setPageLayoutFitting(QRect viewport, PageItem::PageAlign align, 
     if (fitMode == qvEnums::FitToRect) {
         if (newsize.height() == viewport1.height()) { // fitting on upper and bottom
             const int ofsinviewport = horizontalOffsetForAlignment(
-                align, viewport.width(), newsize.width());
+                align, viewport, newsize);
             drawRect = QRect(QPoint(of.x() + viewport.x() + ofsinviewport, of.y()), newsize);
         } else { // fitting on left and right
             const int ofsinviewportX = horizontalOffsetForAlignment(
-                align, viewport.width(), newsize.width());
+                align, viewport, newsize);
             int ofsinviewportY = (viewport.height() - newsize.height()) / 2;
             ofsinviewportY = pixelRatio != 1.0 ? 0 : ofsinviewportY; // If pixelRatio > 1, no correction is required
             drawRect = QRect(QPoint(of.x() + viewport.x() + ofsinviewportX, of.y() + ofsinviewportY), newsize);
@@ -167,12 +168,12 @@ QRect PageItem::setPageLayoutFitting(QRect viewport, PageItem::PageAlign align, 
         if (viewport.height() < newsize.height() && newsize.height() < viewport1.height()) {
             // Display magnification is automatically corrected, so special correction is required.
             const int ofsinviewportX = horizontalOffsetForAlignment(
-                align, viewport.width(), newsize.width());
+                align, viewport, newsize);
             int ofsinviewportY = pixelRatio == 1.0 ? 0 : (-viewport1.height() + newsize.height()) / 2;
             drawRect = QRect(QPoint(of.x() + viewport.x() + ofsinviewportX, of.y() + ofsinviewportY), newsize);
         } else {
             const int ofsinviewportX = horizontalOffsetForAlignment(
-                align, viewport.width(), newsize.width());
+                align, viewport, newsize);
             int ofsinviewportY = pixelRatio == 1.0 ? 0 : (viewport.height() - viewport1.height()) / 2;
             drawRect = QRect(QPoint(of.x() + viewport.x() + ofsinviewportX, of.y() + ofsinviewportY), newsize);
         }
@@ -206,7 +207,7 @@ QRect PageItem::setPageLayoutManual(QRect viewport, PageItem::PageAlign align, q
     of *= scale;
 
     const int ofsinviewport = horizontalOffsetForAlignment(
-        align, viewport.width(), newsize.width(), true);
+        align, viewport, newsize, true);
     int offsetY = qMax(0, (viewport.height() - newsize.height()) / 2);
     QRect drawRect(QPoint(of.x() + viewport.x() + ofsinviewport, of.y() + offsetY), newsize);
 
