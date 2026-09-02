@@ -669,9 +669,13 @@ static ImageContent loadImageFromBytes(
     if (bytes.isNull() || bytes.isEmpty()) {
         return ImageContent();
     }
-    QString aformat = IFileLoader::isExifJpegImageFile(path)
-                          ? (IFileLoader::isImageFile("turbojpeg") ? TURBO_JPEG_FMT : "jpg")
-                          : QFileInfo(path.toLower()).suffix();
+    QString aformat = QFileInfo(path.toLower()).suffix();
+    if (IFileLoader::isExifJpegImageFile(path)) {
+        aformat = "jpg";
+        if (IFileLoader::isImageFile("turbojpeg")) {
+            aformat = TURBO_JPEG_FMT;
+        }
+    }
     // Extension "png" might be an APNG.
     if (aformat == "png" && IFileLoader::isImageFile("apng")) {
         aformat = "apng";

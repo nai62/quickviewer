@@ -18,12 +18,6 @@ QVariant FolderItemModel::headerData(int section, Qt::Orientation, int role) con
             return tr("UpDate", "Title of the column in the folder list when displaying as an independent Window in Folder Window");
         }
         break;
-//    case Qt::SizeHintRole:
-//        switch(section) {
-//        case 0: return QSize(300, 20);
-//        case 1: return QSize(300, 20);
-//        }
-//        break;
     }
     return QVariant();
 }
@@ -50,13 +44,6 @@ QVariant FolderItemModel::data(const QModelIndex &index, int role) const
             return icon;
         }
         return QVariant();
-//    case Qt::SizeHintRole:
-//        if(qApp->IconLongText())
-//            return m_catalogViewMode == qvEnums::List ? QSize(300, 100) :
-//                   m_catalogViewMode == qvEnums::Icon ? QSize(150, 170) : QSize(100, 100);
-//        else
-//            return m_catalogViewMode == qvEnums::List ? QSize(200, 100) :
-//                   m_catalogViewMode == qvEnums::Icon ? QSize(150, 120) : QSize(100, 100);
     }
     return QVariant();
 }
@@ -76,8 +63,6 @@ int FolderItemModel::columnCount(const QModelIndex &) const
 
 QModelIndex FolderItemModel::index(int row, int column, const QModelIndex &) const
 {
-//    if(column > 1 || !m_searchedVolumes)
-//        return QModelIndex();
     if (!m_searchedVolumes) {
         return QModelIndex();
     }

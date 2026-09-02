@@ -659,8 +659,12 @@ void ImageView::mouseMoveEvent(QMouseEvent *e)
 void ImageView::wheelEvent(QWheelEvent *event)
 {
     int delta_y = event->angleDelta().y();
-    int delta = delta_y < 0 ? -Q_MOUSE_DELTA : delta_y > 0 ? Q_MOUSE_DELTA
-                                                           : 0;
+    int delta = 0;
+    if (delta_y < 0) {
+        delta = -Q_MOUSE_DELTA;
+    } else if (delta_y > 0) {
+        delta = Q_MOUSE_DELTA;
+    }
     QMouseValue mv(QKeySequence(qApp->keyboardModifiers()), event->buttons(), delta);
     QAction *action = qApp->mouseActions().getActionByValue(mv);
     if (action != nullptr) {

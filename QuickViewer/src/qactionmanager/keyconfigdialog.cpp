@@ -248,7 +248,6 @@ void KeyConfigDialog::setEditTextWithoutSignal(QString text)
 
 void KeyConfigDialog::onTreeWidget_currentItemChanged(QTreeWidgetItem *item, QTreeWidgetItem *)
 {
-    //qDebug() << "on_currentCommandChanged: " << (item ? item->text(0):"nullptr") << (previous ? previous->text(0) :"nullptr");
     if (item) {
         //        m_actionName = item->text(0);
         m_actionName = m_actionNameByIconText[item->text(1)];

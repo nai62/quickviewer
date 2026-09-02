@@ -166,8 +166,13 @@ void MouseConfigDialog::onAddSequenceButton_clicked()
     QKeySequence keyseq(keys);
     qDebug() << keyseq;
     keyseq = QKeySequence();
-    QMouseValue newval(QKeySequence(keys), buttons, ui->radioButtonUp->isChecked() ? Q_MOUSE_DELTA : ui->radioButtonDown->isChecked() ? -Q_MOUSE_DELTA
-                                                                                                                                      : 0);
+    int wheelDelta = 0;
+    if (ui->radioButtonUp->isChecked()) {
+        wheelDelta = Q_MOUSE_DELTA;
+    } else if (ui->radioButtonDown->isChecked()) {
+        wheelDelta = -Q_MOUSE_DELTA;
+    }
+    QMouseValue newval(QKeySequence(keys), buttons, wheelDelta);
     QString seqtext = ui->shortcutEdit->text();
     seqtext += seqtext.isEmpty() ? newval.Key : ", " + newval.Key;
     onRecordButton_keySequenceChanged(QMouseSequence(seqtext));

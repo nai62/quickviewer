@@ -8,6 +8,22 @@
 #    include "qluminor.h"
 #endif
 
+static int horizontalOffsetForAlignment(
+    PageItem::PageAlign alignment,
+    int viewportWidth,
+    int contentWidth,
+    bool clampCenteredOffset = false)
+{
+    if (alignment == PageItem::PageRight) {
+        return 0;
+    }
+    if (alignment == PageItem::PageCenter) {
+        const int centeredOffset = (viewportWidth - contentWidth) / 2;
+        return clampCenteredOffset ? qMax(0, centeredOffset) : centeredOffset;
+    }
+    return viewportWidth - contentWidth;
+}
+
 void ImageContent::initialize()
 {
     if (!Movie.isNull() && !Movie.data()) {
@@ -137,12 +153,12 @@ QRect PageItem::setPageLayoutFitting(QRect viewport, PageItem::PageAlign align, 
     QRect drawRect;
     if (fitMode == qvEnums::FitToRect) {
         if (newsize.height() == viewport1.height()) { // fitting on upper and bottom
-            int ofsinviewport = align == PageRight ? 0 : align == PageCenter ? (viewport.width() - newsize.width()) / 2
-                                                                             : viewport.width() - newsize.width();
+            const int ofsinviewport = horizontalOffsetForAlignment(
+                align, viewport.width(), newsize.width());
             drawRect = QRect(QPoint(of.x() + viewport.x() + ofsinviewport, of.y()), newsize);
         } else { // fitting on left and right
-            int ofsinviewportX = align == PageRight ? 0 : align == PageCenter ? (viewport.width() - newsize.width()) / 2
-                                                                              : viewport.width() - newsize.width();
+            const int ofsinviewportX = horizontalOffsetForAlignment(
+                align, viewport.width(), newsize.width());
             int ofsinviewportY = (viewport.height() - newsize.height()) / 2;
             ofsinviewportY = pixelRatio != 1.0 ? 0 : ofsinviewportY; // If pixelRatio > 1, no correction is required
             drawRect = QRect(QPoint(of.x() + viewport.x() + ofsinviewportX, of.y() + ofsinviewportY), newsize);
@@ -150,13 +166,13 @@ QRect PageItem::setPageLayoutFitting(QRect viewport, PageItem::PageAlign align, 
     } else {
         if (viewport.height() < newsize.height() && newsize.height() < viewport1.height()) {
             // Display magnification is automatically corrected, so special correction is required.
-            int ofsinviewportX = align == PageRight ? 0 : align == PageCenter ? (viewport.width() - newsize.width()) / 2
-                                                                              : viewport.width() - newsize.width();
+            const int ofsinviewportX = horizontalOffsetForAlignment(
+                align, viewport.width(), newsize.width());
             int ofsinviewportY = pixelRatio == 1.0 ? 0 : (-viewport1.height() + newsize.height()) / 2;
             drawRect = QRect(QPoint(of.x() + viewport.x() + ofsinviewportX, of.y() + ofsinviewportY), newsize);
         } else {
-            int ofsinviewportX = align == PageRight ? 0 : align == PageCenter ? (viewport.width() - newsize.width()) / 2
-                                                                              : viewport.width() - newsize.width();
+            const int ofsinviewportX = horizontalOffsetForAlignment(
+                align, viewport.width(), newsize.width());
             int ofsinviewportY = pixelRatio == 1.0 ? 0 : (viewport.height() - viewport1.height()) / 2;
             drawRect = QRect(QPoint(of.x() + viewport.x() + ofsinviewportX, of.y() + ofsinviewportY), newsize);
         }
@@ -189,8 +205,8 @@ QRect PageItem::setPageLayoutManual(QRect viewport, PageItem::PageAlign align, q
     QPoint of = Offset(rotateOffset);
     of *= scale;
 
-    int ofsinviewport = align == PageRight ? 0 : align == PageCenter ? qMax(0, (viewport.width() - newsize.width()) / 2)
-                                                                     : viewport.width() - newsize.width();
+    const int ofsinviewport = horizontalOffsetForAlignment(
+        align, viewport.width(), newsize.width(), true);
     int offsetY = qMax(0, (viewport.height() - newsize.height()) / 2);
     QRect drawRect(QPoint(of.x() + viewport.x() + ofsinviewport, of.y() + offsetY), newsize);
 
