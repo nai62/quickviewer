@@ -973,7 +973,7 @@ void MainWindow::createCatalogWindow(bool docked)
 }
 
 ////////////////////////////
-//// BrightnessWindow
+//// Retouch panel
 ////////////////////////////
 void MainWindow::handleShowRetouchWindowActionTriggered()
 {

@@ -72,7 +72,7 @@ public:
     bool isCatalogSearching();
     void createCatalogWindow(bool docked);
 
-    // BrightnessWindow
+    // Retouch panel
     void createBrightnessWindow(bool docked);
 
 protected:
