@@ -110,8 +110,8 @@ if /I "%~1"=="debug" (
     set "QV_HEIF_PLUGIN=%QV_HEIF_SOURCE%\qtbuild_6.11.2\kimg_heif6.dll"
 )
 if not exist "%QV_HEIF_PLUGIN%" (
-    echo === HEIF %~1 plug-in not found; it will not be staged ===
-    exit /b 0
+    echo ERROR: HEIF %~1 plug-in not found: %QV_HEIF_PLUGIN%
+    exit /b 2
 )
 for %%D in ("%QV_BUILD_DIR%\bin" "%QV_BUILD_DIR%\lib") do (
     if not exist "%%~D\imageformats" mkdir "%%~D\imageformats"
