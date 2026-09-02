@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
       m_sliderChanging(false),
       m_onWindowClosing(false),
       m_viewerWindowStateMaximized(false)
-//    , contextMenu(this)
+      //    , contextMenu(this)
       ,
       m_pageManager(this),
       m_thumbManager(nullptr),
@@ -81,7 +81,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // setup checkable menus
     ui->actionFitting->setChecked(qApp->Fitting());
-    ui->graphicsView->on_fitting_triggered(qApp->Fitting());
+    ui->graphicsView->handleFittingActionTriggered(qApp->Fitting());
     switch (qApp->ImageSortBy()) {
     case qvEnums::SortByFileName:
         ui->actionSortByFileName->setChecked(true);
@@ -121,7 +121,7 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     ui->actionDualView->setChecked(qApp->DualView());
-    ui->graphicsView->on_dualView_triggered(qApp->DualView());
+    ui->graphicsView->handleDualViewActionTriggered(qApp->DualView());
 
     ui->actionStayOnTop->setChecked(qApp->StayOnTop());
     ui->actionStayOnTop->triggered(qApp->StayOnTop());
@@ -137,7 +137,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionLargeToolbarIcons->setChecked(qApp->LargeToolbarIcons());
     ui->actionLargeToolbarIcons->triggered(qApp->LargeToolbarIcons());
 
-    ui->graphicsView->on_rightSideBook_triggered(qApp->RightSideBook());
+    ui->graphicsView->handleRightSideBookActionTriggered(qApp->RightSideBook());
     ui->actionRightSideBook->setChecked(qApp->RightSideBook());
     ui->actionLoupeTool->setChecked(qApp->LoupeTool());
     ui->actionScrollWithCursorWhenZooming->setChecked(qApp->ScrollWithCursorWhenZooming());
@@ -157,7 +157,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionShowFullscreenSignage->setChecked(qApp->ShowFullscreenSignage());
     ui->actionShowPanelSeparateWindow->setChecked(qApp->ShowPanelSeparateWindow());
     ui->actionHideMouseCursorInFullscreen->setChecked(qApp->HideMouseCursorInFullscreenForMenu());
-//    ui->actionShowFullscreenTitleBar->setChecked(qApp->ShowFullscreenTitleBar());
+    //    ui->actionShowFullscreenTitleBar->setChecked(qApp->ShowFullscreenTitleBar());
 
     // Languages
     qApp->languageSelector()->initializeMenu(ui->menuChange_Language);
@@ -349,14 +349,14 @@ void MainWindow::resetShortcutKeys()
     foreach (const QString &name, actions.keys()) {
         auto a = actions[name];
         QKeySequence seq = seqMap[name];
-//        a->setShortcut(seq);
+        //        a->setShortcut(seq);
 
         QList<QKeySequence> seqlist;
         for (int i = 0; i < seq.count(); i++) {
             seqlist << QKeySequence(seq[i]);
         }
         a->setShortcuts(seqlist);
-//        a->setShortcutContext(Qt::ApplicationShortcut);
+        //        a->setShortcutContext(Qt::ApplicationShortcut);
     }
     onScrollModeChanged(ui->graphicsView->isScrollMode());
 }
@@ -531,8 +531,8 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     // ContextMenu event occurs when releasing the RightButton
     case QEvent::ContextMenu:
         if (obj == ui->graphicsView) {
-//            QContextMenuEvent *contextMenuEvent = dynamic_cast<QContextMenuEvent*>(event);
-//            qDebug() << contextMenuEvent;
+            //            QContextMenuEvent *contextMenuEvent = dynamic_cast<QContextMenuEvent*>(event);
+            //            qDebug() << contextMenuEvent;
             QMouseValue mv(QKeySequence(qApp->keyboardModifiers()), Qt::RightButton, 0);
             QAction *action = qApp->mouseActions().getActionByValue(mv);
             if (action && needContextMenu) {
@@ -640,8 +640,8 @@ void MainWindow::setThumbnailManager(ThumbnailManager *manager)
 void MainWindow::onActionExit_triggered()
 {
     close();
-//    QApplication::quit();
-//    QCoreApplication::quit();
+    //    QApplication::quit();
+    //    QCoreApplication::quit();
 }
 
 void MainWindow::onSavingHistory_triggered(bool enable)
@@ -680,7 +680,7 @@ void MainWindow::onGraphicsView_anchorHovered(Qt::AnchorPoint anchor)
             qApp->setInnerFrameShowing(true);
         });
         connect(innerFrame, &QInnerFrame::deinit, this, [=] {
-//            qDebug() << showToolbar << showMenubar << fullscreen;
+            //            qDebug() << showToolbar << showMenubar << fullscreen;
             bool fullscreen2 = isFullScreen();
             if (showToolbar || fullscreen2) {
                 ui->mainToolBar->setVisible(false);
@@ -724,7 +724,7 @@ void MainWindow::onGraphicsView_anchorHovered(Qt::AnchorPoint anchor)
         innerFrame->showWithoutTitleBar();
     }
     if (anchor == Qt::AnchorHorizontalCenter) {
-//        ui->pageFrame->hide();
+        //        ui->pageFrame->hide();
     }
     ui->graphicsView->refreshRenderedPages();
 }
@@ -1010,7 +1010,7 @@ void MainWindow::createBrightnessWindow(bool docked)
         closeAllDockedWindow();
         m_brightnessWindow = new BrightnessWindow(nullptr, ui);
         connect(m_brightnessWindow, SIGNAL(closed()), this, SLOT(onBrightnessWindow_closed()));
-        connect(m_brightnessWindow, SIGNAL(brightnessChanged(ImageRetouch)), ui->graphicsView, SLOT(onBrightness_valueChanged(ImageRetouch)));
+        connect(m_brightnessWindow, SIGNAL(brightnessChanged(ImageRetouch)), ui->graphicsView, SLOT(handleBrightnessChanged(ImageRetouch)));
         m_brightnessWindow->setImageView(ui->graphicsView);
         ui->catalogSplitter->insertWidget(0, m_brightnessWindow);
         auto sizes = ui->catalogSplitter->sizes();
@@ -1021,7 +1021,7 @@ void MainWindow::createBrightnessWindow(bool docked)
     } else {
         m_brightnessWindow = new BrightnessWindow(nullptr, ui);
         connect(m_brightnessWindow, SIGNAL(closed()), this, SLOT(onBrightnessWindow_closed()));
-        connect(m_brightnessWindow, SIGNAL(brightnessChanged(ImageRetouch)), ui->graphicsView, SLOT(onBrightness_valueChanged(ImageRetouch)));
+        connect(m_brightnessWindow, SIGNAL(brightnessChanged(ImageRetouch)), ui->graphicsView, SLOT(handleBrightnessChanged(ImageRetouch)));
         m_brightnessWindow->setImageView(ui->graphicsView);
         QRect self = geometry();
         m_brightnessWindow->setGeometry(self.left() - 100, self.top() + 100, self.width(), self.height());
@@ -1129,8 +1129,8 @@ void MainWindow::onActionStayOnTop_triggered(bool top)
     qApp->setStayOnTop(top);
     // Qt's StayOnTop mechanism is not working correctly in Windows.
     // so win32api calling manually
-//    if(setStayOnTop(top))
-//        return;
+    //    if(setStayOnTop(top))
+    //        return;
     Qt::WindowFlags flags = windowFlags();
     if (top) {
         flags |= Qt::WindowStaysOnTopHint;
@@ -1184,7 +1184,7 @@ void MainWindow::onPageManager_pageChanged()
     m_sliderChanging = false;
 
     // StatusBar
-//    m_pageCaption = m_pageManager.currentPageStatusAsString();
+    //    m_pageCaption = m_pageManager.currentPageStatusAsString();
     m_pageCaption = m_imageString.getStatusBarText();
 
     // Elide text(Otherwise the width of the main window will be forcibly changed)
@@ -1246,7 +1246,7 @@ void MainWindow::onActionAppVersion_triggered()
     msgBox.setWindowTitle(QString("about %1").arg(QApplication::applicationName()));
     msgBox.setIcon(QMessageBox::Information);
     msgBox.setTextFormat(Qt::RichText);
-//    msgBox.setText(QApplication::applicationVersion());
+    //    msgBox.setText(QApplication::applicationVersion());
     QString message = QString("<h1>%1 %2</h1><p>%3&lt;<a href=\"mailto:k.kanryu@gmail.com\">k.kanryu@gmail.com&gt;</a> All rights reserved.</p>"
                               "<p>Project Webpage: <a href=\"https://kanryu.github.io/quickviewer/\">https://kanryu.github.io/quickviewer/</a></p>"
                               "<p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</p>")
@@ -1343,14 +1343,14 @@ void MainWindow::touchEvent(QTouchEvent *e)
         if (touchFirst) {
             touchCount = qMax(touchCount, e->touchPoints().count());
             touchBegin = e->touchPoints().first();
-//            touchBegin = touchPrev = e->touchPoints().first();
+            //            touchBegin = touchPrev = e->touchPoints().first();
             touchFirst = false;
             scrollBarBegin = QPoint(ui->graphicsView->horizontalScrollBar()->value(), ui->graphicsView->verticalScrollBar()->value());
             if (touchCount == 2) {
                 twoFingersCount++;
             }
         } else {
-//            touchPrev = touchEnd;
+            //            touchPrev = touchEnd;
             touchEnd = e->touchPoints().first();
             qreal beginx = 1.0 * touchBegin.pos().x() / ui->graphicsView->width();
             qreal beginy = 1.0 * touchBegin.pos().y() / ui->graphicsView->height();
@@ -1359,13 +1359,13 @@ void MainWindow::touchEvent(QTouchEvent *e)
                 break;
             }
             if (touchCount == 1) {
-//                ui->graphicsView->updateViewportOffset(
-//                    QPointF(
-//                        touchEnd.pos().x()-touchPrev.pos().x(),
-//                        touchEnd.pos().y()-touchPrev.pos().y()));
+                //                ui->graphicsView->updateViewportOffset(
+                //                    QPointF(
+                //                        touchEnd.pos().x()-touchPrev.pos().x(),
+                //                        touchEnd.pos().y()-touchPrev.pos().y()));
 
-//                ui->graphicsView->horizontalScrollBar()->setValue(ui->graphicsView->horizontalScrollBar()->value()-touchEnd.pos().x()+touchPrev.pos().x());
-//                ui->graphicsView->verticalScrollBar()->setValue(ui->graphicsView->verticalScrollBar()->value()-touchEnd.pos().y()+touchPrev.pos().y());
+                //                ui->graphicsView->horizontalScrollBar()->setValue(ui->graphicsView->horizontalScrollBar()->value()-touchEnd.pos().x()+touchPrev.pos().x());
+                //                ui->graphicsView->verticalScrollBar()->setValue(ui->graphicsView->verticalScrollBar()->value()-touchEnd.pos().y()+touchPrev.pos().y());
 
                 ui->graphicsView->horizontalScrollBar()->setValue(scrollBarBegin.x() - touchEnd.pos().x() + touchEnd.startPos().x());
                 ui->graphicsView->verticalScrollBar()->setValue(scrollBarBegin.y() - touchEnd.pos().y() + touchEnd.startPos().y());
@@ -1394,7 +1394,7 @@ void MainWindow::touchEvent(QTouchEvent *e)
     case QEvent::TouchEnd:
         int ofsX = touchEnd.pos().x() - touchBegin.pos().x();
         int ofsY = touchEnd.pos().y() - touchBegin.pos().y();
-  // React only at the bottom 1/3 of the screen
+        // React only at the bottom 1/3 of the screen
         qreal endy = 1.0 * touchEnd.pos().y() / ui->graphicsView->height();
         if (touchCount == 1 && 0.75 < endy) {
             if (ofsX > 30) {
@@ -1562,13 +1562,13 @@ void MainWindow::onActionOpenfolder_triggered()
         tr("Please select the image or archive", "Title of the dialog displayed when opening a file with OpenFileFolder"),
         qApp->LastOpenedFolderPath(),
         filter);
-//    QFileDialog dialog = QFileDialog(this, tr("Open a image folder"));
-//    if(dialog.exec()) {
+    //    QFileDialog dialog = QFileDialog(this, tr("Open a image folder"));
+    //    if(dialog.exec()) {
     if (folder.length() > 0) {
         //qDebug() << folder;
-//        QDir dir(folder);
-//        if(dir.exists())
-//            loadVolume(folder);
+        //        QDir dir(folder);
+        //        if(dir.exists())
+        //            loadVolume(folder);
         loadVolume(folder);
         qApp->setLastOpenedFolderPath(folder);
     }
@@ -1703,7 +1703,7 @@ void MainWindow::onActionLargeToolbarIcons_triggered(bool enable)
     ui->pageLabel->setFont(font);
     ui->pageLabel->setMinimumWidth(fontsize * 10);
     if (enable) {
-//		int sliderHeight = (int)(1.5*m_pageSliderHeight);
+        //		int sliderHeight = (int)(1.5*m_pageSliderHeight);
         ui->pageSlider->setMinimumHeight(m_pageSliderHeight);
         if (ui->pageFrame->isVisible()) {
             ui->pageFrame->setVisible(false);

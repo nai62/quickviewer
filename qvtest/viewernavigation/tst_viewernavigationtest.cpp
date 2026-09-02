@@ -258,22 +258,22 @@ private slots:
         ImageView view;
         view.setPageManager(&manager);
 
-        view.on_nextPage_triggered();
-        view.on_prevPage_triggered();
-        view.onActionNextPageOrVolume_triggered();
-        view.onActionPrevPageOrVolume_triggered();
-        view.on_fastForwardPage_triggered();
-        view.on_fastBackwardPage_triggered();
-        view.on_firstPage_triggered();
-        view.on_lastPage_triggered();
-        view.on_nextOnlyOnePage_triggered();
-        view.on_prevOnlyOnePage_triggered();
-        view.on_nextVolume_triggered();
-        view.on_prevVolume_triggered();
-        view.on_rotatePage_triggered();
-        view.on_slideShowChanging_triggered();
-        view.on_copyPage_triggered();
-        view.on_copyFile_triggered();
+        view.handleNextPageActionTriggered();
+        view.handlePrevPageActionTriggered();
+        view.handleNextPageOrVolumeActionTriggered();
+        view.handlePrevPageOrVolumeActionTriggered();
+        view.handleFastForwardActionTriggered();
+        view.handleFastBackwardActionTriggered();
+        view.handleFirstPageActionTriggered();
+        view.handleLastPageActionTriggered();
+        view.handleNextOnePageActionTriggered();
+        view.handlePrevOnePageActionTriggered();
+        view.handleNextVolumeActionTriggered();
+        view.handlePrevVolumeActionTriggered();
+        view.handleRotateActionTriggered();
+        view.handleSlideShowTimerTimeout();
+        view.handleCopyPageActionTriggered();
+        view.handleCopyFileActionTriggered();
     }
 
     void gestureStateIsIndependentBetweenViews()
@@ -331,8 +331,8 @@ private slots:
         const QImage image(8, 8, QImage::Format_ARGB32);
         manager.addNewPage(ImageContent(image, "preview.png", image.size(), {}, 0), true);
 
-        view.onActionNextPageOrVolume_triggered();
-        view.onActionPrevPageOrVolume_triggered();
+        view.handleNextPageOrVolumeActionTriggered();
+        view.handlePrevPageOrVolumeActionTriggered();
         QCOMPARE(manager.currentPageName(), QString("preview.png"));
     }
 
@@ -399,7 +399,7 @@ private slots:
         view.refreshRenderedPages();
         QCOMPARE(view.renderedPageMetrics().notationalScaleAt(0), 1.0);
 
-        view.on_fitting_triggered(true);
+        view.handleFittingActionTriggered(true);
         QVERIFY(qApp->Fitting());
         QVERIFY(view.renderedPageMetrics().notationalScaleAt(0) < 1.0);
     }
@@ -413,7 +413,7 @@ private slots:
 
         QAction fittingAction;
         fittingAction.setCheckable(true);
-        connect(&fittingAction, &QAction::triggered, &view, &ImageView::on_fitting_triggered);
+        connect(&fittingAction, &QAction::triggered, &view, &ImageView::handleFittingActionTriggered);
         QAction *previousAction =
             qApp->keyActions().actions().value("actionFitting", nullptr);
         auto restoreAction = qScopeGuard([previousAction]() {
@@ -458,8 +458,8 @@ private slots:
         QCOMPARE(manager.size(), 0);
         QVERIFY(!manager.firstPage());
         QVERIFY(!manager.lastPage());
-        view.onActionNextPageOrVolume_triggered();
-        view.onActionPrevPageOrVolume_triggered();
+        view.handleNextPageOrVolumeActionTriggered();
+        view.handlePrevPageOrVolumeActionTriggered();
 
         manager.dispose();
         QCOMPARE(manager.stateKind(), ViewerStateKind::Empty);
@@ -493,8 +493,8 @@ private slots:
         QCOMPARE(manager.currentPagePath(), QString());
         QCOMPARE(manager.currentPageName(), QString());
         QCOMPARE(manager.pageSignage(0), QString());
-        view.onActionNextPageOrVolume_triggered();
-        view.onActionPrevPageOrVolume_triggered();
+        view.handleNextPageOrVolumeActionTriggered();
+        view.handlePrevPageOrVolumeActionTriggered();
     }
 };
 

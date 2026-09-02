@@ -1355,38 +1355,38 @@
     <signal>fittingChanged(bool)</signal>
     <signal>anchorHovered(Qt::AnchorPoint)</signal>
     <slot>on_image_changing(QImage)</slot>
-    <slot>on_fitting_triggered(bool)</slot>
-    <slot>on_dualView_triggered(bool)</slot>
-    <slot>on_scaleUp_triggered()</slot>
-    <slot>on_scaleDown_triggered()</slot>
-    <slot>on_rightSideBook_triggered(bool)</slot>
-    <slot>on_wideImageAsOneView_triggered(bool)</slot>
-    <slot>on_openFiler_triggered()</slot>
-    <slot>on_nextPage_triggered()</slot>
-    <slot>on_prevPage_triggered()</slot>
-    <slot>on_firstPage_triggered()</slot>
-    <slot>on_lastPage_triggered()</slot>
-    <slot>on_nextOnlyOnePage_triggered()</slot>
-    <slot>on_prevOnlyOnePage_triggered()</slot>
-    <slot>on_firstImageAsOneView_triggered(bool)</slot>
-    <slot>on_copyPage_triggered()</slot>
-    <slot>on_nextVolume_triggered()</slot>
-    <slot>on_prevVolume_triggered()</slot>
-    <slot>on_fastForwardPage_triggered()</slot>
-    <slot>on_fastBackwardPage_triggered()</slot>
-    <slot>on_copyFile_triggered()</slot>
-    <slot>on_rotatePage_triggered()</slot>
-    <slot>on_showSubfolders_triggered(bool)</slot>
-    <slot>on_dontEnlargeSmallImagesOnFitting(bool)</slot>
-    <slot>onActionSeparatePagesWhenWideImage_triggered(bool)</slot>
-    <slot>onActionLoupe_triggered(bool)</slot>
-    <slot>onActionScrollWithCursorWhenZooming_triggered(bool)</slot>
-    <slot>onActionShowFullscreenSignage_triggered(bool)</slot>
-    <slot>on_fitToWidth_triggered(bool)</slot>
-    <slot>on_fitToWindow_triggered(bool)</slot>
-    <slot>onActionNextPageOrVolume_triggered()</slot>
-    <slot>onActionPrevPageOrVolume_triggered()</slot>
-    <slot>onActionHideMouseCursorInFullscreen_triggered(bool)</slot>
+    <slot>handleFittingActionTriggered(bool)</slot>
+    <slot>handleDualViewActionTriggered(bool)</slot>
+    <slot>handleZoomInActionTriggered()</slot>
+    <slot>handleZoomOutActionTriggered()</slot>
+    <slot>handleRightSideBookActionTriggered(bool)</slot>
+    <slot>handleWideImageAsOneViewActionTriggered(bool)</slot>
+    <slot>handleOpenFilerActionTriggered()</slot>
+    <slot>handleNextPageActionTriggered()</slot>
+    <slot>handlePrevPageActionTriggered()</slot>
+    <slot>handleFirstPageActionTriggered()</slot>
+    <slot>handleLastPageActionTriggered()</slot>
+    <slot>handleNextOnePageActionTriggered()</slot>
+    <slot>handlePrevOnePageActionTriggered()</slot>
+    <slot>handleFirstImageAsOneViewActionTriggered(bool)</slot>
+    <slot>handleCopyPageActionTriggered()</slot>
+    <slot>handleNextVolumeActionTriggered()</slot>
+    <slot>handlePrevVolumeActionTriggered()</slot>
+    <slot>handleFastForwardActionTriggered()</slot>
+    <slot>handleFastBackwardActionTriggered()</slot>
+    <slot>handleCopyFileActionTriggered()</slot>
+    <slot>handleRotateActionTriggered()</slot>
+    <slot>handleShowSubfoldersActionTriggered(bool)</slot>
+    <slot>handleDontEnlargeSmallImagesOnFittingActionTriggered(bool)</slot>
+    <slot>handleSeparatePagesWhenWideImageActionTriggered(bool)</slot>
+    <slot>handleLoupeToolActionTriggered(bool)</slot>
+    <slot>handleScrollWithCursorWhenZoomingActionTriggered(bool)</slot>
+    <slot>handleShowFullscreenSignageActionTriggered(bool)</slot>
+    <slot>handleFitToWidthActionTriggered(bool)</slot>
+    <slot>handleFitToWindowActionTriggered(bool)</slot>
+    <slot>handleNextPageOrVolumeActionTriggered()</slot>
+    <slot>handlePrevPageOrVolumeActionTriggered()</slot>
+    <slot>handleHideMouseCursorInFullscreenActionTriggered(bool)</slot>
     <slot>onActionSortByFileName_triggered(bool)</slot>
     <slot>onActionSortByFileNameDescending_triggered(bool)</slot>
     <slot>onActionSortByFileSize_triggered(bool)</slot>
@@ -1409,7 +1409,7 @@
    <sender>actionNextPage</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_nextPage_triggered()</slot>
+   <slot>handleNextPageActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1425,7 +1425,7 @@
    <sender>actionPrevPage</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_prevPage_triggered()</slot>
+   <slot>handlePrevPageActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1441,7 +1441,7 @@
    <sender>actionZoomIn</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_scaleUp_triggered()</slot>
+   <slot>handleZoomInActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1457,7 +1457,7 @@
    <sender>actionZoomOut</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_scaleDown_triggered()</slot>
+   <slot>handleZoomOutActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1473,7 +1473,7 @@
    <sender>actionFitting</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_fitting_triggered(bool)</slot>
+   <slot>handleFittingActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1489,7 +1489,7 @@
    <sender>actionDualView</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_dualView_triggered(bool)</slot>
+   <slot>handleDualViewActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1553,7 +1553,7 @@
    <sender>actionRightSideBook</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_rightSideBook_triggered(bool)</slot>
+   <slot>handleRightSideBookActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1585,7 +1585,7 @@
    <sender>actionWideImageAsOneView</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_wideImageAsOneView_triggered(bool)</slot>
+   <slot>handleWideImageAsOneViewActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1601,7 +1601,7 @@
    <sender>actionFirstPage</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_firstPage_triggered()</slot>
+   <slot>handleFirstPageActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1617,7 +1617,7 @@
    <sender>actionLastPage</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_lastPage_triggered()</slot>
+   <slot>handleLastPageActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1681,7 +1681,7 @@
    <sender>actionOpenFiler</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_openFiler_triggered()</slot>
+   <slot>handleOpenFilerActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1713,7 +1713,7 @@
    <sender>actionNextVolume</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_nextVolume_triggered()</slot>
+   <slot>handleNextVolumeActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1729,7 +1729,7 @@
    <sender>actionPrevVolume</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_prevVolume_triggered()</slot>
+   <slot>handlePrevVolumeActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1745,7 +1745,7 @@
    <sender>actionNextOnePage</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_nextOnlyOnePage_triggered()</slot>
+   <slot>handleNextOnePageActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1761,7 +1761,7 @@
    <sender>actionPrevOnePage</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_prevOnlyOnePage_triggered()</slot>
+   <slot>handlePrevOnePageActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1825,7 +1825,7 @@
    <sender>actionFirstImageAsOneView</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_firstImageAsOneView_triggered(bool)</slot>
+   <slot>handleFirstImageAsOneViewActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1889,7 +1889,7 @@
    <sender>actionCopyPage</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_copyPage_triggered()</slot>
+   <slot>handleCopyPageActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2001,7 +2001,7 @@
    <sender>actionFastForward</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_fastForwardPage_triggered()</slot>
+   <slot>handleFastForwardActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2017,7 +2017,7 @@
    <sender>actionFastBackward</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_fastBackwardPage_triggered()</slot>
+   <slot>handleFastBackwardActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2049,7 +2049,7 @@
    <sender>actionCopyFile</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_copyFile_triggered()</slot>
+   <slot>handleCopyFileActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2065,7 +2065,7 @@
    <sender>actionRotate</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_rotatePage_triggered()</slot>
+   <slot>handleRotateActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2385,7 +2385,7 @@
    <sender>actionShowSubfolders</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_showSubfolders_triggered(bool)</slot>
+   <slot>handleShowSubfoldersActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2465,7 +2465,7 @@
    <sender>actionDontEnlargeSmallImagesOnFitting</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_dontEnlargeSmallImagesOnFitting(bool)</slot>
+   <slot>handleDontEnlargeSmallImagesOnFittingActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2497,7 +2497,7 @@
    <sender>actionShowFullscreenSignage</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>onActionShowFullscreenSignage_triggered(bool)</slot>
+   <slot>handleShowFullscreenSignageActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2705,7 +2705,7 @@
    <sender>actionSeparatePagesWhenWideImage</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>onActionSeparatePagesWhenWideImage_triggered(bool)</slot>
+   <slot>handleSeparatePagesWhenWideImageActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2721,7 +2721,7 @@
    <sender>actionLoupeTool</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>onActionLoupe_triggered(bool)</slot>
+   <slot>handleLoupeToolActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2737,7 +2737,7 @@
    <sender>actionScrollWithCursorWhenZooming</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>onActionScrollWithCursorWhenZooming_triggered(bool)</slot>
+   <slot>handleScrollWithCursorWhenZoomingActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2753,7 +2753,7 @@
    <sender>actionFitToWidth</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_fitToWidth_triggered(bool)</slot>
+   <slot>handleFitToWidthActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2769,7 +2769,7 @@
    <sender>actionFitToWindow</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_fitToWindow_triggered(bool)</slot>
+   <slot>handleFitToWindowActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2865,7 +2865,7 @@
    <sender>actionPrevPageOrVolume</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>onActionPrevPageOrVolume_triggered()</slot>
+   <slot>handlePrevPageOrVolumeActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2881,7 +2881,7 @@
    <sender>actionNextPageOrVolume</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>onActionNextPageOrVolume_triggered()</slot>
+   <slot>handleNextPageOrVolumeActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2945,7 +2945,7 @@
    <sender>actionHideMouseCursorInFullscreen</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>onActionHideMouseCursorInFullscreen_triggered(bool)</slot>
+   <slot>handleHideMouseCursorInFullscreenActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -3055,16 +3055,16 @@
   </connection>
  </connections>
  <slots>
-  <slot>on_nextPage_triggered()</slot>
-  <slot>on_prevPage_triggered()</slot>
-  <slot>on_scaleUp_triggered()</slot>
-  <slot>on_scaleDown_triggered()</slot>
+  <slot>handleNextPageActionTriggered()</slot>
+  <slot>handlePrevPageActionTriggered()</slot>
+  <slot>handleZoomInActionTriggered()</slot>
+  <slot>handleZoomOutActionTriggered()</slot>
   <slot>onActionFullscreen_triggered()</slot>
   <slot>onActionAppVersion_triggered()</slot>
   <slot>onActionAutoLoaded_triggered(bool)</slot>
   <slot>onActionOpenfolder_triggered()</slot>
-  <slot>on_firstPage_triggered()</slot>
-  <slot>on_lastPage_triggered()</slot>
+  <slot>handleFirstPageActionTriggered()</slot>
+  <slot>handleLastPageActionTriggered()</slot>
   <slot>onActionShowPageBar_triggered(bool)</slot>
   <slot>onActionShowStatusBar_triggered(bool)</slot>
   <slot>onActionOpenKeyConfig_triggered()</slot>
@@ -3110,7 +3110,7 @@
   <slot>onActionRenameImageFile_triggered()</slot>
   <slot>onActionOpenExif_triggered()</slot>
   <slot>onActionBeginAsFullscreen_triggered(bool)</slot>
-  <slot>onActionShowFullscreenSignage_triggered(bool)</slot>
+  <slot>handleShowFullscreenSignageActionTriggered(bool)</slot>
   <slot>onActionConfirmDeletePage_triggered(bool)</slot>
   <slot>handleRegisterFileAssociationsAsAdministratorActionTriggered()</slot>
   <slot>onActionShowFullscreenTitleBar_triggered(bool)</slot>
