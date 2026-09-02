@@ -25,7 +25,7 @@ class VolumeManagerBuilder;
 class VolumeManager : public QObject
 {
     Q_OBJECT
-//    Q_DISABLE_COPY(IFileVolume)
+    //    Q_DISABLE_COPY(IFileVolume)
 public:
     using CacheMode = PrefetchMode;
     static constexpr CacheMode Normal = CacheMode::Normal;
@@ -143,14 +143,14 @@ public:
      */
     int size() { return m_filelist.size(); }
     /**
-     * @brief on_ready Called when the application is ready. First, or the image to be displayed next and its file path are emitted
+     * @brief handleReady Called when the application is ready. First, or the image to be displayed next and its file path are emitted
      */
-    void on_ready();
+    void handleReady();
     int pageCount() { return m_cnt; }
 
-//    QPixmap getIndexedImage(int idx);
-//    QString getIndexedImageName(int idx) { return m_filelist[idx]; }
-//    QString currentImageName() const { return m_filelist[m_cnt]; }
+    //    QPixmap getIndexedImage(int idx);
+    //    QString getIndexedImageName(int idx) { return m_filelist[idx]; }
+    //    QString currentImageName() const { return m_filelist[m_cnt]; }
     const ImageContent getIndexedImageContent(int idx);
     bool openedWithSpecifiedImageFile() { return m_openedWithSpecifiedImageFile; }
     void setOpenedWithSpecifiedImageFile(bool openedWithSpecifiedImageFile) { m_openedWithSpecifiedImageFile = openedWithSpecifiedImageFile; }
@@ -161,7 +161,7 @@ signals:
     void enumerationFinished();
 
 public slots:
-    void on_enmumerated();
+    void handleEnumerationFinished();
 
 private:
     future_image scheduleImageLoad(const QString &path, const QSize &pageSize, bool requiredForDisplay);
@@ -178,8 +178,8 @@ private:
     ImageContent m_currentCacheSync;
 
     FutureCache<int, ImageContent> m_imageCache;
-//    QMap<int, future_image> m_imageCache;
-//    QList<int> m_pageCache;
+    //    QMap<int, future_image> m_imageCache;
+    //    QList<int> m_pageCache;
 
     QSharedPointer<ImageLoadContext> m_loadContext;
     IFileLoader *m_loader;

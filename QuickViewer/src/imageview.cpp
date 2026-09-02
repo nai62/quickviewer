@@ -113,8 +113,8 @@ void ImageView::setPageManager(PageManager *manager)
     connect(manager, &PageManager::visiblePagesChanged, this, &ImageView::handleVisiblePagesChanged);
     connect(manager, SIGNAL(readyForPaint()), this, SLOT(refreshRenderedPages()));
     connect(manager, SIGNAL(volumeChanged(QString)), this, SLOT(handleVolumeChanged(QString)));
-    connect(this, SIGNAL(slideShowStarted()), manager, SLOT(onSlideShowStarted()));
-    connect(this, SIGNAL(slideShowStopped()), manager, SLOT(onSlideShowStopped()));
+    connect(this, SIGNAL(slideShowStarted()), manager, SLOT(handleSlideShowStarted()));
+    connect(this, SIGNAL(slideShowStopped()), manager, SLOT(handleSlideShowStopped()));
     handleVisiblePagesChanged(manager->visiblePages());
 }
 

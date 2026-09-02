@@ -56,7 +56,7 @@ void PageManager::configureVolume(VolumeManager *volume)
         return;
     }
     volume->setViewportSize(m_viewportSize);
-    connect(volume, &VolumeManager::enumerationFinished, this, &PageManager::on_pageEnumerated, Qt::UniqueConnection);
+    connect(volume, &VolumeManager::enumerationFinished, this, &PageManager::handlePageEnumerated, Qt::UniqueConnection);
 }
 
 void PageManager::setViewportSize(QSize size)
@@ -288,7 +288,7 @@ void PageManager::startAssociatedVolumeBuild(const QString &qpath,
             emit volumeChanged(volume->volumePath()); }, [](VolumeHandle) {});
 }
 
-void PageManager::on_pageEnumerated()
+void PageManager::handlePageEnumerated()
 {
     if (auto *source = qobject_cast<VolumeManager *>(sender())) {
         if (source != activeVolume()) {
@@ -304,7 +304,7 @@ void PageManager::on_pageEnumerated()
     emit pageChanged();
 }
 
-void PageManager::onSlideShowStarted()
+void PageManager::handleSlideShowStarted()
 {
     VolumeManager *volume = activeVolume();
     if (!volume) {
@@ -316,7 +316,7 @@ void PageManager::onSlideShowStarted()
     }
 }
 
-void PageManager::onSlideShowStopped()
+void PageManager::handleSlideShowStopped()
 {
     VolumeManager *volume = activeVolume();
     if (!volume) {

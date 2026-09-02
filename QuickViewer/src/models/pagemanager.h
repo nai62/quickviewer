@@ -161,9 +161,9 @@ signals:
      */
     void initialImageDisplayFinished();
 public slots:
-    void on_pageEnumerated();
-    void onSlideShowStarted();
-    void onSlideShowStopped();
+    void handlePageEnumerated();
+    void handleSlideShowStarted();
+    void handleSlideShowStopped();
 
 private:
     void startAssociatedVolumeBuild(const QString &qpath,
@@ -199,7 +199,7 @@ private:
     QString m_pendingAssociatedPathbase;
     QString m_pendingAssociatedFilename;
 
-//    VolumeManagerBuilder m_builderForAssoc;
+    //    VolumeManagerBuilder m_builderForAssoc;
 };
 
 #endif // PAGEMANAGER_H

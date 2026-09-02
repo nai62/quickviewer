@@ -139,11 +139,11 @@ public:
         PageLeft,
         PageRight
     };
-//    enum FitMode {
-//        NoFitting,
-//        FitToRect,
-//        FitToWidth
-//    };
+    //    enum FitMode {
+    //        NoFitting,
+    //        FitToRect,
+    //        FitToWidth
+    //    };
 
     enum SeparationState {
         NoSeparated,
@@ -158,11 +158,11 @@ public:
      * Page image is used as a QGraphicsItem. It will be registered with the scene.
      */
     QGraphicsItem *GrItem;
-//    /**
-//     * @brief Resized
-//     * Store the image changed to the specified size (newsize)
-//     */
-//    QPixmap ResizedPage;
+    //    /**
+    //     * @brief Resized
+    //     * Store the image changed to the specified size (newsize)
+    //     */
+    //    QPixmap ResizedPage;
     QFutureWatcher<QImage> generateWatcher;
     /**
      * @brief Rotate: rotation as digrees
@@ -209,11 +209,11 @@ public:
 signals:
     void resizeFinished();
 public slots:
-    void on_resizeFinished_trigger();
-    void on_animateFrameChanged_trigger(int frameNumber);
-    void on_animateFinished_trigger();
-    void on_brightnessChanged_trigger(ImageRetouch param);
-    void on_brightnessReset_trigger();
+    void handleResizeFinished();
+    void handleAnimationFrameChanged(int frameNumber);
+    void handleAnimationFinished();
+    void handleBrightnessChanged(ImageRetouch param);
+    void handleBrightnessReset();
 
 private:
     int m_resizeGeneratingState;

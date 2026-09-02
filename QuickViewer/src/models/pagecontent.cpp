@@ -54,7 +54,7 @@ PageItem::PageItem(QObject *parent, QGraphicsScene *s, ImageContent ic, const Pa
       initialized(false),
       m_renderContext(renderContext)
 {
-//    qDebug() << Ic.wideImage() << qApp->SeparatePagesWhenWideImage();
+    //    qDebug() << Ic.wideImage() << qApp->SeparatePagesWhenWideImage();
     if (!Ic.ImportSize.width()) {
         QGraphicsTextItem *gtext = s->addText(tr("NOT IMAGE FILE", "Error messages to be displayed on screen when image loading fails"));
         gtext->setDefaultTextColor(Qt::white);
@@ -232,7 +232,7 @@ static QZimg::FilterMode ShaderEffect2FilterMode(qvEnums::ShaderEffect effect)
 void PageItem::applyResize(qreal scale, int rotateOffset, QPoint pos, QSize newsize, bool loupe)
 {
     checkInitialize();
-//    QSize newsize2 = Ic.Info.Orientation==6 || Ic.Info.Orientation==8 ? QSize(newsize.height(), newsize.width()) : newsize;
+    //    QSize newsize2 = Ic.Info.Orientation==6 || Ic.Info.Orientation==8 ? QSize(newsize.height(), newsize.width()) : newsize;
     QSize newsize2 = (Rotate + rotateOffset) % 180 ? QSize(newsize.height(), newsize.width()) : newsize;
     qvEnums::ShaderEffect effect = Ic.Movie.isNull() ? qApp->Effect() : qvEnums::Bilinear;
     QImage &srcImage = applyRetouched();
@@ -266,7 +266,7 @@ void PageItem::applyResize(qreal scale, int rotateOffset, QPoint pos, QSize news
         if (Ic.ResizedImage.isNull() && m_resizeGeneratingState == 0) {
             m_resizeGeneratingState = 1;
             QFuture<QImage> future = QtConcurrent::run(QZimg::scaled, srcImage, newsize2, Qt::IgnoreAspectRatio, ShaderEffect2FilterMode(qApp->Effect()));
-            connect(&generateWatcher, SIGNAL(finished()), this, SLOT(on_resizeFinished_trigger()));
+            connect(&generateWatcher, SIGNAL(finished()), this, SLOT(handleResizeFinished()));
             generateWatcher.setFuture(future);
         }
         if (!Ic.ResizedImage.isNull() && m_resizeGeneratingState == 2) {
@@ -279,8 +279,8 @@ void PageItem::applyResize(qreal scale, int rotateOffset, QPoint pos, QSize news
     }
     // only GPU resizing
     if ((effect > qvEnums::UsingFixedShader && effect < qvEnums::UsingCpuResizer) || effect > qvEnums::UsingSomeShader) {
-//        if(!Ic.ResizedImage.isNull())
-//            initializePage(true);
+        //        if(!Ic.ResizedImage.isNull())
+        //            initializePage(true);
         initializePage(true);
         GrItem->setScale(retouchedScale);
     }
@@ -344,7 +344,7 @@ void PageItem::resetSignage(QRect viewport, PageItem::PageAlign fitting)
     }
     GText = Scene->addText(Text);
     GText->setPos(fitting == PageItem::PageRight ? viewport.right() - GText->boundingRect().width() : 0, 0);
-//qDebug() << GText->pos() << Text;
+    //qDebug() << GText->pos() << Text;
     GText->setDefaultTextColor(Qt::green);
     GText->setZValue(1);
     QBrush brush(QColor::fromRgb(0, 0, 0, 0x80));
@@ -373,12 +373,12 @@ void PageItem::resetScene(QGraphicsScene *)
 {
 }
 
-void PageItem::on_resizeFinished_trigger()
+void PageItem::handleResizeFinished()
 {
     Ic.ResizedImage = generateWatcher.result();
 
     m_resizeGeneratingState = 2;
-    disconnect(&generateWatcher, SIGNAL(finished()), this, SLOT(on_resizeFinished_trigger()));
+    disconnect(&generateWatcher, SIGNAL(finished()), this, SLOT(handleResizeFinished()));
     emit resizeFinished();
 }
 
@@ -389,14 +389,14 @@ void PageItem::checkInitialize()
     }
     if (!Ic.Movie.isNull()) {
         QMovie *movie = Ic.Movie.data();
-        connect(movie, SIGNAL(finished()), SLOT(on_animateFinished_trigger()));
-        connect(movie, SIGNAL(frameChanged(int)), SLOT(on_animateFrameChanged_trigger(int)));
+        connect(movie, SIGNAL(finished()), SLOT(handleAnimationFinished()));
+        connect(movie, SIGNAL(frameChanged(int)), SLOT(handleAnimationFrameChanged(int)));
         movie->start();
     }
     initialized = true;
 }
 
-void PageItem::on_animateFinished_trigger()
+void PageItem::handleAnimationFinished()
 {
     QGraphicsPixmapItem *pi = dynamic_cast<QGraphicsPixmapItem *>(GrItem);
     QMovie *movie = Ic.Movie.data();
@@ -406,22 +406,22 @@ void PageItem::on_animateFinished_trigger()
     movie->start();
 }
 
-void PageItem::on_animateFrameChanged_trigger(int frameNumber)
+void PageItem::handleAnimationFrameChanged(int frameNumber)
 {
-//    qDebug() << frameNumber;
+    //    qDebug() << frameNumber;
     QGraphicsPixmapItem *pi = dynamic_cast<QGraphicsPixmapItem *>(GrItem);
     QMovie *movie = Ic.Movie.data();
     movie->jumpToFrame(frameNumber);
     pi->setPixmap(movie->currentPixmap());
 }
 
-void PageItem::on_brightnessChanged_trigger(ImageRetouch param)
+void PageItem::handleBrightnessChanged(ImageRetouch param)
 {
 #ifdef QV_WITH_LUMINOR
 #endif
 }
 
-void PageItem::on_brightnessReset_trigger()
+void PageItem::handleBrightnessReset()
 {
 #ifdef QV_WITH_LUMINOR
 #endif
