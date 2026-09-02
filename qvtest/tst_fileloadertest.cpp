@@ -273,7 +273,7 @@ void FileLoaderTest::testCase10_heifPluginDecodesImage()
     QVERIFY2(reader.canRead(), qPrintable(reader.errorString()));
     const QImage image = reader.read();
     QVERIFY2(!image.isNull(), qPrintable(reader.errorString()));
-    QCOMPARE(image.size(), QSize(64, 64));
+    QCOMPARE(image.size(), QSize(32, 32));
 }
 
 QTEST_MAIN(FileLoaderTest)

@@ -35,6 +35,21 @@ For a Windows distribution build, build that plug-in with Qt 6.11.2 in
 in `../../qt-heic-image-plugin/3rdparty/install`. The install step copies
 `kimg_heif6.dll` and the required codec DLLs into the distribution.
 
+The Debug test suite requires a plug-in linked against the Debug Qt libraries.
+After building the bundled libheif dependencies, build it from a Visual Studio
+developer command prompt with:
+
+```bat
+mkdir ..\..\qt-heic-image-plugin\qtbuild_6.11.2-debug
+cd ..\..\qt-heic-image-plugin\qtbuild_6.11.2-debug
+C:\Qt\6.11.2\msvc2022_64\bin\qmake.exe ^
+  ..\..\others\quickviewer\scripts\qt-heic-image-plugin-debug.pro
+nmake
+```
+
+The Windows test runner stages this Debug plug-in and the libheif runtime DLLs
+next to the test executable.
+
 
 ## 2. Make a project to build
 
