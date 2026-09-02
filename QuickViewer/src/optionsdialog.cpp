@@ -259,14 +259,18 @@ void OptionsDialog::onCheckBoxCheckeredPattern_clicked(bool enabled)
     resetColorBox();
 }
 
-void OptionsDialog::onRadioButtonWindowTitle_triggered(bool)
+void OptionsDialog::handleWindowTitleRadioButtonToggled(bool checked)
 {
+    Q_UNUSED(checked);
+
     resetWindowTitleSample();
     ui->lineEditWindowTitleUserStyle->setEnabled(ui->radioButtonWindowTitleUserDefined->isChecked());
 }
 
-void OptionsDialog::onRadioButtonStatusBar_triggered(bool)
+void OptionsDialog::handleStatusBarRadioButtonToggled(bool checked)
 {
+    Q_UNUSED(checked);
+
     resetStatusbarSample();
     ui->lineEditStatusBarUserStyle->setEnabled(ui->radioButtonStatusBarUserDefined->isChecked());
 }

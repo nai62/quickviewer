@@ -29,8 +29,8 @@ public slots:
     void onBtnColorSelect_clicked();
     void onBtnColorSelect2_clicked();
     void onCheckBoxCheckeredPattern_clicked(bool enabled);
-    void onRadioButtonWindowTitle_triggered(bool enabled);
-    void onRadioButtonStatusBar_triggered(bool enabled);
+    void handleWindowTitleRadioButtonToggled(bool checked);
+    void handleStatusBarRadioButtonToggled(bool checked);
     void onLineEditWindowTitleUserStyle_textEdited(QString text);
     void onLineEditStatusBarUserStyle_textEdited(QString text);
     void onCheckBoxShowUsage_clicked(bool enabled);

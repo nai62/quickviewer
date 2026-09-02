@@ -2507,7 +2507,7 @@
    <sender>radioButtonWindowTitleIrfanViewStyle</sender>
    <signal>toggled(bool)</signal>
    <receiver>OptionsDialog</receiver>
-   <slot>onRadioButtonWindowTitle_triggered(bool)</slot>
+   <slot>handleWindowTitleRadioButtonToggled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>78</x>
@@ -2523,7 +2523,7 @@
    <sender>radioButtonWindowTitleNormalStyle</sender>
    <signal>toggled(bool)</signal>
    <receiver>OptionsDialog</receiver>
-   <slot>onRadioButtonWindowTitle_triggered(bool)</slot>
+   <slot>handleWindowTitleRadioButtonToggled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>72</x>
@@ -2539,7 +2539,7 @@
    <sender>radioButtonWindowTitleUserDefined</sender>
    <signal>toggled(bool)</signal>
    <receiver>OptionsDialog</receiver>
-   <slot>onRadioButtonWindowTitle_triggered(bool)</slot>
+   <slot>handleWindowTitleRadioButtonToggled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>88</x>
@@ -2587,7 +2587,7 @@
    <sender>radioButtonStatusBarIrfanViewStyle</sender>
    <signal>toggled(bool)</signal>
    <receiver>OptionsDialog</receiver>
-   <slot>onRadioButtonStatusBar_triggered(bool)</slot>
+   <slot>handleStatusBarRadioButtonToggled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>78</x>
@@ -2603,7 +2603,7 @@
    <sender>radioButtonStatusBarNormalStyle</sender>
    <signal>toggled(bool)</signal>
    <receiver>OptionsDialog</receiver>
-   <slot>onRadioButtonStatusBar_triggered(bool)</slot>
+   <slot>handleStatusBarRadioButtonToggled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>72</x>
@@ -2619,7 +2619,7 @@
    <sender>radioButtonStatusBarUserDefined</sender>
    <signal>toggled(bool)</signal>
    <receiver>OptionsDialog</receiver>
-   <slot>onRadioButtonStatusBar_triggered(bool)</slot>
+   <slot>handleStatusBarRadioButtonToggled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>88</x>
@@ -2652,10 +2652,10 @@
   <slot>onBtnColorSelect_clicked()</slot>
   <slot>onBtnColorSelect2_clicked()</slot>
   <slot>onCheckBoxCheckeredPattern_clicked(bool)</slot>
-  <slot>onRadioButtonWindowTitle_triggered(bool)</slot>
+  <slot>handleWindowTitleRadioButtonToggled(bool)</slot>
   <slot>onLineEditWindowTitleUserStyle_textEdited(QString)</slot>
   <slot>onLineEditStatusBarUserStyle_textEdited(QString)</slot>
-  <slot>onRadioButtonStatusBar_triggered(bool)</slot>
+  <slot>handleStatusBarRadioButtonToggled(bool)</slot>
   <slot>onCheckBoxShowUsage_clicked(bool)</slot>
  </slots>
 </ui>

@@ -55,7 +55,7 @@
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
    <receiver>RenameDialog</receiver>
-   <slot>on_tryChangingFilenameAndAccept_triggered()</slot>
+   <slot>handleButtonBoxAccepted()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>248</x>
@@ -87,7 +87,7 @@
    <sender>editFilename</sender>
    <signal>textChanged(QString)</signal>
    <receiver>RenameDialog</receiver>
-   <slot>on_textChanged_triggered(QString)</slot>
+   <slot>handleFilenameLineEditTextChanged(QString)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>199</x>
@@ -101,7 +101,7 @@
   </connection>
  </connections>
  <slots>
-  <slot>on_textChanged_triggered(QString)</slot>
-  <slot>on_tryChangingFilenameAndAccept_triggered()</slot>
+  <slot>handleFilenameLineEditTextChanged(QString)</slot>
+  <slot>handleButtonBoxAccepted()</slot>
  </slots>
 </ui>

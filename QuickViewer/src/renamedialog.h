@@ -15,8 +15,8 @@ public:
     QString newName();
 
 public slots:
-    void on_textChanged_triggered(QString text);
-    void on_tryChangingFilenameAndAccept_triggered();
+    void handleFilenameLineEditTextChanged(QString text);
+    void handleButtonBoxAccepted();
 
 private:
     Ui::RenameDialog *ui;
