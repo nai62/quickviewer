@@ -22,6 +22,7 @@ bool ThumbnailManager::isImageFile(QString path)
         st_jpegpegImageFormats << "jpg" << "jpeg" << "jpe";
         st_heavyImageFormats << "crw" << "cr2" << "arw" << "nef" << "raf" << "dng"; // heavy images
         st_supportedImageFormats = QImageReader::supportedImageFormats();
+        st_supportedImageFormats << "heic" << "heif";
     }
     QString lower = path.toLower();
     foreach (const QString &e, st_supportedImageFormats) {

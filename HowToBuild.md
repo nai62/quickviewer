@@ -28,6 +28,13 @@ $ git submodule init
 $ git submodule update
 ```
 
+HEIC/HEIF support uses
+[qt-heic-image-plugin](https://github.com/novomesk/qt-heic-image-plugin).
+For a Windows distribution build, build that plug-in with Qt 6.11.2 in
+`../../qt-heic-image-plugin/qtbuild_6.11.2` and its bundled libheif dependencies
+in `../../qt-heic-image-plugin/3rdparty/install`. The install step copies
+`kimg_heif6.dll` and the required codec DLLs into the distribution.
+
 
 ## 2. Make a project to build
 

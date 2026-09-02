@@ -317,6 +317,13 @@ win32 : !CONFIG(debug, debug|release) {
         install_qvavif.files = \
             ../../../qt-avif-image-plugin/imageformats-$${TARGET_ARCH}/qavif6.dll \
 
+        install_qvheif.path = $${MY_DEFAULT_INSTALL}/imageformats
+        install_qvheif.files = \
+            ../../../qt-heic-image-plugin/qtbuild_6.11.2/kimg_heif6.dll \
+
+        install_qvheif_runtime.path = $${MY_DEFAULT_INSTALL}
+        install_qvheif_runtime.files = $$files(../../../qt-heic-image-plugin/3rdparty/install/bin/*.dll)
+
         # dlls instead of vcredist_xxx.exe
         install_msvcrt.PATH = C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Redist/MSVC/14.38.33130/x64/Microsoft.VC143.CRT
         install_msvcrt.path = $${MY_DEFAULT_INSTALL}
@@ -329,7 +336,7 @@ win32 : !CONFIG(debug, debug|release) {
             "$${install_msvcrt.PATH}/vccorlib140.dll" \
             "$${install_msvcrt.PATH}/vcruntime140.dll"
 
-        INSTALLS += install_target install_deploy_files install_translations install_translations2 install_qrawspeed install_qvavif install_msvcrt install_assoc_icons
+        INSTALLS += install_target install_deploy_files install_translations install_translations2 install_qrawspeed install_qvavif install_qvheif install_qvheif_runtime install_msvcrt install_assoc_icons
     }
     install_deploy_files.path = $${MY_DEFAULT_INSTALL}
     install_deploy_files.files = \

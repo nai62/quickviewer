@@ -35,7 +35,7 @@ An image/comic viewer for Windows, Mac, and Linux. It can show images very fast!
  - Double-page spread view (displaying of two images at once: handy for digital books/comics)
  - Direct reading of archives (zip/7z/rar/cbz/cb7/cbr/cab/tar.gz/tar.bz2/tar.xz, and more)
  - View many different types of images (bmp/png/jpeg/ico/dds/tga/tiff/gif)
-   - Supports modern formats (AVIF / WebP / JPEG 2000 / JPEG XR)
+   - Supports modern formats (AVIF / HEIC / HEIF / WebP / JPEG 2000 / JPEG XR)
    - Supports Animated PNG (APNG) and GIF
    - Auto-rotation (using JPEG Exif)
  - View RAW images from digital cameras:

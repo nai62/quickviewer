@@ -91,35 +91,42 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="0" colspan="2">
+      <item row="5" column="0">
+       <widget class="QCheckBox" name="checkBoxHeif">
+        <property name="text">
+         <string>HEIF Image (*.heic, *.heif)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0" colspan="2">
        <widget class="Line" name="line">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
        </widget>
       </item>
-      <item row="6" column="0">
+      <item row="7" column="0">
        <widget class="QCheckBox" name="checkBoxRawCanon">
         <property name="text">
          <string>Canon Raw Format (*.crw, *.cr2)</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
+      <item row="7" column="1">
        <widget class="QCheckBox" name="checkBoxRawNicon">
         <property name="text">
          <string>Nicon Raw Format (*.nef)</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="0">
+      <item row="8" column="0">
        <widget class="QCheckBox" name="checkBoxRawSony">
         <property name="text">
          <string>Sony Raw Format (*.arw)</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="1">
+      <item row="8" column="1">
        <widget class="QCheckBox" name="checkBoxRawDng">
         <property name="toolTip">
          <string>for Ricoh, Casio, Pentax, Nokia, Leica, etc..</string>
