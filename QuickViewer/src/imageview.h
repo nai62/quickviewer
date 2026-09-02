@@ -7,6 +7,7 @@
 #include "volumemanager.h"
 #include "exifdialog.h"
 #include "models/pagemanager.h"
+#include "models/loupecontroller.h"
 #include "models/shadermanager.h"
 #include "models/renderedpages.h"
 #include "models/renderedpagemetrics.h"
@@ -127,7 +128,10 @@ public slots:
 private:
     qreal manualZoomScale() const;
     void updateSceneForContent(bool allowScrolling, const QRect &contentRect);
-    void configureScrollInteraction(bool scrollable, bool leavingLoupe, const QRect &contentRect);
+    void configureScrollInteraction(
+        bool scrollable,
+        const LoupeController::SceneUpdate &loupeUpdate,
+        const QRect &contentRect);
     void preserveViewportCenter(qreal newScale, int previousHorizontalScroll, int previousVerticalScroll);
     void updateLoupeScrollFromCursor();
     void updateZoomScrollFromCursor();
@@ -144,6 +148,7 @@ private:
     QVector<int> m_pageRotations;
     int m_zoomLevelIndex;
     QCursor m_loupeCursor;
+    LoupeController m_loupeController;
 
     PageManager *m_pageManager;
     ShaderManager m_shaderManager;
@@ -154,8 +159,6 @@ private:
     qreal m_committedGestureRotationDegrees;
     qreal m_pendingGestureScale;
     qreal m_pendingGestureRotationDegrees;
-    qreal m_loupeFactor;
-
     int m_sceneRectUpdateDepth;
     int m_resizeEventDepth;
     qreal m_previousDrawScale;
@@ -165,14 +168,6 @@ private:
     bool m_isFullScreen;
     bool m_scrollMode;
     bool m_openSeparatedPageFromEnd;
-    bool m_loupeActive;
-    bool m_wasLoupeActive;
-
-    // Loupe
-    QPoint m_loupeAnchorPosition;
-    QRect m_sceneRectBeforeLoupe;
-    QPoint m_scrollPositionBeforeLoupe;
-
     ImageRetouch m_retouchParams;
 };
 
