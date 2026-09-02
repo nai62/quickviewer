@@ -173,7 +173,6 @@ private:
     QRect m_sceneRectBeforeLoupe;
     QPoint m_scrollPositionBeforeLoupe;
 
-    // Brightness
     ImageRetouch m_retouchParams;
 };
 
