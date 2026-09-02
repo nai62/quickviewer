@@ -75,6 +75,9 @@ FileAssocDialog::FileAssocDialog(QWidget *parent)
     m_assocOfActions["WebP"] = ui->checkBoxWebp;
     m_assocs["WebP"] = AssocInfo{"WebP", tr("WebP Image", "description of File format on Explorer(.webp)"), "qv_webp.ico", {".webp"}};
 
+    m_assocOfActions["Heif"] = ui->checkBoxHeif;
+    m_assocs["Heif"] = AssocInfo{"Heif", tr("HEIF Image", "description of File format on Explorer(.heic, .heif)"), "", {".heic", ".heif"}};
+
     m_assocOfActions["RawCanon"] = ui->checkBoxRawCanon;
     m_assocs["RawCanon"] = AssocInfo{"RawCanon", tr("Canon Raw Format", "description of File format on Explorer(.cr2)"), "qv_raw.ico", {".crw", ".cr2"}};
 

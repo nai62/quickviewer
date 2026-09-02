@@ -1,6 +1,8 @@
 #include <QString>
 #include <QtTest>
 #include <QCoreApplication>
+#include <QBuffer>
+#include <QImageReader>
 #include "fileloader7zarchive.h"
 #include "fileloaderdirectory.h"
 #include "rarextractor.h"
@@ -39,6 +41,8 @@ private Q_SLOTS:
     void testCase7_directoryLinks_data();
     void testCase7_directoryLinks();
     void testCase8_jpeIsJpegImage();
+    void testCase9_heifExtensionsAreImages();
+    void testCase10_heifPluginDecodesImage();
 };
 
 FileLoaderTest::FileLoaderTest()
@@ -237,6 +241,39 @@ void FileLoaderTest::testCase8_jpeIsJpegImage()
     QVERIFY(IFileLoader::isImageFile("IMAGE.JPE"));
     QVERIFY(IFileLoader::isExifJpegImageFile("image.jpe"));
     QVERIFY(IFileLoader::isExifJpegImageFile("IMAGE.JPE"));
+}
+
+void FileLoaderTest::testCase9_heifExtensionsAreImages()
+{
+    QVERIFY(IFileLoader::isImageFile("image.heic"));
+    QVERIFY(IFileLoader::isImageFile("IMAGE.HEIC"));
+    QVERIFY(IFileLoader::isImageFile("image.heif"));
+    QVERIFY(IFileLoader::isImageFile("IMAGE.HEIF"));
+}
+
+void FileLoaderTest::testCase10_heifPluginDecodesImage()
+{
+    if (!QImageReader::supportedImageFormats().contains("heic")) {
+        QSKIP("The HEIF image format plug-in is not staged in this test environment");
+    }
+
+    const QByteArray bytes = QByteArray::fromBase64(
+        "AAAAHGZ0eXBoZWljAAAAAG1pZjFoZWljbWlhZgAAAXttZXRhAAAAAAAAACFoZGxyAAAAAAAAAABwaWN0AAAAAAAAAAAAAAAAAAAA"
+        "ACJpbG9jAAAAAERAAAEAAQAAAAABnwABAAAAAAAAAGwAAAAjaWluZgAAAAAAAQAAABVpbmZlAgAAAAABAABodmMxAAAAAA5waXRt"
+        "AAAAAAABAAAA+2lwcnAAAADbaXBjbwAAAHZodmNDAQNwAAAAAAAAAAAAHvAA/P34+AAADwNgAAEAGEABDAH//wNwAAADAJAAAAMA"
+        "AAMAHroCQGEAAQAqQgEBA3AAAAMAkAAAAwAAAwAeoCCBBZbq5Ka5uAhoMCAAAAMDIAAAAwAhYgABAAZEAcFzwIkAAAATY29scm5j"
+        "bHgAAQANAAaAAAAAFGlzcGUAAAAAAAAAQAAAAEAAAAAoY2xhcAAAACAAAAABAAAAIAAAAAH////gAAAAAv///+AAAAACAAAADnBp"
+        "eGkAAAAAAQgAAAAYaXBtYQAAAAAAAAABAAEFgQIDBYQAAAB0bWRhdAAAAGgoAa8TgPUrAhGDczL1mz4HCRRzxqbGjnnUrr1cLTO7"
+        "99zRz6nw0QjRMp+4I2Da10D3ghQEMvB53CWoI0S3qXIb99YsvLFaQ9ZLHxsJsZ9SxlvNJ5EgD4Y4miuaKu3bxPGXDHirp/9TzA==");
+    QBuffer buffer;
+    buffer.setData(bytes);
+    QVERIFY(buffer.open(QIODevice::ReadOnly));
+
+    QImageReader reader(&buffer, "heic");
+    QVERIFY2(reader.canRead(), qPrintable(reader.errorString()));
+    const QImage image = reader.read();
+    QVERIFY2(!image.isNull(), qPrintable(reader.errorString()));
+    QCOMPARE(image.size(), QSize(64, 64));
 }
 
 QTEST_MAIN(FileLoaderTest)
