@@ -1808,7 +1808,7 @@ void MainWindow::onActionRecyclePage_triggered()
             return;
         }
     }
-    if (moveToTrush(path)) {
+    if (moveToTrash(path)) {
         m_pageManager.reloadVolumeAfterRemoveImage();
     }
 }

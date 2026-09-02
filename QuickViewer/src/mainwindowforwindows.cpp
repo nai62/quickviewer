@@ -22,7 +22,7 @@ MainWindowForWindows::MainWindowForWindows(QWidget *parent)
     MainWindowForWindows_self = this;
 }
 
-bool MainWindowForWindows::moveToTrush(QString path)
+bool MainWindowForWindows::moveToTrash(QString path)
 {
     WCHAR from[MAX_PATH + 2048] = {0};
     path.toWCharArray(from);

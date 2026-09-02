@@ -155,7 +155,7 @@ public:
     ImageContent Ic;
     /**
      * @brief GrItem
-     * Page image is used as a QGraphicsItem. it will be registed to the scene
+     * Page image is used as a QGraphicsItem. It will be registered with the scene.
      */
     QGraphicsItem *GrItem;
 //    /**

@@ -22,7 +22,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    virtual bool moveToTrush(QString) { return false; }
+    virtual bool moveToTrash(QString) { return false; }
     virtual bool setStayOnTop(bool) { return false; }
     virtual void setWindowTop(bool) {}
     virtual void setMailAttachment(QString) {}
@@ -30,7 +30,7 @@ public:
 
     /**
      * @brief loadVolume
-     * @param prohibitProhibit2Page prohbit 2 page viewing
+     * @param prohibitProhibit2Page prohibit 2 page viewing
      */
     void loadVolume(QString path, bool prohibitProhibit2Page = false);
     void loadVolumeWithAssoc(QString path);
