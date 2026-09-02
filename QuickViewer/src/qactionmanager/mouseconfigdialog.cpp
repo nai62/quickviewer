@@ -1,13 +1,12 @@
 #include "mouseconfigdialog.h"
 #include "ui_keyconfigdialog.h"
 
-
 MouseConfigDialog::MouseConfigDialog(MouseConfigDialog::MouseActionManager &mouseActions, QWidget *parent)
-    : QDialog(parent)
-    , ui(new Ui::KeyConfigDialog)
-    , m_mouseActions(mouseActions)
-    , m_keyCapturing(false)
-    , m_ignoreEdited(false)
+    : QDialog(parent),
+      ui(new Ui::KeyConfigDialog),
+      m_mouseActions(mouseActions),
+      m_keyCapturing(false),
+      m_ignoreEdited(false)
 {
     ui->setupUi(this);
     ui->frameMouseOptions->setEnabled(false);
@@ -24,11 +23,10 @@ MouseConfigDialog::MouseConfigDialog(MouseConfigDialog::MouseActionManager &mous
     ui->checkBoxAlt->setText(tr("Option", "caption of Option key"));
 #endif
 
-
     connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(ui->buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
-    connect(ui->buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(onStandardButton_clicked(QAbstractButton*)));
-    connect(ui->treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SLOT(onTreeWidget_currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)));
+    connect(ui->buttonBox, SIGNAL(clicked(QAbstractButton *)), this, SLOT(onStandardButton_clicked(QAbstractButton *)));
+    connect(ui->treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)), this, SLOT(onTreeWidget_currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)));
     connect(ui->resetButton, SIGNAL(clicked()), this, SLOT(onResetButton_clicked()));
     connect(ui->addSequenceButton, SIGNAL(clicked()), this, SLOT(onAddSequenceButton_clicked()));
     connect(ui->shortcutEdit, SIGNAL(textChanged(QString)), this, SLOT(onShortcutEdit_textChanged(QString)));
@@ -42,12 +40,12 @@ MouseConfigDialog::MouseConfigDialog(MouseConfigDialog::MouseActionManager &mous
     connect(ui->radioButtonNone, SIGNAL(toggled(bool)), this, SLOT(onCheckBox_toggled()));
     connect(ui->radioButtonUp, SIGNAL(toggled(bool)), this, SLOT(onCheckBox_toggled()));
 
-//    connect(ui->recordButton, &ShortcutButton::keySequenceChanged,
-//            this, &MouseConfigDialog::on_keySequence_changed);
+    //    connect(ui->recordButton, &ShortcutButton::keySequenceChanged,
+    //            this, &MouseConfigDialog::on_keySequence_changed);
 
     ui->treeWidget->sortByColumn(0, Qt::AscendingOrder);
     QTreeWidgetItem *header = ui->treeWidget->headerItem();
-//    header->setText(0, tr("Motions", "Title of the column of Action to be registered with the mouse sequence"));
+    //    header->setText(0, tr("Motions", "Title of the column of Action to be registered with the mouse sequence"));
     header->setText(0, tr("Group", "Group of the Action to be registered with the shortcut key"));
     header->setText(1, tr("Description", "Title of the column that displays the meaning of the action to be registered with the mouse sequence"));
     header->setText(2, tr("Current Mouse Sequence", "Title of the column of the content of the mouse sequence registered for Action"));
@@ -59,30 +57,32 @@ void MouseConfigDialog::resetView()
 {
     ui->treeWidget->clear();
     m_actionNameByIconText.clear();
-    QMap<QString, QAction*>& actions = m_mouseActions.actions();
-    QMap<QString, QMouseSequence>& mouseconfigs = m_mouseActions.keyMaps();
-//    foreach(const QString& key, actions.keys()) {
-//        QAction* action = actions[key];
-//        if(!action) continue;
-//        QTreeWidgetItem* item = new QTreeWidgetItem;
-//        item->setText(0, key);
-//        item->setText(1, action->iconText());
-//        item->setText(2, mouseconfigs.contains(key) ? mouseconfigs[key].toString() : "");
-////        item->setSizeHint(0, QSize(240, 20));
-////        item->setSizeHint(1, QSize(240, 20));
-//        ui->treeWidget->addTopLevelItem(item);
-//    }
-    const QMultiMap<QString, QString>& nameByGroups = m_mouseActions.nameByGroups();
-    foreach(const QString& groupName, nameByGroups.uniqueKeys()) {
-        foreach(const QString& key, nameByGroups.values(groupName)) {
-            QAction* action = actions[key];
-            if(!action) continue;
-            QTreeWidgetItem* item = new QTreeWidgetItem;
+    QMap<QString, QAction *> &actions = m_mouseActions.actions();
+    QMap<QString, QMouseSequence> &mouseconfigs = m_mouseActions.keyMaps();
+    //    foreach(const QString& key, actions.keys()) {
+    //        QAction* action = actions[key];
+    //        if(!action) continue;
+    //        QTreeWidgetItem* item = new QTreeWidgetItem;
+    //        item->setText(0, key);
+    //        item->setText(1, action->iconText());
+    //        item->setText(2, mouseconfigs.contains(key) ? mouseconfigs[key].toString() : "");
+    ////        item->setSizeHint(0, QSize(240, 20));
+    ////        item->setSizeHint(1, QSize(240, 20));
+    //        ui->treeWidget->addTopLevelItem(item);
+    //    }
+    const QMultiMap<QString, QString> &nameByGroups = m_mouseActions.nameByGroups();
+    foreach (const QString &groupName, nameByGroups.uniqueKeys()) {
+        foreach (const QString &key, nameByGroups.values(groupName)) {
+            QAction *action = actions[key];
+            if (!action) {
+                continue;
+            }
+            QTreeWidgetItem *item = new QTreeWidgetItem;
             item->setText(0, groupName);
             item->setText(1, action->iconText());
             item->setText(2, mouseconfigs.contains(key) ? mouseconfigs[key].toString() : "");
-//            item->setSizeHint(0, QSize(240, 20));
-//            item->setSizeHint(1, QSize(300, 20));
+            //            item->setSizeHint(0, QSize(240, 20));
+            //            item->setSizeHint(1, QSize(300, 20));
             ui->treeWidget->addTopLevelItem(item);
             m_actionNameByIconText[action->iconText()] = key;
         }
@@ -103,8 +103,8 @@ void MouseConfigDialog::setEditTextWithoutSignal(QString text)
 
 void MouseConfigDialog::onTreeWidget_currentItemChanged(QTreeWidgetItem *item, QTreeWidgetItem *)
 {
-    if(item) {
-//        m_actionName = item->text(0);
+    if (item) {
+        //        m_actionName = item->text(0);
         m_actionName = m_actionNameByIconText[item->text(1)];
         ui->shortcutGroupBox->setEnabled(true);
         QString shortcut = item->text(2);
@@ -119,13 +119,12 @@ void MouseConfigDialog::onRecordButton_keySequenceChanged(QMouseSequence key)
 {
     QString shortcutText = key.toString();
     setEditTextWithoutSignal(shortcutText);
-    if(!shortcutText.isEmpty() && m_mouseActions.markCollisions(m_actionName, key)) {
+    if (!shortcutText.isEmpty() && m_mouseActions.markCollisions(m_actionName, key)) {
         ui->warningLabel->setText(tr("Mouse sequence has potential conflicts.", "Text to be displayed when the entered mouse sequence conflicts with another mouse sequence"));
         return;
     }
     ui->warningLabel->clear();
     resetMouseCheckBox();
-
 
     QTreeWidgetItem *current = ui->treeWidget->currentItem();
     current->setText(2, shortcutText);
@@ -135,36 +134,52 @@ void MouseConfigDialog::onRecordButton_keySequenceChanged(QMouseSequence key)
 void MouseConfigDialog::onAddSequenceButton_clicked()
 {
     Qt::KeyboardModifiers keys;
-    if(ui->checkBoxCtrl->isChecked())  keys |= Qt::ControlModifier;
-    if(ui->checkBoxAlt->isChecked())   keys |= Qt::AltModifier;
-    if(ui->checkBoxShift->isChecked()) keys |= Qt::ShiftModifier;
-    if(ui->checkBoxMeta->isChecked()) keys |= Qt::MetaModifier;
+    if (ui->checkBoxCtrl->isChecked()) {
+        keys |= Qt::ControlModifier;
+    }
+    if (ui->checkBoxAlt->isChecked()) {
+        keys |= Qt::AltModifier;
+    }
+    if (ui->checkBoxShift->isChecked()) {
+        keys |= Qt::ShiftModifier;
+    }
+    if (ui->checkBoxMeta->isChecked()) {
+        keys |= Qt::MetaModifier;
+    }
 
     Qt::MouseButtons buttons = Qt::MouseButton::NoButton;
-    if(ui->checkBoxLeft->isChecked())     buttons |= Qt::LeftButton;
-    if(ui->checkBoxRight->isChecked())    buttons |= Qt::RightButton;
-    if(ui->checkBoxWheel->isChecked())    buttons |= Qt::MiddleButton;
-    if(ui->checkBoxForward->isChecked())  buttons |= Qt::ForwardButton;
-    if(ui->checkBoxBackward->isChecked()) buttons |= Qt::BackButton;
+    if (ui->checkBoxLeft->isChecked()) {
+        buttons |= Qt::LeftButton;
+    }
+    if (ui->checkBoxRight->isChecked()) {
+        buttons |= Qt::RightButton;
+    }
+    if (ui->checkBoxWheel->isChecked()) {
+        buttons |= Qt::MiddleButton;
+    }
+    if (ui->checkBoxForward->isChecked()) {
+        buttons |= Qt::ForwardButton;
+    }
+    if (ui->checkBoxBackward->isChecked()) {
+        buttons |= Qt::BackButton;
+    }
     QKeySequence keyseq(keys);
     qDebug() << keyseq;
     keyseq = QKeySequence();
-    QMouseValue newval(QKeySequence(keys), buttons,
-                       ui->radioButtonUp->isChecked()   ?  Q_MOUSE_DELTA
-                     : ui->radioButtonDown->isChecked() ? -Q_MOUSE_DELTA
-                     : 0);
+    QMouseValue newval(QKeySequence(keys), buttons, ui->radioButtonUp->isChecked() ? Q_MOUSE_DELTA : ui->radioButtonDown->isChecked() ? -Q_MOUSE_DELTA
+                                                                                                                                      : 0);
     QString seqtext = ui->shortcutEdit->text();
-    seqtext += seqtext.isEmpty() ? newval.Key : ", "+newval.Key;
+    seqtext += seqtext.isEmpty() ? newval.Key : ", " + newval.Key;
     onRecordButton_keySequenceChanged(QMouseSequence(seqtext));
 }
 
 void MouseConfigDialog::onResetButton_clicked()
 {
     QMouseSequence key = m_mouseActions.getKeyDefault(m_actionName);
-//    QString shortcutText = keySequenceToEditString(key);
+    //    QString shortcutText = keySequenceToEditString(key);
     QString shortcutText = key.toString();
     setEditTextWithoutSignal(shortcutText);
-    if(m_mouseActions.markCollisions(m_actionName, key)) {
+    if (m_mouseActions.markCollisions(m_actionName, key)) {
         ui->warningLabel->setText(tr("Mouse sequence has potential conflicts.", "Text to be displayed when the entered mouse sequence conflicts with another mouse sequence"));
         return;
     }
@@ -177,31 +192,25 @@ void MouseConfigDialog::onResetButton_clicked()
 
 void MouseConfigDialog::onShortcutEdit_textChanged(QString text)
 {
-    if(!m_ignoreEdited) {
+    if (!m_ignoreEdited) {
         QMouseSequence key(text);
-//        if(!keySequenceIsValid(key)) {
-//            ui->warningLabel->setText(tr("Invalid mouse sequence.", "Message when rejecting input contents of inappropriate mouse sequence"));
-//            return;
-//        }
+        //        if(!keySequenceIsValid(key)) {
+        //            ui->warningLabel->setText(tr("Invalid mouse sequence.", "Message when rejecting input contents of inappropriate mouse sequence"));
+        //            return;
+        //        }
         onRecordButton_keySequenceChanged(key);
     }
 }
 
 void MouseConfigDialog::onCheckBox_toggled()
 {
-    bool enabled = ui->checkBoxLeft->isChecked()
-            || ui->checkBoxRight->isChecked()
-            || ui->checkBoxWheel->isChecked()
-            || ui->checkBoxForward->isChecked()
-            || ui->checkBoxBackward->isChecked()
-            || ui->radioButtonDown->isChecked()
-            || ui->radioButtonUp->isChecked();
+    bool enabled = ui->checkBoxLeft->isChecked() || ui->checkBoxRight->isChecked() || ui->checkBoxWheel->isChecked() || ui->checkBoxForward->isChecked() || ui->checkBoxBackward->isChecked() || ui->radioButtonDown->isChecked() || ui->radioButtonUp->isChecked();
     ui->addSequenceButton->setEnabled(enabled);
 }
 
 void MouseConfigDialog::onStandardButton_clicked(QAbstractButton *button)
 {
-    switch(ui->buttonBox->standardButton(button)) {
+    switch (ui->buttonBox->standardButton(button)) {
     case QDialogButtonBox::RestoreDefaults:
         m_mouseActions.resetByDefault();
         resetView();

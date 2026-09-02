@@ -11,7 +11,6 @@ struct ShortcutItem
     QTreeWidgetItem *m_item;
 };
 
-
 class ShortcutButton : public QPushButton
 {
     Q_OBJECT
@@ -36,6 +35,5 @@ private:
     std::array<int, 4> m_key;
     int m_keyNum = 0;
 };
-
 
 #endif // SHORTCUTBUTTON_H

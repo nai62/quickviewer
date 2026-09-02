@@ -15,24 +15,29 @@ class QMouseValue
 {
 public:
     QMouseValue()
-        : KeyboardModifier("")
-        , Buttons(0)
-        , Delta(0) {}
+        : KeyboardModifier(""),
+          Buttons(0),
+          Delta(0)
+    {}
 
     QMouseValue(const QString key);
 
     QMouseValue(QKeySequence modifiers, Qt::MouseButtons buttons, int delta)
-        : KeyboardModifier(modifiers)
-        , Buttons(buttons)
-        , Delta(delta) {toString();}
+        : KeyboardModifier(modifiers),
+          Buttons(buttons),
+          Delta(delta)
+    {
+        toString();
+    }
 
-    QMouseValue(const QMouseValue& rhs)
-        : KeyboardModifier(rhs.KeyboardModifier)
-        , Buttons(rhs.Buttons)
-        , Delta(rhs.Delta)
-        , Key(rhs.Key){}
+    QMouseValue(const QMouseValue &rhs)
+        : KeyboardModifier(rhs.KeyboardModifier),
+          Buttons(rhs.Buttons),
+          Delta(rhs.Delta),
+          Key(rhs.Key)
+    {}
 
-    inline QMouseValue& operator=(const QMouseValue &rhs)
+    inline QMouseValue &operator=(const QMouseValue &rhs)
     {
         KeyboardModifier = rhs.KeyboardModifier;
         Buttons = rhs.Buttons;
@@ -43,15 +48,12 @@ public:
 
     inline bool operator==(const QMouseValue &other) const
     {
-        return KeyboardModifier == other.KeyboardModifier
-                && Buttons == other.Buttons
-                && Delta == other.Delta;
+        return KeyboardModifier == other.KeyboardModifier && Buttons == other.Buttons && Delta == other.Delta;
     }
     inline bool operator<(const QMouseValue &other) const
     {
         return Key < other.Key;
     }
-
 
     QString toString();
 
@@ -60,8 +62,6 @@ public:
     int Delta;
     QString Key;
 };
-
-
 
 /**
  * @brief The QMouseSequence class
@@ -83,11 +83,11 @@ class QMouseSequence
 public:
     QMouseSequence() {}
     QMouseSequence(const QString seq);
-    inline QString toString() const {return m_seq;}
-    const QList<QMouseValue>& Values() const { return m_values; }
+    inline QString toString() const { return m_seq; }
+    const QList<QMouseValue> &Values() const { return m_values; }
     QKeySequence::SequenceMatch matches(const QMouseSequence &seq) const;
 
-    inline QMouseSequence& operator=(const QMouseSequence &rhs)
+    inline QMouseSequence &operator=(const QMouseSequence &rhs)
     {
         m_seq = rhs.m_seq;
         m_values = rhs.m_values;
