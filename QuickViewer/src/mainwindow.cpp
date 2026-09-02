@@ -178,7 +178,9 @@ MainWindow::MainWindow(QWidget *parent)
     if (!qApp->ShowMenuBar()) {
         menuBar()->hide();
     }
-    ui->pageFrame->hide();
+    // Keep the configured page bar in the initial window layout. Its empty
+    // state reserves the same space that the completed folder scan will use,
+    // so displaying the volume does not move the already rendered image.
 
     // History
     makeHistoryMenu();
