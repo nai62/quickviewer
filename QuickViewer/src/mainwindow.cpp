@@ -1012,7 +1012,7 @@ void MainWindow::createBrightnessWindow(bool docked)
         closeAllDockedWindow();
         m_brightnessWindow = new BrightnessWindow(nullptr, ui);
         connect(m_brightnessWindow, SIGNAL(closed()), this, SLOT(handleBrightnessWindowClosed()));
-        connect(m_brightnessWindow, SIGNAL(brightnessChanged(ImageRetouch)), ui->graphicsView, SLOT(handleBrightnessChanged(ImageRetouch)));
+        connect(m_brightnessWindow, SIGNAL(retouchParametersChanged(ImageRetouch)), ui->graphicsView, SLOT(handleRetouchParametersChanged(ImageRetouch)));
         m_brightnessWindow->setImageView(ui->graphicsView);
         ui->catalogSplitter->insertWidget(0, m_brightnessWindow);
         auto sizes = ui->catalogSplitter->sizes();
@@ -1023,7 +1023,7 @@ void MainWindow::createBrightnessWindow(bool docked)
     } else {
         m_brightnessWindow = new BrightnessWindow(nullptr, ui);
         connect(m_brightnessWindow, SIGNAL(closed()), this, SLOT(handleBrightnessWindowClosed()));
-        connect(m_brightnessWindow, SIGNAL(brightnessChanged(ImageRetouch)), ui->graphicsView, SLOT(handleBrightnessChanged(ImageRetouch)));
+        connect(m_brightnessWindow, SIGNAL(retouchParametersChanged(ImageRetouch)), ui->graphicsView, SLOT(handleRetouchParametersChanged(ImageRetouch)));
         m_brightnessWindow->setImageView(ui->graphicsView);
         QRect self = geometry();
         m_brightnessWindow->setGeometry(self.left() - 100, self.top() + 100, self.width(), self.height());

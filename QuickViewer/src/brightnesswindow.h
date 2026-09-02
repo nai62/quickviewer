@@ -22,7 +22,7 @@ public:
     void resetSliders();
 
 signals:
-    void brightnessChanged(ImageRetouch value);
+    void retouchParametersChanged(ImageRetouch params);
 
 public slots:
     void onSliderBrightness_valueChanged(int value);

@@ -65,7 +65,7 @@ void BrightnessWindow::onSliderBrightness_valueChanged(int value)
     if (!ignoreTextChange) {
         ui->lineBrightness->setText(QString::number(value));
     }
-    emit brightnessChanged(m_retouchParams);
+    emit retouchParametersChanged(m_retouchParams);
 }
 
 void BrightnessWindow::onSliderContrast_valueChanged(int value)
@@ -74,7 +74,7 @@ void BrightnessWindow::onSliderContrast_valueChanged(int value)
     if (!ignoreTextChange) {
         ui->lineContrast->setText(QString::number(value));
     }
-    emit brightnessChanged(m_retouchParams);
+    emit retouchParametersChanged(m_retouchParams);
 }
 
 void BrightnessWindow::onSliderGamma_valueChanged(int value)
@@ -83,7 +83,7 @@ void BrightnessWindow::onSliderGamma_valueChanged(int value)
     if (!ignoreTextChange) {
         ui->lineGamma->setText(QString::number(value));
     }
-    emit brightnessChanged(m_retouchParams);
+    emit retouchParametersChanged(m_retouchParams);
 }
 
 void BrightnessWindow::onLineBrightness_textChanged(QString text)
@@ -114,5 +114,5 @@ void BrightnessWindow::onResetButton_clicked()
 {
     m_retouchParams = ImageRetouch();
     resetSliders();
-    emit brightnessChanged(m_retouchParams);
+    emit retouchParametersChanged(m_retouchParams);
 }

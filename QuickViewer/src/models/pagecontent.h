@@ -212,7 +212,7 @@ public slots:
     void handleResizeFinished();
     void handleAnimationFrameChanged(int frameNumber);
     void handleAnimationFinished();
-    void handleBrightnessChanged(ImageRetouch param);
+    void handleRetouchParametersChanged(ImageRetouch params);
     void handleBrightnessReset();
 
 private:

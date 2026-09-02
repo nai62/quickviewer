@@ -929,7 +929,7 @@ void ImageView::handleCopyFileActionTriggered()
     clipboard->setMimeData(mimeData);
 }
 
-void ImageView::handleBrightnessChanged(ImageRetouch params)
+void ImageView::handleRetouchParametersChanged(ImageRetouch params)
 {
     m_retouchParams = params;
     refreshRenderedPages();

@@ -415,8 +415,10 @@ void PageItem::handleAnimationFrameChanged(int frameNumber)
     pi->setPixmap(movie->currentPixmap());
 }
 
-void PageItem::handleBrightnessChanged(ImageRetouch param)
+void PageItem::handleRetouchParametersChanged(ImageRetouch params)
 {
+    Q_UNUSED(params);
+
 #ifdef QV_WITH_LUMINOR
 #endif
 }

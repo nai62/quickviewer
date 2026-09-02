@@ -122,7 +122,7 @@ public slots:
     void handleCopyFileActionTriggered();
 
     // Retouch
-    void handleBrightnessChanged(ImageRetouch params);
+    void handleRetouchParametersChanged(ImageRetouch params);
 
 private:
     qreal manualZoomScale() const;
