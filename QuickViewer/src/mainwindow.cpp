@@ -72,7 +72,7 @@ MainWindow::MainWindow(QWidget *parent)
     setAcceptDrops(true);
 
     // Mapping to Key-Action Table and Key Config Dialog
-    qApp->registActions(ui);
+    qApp->registerActions(ui);
     resetShortcutKeys();
 
     // Context menus(independent from menuBar)

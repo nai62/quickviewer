@@ -334,9 +334,9 @@ public:
         QApplication::setStyleSheet(styleSheet);
     }
 
-    void registDefaultKeyMap();
-    void registDefaultMouseMap();
-    void registActions(Ui::MainWindow *ui);
+    void registerDefaultKeyMap();
+    void registerDefaultMouseMap();
+    void registerActions(Ui::MainWindow *ui);
 
     /**
      * @brief load settings from "quickviewer.ini"

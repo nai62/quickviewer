@@ -420,7 +420,7 @@ private slots:
             qApp->keyActions().actions()["actionFitting"] = previousAction;
         });
         QAction *fittingActionPtr = &fittingAction;
-        qApp->keyActions().registAction(
+        qApp->keyActions().registerAction(
             "actionFitting", fittingActionPtr, "Image");
 
         QImage image(640, 480, QImage::Format_ARGB32);
