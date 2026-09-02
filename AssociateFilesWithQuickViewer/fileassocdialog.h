@@ -3,7 +3,7 @@
 
 #include <QtGui>
 #if QT_VERSION_MAJOR >= 5
-#  include <QtWidgets>
+#    include <QtWidgets>
 #endif
 
 namespace Ui {
@@ -26,19 +26,19 @@ class FileAssocDialog : public QDialog
 public:
     explicit FileAssocDialog(QWidget *parent = 0);
     ~FileAssocDialog();
-//    void closeEvent(QCloseEvent *event) override;
+    //    void closeEvent(QCloseEvent *event) override;
     QStringList enumrateFormats();
-    void registEntries(QStringList formats);
-    void unregistEntries();
+    void registerEntries(QStringList formats);
+    void unregisterEntries();
     QString getExecuteApplication();
     QString getIconPath(QString iconName);
 
     static QSettings::Format RegFormat;
 
 public slots:
-    void on_allOn_triggered();
-    void on_allOff_triggered();
-    void on_tryRegist_triggered();
+    void handleAllOnButtonClicked();
+    void handleAllOffButtonClicked();
+    void handleButtonBoxAccepted();
 
 signals:
     void closed();
@@ -46,7 +46,7 @@ signals:
 private:
     Ui::FileAssocDialog *ui;
     QMap<QString, AssocInfo> m_assocs;
-    QMap<QString, QCheckBox*> m_assocOfActions;
+    QMap<QString, QCheckBox *> m_assocOfActions;
 };
 
 #endif // FILEASSOCDIALOG_H

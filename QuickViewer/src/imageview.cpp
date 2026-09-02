@@ -20,7 +20,6 @@ ImageView::ImageView(QWidget *parent)
       m_committedGestureRotationDegrees(0.0),
       m_pendingGestureScale(1.0),
       m_pendingGestureRotationDegrees(0.0),
-      m_loupeFactor(3.0),
       m_sceneRectUpdateDepth(0),
       m_resizeEventDepth(0),
       m_previousDrawScale(0),
@@ -28,9 +27,7 @@ ImageView::ImageView(QWidget *parent)
       m_skipResizeEvent(false),
       m_isFullScreen(false),
       m_scrollMode(false),
-      m_openSeparatedPageFromEnd(false),
-      m_loupeActive(false),
-      m_wasLoupeActive(false)
+      m_openSeparatedPageFromEnd(false)
 {
     m_zoomLevels
         << ZoomFraction(1, 6)    //  16.6%
@@ -50,9 +47,9 @@ ImageView::ImageView(QWidget *parent)
 
     QGraphicsScene *scene = new QGraphicsScene(this);
     setScene(scene);
-//    setTransformationAnchor(AnchorUnderMouse);
-//    setDragMode(ScrollHandDrag);
-//    setViewportUpdateMode(FullViewportUpdate);
+    //    setTransformationAnchor(AnchorUnderMouse);
+    //    setDragMode(ScrollHandDrag);
+    //    setViewportUpdateMode(FullViewportUpdate);
     setAcceptDrops(false);
 //    setDragMode(DragDropMode::InternalMove);
 #ifdef QV_WITHOUT_OPENGL
@@ -110,12 +107,12 @@ void ImageView::setPageManager(PageManager *manager)
     }
     m_pageManager = manager;
     m_pageManager->setViewportSize(viewport()->size());
-    connect(manager, &PageManager::visiblePagesChanged, this, &ImageView::on_visiblePagesChanged);
+    connect(manager, &PageManager::visiblePagesChanged, this, &ImageView::handleVisiblePagesChanged);
     connect(manager, SIGNAL(readyForPaint()), this, SLOT(refreshRenderedPages()));
-    connect(manager, SIGNAL(volumeChanged(QString)), this, SLOT(on_volumeChanged_triggered(QString)));
-    connect(this, SIGNAL(slideShowStarted()), manager, SLOT(onSlideShowStarted()));
-    connect(this, SIGNAL(slideShowStopped()), manager, SLOT(onSlideShowStopped()));
-    on_visiblePagesChanged(manager->visiblePages());
+    connect(manager, SIGNAL(volumeChanged(QString)), this, SLOT(handleVolumeChanged(QString)));
+    connect(this, SIGNAL(slideShowStarted()), manager, SLOT(handleSlideShowStarted()));
+    connect(this, SIGNAL(slideShowStopped()), manager, SLOT(handleSlideShowStopped()));
+    handleVisiblePagesChanged(manager->visiblePages());
 }
 
 void ImageView::toggleSlideShow()
@@ -131,14 +128,14 @@ void ImageView::toggleSlideShow()
     }
     emit slideShowStarted();
     m_slideshowTimer = new QTimer();
-    connect(m_slideshowTimer, SIGNAL(timeout()), this, SLOT(on_slideShowChanging_triggered()));
+    connect(m_slideshowTimer, SIGNAL(timeout()), this, SLOT(handleSlideShowTimerTimeout()));
     m_slideshowTimer->start(qApp->SlideShowWait());
 }
 
 void ImageView::resetBackgroundColor()
 {
-//    QColor bg = qApp->BackgroundColor();
-//    setStyleSheet(QString("background-color:") + bg.name(QColor::HexArgb));
+    //    QColor bg = qApp->BackgroundColor();
+    //    setStyleSheet(QString("background-color:") + bg.name(QColor::HexArgb));
     if (!qApp->UseCheckeredPattern()) {
         setBackgroundBrush(QBrush(qApp->BackgroundColor(), Qt::SolidPattern));
         return;
@@ -153,7 +150,7 @@ void ImageView::resetBackgroundColor()
     setBackgroundBrush(brush);
 }
 
-void ImageView::on_volumeChanged_triggered(QString)
+void ImageView::handleVolumeChanged(QString)
 {
     if (!m_pageManager) {
         return;
@@ -186,7 +183,7 @@ void ImageView::clearRenderedPages()
     // verticalScrollBar()->setValue(0);
 }
 
-void ImageView::on_visiblePagesChanged(VisiblePages pages)
+void ImageView::handleVisiblePagesChanged(VisiblePages pages)
 {
     clearRenderedPages();
     for (int index = 0; index < pages.count(); ++index) {
@@ -199,7 +196,7 @@ void ImageView::on_visiblePagesChanged(VisiblePages pages)
 //static int paintCnt=0;
 void ImageView::refreshRenderedPages()
 {
-//    qDebug() << "refreshRenderedPages " << paintCnt++;
+    //    qDebug() << "refreshRenderedPages " << paintCnt++;
     if (qApp->Effect() > qvEnums::UsingFixedShader) {
         setRenderer(OpenGL);
     }
@@ -212,8 +209,8 @@ void ImageView::refreshRenderedPages()
                              ? qApp->ImageFitMode()
                              : qvEnums::NoFitting;
         layout.manualScale = manualZoomScale();
-        layout.scaleFactor = m_loupeActive ? m_loupeFactor : 1.0;
-        layout.loupe = m_loupeActive;
+        layout.scaleFactor = m_loupeController.isActive() ? m_loupeController.scaleFactor() : 1.0;
+        layout.loupe = m_loupeController.isActive();
         layout.separateWideImages = qApp->SeparatePagesWhenWideImage();
         layout.rightSideBook = qApp->RightSideBook();
         for (int index = 0; index < renderedCount; ++index) {
@@ -230,7 +227,7 @@ void ImageView::refreshRenderedPages()
             });
         // if Size of Image overs Size of View, use Image's size
         updateSceneForContent(
-            !(qApp->Fitting() && qApp->ImageFitMode() == qvEnums::FitToRect) || m_loupeActive || m_lastScreenPixelRatio > 1.0, sceneRect);
+            !(qApp->Fitting() && qApp->ImageFitMode() == qvEnums::FitToRect) || m_loupeController.isActive() || m_lastScreenPixelRatio > 1.0, sceneRect);
     }
     // QGraphicsView updates the cursor internally,
     // but QV cannot trap this event, so it forcibly clears the cursor.
@@ -248,21 +245,16 @@ void ImageView::updateSceneForContent(bool allowScrolling, const QRect &contentR
     const int previousVerticalScroll = verticalScrollBar()->value();
     m_sceneRectUpdateDepth++;
 
-    if (!m_loupeActive) {
-        m_sceneRectBeforeLoupe = contentRect;
-    }
-    const bool leavingLoupe = !m_loupeActive && m_wasLoupeActive;
-    if (m_loupeActive && !m_wasLoupeActive) {
-        m_scrollPositionBeforeLoupe = QPoint(horizontalScrollBar()->value(), verticalScrollBar()->value());
-    }
-    m_wasLoupeActive = m_loupeActive;
+    const LoupeController::SceneUpdate loupeUpdate = m_loupeController.prepareSceneUpdate(
+        contentRect,
+        QPoint(horizontalScrollBar()->value(), verticalScrollBar()->value()));
     const bool scrollable = allowScrolling && (size().width() < contentRect.width() || size().height() < contentRect.height());
     const QRectF previousSceneRect = scene()->sceneRect();
     const QRectF updatedSceneRect = scrollable
                                         ? QRectF(QPoint(qMin(0, contentRect.left()), 0), QSize(qMax(size().width(), contentRect.width()), qMax(size().height(), contentRect.height())))
                                         : QRectF(QPoint(), size());
     scene()->setSceneRect(updatedSceneRect);
-    configureScrollInteraction(scrollable, leavingLoupe, contentRect);
+    configureScrollInteraction(scrollable, loupeUpdate, contentRect);
 
     // Correct the scroll bar so that it keep at the center of the viewport
     // when the image display magnification is changed.
@@ -281,14 +273,17 @@ void ImageView::updateSceneForContent(bool allowScrolling, const QRect &contentR
     m_sceneRectUpdateDepth--;
 }
 
-void ImageView::configureScrollInteraction(bool scrollable, bool leavingLoupe, const QRect &contentRect)
+void ImageView::configureScrollInteraction(
+    bool scrollable,
+    const LoupeController::SceneUpdate &loupeUpdate,
+    const QRect &contentRect)
 {
     if (!scrollable) {
         setDragMode(QGraphicsView::NoDrag);
         return;
     }
-    if (m_loupeActive) {
-        m_loupeAnchorPosition = mapFromGlobal(QCursor::pos());
+    if (m_loupeController.isActive()) {
+        m_loupeController.setAnchorPosition(mapFromGlobal(QCursor::pos()));
         setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         setDragMode(QGraphicsView::NoDrag);
@@ -307,15 +302,15 @@ void ImageView::configureScrollInteraction(bool scrollable, bool leavingLoupe, c
     setHorizontalScrollBarPolicy(!hideScrollBars && size().width() < contentRect.width() + verticalScrollBar()->width() ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(!hideScrollBars && size().height() < contentRect.height() + horizontalScrollBar()->height() ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
     setDragMode(QGraphicsView::ScrollHandDrag);
-    if (leavingLoupe) {
-        horizontalScrollBar()->setValue(m_scrollPositionBeforeLoupe.x());
-        verticalScrollBar()->setValue(m_scrollPositionBeforeLoupe.y());
+    if (loupeUpdate.leavingLoupe) {
+        horizontalScrollBar()->setValue(loupeUpdate.scrollPositionToRestore.x());
+        verticalScrollBar()->setValue(loupeUpdate.scrollPositionToRestore.y());
     }
 }
 
 void ImageView::preserveViewportCenter(qreal newScale, int previousHorizontalScroll, int previousVerticalScroll)
 {
-    if (!qApp->Fitting() && !m_loupeActive && m_previousDrawScale > 0 && m_previousDrawScale != newScale) {
+    if (!qApp->Fitting() && !m_loupeController.isActive() && m_previousDrawScale > 0 && m_previousDrawScale != newScale) {
         const int halfViewportWidth = 0.5 * viewport()->width();
         const int halfViewportHeight = 0.5 * viewport()->height();
         horizontalScrollBar()->setValue((previousHorizontalScroll + halfViewportWidth) / m_previousDrawScale * newScale - halfViewportWidth);
@@ -326,8 +321,8 @@ void ImageView::preserveViewportCenter(qreal newScale, int previousHorizontalScr
 
 void ImageView::updateLoupeScrollFromCursor()
 {
-    const std::optional<QPoint> scrollPosition = CursorScrollMapping::loupeScrollPosition(
-        mapFromGlobal(QCursor::pos()), m_loupeAnchorPosition, size(), m_sceneRectBeforeLoupe, scene()->sceneRect(), m_scrollPositionBeforeLoupe);
+    const std::optional<QPoint> scrollPosition = m_loupeController.scrollPositionForCursor(
+        mapFromGlobal(QCursor::pos()), size(), scene()->sceneRect());
     if (!scrollPosition) {
         return;
     }
@@ -416,7 +411,7 @@ void ImageView::resizeEvent(QResizeEvent *event)
     }
 }
 
-void ImageView::on_nextPage_triggered()
+void ImageView::handleNextPageActionTriggered()
 {
     if (qApp->SeparatePagesWhenWideImage() && m_renderedPages.advanceSeparatedPage()) {
         refreshRenderedPages();
@@ -430,7 +425,7 @@ void ImageView::on_nextPage_triggered()
     }
 }
 
-void ImageView::on_prevPage_triggered()
+void ImageView::handlePrevPageActionTriggered()
 {
     if (qApp->SeparatePagesWhenWideImage() && m_renderedPages.rewindSeparatedPage()) {
         refreshRenderedPages();
@@ -446,7 +441,7 @@ void ImageView::on_prevPage_triggered()
     m_openSeparatedPageFromEnd = false;
 }
 
-void ImageView::onActionNextPageOrVolume_triggered()
+void ImageView::handleNextPageOrVolumeActionTriggered()
 {
     if (qApp->SeparatePagesWhenWideImage() && m_renderedPages.advanceSeparatedPage()) {
         refreshRenderedPages();
@@ -462,7 +457,7 @@ void ImageView::onActionNextPageOrVolume_triggered()
     }
 }
 
-void ImageView::onActionPrevPageOrVolume_triggered()
+void ImageView::handlePrevPageOrVolumeActionTriggered()
 {
     if (qApp->SeparatePagesWhenWideImage() && m_renderedPages.rewindSeparatedPage()) {
         refreshRenderedPages();
@@ -478,7 +473,7 @@ void ImageView::onActionPrevPageOrVolume_triggered()
     }
 }
 
-void ImageView::on_fastForwardPage_triggered()
+void ImageView::handleFastForwardActionTriggered()
 {
     if (m_pageManager) {
         m_pageManager->fastForwardPage();
@@ -488,7 +483,7 @@ void ImageView::on_fastForwardPage_triggered()
     }
 }
 
-void ImageView::on_fastBackwardPage_triggered()
+void ImageView::handleFastBackwardActionTriggered()
 {
     if (m_pageManager) {
         m_pageManager->fastBackwardPage();
@@ -498,7 +493,7 @@ void ImageView::on_fastBackwardPage_triggered()
     }
 }
 
-void ImageView::on_firstPage_triggered()
+void ImageView::handleFirstPageActionTriggered()
 {
     if (m_pageManager) {
         m_pageManager->firstPage();
@@ -508,7 +503,7 @@ void ImageView::on_firstPage_triggered()
     }
 }
 
-void ImageView::on_lastPage_triggered()
+void ImageView::handleLastPageActionTriggered()
 {
     if (m_pageManager) {
         m_pageManager->lastPage();
@@ -518,21 +513,21 @@ void ImageView::on_lastPage_triggered()
     }
 }
 
-void ImageView::on_nextOnlyOnePage_triggered()
+void ImageView::handleNextOnePageActionTriggered()
 {
     if (m_pageManager) {
         m_pageManager->nextOnlyOnePage();
     }
 }
 
-void ImageView::on_prevOnlyOnePage_triggered()
+void ImageView::handlePrevOnePageActionTriggered()
 {
     if (m_pageManager) {
         m_pageManager->prevOnlyOnePage();
     }
 }
 
-void ImageView::on_rotatePage_triggered()
+void ImageView::handleRotateActionTriggered()
 {
     if (!m_pageManager || m_pageRotations.empty()) {
         return;
@@ -545,9 +540,9 @@ void ImageView::on_rotatePage_triggered()
     refreshRenderedPages();
 }
 
-void ImageView::on_showSubfolders_triggered(bool enable)
+void ImageView::handleShowSubfoldersActionTriggered(bool checked)
 {
-    qApp->setShowSubfolders(enable);
+    qApp->setShowSubfolders(checked);
     if (!m_pageManager) {
         return;
     }
@@ -556,7 +551,7 @@ void ImageView::on_showSubfolders_triggered(bool enable)
     }
 }
 
-void ImageView::on_slideShowChanging_triggered()
+void ImageView::handleSlideShowTimerTimeout()
 {
     if (!m_pageManager) {
         return;
@@ -568,29 +563,29 @@ void ImageView::on_slideShowChanging_triggered()
     }
 }
 
-void ImageView::on_nextVolume_triggered()
+void ImageView::handleNextVolumeActionTriggered()
 {
     if (m_pageManager) {
         m_pageManager->nextVolume();
     }
 }
 
-void ImageView::on_prevVolume_triggered()
+void ImageView::handlePrevVolumeActionTriggered()
 {
     if (m_pageManager) {
         m_pageManager->prevVolume();
     }
 }
 
-void ImageView::onActionShowFullscreenSignage_triggered(bool enable)
+void ImageView::handleShowFullscreenSignageActionTriggered(bool checked)
 {
-    qApp->setShowFullscreenSignage(enable);
+    qApp->setShowFullscreenSignage(checked);
     refreshRenderedPages();
 }
 
-void ImageView::onActionHideMouseCursorInFullscreen_triggered(bool enable)
+void ImageView::handleHideMouseCursorInFullscreenActionTriggered(bool checked)
 {
-    qApp->setHideMouseCursorInFullscreen(enable);
+    qApp->setHideMouseCursorInFullscreen(checked);
 }
 
 #define HOVER_BORDER 20
@@ -599,7 +594,7 @@ void ImageView::onActionHideMouseCursorInFullscreen_triggered(bool enable)
 void ImageView::mouseMoveEvent(QMouseEvent *e)
 {
     QGraphicsView::mouseMoveEvent(e);
-//    qDebug() << "qApp->HideMouseCursorInFullscreen()" << qApp->HideMouseCursorInFullscreen();
+    //    qDebug() << "qApp->HideMouseCursorInFullscreen()" << qApp->HideMouseCursorInFullscreen();
     int NOT_HOVER_AREA = width() / 3;
     int hover_border = qApp->LargeToolbarIcons() ? 3 * HOVER_BORDER : HOVER_BORDER;
     if (e->pos().x() < hover_border && e->pos().y() < height() - hover_border) {
@@ -634,8 +629,8 @@ void ImageView::mouseMoveEvent(QMouseEvent *e)
     } else {
         setCursor(Qt::ArrowCursor);
     }
-//    qDebug() << qApp->ScrollWithCursorWhenZooming() << scene()->sceneRect() << size();
-    if (m_loupeActive) {
+    //    qDebug() << qApp->ScrollWithCursorWhenZooming() << scene()->sceneRect() << size();
+    if (m_loupeController.isActive()) {
         updateLoupeScrollFromCursor();
     } else if (qApp->ScrollWithCursorWhenZooming() && (scene()->sceneRect().width() > width() || scene()->sceneRect().height() > height())) {
         updateZoomScrollFromCursor();
@@ -664,8 +659,12 @@ void ImageView::mouseMoveEvent(QMouseEvent *e)
 void ImageView::wheelEvent(QWheelEvent *event)
 {
     int delta_y = event->angleDelta().y();
-    int delta = delta_y < 0 ? -Q_MOUSE_DELTA : delta_y > 0 ? Q_MOUSE_DELTA
-                                                           : 0;
+    int delta = 0;
+    if (delta_y < 0) {
+        delta = -Q_MOUSE_DELTA;
+    } else if (delta_y > 0) {
+        delta = Q_MOUSE_DELTA;
+    }
     QMouseValue mv(QKeySequence(qApp->keyboardModifiers()), event->buttons(), delta);
     QAction *action = qApp->mouseActions().getActionByValue(mv);
     if (action != nullptr) {
@@ -676,13 +675,8 @@ void ImageView::wheelEvent(QWheelEvent *event)
             return;
         }
     }
-    if (m_loupeActive) {
-        if (delta_y < 0) {
-            m_loupeFactor = qMax(1.5, m_loupeFactor - 0.5);
-        }
-        if (delta_y > 0) {
-            m_loupeFactor += 0.5;
-        }
+    if (m_loupeController.isActive()) {
+        m_loupeController.adjustScaleFromWheel(delta_y);
         refreshRenderedPages();
         return;
     }
@@ -705,7 +699,7 @@ void ImageView::mousePressEvent(QMouseEvent *event)
         QGraphicsView::mousePressEvent(event);
         return;
     }
-    m_loupeActive = true;
+    m_loupeController.activate();
     refreshRenderedPages();
 }
 
@@ -715,24 +709,24 @@ void ImageView::mouseReleaseEvent(QMouseEvent *event)
         QGraphicsView::mouseReleaseEvent(event);
         return;
     }
-    m_loupeActive = false;
+    m_loupeController.deactivate();
     refreshRenderedPages();
 }
 
-void ImageView::on_fitting_triggered(bool enable)
+void ImageView::handleFittingActionTriggered(bool checked)
 {
-    if (enable) {
-        qApp->setFitting(enable);
+    if (checked) {
+        qApp->setFitting(checked);
         refreshRenderedPages();
     } else {
         // When turning off fitting mode, use the scale up event handler instead.
-        on_scaleUp_triggered();
+        handleZoomInActionTriggered();
     }
 }
 
-void ImageView::on_fitToWindow_triggered(bool enable)
+void ImageView::handleFitToWindowActionTriggered(bool checked)
 {
-    if (!enable) {
+    if (!checked) {
         return;
     }
     qApp->setImageFitMode(qvEnums::FitToRect);
@@ -741,9 +735,9 @@ void ImageView::on_fitToWindow_triggered(bool enable)
     refreshRenderedPages();
 }
 
-void ImageView::on_fitToWidth_triggered(bool enable)
+void ImageView::handleFitToWidthActionTriggered(bool checked)
 {
-    if (!enable) {
+    if (!checked) {
         return;
     }
     qApp->setImageFitMode(qvEnums::FitToWidth);
@@ -752,9 +746,9 @@ void ImageView::on_fitToWidth_triggered(bool enable)
     refreshRenderedPages();
 }
 
-void ImageView::on_dualView_triggered(bool viewdual)
+void ImageView::handleDualViewActionTriggered(bool checked)
 {
-    qApp->setDualView(viewdual);
+    qApp->setDualView(checked);
 
     if (m_pageManager) {
         m_pageManager->reloadCurrentPage();
@@ -762,13 +756,13 @@ void ImageView::on_dualView_triggered(bool viewdual)
     refreshRenderedPages();
 }
 
-void ImageView::on_rightSideBook_triggered(bool rightSideBook)
+void ImageView::handleRightSideBookActionTriggered(bool checked)
 {
-    qApp->setRightSideBook(rightSideBook);
+    qApp->setRightSideBook(checked);
     refreshRenderedPages();
 }
 
-void ImageView::on_scaleUp_triggered()
+void ImageView::handleZoomInActionTriggered()
 {
     const std::optional<qreal> firstDrawScale = m_renderedPages.firstDrawScale();
     if (!firstDrawScale) {
@@ -792,7 +786,7 @@ void ImageView::on_scaleUp_triggered()
     refreshRenderedPages();
 }
 
-void ImageView::on_scaleDown_triggered()
+void ImageView::handleZoomOutActionTriggered()
 {
     const std::optional<qreal> firstDrawScale = m_renderedPages.firstDrawScale();
     if (!firstDrawScale) {
@@ -815,52 +809,52 @@ void ImageView::on_scaleDown_triggered()
     refreshRenderedPages();
 }
 
-void ImageView::on_wideImageAsOneView_triggered(bool wideImage)
+void ImageView::handleWideImageAsOneViewActionTriggered(bool checked)
 {
-    qApp->setWideImageAsOnePageInDualView(wideImage);
+    qApp->setWideImageAsOnePageInDualView(checked);
     if (m_pageManager) {
         m_pageManager->reloadCurrentPage();
     }
     refreshRenderedPages();
 }
 
-void ImageView::on_firstImageAsOneView_triggered(bool firstImage)
+void ImageView::handleFirstImageAsOneViewActionTriggered(bool checked)
 {
-    qApp->setFirstImageAsOnePageInDualView(firstImage);
+    qApp->setFirstImageAsOnePageInDualView(checked);
     if (m_pageManager) {
         m_pageManager->reloadCurrentPage();
     }
     refreshRenderedPages();
 }
 
-void ImageView::on_dontEnlargeSmallImagesOnFitting(bool enable)
+void ImageView::handleDontEnlargeSmallImagesOnFittingActionTriggered(bool checked)
 {
-    qApp->setDontEnlargeSmallImagesOnFitting(enable);
+    qApp->setDontEnlargeSmallImagesOnFitting(checked);
     refreshRenderedPages();
 }
 
-void ImageView::onActionSeparatePagesWhenWideImage_triggered(bool enable)
+void ImageView::handleSeparatePagesWhenWideImageActionTriggered(bool checked)
 {
-    qApp->setSeparatePagesWhenWideImage(enable);
+    qApp->setSeparatePagesWhenWideImage(checked);
     refreshRenderedPages();
 }
 
-void ImageView::onActionLoupe_triggered(bool enable)
+void ImageView::handleLoupeToolActionTriggered(bool checked)
 {
-    qApp->setLoupeTool(enable);
-    if (!enable) {
-        m_loupeActive = false;
+    qApp->setLoupeTool(checked);
+    if (!checked) {
+        m_loupeController.deactivate();
         refreshRenderedPages();
     }
 }
 
-void ImageView::onActionScrollWithCursorWhenZooming_triggered(bool enable)
+void ImageView::handleScrollWithCursorWhenZoomingActionTriggered(bool checked)
 {
-    qApp->setScrollWithCursorWhenZooming(enable);
+    qApp->setScrollWithCursorWhenZooming(checked);
     refreshRenderedPages();
 }
 
-void ImageView::on_openFiler_triggered()
+void ImageView::handleOpenFilerActionTriggered()
 {
     if (!m_pageManager) {
         return;
@@ -903,7 +897,7 @@ void ImageView::on_openFiler_triggered()
 #endif
 }
 
-void ImageView::on_copyPage_triggered()
+void ImageView::handleCopyPageActionTriggered()
 {
     const QImage image = m_renderedPages.firstImage();
     if (image.isNull()) {
@@ -913,7 +907,7 @@ void ImageView::on_copyPage_triggered()
     clipboard->setImage(image);
 }
 
-void ImageView::on_copyFile_triggered()
+void ImageView::handleCopyFileActionTriggered()
 {
     if (!m_pageManager) {
         return;
@@ -929,7 +923,7 @@ void ImageView::on_copyFile_triggered()
     clipboard->setMimeData(mimeData);
 }
 
-void ImageView::onBrightness_valueChanged(ImageRetouch params)
+void ImageView::handleRetouchParametersChanged(ImageRetouch params)
 {
     m_retouchParams = params;
     refreshRenderedPages();

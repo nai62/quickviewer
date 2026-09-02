@@ -72,8 +72,8 @@ public:
       , m_strFileExt(extOfArchive)
       , m_lastpos(0)
     {
-        // connect(&m_timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
-        // connect(this, SIGNAL(startMyTimer()), this, SLOT(onStartTimer()));
+        // connect(&m_timer, SIGNAL(timeout()), this, SLOT(handleTimeout()));
+        // connect(this, SIGNAL(startMyTimer()), this, SLOT(handleStartTimer()));
     }
 
     virtual ~Qt7zStreamReader()
@@ -159,15 +159,15 @@ signals:
     void stopMyTimer();
 
 public slots:
-    void onStartTimer()
+    void handleStartTimer()
     {
         //m_timer.start(1000);
     }
-    void onStopTimer()
+    void handleStopTimer()
     {
         //m_timer.stop();
     }
-    void onTimeout()
+    void handleTimeout()
     {
         // if(m_inStream)
         //     m_inStream->close();

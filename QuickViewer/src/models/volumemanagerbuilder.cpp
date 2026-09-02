@@ -62,7 +62,6 @@ VolumeManagerBuilder::VolumeManagerBuilder(QString path)
       Path(path),
       m_volumeManager(nullptr)
 {
-//    connect(&m_watcher, SIGNAL(finished()), this, SLOT(on_enumerated()));
 }
 
 VolumeManager *VolumeManagerBuilder::build(bool onlyCover)
@@ -90,7 +89,7 @@ VolumeManager *VolumeManagerBuilder::build(bool onlyCover)
     } else if (subfilename.length() > 0) {
         m_volumeManager->findImageByName(subfilename);
     }
-    m_volumeManager->on_ready();
+    m_volumeManager->handleReady();
     return m_volumeManager;
 }
 
@@ -133,7 +132,7 @@ ImageContent VolumeManagerBuilder::thumbnail()
     }
     checkBookProgress();
     m_volumeManager->setCacheMode(VolumeManager::CreateThumbnail);
-    m_volumeManager->on_ready();
+    m_volumeManager->handleReady();
     auto ic = m_volumeManager->currentImage();
     delete m_volumeManager;
     return ic;

@@ -5,6 +5,7 @@
 #include "imageview.h"
 #include "models/cursorscrollmapping.h"
 #include "models/imagestring.h"
+#include "models/loupecontroller.h"
 #include "models/pagemanager.h"
 #include "models/qvapplication.h"
 #include "models/volumehandle.h"
@@ -202,7 +203,7 @@ private slots:
         QVERIFY(!volume.findPageByIndex(0));
         QVERIFY(!volume.findImageByIndex(0));
         QVERIFY(!volume.findImageByName("missing.png"));
-        volume.on_enmumerated();
+        volume.handleEnumerationFinished();
         QCOMPARE(enumerationSpy.count(), 1);
         volume.moveToThread(nullptr);
     }
@@ -258,22 +259,22 @@ private slots:
         ImageView view;
         view.setPageManager(&manager);
 
-        view.on_nextPage_triggered();
-        view.on_prevPage_triggered();
-        view.onActionNextPageOrVolume_triggered();
-        view.onActionPrevPageOrVolume_triggered();
-        view.on_fastForwardPage_triggered();
-        view.on_fastBackwardPage_triggered();
-        view.on_firstPage_triggered();
-        view.on_lastPage_triggered();
-        view.on_nextOnlyOnePage_triggered();
-        view.on_prevOnlyOnePage_triggered();
-        view.on_nextVolume_triggered();
-        view.on_prevVolume_triggered();
-        view.on_rotatePage_triggered();
-        view.on_slideShowChanging_triggered();
-        view.on_copyPage_triggered();
-        view.on_copyFile_triggered();
+        view.handleNextPageActionTriggered();
+        view.handlePrevPageActionTriggered();
+        view.handleNextPageOrVolumeActionTriggered();
+        view.handlePrevPageOrVolumeActionTriggered();
+        view.handleFastForwardActionTriggered();
+        view.handleFastBackwardActionTriggered();
+        view.handleFirstPageActionTriggered();
+        view.handleLastPageActionTriggered();
+        view.handleNextOnePageActionTriggered();
+        view.handlePrevOnePageActionTriggered();
+        view.handleNextVolumeActionTriggered();
+        view.handlePrevVolumeActionTriggered();
+        view.handleRotateActionTriggered();
+        view.handleSlideShowTimerTimeout();
+        view.handleCopyPageActionTriggered();
+        view.handleCopyFileActionTriggered();
     }
 
     void gestureStateIsIndependentBetweenViews()
@@ -322,6 +323,69 @@ private slots:
             QPoint(200, 150), QPoint(0, 150), QSize(400, 300), QRect(0, 0, 400, 300), QRectF(0, 0, 800, 600), QPoint()));
     }
 
+    void loupeControllerTracksActivationAndRestoration()
+    {
+        LoupeController loupe;
+        const QRect contentRect(0, 0, 400, 300);
+        const QPoint initialScrollPosition(25, 40);
+
+        QVERIFY(!loupe.isActive());
+        LoupeController::SceneUpdate update = loupe.prepareSceneUpdate(contentRect, initialScrollPosition);
+        QVERIFY(!update.leavingLoupe);
+
+        loupe.activate();
+        QVERIFY(loupe.isActive());
+        update = loupe.prepareSceneUpdate(QRect(0, 0, 800, 600), initialScrollPosition);
+        QVERIFY(!update.leavingLoupe);
+        QCOMPARE(update.scrollPositionToRestore, initialScrollPosition);
+
+        loupe.setAnchorPosition(QPoint(200, 150));
+        const std::optional<QPoint> mappedPosition = loupe.scrollPositionForCursor(
+            QPoint(200, 150), QSize(400, 300), QRectF(0, 0, 800, 600));
+        QVERIFY(mappedPosition);
+        QCOMPARE(*mappedPosition, QPoint(250, 230));
+
+        loupe.deactivate();
+        QVERIFY(!loupe.isActive());
+        update = loupe.prepareSceneUpdate(contentRect, QPoint(100, 120));
+        QVERIFY(update.leavingLoupe);
+        QCOMPARE(update.scrollPositionToRestore, initialScrollPosition);
+
+        update = loupe.prepareSceneUpdate(contentRect, QPoint(100, 120));
+        QVERIFY(!update.leavingLoupe);
+    }
+
+    void loupeControllerAdjustsScaleWithinLowerBound()
+    {
+        LoupeController loupe;
+
+        QCOMPARE(loupe.scaleFactor(), 3.0);
+        loupe.adjustScaleFromWheel(-120);
+        loupe.adjustScaleFromWheel(-120);
+        loupe.adjustScaleFromWheel(-120);
+        loupe.adjustScaleFromWheel(-120);
+        QCOMPARE(loupe.scaleFactor(), 1.5);
+
+        loupe.adjustScaleFromWheel(120);
+        QCOMPARE(loupe.scaleFactor(), 2.0);
+        loupe.adjustScaleFromWheel(0);
+        QCOMPARE(loupe.scaleFactor(), 2.0);
+    }
+
+    void loupeControllersKeepIndependentState()
+    {
+        LoupeController first;
+        LoupeController second;
+
+        first.activate();
+        first.adjustScaleFromWheel(120);
+
+        QVERIFY(first.isActive());
+        QCOMPARE(first.scaleFactor(), 3.5);
+        QVERIFY(!second.isActive());
+        QCOMPARE(second.scaleFactor(), 3.0);
+    }
+
     void standalonePreviewNavigationIsSafe()
     {
         PageManager manager(nullptr);
@@ -331,8 +395,8 @@ private slots:
         const QImage image(8, 8, QImage::Format_ARGB32);
         manager.addNewPage(ImageContent(image, "preview.png", image.size(), {}, 0), true);
 
-        view.onActionNextPageOrVolume_triggered();
-        view.onActionPrevPageOrVolume_triggered();
+        view.handleNextPageOrVolumeActionTriggered();
+        view.handlePrevPageOrVolumeActionTriggered();
         QCOMPARE(manager.currentPageName(), QString("preview.png"));
     }
 
@@ -399,7 +463,7 @@ private slots:
         view.refreshRenderedPages();
         QCOMPARE(view.renderedPageMetrics().notationalScaleAt(0), 1.0);
 
-        view.on_fitting_triggered(true);
+        view.handleFittingActionTriggered(true);
         QVERIFY(qApp->Fitting());
         QVERIFY(view.renderedPageMetrics().notationalScaleAt(0) < 1.0);
     }
@@ -413,14 +477,14 @@ private slots:
 
         QAction fittingAction;
         fittingAction.setCheckable(true);
-        connect(&fittingAction, &QAction::triggered, &view, &ImageView::on_fitting_triggered);
+        connect(&fittingAction, &QAction::triggered, &view, &ImageView::handleFittingActionTriggered);
         QAction *previousAction =
             qApp->keyActions().actions().value("actionFitting", nullptr);
         auto restoreAction = qScopeGuard([previousAction]() {
             qApp->keyActions().actions()["actionFitting"] = previousAction;
         });
         QAction *fittingActionPtr = &fittingAction;
-        qApp->keyActions().registAction(
+        qApp->keyActions().registerAction(
             "actionFitting", fittingActionPtr, "Image");
 
         QImage image(640, 480, QImage::Format_ARGB32);
@@ -458,8 +522,8 @@ private slots:
         QCOMPARE(manager.size(), 0);
         QVERIFY(!manager.firstPage());
         QVERIFY(!manager.lastPage());
-        view.onActionNextPageOrVolume_triggered();
-        view.onActionPrevPageOrVolume_triggered();
+        view.handleNextPageOrVolumeActionTriggered();
+        view.handlePrevPageOrVolumeActionTriggered();
 
         manager.dispose();
         QCOMPARE(manager.stateKind(), ViewerStateKind::Empty);
@@ -493,8 +557,8 @@ private slots:
         QCOMPARE(manager.currentPagePath(), QString());
         QCOMPARE(manager.currentPageName(), QString());
         QCOMPARE(manager.pageSignage(0), QString());
-        view.onActionNextPageOrVolume_triggered();
-        view.onActionPrevPageOrVolume_triggered();
+        view.handleNextPageOrVolumeActionTriggered();
+        view.handlePrevPageOrVolumeActionTriggered();
     }
 };
 

@@ -43,22 +43,21 @@ public:
     void initTagButtons();
     void resetTagButtons(QStringList buttons, QStringList checks);
     QStringList getTagWords();
-    void on_showTagBar_triggered(bool enable);
+    void handleShowTagBarActionTriggered(bool checked);
 
 public slots:
-    void on_treeItemChanged(QString path);
-    void onFolderViewButton_clicked();
-    void onActionFolderViewList_triggered();
-    void onActionFolderViewIcon_triggered();
-    void onActionFolderViewNotext_triggered();
-    void onManageCatalogButton_clicked();
-    void onSearchCombo_editTextChanged(QString search);
-    void onSearchCombo_currentIndexChanged(QString search);
-    void onLineEdit_editingFinished();
-    void on_itemDoubleClicked(const QModelIndex &index);
-    void onActionSearchTitleWithOptions_triggered(bool enable);
-    void onActionCatalogTitleWithoutOptions_triggered(bool enable);
-    void on_tagButtonClicked(bool checked);
+    void handleFolderViewButtonClicked();
+    void handleFolderViewListActionTriggered();
+    void handleFolderViewIconActionTriggered();
+    void handleFolderViewIconNoTextActionTriggered();
+    void handleManageCatalogButtonClicked();
+    void handleSearchComboBoxEditTextChanged(QString search);
+    void handleSearchComboBoxCurrentIndexChanged(QString search);
+    void handleSearchLineEditEditingFinished();
+    void handleVolumeListItemDoubleClicked(const QModelIndex &index);
+    void handleSearchTitleWithOptionsActionTriggered(bool checked);
+    void handleCatalogTitleWithoutOptionsActionTriggered(bool checked);
+    void handleTagButtonClicked();
 
 signals:
     void openVolume(QString path);

@@ -5,7 +5,7 @@
 BookProgressManager::BookProgressManager(QObject *parent)
     : QObject(parent)
 {
-    connect(&m_initializeWatcher, SIGNAL(finished()), SLOT(on_Initialized_triggered()));
+    connect(&m_initializeWatcher, SIGNAL(finished()), SLOT(handleInitializationFinished()));
     QFuture<BookProgressMap> future = QtConcurrent::run(&BookProgressManager::initializeAsync);
     m_initializeWatcher.setFuture(future);
 }
@@ -62,7 +62,7 @@ BookProgressManager::BookProgressMap BookProgressManager::initializeAsync()
     return result;
 }
 
-void BookProgressManager::on_Initialized_triggered()
+void BookProgressManager::handleInitializationFinished()
 {
     m_books = m_initializeWatcher.result();
 }

@@ -427,7 +427,7 @@ QPushButton:hover {
    <sender>folderView</sender>
    <signal>selected(QModelIndex)</signal>
    <receiver>FolderWindow</receiver>
-   <slot>on_itemSingleClicked(QModelIndex)</slot>
+   <slot>handleFolderViewItemSelected(QModelIndex)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>359</x>
@@ -443,7 +443,7 @@ QPushButton:hover {
    <sender>folderView</sender>
    <signal>doubleClicked(QModelIndex)</signal>
    <receiver>FolderWindow</receiver>
-   <slot>on_itemDoubleClicked(QModelIndex)</slot>
+   <slot>handleFolderViewItemDoubleClicked(QModelIndex)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>359</x>
@@ -459,7 +459,7 @@ QPushButton:hover {
    <sender>nextButton</sender>
    <signal>clicked()</signal>
    <receiver>FolderWindow</receiver>
-   <slot>onNextButton_clicked()</slot>
+   <slot>handleNextButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>81</x>
@@ -475,7 +475,7 @@ QPushButton:hover {
    <sender>prevButton</sender>
    <signal>clicked()</signal>
    <receiver>FolderWindow</receiver>
-   <slot>onPrevButton_clicked()</slot>
+   <slot>handlePreviousButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>51</x>
@@ -491,7 +491,7 @@ QPushButton:hover {
    <sender>toParentButton</sender>
    <signal>clicked()</signal>
    <receiver>FolderWindow</receiver>
-   <slot>onParentButton_clicked()</slot>
+   <slot>handleParentButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>111</x>
@@ -507,7 +507,7 @@ QPushButton:hover {
    <sender>reloadButton</sender>
    <signal>clicked()</signal>
    <receiver>FolderWindow</receiver>
-   <slot>onReloadButton_clicked()</slot>
+   <slot>handleReloadButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>141</x>
@@ -523,7 +523,7 @@ QPushButton:hover {
    <sender>homeButton</sender>
    <signal>clicked()</signal>
    <receiver>FolderWindow</receiver>
-   <slot>onHomeButton_clicked()</slot>
+   <slot>handleHomeButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>21</x>
@@ -539,7 +539,7 @@ QPushButton:hover {
    <sender>sortModeButton</sender>
    <signal>clicked()</signal>
    <receiver>FolderWindow</receiver>
-   <slot>onSortModeButton_clicked()</slot>
+   <slot>handleSortModeButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>176</x>
@@ -555,7 +555,7 @@ QPushButton:hover {
    <sender>actionOrderByName</sender>
    <signal>triggered()</signal>
    <receiver>FolderWindow</receiver>
-   <slot>onActionOrderByName_triggered()</slot>
+   <slot>handleOrderByNameActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -571,7 +571,7 @@ QPushButton:hover {
    <sender>actionOrderByUpdatedAt</sender>
    <signal>triggered()</signal>
    <receiver>FolderWindow</receiver>
-   <slot>onActionOrderByUpdatedAt_triggered()</slot>
+   <slot>handleOrderByUpdatedAtActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -587,7 +587,7 @@ QPushButton:hover {
    <sender>actionSetAsHomeFolder</sender>
    <signal>triggered()</signal>
    <receiver>FolderWindow</receiver>
-   <slot>onActionSetAsHomeFolder_triggered()</slot>
+   <slot>handleSetAsHomeFolderActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -601,18 +601,17 @@ QPushButton:hover {
   </connection>
  </connections>
  <slots>
-  <slot>on_itemSingleClicked(QModelIndex)</slot>
-  <slot>on_itemDoubleClicked(QModelIndex)</slot>
-  <slot>onPrevButton_clicked()</slot>
-  <slot>onNextButton_clicked()</slot>
-  <slot>onParentButton_clicked()</slot>
-  <slot>onReloadButton_clicked()</slot>
-  <slot>on_pathChanged_triggered(QString)</slot>
-  <slot>onHomeButton_clicked()</slot>
-  <slot>onSortModeButton_clicked()</slot>
-  <slot>onActionOrderByName_triggered()</slot>
-  <slot>onActionOrderByUpdatedAt_triggered()</slot>
-  <slot>onActionSetAsHomeFolder_triggered()</slot>
-  <slot>on_currentItem_triggered()</slot>
+  <slot>handleFolderViewItemSelected(QModelIndex)</slot>
+  <slot>handleFolderViewItemDoubleClicked(QModelIndex)</slot>
+  <slot>handlePreviousButtonClicked()</slot>
+  <slot>handleNextButtonClicked()</slot>
+  <slot>handleParentButtonClicked()</slot>
+  <slot>handleReloadButtonClicked()</slot>
+  <slot>handleHomeButtonClicked()</slot>
+  <slot>handleSortModeButtonClicked()</slot>
+  <slot>handleOrderByNameActionTriggered()</slot>
+  <slot>handleOrderByUpdatedAtActionTriggered()</slot>
+  <slot>handleSetAsHomeFolderActionTriggered()</slot>
+  <slot>handleCurrentFolderItemTriggered()</slot>
  </slots>
 </ui>

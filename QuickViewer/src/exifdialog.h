@@ -24,14 +24,14 @@ signals:
     void closed();
 
 public slots:
-    void onBtnClipbard_clicked();
+    void handleClipboardButtonClicked();
 
 private:
     Ui::ExifDialog *ui;
     QString m_exif;
     QString generateFlash(char flash);
-//    QString generateFlashMode(unsigned short mode);
-//    QString generateFlashReturnedLight(unsigned short light);
+    //    QString generateFlashMode(unsigned short mode);
+    //    QString generateFlashReturnedLight(unsigned short light);
     QString generateOrientation(unsigned short orient);
 };
 

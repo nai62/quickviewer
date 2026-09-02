@@ -165,7 +165,7 @@ Section
   CreateDirectory "$SMPROGRAMS\${AppDir}"
   SetOutPath "$INSTDIR"
   CreateShortcut "$SMPROGRAMS\${AppDir}\QuickViewer.lnk" "$INSTDIR\QuickViewer.exe" ""
-  # write registries for uninsataling
+  # write registry entries for uninstalling
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "DisplayName" "QuickViewer"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "DisplayIcon" "$\"$INSTDIR\QuickViewer.exe$\""
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "Publisher" "${COMPANYNAME}"

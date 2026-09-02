@@ -47,7 +47,7 @@ CatalogWindow::CatalogWindow(QWidget *parent, Ui::MainWindow *uiMain)
     ui->volumeList->setModel(&m_itemModel);
 
     // SearchCombo
-    connect(ui->searchCombo->lineEdit(), SIGNAL(editingFinished()), this, SLOT(onLineEdit_editingFinished()));
+    connect(ui->searchCombo->lineEdit(), SIGNAL(editingFinished()), this, SLOT(handleSearchLineEditEditingFinished()));
     ui->searchCombo->lineEdit()->setPlaceholderText(tr("Field the search term and press enter key to search by the title.", "Gray text that prompts a keyword search of Volume"));
 
     // TagFrame
@@ -96,13 +96,13 @@ void CatalogWindow::resetViewMode()
 {
     switch (qApp->CatalogViewModeSetting()) {
     case qvEnums::List:
-        onActionFolderViewList_triggered();
+        handleFolderViewListActionTriggered();
         break;
     case qvEnums::Icon:
-        onActionFolderViewIcon_triggered();
+        handleFolderViewIconActionTriggered();
         break;
     case qvEnums::IconNoText:
-        onActionFolderViewNotext_triggered();
+        handleFolderViewIconNoTextActionTriggered();
         break;
     }
 }
@@ -137,7 +137,7 @@ void CatalogWindow::resetTagButtons(QStringList buttons, QStringList checks)
         if (checks.contains(name)) {
             b->setChecked(true);
         }
-        connect(b, SIGNAL(clicked(bool)), this, SLOT(on_tagButtonClicked(bool)));
+        connect(b, &QPushButton::clicked, this, &CatalogWindow::handleTagButtonClicked);
         ui->tagFrame->layout()->addWidget(b);
     }
 }
@@ -205,7 +205,7 @@ void CatalogWindow::searchByWord(bool doForce)
     }
     m_lastSearchWord = search;
 
-//    int cnt = 0;
+    //    int cnt = 0;
     m_volumeSearch.clear();
     SearchWords searchwords(search.toLower());
     foreach (const VolumeThumbRecord &vtr, m_volumes) {
@@ -216,8 +216,8 @@ void CatalogWindow::searchByWord(bool doForce)
         if (!searchwords.match(title)) {
             continue;
         }
-//        if(qApp->MaxShowFrontpage() < ++cnt)
-//            break;
+        //        if(qApp->MaxShowFrontpage() < ++cnt)
+        //            break;
         m_volumeSearch.append(const_cast<VolumeThumbRecord *>(&vtr));
     }
     resetVolumes();
@@ -250,12 +250,7 @@ void CatalogWindow::resizeEvent(QResizeEvent *event)
     qApp->setCatalogViewWidth(event->size().width());
 }
 
-void CatalogWindow::on_treeItemChanged(QString)
-{
-    //ui->pathCombo->setCurrentText(QDir::toNativeSeparators(path));
-}
-
-void CatalogWindow::onFolderViewButton_clicked()
+void CatalogWindow::handleFolderViewButtonClicked()
 {
     QWidget *widget = ui->folderViewButton;
 
@@ -263,7 +258,7 @@ void CatalogWindow::onFolderViewButton_clicked()
     m_folderViewMenu.exec(p);
 }
 
-void CatalogWindow::onActionFolderViewList_triggered()
+void CatalogWindow::handleFolderViewListActionTriggered()
 {
     qApp->setCatalogViewModeSetting(qvEnums::List);
     ui->actionFolderViewList->setChecked(true);
@@ -284,7 +279,7 @@ void CatalogWindow::onActionFolderViewList_triggered()
     resetVolumes();
 }
 
-void CatalogWindow::onActionFolderViewIcon_triggered()
+void CatalogWindow::handleFolderViewIconActionTriggered()
 {
     qApp->setCatalogViewModeSetting(qvEnums::Icon);
     ui->actionFolderViewList->setChecked(false);
@@ -305,7 +300,7 @@ void CatalogWindow::onActionFolderViewIcon_triggered()
     resetVolumes();
 }
 
-void CatalogWindow::onActionFolderViewNotext_triggered()
+void CatalogWindow::handleFolderViewIconNoTextActionTriggered()
 {
     qApp->setCatalogViewModeSetting(qvEnums::IconNoText);
     ui->actionFolderViewList->setChecked(false);
@@ -320,7 +315,7 @@ void CatalogWindow::onActionFolderViewNotext_triggered()
     resetVolumes();
 }
 
-void CatalogWindow::onManageCatalogButton_clicked()
+void CatalogWindow::handleManageCatalogButtonClicked()
 {
     ManageDatabaseDialog dialog(this);
     dialog.setThumbnailManager(m_thumbManager);
@@ -331,27 +326,27 @@ void CatalogWindow::onManageCatalogButton_clicked()
     searchByWord(true);
 }
 
-void CatalogWindow::onSearchCombo_editTextChanged(QString search)
+void CatalogWindow::handleSearchComboBoxEditTextChanged(QString search)
 {
     qDebug() << search;
-//    if(m_volumes.size() < qApp->MaxSearchByCharChanged())
+    //    if(m_volumes.size() < qApp->MaxSearchByCharChanged())
     searchByWord();
     return;
 }
 
-void CatalogWindow::onSearchCombo_currentIndexChanged(QString search)
+void CatalogWindow::handleSearchComboBoxCurrentIndexChanged(QString search)
 {
-    qDebug() << "on_searchTextIndexChanged: " << search;
+    qDebug() << "handleSearchComboBoxCurrentIndexChanged: " << search;
     searchByWord();
 }
 
-void CatalogWindow::onLineEdit_editingFinished()
+void CatalogWindow::handleSearchLineEditEditingFinished()
 {
-    qDebug() << "on_searchTextFinished:";
+    qDebug() << "handleSearchLineEditEditingFinished:";
     searchByWord();
 }
 
-void CatalogWindow::on_itemDoubleClicked(const QModelIndex &index)
+void CatalogWindow::handleVolumeListItemDoubleClicked(const QModelIndex &index)
 {
     int row = index.row();
     if (row >= m_volumeSearch.size()) {
@@ -369,28 +364,28 @@ void CatalogWindow::on_itemDoubleClicked(const QModelIndex &index)
     resetTagButtons(tagtxt, getTagWords());
 }
 
-void CatalogWindow::onActionSearchTitleWithOptions_triggered(bool enable)
+void CatalogWindow::handleSearchTitleWithOptionsActionTriggered(bool checked)
 {
-    qApp->setSearchTitleWithOptions(enable);
+    qApp->setSearchTitleWithOptions(checked);
     searchByWord(true);
 }
 
-void CatalogWindow::onActionCatalogTitleWithoutOptions_triggered(bool enable)
+void CatalogWindow::handleCatalogTitleWithoutOptionsActionTriggered(bool checked)
 {
-    qApp->setTitleWithoutOptions(enable);
+    qApp->setTitleWithoutOptions(checked);
     searchByWord(true);
 }
 
-void CatalogWindow::on_tagButtonClicked(bool)
+void CatalogWindow::handleTagButtonClicked()
 {
     searchByWord();
 }
 
-void CatalogWindow::on_showTagBar_triggered(bool enable)
+void CatalogWindow::handleShowTagBarActionTriggered(bool checked)
 {
-    qApp->setShowTagBar(enable);
-    ui->tagFrame->setVisible(enable);
-    if (enable) {
+    qApp->setShowTagBar(checked);
+    ui->tagFrame->setVisible(checked);
+    if (checked) {
         initTagButtons();
     } else {
         resetTagButtons(QStringList(), QStringList());

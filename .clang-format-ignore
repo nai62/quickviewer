@@ -1,5 +1,4 @@
-# Only parent-repository sources under QuickViewer and qvtest are formatted.
-AssociateFilesWithQuickViewer/**
+# Third-party and externally maintained sources are not formatted.
 Qt7z/**
 ResizeHalf/**
 easyexif/**
@@ -10,7 +9,6 @@ unrar/**
 zimg/**
 
 # These directories are Git submodules nested below QuickViewer/src.
-QuickViewer/src/qactionmanager/**
 QuickViewer/src/qfullscreenframe/**
 QuickViewer/src/qlanguageselector/**
 QuickViewer/src/qnamedpipe/**

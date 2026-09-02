@@ -9,7 +9,7 @@ class MainWindowForWindows : public MainWindow
     Q_OBJECT
 public:
     MainWindowForWindows(QWidget *parent = 0);
-    virtual bool moveToTrush(QString path) override;
+    virtual bool moveToTrash(QString path) override;
     virtual bool setStayOnTop(bool top) override;
     virtual void setWindowTop(bool signalOnly) override;
     virtual void setMailAttachment(QString path) override;

@@ -38,7 +38,7 @@ public:
 
     // Volumes
     bool loadVolume(QString path, bool coverOnly = false);
-    bool loadVolumeWithFile(QString path, bool prohibitProhibit2Page = false);
+    bool loadVolumeWithFile(QString path, bool allowSecondPage = false);
     bool nextVolume();
     bool prevVolume();
     void reloadVolumeAfterRemoveImage();
@@ -161,9 +161,9 @@ signals:
      */
     void initialImageDisplayFinished();
 public slots:
-    void on_pageEnumerated();
-    void onSlideShowStarted();
-    void onSlideShowStopped();
+    void handlePageEnumerated();
+    void handleSlideShowStarted();
+    void handleSlideShowStopped();
 
 private:
     void startAssociatedVolumeBuild(const QString &qpath,
@@ -182,7 +182,7 @@ private:
     int m_currentPage;
 
     bool m_wideImage;
-    bool m_prohibit2Pages;
+    bool m_allowSecondPage;
     QVector<ImageContent> m_pages;
     TimeOrderdCacheFutureSharedPtr<QString, VolumeManager> m_volumes;
     QStringList m_volumenames;
@@ -199,7 +199,7 @@ private:
     QString m_pendingAssociatedPathbase;
     QString m_pendingAssociatedFilename;
 
-//    VolumeManagerBuilder m_builderForAssoc;
+    //    VolumeManagerBuilder m_builderForAssoc;
 };
 
 #endif // PAGEMANAGER_H

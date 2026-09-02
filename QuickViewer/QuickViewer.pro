@@ -138,6 +138,7 @@ SOURCES += \
     src/qactionmanager/qmousesequence.cpp \
     src/qactionmanager/shortcutbutton.cpp \
     src/models/imagestring.cpp \
+    src/models/loupecontroller.cpp \
     src/brightnesswindow.cpp \
     src/models/fileoperator.cpp \
     src/qlanguageselector/qtexttranslator.cpp \
@@ -162,6 +163,7 @@ HEADERS  += \
     src/models/cursorscrollmapping.h \
     src/models/futurecache.h \
     src/models/imageloadcontext.h \
+    src/models/loupecontroller.h \
     src/models/pagecontent.h \
     src/models/pagemanager.h \
     src/models/latestresultdispatcher.h \

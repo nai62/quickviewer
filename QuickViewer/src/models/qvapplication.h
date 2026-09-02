@@ -32,7 +32,7 @@ class QVApplication : public QApplication
     Q_PROPERTY(int MaxHistoryCount READ MaxHistoryCount WRITE setMaxHistoryCount)
     Q_PROPERTY(bool ProhibitMultipleRunning READ ProhibitMultipleRunning WRITE setProhibitMultipleRunning)
     // Bookmark
-//    Q_PROPERTY(int MaxBookmarkCount READ MaxBookmarkCount WRITE setMaxBookmarkCount)
+    //    Q_PROPERTY(int MaxBookmarkCount READ MaxBookmarkCount WRITE setMaxBookmarkCount)
 
     // View
     Q_PROPERTY(int SlideShowWait READ SlideShowWait WRITE setSlideShowWait)
@@ -45,7 +45,7 @@ class QVApplication : public QApplication
     Q_PROPERTY(bool DontEnlargeSmallImagesOnFitting READ DontEnlargeSmallImagesOnFitting WRITE setDontEnlargeSmallImagesOnFitting)
     Q_PROPERTY(bool ShowFullscreenSignage READ ShowFullscreenSignage WRITE setShowFullscreenSignage)
     Q_PROPERTY(bool DontShrinkForLargeImage READ DontShrinkForLargeImage WRITE setDontShrinkForLargeImage)
-//    Q_PROPERTY(bool ShowFullscreenTitleBar READ ShowFullscreenTitleBar WRITE setShowFullscreenTitleBar)
+    //    Q_PROPERTY(bool ShowFullscreenTitleBar READ ShowFullscreenTitleBar WRITE setShowFullscreenTitleBar)
 
     // DualView
     Q_PROPERTY(bool DualView READ DualView WRITE setDualView)
@@ -334,9 +334,9 @@ public:
         QApplication::setStyleSheet(styleSheet);
     }
 
-    void registDefaultKeyMap();
-    void registDefaultMouseMap();
-    void registActions(Ui::MainWindow *ui);
+    void registerDefaultKeyMap();
+    void registerDefaultMouseMap();
+    void registerActions(Ui::MainWindow *ui);
 
     /**
      * @brief load settings from "quickviewer.ini"
@@ -358,7 +358,7 @@ private:
     // View
     qvEnums::ImageSortBy m_imageSortBy;
     bool m_fitting;
-//    bool m_fitToWidth;
+    //    bool m_fitToWidth;
     qvEnums::FitMode m_fitMode;
     bool m_dualView;
     bool m_stayOnTop;
@@ -381,7 +381,7 @@ private:
     bool m_dontEnlargeSmallImagesOnFitting;
     bool m_showFullscreenSignage;
     bool m_dontShrinkForLargeImage;
-//    bool m_showFullscreenTitleBar;
+    //    bool m_showFullscreenTitleBar;
     bool m_useDirect2D;
     bool m_useFastDCTForJPEG;
     QString m_howToLoadSVG;

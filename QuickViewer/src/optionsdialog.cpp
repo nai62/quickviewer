@@ -50,6 +50,16 @@ OptionsDialog::OptionsDialog(QWidget *parent)
       ui(new Ui::OptionsDialog)
 {
     ui->setupUi(this);
+    connect(
+        ui->radioButtonWindowTitleUserDefined,
+        &QRadioButton::toggled,
+        this,
+        &OptionsDialog::handleWindowTitleUserDefinedRadioButtonToggled);
+    connect(
+        ui->radioButtonStatusBarUserDefined,
+        &QRadioButton::toggled,
+        this,
+        &OptionsDialog::handleStatusBarUserDefinedRadioButtonToggled);
     if (!stSamplePageContent) {
         stSamplePageContent = new SamplePageContent;
     }
@@ -216,22 +226,30 @@ void OptionsDialog::resetColorBox()
 void OptionsDialog::resetWindowTitleSample()
 {
     QString format;
-    format = ui->radioButtonWindowTitleNormalStyle->isChecked()      ? QV_WINDOWTITLE_FORMAT
-             : ui->radioButtonWindowTitleIrfanViewStyle->isChecked() ? IRFANVIEW_WINDOWTITLE_FORMAT
-                                                                     : ui->lineEditWindowTitleUserStyle->text();
+    if (ui->radioButtonWindowTitleNormalStyle->isChecked()) {
+        format = QV_WINDOWTITLE_FORMAT;
+    } else if (ui->radioButtonWindowTitleIrfanViewStyle->isChecked()) {
+        format = IRFANVIEW_WINDOWTITLE_FORMAT;
+    } else {
+        format = ui->lineEditWindowTitleUserStyle->text();
+    }
     ui->labelWindowTitleSample->setText(m_imageString.formatString(format));
 }
 
 void OptionsDialog::resetStatusbarSample()
 {
     QString format;
-    format = ui->radioButtonStatusBarNormalStyle->isChecked()      ? QV_STATUSBAR_FORMAT
-             : ui->radioButtonStatusBarIrfanViewStyle->isChecked() ? IRFANVIEW_STATUSBAR_FORMAT
-                                                                   : ui->lineEditStatusBarUserStyle->text();
+    if (ui->radioButtonStatusBarNormalStyle->isChecked()) {
+        format = QV_STATUSBAR_FORMAT;
+    } else if (ui->radioButtonStatusBarIrfanViewStyle->isChecked()) {
+        format = IRFANVIEW_STATUSBAR_FORMAT;
+    } else {
+        format = ui->lineEditStatusBarUserStyle->text();
+    }
     ui->labelStatusBarSample->setText(m_imageString.formatString(format));
 }
 
-void OptionsDialog::onBtnColorSelect_clicked()
+void OptionsDialog::handlePrimaryColorButtonClicked()
 {
     QColorDialog dialog(this);
     dialog.setCurrentColor(m_backgroundColor);
@@ -242,7 +260,7 @@ void OptionsDialog::onBtnColorSelect_clicked()
     }
 }
 
-void OptionsDialog::onBtnColorSelect2_clicked()
+void OptionsDialog::handleSecondaryColorButtonClicked()
 {
     QColorDialog dialog(this);
     dialog.setCurrentColor(m_backgroundColor2);
@@ -253,38 +271,43 @@ void OptionsDialog::onBtnColorSelect2_clicked()
     }
 }
 
-void OptionsDialog::onCheckBoxCheckeredPattern_clicked(bool enabled)
+void OptionsDialog::handleCheckeredPatternCheckBoxClicked(bool checked)
 {
-    m_useCheckeredPattern = enabled;
+    m_useCheckeredPattern = checked;
     resetColorBox();
 }
 
-void OptionsDialog::onRadioButtonWindowTitle_triggered(bool)
-{
-    resetWindowTitleSample();
-    ui->lineEditWindowTitleUserStyle->setEnabled(ui->radioButtonWindowTitleUserDefined->isChecked());
-}
-
-void OptionsDialog::onRadioButtonStatusBar_triggered(bool)
-{
-    resetStatusbarSample();
-    ui->lineEditStatusBarUserStyle->setEnabled(ui->radioButtonStatusBarUserDefined->isChecked());
-}
-
-void OptionsDialog::onLineEditWindowTitleUserStyle_textEdited(QString text)
+void OptionsDialog::handleWindowTitleStyleRadioButtonToggled()
 {
     resetWindowTitleSample();
 }
 
-void OptionsDialog::onLineEditStatusBarUserStyle_textEdited(QString text)
+void OptionsDialog::handleWindowTitleUserDefinedRadioButtonToggled(bool checked)
+{
+    ui->lineEditWindowTitleUserStyle->setEnabled(checked);
+}
+
+void OptionsDialog::handleStatusBarStyleRadioButtonToggled()
 {
     resetStatusbarSample();
 }
 
-void OptionsDialog::onCheckBoxShowUsage_clicked(bool enabled)
+void OptionsDialog::handleStatusBarUserDefinedRadioButtonToggled(bool checked)
 {
-    ui->labelFormatUsage->setVisible(enabled);
+    ui->lineEditStatusBarUserStyle->setEnabled(checked);
 }
-void OptionsDialog::onCheckBoxDontShrinkForLargeImage_clicked(bool enabled)
+
+void OptionsDialog::handleWindowTitleUserStyleLineEditTextEdited(QString text)
 {
+    resetWindowTitleSample();
+}
+
+void OptionsDialog::handleStatusBarUserStyleLineEditTextEdited(QString text)
+{
+    resetStatusbarSample();
+}
+
+void OptionsDialog::handleShowUsageCheckBoxClicked(bool checked)
+{
+    ui->labelFormatUsage->setVisible(checked);
 }

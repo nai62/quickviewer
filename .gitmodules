@@ -16,9 +16,6 @@
 [submodule "easyexif/easyexif"]
 	path = easyexif/easyexif
 	url = https://github.com/mayanklahiri/easyexif
-[submodule "QuickViewer/src/qactionmanager"]
-	path = QuickViewer/src/qactionmanager
-	url = https://github.com/kanryu/qactionmanager
 [submodule "luminor/luminor"]
 	path = luminor/luminor
 	url = https://github.com/kanryu/luminor

@@ -30,7 +30,7 @@ QVApplication::QVApplication(int &argc, char **argv)
     setApplicationVersion(APP_VERSION);
     setApplicationName(APP_NAME);
     //setOrganizationName(APP_ORGANIZATION);
-//    qDebug() << "TranslationsPath" << QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+    //    qDebug() << "TranslationsPath" << QLibraryInfo::location(QLibraryInfo::TranslationsPath);
 
 #if defined(Q_OS_WIN)
     // Since there is an evil implementation that forcibly installs QuickViewer in Windows "C:/Program Files", the specification is changed as follows.
@@ -70,15 +70,15 @@ QVApplication::QVApplication(int &argc, char **argv)
             }
         }
     }
-//#endif
+    //#endif
     m_settings = new QSettings(getFilePathOfApplicationSetting(APP_INI), QSettings::IniFormat, this);
 
     m_languageSelector.initialize();
     m_qtbaseLanguageSelector.copyLanguages(m_languageSelector.Languages());
     //m_settings->setIniCodec(QTextCodec::codecForName("UTF-8"));
     connect(&m_languageSelector, SIGNAL(languageChanged(QString)), &m_qtbaseLanguageSelector, SLOT(resetTranslator(QString)));
-    registDefaultKeyMap();
-    registDefaultMouseMap();
+    registerDefaultKeyMap();
+    registerDefaultMouseMap();
     loadSettings();
 
     FileLoader7zArchive::initializeLib();
@@ -146,7 +146,7 @@ void QVApplication::myInstallTranslator()
     }
 }
 
-void QVApplication::registDefaultKeyMap()
+void QVApplication::registerDefaultKeyMap()
 {
     // Default key configs
     m_keyActions.addDefaultKey("actionExitApplicationOrFullscreen", QKeySequence("Esc"));
@@ -179,7 +179,7 @@ void QVApplication::registDefaultKeyMap()
     m_keyActions.addDefaultKey("actionMaximizeOrNormal", QKeySequence("Return, Num+Enter"));
 }
 
-void QVApplication::registDefaultMouseMap()
+void QVApplication::registerDefaultMouseMap()
 {
     // Default mouse configs
     m_mouseActions.addDefaultKey("actionNextPage", QMouseSequence("+::WheelDown, +::ForwardButton"));
@@ -191,130 +191,130 @@ void QVApplication::registDefaultMouseMap()
     m_mouseActions.addDefaultKey("actionFullscreen", QMouseSequence("+::MiddleButton"));
 }
 
-void QVApplication::registActions(Ui::MainWindow *ui)
+void QVApplication::registerActions(Ui::MainWindow *ui)
 {
     // File
     QString groupName = tr("File", "File Action Group");
-    m_keyActions.registAction("actionOpenFolder", ui->actionOpenFolder, groupName);
-    m_keyActions.registAction("actionClearHistory", ui->actionClearHistory, groupName);
-    m_keyActions.registAction("actionAutoLoaded", ui->actionAutoLoaded, groupName);
-    m_keyActions.registAction("actionExit", ui->actionExit, groupName);
+    m_keyActions.registerAction("actionOpenFolder", ui->actionOpenFolder, groupName);
+    m_keyActions.registerAction("actionClearHistory", ui->actionClearHistory, groupName);
+    m_keyActions.registerAction("actionAutoLoaded", ui->actionAutoLoaded, groupName);
+    m_keyActions.registerAction("actionExit", ui->actionExit, groupName);
 
     // Bookmark
     groupName = tr("Bookmark", "Bookmark Action Group");
-    m_keyActions.registAction("actionClearBookmarks", ui->actionClearBookmarks, groupName);
-    m_keyActions.registAction("actionLoadBookmark", ui->actionLoadBookmark, groupName);
-    m_keyActions.registAction("actionSaveBookmark", ui->actionSaveBookmark, groupName);
+    m_keyActions.registerAction("actionClearBookmarks", ui->actionClearBookmarks, groupName);
+    m_keyActions.registerAction("actionLoadBookmark", ui->actionLoadBookmark, groupName);
+    m_keyActions.registerAction("actionSaveBookmark", ui->actionSaveBookmark, groupName);
 
     // Navigation
     groupName = tr("Navigation", "Navigation Action Group");
-    m_keyActions.registAction("actionNextPage", ui->actionNextPage, groupName);
-    m_keyActions.registAction("actionPrevPage", ui->actionPrevPage, groupName);
-    m_keyActions.registAction("actionNextPageOrVolume", ui->actionNextPageOrVolume, groupName);
-    m_keyActions.registAction("actionPrevPageOrVolume", ui->actionPrevPageOrVolume, groupName);
-    m_keyActions.registAction("actionTurnPageOnLeft", ui->actionTurnPageOnLeft, groupName);
-    m_keyActions.registAction("actionTurnPageOnRight", ui->actionTurnPageOnRight, groupName);
-    m_keyActions.registAction("actionFastForward", ui->actionFastForward, groupName);
-    m_keyActions.registAction("actionFastBackward", ui->actionFastBackward, groupName);
-    m_keyActions.registAction("actionLastPage", ui->actionLastPage, groupName);
-    m_keyActions.registAction("actionFirstPage", ui->actionFirstPage, groupName);
-    m_keyActions.registAction("actionNextVolume", ui->actionNextVolume, groupName);
-    m_keyActions.registAction("actionPrevVolume", ui->actionPrevVolume, groupName);
-    m_keyActions.registAction("actionNextOnePage", ui->actionNextOnePage, groupName);
-    m_keyActions.registAction("actionPrevOnePage", ui->actionPrevOnePage, groupName);
-    m_keyActions.registAction("actionSlideShow", ui->actionSlideShow, groupName);
+    m_keyActions.registerAction("actionNextPage", ui->actionNextPage, groupName);
+    m_keyActions.registerAction("actionPrevPage", ui->actionPrevPage, groupName);
+    m_keyActions.registerAction("actionNextPageOrVolume", ui->actionNextPageOrVolume, groupName);
+    m_keyActions.registerAction("actionPrevPageOrVolume", ui->actionPrevPageOrVolume, groupName);
+    m_keyActions.registerAction("actionTurnPageOnLeft", ui->actionTurnPageOnLeft, groupName);
+    m_keyActions.registerAction("actionTurnPageOnRight", ui->actionTurnPageOnRight, groupName);
+    m_keyActions.registerAction("actionFastForward", ui->actionFastForward, groupName);
+    m_keyActions.registerAction("actionFastBackward", ui->actionFastBackward, groupName);
+    m_keyActions.registerAction("actionLastPage", ui->actionLastPage, groupName);
+    m_keyActions.registerAction("actionFirstPage", ui->actionFirstPage, groupName);
+    m_keyActions.registerAction("actionNextVolume", ui->actionNextVolume, groupName);
+    m_keyActions.registerAction("actionPrevVolume", ui->actionPrevVolume, groupName);
+    m_keyActions.registerAction("actionNextOnePage", ui->actionNextOnePage, groupName);
+    m_keyActions.registerAction("actionPrevOnePage", ui->actionPrevOnePage, groupName);
+    m_keyActions.registerAction("actionSlideShow", ui->actionSlideShow, groupName);
 
     // Folder
     groupName = tr("Folder", "Folder Action Group");
-    m_keyActions.registAction("actionShowFolder", ui->actionShowFolder, groupName);
-    m_keyActions.registAction("actionShowSubfolders", ui->actionShowSubfolders, groupName);
+    m_keyActions.registerAction("actionShowFolder", ui->actionShowFolder, groupName);
+    m_keyActions.registerAction("actionShowSubfolders", ui->actionShowSubfolders, groupName);
 
     // Catalog
     groupName = tr("Catalog", "Catalog Action Group");
-    m_keyActions.registAction("actionShowCatalog", ui->actionShowCatalog, groupName);
-    m_keyActions.registAction("actionSearchTitleWithOptions", ui->actionSearchTitleWithOptions, groupName);
-    m_keyActions.registAction("actionCatalogTitleWithoutOptions", ui->actionCatalogTitleWithoutOptions, groupName);
-    m_keyActions.registAction("actionCatalogIconLongText", ui->actionCatalogIconLongText, groupName);
+    m_keyActions.registerAction("actionShowCatalog", ui->actionShowCatalog, groupName);
+    m_keyActions.registerAction("actionSearchTitleWithOptions", ui->actionSearchTitleWithOptions, groupName);
+    m_keyActions.registerAction("actionCatalogTitleWithoutOptions", ui->actionCatalogTitleWithoutOptions, groupName);
+    m_keyActions.registerAction("actionCatalogIconLongText", ui->actionCatalogIconLongText, groupName);
 
     // Image
     groupName = tr("Image", "Image Action Group");
-    m_keyActions.registAction("actionRotate", ui->actionRotate, groupName);
-    m_keyActions.registAction("actionFitting", ui->actionFitting, groupName);
-    m_keyActions.registAction("actionFitToWindow", ui->actionFitToWindow, groupName);
-    m_keyActions.registAction("actionFitToWidth", ui->actionFitToWidth, groupName);
-    m_keyActions.registAction("actionZoomIn", ui->actionZoomIn, groupName);
-    m_keyActions.registAction("actionZoomOut", ui->actionZoomOut, groupName);
-    m_keyActions.registAction("actionDontEnlargeSmallImagesOnFitting", ui->actionDontEnlargeSmallImagesOnFitting, groupName);
-    m_keyActions.registAction("actionScrollWithCursorWhenZooming", ui->actionScrollWithCursorWhenZooming, groupName);
-    m_keyActions.registAction("actionLoupeTool", ui->actionLoupeTool, groupName);
+    m_keyActions.registerAction("actionRotate", ui->actionRotate, groupName);
+    m_keyActions.registerAction("actionFitting", ui->actionFitting, groupName);
+    m_keyActions.registerAction("actionFitToWindow", ui->actionFitToWindow, groupName);
+    m_keyActions.registerAction("actionFitToWidth", ui->actionFitToWidth, groupName);
+    m_keyActions.registerAction("actionZoomIn", ui->actionZoomIn, groupName);
+    m_keyActions.registerAction("actionZoomOut", ui->actionZoomOut, groupName);
+    m_keyActions.registerAction("actionDontEnlargeSmallImagesOnFitting", ui->actionDontEnlargeSmallImagesOnFitting, groupName);
+    m_keyActions.registerAction("actionScrollWithCursorWhenZooming", ui->actionScrollWithCursorWhenZooming, groupName);
+    m_keyActions.registerAction("actionLoupeTool", ui->actionLoupeTool, groupName);
 
     groupName = tr("Dual View", "Dual View Action Group");
-    m_keyActions.registAction("actionDualView", ui->actionDualView, groupName);
-    m_keyActions.registAction("actionRightSideBook", ui->actionRightSideBook, groupName);
-    m_keyActions.registAction("actionWideImageAsOneView", ui->actionWideImageAsOneView, groupName);
-    m_keyActions.registAction("actionFirstImageAsOneView", ui->actionFirstImageAsOneView, groupName);
-    m_keyActions.registAction("actionSeparatePagesWhenWideImage", ui->actionSeparatePagesWhenWideImage, groupName);
+    m_keyActions.registerAction("actionDualView", ui->actionDualView, groupName);
+    m_keyActions.registerAction("actionRightSideBook", ui->actionRightSideBook, groupName);
+    m_keyActions.registerAction("actionWideImageAsOneView", ui->actionWideImageAsOneView, groupName);
+    m_keyActions.registerAction("actionFirstImageAsOneView", ui->actionFirstImageAsOneView, groupName);
+    m_keyActions.registerAction("actionSeparatePagesWhenWideImage", ui->actionSeparatePagesWhenWideImage, groupName);
 
     // View
     groupName = tr("View", "View Action Group");
-    m_keyActions.registAction("actionLargeToolbarIcons", ui->actionLargeToolbarIcons, groupName);
-    m_keyActions.registAction("actionShowToolBar", ui->actionShowToolBar, groupName);
-    m_keyActions.registAction("actionShowStatusBar", ui->actionShowStatusBar, groupName);
-    m_keyActions.registAction("actionShowPageBar", ui->actionShowPageBar, groupName);
-    m_keyActions.registAction("actionShowMenuBar", ui->actionShowMenuBar, groupName);
-    m_keyActions.registAction("actionShowFullscreenSignage", ui->actionShowFullscreenSignage, groupName);
-    m_keyActions.registAction("actionRestoreWindowState", ui->actionRestoreWindowState, groupName);
-    m_keyActions.registAction("actionFullscreen", ui->actionFullscreen, groupName);
-    m_keyActions.registAction("actionExitApplicationOrFullscreen", ui->actionExitApplicationOrFullscreen, groupName);
-    m_keyActions.registAction("actionMaximizeOrNormal", ui->actionMaximizeOrNormal, groupName);
-    m_keyActions.registAction("actionShowPanelSeparateWindow", ui->actionShowPanelSeparateWindow, groupName);
-    m_keyActions.registAction("actionStayOnTop", ui->actionStayOnTop, groupName);
-    m_keyActions.registAction("actionHideMouseCursorInFullscreen", ui->actionHideMouseCursorInFullscreen, groupName);
-    m_keyActions.registAction("actionSortByFileName", ui->actionSortByFileName, groupName);
-    m_keyActions.registAction("actionSortByFileNameDescending", ui->actionSortByFileNameDescending, groupName);
-    m_keyActions.registAction("actionSortByFileSize", ui->actionSortByFileSize, groupName);
-    m_keyActions.registAction("actionSortByFileSizeDescending", ui->actionSortByFileSizeDescending, groupName);
-    m_keyActions.registAction("actionSortByModifiedTime", ui->actionSortByModifiedTime, groupName);
-    m_keyActions.registAction("actionSortByModifiedTimeDescending", ui->actionSortByModifiedTimeDescending, groupName);
+    m_keyActions.registerAction("actionLargeToolbarIcons", ui->actionLargeToolbarIcons, groupName);
+    m_keyActions.registerAction("actionShowToolBar", ui->actionShowToolBar, groupName);
+    m_keyActions.registerAction("actionShowStatusBar", ui->actionShowStatusBar, groupName);
+    m_keyActions.registerAction("actionShowPageBar", ui->actionShowPageBar, groupName);
+    m_keyActions.registerAction("actionShowMenuBar", ui->actionShowMenuBar, groupName);
+    m_keyActions.registerAction("actionShowFullscreenSignage", ui->actionShowFullscreenSignage, groupName);
+    m_keyActions.registerAction("actionRestoreWindowState", ui->actionRestoreWindowState, groupName);
+    m_keyActions.registerAction("actionFullscreen", ui->actionFullscreen, groupName);
+    m_keyActions.registerAction("actionExitApplicationOrFullscreen", ui->actionExitApplicationOrFullscreen, groupName);
+    m_keyActions.registerAction("actionMaximizeOrNormal", ui->actionMaximizeOrNormal, groupName);
+    m_keyActions.registerAction("actionShowPanelSeparateWindow", ui->actionShowPanelSeparateWindow, groupName);
+    m_keyActions.registerAction("actionStayOnTop", ui->actionStayOnTop, groupName);
+    m_keyActions.registerAction("actionHideMouseCursorInFullscreen", ui->actionHideMouseCursorInFullscreen, groupName);
+    m_keyActions.registerAction("actionSortByFileName", ui->actionSortByFileName, groupName);
+    m_keyActions.registerAction("actionSortByFileNameDescending", ui->actionSortByFileNameDescending, groupName);
+    m_keyActions.registerAction("actionSortByFileSize", ui->actionSortByFileSize, groupName);
+    m_keyActions.registerAction("actionSortByFileSizeDescending", ui->actionSortByFileSizeDescending, groupName);
+    m_keyActions.registerAction("actionSortByModifiedTime", ui->actionSortByModifiedTime, groupName);
+    m_keyActions.registerAction("actionSortByModifiedTimeDescending", ui->actionSortByModifiedTimeDescending, groupName);
 
     // ContextMenu
     groupName = tr("ContextMenu", "ContextMenu Action Group");
-    m_keyActions.registAction("actionContextMenu", ui->actionContextMenu, groupName);
-    m_keyActions.registAction("actionOpenFiler", ui->actionOpenFiler, groupName);
-    m_keyActions.registAction("actionOpenExif", ui->actionOpenExif, groupName);
-    m_keyActions.registAction("actionCopyPage", ui->actionCopyPage, groupName);
-    m_keyActions.registAction("actionCopyFile", ui->actionCopyFile, groupName);
-    m_keyActions.registAction("actionRecyclePage", ui->actionRecyclePage, groupName);
-    m_keyActions.registAction("actionDeletePage", ui->actionDeletePage, groupName);
-    m_keyActions.registAction("actionMailAttachment", ui->actionMailAttachment, groupName);
-    m_keyActions.registAction("actionRenameImageFile", ui->actionRenameImageFile, groupName);
-    m_keyActions.registAction("actionShowToolBar", ui->actionShowToolBar, groupName);
-    m_keyActions.registAction("actionShowToolBar", ui->actionShowToolBar, groupName);
-    m_keyActions.registAction("actionShowToolBar", ui->actionShowToolBar, groupName);
+    m_keyActions.registerAction("actionContextMenu", ui->actionContextMenu, groupName);
+    m_keyActions.registerAction("actionOpenFiler", ui->actionOpenFiler, groupName);
+    m_keyActions.registerAction("actionOpenExif", ui->actionOpenExif, groupName);
+    m_keyActions.registerAction("actionCopyPage", ui->actionCopyPage, groupName);
+    m_keyActions.registerAction("actionCopyFile", ui->actionCopyFile, groupName);
+    m_keyActions.registerAction("actionRecyclePage", ui->actionRecyclePage, groupName);
+    m_keyActions.registerAction("actionDeletePage", ui->actionDeletePage, groupName);
+    m_keyActions.registerAction("actionMailAttachment", ui->actionMailAttachment, groupName);
+    m_keyActions.registerAction("actionRenameImageFile", ui->actionRenameImageFile, groupName);
+    m_keyActions.registerAction("actionShowToolBar", ui->actionShowToolBar, groupName);
+    m_keyActions.registerAction("actionShowToolBar", ui->actionShowToolBar, groupName);
+    m_keyActions.registerAction("actionShowToolBar", ui->actionShowToolBar, groupName);
 
     // Shader
     groupName = tr("Shader", "Shader Action Group");
-    m_keyActions.registAction("actionShaderBilinear", ui->actionShaderBilinear, groupName);
+    m_keyActions.registerAction("actionShaderBilinear", ui->actionShaderBilinear, groupName);
 #ifndef QV_WITHOUT_OPENGL
-    m_keyActions.registAction("actionShaderBicubic", ui->actionShaderBicubic, groupName);
-    m_keyActions.registAction("actionShaderLanczos", ui->actionShaderLanczos, groupName);
+    m_keyActions.registerAction("actionShaderBicubic", ui->actionShaderBicubic, groupName);
+    m_keyActions.registerAction("actionShaderLanczos", ui->actionShaderLanczos, groupName);
 #endif
-//    m_keyActions.registAction("actionShaderBilinearBeforeCpuBicubic", ui->actionShaderBilinearBeforeCpuBicubic, groupName);
-    m_keyActions.registAction("actionShaderCpuBicubic", ui->actionShaderCpuBicubic, groupName);
-    m_keyActions.registAction("actionShaderCpuSpline16", ui->actionShaderCpuSpline16, groupName);
-    m_keyActions.registAction("actionShaderCpuSpline36", ui->actionShaderCpuSpline36, groupName);
-    m_keyActions.registAction("actionShaderCpuLanczos3", ui->actionShaderCpuLanczos3, groupName);
-    m_keyActions.registAction("actionShaderCpuLanczos4", ui->actionShaderCpuLanczos4, groupName);
-    m_keyActions.registAction("actionShaderNearestNeighbor", ui->actionShaderNearestNeighbor, groupName);
+    //    m_keyActions.registerAction("actionShaderBilinearBeforeCpuBicubic", ui->actionShaderBilinearBeforeCpuBicubic, groupName);
+    m_keyActions.registerAction("actionShaderCpuBicubic", ui->actionShaderCpuBicubic, groupName);
+    m_keyActions.registerAction("actionShaderCpuSpline16", ui->actionShaderCpuSpline16, groupName);
+    m_keyActions.registerAction("actionShaderCpuSpline36", ui->actionShaderCpuSpline36, groupName);
+    m_keyActions.registerAction("actionShaderCpuLanczos3", ui->actionShaderCpuLanczos3, groupName);
+    m_keyActions.registerAction("actionShaderCpuLanczos4", ui->actionShaderCpuLanczos4, groupName);
+    m_keyActions.registerAction("actionShaderNearestNeighbor", ui->actionShaderNearestNeighbor, groupName);
 
     // Help
     groupName = tr("Help", "Help Action Group");
-    m_keyActions.registAction("actionOpenKeyConfig", ui->actionOpenKeyConfig, groupName);
-    m_keyActions.registAction("actionOpenMouseConfig", ui->actionOpenMouseConfig, groupName);
-    m_keyActions.registAction("actionOpenOptionsDialog", ui->actionOpenOptionsDialog, groupName);
-    m_keyActions.registAction("actionProjectWeb", ui->actionProjectWeb, groupName);
-    m_keyActions.registAction("actionCheckVersion", ui->actionCheckVersion, groupName);
-    m_keyActions.registAction("actionAppVersion", ui->actionAppVersion, groupName);
+    m_keyActions.registerAction("actionOpenKeyConfig", ui->actionOpenKeyConfig, groupName);
+    m_keyActions.registerAction("actionOpenMouseConfig", ui->actionOpenMouseConfig, groupName);
+    m_keyActions.registerAction("actionOpenOptionsDialog", ui->actionOpenOptionsDialog, groupName);
+    m_keyActions.registerAction("actionProjectWeb", ui->actionProjectWeb, groupName);
+    m_keyActions.registerAction("actionCheckVersion", ui->actionCheckVersion, groupName);
+    m_keyActions.registerAction("actionAppVersion", ui->actionAppVersion, groupName);
 
     m_mouseActions.actions() = m_keyActions.actions();
     m_mouseActions.nameByGroups() = m_keyActions.nameByGroups();
@@ -424,7 +424,7 @@ void QVApplication::loadSettings()
     m_dontEnlargeSmallImagesOnFitting = m_settings->value("DontEnlargeSmallImagesOnFitting", true).toBool();
     m_showFullscreenSignage = m_settings->value("ShowFullscreenSignage", false).toBool();
     m_dontShrinkForLargeImage = m_settings->value("DontShrinkForLargeImage", false).toBool();
-//    m_showFullscreenTitleBar = m_settings->value("ShowFullscreenTitleBar", true).toBool();
+    //    m_showFullscreenTitleBar = m_settings->value("ShowFullscreenTitleBar", true).toBool();
     m_useDirect2D = m_settings->value("UseDirect2D", false).toBool();
     m_useFastDCTForJPEG = m_settings->value("UseFastDCTForJPEG", true).toBool();
     m_howToLoadSVG = m_settings->value("HowToLoadSVG", "imageformat").toString();
@@ -604,7 +604,7 @@ void QVApplication::saveSettings()
     m_settings->setValue("DontEnlargeSmallImagesOnFitting", m_dontEnlargeSmallImagesOnFitting);
     m_settings->setValue("ShowFullscreenSignage", m_showFullscreenSignage);
     m_settings->setValue("DontShrinkForLargeImage", m_dontShrinkForLargeImage);
-//    m_settings->setValue("ShowFullscreenTitleBar", m_showFullscreenTitleBar);
+    //    m_settings->setValue("ShowFullscreenTitleBar", m_showFullscreenTitleBar);
     m_settings->setValue("UseDirect2D", m_useDirect2D);
     m_settings->setValue("UseFastDCTForJPEG", m_useFastDCTForJPEG);
     m_settings->setValue("HowToLoadSVG", m_howToLoadSVG);

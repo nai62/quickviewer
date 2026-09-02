@@ -17,7 +17,7 @@ PageManager::PageManager(QObject *parent)
     : QObject(parent),
       m_currentPage(0),
       m_wideImage(false),
-      m_prohibit2Pages(false),
+      m_allowSecondPage(true),
       m_volumes(qApp->MaxVolumesCache()),
       m_state(EmptyViewerState{}),
       m_viewportSize(),
@@ -56,7 +56,7 @@ void PageManager::configureVolume(VolumeManager *volume)
         return;
     }
     volume->setViewportSize(m_viewportSize);
-    connect(volume, &VolumeManager::enumerationFinished, this, &PageManager::on_pageEnumerated, Qt::UniqueConnection);
+    connect(volume, &VolumeManager::enumerationFinished, this, &PageManager::handlePageEnumerated, Qt::UniqueConnection);
 }
 
 void PageManager::setViewportSize(QSize size)
@@ -122,16 +122,16 @@ bool PageManager::loadVolume(QString path, bool coverOnly)
     return true;
 }
 
-bool PageManager::loadVolumeWithFile(QString path, bool prohibitProhibit2Page)
+bool PageManager::loadVolumeWithFile(QString path, bool allowSecondPage)
 {
     QString qpath = QDir::fromNativeSeparators(path);
     const QFileInfo imageInfo(qpath);
     QString pathbase = imageInfo.absolutePath();
     const QString subfilename = imageInfo.fileName();
-    if (m_volumes.contains(pathbase) || (prohibitProhibit2Page && qApp->DualView())) {
-        m_prohibit2Pages = !prohibitProhibit2Page;
+    if (m_volumes.contains(pathbase) || (allowSecondPage && qApp->DualView())) {
+        m_allowSecondPage = allowSecondPage;
         bool result = loadVolume(QString("%1::%2").arg(pathbase).arg(subfilename));
-        m_prohibit2Pages = false;
+        m_allowSecondPage = true;
         return result;
     }
 
@@ -288,7 +288,7 @@ void PageManager::startAssociatedVolumeBuild(const QString &qpath,
             emit volumeChanged(volume->volumePath()); }, [](VolumeHandle) {});
 }
 
-void PageManager::on_pageEnumerated()
+void PageManager::handlePageEnumerated()
 {
     if (auto *source = qobject_cast<VolumeManager *>(sender())) {
         if (source != activeVolume()) {
@@ -304,7 +304,7 @@ void PageManager::on_pageEnumerated()
     emit pageChanged();
 }
 
-void PageManager::onSlideShowStarted()
+void PageManager::handleSlideShowStarted()
 {
     VolumeManager *volume = activeVolume();
     if (!volume) {
@@ -316,7 +316,7 @@ void PageManager::onSlideShowStarted()
     }
 }
 
-void PageManager::onSlideShowStopped()
+void PageManager::handleSlideShowStopped()
 {
     VolumeManager *volume = activeVolume();
     if (!volume) {
@@ -700,7 +700,7 @@ bool PageManager::reloadCurrentPage(bool)
     }
     m_wideImage = ic0.wideImage();
     if (!(m_currentPage == 0 && qApp->FirstImageAsOnePageInDualView()) && canDualView()) {
-        if (!m_prohibit2Pages && volume->pageCount() < volume->size() - 1) {
+        if (m_allowSecondPage && volume->pageCount() < volume->size() - 1) {
             ImageContent ic1 = volume->getIndexedImageContent(m_currentPage + 1);
             if (!qApp->WideImageAsOnePageInDualView() || (!ic0.wideImage() && !ic1.wideImage())) {
                 volume->nextPage();

@@ -126,7 +126,7 @@ void ManageDatabaseDialog::dragEnterEvent(QDragEnterEvent *e)
     }
 }
 
-void ManageDatabaseDialog::onAddButton_clicked()
+void ManageDatabaseDialog::handleAddButtonClicked()
 {
     CatalogRecord catalog = {0};
     if (!databaseSettingDialog(catalog, false)) {
@@ -149,11 +149,11 @@ void ManageDatabaseDialog::dropEvent(QDropEvent *e)
         QFileInfo info(url.toLocalFile());
         CatalogRecord catalog = {0};
         if (info.isDir()) {
-//            createCatalog(info.fileName(), QDir::toNativeSeparators(info.absoluteFilePath()));
+            //            createCatalog(info.fileName(), QDir::toNativeSeparators(info.absoluteFilePath()));
             catalog.name = info.fileName();
             catalog.path = QDir::toNativeSeparators(info.absoluteFilePath());
         } else if (info.isFile()) {
-//            createCatalog(info.baseName(), QDir::toNativeSeparators(info.path()));
+            //            createCatalog(info.baseName(), QDir::toNativeSeparators(info.path()));
             catalog.name = info.baseName();
             catalog.path = QDir::toNativeSeparators(info.path());
         }
@@ -190,7 +190,7 @@ void ManageDatabaseDialog::createCatalog()
     }
 }
 
-void ManageDatabaseDialog::on_catalogCreated(const CatalogRecord cr)
+void ManageDatabaseDialog::handleCatalogCreated(const CatalogRecord cr)
 {
     if (!cr.created) {
         return;
@@ -210,16 +210,16 @@ void ManageDatabaseDialog::on_catalogCreated(const CatalogRecord cr)
     resetCatalogList();
 }
 
-void ManageDatabaseDialog::on_catalogCreateFinished()
+void ManageDatabaseDialog::handleCatalogCreationFinished()
 {
     if (!m_catalogWatcher) {
         return;
     }
-    disconnect(m_thumbManager, SIGNAL(catalogCreated(CatalogRecord)), this, SLOT(on_catalogCreated(CatalogRecord)));
-    disconnect(m_catalogWatcher, SIGNAL(finished()), this, SLOT(on_catalogCreateFinished()));
+    disconnect(m_thumbManager, SIGNAL(catalogCreated(CatalogRecord)), this, SLOT(handleCatalogCreated(CatalogRecord)));
+    disconnect(m_catalogWatcher, SIGNAL(finished()), this, SLOT(handleCatalogCreationFinished()));
     disconnect(m_catalogWatcher, SIGNAL(progressRangeChanged(int, int)), ui->progressBar, SLOT(setRange(int, int)));
     disconnect(m_catalogWatcher, SIGNAL(progressValueChanged(int)), ui->progressBar, SLOT(setValue(int)));
-  //  disconnect(m_catalogWatcher, SIGNAL(progressTextChanged(QString)), ui->progressBar, SLOT(setWindowTitle(QString)));
+    //  disconnect(m_catalogWatcher, SIGNAL(progressTextChanged(QString)), ui->progressBar, SLOT(setWindowTitle(QString)));
     disconnect(m_catalogWatcher, SIGNAL(progressTextChanged(QString)), ui->volumeNameLabel, SLOT(setText(QString)));
 
     m_catalogWatcher = nullptr;
@@ -235,23 +235,23 @@ void ManageDatabaseDialog::on_catalogCreateFinished()
     msgBox.exec();
 }
 
-void ManageDatabaseDialog::onCancelButton_clicked()
+void ManageDatabaseDialog::handleCancelButtonClicked()
 {
     if (!m_thumbManager) {
         return;
     }
     if (!m_catalogWatcher) {
-        connect(m_thumbManager, SIGNAL(catalogCreated(CatalogRecord)), this, SLOT(on_catalogCreated(CatalogRecord)));
+        connect(m_thumbManager, SIGNAL(catalogCreated(CatalogRecord)), this, SLOT(handleCatalogCreated(CatalogRecord)));
         m_catalogWatcher = m_thumbManager->createCatalogAsync(m_makeCatalogs);
-        connect(m_catalogWatcher, SIGNAL(finished()), this, SLOT(on_catalogCreateFinished()));
+        connect(m_catalogWatcher, SIGNAL(finished()), this, SLOT(handleCatalogCreationFinished()));
         connect(m_catalogWatcher, SIGNAL(progressRangeChanged(int, int)), ui->progressBar, SLOT(setRange(int, int)));
         connect(m_catalogWatcher, SIGNAL(progressValueChanged(int)), ui->progressBar, SLOT(setValue(int)));
         connect(m_catalogWatcher, SIGNAL(progressTextChanged(QString)), ui->volumeNameLabel, SLOT(setText(QString)));
 
         progressButtonStates();
     } else {
-        disconnect(m_thumbManager, SIGNAL(catalogCreated(CatalogRecord)), this, SLOT(on_catalogCreated(CatalogRecord)));
-        disconnect(m_catalogWatcher, SIGNAL(finished()), this, SLOT(on_catalogCreateFinished()));
+        disconnect(m_thumbManager, SIGNAL(catalogCreated(CatalogRecord)), this, SLOT(handleCatalogCreated(CatalogRecord)));
+        disconnect(m_catalogWatcher, SIGNAL(finished()), this, SLOT(handleCatalogCreationFinished()));
         disconnect(m_catalogWatcher, SIGNAL(progressRangeChanged(int, int)), ui->progressBar, SLOT(setRange(int, int)));
         disconnect(m_catalogWatcher, SIGNAL(progressValueChanged(int)), ui->progressBar, SLOT(setValue(int)));
         m_thumbManager->cancelCreateCatalogAsync();
@@ -273,7 +273,7 @@ void ManageDatabaseDialog::closeEvent(QCloseEvent *)
     m_thumbManager->vacuum();
 }
 
-void ManageDatabaseDialog::onEditButton_clicked()
+void ManageDatabaseDialog::handleEditButtonClicked()
 {
     if (!m_thumbManager) {
         return;
@@ -302,7 +302,7 @@ void ManageDatabaseDialog::onEditButton_clicked()
     resetCatalogList();
 }
 
-void ManageDatabaseDialog::onDeleteButton_clicked()
+void ManageDatabaseDialog::handleDeleteButtonClicked()
 {
     if (!m_thumbManager) {
         return;
@@ -326,11 +326,11 @@ void ManageDatabaseDialog::onDeleteButton_clicked()
     normalButtonStates();
 }
 
-void ManageDatabaseDialog::onUpdateButton_clicked()
+void ManageDatabaseDialog::handleUpdateButtonClicked()
 {
 }
 
-void ManageDatabaseDialog::onDeleteAllButton_clicked()
+void ManageDatabaseDialog::handleDeleteAllButtonClicked()
 {
     if (!m_thumbManager) {
         return;
@@ -343,6 +343,6 @@ void ManageDatabaseDialog::onDeleteAllButton_clicked()
     normalButtonStates();
 }
 
-void ManageDatabaseDialog::onUpdateAllButton_clicked()
+void ManageDatabaseDialog::handleUpdateAllButtonClicked()
 {
 }
