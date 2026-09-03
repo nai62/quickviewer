@@ -33,7 +33,7 @@
     </message>
     <message>
         <location filename="../src/retouchwindow.ui" line="14"/>
-        <source>Retouch Window</source>
+        <source>Brightness Window</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
