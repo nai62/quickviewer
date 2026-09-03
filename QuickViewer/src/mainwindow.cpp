@@ -137,7 +137,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->menuBar->setCornerWidget(m_fullscreenButton);
 
     ui->actionLargeToolbarIcons->setChecked(qApp->LargeToolbarIcons());
-    ui->actionLargeToolbarIcons->triggered(qApp->LargeToolbarIcons());
+    handleLargeToolbarIconsActionTriggered(qApp->LargeToolbarIcons());
 
     ui->graphicsView->handleRightSideBookActionTriggered(qApp->RightSideBook());
     ui->actionRightSideBook->setChecked(qApp->RightSideBook());
@@ -168,11 +168,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     // ToolBar/PageBar/StatusBar/MenuBar
     ui->actionShowToolBar->setChecked(qApp->ShowToolBar());
-    ui->actionShowToolBar->triggered(qApp->ShowToolBar());
+    handleShowToolBarActionTriggered(qApp->ShowToolBar());
     ui->actionShowPageBar->setChecked(qApp->ShowSliderBar());
-    ui->actionShowPageBar->triggered(qApp->ShowSliderBar());
+    handleShowPageBarActionTriggered(qApp->ShowSliderBar());
     ui->actionShowStatusBar->setChecked(qApp->ShowStatusBar());
-    ui->actionShowStatusBar->triggered(qApp->ShowStatusBar());
+    handleShowStatusBarActionTriggered(qApp->ShowStatusBar());
     ui->actionShowMenuBar->setChecked(qApp->ShowMenuBar());
     if (!qApp->ShowMenuBar()) {
         menuBar()->hide();
@@ -546,11 +546,11 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             // tap left/right of window
             if (mouseEvent->button() == Qt::LeftButton) {
                 if (ui->graphicsView->hoverState() == Qt::AnchorLeft) {
-                    ui->actionTurnPageOnLeft->triggered();
+                    ui->actionTurnPageOnLeft->trigger();
                     return true;
                 }
                 if (ui->graphicsView->hoverState() == Qt::AnchorRight) {
-                    ui->actionTurnPageOnRight->triggered();
+                    ui->actionTurnPageOnRight->trigger();
                     return true;
                 }
             }
