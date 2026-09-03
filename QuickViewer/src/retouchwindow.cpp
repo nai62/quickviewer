@@ -114,7 +114,7 @@ void RetouchWindow::handleGammaLineEditTextChanged(QString text)
 
 void RetouchWindow::handleResetButtonClicked()
 {
-    m_retouchParams = ImageRetouch();
+    m_retouchParams = RetouchParameters();
     resetSliders();
     emit retouchParametersChanged(m_retouchParams);
 }

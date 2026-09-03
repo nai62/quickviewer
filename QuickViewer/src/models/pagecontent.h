@@ -10,21 +10,21 @@
 #include "qvmovie.h"
 #include "qv_init.h"
 
-struct ImageRetouch
+struct RetouchParameters
 {
     float brightness;
     float contrast;
     float gamma;
-    ImageRetouch(float brightness = 0.0f, float contrast = 1.0f, float gamma = 1.0f)
+    RetouchParameters(float brightness = 0.0f, float contrast = 1.0f, float gamma = 1.0f)
         : brightness(brightness),
           contrast(contrast),
           gamma(gamma)
     {}
     bool isDefault() const
     {
-        return *this == ImageRetouch();
+        return *this == RetouchParameters();
     }
-    bool operator==(const ImageRetouch &rhs) const
+    bool operator==(const RetouchParameters &rhs) const
     {
         return brightness == rhs.brightness && contrast == rhs.contrast && gamma == rhs.gamma;
     }
@@ -35,7 +35,7 @@ class PageRenderContext
 public:
     virtual ~PageRenderContext() = default;
     virtual qreal currentPixelRatio() const = 0;
-    virtual ImageRetouch retouchParameters() const = 0;
+    virtual RetouchParameters retouchParameters() const = 0;
 };
 
 /**
@@ -46,7 +46,7 @@ struct ImageContent
     /**
      * @brief Decoded image used for viewing
      */
-    QImage image;
+    QImage loadedImage;
     /**
      * @brief Cached image with brightness, contrast, and gamma adjustments
      */
@@ -77,7 +77,7 @@ struct ImageContent
     easyexif::EXIFInfo exifInfo;
 
     size_t fileSize = 0;
-    ImageRetouch appliedRetouchParameters;
+    RetouchParameters appliedRetouchParameters;
     qvEnums::ShaderEffect appliedResizeMode = qvEnums::Bilinear;
 
     ImageContent() = default;
@@ -85,10 +85,10 @@ struct ImageContent
         : path(std::move(imagePath)),
           fileSize(size)
     {}
-    ImageContent(QImage loadedImage, QString imagePath, QSize sourceSize, easyexif::EXIFInfo metadata, size_t size)
-        : image(std::move(loadedImage)),
+    ImageContent(QImage image, QString imagePath, QSize sourceSize, easyexif::EXIFInfo metadata, size_t size)
+        : loadedImage(std::move(image)),
           originalSize(sourceSize),
-          loadedImageSize(image.size()),
+          loadedImageSize(loadedImage.size()),
           path(std::move(imagePath)),
           exifInfo(std::move(metadata)),
           fileSize(size)

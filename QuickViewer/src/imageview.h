@@ -48,7 +48,7 @@ public:
     void updateGestureTransform(qreal scale, qreal rotationDegrees);
     void commitGestureTransform();
     void resetGestureTransform();
-    ImageRetouch retouchParameters() const override { return m_retouchParams; }
+    RetouchParameters retouchParameters() const override { return m_retouchParams; }
     qreal currentPixelRatio() const override { return m_lastScreenPixelRatio; }
     void setCursor(const QCursor &cursor);
     AddRenderedPageResult addRenderedPage(ImageContent content, bool append);
@@ -123,7 +123,7 @@ public slots:
     void handleCopyFileActionTriggered();
 
     // Retouch
-    void handleRetouchParametersChanged(ImageRetouch params);
+    void handleRetouchParametersChanged(RetouchParameters params);
 
 private:
     qreal manualZoomScale() const;
@@ -168,7 +168,7 @@ private:
     bool m_isFullScreen;
     bool m_scrollMode;
     bool m_openSeparatedPageFromEnd;
-    ImageRetouch m_retouchParams;
+    RetouchParameters m_retouchParams;
 };
 
 #endif // IMAGEVIEW_H

@@ -153,7 +153,7 @@ bool PageManager::loadVolumeWithFile(QString path, bool allowSecondPage)
             m_pendingAssociatedPath = normalizedPath;
             m_pendingAssociatedBasePath = basePath;
             m_pendingAssociatedFileName = subfileName;
-            const bool imageReady = !content.image.isNull() || !content.resizedImage.isNull() || !content.movie.isNull();
+            const bool imageReady = !content.loadedImage.isNull() || !content.resizedImage.isNull() || !content.movie.isNull();
             m_state = StandalonePreviewViewerState{
                 displayGeneration, imageReady, false, false};
             if (imageReady) {

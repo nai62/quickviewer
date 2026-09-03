@@ -144,7 +144,7 @@ QString ImageString::formatString(QString fmt)
             break;
             // Image bitmap size with useful, e.g. '1.59 MB'
         case 'b': {
-            double filelength = page->image.sizeInBytes();
+            double filelength = page->loadedImage.sizeInBytes();
             if (filelength < 1024) {
                 result << QString(tr("%1 Bytes")).arg(filelength);
             } else if (filelength < 1024 * 1024) {

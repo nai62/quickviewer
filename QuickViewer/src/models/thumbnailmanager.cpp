@@ -179,7 +179,7 @@ VolumeWorker ThumbnailManager::createSubVolumesConcurrent(QString dirpath, int v
         //        }
         VolumeManagerBuilder builder(dirpath);
         ImageContent ic = builder.thumbnail();
-        if (!ic.image.isNull()) {
+        if (!ic.loadedImage.isNull()) {
             vw.frontPage = createFileRecordFromArchive(dirpath, ic, 0);
         }
 
@@ -610,7 +610,7 @@ FileWorker ThumbnailManager::createFileRecordFromArchive(QString archivePath, Im
     result.filepath = ic.path;
     result.info.setFile(archivePath);
     result.asc = filename_asc;
-    QImage img = ic.image;
+    QImage img = ic.loadedImage;
     if (!img.width()) {
         result.asc = -1;
         return result;

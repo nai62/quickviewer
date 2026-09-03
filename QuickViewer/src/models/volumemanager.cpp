@@ -295,7 +295,7 @@ void VolumeManager::handleReady()
                 QSize resized = ic.exifInfo.Orientation == 6 || ic.exifInfo.Orientation == 8 ? QSize(pageSize.height(), pageSize.width()) : pageSize;
                 resized.setWidth(ic.loadedImageSize.width() * resized.height() / ic.loadedImageSize.height());
 
-                if (ic.resizedImage.size() != resized && !ic.image.isNull()) {
+                if (ic.resizedImage.size() != resized && !ic.loadedImage.isNull()) {
                     qDebug() << ic.resizedImage.size() << resized;
                     const future_image future = scheduleResize(
                         ic, pageSize);
@@ -646,14 +646,14 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QByteA
             resizer.resizeHV(half.bits(), src.bits(), src.width(), srcSize.height(), half.bytesPerLine(), src.bytesPerLine());
 
             //        ImageContent ic(QPixmap::fromImage(half), path, srcSizeReal, info);
-            ic.image = half;
+            ic.loadedImage = half;
             ic.loadedImageSize = half.size();
         }
         // CPU resizing before Page Viewing
-        if (!pageSize.isEmpty() && !ic.image.isNull()) {
+        if (!pageSize.isEmpty() && !ic.loadedImage.isNull()) {
             QSize newsize = ic.exifInfo.Orientation == 6 || ic.exifInfo.Orientation == 8 ? QSize(pageSize.height(), pageSize.width()) : pageSize;
             ic.appliedResizeMode = qApp->Effect();
-            ic.resizedImage = QZimg::scaled(ic.image, newsize, Qt::KeepAspectRatio, filterModeForShaderEffect(qApp->Effect()));
+            ic.resizedImage = QZimg::scaled(ic.loadedImage, newsize, Qt::KeepAspectRatio, filterModeForShaderEffect(qApp->Effect()));
         }
         return ic;
     }
@@ -706,7 +706,7 @@ ImageContent VolumeManager::futureLoadImageFromFileVolume(
     ImageContent ic = futureLoadImageFromFileVolumeImpl(context, path, pageSize);
     qint64 t_load = et_load.elapsed();
 
-    qDebug() << "futureLoadImageFromFileVolume" << path << t_load << "ms, ResizedImage=" << !ic.resizedImage.isNull();
+    qDebug() << "futureLoadImageFromFileVolume" << path << t_load << "ms, resizedImage=" << !ic.resizedImage.isNull();
     return ic;
 }
 
@@ -727,6 +727,6 @@ ImageContent VolumeManager::resizeImageForViewport(ImageContent content, QSize p
                                  : pageSize;
     content.appliedResizeMode = qApp->Effect();
     content.resizedImage = QZimg::scaled(
-        content.image, targetSize, Qt::KeepAspectRatio, filterModeForShaderEffect(qApp->Effect()));
+        content.loadedImage, targetSize, Qt::KeepAspectRatio, filterModeForShaderEffect(qApp->Effect()));
     return content;
 }

@@ -37,7 +37,7 @@ public:
         return 2.0;
     }
 
-    ImageRetouch retouchParameters() const override { return {}; }
+    RetouchParameters retouchParameters() const override { return {}; }
 
     mutable int pixelRatioRequests = 0;
 };
@@ -196,8 +196,8 @@ private slots:
         QCOMPARE(volume.currentPath(), QString());
         QCOMPARE(volume.currentPathWithSeparator(), QString());
         QCOMPARE(volume.getIndexedFileName(0), QString());
-        QVERIFY(volume.currentImage().image.isNull());
-        QVERIFY(volume.getIndexedImageContent(0).image.isNull());
+        QVERIFY(volume.currentImage().loadedImage.isNull());
+        QVERIFY(volume.getIndexedImageContent(0).loadedImage.isNull());
         QVERIFY(!volume.nextPage());
         QVERIFY(!volume.prevPage());
         QVERIFY(!volume.findPageByIndex(0));

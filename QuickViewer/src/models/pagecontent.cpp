@@ -44,7 +44,7 @@ void ImageContent::initializeAnimation()
         QMovie *qm = movie.data();
         qm->jumpToFrame(0);
         QPixmap firstFrame = qm->currentPixmap();
-        image = firstFrame.toImage();
+        loadedImage = firstFrame.toImage();
         originalSize = loadedImageSize = firstFrame.size();
     }
 }
@@ -111,11 +111,11 @@ QPoint PageItem::offsetForRotation(int rotationOffset) const
 {
     switch (combinedRotationDegrees(rotationDegrees, rotationOffset)) {
     case 90:
-        return QPoint(content.image.height(), 0);
+        return QPoint(content.loadedImage.height(), 0);
     case 180:
-        return QPoint(content.image.width(), content.image.height());
+        return QPoint(content.loadedImage.width(), content.loadedImage.height());
     case 270:
-        return QPoint(0, content.image.width());
+        return QPoint(0, content.loadedImage.width());
     default:
         return QPoint();
     }
@@ -125,8 +125,8 @@ QSize PageItem::rotatedImageSize(int rotationOffset) const
 {
     const int rotation = combinedRotationDegrees(rotationDegrees, rotationOffset);
     return rotation == 90 || rotation == 270
-               ? QSize(content.image.height(), content.image.width())
-               : content.image.size();
+               ? QSize(content.loadedImage.height(), content.loadedImage.width())
+               : content.loadedImage.size();
 }
 
 QRect PageItem::setPageLayoutFitting(QRect viewport, PageItem::PageAlign alignment, qvEnums::FitMode fitMode, qreal loupe, int rotationOffset)
@@ -322,20 +322,20 @@ void PageItem::applyResize(qreal scale, int rotationOffset, QPoint position, QSi
 QImage &PageItem::imageWithRetouch()
 {
 #ifndef QV_WITH_LUMINOR
-    return content.image;
+    return content.loadedImage;
 #else
-    const ImageRetouch params = m_renderContext ? m_renderContext->retouchParameters() : ImageRetouch();
+    const RetouchParameters params = m_renderContext ? m_renderContext->retouchParameters() : RetouchParameters();
     if (content.appliedRetouchParameters == params) {
-        return params.isDefault() ? content.image : content.retouchedImage;
+        return params.isDefault() ? content.loadedImage : content.retouchedImage;
     }
     content.resizedImage = QImage();
     content.appliedRetouchParameters = params;
     if (!params.isDefault()) {
-        content.retouchedImage = QLuminor::toLuminor(content.image, params.brightness, params.contrast, params.gamma);
+        content.retouchedImage = QLuminor::toLuminor(content.loadedImage, params.brightness, params.contrast, params.gamma);
         return content.retouchedImage;
     }
     content.retouchedImage = QImage();
-    return content.image;
+    return content.loadedImage;
 #endif
 }
 

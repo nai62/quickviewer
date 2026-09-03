@@ -18,7 +18,7 @@ public:
     void initializeFromImageView(const ImageView *imageView);
 
 signals:
-    void retouchParametersChanged(ImageRetouch params);
+    void retouchParametersChanged(RetouchParameters params);
 
 public slots:
     void handleBrightnessSliderValueChanged(int value);
@@ -35,7 +35,7 @@ private:
     void resetSliders();
 
     Ui::RetouchWindow *ui;
-    ImageRetouch m_retouchParams;
+    RetouchParameters m_retouchParams;
     bool m_ignoreTextChange;
 };
 

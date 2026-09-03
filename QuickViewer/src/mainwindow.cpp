@@ -1842,7 +1842,7 @@ void MainWindow::handleRecyclePageActionTriggered()
         if (!page) {
             return;
         }
-        QImage image = page->image;
+        QImage image = page->loadedImage;
         image = image.scaled(QSize(100, 100), Qt::KeepAspectRatio);
         msgBox.setIconPixmap(QPixmap::fromImage(image));
 
@@ -1883,7 +1883,7 @@ void MainWindow::handleDeletePageActionTriggered()
         if (!page) {
             return;
         }
-        QImage image = page->image;
+        QImage image = page->loadedImage;
         image = image.scaled(QSize(100, 100), Qt::KeepAspectRatio);
         msgBox.setIconPixmap(QPixmap::fromImage(image));
 
