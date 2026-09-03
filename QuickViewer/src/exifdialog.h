@@ -14,7 +14,7 @@ class ExifDialog : public QWidget
     Q_OBJECT
 
 public:
-    explicit ExifDialog(QWidget *parent = 0);
+    explicit ExifDialog(QWidget *parent = nullptr);
     ~ExifDialog();
 
     void setExif(const ImageContent &content);

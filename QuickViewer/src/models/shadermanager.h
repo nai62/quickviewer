@@ -15,7 +15,7 @@ class ShaderManager : public QObject
 {
     Q_OBJECT
 public:
-    ShaderManager(QObject *parent = 0);
+    ShaderManager(QObject *parent = nullptr);
     /**
      * @brief prepare shader for each page
      * @param ic

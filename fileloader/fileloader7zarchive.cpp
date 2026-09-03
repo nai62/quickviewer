@@ -203,7 +203,7 @@ public:
 
         if (writeBytes >= 0)
         {
-            if (processedSize != NULL)
+            if (processedSize != nullptr)
                 *processedSize = writeBytes;
 
             m_nFileSize += writeBytes;

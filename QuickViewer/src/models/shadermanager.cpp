@@ -10,7 +10,7 @@
 class LanczosShaderEffect : public QGraphicsShaderEffect
 {
 public:
-    LanczosShaderEffect(QObject *parent = 0)
+    LanczosShaderEffect(QObject *parent = nullptr)
         : QGraphicsShaderEffect(parent)
     {}
     void createKernel(float delta, int *size);

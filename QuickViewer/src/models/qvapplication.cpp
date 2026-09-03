@@ -360,7 +360,7 @@ QString QVApplication::getDefaultPictureFolderPath()
     WCHAR szPath[MAX_PATH + 1];
 
     SHGetMalloc(&pMalloc);
-    result = ::SHGetSpecialFolderLocation(NULL, nFolder, &pidl);
+    result = ::SHGetSpecialFolderLocation(nullptr, nFolder, &pidl);
 
     if (SUCCEEDED(result)) {
         ::SHGetPathFromIDList(pidl, szPath);

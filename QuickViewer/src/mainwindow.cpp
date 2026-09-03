@@ -508,10 +508,10 @@ void MainWindow::closeEvent(QCloseEvent *)
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
-    QKeyEvent *keyEvent = NULL;//event data, if this is a keystroke event
-    QMouseEvent *mouseEvent = NULL;//event data, if this is a keystroke event
-    //QDragEnterEvent  *dragEnterEvent = NULL;//event data, if this is a keystroke event
-    //QDropEvent *dropEvent = NULL;//event data, if this is a keystroke event
+    QKeyEvent *keyEvent = nullptr;//event data, if this is a keystroke event
+    QMouseEvent *mouseEvent = nullptr;//event data, if this is a keystroke event
+    //QDragEnterEvent  *dragEnterEvent = nullptr;//event data, if this is a keystroke event
+    //QDropEvent *dropEvent = nullptr;//event data, if this is a keystroke event
 
 //    if(obj == ui->graphicsView) {
 //        qDebug() << "graphicsView <= " << event->type();
