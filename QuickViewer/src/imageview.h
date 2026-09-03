@@ -121,7 +121,6 @@ public slots:
     void handleCopyPageActionTriggered();
     void handleCopyFileActionTriggered();
 
-    // Retouch
     void handleRetouchParametersChanged(RetouchParameters params);
 
 private:

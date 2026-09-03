@@ -201,10 +201,9 @@ void ImageView::handleVisiblePagesChanged(VisiblePages pages)
         }
     }
 }
-//static int paintCnt=0;
+
 void ImageView::refreshRenderedPages()
 {
-    //    qDebug() << "refreshRenderedPages " << paintCnt++;
     if (qApp->Effect() > qvEnums::UsingFixedShader) {
         setRenderer(OpenGL);
     }
@@ -350,6 +349,7 @@ void ImageView::updateZoomScrollFromCursor()
     horizontalScrollBar()->setValue(scrollPosition.x());
     verticalScrollBar()->setValue(scrollPosition.y());
 }
+
 void ImageView::updateGestureTransform(qreal scale, qreal rotationDegrees)
 {
     m_pendingGestureScale = scale;
