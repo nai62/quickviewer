@@ -1211,7 +1211,7 @@ void MainWindow::handlePageManagerPageChanged()
         return;
     }
     // PageSlider
-    ui->pageLabel->setText(m_pageManager.currentPageNumAsString());
+    ui->pageLabel->setText(m_pageManager.currentPageNumberText());
     m_sliderChanging = true;
 
     // at DualView Mode, last 2 page should be [volume.size()-2, volume.size()-1]
@@ -1226,7 +1226,7 @@ void MainWindow::handlePageManagerPageChanged()
     m_sliderChanging = false;
 
     // StatusBar
-    //    m_pageCaption = m_pageManager.currentPageStatusAsString();
+    //    m_pageCaption = m_pageManager.currentPageStatusText();
     m_pageCaption = m_imageString.getStatusBarText();
 
     // Elide text(Otherwise the width of the main window will be forcibly changed)

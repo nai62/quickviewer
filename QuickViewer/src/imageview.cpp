@@ -536,7 +536,7 @@ void ImageView::handleRotateActionTriggered()
     if (page < 0 || page >= m_pageRotations.size()) {
         return;
     }
-    m_pageRotations[page] += 90;
+    m_pageRotations[page] = (m_pageRotations[page] + 90) % 360;
     refreshRenderedPages();
 }
 

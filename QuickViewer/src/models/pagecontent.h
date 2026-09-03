@@ -39,12 +39,10 @@ public:
 };
 
 /**
- * @brief The ImageContent struct
- * actual Image data and metadata
+ * @brief Decoded image data, metadata, and derived rendering caches
  */
 struct ImageContent
 {
-public:
     /**
      * @brief Decoded image used for viewing
      */
@@ -96,12 +94,11 @@ public:
           fileSize(size)
     {}
     bool isLandscape() const { return originalSize.width() > originalSize.height(); }
-    void initialize();
+    void initializeAnimation();
 };
 
 /**
- * @brief PageItem
- * contains the informations of a Page
+ * @brief Rendered state for a page
  */
 class PageItem : public QObject
 {
@@ -119,66 +116,54 @@ public:
     //    };
 
     enum SeparationState {
-        NoSeparated,
-        FirstSeparated,
-        SecondSeparated
+        NotSeparated,
+        FirstHalf,
+        SecondHalf
     };
 
-    QGraphicsScene *Scene;
-    ImageContent Ic;
+    QGraphicsScene *scene;
+    ImageContent content;
     /**
-     * @brief GrItem
-     * Page image is used as a QGraphicsItem. It will be registered with the scene.
+     * @brief Graphics item registered with the scene for this page
      */
-    QGraphicsItem *GrItem;
-    //    /**
-    //     * @brief Resized
-    //     * Store the image changed to the specified size (newsize)
-    //     */
-    //    QPixmap ResizedPage;
-    QFutureWatcher<QImage> generateWatcher;
+    QGraphicsItem *graphicsItem;
     /**
-     * @brief Rotate: rotation as digrees
+     * @brief Rotation in degrees from the decoded image orientation
      */
-    int Rotate;
+    int rotationDegrees;
     /**
-     * @brief GText is information as a text on fullscreen
+     * @brief Fullscreen signage text
      */
-    QString Text;
-    QGraphicsTextItem *GText;
-    QGraphicsRectItem *GTextSurface;
+    QString signageText;
+    QGraphicsTextItem *signageTextItem;
+    QGraphicsRectItem *signageBackgroundItem;
     /**
      * @brief Actual drawing scale
      */
-    qreal DrawScale;
+    qreal drawScale;
     /**
-     * @brief Notational scale
+     * @brief Scale displayed to the user
      */
-    qreal NotationalScale;
-    SeparationState Separation;
+    qreal displayScale;
+    SeparationState separationState;
 
     explicit PageItem(QObject *parent = nullptr, const PageRenderContext *renderContext = nullptr);
-    PageItem(QObject *parent, QGraphicsScene *s, ImageContent ic, const PageRenderContext *renderContext = nullptr);
+    PageItem(QObject *parent, QGraphicsScene *graphicsScene, ImageContent imageContent, const PageRenderContext *renderContext = nullptr);
     ~PageItem() override;
     Q_DISABLE_COPY_MOVE(PageItem)
 
-    QPoint Offset(int rotateOffset = 0);
-    QSize CurrentSize(int rotateOffset = 0);
+    QPoint offsetForRotation(int rotationOffset = 0) const;
+    QSize rotatedImageSize(int rotationOffset = 0) const;
 
     /**
-     * @brief setPageLayout set each image on the page
-     * @param viewport: the image must be inscribed in the viewport area
+     * @brief Lay out an image fitted within the viewport
      */
-    QRect setPageLayoutFitting(QRect viewport, PageAlign align, qvEnums::FitMode fitMode, qreal loupe, int rotateOffset = 0);
-    QRect setPageLayoutManual(QRect viewport, PageAlign align, qreal scale, int rotateOffset = 0, bool loupe = false);
+    QRect setPageLayoutFitting(QRect viewport, PageAlign alignment, qvEnums::FitMode fitMode, qreal loupe, int rotationOffset = 0);
+    QRect setPageLayoutManual(QRect viewport, PageAlign alignment, qreal scale, int rotationOffset = 0, bool loupe = false);
 
-    void applyResize(qreal scale, int rotateOffset, QPoint pos, QSize newsize, bool loupe = false);
-    QImage &applyRetouched();
-    void initializePage(bool resetResized = false);
-    void resetSignage(QRect viewport, PageItem::PageAlign fitting);
-    void resetScene(QGraphicsScene *scene);
-    void checkInitialize();
-    void dispose();
+    void applyResize(qreal scale, int rotationOffset, QPoint position, QSize targetSize, bool loupe = false);
+    void initializePage(bool resetResizedImage = false);
+    void resetSignage(QRect viewport, PageItem::PageAlign alignment);
 signals:
     void resizeFinished();
 public slots:
@@ -187,8 +172,13 @@ public slots:
     void handleAnimationFinished();
 
 private:
+    QImage &imageWithRetouch();
+    void ensureInitialized();
+    void dispose();
+
+    QFutureWatcher<QImage> m_resizeWatcher;
     int m_resizeGeneratingState;
-    bool initialized;
+    bool m_initialized;
     // Non-owning. The context must outlive this page item.
     const PageRenderContext *m_renderContext;
 };

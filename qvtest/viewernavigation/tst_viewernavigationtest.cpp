@@ -72,8 +72,8 @@ private slots:
         QVERIFY(!manager.reloadCurrentPage());
         QCOMPARE(manager.currentPagePath(), QString());
         QCOMPARE(manager.currentPageName(), QString());
-        QCOMPARE(manager.currentPageNumAsString(), QString());
-        QCOMPARE(manager.currentPageStatusAsString(), QString());
+        QCOMPARE(manager.currentPageNumberText(), QString());
+        QCOMPARE(manager.currentPageStatusText(), QString());
         QCOMPARE(manager.pageSignage(0), QString());
         QCOMPARE(manager.pageSignage(-1), QString());
     }

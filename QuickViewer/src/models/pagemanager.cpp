@@ -16,7 +16,7 @@ static QFuture<VolumeHandle> readyVolumeFuture(VolumeHandle volume)
 PageManager::PageManager(QObject *parent)
     : QObject(parent),
       m_currentPage(0),
-      m_wideImage(false),
+      m_currentPageIsLandscape(false),
       m_allowSecondPage(true),
       m_volumes(qApp->MaxVolumesCache()),
       m_state(EmptyViewerState{}),
@@ -93,8 +93,8 @@ bool PageManager::loadVolume(QString path, bool coverOnly)
     const quint64 generation = ++m_initialDisplayGeneration;
     m_state = LoadingViewerState{generation};
     m_pendingAssociatedPath.clear();
-    m_pendingAssociatedPathbase.clear();
-    m_pendingAssociatedFilename.clear();
+    m_pendingAssociatedBasePath.clear();
+    m_pendingAssociatedFileName.clear();
     m_initialImageLoads.invalidate();
     m_volumeLoads.invalidate();
     clearPages();
@@ -109,7 +109,7 @@ bool PageManager::loadVolume(QString path, bool coverOnly)
     if (coverOnly) {
         volume->setCacheMode(VolumeManager::CoverOnly);
     } else {
-        m_volumenames = QStringList();
+        m_volumeNames = QStringList();
     }
     m_currentPage = 0;
     const int initialPage = coverOnly ? 0 : volume->pageCount();
@@ -117,20 +117,20 @@ bool PageManager::loadVolume(QString path, bool coverOnly)
     if (activeVolume() != volume) {
         return true;
     }
-    // if volume is folder and the path incluces filename, pageCount() != 0
+    // A folder path that includes a filename may already select a page.
     selectPage(initialPage);
     return true;
 }
 
 bool PageManager::loadVolumeWithFile(QString path, bool allowSecondPage)
 {
-    QString qpath = QDir::fromNativeSeparators(path);
-    const QFileInfo imageInfo(qpath);
-    QString pathbase = imageInfo.absolutePath();
-    const QString subfilename = imageInfo.fileName();
-    if (m_volumes.contains(pathbase) || (allowSecondPage && qApp->DualView())) {
+    QString normalizedPath = QDir::fromNativeSeparators(path);
+    const QFileInfo imageInfo(normalizedPath);
+    QString basePath = imageInfo.absolutePath();
+    const QString subfileName = imageInfo.fileName();
+    if (m_volumes.contains(basePath) || (allowSecondPage && qApp->DualView())) {
         m_allowSecondPage = allowSecondPage;
-        bool result = loadVolume(QString("%1::%2").arg(pathbase).arg(subfilename));
+        bool result = loadVolume(QString("%1::%2").arg(basePath).arg(subfileName));
         m_allowSecondPage = true;
         return result;
     }
@@ -140,22 +140,23 @@ bool PageManager::loadVolumeWithFile(QString path, bool allowSecondPage)
     const quint64 displayGeneration = ++m_initialDisplayGeneration;
     m_state = LoadingViewerState{displayGeneration};
     m_pendingAssociatedPath.clear();
-    m_pendingAssociatedPathbase.clear();
-    m_pendingAssociatedFilename.clear();
+    m_pendingAssociatedBasePath.clear();
+    m_pendingAssociatedFileName.clear();
     const QSize pageSize = viewportSize();
     const QFuture<ImageContent> initialImage = QtConcurrent::run(
-        [qpath, pageSize] {
-            return VolumeManager::loadImageFromFile(qpath, pageSize);
+        [normalizedPath, pageSize] {
+            return VolumeManager::loadImageFromFile(normalizedPath, pageSize);
         });
-    m_initialImageLoads.submit(initialImage, [this, qpath, pathbase, subfilename, displayGeneration](ImageContent content) mutable {
-            m_pendingAssociatedPath = qpath;
-            m_pendingAssociatedPathbase = pathbase;
-            m_pendingAssociatedFilename = subfilename;
-            const bool imageReady = !content.image.isNull() || !content.resizedImage.isNull()
-                    || !content.movie.isNull();
+    m_initialImageLoads.submit(
+        initialImage,
+        [this, normalizedPath, basePath, subfileName, displayGeneration](ImageContent content) mutable {
+            m_pendingAssociatedPath = normalizedPath;
+            m_pendingAssociatedBasePath = basePath;
+            m_pendingAssociatedFileName = subfileName;
+            const bool imageReady = !content.image.isNull() || !content.resizedImage.isNull() || !content.movie.isNull();
             m_state = StandalonePreviewViewerState{
                 displayGeneration, imageReady, false, false};
-            if(imageReady) {
+            if (imageReady) {
                 m_currentPage = 0;
                 replaceVisiblePages({std::move(content)});
                 emit readyForPaint();
@@ -166,7 +167,9 @@ bool PageManager::loadVolumeWithFile(QString path, bool allowSecondPage)
                 });
             } else {
                 finishInitialImageDisplay(displayGeneration);
-            } }, [](ImageContent) {});
+            }
+        },
+        [](ImageContent) {});
     return true;
 }
 
@@ -179,8 +182,8 @@ void PageManager::deferFolderWorkUntilNextPaint()
     }
     ready->initialPaintDeferral = InitialPaintDeferral{displayGeneration, false};
     m_pendingAssociatedPath.clear();
-    m_pendingAssociatedPathbase.clear();
-    m_pendingAssociatedFilename.clear();
+    m_pendingAssociatedBasePath.clear();
+    m_pendingAssociatedFileName.clear();
 
     QTimer::singleShot(1000, this, [this, displayGeneration] {
         finishInitialImageDisplay(displayGeneration);
@@ -236,56 +239,60 @@ void PageManager::finishInitialImageDisplay(quint64 generation)
     } else {
         return;
     }
-    const QString qpath = m_pendingAssociatedPath;
-    const QString pathbase = m_pendingAssociatedPathbase;
-    const QString subfilename = m_pendingAssociatedFilename;
+    const QString normalizedPath = m_pendingAssociatedPath;
+    const QString basePath = m_pendingAssociatedBasePath;
+    const QString subfileName = m_pendingAssociatedFileName;
     m_pendingAssociatedPath.clear();
-    m_pendingAssociatedPathbase.clear();
-    m_pendingAssociatedFilename.clear();
+    m_pendingAssociatedBasePath.clear();
+    m_pendingAssociatedFileName.clear();
 
-    if (shouldStartAssociatedVolume && !qpath.isEmpty()) {
-        startAssociatedVolumeBuild(qpath, pathbase, subfilename);
+    if (shouldStartAssociatedVolume && !normalizedPath.isEmpty()) {
+        startAssociatedVolumeBuild(normalizedPath, basePath, subfileName);
     }
     emit initialImageDisplayFinished();
 }
 
-void PageManager::startAssociatedVolumeBuild(const QString &qpath,
-                                             const QString &pathbase,
-                                             const QString &subfilename)
+void PageManager::startAssociatedVolumeBuild(const QString &normalizedPath,
+                                             const QString &basePath,
+                                             const QString &subfileName)
 {
     QThread *guiThread = thread();
-    const QFuture<VolumeHandle> future = QtConcurrent::run([qpath, guiThread] {
-        VolumeManagerBuilder builder(qpath);
+    const QFuture<VolumeHandle> future = QtConcurrent::run([normalizedPath, guiThread] {
+        VolumeManagerBuilder builder(normalizedPath);
         VolumeManager *newer = builder.buildForAssoc();
         if (newer) {
             newer->moveToThread(guiThread);
         }
         return makeVolumeHandle(newer);
     });
-    m_volumeLoads.submit(future, [this, pathbase, subfilename](VolumeHandle newer) {
-            if(!newer) {
-                loadVolume(QString("%1::%2").arg(pathbase).arg(subfilename));
+    m_volumeLoads.submit(
+        future,
+        [this, basePath, subfileName](VolumeHandle newer) {
+            if (!newer) {
+                loadVolume(QString("%1::%2").arg(basePath).arg(subfileName));
                 return;
             }
             configureVolume(newer.get());
             emit volumeChanged("");
-            m_volumes.insert(pathbase, readyVolumeFuture(newer));
+            m_volumes.insert(basePath, readyVolumeFuture(newer));
             setVolumeReady(newer);
             VolumeManager *volume = newer.get();
             clearPages();
-            if(activeVolume() != volume){
+            if (activeVolume() != volume) {
                 return;
-}
+            }
             m_currentPage = volume->pageCount();
-            reloadCurrentPage(true);
-            if(activeVolume() != volume){
+            reloadCurrentPage();
+            if (activeVolume() != volume) {
                 return;
-}
+            }
             emit pageChanged();
-            if(activeVolume() != volume){
+            if (activeVolume() != volume) {
                 return;
-}
-            emit volumeChanged(volume->volumePath()); }, [](VolumeHandle) {});
+            }
+            emit volumeChanged(volume->volumePath());
+        },
+        [](VolumeHandle) {});
 }
 
 void PageManager::handlePageEnumerated()
@@ -335,27 +342,27 @@ bool PageManager::nextVolume()
         return false;
     }
     QDir dir(volume->volumePath());
-    QFileInfo fileinfo(volume->volumePath());
-    QString current = fileinfo.fileName();
+    const QFileInfo fileInfo(volume->volumePath());
+    const QString current = fileInfo.fileName();
     if (!dir.cdUp()) {
         return false;
     }
-    if (m_volumenames.size() == 0) {
-        m_volumenames = enumVolumes(dir);
+    if (m_volumeNames.isEmpty()) {
+        m_volumeNames = enumerateVolumes(dir);
     }
     bool beforeMatch = true;
     bool loaded = false;
     int preloadCount = 0;
-    foreach (const QString &name, m_volumenames) {
+    foreach (const QString &name, m_volumeNames) {
         if (beforeMatch) {
             if (name == current) {
                 beforeMatch = false;
             }
             continue;
         }
-        QString path = dir.filePath(name);
+        const QString path = dir.filePath(name);
         if (preloadCount++ == 0) {
-            // if load new volume failed, search continue
+            // Continue searching if the next volume cannot be loaded.
             if (!loadVolume(path, true)) {
                 preloadCount = 0;
             } else {
@@ -389,30 +396,30 @@ bool PageManager::prevVolume()
         return false;
     }
     QDir dir(volume->volumePath());
-    QFileInfo fileinfo(volume->volumePath());
-    QString current = fileinfo.fileName();
+    const QFileInfo fileInfo(volume->volumePath());
+    const QString current = fileInfo.fileName();
     if (!dir.cdUp()) {
         return false;
     }
     int matchCount = 0;
     bool loaded = false;
-    if (m_volumenames.size() == 0) {
-        m_volumenames = enumVolumes(dir);
+    if (m_volumeNames.isEmpty()) {
+        m_volumeNames = enumerateVolumes(dir);
     }
-    QListIterator<QString> it(m_volumenames);
+    QListIterator<QString> it(m_volumeNames);
     it.toBack();
     bool beforeMatch = true;
     while (it.hasPrevious()) {
-        QString name = it.previous();
+        const QString name = it.previous();
         if (beforeMatch) {
             if (name == current) {
                 beforeMatch = false;
             }
             continue;
         }
-        QString path = dir.filePath(name);
+        const QString path = dir.filePath(name);
         if (matchCount++ == 0) {
-            // if load new volume failed, search continue
+            // Continue searching if the previous volume cannot be loaded.
             if (!loadVolume(path, true)) {
                 matchCount = 0;
             } else {
@@ -446,29 +453,29 @@ void PageManager::reloadVolumeAfterRemoveImage()
         return;
     }
     clearPages();
-    QString volumepath = QDir::fromNativeSeparators(volume->volumePath());
+    const QString volumePath = QDir::fromNativeSeparators(volume->volumePath());
     if (volume->size() > 1) {
         // if(!m_fileVolume->nextPage())
         //     m_fileVolume->prevPage();
-        QString fullpath = volume->currentPathWithSeparator();
-        m_volumes.remove(volumepath);
+        const QString fullPath = volume->currentPathWithSeparator();
+        m_volumes.remove(volumePath);
         m_state = EmptyViewerState{};
-        loadVolume(fullpath);
+        loadVolume(fullPath);
     } else {
-        m_volumes.remove(volumepath);
+        m_volumes.remove(volumePath);
         m_state = EmptyViewerState{};
     }
 }
 
 VolumeHandle PageManager::addVolumeCache(QString path, bool onlyCover, bool immediate)
 {
-    QString pathbase = QDir::fromNativeSeparators(VolumeManager::FullPathToVolumePath(path));
-    QString subfilename = VolumeManager::FullPathToSubFilePath(path);
-    if (!m_volumes.contains(pathbase)) {
+    const QString basePath = QDir::fromNativeSeparators(VolumeManager::FullPathToVolumePath(path));
+    const QString subfileName = VolumeManager::FullPathToSubFilePath(path);
+    if (!m_volumes.contains(basePath)) {
         if (!immediate) {
             qDebug() << "addVolumeCache:prefetch" << path;
             QThread *guiThread = thread();
-            m_volumes.insert(pathbase, QtConcurrent::run([path, onlyCover, guiThread] {
+            m_volumes.insert(basePath, QtConcurrent::run([path, onlyCover, guiThread] {
                                  VolumeManager *volume =
                                      VolumeManagerBuilder::buildAsync(path, onlyCover);
                                  if (volume) {
@@ -482,9 +489,9 @@ VolumeHandle PageManager::addVolumeCache(QString path, bool onlyCover, bool imme
         VolumeManagerBuilder builder(path);
         VolumeHandle imm = makeVolumeHandle(builder.build(onlyCover));
         qDebug() << "addVolumeCache:imm" << imm.get();
-        m_volumes.insert(pathbase, readyVolumeFuture(imm));
+        m_volumes.insert(basePath, readyVolumeFuture(imm));
     }
-    QFuture<VolumeHandle> future = m_volumes.object(pathbase);
+    QFuture<VolumeHandle> future = m_volumes.object(basePath);
     if (!immediate && !future.isFinished()) {
         return nullptr;
     }
@@ -493,21 +500,21 @@ VolumeHandle PageManager::addVolumeCache(QString path, bool onlyCover, bool imme
     VolumeHandle newer = future.result();
     qDebug() << "addVolumeCache:newer" << newer.get();
     if (!newer) {
-        m_volumes.remove(pathbase);
+        m_volumes.remove(basePath);
         return nullptr;
     }
     configureVolume(newer.get());
-    // If the subdirectory search is switched valid, we need to recreate the instance
+    // Recreate the volume when the subdirectory-search setting changes.
     if (!newer->isArchive() &&
         ((qApp->ShowSubfolders() && !newer->hasSubDirectories()) || (!qApp->ShowSubfolders() && newer->hasSubDirectories()))) {
         qDebug() << qApp->ShowSubfolders() << newer->hasSubDirectories();
-        m_volumes.remove(pathbase);
+        m_volumes.remove(basePath);
     }
-    m_volumes.retain(pathbase);
+    m_volumes.retain(basePath);
     qDebug() << "addVolumeCache:retain";
 
-    if (newer && subfilename.length()) {
-        newer->findImageByName(subfilename);
+    if (!subfileName.isEmpty()) {
+        newer->findImageByName(subfileName);
     }
     return newer;
 }
@@ -553,9 +560,9 @@ bool PageManager::prevPage()
     //QVApplication* app = qApp;
     m_currentPage--;
     if (qApp->DualView() && m_currentPage >= 1) {
-        const ImageContent ic0 = volume->getIndexedImageContent(m_currentPage);
-        const ImageContent ic1 = volume->getIndexedImageContent(m_currentPage - 1);
-        if (!qApp->WideImageAsOnePageInDualView() || (!ic0.isLandscape() && !ic1.isLandscape())) {
+        const ImageContent currentContent = volume->getIndexedImageContent(m_currentPage);
+        const ImageContent previousContent = volume->getIndexedImageContent(m_currentPage - 1);
+        if (!qApp->WideImageAsOnePageInDualView() || (!currentContent.isLandscape() && !previousContent.isLandscape())) {
             m_currentPage--;
         }
     }
@@ -605,19 +612,18 @@ bool PageManager::fastBackwardPage()
     return selectPage(m_currentPage, VolumeManager::FastBackward);
 }
 
-bool PageManager::selectPage(int idx, VolumeManager::CacheMode cacheMode)
+bool PageManager::selectPage(int pageIndex, VolumeManager::CacheMode cacheMode)
 {
-    //qDebug() << "PageManager::selectPage()" << idx;
     VolumeManager *volume = activeVolume();
-    if (!volume || idx < 0 || idx >= volume->size()) {
+    if (!volume || pageIndex < 0 || pageIndex >= volume->size()) {
         return false;
     }
     volume->setCacheMode(cacheMode);
-    bool result = volume->findPageByIndex(idx);
+    const bool result = volume->findPageByIndex(pageIndex);
     if (!result) {
         return false;
     }
-    m_currentPage = idx;
+    m_currentPage = pageIndex;
 
     reloadCurrentPage();
     emit pageChanged();
@@ -683,7 +689,7 @@ bool PageManager::prevOnlyOnePage()
     return selectPage(m_currentPage);
 }
 
-bool PageManager::reloadCurrentPage(bool)
+bool PageManager::reloadCurrentPage()
 {
     //qDebug() << "ImageView::reloadCurrentPage()";
     VolumeHandle volumeHandle = activeVolumeHandle();
@@ -692,20 +698,21 @@ bool PageManager::reloadCurrentPage(bool)
         return false;
     }
     QVector<ImageContent> pages;
-    ImageContent ic0 = volume->getIndexedImageContent(m_currentPage);
-    ic0.initialize();
-    pages.push_back(ic0);
+    ImageContent firstContent = volume->getIndexedImageContent(m_currentPage);
+    firstContent.initializeAnimation();
+    const bool firstPageIsLandscape = firstContent.isLandscape();
+    pages.push_back(std::move(firstContent));
     if (activeVolume() != volume) {
         return false;
     }
-    m_wideImage = ic0.isLandscape();
+    m_currentPageIsLandscape = firstPageIsLandscape;
     if (!(m_currentPage == 0 && qApp->FirstImageAsOnePageInDualView()) && canDualView()) {
         if (m_allowSecondPage && volume->pageCount() < volume->size() - 1) {
-            ImageContent ic1 = volume->getIndexedImageContent(m_currentPage + 1);
-            if (!qApp->WideImageAsOnePageInDualView() || (!ic0.isLandscape() && !ic1.isLandscape())) {
+            ImageContent secondContent = volume->getIndexedImageContent(m_currentPage + 1);
+            if (!qApp->WideImageAsOnePageInDualView() || (!firstPageIsLandscape && !secondContent.isLandscape())) {
                 volume->nextPage();
-                ic1.initialize();
-                pages.push_back(ic1);
+                secondContent.initializeAnimation();
+                pages.push_back(std::move(secondContent));
                 if (activeVolume() != volume) {
                     return false;
                 }
@@ -717,16 +724,19 @@ bool PageManager::reloadCurrentPage(bool)
     return true;
 }
 
-bool PageManager::addNewPage(ImageContent ic, bool pageNext)
+bool PageManager::addNewPage(ImageContent content, bool append)
 {
     if (m_pages.size() >= VisiblePages::Capacity) {
         return false;
     }
-    ic.initialize();
-    if (pageNext) {
-        m_pages.push_back(ic);
+    content.initializeAnimation();
+    if (!append || m_pages.isEmpty()) {
+        m_currentPageIsLandscape = content.isLandscape();
+    }
+    if (append) {
+        m_pages.push_back(std::move(content));
     } else {
-        m_pages.push_front(ic);
+        m_pages.push_front(std::move(content));
     }
     emit visiblePagesChanged(visiblePages());
     return true;
@@ -735,6 +745,7 @@ bool PageManager::addNewPage(ImageContent ic, bool pageNext)
 void PageManager::clearPages()
 {
     m_pages.clear();
+    m_currentPageIsLandscape = false;
     emit visiblePagesChanged({});
 }
 
@@ -744,7 +755,7 @@ void PageManager::replaceVisiblePages(QVector<ImageContent> pages)
         pages.resize(VisiblePages::Capacity);
     }
     for (ImageContent &page : pages) {
-        page.initialize();
+        page.initializeAnimation();
     }
     m_pages = std::move(pages);
     emit visiblePagesChanged(visiblePages());
@@ -787,7 +798,7 @@ bool PageManager::eventFilter(QObject *obj, QEvent *event)
         if (!volume) {
             return true;
         }
-        reloadCurrentPage(true);
+        reloadCurrentPage();
         if (activeVolume() != volume.get()) {
             return true;
         }
@@ -804,7 +815,7 @@ bool PageManager::eventFilter(QObject *obj, QEvent *event)
     return QObject::eventFilter(obj, event);
 }
 
-QString PageManager::currentPageNumAsString() const
+QString PageManager::currentPageNumberText() const
 {
     VolumeManager *volume = activeVolume();
     if (!volume || volume->size() == 0 || m_pages.isEmpty()) {
@@ -812,28 +823,26 @@ QString PageManager::currentPageNumAsString() const
     }
     if (m_pages.size() == 2) {
         return QString("(%1-%2/%3)").arg(m_currentPage + 1).arg(m_currentPage + 2).arg(volume->size());
-    } else {
-        return QString("(%1/%3)").arg(m_currentPage + 1).arg(volume->size());
     }
+    return QString("(%1/%2)").arg(m_currentPage + 1).arg(volume->size());
 }
 
-QString PageManager::currentPageStatusAsString() const
+QString PageManager::currentPageStatusText() const
 {
-    // StatusBar
-    QString pagestr = currentPageNumAsString();
+    const QString pageNumberText = currentPageNumberText();
     QString status;
     switch (m_pages.size()) {
     case 1:
         status = QString("%1 %2[%3x%4]")
                      .arg(m_pages[0].path)
-                     .arg(pagestr)
+                     .arg(pageNumberText)
                      .arg(m_pages[0].originalSize.width())
                      .arg(m_pages[0].originalSize.height());
         break;
     case 2:
         status = QString("%1 %2[%3x%4] | %5 [%6x%7]")
                      .arg(m_pages[0].path)
-                     .arg(pagestr)
+                     .arg(pageNumberText)
                      .arg(m_pages[0].originalSize.width())
                      .arg(m_pages[0].originalSize.height())
                      .arg(m_pages[1].path)
@@ -846,29 +855,28 @@ QString PageManager::currentPageStatusAsString() const
     return status;
 }
 
-QString PageManager::pageSignage(int page) const
+QString PageManager::pageSignage(int pageIndex) const
 {
     VolumeManager *volume = activeVolume();
-    if (!volume || page < 0 || m_pages.size() <= page) {
+    if (!volume || pageIndex < 0 || m_pages.size() <= pageIndex) {
         return "";
     }
     return QString("%1 (%2/%3)")
-        .arg(QDir::toNativeSeparators(volume->getPathByFileName(m_pages[page].path)))
-        .arg(m_currentPage + 1 + page)
+        .arg(QDir::toNativeSeparators(volume->getPathByFileName(m_pages[pageIndex].path)))
+        .arg(m_currentPage + 1 + pageIndex)
         .arg(volume->size());
 }
+
 bool PageManager::canDualView() const
 {
-    QVApplication *myapp = qApp;
-    return qApp->DualView() && !(m_wideImage && myapp->WideImageAsOnePageInDualView());
+    return qApp->DualView() && !(m_currentPageIsLandscape && qApp->WideImageAsOnePageInDualView());
 }
 
-QStringList PageManager::enumVolumes(QDir dir)
+QStringList PageManager::enumerateVolumes(const QDir &directory)
 {
-    QStringList folders, archives;
-    folders = dir.entryList(QDir::NoDotAndDotDot | QDir::Dirs, QDir::Name);
+    QStringList folders = directory.entryList(QDir::NoDotAndDotDot | QDir::Dirs, QDir::Name);
     IFileLoader::sortFiles(folders);
-    archives = dir.entryList(QDir::NoDotAndDotDot | QDir::Files, QDir::Name);
+    QStringList archives = directory.entryList(QDir::NoDotAndDotDot | QDir::Files, QDir::Name);
     IFileLoader::sortFiles(archives);
     return folders + archives;
 }
