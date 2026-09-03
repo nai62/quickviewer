@@ -24,7 +24,7 @@ class FileAssocDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit FileAssocDialog(QWidget *parent = 0);
+    explicit FileAssocDialog(QWidget *parent = nullptr);
     ~FileAssocDialog();
     //    void closeEvent(QCloseEvent *event) override;
     QStringList enumrateFormats();

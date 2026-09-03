@@ -15,7 +15,7 @@ class ShortcutButton : public QPushButton
 {
     Q_OBJECT
 public:
-    ShortcutButton(QWidget *parent = 0);
+    ShortcutButton(QWidget *parent = nullptr);
 
     QSize sizeHint() const;
 

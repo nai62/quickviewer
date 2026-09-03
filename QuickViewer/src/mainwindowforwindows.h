@@ -7,7 +7,7 @@ class MainWindowForWindows : public MainWindow
 {
     Q_OBJECT
 public:
-    explicit MainWindowForWindows(QWidget *parent = 0);
+    explicit MainWindowForWindows(QWidget *parent = nullptr);
     bool moveToTrash(QString path) override;
     bool setStayOnTop(bool top) override;
     void setWindowTop(bool signalOnly) override;

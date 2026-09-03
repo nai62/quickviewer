@@ -228,10 +228,10 @@ void FileAssocDialog::registerEntries(QStringList formats)
         settings.sync();
     }
 
-    IApplicationAssociationRegistrationUI *pAARUI = NULL;
-    HRESULT hr = ::CoCreateInstance(CLSID_ApplicationAssociationRegistrationUI, NULL, CLSCTX_INPROC, __uuidof(IApplicationAssociationRegistrationUI), reinterpret_cast<void **>(&pAARUI));
+    IApplicationAssociationRegistrationUI *pAARUI = nullptr;
+    HRESULT hr = ::CoCreateInstance(CLSID_ApplicationAssociationRegistrationUI, nullptr, CLSCTX_INPROC, __uuidof(IApplicationAssociationRegistrationUI), reinterpret_cast<void **>(&pAARUI));
 
-    if (SUCCEEDED(hr) && pAARUI != NULL) {
+    if (SUCCEEDED(hr) && pAARUI != nullptr) {
         hr = pAARUI->LaunchAdvancedAssociationUI(L"QuickViewer");
         pAARUI->Release();
     }
