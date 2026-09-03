@@ -127,7 +127,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->graphicsView->handleDualViewActionTriggered(qApp->DualView());
 
     ui->actionStayOnTop->setChecked(qApp->StayOnTop());
-    ui->actionStayOnTop->triggered(qApp->StayOnTop());
 
     m_fullscreenButton = new QToolButton(this);
     m_fullscreenButton->setToolTip(tr("&Fullscreen"));
@@ -138,7 +137,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->menuBar->setCornerWidget(m_fullscreenButton);
 
     ui->actionLargeToolbarIcons->setChecked(qApp->LargeToolbarIcons());
-    ui->actionLargeToolbarIcons->triggered(qApp->LargeToolbarIcons());
+    handleLargeToolbarIconsActionTriggered(qApp->LargeToolbarIcons());
 
     ui->graphicsView->handleRightSideBookActionTriggered(qApp->RightSideBook());
     ui->actionRightSideBook->setChecked(qApp->RightSideBook());
@@ -169,11 +168,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     // ToolBar/PageBar/StatusBar/MenuBar
     ui->actionShowToolBar->setChecked(qApp->ShowToolBar());
-    ui->actionShowToolBar->triggered(qApp->ShowToolBar());
+    handleShowToolBarActionTriggered(qApp->ShowToolBar());
     ui->actionShowPageBar->setChecked(qApp->ShowSliderBar());
-    ui->actionShowPageBar->triggered(qApp->ShowSliderBar());
+    handleShowPageBarActionTriggered(qApp->ShowSliderBar());
     ui->actionShowStatusBar->setChecked(qApp->ShowStatusBar());
-    ui->actionShowStatusBar->triggered(qApp->ShowStatusBar());
+    handleShowStatusBarActionTriggered(qApp->ShowStatusBar());
     ui->actionShowMenuBar->setChecked(qApp->ShowMenuBar());
     if (!qApp->ShowMenuBar()) {
         menuBar()->hide();
@@ -322,6 +321,13 @@ MainWindow::MainWindow(QWidget *parent)
         repaint();
         setWindowOpacity(1.0);
     }
+}
+
+void MainWindow::initializeStartup()
+{
+    // Platform-specific virtual functions must be invoked after the most-derived
+    // MainWindow has finished construction.
+    handleStayOnTopActionTriggered(qApp->StayOnTop());
 
     // when drop a folder/archive icon to this app
     if (qApp->arguments().length() >= 2) {
@@ -540,11 +546,11 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             // tap left/right of window
             if (mouseEvent->button() == Qt::LeftButton) {
                 if (ui->graphicsView->hoverState() == Qt::AnchorLeft) {
-                    ui->actionTurnPageOnLeft->triggered();
+                    ui->actionTurnPageOnLeft->trigger();
                     return true;
                 }
                 if (ui->graphicsView->hoverState() == Qt::AnchorRight) {
-                    ui->actionTurnPageOnRight->triggered();
+                    ui->actionTurnPageOnRight->trigger();
                     return true;
                 }
             }
@@ -1173,19 +1179,14 @@ void MainWindow::handleStayOnTopActionTriggered(bool checked)
     qApp->setStayOnTop(checked);
     // Qt's StayOnTop mechanism is not working correctly in Windows.
     // so win32api calling manually
-    //    if(setStayOnTop(top))
-    //        return;
+    if (setStayOnTop(checked)) {
+        return;
+    }
     Qt::WindowFlags flags = windowFlags();
     if (checked) {
         flags |= Qt::WindowStaysOnTopHint;
     } else {
         flags &= ~Qt::WindowStaysOnTopHint;
-    }
-
-    // If show() is called here when the application starts,
-    // there will be problems, so skip it.
-    if (!m_fullscreenButton) {
-        return;
     }
 
     bool full = isFullScreen();
