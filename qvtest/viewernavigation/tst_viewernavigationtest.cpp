@@ -155,7 +155,7 @@ private slots:
     void pageItemUsesRenderSettingsSnapshot()
     {
         QGraphicsScene scene;
-        QImage image(100, 100, QImage::Format_RGB32);
+        QImage image(400, 400, QImage::Format_RGB32);
         image.fill(Qt::red);
         PageRenderSettings settings;
         settings.pixelRatio = 2.0;
@@ -166,21 +166,21 @@ private slots:
                                   PageItem::PageCenter,
                                   qvEnums::FitToRect,
                                   1.0);
-        QCOMPARE(page.displayScale, 2.0);
+        QCOMPARE(page.displayScale, 0.5);
 
         page.setRenderSettings(settings);
         page.setPageLayoutFitting(QRect(0, 0, 100, 100),
                                   PageItem::PageCenter,
                                   qvEnums::FitToRect,
                                   1.0);
-        QCOMPARE(page.displayScale, 3.0);
+        QCOMPARE(page.displayScale, 0.75);
 
         PageItem pageWithDefaults(nullptr, &scene, ImageContent(image, "preview.bmp", image.size(), {}, 0));
         pageWithDefaults.setPageLayoutFitting(QRect(0, 0, 100, 100),
                                               PageItem::PageCenter,
                                               qvEnums::FitToRect,
                                               1.0);
-        QCOMPARE(pageWithDefaults.displayScale, 1.0);
+        QCOMPARE(pageWithDefaults.displayScale, 0.25);
     }
 
     void emptyVolumeManagerOperationsAreSafe()
