@@ -1056,12 +1056,13 @@ void MainWindow::createRetouchWindow(bool docked)
         return;
     }
     qApp->setShowOptionViewOnStartup(qvEnums::RetouchStartup);
+    m_retouchWindow = new RetouchWindow(nullptr);
+    connect(m_retouchWindow, &RetouchWindow::closed, this, &MainWindow::handleRetouchWindowClosed);
+    connect(m_retouchWindow, &RetouchWindow::retouchParametersChanged, ui->graphicsView, &ImageView::handleRetouchParametersChanged);
+    m_retouchWindow->initializeFromImageView(ui->graphicsView);
+
     if (docked) {
         closeAllDockedWindow();
-        m_retouchWindow = new RetouchWindow(nullptr);
-        connect(m_retouchWindow, SIGNAL(closed()), this, SLOT(handleRetouchWindowClosed()));
-        connect(m_retouchWindow, SIGNAL(retouchParametersChanged(ImageRetouch)), ui->graphicsView, SLOT(handleRetouchParametersChanged(ImageRetouch)));
-        m_retouchWindow->setImageView(ui->graphicsView);
         ui->catalogSplitter->insertWidget(0, m_retouchWindow);
         auto sizes = ui->catalogSplitter->sizes();
         int sum = sizes[0] + sizes[1];
@@ -1069,10 +1070,6 @@ void MainWindow::createRetouchWindow(bool docked)
         sizes[1] = sum - sizes[0];
         ui->catalogSplitter->setSizes(sizes);
     } else {
-        m_retouchWindow = new RetouchWindow(nullptr);
-        connect(m_retouchWindow, SIGNAL(closed()), this, SLOT(handleRetouchWindowClosed()));
-        connect(m_retouchWindow, SIGNAL(retouchParametersChanged(ImageRetouch)), ui->graphicsView, SLOT(handleRetouchParametersChanged(ImageRetouch)));
-        m_retouchWindow->setImageView(ui->graphicsView);
         QRect self = geometry();
         m_retouchWindow->setGeometry(self.left() - 100, self.top() + 100, self.width(), self.height());
         m_retouchWindow->show();

@@ -15,10 +15,7 @@ class RetouchWindow : public QWidget
 public:
     explicit RetouchWindow(QWidget *parent);
     ~RetouchWindow() override;
-    float sliderToFloat(int value);
-    int floatToSlider(float value);
-    void setImageView(ImageView *imageView);
-    void resetSliders();
+    void initializeFromImageView(const ImageView *imageView);
 
 signals:
     void retouchParametersChanged(ImageRetouch params);
@@ -33,10 +30,13 @@ public slots:
     void handleResetButtonClicked();
 
 private:
+    static float sliderToFloat(int value);
+    static int floatToSlider(float value);
+    void resetSliders();
+
     Ui::RetouchWindow *ui;
-    ImageView *m_imageView;
     ImageRetouch m_retouchParams;
-    bool ignoreTextChange;
+    bool m_ignoreTextChange;
 };
 
 #endif // RETOUCHWINDOW_H
