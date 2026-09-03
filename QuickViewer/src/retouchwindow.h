@@ -30,8 +30,8 @@ public slots:
     void handleResetButtonClicked();
 
 private:
-    static float sliderToFloat(int value);
-    static int floatToSlider(float value);
+    static float sliderValueToFactor(int sliderValue);
+    static int factorToSliderValue(float factor);
     void resetSliders();
 
     Ui::RetouchWindow *ui;
