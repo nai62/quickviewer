@@ -132,7 +132,7 @@ private slots:
         QVERIFY(pages.at(-1) == nullptr);
         QVERIFY(pages.at(1) == nullptr);
         QVERIFY(pages.first() != nullptr);
-        QCOMPARE(pages.first()->Path, QString("first.bmp"));
+        QCOMPARE(pages.first()->path, QString("first.bmp"));
 
         QVERIFY(manager.addNewPage(ImageContent("second.bmp", 0), true));
         QCOMPARE(notificationCount, 2);
@@ -145,7 +145,7 @@ private slots:
         QVERIFY(latest.isEmpty());
         QVERIFY(manager.visiblePages().isEmpty());
         QCOMPARE(pages.count(), 1);
-        QCOMPARE(pages.first()->Path, QString("first.bmp"));
+        QCOMPARE(pages.first()->path, QString("first.bmp"));
     }
 
     void imageStringUsesValueSnapshots()
@@ -196,8 +196,8 @@ private slots:
         QCOMPARE(volume.currentPath(), QString());
         QCOMPARE(volume.currentPathWithSeparator(), QString());
         QCOMPARE(volume.getIndexedFileName(0), QString());
-        QVERIFY(volume.currentImage().Image.isNull());
-        QVERIFY(volume.getIndexedImageContent(0).Image.isNull());
+        QVERIFY(volume.currentImage().image.isNull());
+        QVERIFY(volume.getIndexedImageContent(0).image.isNull());
         QVERIFY(!volume.nextPage());
         QVERIFY(!volume.prevPage());
         QVERIFY(!volume.findPageByIndex(0));
@@ -421,8 +421,8 @@ private slots:
                  ImageView::AddRenderedPageResult::AddedLandscape);
         QCOMPARE(view.renderedPageCount(), 2);
         VisiblePages contents = view.renderedPageContents();
-        QCOMPARE(contents.at(0)->Path, QString("first.png"));
-        QCOMPARE(contents.at(1)->Path, QString("second.png"));
+        QCOMPARE(contents.at(0)->path, QString("first.png"));
+        QCOMPARE(contents.at(1)->path, QString("second.png"));
         QCOMPARE(view.addRenderedPage(
                      ImageContent(image, "third.png", image.size(), {}, 0), true),
                  ImageView::AddRenderedPageResult::Rejected);
@@ -440,8 +440,8 @@ private slots:
                  ImageView::AddRenderedPageResult::AddedLandscape);
         QCOMPARE(view.renderedPageCount(), 2);
         contents = view.renderedPageContents();
-        QCOMPARE(contents.at(0)->Path, QString("prepended.png"));
-        QCOMPARE(contents.at(1)->Path, QString("replacement.png"));
+        QCOMPARE(contents.at(0)->path, QString("prepended.png"));
+        QCOMPARE(contents.at(1)->path, QString("replacement.png"));
         QVERIFY(!contents.at(-1));
         QVERIFY(!contents.at(2));
     }

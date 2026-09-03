@@ -176,26 +176,26 @@ void ShaderManager::prepare(QGraphicsPixmapItem *item, const ImageContent &, QSi
                 auto lanczos = new LanczosShaderEffect(this);
                 lanczos->setPixelShaderFragment(m_lanczos);
 
-                int sw = ic.ImportSize.width();
-                //int sh = ic.ImportSize.height();
+                int sw = ic.loadedImageSize.width();
+                //int sh = ic.loadedImageSize.height();
                 qreal pow = 1.0 * size.width() / sw;
-//                if(pow*8 < 1) {
-//                    pow *= 2;
-//                } else if(pow*4 < 1){
-//                    pow *= 1;
-//                } else if(pow*2 < 1){
-//                    pow *= 1;
-//                }
+                //                if(pow*8 < 1) {
+                //                    pow *= 2;
+                //                } else if(pow*4 < 1){
+                //                    pow *= 1;
+                //                } else if(pow*2 < 1){
+                //                    pow *= 1;
+                //                }
                 int kernelSize;
                 lanczos->createKernel(1.0 / pow, &kernelSize);
-//                qDebug() << 1.0/pow << kernelSize;
+                //                qDebug() << 1.0/pow << kernelSize;
                 lanczos->createOffsets(kernelSize, sw, Qt::Horizontal);
 
-//                int sw2 = qMax(sw, sh);
-//                int swb = 1;
-//                while(sw2 > swb)
-//                  swb <<= 1;
-//                lanczos->createOffsets(kernelSize, swb, Qt::Horizontal);
+                //                int sw2 = qMax(sw, sh);
+                //                int swb = 1;
+                //                while(sw2 > swb)
+                //                  swb <<= 1;
+                //                lanczos->createOffsets(kernelSize, swb, Qt::Horizontal);
 
                 shader = lanczos;
             }
@@ -208,18 +208,18 @@ void ShaderManager::prepare(QGraphicsPixmapItem *item, const ImageContent &, QSi
             if (lanczos->viewWidth() == size.width()) {
                 break;
             }
-            int sw = ic.ImportSize.width();
-            //int sh = ic.ImportSize.height();
+            int sw = ic.loadedImageSize.width();
+            //int sh = ic.loadedImageSize.height();
             qreal pow = 1.0 * size.width() / sw;
             int kernelSize;
             lanczos->createKernel(1.0 / pow, &kernelSize);
             lanczos->createOffsets(kernelSize, sw, Qt::Horizontal);
 
-//            int sw2 = qMax(sw, sh);
-//            int swb = 1;
-//            while(sw2 > swb)
-//              swb <<= 1;
-//            lanczos->createOffsets(kernelSize, swb, Qt::Horizontal);
+            //            int sw2 = qMax(sw, sh);
+            //            int swb = 1;
+            //            while(sw2 > swb)
+            //              swb <<= 1;
+            //            lanczos->createOffsets(kernelSize, swb, Qt::Horizontal);
         }
         break;
 #endif

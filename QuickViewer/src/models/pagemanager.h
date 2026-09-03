@@ -76,7 +76,7 @@ public:
         if (!volume || m_pages.isEmpty()) {
             return "";
         }
-        return QDir::toNativeSeparators(volume->getPathByFileName(m_pages[0].Path));
+        return QDir::toNativeSeparators(volume->getPathByFileName(m_pages[0].path));
     }
     QString nextPagePathAfterDeleted()
     {
@@ -87,7 +87,7 @@ public:
         int idx = volume->size() - 1 == m_currentPage ? m_currentPage - 1 : m_currentPage + 1;
         return QDir::toNativeSeparators(volume->getPathByIndex(idx));
     }
-    QString currentPageName() { return m_pages.isEmpty() ? QString() : m_pages[0].Path; }
+    QString currentPageName() { return m_pages.isEmpty() ? QString() : m_pages[0].path; }
 
     /**
      * @brief currentPageNumAsString: for the label text on PageBar

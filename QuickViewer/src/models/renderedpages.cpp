@@ -60,7 +60,7 @@ QRect RenderedPages::layout(const RenderedPageLayout &layout,
     const int pageCount = count();
     for (int index = 0; index < pageCount; ++index) {
         PageItem &page = *m_pages[index];
-        if (layout.separateWideImages && page.Ic.wideImage()) {
+        if (layout.separateWideImages && page.Ic.isLandscape()) {
             if (page.Separation == PageItem::NoSeparated && layout.viewport.width() < layout.viewport.height()) {
                 page.Separation = PageItem::FirstSeparated;
             }
@@ -142,7 +142,7 @@ std::optional<qreal> RenderedPages::firstDrawScale() const
 QImage RenderedPages::firstImage() const
 {
     const PageItem *page = at(0);
-    return page ? page->Ic.Image : QImage();
+    return page ? page->Ic.image : QImage();
 }
 
 VisiblePages RenderedPages::contents() const

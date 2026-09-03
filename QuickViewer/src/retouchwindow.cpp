@@ -47,19 +47,19 @@ void RetouchWindow::resetSliders()
     const QSignalBlocker contrastSignals(ui->sliderContrast);
     const QSignalBlocker gammaSignals(ui->sliderGamma);
 
-    ui->sliderBrightness->setValue(static_cast<int>(m_retouchParams.Brightness));
+    ui->sliderBrightness->setValue(static_cast<int>(m_retouchParams.brightness));
     ui->lineBrightness->setText(QString::number(ui->sliderBrightness->value()));
 
-    ui->sliderContrast->setValue(floatToSlider(m_retouchParams.Contrast));
+    ui->sliderContrast->setValue(floatToSlider(m_retouchParams.contrast));
     ui->lineContrast->setText(QString::number(ui->sliderContrast->value()));
 
-    ui->sliderGamma->setValue(floatToSlider(m_retouchParams.Gamma));
+    ui->sliderGamma->setValue(floatToSlider(m_retouchParams.gamma));
     ui->lineGamma->setText(QString::number(ui->sliderGamma->value()));
 }
 
 void RetouchWindow::handleBrightnessSliderValueChanged(int value)
 {
-    m_retouchParams.Brightness = value;
+    m_retouchParams.brightness = value;
     if (!m_ignoreTextChange) {
         ui->lineBrightness->setText(QString::number(value));
     }
@@ -68,7 +68,7 @@ void RetouchWindow::handleBrightnessSliderValueChanged(int value)
 
 void RetouchWindow::handleContrastSliderValueChanged(int value)
 {
-    m_retouchParams.Contrast = sliderToFloat(value);
+    m_retouchParams.contrast = sliderToFloat(value);
     if (!m_ignoreTextChange) {
         ui->lineContrast->setText(QString::number(value));
     }
@@ -77,7 +77,7 @@ void RetouchWindow::handleContrastSliderValueChanged(int value)
 
 void RetouchWindow::handleGammaSliderValueChanged(int value)
 {
-    m_retouchParams.Gamma = sliderToFloat(value);
+    m_retouchParams.gamma = sliderToFloat(value);
     if (!m_ignoreTextChange) {
         ui->lineGamma->setText(QString::number(value));
     }

@@ -1089,7 +1089,7 @@ void MainWindow::handleOpenExifActionTriggered()
     }
     const VisiblePages pages = m_pageManager.visiblePages();
     const ImageContent *page = pages.first();
-    if (!page || page->Info.ImageWidth == 0) {
+    if (!page || page->exifInfo.ImageWidth == 0) {
         return;
     }
     if (m_catalogWindow && m_catalogWindow->parent()) {
@@ -1842,7 +1842,7 @@ void MainWindow::handleRecyclePageActionTriggered()
         if (!page) {
             return;
         }
-        QImage image = page->Image;
+        QImage image = page->image;
         image = image.scaled(QSize(100, 100), Qt::KeepAspectRatio);
         msgBox.setIconPixmap(QPixmap::fromImage(image));
 
@@ -1883,7 +1883,7 @@ void MainWindow::handleDeletePageActionTriggered()
         if (!page) {
             return;
         }
-        QImage image = page->Image;
+        QImage image = page->image;
         image = image.scaled(QSize(100, 100), Qt::KeepAspectRatio);
         msgBox.setIconPixmap(QPixmap::fromImage(image));
 

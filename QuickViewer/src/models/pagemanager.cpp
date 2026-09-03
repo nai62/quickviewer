@@ -151,8 +151,8 @@ bool PageManager::loadVolumeWithFile(QString path, bool allowSecondPage)
             m_pendingAssociatedPath = qpath;
             m_pendingAssociatedPathbase = pathbase;
             m_pendingAssociatedFilename = subfilename;
-            const bool imageReady = !content.Image.isNull() || !content.ResizedImage.isNull()
-                    || !content.Movie.isNull();
+            const bool imageReady = !content.image.isNull() || !content.resizedImage.isNull()
+                    || !content.movie.isNull();
             m_state = StandalonePreviewViewerState{
                 displayGeneration, imageReady, false, false};
             if(imageReady) {
@@ -555,7 +555,7 @@ bool PageManager::prevPage()
     if (qApp->DualView() && m_currentPage >= 1) {
         const ImageContent ic0 = volume->getIndexedImageContent(m_currentPage);
         const ImageContent ic1 = volume->getIndexedImageContent(m_currentPage - 1);
-        if (!qApp->WideImageAsOnePageInDualView() || (!ic0.wideImage() && !ic1.wideImage())) {
+        if (!qApp->WideImageAsOnePageInDualView() || (!ic0.isLandscape() && !ic1.isLandscape())) {
             m_currentPage--;
         }
     }
@@ -698,11 +698,11 @@ bool PageManager::reloadCurrentPage(bool)
     if (activeVolume() != volume) {
         return false;
     }
-    m_wideImage = ic0.wideImage();
+    m_wideImage = ic0.isLandscape();
     if (!(m_currentPage == 0 && qApp->FirstImageAsOnePageInDualView()) && canDualView()) {
         if (m_allowSecondPage && volume->pageCount() < volume->size() - 1) {
             ImageContent ic1 = volume->getIndexedImageContent(m_currentPage + 1);
-            if (!qApp->WideImageAsOnePageInDualView() || (!ic0.wideImage() && !ic1.wideImage())) {
+            if (!qApp->WideImageAsOnePageInDualView() || (!ic0.isLandscape() && !ic1.isLandscape())) {
                 volume->nextPage();
                 ic1.initialize();
                 pages.push_back(ic1);
@@ -825,20 +825,20 @@ QString PageManager::currentPageStatusAsString() const
     switch (m_pages.size()) {
     case 1:
         status = QString("%1 %2[%3x%4]")
-                     .arg(m_pages[0].Path)
+                     .arg(m_pages[0].path)
                      .arg(pagestr)
-                     .arg(m_pages[0].BaseSize.width())
-                     .arg(m_pages[0].BaseSize.height());
+                     .arg(m_pages[0].originalSize.width())
+                     .arg(m_pages[0].originalSize.height());
         break;
     case 2:
         status = QString("%1 %2[%3x%4] | %5 [%6x%7]")
-                     .arg(m_pages[0].Path)
+                     .arg(m_pages[0].path)
                      .arg(pagestr)
-                     .arg(m_pages[0].BaseSize.width())
-                     .arg(m_pages[0].BaseSize.height())
-                     .arg(m_pages[1].Path)
-                     .arg(m_pages[1].BaseSize.width())
-                     .arg(m_pages[1].BaseSize.height());
+                     .arg(m_pages[0].originalSize.width())
+                     .arg(m_pages[0].originalSize.height())
+                     .arg(m_pages[1].path)
+                     .arg(m_pages[1].originalSize.width())
+                     .arg(m_pages[1].originalSize.height());
         break;
     default:
         break;
@@ -853,7 +853,7 @@ QString PageManager::pageSignage(int page) const
         return "";
     }
     return QString("%1 (%2/%3)")
-        .arg(QDir::toNativeSeparators(volume->getPathByFileName(m_pages[page].Path)))
+        .arg(QDir::toNativeSeparators(volume->getPathByFileName(m_pages[page].path)))
         .arg(m_currentPage + 1 + page)
         .arg(volume->size());
 }

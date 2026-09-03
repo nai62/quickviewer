@@ -290,13 +290,13 @@ void VolumeManager::handleReady()
     for (int cnt : indexes) {
         if (qApp->Effect() < qvEnums::UsingFixedShader && m_imageCache.contains(cnt) && m_imageCache.object(cnt).isFinished()) {
             ImageContent ic = m_imageCache.object(cnt).result();
-            if (ic.ImportSize.isValid()) {
+            if (ic.loadedImageSize.isValid()) {
                 const QSize pageSize = m_viewportSize;
-                QSize resized = ic.Info.Orientation == 6 || ic.Info.Orientation == 8 ? QSize(pageSize.height(), pageSize.width()) : pageSize;
-                resized.setWidth(ic.ImportSize.width() * resized.height() / ic.ImportSize.height());
+                QSize resized = ic.exifInfo.Orientation == 6 || ic.exifInfo.Orientation == 8 ? QSize(pageSize.height(), pageSize.width()) : pageSize;
+                resized.setWidth(ic.loadedImageSize.width() * resized.height() / ic.loadedImageSize.height());
 
-                if (ic.ResizedImage.size() != resized && !ic.Image.isNull()) {
-                    qDebug() << ic.ResizedImage.size() << resized;
+                if (ic.resizedImage.size() != resized && !ic.image.isNull()) {
+                    qDebug() << ic.resizedImage.size() << resized;
                     const future_image future = scheduleResize(
                         ic, pageSize);
                     if (future.isValid()) {
@@ -518,8 +518,8 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QByteA
         if (reader.supportsAnimation()) {
             QvMovie movie = QvMovie(bytes, aformat.toUtf8());
             ImageContent ic(path, bytes.length());
-            ic.Movie = movie;
-            ic.BaseSize = ic.ImportSize = reader.size();
+            ic.movie = movie;
+            ic.originalSize = ic.loadedImageSize = reader.size();
             return ic;
         }
         //        qint64 t_supportsAnimation = et_supportsAnimation.elapsed();
@@ -580,8 +580,8 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QByteA
         }
 
         //    ImageContent ic(QPixmap::fromImage(src), path, baseSize, info);
-        ic.BaseSize = baseSize;
-        ic.Info = info;
+        ic.originalSize = baseSize;
+        ic.exifInfo = info;
         if (src.isNull()) {
             return ic;
         }
@@ -646,14 +646,14 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QByteA
             resizer.resizeHV(half.bits(), src.bits(), src.width(), srcSize.height(), half.bytesPerLine(), src.bytesPerLine());
 
             //        ImageContent ic(QPixmap::fromImage(half), path, srcSizeReal, info);
-            ic.Image = half;
-            ic.ImportSize = half.size();
+            ic.image = half;
+            ic.loadedImageSize = half.size();
         }
         // CPU resizing before Page Viewing
-        if (!pageSize.isEmpty() && !ic.Image.isNull()) {
-            QSize newsize = ic.Info.Orientation == 6 || ic.Info.Orientation == 8 ? QSize(pageSize.height(), pageSize.width()) : pageSize;
-            ic.ResizeMode = qApp->Effect();
-            ic.ResizedImage = QZimg::scaled(ic.Image, newsize, Qt::KeepAspectRatio, ShaderEffect2FilterMode(qApp->Effect()));
+        if (!pageSize.isEmpty() && !ic.image.isNull()) {
+            QSize newsize = ic.exifInfo.Orientation == 6 || ic.exifInfo.Orientation == 8 ? QSize(pageSize.height(), pageSize.width()) : pageSize;
+            ic.appliedResizeMode = qApp->Effect();
+            ic.resizedImage = QZimg::scaled(ic.image, newsize, Qt::KeepAspectRatio, ShaderEffect2FilterMode(qApp->Effect()));
         }
         return ic;
     }
@@ -706,7 +706,7 @@ ImageContent VolumeManager::futureLoadImageFromFileVolume(
     ImageContent ic = futureLoadImageFromFileVolumeImpl(context, path, pageSize);
     qint64 t_load = et_load.elapsed();
 
-    qDebug() << "futureLoadImageFromFileVolume" << path << t_load << "ms, ResizedImage=" << !ic.ResizedImage.isNull();
+    qDebug() << "futureLoadImageFromFileVolume" << path << t_load << "ms, ResizedImage=" << !ic.resizedImage.isNull();
     return ic;
 }
 
@@ -722,9 +722,9 @@ ImageContent VolumeManager::loadImageFromFile(QString path, QSize pageSize)
 
 ImageContent VolumeManager::futureReizeImage(ImageContent ic, QSize pageSize)
 {
-    //    qDebug() << "futureReizeImage:" << ic.Path;
-    QSize newsize = ic.Info.Orientation == 6 || ic.Info.Orientation == 8 ? QSize(pageSize.height(), pageSize.width()) : pageSize;
-    ic.ResizeMode = qApp->Effect();
-    ic.ResizedImage = QZimg::scaled(ic.Image, newsize, Qt::KeepAspectRatio, ShaderEffect2FilterMode(qApp->Effect()));
+    //    qDebug() << "futureReizeImage:" << ic.path;
+    QSize newsize = ic.exifInfo.Orientation == 6 || ic.exifInfo.Orientation == 8 ? QSize(pageSize.height(), pageSize.width()) : pageSize;
+    ic.appliedResizeMode = qApp->Effect();
+    ic.resizedImage = QZimg::scaled(ic.image, newsize, Qt::KeepAspectRatio, ShaderEffect2FilterMode(qApp->Effect()));
     return ic;
 }

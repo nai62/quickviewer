@@ -1,6 +1,8 @@
 #ifndef PAGECONTENT_H
 #define PAGECONTENT_H
 
+#include <utility>
+
 #include <QtCore>
 #include <QtWidgets>
 
@@ -10,13 +12,13 @@
 
 struct ImageRetouch
 {
-    float Brightness;
-    float Contrast;
-    float Gamma;
+    float brightness;
+    float contrast;
+    float gamma;
     ImageRetouch(float brightness = 0.0f, float contrast = 1.0f, float gamma = 1.0f)
-        : Brightness(brightness),
-          Contrast(contrast),
-          Gamma(gamma)
+        : brightness(brightness),
+          contrast(contrast),
+          gamma(gamma)
     {}
     bool isDefault() const
     {
@@ -24,7 +26,7 @@ struct ImageRetouch
     }
     bool operator==(const ImageRetouch &rhs) const
     {
-        return Brightness == rhs.Brightness && Contrast == rhs.Contrast && Gamma == rhs.Gamma;
+        return brightness == rhs.brightness && contrast == rhs.contrast && gamma == rhs.gamma;
     }
 };
 
@@ -44,85 +46,56 @@ struct ImageContent
 {
 public:
     /**
-     * @brief Image is a pixmap of the image for viewing
+     * @brief Decoded image used for viewing
      */
-    QImage Image;
+    QImage image;
     /**
-     * @brief RetouchedImage is another view with changed pixels from Image
+     * @brief Cached image with brightness, contrast, and gamma adjustments
      */
-    QImage RetouchedImage;
+    QImage retouchedImage;
     /**
-     * @brief ResizedImage is resized to actual view size from Image
+     * @brief Cached image resized for the current view
      */
-    QImage ResizedImage;
+    QImage resizedImage;
     /**
-     * @brief Movie will be initialized when imageReader.supportsAnimation() == true
+     * @brief Animation data, if the image reader supports animation
      */
-    QvMovie Movie;
+    QvMovie movie;
     /**
-     * @brief BaseSize is original size of the image
+     * @brief Original dimensions of the image
      */
-    QSize BaseSize;
+    QSize originalSize;
     /**
-     * @brief ImportSize is actual size of image for viewing
+     * @brief Dimensions of the decoded image, which may have been downsampled
      */
-    QSize ImportSize;
+    QSize loadedImageSize;
     /**
-     * @brief Path is path of the image
+     * @brief Path of the image
      */
-    QString Path;
+    QString path;
     /**
-     * @brief Info is Exif Information of the image(JPEG only)
+     * @brief EXIF metadata for JPEG images
      */
-    easyexif::EXIFInfo Info;
+    easyexif::EXIFInfo exifInfo;
 
-    size_t FileLength;
-    ImageRetouch RetouchParam;
-    qvEnums::ShaderEffect ResizeMode;
+    size_t fileSize = 0;
+    ImageRetouch appliedRetouchParameters;
+    qvEnums::ShaderEffect appliedResizeMode = qvEnums::Bilinear;
 
-    ImageContent()
-        : FileLength(0),
-          ResizeMode(qvEnums::Bilinear)
+    ImageContent() = default;
+    ImageContent(QString imagePath, size_t size)
+        : path(std::move(imagePath)),
+          fileSize(size)
     {}
-    ImageContent(QString path, size_t length)
-        : Path(path),
-          FileLength(length),
-          ResizeMode(qvEnums::Bilinear)
+    ImageContent(QImage loadedImage, QString imagePath, QSize sourceSize, easyexif::EXIFInfo metadata, size_t size)
+        : image(std::move(loadedImage)),
+          originalSize(sourceSize),
+          loadedImageSize(image.size()),
+          path(std::move(imagePath)),
+          exifInfo(std::move(metadata)),
+          fileSize(size)
     {}
-    ImageContent(QImage image, QString path, QSize size, easyexif::EXIFInfo info, size_t length)
-        : Image(image),
-          BaseSize(size),
-          ImportSize(image.size()),
-          Path(path),
-          Info(info),
-          FileLength(length),
-          ResizeMode(qvEnums::Bilinear)
-    {}
-    ImageContent(const ImageContent &rhs)
-        : Image(rhs.Image),
-          ResizedImage(rhs.ResizedImage),
-          Movie(rhs.Movie),
-          BaseSize(rhs.BaseSize),
-          ImportSize(rhs.ImportSize),
-          Path(rhs.Path),
-          Info(rhs.Info),
-          FileLength(rhs.FileLength),
-          ResizeMode(rhs.ResizeMode)
-    {}
-    inline ImageContent &operator=(const ImageContent &rhs)
-    {
-        Image = rhs.Image;
-        ResizedImage = rhs.ResizedImage;
-        Movie = rhs.Movie;
-        Path = rhs.Path;
-        BaseSize = rhs.BaseSize;
-        ImportSize = rhs.ImportSize;
-        Info = rhs.Info;
-        FileLength = rhs.FileLength;
-        ResizeMode = rhs.ResizeMode;
-        return *this;
-    }
-    bool wideImage() const { return BaseSize.width() > BaseSize.height(); }
+    bool isLandscape() const { return originalSize.width() > originalSize.height(); }
     void initialize();
 };
 
