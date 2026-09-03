@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Brightness Window</string>
+   <string>Retouch Window</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
