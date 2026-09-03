@@ -1,22 +1,22 @@
-#include "brightnesswindow.h"
-#include "ui_brightnesswindow.h"
+#include "retouchwindow.h"
+#include "ui_retouchwindow.h"
 #include "pagemanager.h"
 
-BrightnessWindow::BrightnessWindow(QWidget *parent, Ui::MainWindow *uiMain)
+RetouchWindow::RetouchWindow(QWidget *parent)
     : QWidget(parent),
-      ui(new Ui::BrightnessWindow),
+      ui(new Ui::RetouchWindow),
       ignoreTextChange(false)
 {
     ui->setupUi(this);
     ui->checkBoxForAll->setVisible(false);
 }
 
-BrightnessWindow::~BrightnessWindow()
+RetouchWindow::~RetouchWindow()
 {
     delete ui;
 }
 
-float BrightnessWindow::sliderToFloat(int value)
+float RetouchWindow::sliderToFloat(int value)
 {
     // -20 ->   0.01
     // -10 ->   0.1
@@ -26,7 +26,7 @@ float BrightnessWindow::sliderToFloat(int value)
     return powf(10, 0.1f / 8 * value);
 }
 
-int BrightnessWindow::floatToSlider(float value)
+int RetouchWindow::floatToSlider(float value)
 {
     //   0.01 -> -20
     //   0.1  -> -10
@@ -36,7 +36,7 @@ int BrightnessWindow::floatToSlider(float value)
     return (int)(10 * 8 * log10f(value));
 }
 
-void BrightnessWindow::setImageView(ImageView *imageView)
+void RetouchWindow::setImageView(ImageView *imageView)
 {
     m_imageView = imageView;
     if (!m_imageView || m_imageView->renderedPageCount() == 0) {
@@ -47,7 +47,7 @@ void BrightnessWindow::setImageView(ImageView *imageView)
     resetSliders();
 }
 
-void BrightnessWindow::resetSliders()
+void RetouchWindow::resetSliders()
 {
     ui->sliderBrightness->setValue((int)m_retouchParams.Brightness);
     ui->lineBrightness->setText(QString::number(ui->sliderBrightness->value()));
@@ -59,7 +59,7 @@ void BrightnessWindow::resetSliders()
     ui->lineGamma->setText(QString::number(ui->sliderGamma->value()));
 }
 
-void BrightnessWindow::handleBrightnessSliderValueChanged(int value)
+void RetouchWindow::handleBrightnessSliderValueChanged(int value)
 {
     m_retouchParams.Brightness = value;
     if (!ignoreTextChange) {
@@ -68,7 +68,7 @@ void BrightnessWindow::handleBrightnessSliderValueChanged(int value)
     emit retouchParametersChanged(m_retouchParams);
 }
 
-void BrightnessWindow::handleContrastSliderValueChanged(int value)
+void RetouchWindow::handleContrastSliderValueChanged(int value)
 {
     m_retouchParams.Contrast = sliderToFloat(value);
     if (!ignoreTextChange) {
@@ -77,7 +77,7 @@ void BrightnessWindow::handleContrastSliderValueChanged(int value)
     emit retouchParametersChanged(m_retouchParams);
 }
 
-void BrightnessWindow::handleGammaSliderValueChanged(int value)
+void RetouchWindow::handleGammaSliderValueChanged(int value)
 {
     m_retouchParams.Gamma = sliderToFloat(value);
     if (!ignoreTextChange) {
@@ -86,7 +86,7 @@ void BrightnessWindow::handleGammaSliderValueChanged(int value)
     emit retouchParametersChanged(m_retouchParams);
 }
 
-void BrightnessWindow::handleBrightnessLineEditTextChanged(QString text)
+void RetouchWindow::handleBrightnessLineEditTextChanged(QString text)
 {
     int value = text.toInt();
     ignoreTextChange = true;
@@ -94,7 +94,7 @@ void BrightnessWindow::handleBrightnessLineEditTextChanged(QString text)
     ignoreTextChange = false;
 }
 
-void BrightnessWindow::handleContrastLineEditTextChanged(QString text)
+void RetouchWindow::handleContrastLineEditTextChanged(QString text)
 {
     int value = text.toInt();
     ignoreTextChange = true;
@@ -102,7 +102,7 @@ void BrightnessWindow::handleContrastLineEditTextChanged(QString text)
     ignoreTextChange = false;
 }
 
-void BrightnessWindow::handleGammaLineEditTextChanged(QString text)
+void RetouchWindow::handleGammaLineEditTextChanged(QString text)
 {
     int value = text.toInt();
     ignoreTextChange = true;
@@ -110,7 +110,7 @@ void BrightnessWindow::handleGammaLineEditTextChanged(QString text)
     ignoreTextChange = false;
 }
 
-void BrightnessWindow::handleResetButtonClicked()
+void RetouchWindow::handleResetButtonClicked()
 {
     m_retouchParams = ImageRetouch();
     resetSliders();

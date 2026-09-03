@@ -1,21 +1,20 @@
-#ifndef BRIGHTNESSWINDOW_H
-#define BRIGHTNESSWINDOW_H
+#ifndef RETOUCHWINDOW_H
+#define RETOUCHWINDOW_H
 
 #include <QtWidgets>
 #include "imageview.h"
 
 namespace Ui {
-class BrightnessWindow;
-class MainWindow;
+class RetouchWindow;
 }
 
-class BrightnessWindow : public QWidget
+class RetouchWindow : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit BrightnessWindow(QWidget *parent, Ui::MainWindow *uiMain);
-    ~BrightnessWindow();
+    explicit RetouchWindow(QWidget *parent);
+    ~RetouchWindow() override;
     float sliderToFloat(int value);
     int floatToSlider(float value);
     void setImageView(ImageView *imageView);
@@ -34,10 +33,10 @@ public slots:
     void handleResetButtonClicked();
 
 private:
-    Ui::BrightnessWindow *ui;
+    Ui::RetouchWindow *ui;
     ImageView *m_imageView;
     ImageRetouch m_retouchParams;
     bool ignoreTextChange;
 };
 
-#endif // BRIGHTNESSWINDOW_H
+#endif // RETOUCHWINDOW_H

@@ -13,7 +13,7 @@ class MainWindow;
 class FolderWindow;
 class CatalogWindow;
 class ThumbnailManager;
-class BrightnessWindow;
+class RetouchWindow;
 
 class MainWindow : public QMainWindow
 {
@@ -74,7 +74,7 @@ public:
     void createCatalogWindow(bool docked);
 
     // Retouch panel
-    void createBrightnessWindow(bool docked);
+    void createRetouchWindow(bool docked);
 
 protected:
     void dragEnterEvent(QDragEnterEvent *e) override;
@@ -125,7 +125,7 @@ public slots:
 
     // RetouchWindow
     void handleShowRetouchWindowActionTriggered();
-    void handleBrightnessWindowClosed();
+    void handleRetouchWindowClosed();
 
     // Navigation
     void handleTurnPageOnLeftActionTriggered();
@@ -240,7 +240,7 @@ protected:
     FolderWindow *m_folderWindow;
     QString m_pendingFolderPath;
     CatalogWindow *m_catalogWindow;
-    BrightnessWindow *m_brightnessWindow;
+    RetouchWindow *m_retouchWindow;
     ExifDialog *m_exifDialog;
     QToolButton *m_fullscreenButton;
     uint m_menubarFontSize;

@@ -17,7 +17,7 @@
 #include "qmousesequence.h"
 #include "fileloader.h"
 #include "qinnerframe.h"
-#include "brightnesswindow.h"
+#include "retouchwindow.h"
 
 #ifdef Q_OS_WIN
 #    include "fileassocdialog.h"
@@ -36,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
       m_thumbManager(nullptr),
       m_folderWindow(nullptr),
       m_catalogWindow(nullptr),
-      m_brightnessWindow(nullptr),
+      m_retouchWindow(nullptr),
       m_exifDialog(nullptr),
       m_fullscreenButton(nullptr)
 {
@@ -682,7 +682,7 @@ void MainWindow::setThumbnailManager(ThumbnailManager *manager)
         createCatalogWindow(!qApp->ShowPanelSeparateWindow());
         break;
     case qvEnums::RetouchStartup:
-        createBrightnessWindow(!qApp->ShowPanelSeparateWindow());
+        createRetouchWindow(!qApp->ShowPanelSeparateWindow());
         break;
     }
 }
@@ -817,8 +817,8 @@ void MainWindow::closeAllDockedWindow()
     if (m_folderWindow && m_folderWindow->parent()) {
         handleFolderWindowClosed();
     }
-    if (m_brightnessWindow && m_brightnessWindow->parent()) {
-        handleBrightnessWindowClosed();
+    if (m_retouchWindow && m_retouchWindow->parent()) {
+        handleRetouchWindowClosed();
     }
     if (m_exifDialog && m_exifDialog->parent()) {
         handleExifDialogClosed();
@@ -1027,18 +1027,18 @@ void MainWindow::createCatalogWindow(bool docked)
 ////////////////////////////
 void MainWindow::handleShowRetouchWindowActionTriggered()
 {
-    if (m_brightnessWindow) {
-        handleBrightnessWindowClosed();
+    if (m_retouchWindow) {
+        handleRetouchWindowClosed();
         return;
     }
-    createBrightnessWindow(!qApp->ShowPanelSeparateWindow());
+    createRetouchWindow(!qApp->ShowPanelSeparateWindow());
 }
 
-void MainWindow::handleBrightnessWindowClosed()
+void MainWindow::handleRetouchWindowClosed()
 {
-    if (m_brightnessWindow) {
-        delete m_brightnessWindow;
-        m_brightnessWindow = nullptr;
+    if (m_retouchWindow) {
+        delete m_retouchWindow;
+        m_retouchWindow = nullptr;
         ui->actionShowRetouchWindow->setChecked(false);
 
         if (!m_onWindowClosing) {
@@ -1047,10 +1047,10 @@ void MainWindow::handleBrightnessWindowClosed()
     }
 }
 
-void MainWindow::createBrightnessWindow(bool docked)
+void MainWindow::createRetouchWindow(bool docked)
 {
-    if (m_brightnessWindow) {
-        handleBrightnessWindowClosed();
+    if (m_retouchWindow) {
+        handleRetouchWindowClosed();
     }
     if (m_pageManager.visiblePages().isEmpty()) {
         return;
@@ -1058,24 +1058,24 @@ void MainWindow::createBrightnessWindow(bool docked)
     qApp->setShowOptionViewOnStartup(qvEnums::RetouchStartup);
     if (docked) {
         closeAllDockedWindow();
-        m_brightnessWindow = new BrightnessWindow(nullptr, ui);
-        connect(m_brightnessWindow, SIGNAL(closed()), this, SLOT(handleBrightnessWindowClosed()));
-        connect(m_brightnessWindow, SIGNAL(retouchParametersChanged(ImageRetouch)), ui->graphicsView, SLOT(handleRetouchParametersChanged(ImageRetouch)));
-        m_brightnessWindow->setImageView(ui->graphicsView);
-        ui->catalogSplitter->insertWidget(0, m_brightnessWindow);
+        m_retouchWindow = new RetouchWindow(nullptr);
+        connect(m_retouchWindow, SIGNAL(closed()), this, SLOT(handleRetouchWindowClosed()));
+        connect(m_retouchWindow, SIGNAL(retouchParametersChanged(ImageRetouch)), ui->graphicsView, SLOT(handleRetouchParametersChanged(ImageRetouch)));
+        m_retouchWindow->setImageView(ui->graphicsView);
+        ui->catalogSplitter->insertWidget(0, m_retouchWindow);
         auto sizes = ui->catalogSplitter->sizes();
         int sum = sizes[0] + sizes[1];
         sizes[0] = 200;
         sizes[1] = sum - sizes[0];
         ui->catalogSplitter->setSizes(sizes);
     } else {
-        m_brightnessWindow = new BrightnessWindow(nullptr, ui);
-        connect(m_brightnessWindow, SIGNAL(closed()), this, SLOT(handleBrightnessWindowClosed()));
-        connect(m_brightnessWindow, SIGNAL(retouchParametersChanged(ImageRetouch)), ui->graphicsView, SLOT(handleRetouchParametersChanged(ImageRetouch)));
-        m_brightnessWindow->setImageView(ui->graphicsView);
+        m_retouchWindow = new RetouchWindow(nullptr);
+        connect(m_retouchWindow, SIGNAL(closed()), this, SLOT(handleRetouchWindowClosed()));
+        connect(m_retouchWindow, SIGNAL(retouchParametersChanged(ImageRetouch)), ui->graphicsView, SLOT(handleRetouchParametersChanged(ImageRetouch)));
+        m_retouchWindow->setImageView(ui->graphicsView);
         QRect self = geometry();
-        m_brightnessWindow->setGeometry(self.left() - 100, self.top() + 100, self.width(), self.height());
-        m_brightnessWindow->show();
+        m_retouchWindow->setGeometry(self.left() - 100, self.top() + 100, self.width(), self.height());
+        m_retouchWindow->show();
     }
     ui->actionShowRetouchWindow->setChecked(true);
 }

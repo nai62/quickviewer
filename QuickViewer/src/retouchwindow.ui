@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>BrightnessWindow</class>
- <widget class="QWidget" name="BrightnessWindow">
+ <class>RetouchWindow</class>
+ <widget class="QWidget" name="RetouchWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -207,7 +207,7 @@
   <connection>
    <sender>sliderBrightness</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>BrightnessWindow</receiver>
+   <receiver>RetouchWindow</receiver>
    <slot>handleBrightnessSliderValueChanged(int)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -223,7 +223,7 @@
   <connection>
    <sender>sliderContrast</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>BrightnessWindow</receiver>
+   <receiver>RetouchWindow</receiver>
    <slot>handleContrastSliderValueChanged(int)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -239,7 +239,7 @@
   <connection>
    <sender>sliderGamma</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>BrightnessWindow</receiver>
+   <receiver>RetouchWindow</receiver>
    <slot>handleGammaSliderValueChanged(int)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -255,7 +255,7 @@
   <connection>
    <sender>resetButton</sender>
    <signal>clicked()</signal>
-   <receiver>BrightnessWindow</receiver>
+   <receiver>RetouchWindow</receiver>
    <slot>handleResetButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -271,7 +271,7 @@
   <connection>
    <sender>lineBrightness</sender>
    <signal>textChanged(QString)</signal>
-   <receiver>BrightnessWindow</receiver>
+   <receiver>RetouchWindow</receiver>
    <slot>handleBrightnessLineEditTextChanged(QString)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -287,7 +287,7 @@
   <connection>
    <sender>lineContrast</sender>
    <signal>textChanged(QString)</signal>
-   <receiver>BrightnessWindow</receiver>
+   <receiver>RetouchWindow</receiver>
    <slot>handleContrastLineEditTextChanged(QString)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -303,7 +303,7 @@
   <connection>
    <sender>lineGamma</sender>
    <signal>textChanged(QString)</signal>
-   <receiver>BrightnessWindow</receiver>
+   <receiver>RetouchWindow</receiver>
    <slot>handleGammaLineEditTextChanged(QString)</slot>
    <hints>
     <hint type="sourcelabel">
