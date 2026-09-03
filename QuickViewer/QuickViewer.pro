@@ -139,7 +139,7 @@ SOURCES += \
     src/qactionmanager/shortcutbutton.cpp \
     src/models/imagestring.cpp \
     src/models/loupecontroller.cpp \
-    src/brightnesswindow.cpp \
+    src/retouchwindow.cpp \
     src/models/fileoperator.cpp \
     src/qlanguageselector/qtexttranslator.cpp \
     src/models/qvimagemetadata.cpp
@@ -195,7 +195,7 @@ HEADERS  += \
     src/qactionmanager/qmousesequence.h \
     src/qactionmanager/shortcutbutton.h \
     src/models/imagestring.h \
-    src/brightnesswindow.h \
+    src/retouchwindow.h \
     src/models/fileoperator.h \
     src/qlanguageselector/qtexttranslator.h \
     src/models/qvimagemetadata.h
@@ -225,7 +225,7 @@ FORMS    += \
     src/optionsdialog.ui \
     src/renamedialog.ui \
     ../AssociateFilesWithQuickViewer/fileassocdialog.ui \
-    src/brightnesswindow.ui
+    src/retouchwindow.ui
 
 RESOURCES += toolbar.qrc \
     themes.qrc

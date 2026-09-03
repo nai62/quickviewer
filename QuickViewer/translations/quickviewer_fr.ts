@@ -2,37 +2,37 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="fr_FR">
 <context>
-    <name>BrightnessWindow</name>
+    <name>RetouchWindow</name>
     <message>
-        <location filename="../src/brightnesswindow.ui" line="22"/>
+        <location filename="../src/retouchwindow.ui" line="22"/>
         <source>Brightness</source>
         <extracomment>label text which describes about changing brightness of the image</extracomment>
         <translation>Luminosité</translation>
     </message>
     <message>
-        <location filename="../src/brightnesswindow.ui" line="75"/>
+        <location filename="../src/retouchwindow.ui" line="75"/>
         <source>Contrast</source>
         <extracomment>label text which describes about changing contrast of the image</extracomment>
         <translation>Contraste</translation>
     </message>
     <message>
-        <location filename="../src/brightnesswindow.ui" line="128"/>
+        <location filename="../src/retouchwindow.ui" line="128"/>
         <source>Gamma Value</source>
         <extracomment>label text which describes about changing gamma value of the image</extracomment>
         <translation>Valeur Gamma</translation>
     </message>
     <message>
-        <location filename="../src/brightnesswindow.ui" line="179"/>
+        <location filename="../src/retouchwindow.ui" line="179"/>
         <source>Change all images of the volume</source>
         <translation>Changer toutes les images du volume</translation>
     </message>
     <message>
-        <location filename="../src/brightnesswindow.ui" line="186"/>
+        <location filename="../src/retouchwindow.ui" line="186"/>
         <source>Reset</source>
         <translation>Reinitialiser</translation>
     </message>
     <message>
-        <location filename="../src/brightnesswindow.ui" line="14"/>
+        <location filename="../src/retouchwindow.ui" line="14"/>
         <source>Brightness Window</source>
         <translation>Luminosité de fénêtre</translation>
     </message>
