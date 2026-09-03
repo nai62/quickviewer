@@ -80,7 +80,7 @@ void MainWindowForWindows::setMailAttachment(QString path)
         //        message.lpszNoteText = L"";
         message.nFileCount = 1;
         message.lpFiles = lpMapiFileDescW(&doc);
-        switch (mapi(NULL, 0, &message, MAPI_LOGON_UI | MAPI_DIALOG, 0)) {
+        switch (mapi(0, 0, &message, MAPI_LOGON_UI | MAPI_DIALOG, 0)) {
         case SUCCESS_SUCCESS:
         case MAPI_E_USER_ABORT:
         case MAPI_E_LOGIN_FAILURE:
@@ -105,7 +105,7 @@ void MainWindowForWindows::setMailAttachment(QString path)
         //        message.lpszNoteText = "";
         message.nFileCount = 1;
         message.lpFiles = lpMapiFileDesc(&doc);
-        switch (mapi(NULL, 0, &message, MAPI_LOGON_UI | MAPI_DIALOG, 0)) {
+        switch (mapi(0, 0, &message, MAPI_LOGON_UI | MAPI_DIALOG, 0)) {
         case SUCCESS_SUCCESS:
         case MAPI_E_USER_ABORT:
         case MAPI_E_LOGIN_FAILURE:

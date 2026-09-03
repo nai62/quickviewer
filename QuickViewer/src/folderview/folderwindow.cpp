@@ -69,7 +69,7 @@ static QModelIndex selectedIdx;
 bool FolderWindow::eventFilter(QObject *obj, QEvent *event)
 {
     //    qDebug() << obj << event << event->type();
-    //    QMouseEvent *mouseEvent = NULL;
+    //    QMouseEvent *mouseEvent = nullptr;
     QContextMenuEvent *contextEvent = nullptr;
     switch (event->type()) {
     default:
