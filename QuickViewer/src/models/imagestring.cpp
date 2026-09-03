@@ -48,7 +48,7 @@ QString ImageString::getFormatUsage()
     addString(tags, "%Q", tr("Image file full path in volume, e.g. 'C:/Users/qv/Desktop/Sample Book/subpath/page01.jpg'", "Format tag of text displayed in title bar and status bar"));
     addString(tags, "%s", tr("Image size, e.g. '1920x1080'", "Format tag of text displayed in title bar and status bar"));
     addString(tags, "%m", tr("Display magnification of image, e.g. '25%'", "Format tag of text displayed in title bar and status bar"));
-    addString(tags, "%f", tr("Image file size with usefull, e.g. '63.23 KB'", "Format tag of text displayed in title bar and status bar"));
+    addString(tags, "%f", tr("Image file size in a readable format, e.g. '63.23 KB'", "Format tag of text displayed in title bar and status bar"));
     addString(tags, "%F", tr("Image file size as correct number of bytes, e.g. '1,154,340 Bytes'", "Format tag of text displayed in title bar and status bar"));
     addString(tags, "%b", tr("Image bitmap size with useful, e.g. '1.59 MB'", "Format tag of text displayed in title bar and status bar"));
     addString(tags, "%n", tr("Current page number of the volume e.g. '33/100' or '33-34/100'", "Format tag of text displayed in title bar and status bar"));
@@ -105,13 +105,13 @@ QString ImageString::formatString(QString fmt)
             break;
             // Image file name (only file name), e.g. 'page01.jpg'
         case 'p': {
-            QFileInfo info(page->Path);
+            QFileInfo info(page->path);
             result << info.fileName();
             break;
         }
             // Image file path in volume, e.g. 'subpath/page01.jpg'
         case 'P':
-            result << page->Path;
+            result << page->path;
             break;
             // Image file full path in volume, e.g. 'C:/Users/qv/Desktop/Sample Book/subpath/page01.jpg'
         case 'Q': {
@@ -120,15 +120,15 @@ QString ImageString::formatString(QString fmt)
         }
             // Image size, e.g. '1920x1080'
         case 's':
-            result << QString("%1x%2").arg(page->BaseSize.width()).arg(page->BaseSize.height());
+            result << QString("%1x%2").arg(page->originalSize.width()).arg(page->originalSize.height());
             break;
             // Display magnification of image, e.g. '25%'
         case 'm':
             result << QString("%1%").arg((int)(100 * metrics.notationalScaleAt(requestedPage)));
             break;
-            // Image file size with usefull, e.g. '63.23 KB'
+            // Image file size in a readable format, e.g. '63.23 KB'
         case 'f': {
-            double filelength = page->FileLength;
+            double filelength = page->fileSize;
             if (filelength < 1024) {
                 result << QString(tr("%1 Bytes")).arg(filelength);
             } else if (filelength < 1024 * 1024) {
@@ -140,11 +140,11 @@ QString ImageString::formatString(QString fmt)
         }
             // Image file size as correct number of bytes, e.g. '1,154,340 Bytes'
         case 'F':
-            result << QString(tr("%L1 Bytes")).arg(page->FileLength);
+            result << QString(tr("%L1 Bytes")).arg(page->fileSize);
             break;
             // Image bitmap size with useful, e.g. '1.59 MB'
         case 'b': {
-            double filelength = page->Image.sizeInBytes();
+            double filelength = page->loadedImage.sizeInBytes();
             if (filelength < 1024) {
                 result << QString(tr("%1 Bytes")).arg(filelength);
             } else if (filelength < 1024 * 1024) {

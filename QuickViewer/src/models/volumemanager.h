@@ -42,13 +42,13 @@ public:
     ~VolumeManager();
     void enumerate();
     bool enumerated() { return m_enumerated; }
-    ImageContent getImageBeforeEnmumerate(QString subfilename);
+    ImageContent getImageBeforeEnumeration(QString subfileName);
     IFileLoader *FileLoader() { return m_loader; }
 
     static ImageContent futureLoadImageFromFileVolume(
         QSharedPointer<ImageLoadContext> context, QString path, QSize pageSize);
     static ImageContent loadImageFromFile(QString path, QSize pageSize);
-    static ImageContent futureReizeImage(ImageContent ic, QSize pageSize);
+    static ImageContent resizeImageForViewport(ImageContent content, QSize pageSize);
     static QString FullPathToVolumePath(QString path);
     static QString FullPathToSubFilePath(QString path);
 

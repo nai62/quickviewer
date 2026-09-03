@@ -28,20 +28,6 @@ public:
     InflateCacheMode getCacheMode() override { return InflateNoCached; }
 };
 
-class StubPageRenderContext final : public PageRenderContext
-{
-public:
-    qreal currentPixelRatio() const override
-    {
-        ++pixelRatioRequests;
-        return 2.0;
-    }
-
-    ImageRetouch retouchParameters() const override { return {}; }
-
-    mutable int pixelRatioRequests = 0;
-};
-
 class ViewerNavigationTest : public QObject
 {
     Q_OBJECT
@@ -72,8 +58,8 @@ private slots:
         QVERIFY(!manager.reloadCurrentPage());
         QCOMPARE(manager.currentPagePath(), QString());
         QCOMPARE(manager.currentPageName(), QString());
-        QCOMPARE(manager.currentPageNumAsString(), QString());
-        QCOMPARE(manager.currentPageStatusAsString(), QString());
+        QCOMPARE(manager.currentPageNumberText(), QString());
+        QCOMPARE(manager.currentPageStatusText(), QString());
         QCOMPARE(manager.pageSignage(0), QString());
         QCOMPARE(manager.pageSignage(-1), QString());
     }
@@ -132,7 +118,7 @@ private slots:
         QVERIFY(pages.at(-1) == nullptr);
         QVERIFY(pages.at(1) == nullptr);
         QVERIFY(pages.first() != nullptr);
-        QCOMPARE(pages.first()->Path, QString("first.bmp"));
+        QCOMPARE(pages.first()->path, QString("first.bmp"));
 
         QVERIFY(manager.addNewPage(ImageContent("second.bmp", 0), true));
         QCOMPARE(notificationCount, 2);
@@ -145,7 +131,7 @@ private slots:
         QVERIFY(latest.isEmpty());
         QVERIFY(manager.visiblePages().isEmpty());
         QCOMPARE(pages.count(), 1);
-        QCOMPARE(pages.first()->Path, QString("first.bmp"));
+        QCOMPARE(pages.first()->path, QString("first.bmp"));
     }
 
     void imageStringUsesValueSnapshots()
@@ -166,25 +152,35 @@ private slots:
                  QString("sample.png|100x200|50%"));
     }
 
-    void pageItemUsesOnlyItsRenderContext()
+    void pageItemUsesRenderSettingsSnapshot()
     {
         QGraphicsScene scene;
         QImage image(100, 100, QImage::Format_RGB32);
         image.fill(Qt::red);
-        StubPageRenderContext context;
-        PageItem page(nullptr, &scene, ImageContent(image, "page.bmp", image.size(), {}, 0), &context);
+        PageRenderSettings settings;
+        settings.pixelRatio = 2.0;
+        PageItem page(nullptr, &scene, ImageContent(image, "page.bmp", image.size(), {}, 0), settings);
+        settings.pixelRatio = 3.0;
 
         page.setPageLayoutFitting(QRect(0, 0, 100, 100),
                                   PageItem::PageCenter,
                                   qvEnums::FitToRect,
                                   1.0);
-        QCOMPARE(context.pixelRatioRequests, 1);
+        QCOMPARE(page.displayScale, 2.0);
 
-        PageItem pageWithoutContext(nullptr, &scene, ImageContent(image, "preview.bmp", image.size(), {}, 0));
-        pageWithoutContext.setPageLayoutFitting(QRect(0, 0, 100, 100),
-                                                PageItem::PageCenter,
-                                                qvEnums::FitToRect,
-                                                1.0);
+        page.setRenderSettings(settings);
+        page.setPageLayoutFitting(QRect(0, 0, 100, 100),
+                                  PageItem::PageCenter,
+                                  qvEnums::FitToRect,
+                                  1.0);
+        QCOMPARE(page.displayScale, 3.0);
+
+        PageItem pageWithDefaults(nullptr, &scene, ImageContent(image, "preview.bmp", image.size(), {}, 0));
+        pageWithDefaults.setPageLayoutFitting(QRect(0, 0, 100, 100),
+                                              PageItem::PageCenter,
+                                              qvEnums::FitToRect,
+                                              1.0);
+        QCOMPARE(pageWithDefaults.displayScale, 1.0);
     }
 
     void emptyVolumeManagerOperationsAreSafe()
@@ -196,8 +192,8 @@ private slots:
         QCOMPARE(volume.currentPath(), QString());
         QCOMPARE(volume.currentPathWithSeparator(), QString());
         QCOMPARE(volume.getIndexedFileName(0), QString());
-        QVERIFY(volume.currentImage().Image.isNull());
-        QVERIFY(volume.getIndexedImageContent(0).Image.isNull());
+        QVERIFY(volume.currentImage().loadedImage.isNull());
+        QVERIFY(volume.getIndexedImageContent(0).loadedImage.isNull());
         QVERIFY(!volume.nextPage());
         QVERIFY(!volume.prevPage());
         QVERIFY(!volume.findPageByIndex(0));
@@ -421,8 +417,8 @@ private slots:
                  ImageView::AddRenderedPageResult::AddedLandscape);
         QCOMPARE(view.renderedPageCount(), 2);
         VisiblePages contents = view.renderedPageContents();
-        QCOMPARE(contents.at(0)->Path, QString("first.png"));
-        QCOMPARE(contents.at(1)->Path, QString("second.png"));
+        QCOMPARE(contents.at(0)->path, QString("first.png"));
+        QCOMPARE(contents.at(1)->path, QString("second.png"));
         QCOMPARE(view.addRenderedPage(
                      ImageContent(image, "third.png", image.size(), {}, 0), true),
                  ImageView::AddRenderedPageResult::Rejected);
@@ -440,8 +436,8 @@ private slots:
                  ImageView::AddRenderedPageResult::AddedLandscape);
         QCOMPARE(view.renderedPageCount(), 2);
         contents = view.renderedPageContents();
-        QCOMPARE(contents.at(0)->Path, QString("prepended.png"));
-        QCOMPARE(contents.at(1)->Path, QString("replacement.png"));
+        QCOMPARE(contents.at(0)->path, QString("prepended.png"));
+        QCOMPARE(contents.at(1)->path, QString("replacement.png"));
         QVERIFY(!contents.at(-1));
         QVERIFY(!contents.at(2));
     }

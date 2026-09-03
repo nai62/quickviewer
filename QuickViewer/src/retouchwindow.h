@@ -18,7 +18,7 @@ public:
     void initializeFromImageView(const ImageView *imageView);
 
 signals:
-    void retouchParametersChanged(ImageRetouch params);
+    void retouchParametersChanged(RetouchParameters params);
 
 public slots:
     void handleBrightnessSliderValueChanged(int value);
@@ -30,12 +30,12 @@ public slots:
     void handleResetButtonClicked();
 
 private:
-    static float sliderToFloat(int value);
-    static int floatToSlider(float value);
+    static float sliderValueToFactor(int sliderValue);
+    static int factorToSliderValue(float factor);
     void resetSliders();
 
     Ui::RetouchWindow *ui;
-    ImageRetouch m_retouchParams;
+    RetouchParameters m_retouchParams;
     bool m_ignoreTextChange;
 };
 

@@ -164,9 +164,9 @@ ImageView::AddRenderedPageResult ImageView::addRenderedPage(ImageContent content
     if (m_pageManager == nullptr || pageCount >= 2) {
         return AddRenderedPageResult::Rejected;
     }
-    const bool landscape = content.Image.width() > content.Image.height();
+    const bool landscape = content.loadedImage.width() > content.loadedImage.height();
     if (!m_renderedPages.add(
-            std::move(content), append, this, scene(), this, m_openSeparatedPageFromEnd, this, [this] { refreshRenderedPages(); })) {
+            std::move(content), append, this, scene(), pageRenderSettings(), m_openSeparatedPageFromEnd, this, [this] { refreshRenderedPages(); })) {
         return AddRenderedPageResult::Rejected;
     }
 
@@ -174,6 +174,14 @@ ImageView::AddRenderedPageResult ImageView::addRenderedPage(ImageContent content
 
     return landscape ? AddRenderedPageResult::AddedLandscape
                      : AddRenderedPageResult::AddedPortrait;
+}
+
+PageRenderSettings ImageView::pageRenderSettings() const
+{
+    PageRenderSettings settings;
+    settings.pixelRatio = m_lastScreenPixelRatio;
+    settings.retouchParameters = m_retouchParams;
+    return settings;
 }
 
 void ImageView::clearRenderedPages()
@@ -193,17 +201,18 @@ void ImageView::handleVisiblePagesChanged(VisiblePages pages)
         }
     }
 }
-//static int paintCnt=0;
+
 void ImageView::refreshRenderedPages()
 {
-    //    qDebug() << "refreshRenderedPages " << paintCnt++;
     if (qApp->Effect() > qvEnums::UsingFixedShader) {
         setRenderer(OpenGL);
     }
     const int renderedCount = renderedPageCount();
     if (renderedCount > 0 && m_pageManager) {
         const int currentPage = m_pageManager->currentPage();
-        RenderedPageLayout layout;
+        PageRenderRequest request;
+        request.settings = pageRenderSettings();
+        RenderedPageLayout &layout = request.layout;
         layout.viewport = QRect(QPoint(), viewport()->size());
         layout.fitMode = qApp->Fitting()
                              ? qApp->ImageFitMode()
@@ -222,7 +231,7 @@ void ImageView::refreshRenderedPages()
                     : QString());
         }
         const QRect sceneRect = m_renderedPages.layout(
-            layout, [this](QGraphicsPixmapItem *item, const ImageContent &content, QSize drawSize) {
+            request, [this](QGraphicsPixmapItem *item, const ImageContent &content, QSize drawSize) {
                 m_shaderManager.prepare(item, content, drawSize);
             });
         // if Size of Image overs Size of View, use Image's size
@@ -340,6 +349,7 @@ void ImageView::updateZoomScrollFromCursor()
     horizontalScrollBar()->setValue(scrollPosition.x());
     verticalScrollBar()->setValue(scrollPosition.y());
 }
+
 void ImageView::updateGestureTransform(qreal scale, qreal rotationDegrees)
 {
     m_pendingGestureScale = scale;
@@ -536,7 +546,7 @@ void ImageView::handleRotateActionTriggered()
     if (page < 0 || page >= m_pageRotations.size()) {
         return;
     }
-    m_pageRotations[page] += 90;
+    m_pageRotations[page] = (m_pageRotations[page] + 90) % 360;
     refreshRenderedPages();
 }
 
@@ -923,7 +933,7 @@ void ImageView::handleCopyFileActionTriggered()
     clipboard->setMimeData(mimeData);
 }
 
-void ImageView::handleRetouchParametersChanged(ImageRetouch params)
+void ImageView::handleRetouchParametersChanged(RetouchParameters params)
 {
     m_retouchParams = params;
     refreshRenderedPages();

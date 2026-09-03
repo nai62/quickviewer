@@ -151,14 +151,14 @@ QString ExifDialog::generateOrientation(unsigned short orient)
 
 void ExifDialog::setExif(const ImageContent &content)
 {
-    const easyexif::EXIFInfo &info = content.Info;
+    const easyexif::EXIFInfo &info = content.exifInfo;
     if (!info.ImageWidth) {
         ui->textEdit->setText(tr("Exif is not included.", "Text to display if EXIF is not included in JPEG"));
         return;
     }
     ImageMetaContents meta;
-    meta.addContent(tr("Filename"), content.Path);
-    meta.addContent(tr("Pixels"), QString("%L1").arg(content.BaseSize.width() * content.BaseSize.height()));
+    meta.addContent(tr("Filename"), content.path);
+    meta.addContent(tr("Pixels"), QString("%L1").arg(content.originalSize.width() * content.originalSize.height()));
     meta.addContent(tr("ImageWidth"), info.ImageWidth);
     meta.addContent(tr("ImageHeight"), info.ImageHeight);
     meta.addContent(tr("Make"), QString::fromStdString(info.Make));

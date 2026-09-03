@@ -171,15 +171,15 @@ VolumeWorker ThumbnailManager::createSubVolumesConcurrent(QString dirpath, int v
     vw.parent_id = parent_id;
 
     if (IFileLoader::isArchiveFile(dirpath)) {
-//        VolumeManager* fv = VolumeManager::CreateVolumeWithOnlyCover(nullptr, dirpath, nullptr, VolumeManager::CreateThumbnail);
-//        if(fv) {
-//            ImageContent ic = fv->currentImage();
-//            vw.frontPage = createFileRecordFromArchive(dirpath, ic, 0);
-//            delete fv;
-//        }
+        //        VolumeManager* fv = VolumeManager::CreateVolumeWithOnlyCover(nullptr, dirpath, nullptr, VolumeManager::CreateThumbnail);
+        //        if(fv) {
+        //            ImageContent ic = fv->currentImage();
+        //            vw.frontPage = createFileRecordFromArchive(dirpath, ic, 0);
+        //            delete fv;
+        //        }
         VolumeManagerBuilder builder(dirpath);
         ImageContent ic = builder.thumbnail();
-        if (!ic.Image.isNull()) {
+        if (!ic.loadedImage.isNull()) {
             vw.frontPage = createFileRecordFromArchive(dirpath, ic, 0);
         }
 
@@ -588,29 +588,29 @@ FileWorker ThumbnailManager::createFileRecord(QString filename, QString filepath
     result.thumbbytes = thumbdat.data();
     result.created_at = QDateTime::currentDateTime();
 
-//    QBuffer alternated;
-//    if(ThumbnailManager::isHeavyImageFile(filename) || img.width() > MAX_WIDTH || img.height() > MAX_HEIGHT) {
-//        QDesktopWidget* desktop = QApplication::desktop();
-//        QRect rect = desktop->screenGeometry();
-////            qDebug() << rect;
-//        QImage alter = img.scaled(rect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-//        alternated.open(QBuffer::ReadWrite);
-//        if(!alter.save(&alternated, "JPEG", 90)) {
-//            return result;
-//        }
-//        result.alternated = alternated.data();
-//    }
+    //    QBuffer alternated;
+    //    if(ThumbnailManager::isHeavyImageFile(filename) || img.width() > MAX_WIDTH || img.height() > MAX_HEIGHT) {
+    //        QDesktopWidget* desktop = QApplication::desktop();
+    //        QRect rect = desktop->screenGeometry();
+    ////            qDebug() << rect;
+    //        QImage alter = img.scaled(rect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    //        alternated.open(QBuffer::ReadWrite);
+    //        if(!alter.save(&alternated, "JPEG", 90)) {
+    //            return result;
+    //        }
+    //        result.alternated = alternated.data();
+    //    }
     return result;
 }
 
 FileWorker ThumbnailManager::createFileRecordFromArchive(QString archivePath, ImageContent &ic, int filename_asc)
 {
     FileWorker result;
-    result.filename = ic.Path;
-    result.filepath = ic.Path;
+    result.filename = ic.path;
+    result.filepath = ic.path;
     result.info.setFile(archivePath);
     result.asc = filename_asc;
-    QImage img = ic.Image;
+    QImage img = ic.loadedImage;
     if (!img.width()) {
         result.asc = -1;
         return result;
@@ -654,16 +654,16 @@ int ThumbnailManager::createVolumeContent(QString dirpath, int volume_id)
     int filename_asc = 0;
     QList<QFuture<FileWorker>> workers;
     for (int i = 0; i < files.size(); i++) {
-//    foreach(QString filename, files) {
+        //    foreach(QString filename, files) {
         if (m_catalogWatcher.isStarted()) {
-//            int progressValue = m_catalogWatcher.progressValue();
+            //            int progressValue = m_catalogWatcher.progressValue();
             emit m_catalogWatcher.progressValueChanged(m_catalogWorkProgress++);
         }
         if (m_catalogWatcher.isCanceled()) {
             break;
         }
         QString filename = files[i];
-//        qDebug() << "  file: " << filename;
+        //        qDebug() << "  file: " << filename;
         if (!isImageFile(filename)) {
             continue;
         }
@@ -747,7 +747,7 @@ CatalogRecord ThumbnailManager::createCatalog(QString name, QString path)
     m_catalogWorkProgress = 0;
     m_catalogWorkMax = 0;
     int catalog_id = catalog.id = t_catalogs.lastInsertId().toInt();
-//    int basevolume_id = createSubVolumes(path, catalog_id);
+    //    int basevolume_id = createSubVolumes(path, catalog_id);
     int basevolume_id = createVolumesFrontPageOnly(path, catalog_id);
     if (basevolume_id > 0) {
         t_catalogs.prepare("UPDATE t_catalogs SET basevolume_id=:basevolume_id WHERE id=:id");
@@ -857,9 +857,9 @@ static VolumeThumbRecord thumbnail2Icon(VolumeThumbRecord vtr)
 {
     QString aformat = IFileLoader::isImageFile("turbojpeg") ? TURBO_JPEG_FMT : "jpg";
     QPixmap pixmap = QPixmap::fromImage(QImage::fromData(vtr.thumbnail, aformat.toUtf8()));
-//    QPixmap pixmap = QPixmap::fromImage(QImage::fromData(vtr.thumbnail));
+    //    QPixmap pixmap = QPixmap::fromImage(QImage::fromData(vtr.thumbnail));
     vtr.icon = QIcon(pixmap);
-//    vtr.thumbnail.clear();
+    //    vtr.thumbnail.clear();
     return vtr;
 }
 

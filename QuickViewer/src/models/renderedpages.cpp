@@ -20,7 +20,7 @@ const PageItem *RenderedPages::at(int index) const
     return index >= 0 && index < count() ? m_pages[index].get() : nullptr;
 }
 
-bool RenderedPages::add(ImageContent content, bool append, QObject *owner, QGraphicsScene *scene, const PageRenderContext *renderContext, bool openSeparatedPageFromEnd, QObject *resizeReceiver, std::function<void()> resizeCallback)
+bool RenderedPages::add(ImageContent content, bool append, QObject *owner, QGraphicsScene *scene, const PageRenderSettings &renderSettings, bool openSeparatedPageFromEnd, QObject *resizeReceiver, std::function<void()> resizeCallback)
 {
     const int pageCount = count();
     if (pageCount >= Capacity || !scene) {
@@ -28,9 +28,9 @@ bool RenderedPages::add(ImageContent content, bool append, QObject *owner, QGrap
     }
 
     auto page = std::make_unique<PageItem>(
-        owner, scene, std::move(content), renderContext);
-    if (openSeparatedPageFromEnd && page->Separation == PageItem::FirstSeparated) {
-        page->Separation = PageItem::SecondSeparated;
+        owner, scene, std::move(content), renderSettings);
+    if (openSeparatedPageFromEnd && page->separationState == PageItem::FirstHalf) {
+        page->separationState = PageItem::SecondHalf;
     }
     if (resizeReceiver && resizeCallback) {
         QObject::connect(page.get(), &PageItem::resizeFinished, resizeReceiver, std::move(resizeCallback));
@@ -53,19 +53,24 @@ void RenderedPages::clear()
     m_pages[0].reset();
 }
 
-QRect RenderedPages::layout(const RenderedPageLayout &layout,
+QRect RenderedPages::layout(const PageRenderRequest &request,
                             const EffectPreparer &prepareEffect)
 {
     QRect sceneRect;
     const int pageCount = count();
     for (int index = 0; index < pageCount; ++index) {
+        m_pages[index]->setRenderSettings(request.settings);
+    }
+
+    const RenderedPageLayout &layout = request.layout;
+    for (int index = 0; index < pageCount; ++index) {
         PageItem &page = *m_pages[index];
-        if (layout.separateWideImages && page.Ic.wideImage()) {
-            if (page.Separation == PageItem::NoSeparated && layout.viewport.width() < layout.viewport.height()) {
-                page.Separation = PageItem::FirstSeparated;
+        if (layout.separateWideImages && page.content.isLandscape()) {
+            if (page.separationState == PageItem::NotSeparated && layout.viewport.width() < layout.viewport.height()) {
+                page.separationState = PageItem::FirstHalf;
             }
-            if (page.Separation != PageItem::NoSeparated && layout.viewport.width() > layout.viewport.height()) {
-                page.Separation = PageItem::NoSeparated;
+            if (page.separationState != PageItem::NotSeparated && layout.viewport.width() > layout.viewport.height()) {
+                page.separationState = PageItem::NotSeparated;
             }
         }
 
@@ -92,11 +97,11 @@ QRect RenderedPages::layout(const RenderedPageLayout &layout,
             drawRect = page.setPageLayoutManual(
                 pageRect, alignment, layout.manualScale * layout.scaleFactor, rotation, layout.loupe);
         }
-        page.Text = layout.signage.value(index);
+        page.signageText = layout.signage.value(index);
         page.resetSignage(layout.viewport, alignment);
         if (prepareEffect) {
-            prepareEffect(dynamic_cast<QGraphicsPixmapItem *>(page.GrItem),
-                          page.Ic,
+            prepareEffect(dynamic_cast<QGraphicsPixmapItem *>(page.graphicsItem),
+                          page.content,
                           drawRect.size());
         }
         sceneRect = sceneRect.united(drawRect);
@@ -107,28 +112,28 @@ QRect RenderedPages::layout(const RenderedPageLayout &layout,
 bool RenderedPages::advanceSeparatedPage()
 {
     PageItem *page = at(0);
-    if (!page || page->Separation != PageItem::FirstSeparated) {
+    if (!page || page->separationState != PageItem::FirstHalf) {
         return false;
     }
-    page->Separation = PageItem::SecondSeparated;
+    page->separationState = PageItem::SecondHalf;
     return true;
 }
 
 bool RenderedPages::rewindSeparatedPage()
 {
     PageItem *page = at(0);
-    if (!page || page->Separation != PageItem::SecondSeparated) {
+    if (!page || page->separationState != PageItem::SecondHalf) {
         return false;
     }
-    page->Separation = PageItem::FirstSeparated;
+    page->separationState = PageItem::FirstHalf;
     return true;
 }
 
 void RenderedPages::setCursor(const QCursor &cursor)
 {
     for (int index = 0; index < count(); ++index) {
-        if (m_pages[index]->GrItem) {
-            m_pages[index]->GrItem->setCursor(cursor);
+        if (m_pages[index]->graphicsItem) {
+            m_pages[index]->graphicsItem->setCursor(cursor);
         }
     }
 }
@@ -136,13 +141,13 @@ void RenderedPages::setCursor(const QCursor &cursor)
 std::optional<qreal> RenderedPages::firstDrawScale() const
 {
     const PageItem *page = at(0);
-    return page ? std::optional<qreal>(page->DrawScale) : std::nullopt;
+    return page ? std::optional<qreal>(page->drawScale) : std::nullopt;
 }
 
 QImage RenderedPages::firstImage() const
 {
     const PageItem *page = at(0);
-    return page ? page->Ic.Image : QImage();
+    return page ? page->content.loadedImage : QImage();
 }
 
 VisiblePages RenderedPages::contents() const
@@ -150,7 +155,7 @@ VisiblePages RenderedPages::contents() const
     QVector<ImageContent> contents;
     contents.reserve(count());
     for (int index = 0; index < count(); ++index) {
-        contents.push_back(m_pages[index]->Ic);
+        contents.push_back(m_pages[index]->content);
     }
     return VisiblePages(std::move(contents));
 }
@@ -160,7 +165,7 @@ RenderedPageMetrics RenderedPages::metrics() const
     QVector<qreal> scales;
     scales.reserve(count());
     for (int index = 0; index < count(); ++index) {
-        scales.push_back(m_pages[index]->NotationalScale);
+        scales.push_back(m_pages[index]->displayScale);
     }
     return RenderedPageMetrics(std::move(scales));
 }

@@ -1,6 +1,8 @@
 #ifndef PAGECONTENT_H
 #define PAGECONTENT_H
 
+#include <utility>
+
 #include <QtCore>
 #include <QtWidgets>
 
@@ -8,127 +10,93 @@
 #include "qvmovie.h"
 #include "qv_init.h"
 
-struct ImageRetouch
+struct RetouchParameters
 {
-    float Brightness;
-    float Contrast;
-    float Gamma;
-    ImageRetouch(float brightness = 0.0f, float contrast = 1.0f, float gamma = 1.0f)
-        : Brightness(brightness),
-          Contrast(contrast),
-          Gamma(gamma)
+    float brightness;
+    float contrast;
+    float gamma;
+    RetouchParameters(float brightness = 0.0f, float contrast = 1.0f, float gamma = 1.0f)
+        : brightness(brightness),
+          contrast(contrast),
+          gamma(gamma)
     {}
     bool isDefault() const
     {
-        return *this == ImageRetouch();
+        return *this == RetouchParameters();
     }
-    bool operator==(const ImageRetouch &rhs) const
+    bool operator==(const RetouchParameters &rhs) const
     {
-        return Brightness == rhs.Brightness && Contrast == rhs.Contrast && Gamma == rhs.Gamma;
+        return brightness == rhs.brightness && contrast == rhs.contrast && gamma == rhs.gamma;
     }
 };
 
-class PageRenderContext
+struct PageRenderSettings
 {
-public:
-    virtual ~PageRenderContext() = default;
-    virtual qreal currentPixelRatio() const = 0;
-    virtual ImageRetouch retouchParameters() const = 0;
+    qreal pixelRatio = 1.0;
+    RetouchParameters retouchParameters;
 };
 
 /**
- * @brief The ImageContent struct
- * actual Image data and metadata
+ * @brief Decoded image data, metadata, and derived rendering caches
  */
 struct ImageContent
 {
-public:
     /**
-     * @brief Image is a pixmap of the image for viewing
+     * @brief Decoded image used for viewing
      */
-    QImage Image;
+    QImage loadedImage;
     /**
-     * @brief RetouchedImage is another view with changed pixels from Image
+     * @brief Cached image with brightness, contrast, and gamma adjustments
      */
-    QImage RetouchedImage;
+    QImage retouchedImage;
     /**
-     * @brief ResizedImage is resized to actual view size from Image
+     * @brief Cached image resized for the current view
      */
-    QImage ResizedImage;
+    QImage resizedImage;
     /**
-     * @brief Movie will be initialized when imageReader.supportsAnimation() == true
+     * @brief Animation data, if the image reader supports animation
      */
-    QvMovie Movie;
+    QvMovie movie;
     /**
-     * @brief BaseSize is original size of the image
+     * @brief Original dimensions of the image
      */
-    QSize BaseSize;
+    QSize originalSize;
     /**
-     * @brief ImportSize is actual size of image for viewing
+     * @brief Dimensions of the decoded image, which may have been downsampled
      */
-    QSize ImportSize;
+    QSize loadedImageSize;
     /**
-     * @brief Path is path of the image
+     * @brief Path of the image
      */
-    QString Path;
+    QString path;
     /**
-     * @brief Info is Exif Information of the image(JPEG only)
+     * @brief EXIF metadata for JPEG images
      */
-    easyexif::EXIFInfo Info;
+    easyexif::EXIFInfo exifInfo;
 
-    size_t FileLength;
-    ImageRetouch RetouchParam;
-    qvEnums::ShaderEffect ResizeMode;
+    size_t fileSize = 0;
+    RetouchParameters appliedRetouchParameters;
+    qvEnums::ShaderEffect appliedResizeMode = qvEnums::Bilinear;
 
-    ImageContent()
-        : FileLength(0),
-          ResizeMode(qvEnums::Bilinear)
+    ImageContent() = default;
+    ImageContent(QString imagePath, size_t size)
+        : path(std::move(imagePath)),
+          fileSize(size)
     {}
-    ImageContent(QString path, size_t length)
-        : Path(path),
-          FileLength(length),
-          ResizeMode(qvEnums::Bilinear)
+    ImageContent(QImage image, QString imagePath, QSize sourceSize, easyexif::EXIFInfo metadata, size_t size)
+        : loadedImage(std::move(image)),
+          originalSize(sourceSize),
+          loadedImageSize(loadedImage.size()),
+          path(std::move(imagePath)),
+          exifInfo(std::move(metadata)),
+          fileSize(size)
     {}
-    ImageContent(QImage image, QString path, QSize size, easyexif::EXIFInfo info, size_t length)
-        : Image(image),
-          BaseSize(size),
-          ImportSize(image.size()),
-          Path(path),
-          Info(info),
-          FileLength(length),
-          ResizeMode(qvEnums::Bilinear)
-    {}
-    ImageContent(const ImageContent &rhs)
-        : Image(rhs.Image),
-          ResizedImage(rhs.ResizedImage),
-          Movie(rhs.Movie),
-          BaseSize(rhs.BaseSize),
-          ImportSize(rhs.ImportSize),
-          Path(rhs.Path),
-          Info(rhs.Info),
-          FileLength(rhs.FileLength),
-          ResizeMode(rhs.ResizeMode)
-    {}
-    inline ImageContent &operator=(const ImageContent &rhs)
-    {
-        Image = rhs.Image;
-        ResizedImage = rhs.ResizedImage;
-        Movie = rhs.Movie;
-        Path = rhs.Path;
-        BaseSize = rhs.BaseSize;
-        ImportSize = rhs.ImportSize;
-        Info = rhs.Info;
-        FileLength = rhs.FileLength;
-        ResizeMode = rhs.ResizeMode;
-        return *this;
-    }
-    bool wideImage() const { return BaseSize.width() > BaseSize.height(); }
-    void initialize();
+    bool isLandscape() const { return originalSize.width() > originalSize.height(); }
+    void initializeAnimation();
 };
 
 /**
- * @brief PageItem
- * contains the informations of a Page
+ * @brief Rendered state for a page
  */
 class PageItem : public QObject
 {
@@ -146,66 +114,55 @@ public:
     //    };
 
     enum SeparationState {
-        NoSeparated,
-        FirstSeparated,
-        SecondSeparated
+        NotSeparated,
+        FirstHalf,
+        SecondHalf
     };
 
-    QGraphicsScene *Scene;
-    ImageContent Ic;
+    QGraphicsScene *scene;
+    ImageContent content;
     /**
-     * @brief GrItem
-     * Page image is used as a QGraphicsItem. It will be registered with the scene.
+     * @brief Graphics item registered with the scene for this page
      */
-    QGraphicsItem *GrItem;
-    //    /**
-    //     * @brief Resized
-    //     * Store the image changed to the specified size (newsize)
-    //     */
-    //    QPixmap ResizedPage;
-    QFutureWatcher<QImage> generateWatcher;
+    QGraphicsItem *graphicsItem;
     /**
-     * @brief Rotate: rotation as digrees
+     * @brief Rotation in degrees from the decoded image orientation
      */
-    int Rotate;
+    int rotationDegrees;
     /**
-     * @brief GText is information as a text on fullscreen
+     * @brief Fullscreen signage text
      */
-    QString Text;
-    QGraphicsTextItem *GText;
-    QGraphicsRectItem *GTextSurface;
+    QString signageText;
+    QGraphicsTextItem *signageTextItem;
+    QGraphicsRectItem *signageBackgroundItem;
     /**
      * @brief Actual drawing scale
      */
-    qreal DrawScale;
+    qreal drawScale;
     /**
-     * @brief Notational scale
+     * @brief Scale displayed to the user
      */
-    qreal NotationalScale;
-    SeparationState Separation;
+    qreal displayScale;
+    SeparationState separationState;
 
-    explicit PageItem(QObject *parent = nullptr, const PageRenderContext *renderContext = nullptr);
-    PageItem(QObject *parent, QGraphicsScene *s, ImageContent ic, const PageRenderContext *renderContext = nullptr);
+    explicit PageItem(QObject *parent = nullptr, PageRenderSettings renderSettings = {});
+    PageItem(QObject *parent, QGraphicsScene *graphicsScene, ImageContent imageContent, PageRenderSettings renderSettings = {});
     ~PageItem() override;
     Q_DISABLE_COPY_MOVE(PageItem)
 
-    QPoint Offset(int rotateOffset = 0);
-    QSize CurrentSize(int rotateOffset = 0);
+    QPoint offsetForRotation(int rotationOffset = 0) const;
+    QSize rotatedImageSize(int rotationOffset = 0) const;
 
     /**
-     * @brief setPageLayout set each image on the page
-     * @param viewport: the image must be inscribed in the viewport area
+     * @brief Lay out an image fitted within the viewport
      */
-    QRect setPageLayoutFitting(QRect viewport, PageAlign align, qvEnums::FitMode fitMode, qreal loupe, int rotateOffset = 0);
-    QRect setPageLayoutManual(QRect viewport, PageAlign align, qreal scale, int rotateOffset = 0, bool loupe = false);
+    QRect setPageLayoutFitting(QRect viewport, PageAlign alignment, qvEnums::FitMode fitMode, qreal loupe, int rotationOffset = 0);
+    QRect setPageLayoutManual(QRect viewport, PageAlign alignment, qreal scale, int rotationOffset = 0, bool loupe = false);
 
-    void applyResize(qreal scale, int rotateOffset, QPoint pos, QSize newsize, bool loupe = false);
-    QImage &applyRetouched();
-    void initializePage(bool resetResized = false);
-    void resetSignage(QRect viewport, PageItem::PageAlign fitting);
-    void resetScene(QGraphicsScene *scene);
-    void checkInitialize();
-    void dispose();
+    void setRenderSettings(PageRenderSettings renderSettings);
+    void applyResize(qreal scale, int rotationOffset, QPoint position, QSize targetSize, bool loupe = false);
+    void initializePage(bool resetResizedImage = false);
+    void resetSignage(QRect viewport, PageItem::PageAlign alignment);
 signals:
     void resizeFinished();
 public slots:
@@ -214,10 +171,14 @@ public slots:
     void handleAnimationFinished();
 
 private:
+    QImage &imageWithRetouch();
+    void ensureInitialized();
+    void dispose();
+
+    QFutureWatcher<QImage> m_resizeWatcher;
     int m_resizeGeneratingState;
-    bool initialized;
-    // Non-owning. The context must outlive this page item.
-    const PageRenderContext *m_renderContext;
+    bool m_initialized;
+    PageRenderSettings m_renderSettings;
 };
 
 #endif // PAGECONTENT_H
