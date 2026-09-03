@@ -19,26 +19,40 @@ script when the local installation differs.
 
 ## Running from native Windows
 
-From a Windows command prompt in the repository root, run:
+From a Windows command prompt in the repository root, write the verbose build
+output to a log instead of streaming it to the terminal:
 
 ```bat
-scripts\test-windows.cmd
+if not exist C:\build mkdir C:\build
+call scripts\test-windows.cmd > C:\build\quickviewer-test.log 2>&1
+set "QV_TEST_EXIT=%ERRORLEVEL%"
+findstr /n /i /c:"Totals:" /c:"All tests passed" /c:": error " /c:"fatal error" /c:"FAILED" /c:"ERROR:" C:\build\quickviewer-test.log
+echo Exit code: %QV_TEST_EXIT%
 ```
+
+The saved exit code is authoritative. The filtered output is only a concise
+summary; inspect the log around the first error if the exit code is nonzero.
 
 ## Running from WSL
 
 The repository must be accessible from Windows. From the repository root in
 WSL, convert its path to a Windows path. Start `cmd.exe` from the Windows drive
 to avoid its UNC working-directory warning, then use `pushd` to enter the
-repository:
+repository. Save the verbose output on the Windows filesystem, then filter the
+completed log from WSL:
 
 ```bash
 repo_win_path="$(wslpath -w "$PWD")"
+mkdir -p /mnt/c/build
 (
   cd /mnt/c
   cmd.exe /d /c pushd "$repo_win_path" '&&' call \
-    'scripts\test-windows.cmd'
+    'scripts\test-windows.cmd' '>' 'C:\build\quickviewer-test.log' '2>&1'
 )
+build_status=$?
+rg -n -i 'Totals:|All tests passed|: error |fatal error|FAILED|ERROR:' \
+  /mnt/c/build/quickviewer-test.log
+printf 'Exit code: %s\n' "$build_status"
 ```
 
 Append any runner option after the script path. For example:
@@ -47,15 +61,32 @@ Append any runner option after the script path. For example:
 (
   cd /mnt/c
   cmd.exe /d /c pushd "$repo_win_path" '&&' call \
-    'scripts\test-windows.cmd' --release-only
+    'scripts\test-windows.cmd' --release-only \
+    '>' 'C:\build\quickviewer-release.log' '2>&1'
 )
 ```
+
+If a run fails, read a bounded amount of context around each error rather than
+printing the entire log:
+
+```bash
+rg -n -i -C 20 ': error |fatal error|FAILED|ERROR:' \
+  /mnt/c/build/quickviewer-test.log | head -n 200
+```
+
+For long-running builds, wait for the process to finish without repeatedly
+retrieving its output. If progress must be checked, inspect only the log size or
+a short tail. Full `cl`, `moc`, and `nmake` command lines repeat large include
+and option lists and are rarely useful unless diagnosing a specific invocation.
+Automated agents should retain the full log as an artifact and return only the
+exit code, test totals, and bounded error context to their model context.
 
 ## Verification modes
 
 With no option, the runner regenerates the Debug qmake build, compiles all
 targets, stages the application translations, and runs every expected QtTest
-executable:
+executable. The command below shows the direct form; use the logged form above
+for normal verification:
 
 ```bat
 scripts\test-windows.cmd
