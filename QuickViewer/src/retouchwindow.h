@@ -18,7 +18,11 @@ public:
     void initializeFromImageView(const ImageView *imageView);
 
 signals:
+    void closed();
     void retouchParametersChanged(RetouchParameters params);
+
+protected:
+    void closeEvent(QCloseEvent *event) override;
 
 public slots:
     void handleBrightnessSliderValueChanged(int value);

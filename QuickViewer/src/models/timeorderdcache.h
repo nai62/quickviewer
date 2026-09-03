@@ -55,8 +55,8 @@ public:
     int size() const { return m_cache.size(); }
     int count() const { return m_cache.size(); }
     bool empty() const { return m_cache.empty(); }
-    bool contains(Key &key) const { return m_newerOrders.contains(key); }
-    T &object(Key &key) { return m_cache[key]; }
+    bool contains(const Key &key) const { return m_newerOrders.contains(key); }
+    T &object(const Key &key) { return m_cache[key]; }
     void clear()
     {
         foreach (const Key &key, m_cache.keys()) {

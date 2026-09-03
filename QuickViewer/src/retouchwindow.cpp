@@ -21,6 +21,12 @@ RetouchWindow::~RetouchWindow()
     delete ui;
 }
 
+void RetouchWindow::closeEvent(QCloseEvent *event)
+{
+    QWidget::closeEvent(event);
+    emit closed();
+}
+
 float RetouchWindow::sliderValueToFactor(int sliderValue)
 {
     return std::pow(10.0f, sliderValue / SliderStepsPerDecade);
