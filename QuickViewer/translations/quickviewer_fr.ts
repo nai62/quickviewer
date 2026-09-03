@@ -1087,7 +1087,7 @@
         <translation type="vanished">Agrandissement de l&apos;affichage de l&apos;image, i.e. &apos;25% &apos;</translation>
     </message>
     <message>
-        <source>Image file size with usefull, e.g. &apos;63.23 KB&apos;</source>
+        <source>Image file size in a readable format, e.g. &apos;63.23 KB&apos;</source>
         <extracomment>Format tag of text displayed in title bar and status bar</extracomment>
         <translation type="vanished">Taille du fichier image utile, par ex. &apos;63 .23 KB &apos;</translation>
     </message>
@@ -1172,7 +1172,7 @@
     </message>
     <message>
         <location filename="../src/models/imagestring.cpp" line="47"/>
-        <source>Image file size with usefull, e.g. &apos;63.23 KB&apos;</source>
+        <source>Image file size in a readable format, e.g. &apos;63.23 KB&apos;</source>
         <comment>Format tag of text displayed in title bar and status bar</comment>
         <translation>Taille du fichier image utile, par ex. &apos;63 .23 KB &apos;</translation>
     </message>

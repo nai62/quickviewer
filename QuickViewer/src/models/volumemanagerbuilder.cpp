@@ -112,9 +112,7 @@ VolumeManager *VolumeManagerBuilder::buildForAssoc()
         return m_volumeManager = nullptr;
     }
 
-    // load the image
-    // Ic = m_volumeManager->getImageBeforeEnmumerate(m_subfilename);
-    // m_volumeManager->findImageByName(m_subfilename);
+    // Load the image.
     m_volumeManager->enumerate();
     if (!m_volumeManager->findImageByName(m_subfilename)) {
         delete m_volumeManager;

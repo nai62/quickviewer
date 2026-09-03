@@ -1048,7 +1048,7 @@
         <translation type="vanished">Отображение увеличения изображения, например &apos;25%&apos;</translation>
     </message>
     <message>
-        <source>Image file size with usefull, e.g. &apos;63.23 KB&apos;</source>
+        <source>Image file size in a readable format, e.g. &apos;63.23 KB&apos;</source>
         <translation type="vanished">Размер файла изображения с полезным, например, &apos;63.23 КБ&apos;</translation>
     </message>
     <message>
@@ -1128,7 +1128,7 @@
     </message>
     <message>
         <location filename="../src/models/imagestring.cpp" line="47"/>
-        <source>Image file size with usefull, e.g. &apos;63.23 KB&apos;</source>
+        <source>Image file size in a readable format, e.g. &apos;63.23 KB&apos;</source>
         <comment>Format tag of text displayed in title bar and status bar</comment>
         <translation>Размер файла изображения с полезным, например, &apos;63.23 КБ&apos;</translation>
     </message>

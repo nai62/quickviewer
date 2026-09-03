@@ -872,7 +872,7 @@
     </message>
     <message>
         <location filename="../src/models/imagestring.cpp" line="47"/>
-        <source>Image file size with usefull, e.g. &apos;63.23 KB&apos;</source>
+        <source>Image file size in a readable format, e.g. &apos;63.23 KB&apos;</source>
         <comment>Format tag of text displayed in title bar and status bar</comment>
         <translation>حجم ملف الصورة مع الاستخدام الكامل، على سبيل المثال &apos;63.23 ك ب&apos;</translation>
     </message>
