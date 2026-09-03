@@ -43,6 +43,10 @@ void RetouchWindow::initializeFromImageView(const ImageView *imageView)
 
 void RetouchWindow::resetSliders()
 {
+    const QSignalBlocker brightnessSignals(ui->sliderBrightness);
+    const QSignalBlocker contrastSignals(ui->sliderContrast);
+    const QSignalBlocker gammaSignals(ui->sliderGamma);
+
     ui->sliderBrightness->setValue(static_cast<int>(m_retouchParams.Brightness));
     ui->lineBrightness->setText(QString::number(ui->sliderBrightness->value()));
 
