@@ -28,20 +28,6 @@ public:
     InflateCacheMode getCacheMode() override { return InflateNoCached; }
 };
 
-class StubPageRenderContext final : public PageRenderContext
-{
-public:
-    qreal currentPixelRatio() const override
-    {
-        ++pixelRatioRequests;
-        return 2.0;
-    }
-
-    RetouchParameters retouchParameters() const override { return {}; }
-
-    mutable int pixelRatioRequests = 0;
-};
-
 class ViewerNavigationTest : public QObject
 {
     Q_OBJECT
@@ -166,25 +152,35 @@ private slots:
                  QString("sample.png|100x200|50%"));
     }
 
-    void pageItemUsesOnlyItsRenderContext()
+    void pageItemUsesRenderSettingsSnapshot()
     {
         QGraphicsScene scene;
         QImage image(100, 100, QImage::Format_RGB32);
         image.fill(Qt::red);
-        StubPageRenderContext context;
-        PageItem page(nullptr, &scene, ImageContent(image, "page.bmp", image.size(), {}, 0), &context);
+        PageRenderSettings settings;
+        settings.pixelRatio = 2.0;
+        PageItem page(nullptr, &scene, ImageContent(image, "page.bmp", image.size(), {}, 0), settings);
+        settings.pixelRatio = 3.0;
 
         page.setPageLayoutFitting(QRect(0, 0, 100, 100),
                                   PageItem::PageCenter,
                                   qvEnums::FitToRect,
                                   1.0);
-        QCOMPARE(context.pixelRatioRequests, 1);
+        QCOMPARE(page.displayScale, 2.0);
 
-        PageItem pageWithoutContext(nullptr, &scene, ImageContent(image, "preview.bmp", image.size(), {}, 0));
-        pageWithoutContext.setPageLayoutFitting(QRect(0, 0, 100, 100),
-                                                PageItem::PageCenter,
-                                                qvEnums::FitToRect,
-                                                1.0);
+        page.setRenderSettings(settings);
+        page.setPageLayoutFitting(QRect(0, 0, 100, 100),
+                                  PageItem::PageCenter,
+                                  qvEnums::FitToRect,
+                                  1.0);
+        QCOMPARE(page.displayScale, 3.0);
+
+        PageItem pageWithDefaults(nullptr, &scene, ImageContent(image, "preview.bmp", image.size(), {}, 0));
+        pageWithDefaults.setPageLayoutFitting(QRect(0, 0, 100, 100),
+                                              PageItem::PageCenter,
+                                              qvEnums::FitToRect,
+                                              1.0);
+        QCOMPARE(pageWithDefaults.displayScale, 1.0);
     }
 
     void emptyVolumeManagerOperationsAreSafe()

@@ -30,12 +30,10 @@ struct RetouchParameters
     }
 };
 
-class PageRenderContext
+struct PageRenderSettings
 {
-public:
-    virtual ~PageRenderContext() = default;
-    virtual qreal currentPixelRatio() const = 0;
-    virtual RetouchParameters retouchParameters() const = 0;
+    qreal pixelRatio = 1.0;
+    RetouchParameters retouchParameters;
 };
 
 /**
@@ -147,8 +145,8 @@ public:
     qreal displayScale;
     SeparationState separationState;
 
-    explicit PageItem(QObject *parent = nullptr, const PageRenderContext *renderContext = nullptr);
-    PageItem(QObject *parent, QGraphicsScene *graphicsScene, ImageContent imageContent, const PageRenderContext *renderContext = nullptr);
+    explicit PageItem(QObject *parent = nullptr, PageRenderSettings renderSettings = {});
+    PageItem(QObject *parent, QGraphicsScene *graphicsScene, ImageContent imageContent, PageRenderSettings renderSettings = {});
     ~PageItem() override;
     Q_DISABLE_COPY_MOVE(PageItem)
 
@@ -161,6 +159,7 @@ public:
     QRect setPageLayoutFitting(QRect viewport, PageAlign alignment, qvEnums::FitMode fitMode, qreal loupe, int rotationOffset = 0);
     QRect setPageLayoutManual(QRect viewport, PageAlign alignment, qreal scale, int rotationOffset = 0, bool loupe = false);
 
+    void setRenderSettings(PageRenderSettings renderSettings);
     void applyResize(qreal scale, int rotationOffset, QPoint position, QSize targetSize, bool loupe = false);
     void initializePage(bool resetResizedImage = false);
     void resetSignage(QRect viewport, PageItem::PageAlign alignment);
@@ -179,8 +178,7 @@ private:
     QFutureWatcher<QImage> m_resizeWatcher;
     int m_resizeGeneratingState;
     bool m_initialized;
-    // Non-owning. The context must outlive this page item.
-    const PageRenderContext *m_renderContext;
+    PageRenderSettings m_renderSettings;
 };
 
 #endif // PAGECONTENT_H

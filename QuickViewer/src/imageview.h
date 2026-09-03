@@ -17,7 +17,7 @@
  * It provides to show 1 or 2 images once, using OpenGL.
  * It is made on QGraphicView, each images is used as QGraphicsItem
  */
-class ImageView : public QGraphicsView, public PageRenderContext
+class ImageView : public QGraphicsView
 {
     Q_OBJECT
 public:
@@ -48,8 +48,7 @@ public:
     void updateGestureTransform(qreal scale, qreal rotationDegrees);
     void commitGestureTransform();
     void resetGestureTransform();
-    RetouchParameters retouchParameters() const override { return m_retouchParams; }
-    qreal currentPixelRatio() const override { return m_lastScreenPixelRatio; }
+    RetouchParameters retouchParameters() const { return m_retouchParams; }
     void setCursor(const QCursor &cursor);
     AddRenderedPageResult addRenderedPage(ImageContent content, bool append);
     void clearRenderedPages();
@@ -126,6 +125,7 @@ public slots:
     void handleRetouchParametersChanged(RetouchParameters params);
 
 private:
+    PageRenderSettings pageRenderSettings() const;
     qreal manualZoomScale() const;
     void updateSceneForContent(bool allowScrolling, const QRect &contentRect);
     void configureScrollInteraction(

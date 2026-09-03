@@ -49,7 +49,7 @@ void ImageContent::initializeAnimation()
     }
 }
 
-PageItem::PageItem(QObject *parent, const PageRenderContext *renderContext)
+PageItem::PageItem(QObject *parent, PageRenderSettings renderSettings)
     : QObject(parent),
       scene(nullptr),
       content(),
@@ -63,11 +63,11 @@ PageItem::PageItem(QObject *parent, const PageRenderContext *renderContext)
       separationState(NotSeparated),
       m_resizeGeneratingState(0),
       m_initialized(false),
-      m_renderContext(renderContext)
+      m_renderSettings(std::move(renderSettings))
 {
 }
 
-PageItem::PageItem(QObject *parent, QGraphicsScene *graphicsScene, ImageContent imageContent, const PageRenderContext *renderContext)
+PageItem::PageItem(QObject *parent, QGraphicsScene *graphicsScene, ImageContent imageContent, PageRenderSettings renderSettings)
     : QObject(parent),
       scene(graphicsScene),
       content(std::move(imageContent)),
@@ -81,7 +81,7 @@ PageItem::PageItem(QObject *parent, QGraphicsScene *graphicsScene, ImageContent 
       separationState(content.isLandscape() && qApp->SeparatePagesWhenWideImage() ? FirstHalf : NotSeparated),
       m_resizeGeneratingState(0),
       m_initialized(false),
-      m_renderContext(renderContext)
+      m_renderSettings(std::move(renderSettings))
 {
     if (!content.loadedImageSize.width()) {
         QGraphicsTextItem *errorTextItem = scene->addText(tr("NOT IMAGE FILE", "Error messages to be displayed on screen when image loading fails"));
@@ -132,7 +132,7 @@ QSize PageItem::rotatedImageSize(int rotationOffset) const
 QRect PageItem::setPageLayoutFitting(QRect viewport, PageItem::PageAlign alignment, qvEnums::FitMode fitMode, qreal loupe, int rotationOffset)
 {
     QRect viewport1 = viewport;
-    const qreal pixelRatio = m_renderContext ? m_renderContext->currentPixelRatio() : 1.0;
+    const qreal pixelRatio = m_renderSettings.pixelRatio;
     if (pixelRatio != 1.0) {
         // Compensate for the world transform used on high-DPI displays.
         viewport1 = QRect(viewport.left() * pixelRatio, viewport.top() * pixelRatio, viewport.width() * pixelRatio, viewport.height() * pixelRatio);
@@ -231,6 +231,14 @@ QRect PageItem::setPageLayoutManual(QRect viewport, PageItem::PageAlign alignmen
     return drawRect;
 }
 
+void PageItem::setRenderSettings(PageRenderSettings renderSettings)
+{
+    if (!(m_renderSettings.retouchParameters == renderSettings.retouchParameters)) {
+        content.resizedImage = QImage();
+    }
+    m_renderSettings = std::move(renderSettings);
+}
+
 static QZimg::FilterMode filterModeForShaderEffect(qvEnums::ShaderEffect effect)
 {
     switch (effect) {
@@ -324,7 +332,7 @@ QImage &PageItem::imageWithRetouch()
 #ifndef QV_WITH_LUMINOR
     return content.loadedImage;
 #else
-    const RetouchParameters params = m_renderContext ? m_renderContext->retouchParameters() : RetouchParameters();
+    const RetouchParameters &params = m_renderSettings.retouchParameters;
     if (content.appliedRetouchParameters == params) {
         return params.isDefault() ? content.loadedImage : content.retouchedImage;
     }

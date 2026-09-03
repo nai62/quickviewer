@@ -166,7 +166,7 @@ ImageView::AddRenderedPageResult ImageView::addRenderedPage(ImageContent content
     }
     const bool landscape = content.loadedImage.width() > content.loadedImage.height();
     if (!m_renderedPages.add(
-            std::move(content), append, this, scene(), this, m_openSeparatedPageFromEnd, this, [this] { refreshRenderedPages(); })) {
+            std::move(content), append, this, scene(), pageRenderSettings(), m_openSeparatedPageFromEnd, this, [this] { refreshRenderedPages(); })) {
         return AddRenderedPageResult::Rejected;
     }
 
@@ -174,6 +174,14 @@ ImageView::AddRenderedPageResult ImageView::addRenderedPage(ImageContent content
 
     return landscape ? AddRenderedPageResult::AddedLandscape
                      : AddRenderedPageResult::AddedPortrait;
+}
+
+PageRenderSettings ImageView::pageRenderSettings() const
+{
+    PageRenderSettings settings;
+    settings.pixelRatio = m_lastScreenPixelRatio;
+    settings.retouchParameters = m_retouchParams;
+    return settings;
 }
 
 void ImageView::clearRenderedPages()
@@ -203,7 +211,9 @@ void ImageView::refreshRenderedPages()
     const int renderedCount = renderedPageCount();
     if (renderedCount > 0 && m_pageManager) {
         const int currentPage = m_pageManager->currentPage();
-        RenderedPageLayout layout;
+        PageRenderRequest request;
+        request.settings = pageRenderSettings();
+        RenderedPageLayout &layout = request.layout;
         layout.viewport = QRect(QPoint(), viewport()->size());
         layout.fitMode = qApp->Fitting()
                              ? qApp->ImageFitMode()
@@ -222,7 +232,7 @@ void ImageView::refreshRenderedPages()
                     : QString());
         }
         const QRect sceneRect = m_renderedPages.layout(
-            layout, [this](QGraphicsPixmapItem *item, const ImageContent &content, QSize drawSize) {
+            request, [this](QGraphicsPixmapItem *item, const ImageContent &content, QSize drawSize) {
                 m_shaderManager.prepare(item, content, drawSize);
             });
         // if Size of Image overs Size of View, use Image's size

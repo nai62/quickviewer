@@ -20,7 +20,7 @@ const PageItem *RenderedPages::at(int index) const
     return index >= 0 && index < count() ? m_pages[index].get() : nullptr;
 }
 
-bool RenderedPages::add(ImageContent content, bool append, QObject *owner, QGraphicsScene *scene, const PageRenderContext *renderContext, bool openSeparatedPageFromEnd, QObject *resizeReceiver, std::function<void()> resizeCallback)
+bool RenderedPages::add(ImageContent content, bool append, QObject *owner, QGraphicsScene *scene, const PageRenderSettings &renderSettings, bool openSeparatedPageFromEnd, QObject *resizeReceiver, std::function<void()> resizeCallback)
 {
     const int pageCount = count();
     if (pageCount >= Capacity || !scene) {
@@ -28,7 +28,7 @@ bool RenderedPages::add(ImageContent content, bool append, QObject *owner, QGrap
     }
 
     auto page = std::make_unique<PageItem>(
-        owner, scene, std::move(content), renderContext);
+        owner, scene, std::move(content), renderSettings);
     if (openSeparatedPageFromEnd && page->separationState == PageItem::FirstHalf) {
         page->separationState = PageItem::SecondHalf;
     }
@@ -53,11 +53,16 @@ void RenderedPages::clear()
     m_pages[0].reset();
 }
 
-QRect RenderedPages::layout(const RenderedPageLayout &layout,
+QRect RenderedPages::layout(const PageRenderRequest &request,
                             const EffectPreparer &prepareEffect)
 {
     QRect sceneRect;
     const int pageCount = count();
+    for (int index = 0; index < pageCount; ++index) {
+        m_pages[index]->setRenderSettings(request.settings);
+    }
+
+    const RenderedPageLayout &layout = request.layout;
     for (int index = 0; index < pageCount; ++index) {
         PageItem &page = *m_pages[index];
         if (layout.separateWideImages && page.content.isLandscape()) {
