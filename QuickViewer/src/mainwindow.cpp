@@ -127,7 +127,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->graphicsView->handleDualViewActionTriggered(qApp->DualView());
 
     ui->actionStayOnTop->setChecked(qApp->StayOnTop());
-    ui->actionStayOnTop->triggered(qApp->StayOnTop());
 
     m_fullscreenButton = new QToolButton(this);
     m_fullscreenButton->setToolTip(tr("&Fullscreen"));
@@ -322,6 +321,13 @@ MainWindow::MainWindow(QWidget *parent)
         repaint();
         setWindowOpacity(1.0);
     }
+}
+
+void MainWindow::initializeStartup()
+{
+    // Platform-specific virtual functions must be invoked after the most-derived
+    // MainWindow has finished construction.
+    handleStayOnTopActionTriggered(qApp->StayOnTop());
 
     // when drop a folder/archive icon to this app
     if (qApp->arguments().length() >= 2) {
@@ -1173,19 +1179,14 @@ void MainWindow::handleStayOnTopActionTriggered(bool checked)
     qApp->setStayOnTop(checked);
     // Qt's StayOnTop mechanism is not working correctly in Windows.
     // so win32api calling manually
-    //    if(setStayOnTop(top))
-    //        return;
+    if (setStayOnTop(checked)) {
+        return;
+    }
     Qt::WindowFlags flags = windowFlags();
     if (checked) {
         flags |= Qt::WindowStaysOnTopHint;
     } else {
         flags &= ~Qt::WindowStaysOnTopHint;
-    }
-
-    // If show() is called here when the application starts,
-    // there will be problems, so skip it.
-    if (!m_fullscreenButton) {
-        return;
     }
 
     bool full = isFullScreen();

@@ -60,6 +60,7 @@ int main(int argc, char *argv[])
 #else
         MainWindow w;
 #endif
+        w.initializeStartup();
         QString dbpath = app.CatalogDatabasePath();
         ThumbnailManager manager(&w, dbpath);
         w.setThumbnailManager(&manager);

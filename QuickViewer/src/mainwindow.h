@@ -21,12 +21,13 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+    ~MainWindow() override;
+    void initializeStartup();
     virtual bool moveToTrash(QString) { return false; }
     virtual bool setStayOnTop(bool) { return false; }
     virtual void setWindowTop(bool) {}
     virtual void setMailAttachment(QString) {}
-    virtual bool eventFilter(QObject *obj, QEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event) override;
 
     /**
      * @brief loadVolume
@@ -80,7 +81,7 @@ protected:
     void dropEvent(QDropEvent *e) override;
     //    void paintEvent( QPaintEvent *event ) override;
     void wheelEvent(QWheelEvent *e) override;
-    void keyPressEvent(QKeyEvent *event);
+    void keyPressEvent(QKeyEvent *event) override;
     void showEvent(QShowEvent *event) override;
     //    void contextMenuEvent(QContextMenuEvent *e) override;
     //    void mousePressEvent(QMouseEvent *e) override;
