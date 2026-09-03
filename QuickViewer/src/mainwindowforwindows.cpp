@@ -1,11 +1,12 @@
-#include <Windows.h>
-#include <mapi.h>
-#include <Shellapi.h>
 #include <QtCore>
 
 #include <string>
 
 #include "mainwindowforwindows.h"
+
+#include <Windows.h>
+#include <mapi.h>
+#include <Shellapi.h>
 
 MainWindowForWindows::MainWindowForWindows(QWidget *parent)
     : MainWindow(parent)

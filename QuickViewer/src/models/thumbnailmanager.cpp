@@ -3,14 +3,14 @@
 #include <QDebug>
 #include <QApplication>
 
-#ifdef Q_OS_WIN
-#    include <Shlwapi.h>
-#endif
-
 #include "thumbnailmanager.h"
 #include "qc_init.h"
 #include "volumemanager.h"
 #include "volumemanagerbuilder.h"
+
+#ifdef Q_OS_WIN
+#    include <Shlwapi.h>
+#endif
 
 QList<QByteArray> ThumbnailManager::st_supportedImageFormats;
 QStringList ThumbnailManager::st_jpegpegImageFormats;
