@@ -1,8 +1,4 @@
 #include <QtWidgets>
-#ifdef Q_OS_WIN
-#    include <Windows.h>
-#endif
-
 #include "ui_catalogwindow.h"
 #include "ui_mainwindow.h"
 
@@ -11,6 +7,10 @@
 #include "managedatabasedialog.h"
 #include "qvapplication.h"
 #include "flowlayout.h"
+
+#ifdef Q_OS_WIN
+#    include <Windows.h>
+#endif
 
 static void clearLayout(QLayout *layout)
 {

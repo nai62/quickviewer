@@ -11,6 +11,10 @@
 #    include "mainwindow.h"
 #endif
 
+#ifdef Q_OS_WIN
+#    include <Windows.h>
+#endif
+
 int main(int argc, char *argv[])
 {
 #ifdef Q_OS_WIN
