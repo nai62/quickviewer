@@ -292,9 +292,11 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::initializeStartup()
 {
-    // Platform-specific virtual functions must be invoked after the most-derived
-    // MainWindow has finished construction and before it becomes visible.
-    handleStayOnTopActionTriggered(qApp->StayOnTop());
+    const bool stayOnTop = qApp->StayOnTop();
+    if (stayOnTop) {
+        // Set the portable flag while hidden, without forcing a native handle.
+        setWindowFlag(Qt::WindowStaysOnTopHint);
+    }
 
     // Restore the initial window state before the first visible frame.
     if (qApp->BeginAsFullscreen()) {
@@ -319,9 +321,22 @@ void MainWindow::initializeStartup()
     }
 
     if (!m_revealInitialFullscreen) {
-        // Build and paint a normal window after all native window setup, then
-        // reveal its background before a potentially blocking volume load.
+        // Let Qt create and position the transparent native window first.
+        // Calling the Windows implementation earlier would make winId() create
+        // a temporary native window at (0, 0), which can briefly become visible.
         QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+    }
+    if (stayOnTop) {
+        // Windows needs a native correction, but only after show() has created
+        // the handle at its final geometry. Other platforms need no correction.
+        const bool nativeStateChanged = setStayOnTop(true);
+        if (nativeStateChanged && !m_revealInitialFullscreen) {
+            QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+        }
+    }
+
+    if (!m_revealInitialFullscreen) {
+        // Reveal the painted background before a potentially blocking load.
         if (layout()) {
             layout()->activate();
         }
