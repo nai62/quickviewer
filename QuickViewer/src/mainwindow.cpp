@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
       m_viewerWindowStateMaximized(false),
       m_sliderChanging(false),
       m_onWindowClosing(false),
-      m_revealInitialFullscreen(false)
+      m_revealInitialWindow(true)
       //    , contextMenu(this)
       ,
       m_pageManager(this),
@@ -46,7 +46,6 @@ MainWindow::MainWindow(QWidget *parent)
     if (!qApp->BeginAsFullscreen() && qApp->RestoreWindowState()) {
         restoreGeometry(qApp->WindowGeometry());
     }
-    m_revealInitialFullscreen = qApp->BeginAsFullscreen() || isFullScreen();
     setWindowOpacity(0.0);
 
     m_menubarFontSize = ui->menuBar->font().pointSize();
@@ -294,7 +293,7 @@ void MainWindow::initializeStartup()
 {
     const bool stayOnTop = qApp->StayOnTop();
     if (stayOnTop) {
-        // Set the portable flag while hidden, without forcing a native handle.
+        // Apply the portable flag before the native window is created.
         setWindowFlag(Qt::WindowStaysOnTopHint);
     }
 
@@ -320,31 +319,40 @@ void MainWindow::initializeStartup()
         ui->graphicsView->refreshRenderedPages();
     }
 
-    if (!m_revealInitialFullscreen) {
-        // Let Qt create and position the transparent native window first.
-        // Calling the Windows implementation earlier would make winId() create
-        // a temporary native window at (0, 0), which can briefly become visible.
-        QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-    }
     if (stayOnTop) {
-        // Windows needs a native correction, but only after show() has created
-        // the handle at its final geometry. Other platforms need no correction.
-        const bool nativeStateChanged = setStayOnTop(true);
-        if (nativeStateChanged && !m_revealInitialFullscreen) {
-            QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-        }
+        // The Windows correction uses winId(), so run it only after show().
+        setStayOnTop(true);
     }
 
-    if (!m_revealInitialFullscreen) {
-        // Reveal the painted background before a potentially blocking load.
+    // Finish all synchronous startup work before this timer runs. Paint once
+    // while transparent, then repaint after making the window opaque because
+    // Qt invalidates the native surface when it removes WS_EX_LAYERED.
+    QTimer::singleShot(0, this, [this]() {
+        if (!m_revealInitialWindow) {
+            return;
+        }
         if (layout()) {
             layout()->activate();
         }
         ui->graphicsView->refreshRenderedPages();
         repaint();
-        setWindowOpacity(1.0);
-    }
+        QTimer::singleShot(0, this, [this]() {
+            if (!m_revealInitialWindow) {
+                return;
+            }
+            setWindowOpacity(1.0);
+            repaint();
+            m_revealInitialWindow = false;
 
+            // Give the painted frame back to the event loop before loading a
+            // potentially blocking image or archive.
+            QTimer::singleShot(0, this, &MainWindow::loadStartupVolume);
+        });
+    });
+}
+
+void MainWindow::loadStartupVolume()
+{
     // when drop a folder/archive icon to this app
     if (qApp->arguments().length() >= 2) {
         loadVolume(qApp->arguments().last());
@@ -357,40 +365,6 @@ void MainWindow::initializeStartup()
         loadVolume(bookmark, true);
         makeBookmarkMenu();
     }
-}
-
-void MainWindow::showEvent(QShowEvent *event)
-{
-    QMainWindow::showEvent(event);
-    if (!m_revealInitialFullscreen) {
-        return;
-    }
-
-    // Full-screen state and geometry are applied asynchronously by the native
-    // window system. Keep the initial designer-sized surface transparent until
-    // the full-screen show has crossed event-loop boundaries and been painted.
-    QTimer::singleShot(0, this, [this]() {
-        if (!m_revealInitialFullscreen) {
-            return;
-        }
-        if (!isFullScreen()) {
-            m_revealInitialFullscreen = false;
-            setWindowOpacity(1.0);
-            return;
-        }
-        if (layout()) {
-            layout()->activate();
-        }
-        ui->graphicsView->refreshRenderedPages();
-        repaint();
-        QTimer::singleShot(0, this, [this]() {
-            if (!m_revealInitialFullscreen) {
-                return;
-            }
-            m_revealInitialFullscreen = false;
-            setWindowOpacity(1.0);
-        });
-    });
 }
 
 MainWindow::~MainWindow()
