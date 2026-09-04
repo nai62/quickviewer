@@ -6,9 +6,9 @@
 #include "lrucache.h"
 #include "visiblepages.h"
 #include "viewerstate.h"
-#include "volumemanager.h"
+#include "volume.h"
 
-class VolumeManager;
+class Volume;
 
 struct DeferredVolumeLoadCleanup
 {
@@ -56,7 +56,7 @@ public:
     bool retreatSpread();
     bool fastForwardPage();
     bool fastBackwardPage();
-    bool selectPage(int pageIndex, VolumeManager::CacheMode cacheMode = VolumeManager::Normal);
+    bool selectPage(int pageIndex, Volume::CacheMode cacheMode = Volume::Normal);
     bool firstPage();
     bool lastPage();
     bool advanceOnePage();
@@ -83,20 +83,20 @@ public:
     VisiblePages visiblePages() const override { return VisiblePages(m_visiblePages); }
     QString currentPagePath() const override
     {
-        VolumeManager *volume = activeVolume();
+        Volume *volume = activeVolume();
         if (!volume || m_visiblePages.isEmpty()) {
             return "";
         }
-        return QDir::toNativeSeparators(volume->getPathByFileName(m_visiblePages[0].path));
+        return QDir::toNativeSeparators(volume->pagePathForName(m_visiblePages[0].path));
     }
     QString nextPagePathAfterDeleted() const
     {
-        VolumeManager *volume = activeVolume();
-        if (!volume || volume->isArchive() || volume->size() <= 1) {
+        Volume *volume = activeVolume();
+        if (!volume || volume->isArchive() || volume->pageCount() <= 1) {
             return "";
         }
-        const int index = volume->size() - 1 == m_currentPageIndex ? m_currentPageIndex - 1 : m_currentPageIndex + 1;
-        return QDir::toNativeSeparators(volume->getPathByIndex(index));
+        const int index = volume->pageCount() - 1 == m_currentPageIndex ? m_currentPageIndex - 1 : m_currentPageIndex + 1;
+        return QDir::toNativeSeparators(volume->pagePathAt(index));
     }
     QString currentPageName() const { return m_visiblePages.isEmpty() ? QString() : m_visiblePages[0].path; }
 
@@ -116,29 +116,29 @@ public:
 
     QString volumePath() const override
     {
-        VolumeManager *volume = activeVolume();
+        Volume *volume = activeVolume();
         return volume ? volume->volumePath() : "";
     }
     QString realVolumePath() const
     {
-        VolumeManager *volume = activeVolume();
+        Volume *volume = activeVolume();
         return volume ? volume->realVolumePath() : "";
     }
     bool isArchive() const
     {
-        VolumeManager *volume = activeVolume();
+        Volume *volume = activeVolume();
         return volume && volume->isArchive();
     }
     bool isFolder() const
     {
-        VolumeManager *volume = activeVolume();
+        Volume *volume = activeVolume();
         return volume && !volume->isArchive();
     }
 
     int pageCount() const override
     {
-        VolumeManager *volume = activeVolume();
-        return volume ? volume->size() : 0;
+        Volume *volume = activeVolume();
+        return volume ? volume->pageCount() : 0;
     }
     bool shouldShowSecondPage() const;
     void reset()
@@ -181,9 +181,9 @@ private:
     void finishInitialImageDisplay(quint64 generation);
     VolumeHandle getOrLoadVolume(QString path, bool onlyCover, bool immediate);
     VolumeHandle activeVolumeHandle() const;
-    VolumeManager *activeVolume() const;
+    Volume *activeVolume() const;
     void setVolumeReady(VolumeHandle volume);
-    void configureVolume(VolumeManager *volume);
+    void configureVolume(Volume *volume);
     void replaceVisiblePages(QVector<ImageContent> pages);
     static QStringList enumerateVolumes(const QDir &directory);
     /**
@@ -207,7 +207,7 @@ private:
     QString m_pendingContainingVolumePath;
     QString m_pendingContainingPageName;
 
-    //    VolumeManagerBuilder m_builderForAssoc;
+    //    VolumeLoader m_builderForAssoc;
 };
 
 #endif // VIEWERSESSION_H

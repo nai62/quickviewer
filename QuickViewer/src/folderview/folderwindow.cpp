@@ -4,7 +4,7 @@
 #include "ui_mainwindow.h"
 
 #include "folderwindow.h"
-#include "models/volumemanager.h"
+#include "models/volume.h"
 #include "models/qvapplication.h"
 
 FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *)

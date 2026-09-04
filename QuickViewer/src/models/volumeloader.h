@@ -1,11 +1,11 @@
-#ifndef VOLUMEMANAGERBUILDER_H
-#define VOLUMEMANAGERBUILDER_H
+#ifndef VOLUMELOADER_H
+#define VOLUMELOADER_H
 
 #include <QtGui>
 #include <QtConcurrent>
-#include "volumemanager.h"
+#include "volume.h"
 
-class VolumeManagerBuilder : QObject
+class VolumeLoader : QObject
 {
     Q_OBJECT
 public:
@@ -13,23 +13,23 @@ public:
     QStringList Filenames;
     ImageContent Ic;
 
-    explicit VolumeManagerBuilder(QString path);
+    explicit VolumeLoader(QString path);
 
     /**
      * @brief build
      * @param onlyCover specifies to prefetch only the cover page
      *
-     * Generate VolumeManager synchronously.
+     * Generate Volume synchronously.
      */
-    VolumeManager *build(bool onlyCover);
+    Volume *build(bool onlyCover);
 
     /**
      * @brief build
      * @param onlyCover specifies to prefetch only the cover page
      *
-     * Generate VolumeManager asynchronously.
+     * Generate Volume asynchronously.
      */
-    static VolumeManager *buildAsync(QString path, bool onlyCover);
+    static Volume *buildAsync(QString path, bool onlyCover);
 
     /**
      * @brief buildForAssoc
@@ -37,7 +37,7 @@ public:
      * Special initialization method to skip the enumeration of image files
      * in the Volume and read the first image faster.
      */
-    VolumeManager *buildForAssoc();
+    Volume *buildForAssoc();
 
     /**
      * @brief thumbnail
@@ -51,12 +51,12 @@ public:
      * @brief A factory function that returns an instance of IFileVolume from the path of the specified file or directory
      * @return An object that inherits the IFileVolume interface. It is null if generation failed
      */
-    static VolumeManager *CreateVolume(QObject *parent, QString path);
+    static Volume *CreateVolume(QObject *parent, QString path);
 
 private:
-    VolumeManager *m_volumeManager;
+    Volume *m_volume;
     //    QFutureWatcher<void> m_watcher;
     QString m_subfilename;
 };
 
-#endif // VOLUMEMANAGERBUILDER_H
+#endif // VOLUMELOADER_H

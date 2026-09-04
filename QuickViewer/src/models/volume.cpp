@@ -2,7 +2,7 @@
 #include <random>
 #include <QSvgRenderer>
 
-#include "volumemanager.h"
+#include "volume.h"
 #include "ResizeHalf.h"
 #include "qvapplication.h"
 #include "qzimg.h"
@@ -33,9 +33,9 @@ static QFuture<ImageContent> readyImageFuture(ImageContent content)
     return future;
 }
 
-VolumeManager::VolumeManager(QObject *parent, IFileLoader *loader)
+Volume::Volume(QObject *parent, IFileLoader *loader)
     : QObject(parent),
-      m_cnt(0),
+      m_currentPageIndex(0),
       m_imageLoadCache(qApp->MaxImagesCache()),
       m_loadContext(new ImageLoadContext(loader)),
       m_loader(loader),
@@ -48,13 +48,13 @@ VolumeManager::VolumeManager(QObject *parent, IFileLoader *loader)
     connect(&m_watcher, SIGNAL(finished()), this, SLOT(handleEnumerationFinished()));
 }
 
-VolumeManager::~VolumeManager()
+Volume::~Volume()
 {
     m_imageLoadCache.clear();
     m_loader = nullptr;
 }
 
-VolumeManager::ImageLoadFuture VolumeManager::scheduleImageLoad(
+Volume::ImageLoadFuture Volume::scheduleImageLoad(
     const QString &path, const QSize &pageSize, bool requiredForDisplay)
 {
     const QSharedPointer<ImageLoadContext> context = m_loadContext;
@@ -74,7 +74,7 @@ VolumeManager::ImageLoadFuture VolumeManager::scheduleImageLoad(
         futureLoadImageFromFileVolume(context, path, pageSize));
 }
 
-VolumeManager::ImageLoadFuture VolumeManager::scheduleResize(
+Volume::ImageLoadFuture Volume::scheduleResize(
     ImageContent content, const QSize &pageSize)
 {
     auto submission = imagePrefetchExecutor().submit(
@@ -88,37 +88,37 @@ VolumeManager::ImageLoadFuture VolumeManager::scheduleResize(
     return QFuture<ImageContent>();
 }
 
-void VolumeManager::enumerate()
+void Volume::enumerate()
 {
     if (!m_loader) {
-        m_filelist.clear();
+        m_pageNames.clear();
         m_enumerated = true;
         return;
     }
-    m_filelist = m_loader->contents();
+    m_pageNames = m_loader->contents();
     m_enumerated = true;
     sortForReady(qApp->ImageSortBy());
 }
 
-ImageContent VolumeManager::getImageBeforeEnumeration(QString subfileName)
+ImageContent Volume::getImageBeforeEnumeration(QString subfileName)
 {
-    m_subfilename = subfileName;
-    m_currentImage = VolumeManager::futureLoadImageFromFileVolume(m_loadContext, subfileName, QSize());
+    m_subfileName = subfileName;
+    m_currentImage = Volume::futureLoadImageFromFileVolume(m_loadContext, subfileName, QSize());
     enumerate();
     return m_currentImage;
 }
 
-void VolumeManager::handleEnumerationFinished()
+void Volume::handleEnumerationFinished()
 {
-    // foreach(const QString& fl, m_filelist) {
+    // foreach(const QString& fl, m_pageNames) {
     //     m_imageMetadataList << QvImageMetadata(this, fl);
     // }
-    const int index = m_filelist.indexOf(m_subfilename);
+    const int index = m_pageNames.indexOf(m_subfileName);
     if (index >= 0) {
         m_imageLoadCache.insert(index, readyImageFuture(m_currentImage));
         findImageByIndex(index);
     }
-    setCacheMode(VolumeManager::Normal);
+    setCacheMode(Volume::Normal);
     handleReady();
     emit enumerationFinished();
 }
@@ -180,24 +180,24 @@ static bool modifiedTimeDescendingLessThan(const QvImageMetadata &m1, const QvIm
     return mm1.getMTime() > mm2.getMTime();
 }
 
-void VolumeManager::sort(qvEnums::ImageSortBy sortBy)
+void Volume::sort(qvEnums::ImageSortBy sortBy)
 {
     sortForReady(sortBy);
     handleReady();
 }
 
-void VolumeManager::sortForReady(qvEnums::ImageSortBy sortBy)
+void Volume::sortForReady(qvEnums::ImageSortBy sortBy)
 {
     m_imageMetadataList.clear();
-    foreach (const QString &fl, m_filelist) {
+    foreach (const QString &fl, m_pageNames) {
         m_imageMetadataList << QvImageMetadata(this, fl);
     }
     switch (sortBy) {
     case qvEnums::SortByFileName:
-        std::sort(m_filelist.begin(), m_filelist.end(), fileNameDescendingLessThan);
+        std::sort(m_pageNames.begin(), m_pageNames.end(), fileNameDescendingLessThan);
         break;
     case qvEnums::SortByFileNameDescending:
-        std::sort(m_filelist.begin(), m_filelist.end(), fileNameDescendingGreaterThan);
+        std::sort(m_pageNames.begin(), m_pageNames.end(), fileNameDescendingGreaterThan);
         break;
     case qvEnums::SortByFileSize:
         std::stable_sort(m_imageMetadataList.begin(), m_imageMetadataList.end(), fileSizeLessThan);
@@ -212,71 +212,71 @@ void VolumeManager::sortForReady(qvEnums::ImageSortBy sortBy)
         std::stable_sort(m_imageMetadataList.begin(), m_imageMetadataList.end(), modifiedTimeDescendingLessThan);
         break;
     }
-    m_cnt = 0;
+    m_currentPageIndex = 0;
     m_imageLoadCache.clear();
 }
 
-void VolumeManager::startSlideShow()
+void Volume::startSlideShow()
 {
     if (!qApp->SlideShowRandomly()) {
         return;
     }
-    m_randomfilelist = m_filelist;
-    m_randomfilelist.detach();
+    m_shuffledPageNames = m_pageNames;
+    m_shuffledPageNames.detach();
     std::random_device rd;
     std::mt19937 g(rd());
-    std::shuffle(m_randomfilelist.begin(), m_randomfilelist.end(), g);
-    m_cnt = 0;
+    std::shuffle(m_shuffledPageNames.begin(), m_shuffledPageNames.end(), g);
+    m_currentPageIndex = 0;
     m_imageLoadCache.clear();
     handleReady();
 }
 
-void VolumeManager::stopSlideShow()
+void Volume::stopSlideShow()
 {
     if (!qApp->SlideShowRandomly()) {
         return;
     }
-    m_randomfilelist.clear();
-    m_cnt = 0;
+    m_shuffledPageNames.clear();
+    m_currentPageIndex = 0;
     m_imageLoadCache.clear();
     handleReady();
 }
 
-QString VolumeManager::getIndexedFileName(int idx)
+QString Volume::pageNameAt(int idx)
 {
-    if (idx < 0 || idx >= m_filelist.size()) {
+    if (idx < 0 || idx >= m_pageNames.size()) {
         return "";
     }
-    if (!m_randomfilelist.isEmpty()) {
-        return m_randomfilelist[idx];
+    if (!m_shuffledPageNames.isEmpty()) {
+        return m_shuffledPageNames[idx];
     }
     if (qApp->ImageSortBy() == qvEnums::SortByFileName || qApp->ImageSortBy() == qvEnums::SortByFileNameDescending) {
-        return m_filelist[idx];
+        return m_pageNames[idx];
     } else if (idx < m_imageMetadataList.size()) {
         return m_imageMetadataList[idx].filename();
     }
     return "";
 }
 
-void VolumeManager::handleReady()
+void Volume::handleReady()
 {
     if (!m_enumerated) {
         enumerate();
     }
-    if (!m_loader || m_cnt < 0 || m_cnt >= m_filelist.size() || m_loader->contents().isEmpty()) {
+    if (!m_loader || m_currentPageIndex < 0 || m_currentPageIndex >= m_pageNames.size() || m_loader->contents().isEmpty()) {
         return;
     }
 
-    //    qDebug() << "handleReady: m_cnt" << m_cnt;
+    //    qDebug() << "handleReady: m_currentPageIndex" << m_currentPageIndex;
     switch (m_cacheMode) {
     case CacheMode::CreateThumbnail:
-        m_currentImage = futureLoadImageFromFileVolume(m_loadContext, m_filelist[0], QSize());
+        m_currentImage = futureLoadImageFromFileVolume(m_loadContext, m_pageNames[0], QSize());
         return;
     case CacheMode::CoverOnly:
         for (int cnt : PrefetchPlanner::indexes(
-                 CacheMode::Normal, m_cnt, m_filelist.size(), 2)) {
+                 CacheMode::Normal, m_currentPageIndex, m_pageNames.size(), 2)) {
             const ImageLoadFuture future = scheduleImageLoad(
-                m_filelist[cnt], QSize(), cnt == m_cnt);
+                m_pageNames[cnt], QSize(), cnt == m_currentPageIndex);
             if (future.isValid()) {
                 m_imageLoadCache.insert(cnt, future);
             }
@@ -286,7 +286,7 @@ void VolumeManager::handleReady()
         break;
     }
     const QList<int> indexes = PrefetchPlanner::indexes(
-        m_cacheMode, m_cnt, m_filelist.size(), qApp->MaxImagesCache());
+        m_cacheMode, m_currentPageIndex, m_pageNames.size(), qApp->MaxImagesCache());
     for (int cnt : indexes) {
         ImageLoadFuture *cachedImageLoad = m_imageLoadCache.find(cnt);
         if (qApp->Effect() < qvEnums::UsingFixedShader && cachedImageLoad && cachedImageLoad->isFinished()) {
@@ -307,31 +307,31 @@ void VolumeManager::handleReady()
             }
         }
         if (!m_imageLoadCache.touch(cnt)) {
-            //            qDebug() << "handleReady()" << m_filelist[cnt];
+            //            qDebug() << "handleReady()" << m_pageNames[cnt];
             const QSize pageSize = qApp->Effect() < qvEnums::UsingFixedShader
                                        ? m_viewportSize
                                        : QSize();
             const ImageLoadFuture future = scheduleImageLoad(
-                getIndexedFileName(cnt), pageSize, cnt == m_cnt);
+                pageNameAt(cnt), pageSize, cnt == m_currentPageIndex);
             if (future.isValid()) {
                 m_imageLoadCache.insert(cnt, future);
             }
         }
     }
-    ImageLoadFuture *currentImageLoad = m_imageLoadCache.find(m_cnt);
+    ImageLoadFuture *currentImageLoad = m_imageLoadCache.find(m_currentPageIndex);
     m_currentImageLoad = currentImageLoad ? *currentImageLoad : ImageLoadFuture();
 }
 
-const ImageContent VolumeManager::getIndexedImageContent(int idx)
+const ImageContent Volume::pageAt(int idx)
 {
-    if (idx < 0 || idx >= m_filelist.size()) {
+    if (idx < 0 || idx >= m_pageNames.size()) {
         return ImageContent();
     }
     ImageLoadFuture *imageLoad = m_imageLoadCache.find(idx);
     return imageLoad && imageLoad->isValid() ? imageLoad->result() : ImageContent();
 }
 
-void VolumeManager::moveToThread(QThread *targetThread)
+void Volume::moveToThread(QThread *targetThread)
 {
     if (!targetThread) {
         return;
@@ -343,59 +343,59 @@ void VolumeManager::moveToThread(QThread *targetThread)
     }
 }
 
-bool VolumeManager::nextPage()
+bool Volume::advanceOnePage()
 {
-    //    qDebug() << "nextPage: " << m_cnt << m_filelist.size() <<  "prevCache.size()" << m_prevCache.size() << "nextCache.size()" << m_nextCache.size();
-    if (!m_loader || m_cnt < 0 || m_cnt >= m_filelist.size() - 1 || m_loader->contents().isEmpty()) {
+    //    qDebug() << "nextPage: " << m_currentPageIndex << m_pageNames.size() <<  "prevCache.size()" << m_prevCache.size() << "nextCache.size()" << m_nextCache.size();
+    if (!m_loader || m_currentPageIndex < 0 || m_currentPageIndex >= m_pageNames.size() - 1 || m_loader->contents().isEmpty()) {
         return false;
     }
-    m_cnt++;
+    m_currentPageIndex++;
     handleReady();
     return true;
 }
 
-bool VolumeManager::prevPage()
+bool Volume::retreatOnePage()
 {
-    //    qDebug() << "prevPage: " << m_cnt << m_filelist.size() <<  "prevCache.size()" << m_prevCache.size() << "nextCache.size()" << m_nextCache.size();
-    if (!m_loader || m_cnt <= 0 || m_cnt >= m_filelist.size() || m_loader->contents().isEmpty()) {
+    //    qDebug() << "prevPage: " << m_currentPageIndex << m_pageNames.size() <<  "prevCache.size()" << m_prevCache.size() << "nextCache.size()" << m_nextCache.size();
+    if (!m_loader || m_currentPageIndex <= 0 || m_currentPageIndex >= m_pageNames.size() || m_loader->contents().isEmpty()) {
         return false;
     }
-    m_cnt--;
+    m_currentPageIndex--;
     handleReady();
     return true;
 }
 
-bool VolumeManager::findPageByIndex(int idx)
+bool Volume::selectPage(int idx)
 {
-    if (idx < 0 || idx >= m_filelist.size()) {
+    if (idx < 0 || idx >= m_pageNames.size()) {
         return false;
     }
-    if (m_cnt == idx) {
+    if (m_currentPageIndex == idx) {
         return true;
     }
-    m_cnt = idx;
+    m_currentPageIndex = idx;
     //    bool result = findImageByIndex(idx);
     handleReady();
     return true;
 }
 
-bool VolumeManager::findImageByIndex(int idx)
+bool Volume::findImageByIndex(int idx)
 {
-    if (idx < 0 || idx >= m_filelist.size()) {
+    if (idx < 0 || idx >= m_pageNames.size()) {
         return false;
     }
-    m_cnt = idx;
+    m_currentPageIndex = idx;
     handleReady();
     return true;
 }
 
-bool VolumeManager::findImageByName(QString name)
+bool Volume::selectPageByName(QString name)
 {
-    int idx = m_filelist.indexOf(QDir::toNativeSeparators(name));
+    int idx = m_pageNames.indexOf(QDir::toNativeSeparators(name));
     return findImageByIndex(idx);
 }
 
-QString VolumeManager::FullPathToVolumePath(QString path)
+QString Volume::FullPathToVolumePath(QString path)
 {
     if (!path.contains("::")) {
         return path;
@@ -403,7 +403,7 @@ QString VolumeManager::FullPathToVolumePath(QString path)
     return path.left(path.indexOf("::"));
 }
 
-QString VolumeManager::FullPathToSubFilePath(QString path)
+QString Volume::FullPathToSubFilePath(QString path)
 {
     if (!path.contains("::")) {
         return "";
@@ -695,7 +695,7 @@ static ImageContent futureLoadImageFromFileVolumeImpl(
     return loadImageFromBytes(path, pageSize, context->load(path));
 }
 
-ImageContent VolumeManager::futureLoadImageFromFileVolume(
+ImageContent Volume::futureLoadImageFromFileVolume(
     QSharedPointer<ImageLoadContext> context, QString path, QSize pageSize)
 {
     QElapsedTimer et_load;
@@ -707,7 +707,7 @@ ImageContent VolumeManager::futureLoadImageFromFileVolume(
     return ic;
 }
 
-ImageContent VolumeManager::loadImageFromFile(QString path, QSize pageSize)
+ImageContent Volume::loadImageFromFile(QString path, QSize pageSize)
 {
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) {
@@ -717,7 +717,7 @@ ImageContent VolumeManager::loadImageFromFile(QString path, QSize pageSize)
     return loadImageFromBytes(path, pageSize, file.readAll());
 }
 
-ImageContent VolumeManager::resizeImageForViewport(ImageContent content, QSize pageSize)
+ImageContent Volume::resizeImageForViewport(ImageContent content, QSize pageSize)
 {
     const QSize targetSize = content.exifInfo.Orientation == 6 || content.exifInfo.Orientation == 8
                                  ? QSize(pageSize.height(), pageSize.width())

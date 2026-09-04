@@ -1,5 +1,5 @@
-#ifndef VOLUMEMANAGER_H
-#define VOLUMEMANAGER_H
+#ifndef VOLUME_H
+#define VOLUME_H
 
 #include <QtCore>
 #include <QtGui>
@@ -12,16 +12,16 @@
 #include "qvimagemetadata.h"
 #include "prefetchplanner.h"
 
-class VolumeManagerBuilder;
+class VolumeLoader;
 /**
- * @brief The VolumeManager class
+ * @brief The Volume class
  *
- * This class manages a Volume (Folder or Archive).
+ * This class represents one volume (folder or archive).
  * Image pre-reading is performed by the prefetch algorithm specified by CacheMode.
  * Images in Volume are listed in advance and can be opened with numbers or subpaths.
  * Loaded images are kept in a least-recently-used cache.
  */
-class VolumeManager : public QObject
+class Volume : public QObject
 {
     Q_OBJECT
     //    Q_DISABLE_COPY(IFileVolume)
@@ -37,12 +37,12 @@ public:
 
     using ImageLoadFuture = QFuture<ImageContent>;
 
-    explicit VolumeManager(QObject *parent, IFileLoader *loader);
-    ~VolumeManager();
+    explicit Volume(QObject *parent, IFileLoader *loader);
+    ~Volume();
     void enumerate();
-    bool enumerated() { return m_enumerated; }
+    bool isEnumerated() { return m_enumerated; }
     ImageContent getImageBeforeEnumeration(QString subfileName);
-    IFileLoader *FileLoader() { return m_loader; }
+    IFileLoader *fileLoader() { return m_loader; }
 
     static ImageContent futureLoadImageFromFileVolume(
         QSharedPointer<ImageLoadContext> context, QString path, QSize pageSize);
@@ -61,28 +61,28 @@ public:
 
     QString currentPath()
     {
-        if (!m_loader || m_cnt < 0 || m_cnt >= m_filelist.size()) {
+        if (!m_loader || m_currentPageIndex < 0 || m_currentPageIndex >= m_pageNames.size()) {
             return "";
         }
         if (m_loader->isArchive()) {
             return QString("%1::%2")
                 .arg(QDir::fromNativeSeparators(m_loader->volumePath()))
-                .arg(m_filelist[m_cnt]);
+                .arg(m_pageNames[m_currentPageIndex]);
         } else {
-            return QDir::fromNativeSeparators(QDir(m_loader->volumePath()).absoluteFilePath(m_filelist[m_cnt]));
+            return QDir::fromNativeSeparators(QDir(m_loader->volumePath()).absoluteFilePath(m_pageNames[m_currentPageIndex]));
         }
     }
     QString currentPathWithSeparator()
     {
-        if (!m_loader || m_cnt < 0 || m_cnt >= m_filelist.size()) {
+        if (!m_loader || m_currentPageIndex < 0 || m_currentPageIndex >= m_pageNames.size()) {
             return "";
         }
         return QString("%1::%2")
             .arg(QDir::fromNativeSeparators(m_loader->volumePath()))
-            .arg(m_filelist[m_cnt]);
+            .arg(m_pageNames[m_currentPageIndex]);
     }
 
-    QString getPathByFileName(QString name)
+    QString pagePathForName(QString name)
     {
         if (!m_loader || name.isEmpty()) {
             return "";
@@ -95,13 +95,13 @@ public:
             return QDir(m_loader->realVolumePath()).absoluteFilePath(name);
         }
     }
-    QString getIndexedFileName(int idx);
-    QString getPathByIndex(int idx)
+    QString pageNameAt(int idx);
+    QString pagePathAt(int idx)
     {
-        if (idx < 0 || idx >= m_filelist.size()) {
+        if (idx < 0 || idx >= m_pageNames.size()) {
             return "";
         }
-        return QDir(m_loader->volumePath()).absoluteFilePath(m_filelist[idx]);
+        return QDir(m_loader->volumePath()).absoluteFilePath(m_pageNames[idx]);
     }
     void setCacheMode(CacheMode cachemode) { m_cacheMode = cachemode; }
     CacheMode cacheMode() const { return m_cacheMode; }
@@ -116,19 +116,19 @@ public:
     QString volumePath() { return m_loader ? m_loader->volumePath() : QString(); }
     QString realVolumePath() { return m_loader ? m_loader->realVolumePath() : QString(); }
 
-    bool nextPage();
-    bool prevPage();
-    bool findPageByIndex(int idx);
+    bool advanceOnePage();
+    bool retreatOnePage();
+    bool selectPage(int idx);
 
     /**
-     * @brief Move to the file corresponding to the idx value specified in the file list(Max is size()-1)
+     * @brief Move to the file corresponding to the idx value specified in the file list(Max is pageCount()-1)
      */
     bool findImageByIndex(int idx);
 
     /**
      * @brief Move to the file corresponding to the file name specified in the current file list
      */
-    bool findImageByName(QString name);
+    bool selectPageByName(QString name);
 
     /**
      * @brief loadImageByName Reads and returns the image corresponding to the file name specified in the file list without advancing the internal counter
@@ -140,17 +140,17 @@ public:
     /**
      * @brief Returns the number of pages the volume has
      */
-    int size() { return m_filelist.size(); }
+    int pageCount() { return m_pageNames.size(); }
     /**
      * @brief handleReady Called when the application is ready. First, or the image to be displayed next and its file path are emitted
      */
     void handleReady();
-    int pageCount() { return m_cnt; }
+    int currentPageIndex() { return m_currentPageIndex; }
 
     //    QPixmap getIndexedImage(int idx);
-    //    QString getIndexedImageName(int idx) { return m_filelist[idx]; }
-    //    QString currentImageName() const { return m_filelist[m_cnt]; }
-    const ImageContent getIndexedImageContent(int idx);
+    //    QString getIndexedImageName(int idx) { return m_pageNames[idx]; }
+    //    QString currentImageName() const { return m_pageNames[m_currentPageIndex]; }
+    const ImageContent pageAt(int idx);
     bool openedWithSpecifiedImageFile() { return m_openedWithSpecifiedImageFile; }
     void setOpenedWithSpecifiedImageFile(bool openedWithSpecifiedImageFile) { m_openedWithSpecifiedImageFile = openedWithSpecifiedImageFile; }
     void setViewportSize(QSize size) { m_viewportSize = size; }
@@ -167,11 +167,11 @@ private:
     ImageLoadFuture scheduleResize(ImageContent content, const QSize &pageSize);
 
     /**
-     * @brief m_cnt File counter in the volume
+     * @brief m_currentPageIndex File counter in the volume
      */
-    int m_cnt;
-    QList<QString> m_filelist;
-    QList<QString> m_randomfilelist;
+    int m_currentPageIndex;
+    QList<QString> m_pageNames;
+    QList<QString> m_shuffledPageNames;
     QList<QvImageMetadata> m_imageMetadataList;
     ImageLoadFuture m_currentImageLoad;
     ImageContent m_currentImage;
@@ -187,10 +187,10 @@ private:
     QString m_volumePath;
 
     // fast image loading
-    QString m_subfilename;
+    QString m_subfileName;
     QFutureWatcher<void> m_watcher;
 
-    friend class VolumeManagerBuilder;
+    friend class VolumeLoader;
 };
 
-#endif // VOLUMEMANAGER_H
+#endif // VOLUME_H

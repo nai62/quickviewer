@@ -129,8 +129,8 @@ SOURCES += \
     src/qnamedpipe/qnamedpipe.cpp \
     src/qfullscreenframe/qinnerframe.cpp \
     src/models/qvmovie.cpp \
-    src/models/volumemanager.cpp \
-    src/models/volumemanagerbuilder.cpp \
+    src/models/volume.cpp \
+    src/models/volumeloader.cpp \
     src/qactionmanager/keyconfigdialog.cpp \
     src/qactionmanager/mouseconfigdialog.cpp \
     src/qactionmanager/qactionmanager.cpp \
@@ -185,8 +185,8 @@ HEADERS  += \
     src/qnamedpipe/qnamedpipe.h \
     src/qfullscreenframe/qinnerframe.h \
     src/models/qvmovie.h \
-    src/models/volumemanager.h \
-    src/models/volumemanagerbuilder.h \
+    src/models/volume.h \
+    src/models/volumeloader.h \
     src/qactionmanager/keyconfigdialog.h \
     src/qactionmanager/mouseconfigdialog.h \
     src/qactionmanager/qactionmanager.h \

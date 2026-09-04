@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QtWidgets>
-#include "models/volumemanager.h"
+#include "models/volume.h"
 #include "imageview.h"
 #include "imagestring.h"
 #include "qlanguageselector.h"
@@ -38,7 +38,7 @@ public:
 
     void resetShortcutKeys();
     void makeHistoryMenu();
-    void resetVolume(VolumeManager *newer);
+    void resetVolume(Volume *newer);
     void uncheckAllShaderMenus()
     {
         foreach (QAction *action, m_shaderMenuGroup) {

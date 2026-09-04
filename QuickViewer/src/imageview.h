@@ -4,7 +4,7 @@
 #include <QtCore>
 #include <QtWidgets>
 
-#include "volumemanager.h"
+#include "volume.h"
 #include "exifdialog.h"
 #include "models/viewersession.h"
 #include "models/loupecontroller.h"

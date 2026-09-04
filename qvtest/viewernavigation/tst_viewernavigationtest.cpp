@@ -261,22 +261,22 @@ private slots:
         QCOMPARE(pageWithDefaults.displayScale, 0.25);
     }
 
-    void emptyVolumeManagerOperationsAreSafe()
+    void emptyVolumeOperationsAreSafe()
     {
         EmptyFileLoader loader;
-        VolumeManager volume(nullptr, &loader);
-        QSignalSpy enumerationSpy(&volume, &VolumeManager::enumerationFinished);
+        Volume volume(nullptr, &loader);
+        QSignalSpy enumerationSpy(&volume, &Volume::enumerationFinished);
 
         QCOMPARE(volume.currentPath(), QString());
         QCOMPARE(volume.currentPathWithSeparator(), QString());
-        QCOMPARE(volume.getIndexedFileName(0), QString());
+        QCOMPARE(volume.pageNameAt(0), QString());
         QVERIFY(volume.currentImage().loadedImage.isNull());
-        QVERIFY(volume.getIndexedImageContent(0).loadedImage.isNull());
-        QVERIFY(!volume.nextPage());
-        QVERIFY(!volume.prevPage());
-        QVERIFY(!volume.findPageByIndex(0));
+        QVERIFY(volume.pageAt(0).loadedImage.isNull());
+        QVERIFY(!volume.advanceOnePage());
+        QVERIFY(!volume.retreatOnePage());
+        QVERIFY(!volume.selectPage(0));
         QVERIFY(!volume.findImageByIndex(0));
-        QVERIFY(!volume.findImageByName("missing.png"));
+        QVERIFY(!volume.selectPageByName("missing.png"));
         volume.handleEnumerationFinished();
         QCOMPARE(enumerationSpy.count(), 1);
         volume.moveToThread(nullptr);
@@ -285,7 +285,7 @@ private slots:
     void volumeHandleDestroysOnOwnerThread()
     {
         auto *loader = new EmptyFileLoader;
-        auto *volume = new VolumeManager(nullptr, loader);
+        auto *volume = new Volume(nullptr, loader);
         QThread *destructionThread = nullptr;
         QObject::connect(volume, &QObject::destroyed, this, [&destructionThread] { destructionThread = QThread::currentThread(); }, Qt::DirectConnection);
 
@@ -310,7 +310,7 @@ private slots:
             return future;
         };
 
-        auto *volume = new VolumeManager(
+        auto *volume = new Volume(
             nullptr, new EmptyFileLoader);
         bool destroyed = false;
         QObject::connect(volume, &QObject::destroyed, this, [&destroyed] { destroyed = true; });

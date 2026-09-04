@@ -3,7 +3,7 @@
 
 #include <QtCore>
 
-class VolumeManager;
+class Volume;
 
 /**
  * @brief The QvImageMetadata class
@@ -15,7 +15,7 @@ class QvImageMetadata : QObject
 {
     Q_OBJECT
 public:
-    QvImageMetadata(VolumeManager *volume, QString filename);
+    QvImageMetadata(Volume *volume, QString filename);
     QvImageMetadata(const QvImageMetadata &rhs)
     {
         *this = rhs;
@@ -36,7 +36,7 @@ public:
 
 private:
     void initFileInfo();
-    VolumeManager *m_volume;
+    Volume *m_volume;
     QString m_filename;
     QFileInfo m_info;
     QSize m_dimension;

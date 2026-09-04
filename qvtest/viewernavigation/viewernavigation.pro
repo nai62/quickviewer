@@ -46,8 +46,8 @@ SOURCES += \
     ../../QuickViewer/src/models/qvmovie.cpp \
     ../../QuickViewer/src/models/shadermanager.cpp \
     ../../QuickViewer/src/models/volumehandle.cpp \
-    ../../QuickViewer/src/models/volumemanager.cpp \
-    ../../QuickViewer/src/models/volumemanagerbuilder.cpp \
+    ../../QuickViewer/src/models/volume.cpp \
+    ../../QuickViewer/src/models/volumeloader.cpp \
     ../../QuickViewer/src/qactionmanager/keyconfigdialog.cpp \
     ../../QuickViewer/src/qactionmanager/mouseconfigdialog.cpp \
     ../../QuickViewer/src/qactionmanager/qactionmanager.cpp \
@@ -77,8 +77,8 @@ HEADERS += \
     ../../QuickViewer/src/models/volumehandle.h \
     ../../QuickViewer/src/models/visiblepages.h \
     ../../QuickViewer/src/models/viewerstate.h \
-    ../../QuickViewer/src/models/volumemanager.h \
-    ../../QuickViewer/src/models/volumemanagerbuilder.h \
+    ../../QuickViewer/src/models/volume.h \
+    ../../QuickViewer/src/models/volumeloader.h \
     ../../QuickViewer/src/qactionmanager/keyconfigdialog.h \
     ../../QuickViewer/src/qactionmanager/mouseconfigdialog.h \
     ../../QuickViewer/src/qactionmanager/qactionmanager.h \

@@ -1,7 +1,7 @@
 #include "viewersession.h"
 #include "qvapplication.h"
 #include "fileloadersubdirectory.h"
-#include "volumemanagerbuilder.h"
+#include "volumeloader.h"
 
 static QFuture<VolumeHandle> makeReadyVolumeFuture(VolumeHandle volume)
 {
@@ -43,7 +43,7 @@ VolumeHandle ViewerSession::activeVolumeHandle() const
     return ready ? ready->volume : VolumeHandle{};
 }
 
-VolumeManager *ViewerSession::activeVolume() const
+Volume *ViewerSession::activeVolume() const
 {
     const auto *ready = std::get_if<VolumeReadyViewerState>(&m_state);
     return ready ? ready->volume.get() : nullptr;
@@ -58,19 +58,19 @@ void ViewerSession::setVolumeReady(VolumeHandle volume)
     }
 }
 
-void ViewerSession::configureVolume(VolumeManager *volume)
+void ViewerSession::configureVolume(Volume *volume)
 {
     if (!volume) {
         return;
     }
     volume->setViewportSize(m_viewportSize);
-    connect(volume, &VolumeManager::enumerationFinished, this, &ViewerSession::handleVolumeEnumerationFinished, Qt::UniqueConnection);
+    connect(volume, &Volume::enumerationFinished, this, &ViewerSession::handleVolumeEnumerationFinished, Qt::UniqueConnection);
 }
 
 void ViewerSession::setViewportSize(QSize size)
 {
     m_viewportSize = size;
-    if (VolumeManager *volume = activeVolume()) {
+    if (Volume *volume = activeVolume()) {
         volume->setViewportSize(size);
     }
 }
@@ -96,7 +96,7 @@ bool ViewerSession::loadVolume(QString path, bool coverOnly)
         previousVolume = ready->volume;
     }
     if (previousVolume && m_visiblePages.size() == 2) {
-        previousVolume->prevPage();
+        previousVolume->retreatOnePage();
     }
     const quint64 generation = ++m_initialDisplayGeneration;
     m_state = LoadingViewerState{generation};
@@ -113,14 +113,14 @@ bool ViewerSession::loadVolume(QString path, bool coverOnly)
         return false;
     }
     setVolumeReady(loadedVolume);
-    VolumeManager *volume = loadedVolume.get();
+    Volume *volume = loadedVolume.get();
     if (coverOnly) {
-        volume->setCacheMode(VolumeManager::CoverOnly);
+        volume->setCacheMode(Volume::CoverOnly);
     } else {
         m_volumeNames = QStringList();
     }
     m_currentPageIndex = 0;
-    const int initialPage = coverOnly ? 0 : volume->pageCount();
+    const int initialPage = coverOnly ? 0 : volume->currentPageIndex();
     emit volumeChanged(volume->volumePath());
     if (activeVolume() != volume) {
         return true;
@@ -153,7 +153,7 @@ bool ViewerSession::loadVolumeWithFile(QString path, bool allowSecondPage)
     const QSize pageSize = viewportSize();
     const QFuture<ImageContent> initialImage = QtConcurrent::run(
         [normalizedPath, pageSize] {
-            return VolumeManager::loadImageFromFile(normalizedPath, pageSize);
+            return Volume::loadImageFromFile(normalizedPath, pageSize);
         });
     m_initialImageLoadDispatcher.submit(
         initialImage,
@@ -266,8 +266,8 @@ void ViewerSession::startContainingVolumeLoad(const QString &normalizedPath,
 {
     QThread *guiThread = thread();
     const QFuture<VolumeHandle> volumeLoad = QtConcurrent::run([normalizedPath, guiThread] {
-        VolumeManagerBuilder builder(normalizedPath);
-        VolumeManager *volume = builder.buildForAssoc();
+        VolumeLoader builder(normalizedPath);
+        Volume *volume = builder.buildForAssoc();
         if (volume) {
             volume->moveToThread(guiThread);
         }
@@ -284,12 +284,12 @@ void ViewerSession::startContainingVolumeLoad(const QString &normalizedPath,
             emit volumeChanged("");
             m_volumeLoadCache.insert(basePath, makeReadyVolumeFuture(loadedVolume));
             setVolumeReady(loadedVolume);
-            VolumeManager *volume = loadedVolume.get();
+            Volume *volume = loadedVolume.get();
             clearVisiblePages();
             if (activeVolume() != volume) {
                 return;
             }
-            m_currentPageIndex = volume->pageCount();
+            m_currentPageIndex = volume->currentPageIndex();
             reloadVisiblePages();
             if (activeVolume() != volume) {
                 return;
@@ -305,23 +305,23 @@ void ViewerSession::startContainingVolumeLoad(const QString &normalizedPath,
 
 void ViewerSession::handleVolumeEnumerationFinished()
 {
-    if (auto *source = qobject_cast<VolumeManager *>(sender())) {
+    if (auto *source = qobject_cast<Volume *>(sender())) {
         if (source != activeVolume()) {
             return;
         }
     }
-    VolumeManager *volume = activeVolume();
+    Volume *volume = activeVolume();
     if (!volume) {
         return;
     }
-    m_currentPageIndex = volume->pageCount();
+    m_currentPageIndex = volume->currentPageIndex();
     emit volumeChanged(volume->volumePath());
     emit pageChanged();
 }
 
 void ViewerSession::handleSlideShowStarted()
 {
-    VolumeManager *volume = activeVolume();
+    Volume *volume = activeVolume();
     if (!volume) {
         return;
     }
@@ -333,7 +333,7 @@ void ViewerSession::handleSlideShowStarted()
 
 void ViewerSession::handleSlideShowStopped()
 {
-    VolumeManager *volume = activeVolume();
+    Volume *volume = activeVolume();
     if (!volume) {
         return;
     }
@@ -345,7 +345,7 @@ void ViewerSession::handleSlideShowStopped()
 
 bool ViewerSession::nextVolume()
 {
-    VolumeManager *volume = activeVolume();
+    Volume *volume = activeVolume();
     if (!volume) {
         return false;
     }
@@ -399,7 +399,7 @@ bool ViewerSession::nextVolume()
 
 bool ViewerSession::prevVolume()
 {
-    VolumeManager *volume = activeVolume();
+    Volume *volume = activeVolume();
     if (!volume) {
         return false;
     }
@@ -456,13 +456,13 @@ bool ViewerSession::prevVolume()
 
 void ViewerSession::reloadVolumeAfterImageRemoval()
 {
-    VolumeManager *volume = activeVolume();
+    Volume *volume = activeVolume();
     if (!volume) {
         return;
     }
     clearVisiblePages();
     const QString volumePath = QDir::fromNativeSeparators(volume->volumePath());
-    if (volume->size() > 1) {
+    if (volume->pageCount() > 1) {
         // if(!m_fileVolume->nextPage())
         //     m_fileVolume->prevPage();
         const QString fullPath = volume->currentPathWithSeparator();
@@ -477,15 +477,15 @@ void ViewerSession::reloadVolumeAfterImageRemoval()
 
 VolumeHandle ViewerSession::getOrLoadVolume(QString path, bool onlyCover, bool immediate)
 {
-    const QString basePath = QDir::fromNativeSeparators(VolumeManager::FullPathToVolumePath(path));
-    const QString subfileName = VolumeManager::FullPathToSubFilePath(path);
+    const QString basePath = QDir::fromNativeSeparators(Volume::FullPathToVolumePath(path));
+    const QString subfileName = Volume::FullPathToSubFilePath(path);
     if (!m_volumeLoadCache.contains(basePath)) {
         if (!immediate) {
             qDebug() << "getOrLoadVolume:prefetch" << path;
             QThread *guiThread = thread();
             m_volumeLoadCache.insert(basePath, QtConcurrent::run([path, onlyCover, guiThread] {
-                                         VolumeManager *volume =
-                                             VolumeManagerBuilder::buildAsync(path, onlyCover);
+                                         Volume *volume =
+                                             VolumeLoader::buildAsync(path, onlyCover);
                                          if (volume) {
                                              volume->moveToThread(guiThread);
                                          }
@@ -494,7 +494,7 @@ VolumeHandle ViewerSession::getOrLoadVolume(QString path, bool onlyCover, bool i
             return {};
         }
         qDebug() << "getOrLoadVolume:immediate" << path;
-        VolumeManagerBuilder builder(path);
+        VolumeLoader builder(path);
         VolumeHandle loadedVolume = makeVolumeHandle(builder.build(onlyCover));
         qDebug() << "getOrLoadVolume:immediate" << loadedVolume.get();
         m_volumeLoadCache.insert(basePath, makeReadyVolumeFuture(loadedVolume));
@@ -525,7 +525,7 @@ VolumeHandle ViewerSession::getOrLoadVolume(QString path, bool onlyCover, bool i
     qDebug() << "getOrLoadVolume:touch";
 
     if (!subfileName.isEmpty()) {
-        loadedVolume->findImageByName(subfileName);
+        loadedVolume->selectPageByName(subfileName);
     }
     return loadedVolume;
 }
@@ -533,21 +533,21 @@ VolumeHandle ViewerSession::getOrLoadVolume(QString path, bool onlyCover, bool i
 bool ViewerSession::advanceSpread()
 {
     //qDebug() << "ImageView::nextPage()" << m_currentPageIndex;
-    VolumeManager *volume = activeVolume();
-    if (!volume || !volume->enumerated() || volume->pageCount() >= volume->size() - 1) {
+    Volume *volume = activeVolume();
+    if (!volume || !volume->isEnumerated() || volume->currentPageIndex() >= volume->pageCount() - 1) {
         return false;
     }
 
-    volume->setCacheMode(VolumeManager::NormalForward);
-    bool result = volume->nextPage();
+    volume->setCacheMode(Volume::NormalForward);
+    bool result = volume->advanceOnePage();
     if (!result) {
         return false;
     }
 
     int pageIncr = m_visiblePages.size();
     m_currentPageIndex += pageIncr;
-    if (m_currentPageIndex >= volume->size() - 1) {
-        m_currentPageIndex = volume->size() - 1;
+    if (m_currentPageIndex >= volume->pageCount() - 1) {
+        m_currentPageIndex = volume->pageCount() - 1;
     }
 
     reloadVisiblePages();
@@ -558,21 +558,21 @@ bool ViewerSession::advanceSpread()
 
 bool ViewerSession::retreatSpread()
 {
-    VolumeManager *volume = activeVolume();
-    if (!volume || !volume->enumerated() || volume->pageCount() < m_visiblePages.size()) {
+    Volume *volume = activeVolume();
+    if (!volume || !volume->isEnumerated() || volume->currentPageIndex() < m_visiblePages.size()) {
         return false;
     }
 
-    volume->setCacheMode(VolumeManager::NormalBackward);
-    bool result = volume->prevPage();
+    volume->setCacheMode(Volume::NormalBackward);
+    bool result = volume->retreatOnePage();
     if (!result) {
         return false;
     }
     //QVApplication* app = qApp;
     m_currentPageIndex--;
     if (qApp->DualView() && m_currentPageIndex >= 1) {
-        const ImageContent currentContent = volume->getIndexedImageContent(m_currentPageIndex);
-        const ImageContent previousContent = volume->getIndexedImageContent(m_currentPageIndex - 1);
+        const ImageContent currentContent = volume->pageAt(m_currentPageIndex);
+        const ImageContent previousContent = volume->pageAt(m_currentPageIndex - 1);
         if (!qApp->WideImageAsOnePageInDualView() || (!currentContent.isLandscape() && !previousContent.isLandscape())) {
             m_currentPageIndex--;
         }
@@ -581,7 +581,7 @@ bool ViewerSession::retreatSpread()
         m_currentPageIndex = 0;
     }
 
-    selectPage(m_currentPageIndex, VolumeManager::NormalBackward);
+    selectPage(m_currentPageIndex, Volume::NormalBackward);
     return true;
 }
 
@@ -589,28 +589,28 @@ bool ViewerSession::retreatSpread()
 
 bool ViewerSession::fastForwardPage()
 {
-    VolumeManager *volume = activeVolume();
-    if (!volume || volume->size() == 0) {
+    Volume *volume = activeVolume();
+    if (!volume || volume->pageCount() == 0) {
         return false;
     }
-    if (volume->pageCount() == volume->size() - 1) {
+    if (volume->currentPageIndex() == volume->pageCount() - 1) {
         return false;
     }
     m_currentPageIndex += PAGE_INTERVAL;
-    if (m_currentPageIndex >= volume->size() - 1) {
-        m_currentPageIndex = volume->size() - 1;
+    if (m_currentPageIndex >= volume->pageCount() - 1) {
+        m_currentPageIndex = volume->pageCount() - 1;
     }
 
-    return selectPage(m_currentPageIndex, VolumeManager::FastForward);
+    return selectPage(m_currentPageIndex, Volume::FastForward);
 }
 
 bool ViewerSession::fastBackwardPage()
 {
-    VolumeManager *volume = activeVolume();
-    if (!volume || volume->size() == 0) {
+    Volume *volume = activeVolume();
+    if (!volume || volume->pageCount() == 0) {
         return false;
     }
-    if (volume->pageCount() < m_visiblePages.size()) {
+    if (volume->currentPageIndex() < m_visiblePages.size()) {
         return false;
     }
 
@@ -618,17 +618,17 @@ bool ViewerSession::fastBackwardPage()
     if (m_currentPageIndex < 0) {
         m_currentPageIndex = 0;
     }
-    return selectPage(m_currentPageIndex, VolumeManager::FastBackward);
+    return selectPage(m_currentPageIndex, Volume::FastBackward);
 }
 
-bool ViewerSession::selectPage(int pageIndex, VolumeManager::CacheMode cacheMode)
+bool ViewerSession::selectPage(int pageIndex, Volume::CacheMode cacheMode)
 {
-    VolumeManager *volume = activeVolume();
-    if (!volume || pageIndex < 0 || pageIndex >= volume->size()) {
+    Volume *volume = activeVolume();
+    if (!volume || pageIndex < 0 || pageIndex >= volume->pageCount()) {
         return false;
     }
     volume->setCacheMode(cacheMode);
-    const bool result = volume->findPageByIndex(pageIndex);
+    const bool result = volume->selectPage(pageIndex);
     if (!result) {
         return false;
     }
@@ -642,37 +642,37 @@ bool ViewerSession::selectPage(int pageIndex, VolumeManager::CacheMode cacheMode
 
 bool ViewerSession::firstPage()
 {
-    VolumeManager *volume = activeVolume();
-    if (!volume || volume->size() == 0) {
+    Volume *volume = activeVolume();
+    if (!volume || volume->pageCount() == 0) {
         return false;
     }
-    volume->setCacheMode(VolumeManager::Normal);
+    volume->setCacheMode(Volume::Normal);
     return selectPage(0);
 }
 
 bool ViewerSession::lastPage()
 {
-    VolumeManager *volume = activeVolume();
-    if (volume && volume->size() > 0) {
-        volume->setCacheMode(VolumeManager::Normal);
-        return selectPage(volume->size() - 1);
+    Volume *volume = activeVolume();
+    if (volume && volume->pageCount() > 0) {
+        volume->setCacheMode(Volume::Normal);
+        return selectPage(volume->pageCount() - 1);
     }
     return false;
 }
 
 bool ViewerSession::advanceOnePage()
 {
-    VolumeManager *volume = activeVolume();
-    if (!volume || volume->size() == 0 || volume->pageCount() == volume->size() - 1) {
+    Volume *volume = activeVolume();
+    if (!volume || volume->pageCount() == 0 || volume->currentPageIndex() == volume->pageCount() - 1) {
         return false;
     }
-    volume->setCacheMode(VolumeManager::Normal);
+    volume->setCacheMode(Volume::Normal);
     if (m_visiblePages.size() == 1) {
-        volume->nextPage();
+        volume->advanceOnePage();
     }
     m_currentPageIndex++;
-    if (m_currentPageIndex >= volume->size() - 1) {
-        m_currentPageIndex = volume->size() - 1;
+    if (m_currentPageIndex >= volume->pageCount() - 1) {
+        m_currentPageIndex = volume->pageCount() - 1;
     }
     reloadVisiblePages();
     updateReadProgress();
@@ -682,15 +682,15 @@ bool ViewerSession::advanceOnePage()
 
 bool ViewerSession::retreatOnePage()
 {
-    VolumeManager *volume = activeVolume();
-    if (!volume || volume->size() == 0) {
+    Volume *volume = activeVolume();
+    if (!volume || volume->pageCount() == 0) {
         return false;
     }
 
-    if (volume->pageCount() < m_visiblePages.size()) {
+    if (volume->currentPageIndex() < m_visiblePages.size()) {
         return false;
     }
-    volume->setCacheMode(VolumeManager::Normal);
+    volume->setCacheMode(Volume::Normal);
 
     //QVApplication* app = qApp;
     m_currentPageIndex--;
@@ -704,12 +704,12 @@ bool ViewerSession::reloadVisiblePages()
 {
     //qDebug() << "ImageView::reloadVisiblePages()";
     VolumeHandle volumeHandle = activeVolumeHandle();
-    VolumeManager *volume = volumeHandle.get();
-    if (!volume || m_currentPageIndex < 0 || m_currentPageIndex >= volume->size()) {
+    Volume *volume = volumeHandle.get();
+    if (!volume || m_currentPageIndex < 0 || m_currentPageIndex >= volume->pageCount()) {
         return false;
     }
     QVector<ImageContent> pages;
-    ImageContent firstContent = volume->getIndexedImageContent(m_currentPageIndex);
+    ImageContent firstContent = volume->pageAt(m_currentPageIndex);
     firstContent.initializeAnimation();
     const bool firstPageIsLandscape = firstContent.isLandscape();
     pages.push_back(std::move(firstContent));
@@ -718,10 +718,10 @@ bool ViewerSession::reloadVisiblePages()
     }
     m_firstVisiblePageIsLandscape = firstPageIsLandscape;
     if (!(m_currentPageIndex == 0 && qApp->FirstImageAsOnePageInDualView()) && shouldShowSecondPage()) {
-        if (m_allowSecondVisiblePage && volume->pageCount() < volume->size() - 1) {
-            ImageContent secondContent = volume->getIndexedImageContent(m_currentPageIndex + 1);
+        if (m_allowSecondVisiblePage && volume->currentPageIndex() < volume->pageCount() - 1) {
+            ImageContent secondContent = volume->pageAt(m_currentPageIndex + 1);
             if (!qApp->WideImageAsOnePageInDualView() || (!firstPageIsLandscape && !secondContent.isLandscape())) {
-                volume->nextPage();
+                volume->advanceOnePage();
                 secondContent.initializeAnimation();
                 pages.push_back(std::move(secondContent));
                 if (activeVolume() != volume) {
@@ -774,7 +774,7 @@ void ViewerSession::replaceVisiblePages(QVector<ImageContent> pages)
 
 void ViewerSession::updateReadProgress()
 {
-    VolumeManager *volume = activeVolume();
+    Volume *volume = activeVolume();
     if (!volume || m_visiblePages.isEmpty() || !qApp->bookshelfManager()) {
         return;
     }
@@ -782,8 +782,8 @@ void ViewerSession::updateReadProgress()
     BookProgress book = {
         QFileInfo(volume->volumePath()).fileName(),
         path,
-        volume->getIndexedFileName(m_currentPageIndex),
-        volume->size(),
+        volume->pageNameAt(m_currentPageIndex),
+        volume->pageCount(),
         m_currentPageIndex,
         false};
     if (m_currentPageIndex + m_visiblePages.size() >= pageCount()) {
@@ -795,7 +795,7 @@ void ViewerSession::updateReadProgress()
 
 void ViewerSession::sortActiveVolumePages(qvEnums::ImageSortBy sortBy)
 {
-    if (VolumeManager *volume = activeVolume()) {
+    if (Volume *volume = activeVolume()) {
         volume->sort(sortBy);
         firstPage();
     }
@@ -828,14 +828,14 @@ bool ViewerSession::eventFilter(QObject *obj, QEvent *event)
 
 QString ViewerSession::currentPageNumberText() const
 {
-    VolumeManager *volume = activeVolume();
-    if (!volume || volume->size() == 0 || m_visiblePages.isEmpty()) {
+    Volume *volume = activeVolume();
+    if (!volume || volume->pageCount() == 0 || m_visiblePages.isEmpty()) {
         return "";
     }
     if (m_visiblePages.size() == 2) {
-        return QString("(%1-%2/%3)").arg(m_currentPageIndex + 1).arg(m_currentPageIndex + 2).arg(volume->size());
+        return QString("(%1-%2/%3)").arg(m_currentPageIndex + 1).arg(m_currentPageIndex + 2).arg(volume->pageCount());
     }
-    return QString("(%1/%2)").arg(m_currentPageIndex + 1).arg(volume->size());
+    return QString("(%1/%2)").arg(m_currentPageIndex + 1).arg(volume->pageCount());
 }
 
 QString ViewerSession::currentPageStatusText() const
@@ -868,14 +868,14 @@ QString ViewerSession::currentPageStatusText() const
 
 QString ViewerSession::pageSignage(int pageIndex) const
 {
-    VolumeManager *volume = activeVolume();
+    Volume *volume = activeVolume();
     if (!volume || pageIndex < 0 || m_visiblePages.size() <= pageIndex) {
         return "";
     }
     return QString("%1 (%2/%3)")
-        .arg(QDir::toNativeSeparators(volume->getPathByFileName(m_visiblePages[pageIndex].path)))
+        .arg(QDir::toNativeSeparators(volume->pagePathForName(m_visiblePages[pageIndex].path)))
         .arg(m_currentPageIndex + 1 + pageIndex)
-        .arg(volume->size());
+        .arg(volume->pageCount());
 }
 
 bool ViewerSession::shouldShowSecondPage() const
