@@ -95,15 +95,15 @@ public:
             return QDir(m_loader->realVolumePath()).absoluteFilePath(name);
         }
     }
-    QString pageNameAt(int idx);
-    QString pagePathAt(int idx)
+    QString pageNameAt(int pageIndex);
+    QString pagePathAt(int pageIndex)
     {
-        if (idx < 0 || idx >= m_pageNames.size()) {
+        if (pageIndex < 0 || pageIndex >= m_pageNames.size()) {
             return "";
         }
-        return QDir(m_loader->volumePath()).absoluteFilePath(m_pageNames[idx]);
+        return QDir(m_loader->volumePath()).absoluteFilePath(m_pageNames[pageIndex]);
     }
-    void setCacheMode(CacheMode cachemode) { m_cacheMode = cachemode; }
+    void setCacheMode(CacheMode cacheMode) { m_cacheMode = cacheMode; }
     CacheMode cacheMode() const { return m_cacheMode; }
 
     const ImageContent currentImage()
@@ -118,12 +118,12 @@ public:
 
     bool advanceOnePage();
     bool retreatOnePage();
-    bool selectPage(int idx);
+    bool selectPage(int pageIndex);
 
     /**
-     * @brief Move to the file corresponding to the idx value specified in the file list(Max is pageCount()-1)
+     * @brief Move to the file corresponding to the pageIndex value specified in the file list(Max is pageCount()-1)
      */
-    bool findImageByIndex(int idx);
+    bool selectPageAndRefresh(int pageIndex);
 
     /**
      * @brief Move to the file corresponding to the file name specified in the current file list
@@ -147,10 +147,10 @@ public:
     void handleReady();
     int currentPageIndex() { return m_currentPageIndex; }
 
-    //    QPixmap getIndexedImage(int idx);
-    //    QString getIndexedImageName(int idx) { return m_pageNames[idx]; }
+    //    QPixmap getIndexedImage(int pageIndex);
+    //    QString getIndexedImageName(int pageIndex) { return m_pageNames[pageIndex]; }
     //    QString currentImageName() const { return m_pageNames[m_currentPageIndex]; }
-    const ImageContent pageAt(int idx);
+    const ImageContent pageAt(int pageIndex);
     bool openedWithSpecifiedImageFile() { return m_openedWithSpecifiedImageFile; }
     void setOpenedWithSpecifiedImageFile(bool openedWithSpecifiedImageFile) { m_openedWithSpecifiedImageFile = openedWithSpecifiedImageFile; }
     void setViewportSize(QSize size) { m_viewportSize = size; }

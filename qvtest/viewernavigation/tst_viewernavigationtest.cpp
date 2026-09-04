@@ -42,26 +42,26 @@ private slots:
 
     void emptyViewerSessionOperationsAreSafe()
     {
-        ViewerSession manager(nullptr);
+        ViewerSession session(nullptr);
 
-        QCOMPARE(manager.stateKind(), ViewerStateKind::Empty);
-        QVERIFY(!manager.advanceSpread());
-        QVERIFY(!manager.retreatSpread());
-        QVERIFY(!manager.fastForwardPage());
-        QVERIFY(!manager.fastBackwardPage());
-        QVERIFY(!manager.firstPage());
-        QVERIFY(!manager.lastPage());
-        QVERIFY(!manager.advanceOnePage());
-        QVERIFY(!manager.retreatOnePage());
-        QVERIFY(!manager.nextVolume());
-        QVERIFY(!manager.prevVolume());
-        QVERIFY(!manager.reloadVisiblePages());
-        QCOMPARE(manager.currentPagePath(), QString());
-        QCOMPARE(manager.currentPageName(), QString());
-        QCOMPARE(manager.currentPageNumberText(), QString());
-        QCOMPARE(manager.currentPageStatusText(), QString());
-        QCOMPARE(manager.pageSignage(0), QString());
-        QCOMPARE(manager.pageSignage(-1), QString());
+        QCOMPARE(session.stateKind(), ViewerStateKind::Empty);
+        QVERIFY(!session.advanceSpread());
+        QVERIFY(!session.retreatSpread());
+        QVERIFY(!session.fastForwardPage());
+        QVERIFY(!session.fastBackwardPage());
+        QVERIFY(!session.firstPage());
+        QVERIFY(!session.lastPage());
+        QVERIFY(!session.advanceOnePage());
+        QVERIFY(!session.retreatOnePage());
+        QVERIFY(!session.nextVolume());
+        QVERIFY(!session.prevVolume());
+        QVERIFY(!session.reloadVisiblePages());
+        QCOMPARE(session.currentPagePath(), QString());
+        QCOMPARE(session.currentPageName(), QString());
+        QCOMPARE(session.currentPageNumberText(), QString());
+        QCOMPARE(session.currentPageStatusText(), QString());
+        QCOMPARE(session.pageSignage(0), QString());
+        QCOMPARE(session.pageSignage(-1), QString());
     }
 
     void directImageTransitionsThroughStandalonePreview()
@@ -73,30 +73,30 @@ private slots:
         image.fill(Qt::red);
         QVERIFY(image.save(imagePath));
 
-        ViewerSession manager(nullptr);
+        ViewerSession session(nullptr);
         ImageView view;
         view.resize(320, 240);
-        view.setViewerSession(&manager);
+        view.setViewerSession(&session);
 
-        QVERIFY(manager.loadVolumeWithFile(imagePath));
-        QCOMPARE(manager.stateKind(), ViewerStateKind::Loading);
-        QVERIFY(manager.initialImagePaintPending());
+        QVERIFY(session.loadVolumeWithFile(imagePath));
+        QCOMPARE(session.stateKind(), ViewerStateKind::Loading);
+        QVERIFY(session.initialImagePaintPending());
 
-        QTRY_COMPARE(manager.stateKind(), ViewerStateKind::StandalonePreview);
-        QCOMPARE(QFileInfo(manager.currentPageName()).fileName(),
+        QTRY_COMPARE(session.stateKind(), ViewerStateKind::StandalonePreview);
+        QCOMPARE(QFileInfo(session.currentPageName()).fileName(),
                  QString("preview.bmp"));
-        QVERIFY(manager.initialImagePaintPending());
+        QVERIFY(session.initialImagePaintPending());
         QVERIFY(view.renderedPageMetrics().notationalScaleAt(0) < 1.0);
 
         // Navigation while the parent folder is not ready must remain a no-op.
-        QVERIFY(!manager.advanceSpread());
-        QVERIFY(!manager.retreatSpread());
-        QVERIFY(!manager.nextVolume());
-        QVERIFY(!manager.prevVolume());
+        QVERIFY(!session.advanceSpread());
+        QVERIFY(!session.retreatSpread());
+        QVERIFY(!session.nextVolume());
+        QVERIFY(!session.prevVolume());
 
-        manager.notifyInitialImagePainted();
-        QTRY_COMPARE(manager.stateKind(), ViewerStateKind::VolumeReady);
-        QVERIFY(!manager.initialImagePaintPending());
+        session.notifyInitialImagePainted();
+        QTRY_COMPARE(session.stateKind(), ViewerStateKind::VolumeReady);
+        QVERIFY(!session.initialImagePaintPending());
         QVERIFY(view.renderedPageMetrics().notationalScaleAt(0) < 1.0);
     }
 
@@ -113,10 +113,10 @@ private slots:
 
         qApp->setOpenVolumeWithProgress(false);
         {
-            ViewerSession manager(nullptr);
-            QVERIFY(manager.loadVolume(directory.path()));
-            QVERIFY(manager.selectPage(2));
-            QCOMPARE(manager.currentPageIndex(), 2);
+            ViewerSession session(nullptr);
+            QVERIFY(session.loadVolume(directory.path()));
+            QVERIFY(session.selectPage(2));
+            QCOMPARE(session.currentPageIndex(), 2);
         }
 
         const QString volumePath = QDir::fromNativeSeparators(directory.path());
@@ -126,10 +126,10 @@ private slots:
         QCOMPARE(progress.currentPageName, QString("page-2.bmp"));
 
         qApp->setOpenVolumeWithProgress(true);
-        ViewerSession restoredManager(nullptr);
-        QVERIFY(restoredManager.loadVolume(directory.path()));
-        QCOMPARE(restoredManager.currentPageIndex(), 2);
-        QCOMPARE(restoredManager.currentPageName(), QString("page-2.bmp"));
+        ViewerSession restoredSession(nullptr);
+        QVERIFY(restoredSession.loadVolume(directory.path()));
+        QCOMPARE(restoredSession.currentPageIndex(), 2);
+        QCOMPARE(restoredSession.currentPageName(), QString("page-2.bmp"));
     }
 
     void readProgressKeepsLegacyIniKeys()
@@ -178,51 +178,51 @@ private slots:
 
         qApp->setOpenVolumeWithProgress(false);
         qApp->setDualView(false);
-        ViewerSession singleViewerSession(nullptr);
-        QVERIFY(singleViewerSession.loadVolume(directory.path()));
-        QCOMPARE(singleViewerSession.currentPageIndex(), 0);
-        QCOMPARE(singleViewerSession.visiblePageCount(), 1);
-        QVERIFY(singleViewerSession.advanceSpread());
-        QCOMPARE(singleViewerSession.currentPageIndex(), 1);
-        QVERIFY(singleViewerSession.advanceOnePage());
-        QCOMPARE(singleViewerSession.currentPageIndex(), 2);
-        QVERIFY(singleViewerSession.retreatOnePage());
-        QCOMPARE(singleViewerSession.currentPageIndex(), 1);
-        QVERIFY(singleViewerSession.lastPage());
-        QCOMPARE(singleViewerSession.currentPageIndex(), 5);
-        QVERIFY(singleViewerSession.firstPage());
-        QCOMPARE(singleViewerSession.currentPageIndex(), 0);
+        ViewerSession singlePageSession(nullptr);
+        QVERIFY(singlePageSession.loadVolume(directory.path()));
+        QCOMPARE(singlePageSession.currentPageIndex(), 0);
+        QCOMPARE(singlePageSession.visiblePageCount(), 1);
+        QVERIFY(singlePageSession.advanceSpread());
+        QCOMPARE(singlePageSession.currentPageIndex(), 1);
+        QVERIFY(singlePageSession.advanceOnePage());
+        QCOMPARE(singlePageSession.currentPageIndex(), 2);
+        QVERIFY(singlePageSession.retreatOnePage());
+        QCOMPARE(singlePageSession.currentPageIndex(), 1);
+        QVERIFY(singlePageSession.lastPage());
+        QCOMPARE(singlePageSession.currentPageIndex(), 5);
+        QVERIFY(singlePageSession.firstPage());
+        QCOMPARE(singlePageSession.currentPageIndex(), 0);
 
         qApp->setDualView(true);
         qApp->setFirstImageAsOnePageInDualView(false);
         qApp->setWideImageAsOnePageInDualView(true);
-        ViewerSession spreadManager(nullptr);
-        QVERIFY(spreadManager.loadVolume(directory.path()));
-        QCOMPARE(spreadManager.currentPageIndex(), 0);
-        QCOMPARE(spreadManager.visiblePageCount(), 2);
-        QVERIFY(spreadManager.advanceSpread());
-        QCOMPARE(spreadManager.currentPageIndex(), 2);
-        QCOMPARE(spreadManager.visiblePageCount(), 2);
-        QVERIFY(spreadManager.advanceOnePage());
-        QCOMPARE(spreadManager.currentPageIndex(), 3);
-        QCOMPARE(spreadManager.visiblePageCount(), 2);
-        QVERIFY(spreadManager.retreatSpread());
-        QCOMPARE(spreadManager.currentPageIndex(), 1);
-        QCOMPARE(spreadManager.visiblePageCount(), 2);
+        ViewerSession spreadSession(nullptr);
+        QVERIFY(spreadSession.loadVolume(directory.path()));
+        QCOMPARE(spreadSession.currentPageIndex(), 0);
+        QCOMPARE(spreadSession.visiblePageCount(), 2);
+        QVERIFY(spreadSession.advanceSpread());
+        QCOMPARE(spreadSession.currentPageIndex(), 2);
+        QCOMPARE(spreadSession.visiblePageCount(), 2);
+        QVERIFY(spreadSession.advanceOnePage());
+        QCOMPARE(spreadSession.currentPageIndex(), 3);
+        QCOMPARE(spreadSession.visiblePageCount(), 2);
+        QVERIFY(spreadSession.retreatSpread());
+        QCOMPARE(spreadSession.currentPageIndex(), 1);
+        QCOMPARE(spreadSession.visiblePageCount(), 2);
     }
 
     void visiblePagesAreReadOnlySnapshots()
     {
-        ViewerSession manager(nullptr);
+        ViewerSession session(nullptr);
         int notificationCount = 0;
         VisiblePages latest;
-        connect(&manager, &ViewerSession::visiblePagesChanged, this, [&](VisiblePages pages) {
+        connect(&session, &ViewerSession::visiblePagesChanged, this, [&](VisiblePages pages) {
             ++notificationCount;
             latest = std::move(pages);
         });
-        QVERIFY(manager.addVisiblePage(ImageContent("first.bmp", 0), true));
+        QVERIFY(session.addVisiblePage(ImageContent("first.bmp", 0), true));
 
-        const VisiblePages pages = manager.visiblePages();
+        const VisiblePages pages = session.visiblePages();
         QCOMPARE(notificationCount, 1);
         QCOMPARE(latest.count(), 1);
         QCOMPARE(pages.count(), 1);
@@ -231,16 +231,16 @@ private slots:
         QVERIFY(pages.first() != nullptr);
         QCOMPARE(pages.first()->path, QString("first.bmp"));
 
-        QVERIFY(manager.addVisiblePage(ImageContent("second.bmp", 0), true));
+        QVERIFY(session.addVisiblePage(ImageContent("second.bmp", 0), true));
         QCOMPARE(notificationCount, 2);
         QCOMPARE(latest.count(), 2);
-        QVERIFY(!manager.addVisiblePage(ImageContent("third.bmp", 0), true));
+        QVERIFY(!session.addVisiblePage(ImageContent("third.bmp", 0), true));
         QCOMPARE(notificationCount, 2);
 
-        manager.clearVisiblePages();
+        session.clearVisiblePages();
         QCOMPARE(notificationCount, 3);
         QVERIFY(latest.isEmpty());
-        QVERIFY(manager.visiblePages().isEmpty());
+        QVERIFY(session.visiblePages().isEmpty());
         QCOMPARE(pages.count(), 1);
         QCOMPARE(pages.first()->path, QString("first.bmp"));
     }
@@ -250,12 +250,12 @@ private slots:
         ImageString imageString;
         QCOMPARE(imageString.formatString("%p"), QString());
 
-        ViewerSession manager(nullptr);
+        ViewerSession session(nullptr);
         QImage image(100, 200, QImage::Format_RGB32);
-        QVERIFY(manager.addVisiblePage(
+        QVERIFY(session.addVisiblePage(
             ImageContent(image, "sample.png", image.size(), {}, 1024),
             true));
-        imageString.initialize(&manager, [] {
+        imageString.initialize(&session, [] {
             return RenderedPageMetrics(QVector<qreal>{0.5});
         });
 
@@ -308,7 +308,7 @@ private slots:
         QVERIFY(!volume.advanceOnePage());
         QVERIFY(!volume.retreatOnePage());
         QVERIFY(!volume.selectPage(0));
-        QVERIFY(!volume.findImageByIndex(0));
+        QVERIFY(!volume.selectPageAndRefresh(0));
         QVERIFY(!volume.selectPageByName("missing.png"));
         volume.handleEnumerationFinished();
         QCOMPARE(enumerationSpy.count(), 1);
@@ -362,9 +362,9 @@ private slots:
 
     void emptyImageViewNavigationIsSafe()
     {
-        ViewerSession manager(nullptr);
+        ViewerSession session(nullptr);
         ImageView view;
-        view.setViewerSession(&manager);
+        view.setViewerSession(&session);
 
         view.handleNextPageActionTriggered();
         view.handlePrevPageActionTriggered();
@@ -495,16 +495,16 @@ private slots:
 
     void standalonePreviewNavigationIsSafe()
     {
-        ViewerSession manager(nullptr);
+        ViewerSession session(nullptr);
         ImageView view;
-        view.setViewerSession(&manager);
+        view.setViewerSession(&session);
 
         const QImage image(8, 8, QImage::Format_ARGB32);
-        manager.addVisiblePage(ImageContent(image, "preview.png", image.size(), {}, 0), true);
+        session.addVisiblePage(ImageContent(image, "preview.png", image.size(), {}, 0), true);
 
         view.handleNextPageOrVolumeActionTriggered();
         view.handlePrevPageOrVolumeActionTriggered();
-        QCOMPARE(manager.currentPageName(), QString("preview.png"));
+        QCOMPARE(session.currentPageName(), QString("preview.png"));
     }
 
     void renderedPagesOwnItemsAndExposeSnapshots()
@@ -512,9 +512,9 @@ private slots:
         static_assert(!std::is_copy_constructible_v<PageItem>);
         static_assert(!std::is_copy_assignable_v<PageItem>);
 
-        ViewerSession manager(nullptr);
+        ViewerSession session(nullptr);
         ImageView view;
-        view.setViewerSession(&manager);
+        view.setViewerSession(&session);
 
         const QImage image(8, 4, QImage::Format_ARGB32);
         QCOMPARE(view.addRenderedPage(
@@ -555,14 +555,14 @@ private slots:
 
     void fittingModeRelayoutsRenderedPage()
     {
-        ViewerSession manager(nullptr);
+        ViewerSession session(nullptr);
         ImageView view;
         view.resize(320, 240);
-        view.setViewerSession(&manager);
+        view.setViewerSession(&session);
 
         QImage image(640, 480, QImage::Format_ARGB32);
         image.fill(Qt::red);
-        QVERIFY(manager.addVisiblePage(
+        QVERIFY(session.addVisiblePage(
             ImageContent(image, "fitting.png", image.size(), {}, 0),
             true));
 
@@ -577,10 +577,10 @@ private slots:
 
     void fittingShortcutTriggersViewAction()
     {
-        ViewerSession manager(nullptr);
+        ViewerSession session(nullptr);
         ImageView view;
         view.resize(320, 240);
-        view.setViewerSession(&manager);
+        view.setViewerSession(&session);
 
         QAction fittingAction;
         fittingAction.setCheckable(true);
@@ -596,7 +596,7 @@ private slots:
 
         QImage image(640, 480, QImage::Format_ARGB32);
         image.fill(Qt::red);
-        QVERIFY(manager.addVisiblePage(
+        QVERIFY(session.addVisiblePage(
             ImageContent(image, "shortcut.png", image.size(), {}, 0),
             true));
 
@@ -620,20 +620,20 @@ private slots:
         QTemporaryDir directory;
         QVERIFY(directory.isValid());
 
-        ViewerSession manager(nullptr);
+        ViewerSession session(nullptr);
         ImageView view;
-        view.setViewerSession(&manager);
+        view.setViewerSession(&session);
 
-        QVERIFY(!manager.loadVolume(directory.path()));
-        QCOMPARE(manager.stateKind(), ViewerStateKind::Failed);
-        QCOMPARE(manager.pageCount(), 0);
-        QVERIFY(!manager.firstPage());
-        QVERIFY(!manager.lastPage());
+        QVERIFY(!session.loadVolume(directory.path()));
+        QCOMPARE(session.stateKind(), ViewerStateKind::Failed);
+        QCOMPARE(session.pageCount(), 0);
+        QVERIFY(!session.firstPage());
+        QVERIFY(!session.lastPage());
         view.handleNextPageOrVolumeActionTriggered();
         view.handlePrevPageOrVolumeActionTriggered();
 
-        manager.reset();
-        QCOMPARE(manager.stateKind(), ViewerStateKind::Empty);
+        session.reset();
+        QCOMPARE(session.stateKind(), ViewerStateKind::Empty);
     }
 
     void emptyArchiveNavigationIsSafe()
@@ -650,20 +650,20 @@ private slots:
                  qint64(22));
         archive.close();
 
-        ViewerSession manager(nullptr);
+        ViewerSession session(nullptr);
         ImageView view;
-        view.setViewerSession(&manager);
+        view.setViewerSession(&session);
 
-        QVERIFY(!manager.loadVolume(archivePath));
-        QCOMPARE(manager.stateKind(), ViewerStateKind::Failed);
-        QCOMPARE(manager.pageCount(), 0);
-        QVERIFY(!manager.isArchive());
-        QVERIFY(!manager.firstPage());
-        QVERIFY(!manager.lastPage());
-        QVERIFY(!manager.reloadVisiblePages());
-        QCOMPARE(manager.currentPagePath(), QString());
-        QCOMPARE(manager.currentPageName(), QString());
-        QCOMPARE(manager.pageSignage(0), QString());
+        QVERIFY(!session.loadVolume(archivePath));
+        QCOMPARE(session.stateKind(), ViewerStateKind::Failed);
+        QCOMPARE(session.pageCount(), 0);
+        QVERIFY(!session.isArchive());
+        QVERIFY(!session.firstPage());
+        QVERIFY(!session.lastPage());
+        QVERIFY(!session.reloadVisiblePages());
+        QCOMPARE(session.currentPagePath(), QString());
+        QCOMPARE(session.currentPageName(), QString());
+        QCOMPARE(session.pageSignage(0), QString());
         view.handleNextPageOrVolumeActionTriggered();
         view.handlePrevPageOrVolumeActionTriggered();
     }

@@ -24,11 +24,11 @@ void FolderItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
         if (!qApp->ShowReadProgress() || index.column() != 0) {
             break;
         }
-        QString path = QDir::fromNativeSeparators(m_folderWindow->itemPath(index));
+        const QString path = QDir::fromNativeSeparators(m_folderWindow->itemPath(index));
         if (!qApp->readProgressStore()->contains(path)) {
             break;
         }
-        ReadProgress progress = qApp->readProgressStore()->at(path);
+        const ReadProgress progress = qApp->readProgressStore()->at(path);
         QRect rect(option.rect);
         QPoint begin(rect.left() + 30, rect.top() + PROGRESS_HEIGHT);
         //        painter->drawLine(begin, QPoint(begin.x()+100, begin.y()));

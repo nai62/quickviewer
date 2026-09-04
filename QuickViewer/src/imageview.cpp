@@ -100,19 +100,19 @@ void ImageView::setRenderer(RendererType type)
     setViewport(m_rendererViewport);
 }
 
-void ImageView::setViewerSession(ViewerSession *manager)
+void ImageView::setViewerSession(ViewerSession *session)
 {
-    if (!manager) {
+    if (!session) {
         return;
     }
-    m_viewerSession = manager;
+    m_viewerSession = session;
     m_viewerSession->setViewportSize(viewport()->size());
-    connect(manager, &ViewerSession::visiblePagesChanged, this, &ImageView::handleVisiblePagesChanged);
-    connect(manager, SIGNAL(readyForPaint()), this, SLOT(refreshRenderedPages()));
-    connect(manager, SIGNAL(volumeChanged(QString)), this, SLOT(handleVolumeChanged(QString)));
-    connect(this, SIGNAL(slideShowStarted()), manager, SLOT(handleSlideShowStarted()));
-    connect(this, SIGNAL(slideShowStopped()), manager, SLOT(handleSlideShowStopped()));
-    handleVisiblePagesChanged(manager->visiblePages());
+    connect(session, &ViewerSession::visiblePagesChanged, this, &ImageView::handleVisiblePagesChanged);
+    connect(session, SIGNAL(readyForPaint()), this, SLOT(refreshRenderedPages()));
+    connect(session, SIGNAL(volumeChanged(QString)), this, SLOT(handleVolumeChanged(QString)));
+    connect(this, SIGNAL(slideShowStarted()), session, SLOT(handleSlideShowStarted()));
+    connect(this, SIGNAL(slideShowStopped()), session, SLOT(handleSlideShowStopped()));
+    handleVisiblePagesChanged(session->visiblePages());
 }
 
 void ImageView::toggleSlideShow()

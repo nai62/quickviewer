@@ -171,16 +171,10 @@ VolumeWorker ThumbnailManager::createSubVolumesConcurrent(QString dirpath, int v
     vw.parent_id = parent_id;
 
     if (IFileLoader::isArchiveFile(dirpath)) {
-        //        Volume* fv = Volume::CreateVolumeWithOnlyCover(nullptr, dirpath, nullptr, Volume::CreateThumbnail);
-        //        if(fv) {
-        //            ImageContent ic = fv->currentImage();
-        //            vw.frontPage = createFileRecordFromArchive(dirpath, ic, 0);
-        //            delete fv;
-        //        }
-        VolumeLoader builder(dirpath);
-        ImageContent ic = builder.thumbnail();
-        if (!ic.loadedImage.isNull()) {
-            vw.frontPage = createFileRecordFromArchive(dirpath, ic, 0);
+        VolumeLoader volumeLoader(dirpath);
+        ImageContent thumbnailContent = volumeLoader.thumbnail();
+        if (!thumbnailContent.loadedImage.isNull()) {
+            vw.frontPage = createFileRecordFromArchive(dirpath, thumbnailContent, 0);
         }
 
         if (m_catalogWatcher.isStarted()) {

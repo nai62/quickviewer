@@ -116,7 +116,7 @@ void Volume::handleEnumerationFinished()
     const int index = m_pageNames.indexOf(m_subfileName);
     if (index >= 0) {
         m_imageLoadCache.insert(index, readyImageFuture(m_currentImage));
-        findImageByIndex(index);
+        selectPageAndRefresh(index);
     }
     setCacheMode(Volume::Normal);
     handleReady();
@@ -242,18 +242,18 @@ void Volume::stopSlideShow()
     handleReady();
 }
 
-QString Volume::pageNameAt(int idx)
+QString Volume::pageNameAt(int pageIndex)
 {
-    if (idx < 0 || idx >= m_pageNames.size()) {
+    if (pageIndex < 0 || pageIndex >= m_pageNames.size()) {
         return "";
     }
     if (!m_shuffledPageNames.isEmpty()) {
-        return m_shuffledPageNames[idx];
+        return m_shuffledPageNames[pageIndex];
     }
     if (qApp->ImageSortBy() == qvEnums::SortByFileName || qApp->ImageSortBy() == qvEnums::SortByFileNameDescending) {
-        return m_pageNames[idx];
-    } else if (idx < m_imageMetadataList.size()) {
-        return m_imageMetadataList[idx].filename();
+        return m_pageNames[pageIndex];
+    } else if (pageIndex < m_imageMetadataList.size()) {
+        return m_imageMetadataList[pageIndex].filename();
     }
     return "";
 }
@@ -322,12 +322,12 @@ void Volume::handleReady()
     m_currentImageLoad = currentImageLoad ? *currentImageLoad : ImageLoadFuture();
 }
 
-const ImageContent Volume::pageAt(int idx)
+const ImageContent Volume::pageAt(int pageIndex)
 {
-    if (idx < 0 || idx >= m_pageNames.size()) {
+    if (pageIndex < 0 || pageIndex >= m_pageNames.size()) {
         return ImageContent();
     }
-    ImageLoadFuture *imageLoad = m_imageLoadCache.find(idx);
+    ImageLoadFuture *imageLoad = m_imageLoadCache.find(pageIndex);
     return imageLoad && imageLoad->isValid() ? imageLoad->result() : ImageContent();
 }
 
@@ -365,34 +365,34 @@ bool Volume::retreatOnePage()
     return true;
 }
 
-bool Volume::selectPage(int idx)
+bool Volume::selectPage(int pageIndex)
 {
-    if (idx < 0 || idx >= m_pageNames.size()) {
+    if (pageIndex < 0 || pageIndex >= m_pageNames.size()) {
         return false;
     }
-    if (m_currentPageIndex == idx) {
+    if (m_currentPageIndex == pageIndex) {
         return true;
     }
-    m_currentPageIndex = idx;
-    //    bool result = findImageByIndex(idx);
+    m_currentPageIndex = pageIndex;
+    //    bool result = selectPageAndRefresh(pageIndex);
     handleReady();
     return true;
 }
 
-bool Volume::findImageByIndex(int idx)
+bool Volume::selectPageAndRefresh(int pageIndex)
 {
-    if (idx < 0 || idx >= m_pageNames.size()) {
+    if (pageIndex < 0 || pageIndex >= m_pageNames.size()) {
         return false;
     }
-    m_currentPageIndex = idx;
+    m_currentPageIndex = pageIndex;
     handleReady();
     return true;
 }
 
 bool Volume::selectPageByName(QString name)
 {
-    int idx = m_pageNames.indexOf(QDir::toNativeSeparators(name));
-    return findImageByIndex(idx);
+    int pageIndex = m_pageNames.indexOf(QDir::toNativeSeparators(name));
+    return selectPageAndRefresh(pageIndex);
 }
 
 QString Volume::FullPathToVolumePath(QString path)

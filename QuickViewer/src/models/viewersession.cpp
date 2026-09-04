@@ -266,8 +266,8 @@ void ViewerSession::startContainingVolumeLoad(const QString &normalizedPath,
 {
     QThread *guiThread = thread();
     const QFuture<VolumeHandle> volumeLoad = QtConcurrent::run([normalizedPath, guiThread] {
-        VolumeLoader builder(normalizedPath);
-        Volume *volume = builder.buildForAssoc();
+        VolumeLoader volumeLoader(normalizedPath);
+        Volume *volume = volumeLoader.buildForContainingImage();
         if (volume) {
             volume->moveToThread(guiThread);
         }
@@ -494,8 +494,8 @@ VolumeHandle ViewerSession::getOrLoadVolume(QString path, bool onlyCover, bool i
             return {};
         }
         qDebug() << "getOrLoadVolume:immediate" << path;
-        VolumeLoader builder(path);
-        VolumeHandle loadedVolume = makeVolumeHandle(builder.build(onlyCover));
+        VolumeLoader volumeLoader(path);
+        VolumeHandle loadedVolume = makeVolumeHandle(volumeLoader.build(onlyCover));
         qDebug() << "getOrLoadVolume:immediate" << loadedVolume.get();
         m_volumeLoadCache.insert(basePath, makeReadyVolumeFuture(loadedVolume));
     }

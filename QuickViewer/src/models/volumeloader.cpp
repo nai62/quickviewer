@@ -5,7 +5,7 @@
 #include "fileloaderrararchive.h"
 #include "qvapplication.h"
 
-Volume *VolumeLoader::CreateVolume(QObject *parent, QString path)
+Volume *VolumeLoader::createVolume(QObject *parent, QString path)
 {
     QDir dir(path);
 
@@ -14,66 +14,66 @@ Volume *VolumeLoader::CreateVolume(QObject *parent, QString path)
         return new Volume(parent, qApp->ShowSubfolders() ? new FileLoaderSubDirectory(parent, path) : new FileLoaderDirectory(parent, path));
     }
 
-    QFileInfo pathinfo(path);
-    QString ext = pathinfo.completeSuffix().toLower();
+    const QFileInfo pathInfo(path);
+    const QString completeSuffix = pathInfo.completeSuffix().toLower();
 
     // Mapping extension aliases to original names
-    QString fmt = pathinfo.suffix().toLower();
-    if (ext.right(3) == "cbz") {
-        fmt = "zip";
+    QString archiveFormat = pathInfo.suffix().toLower();
+    if (completeSuffix.right(3) == "cbz") {
+        archiveFormat = "zip";
     }
-    if (ext.right(3) == "cbr") {
-        fmt = "rar";
+    if (completeSuffix.right(3) == "cbr") {
+        archiveFormat = "rar";
     }
-    if (ext.right(3) == "cb7") {
-        fmt = "7z";
+    if (completeSuffix.right(3) == "cb7") {
+        archiveFormat = "7z";
     }
-    if (ext.right(6) == "tar.gz") {
-        fmt = "tgz";
+    if (completeSuffix.right(6) == "tar.gz") {
+        archiveFormat = "tgz";
     }
-    if (ext.right(7) == "tar.bz2") {
-        fmt = "tbz2";
+    if (completeSuffix.right(7) == "tar.bz2") {
+        archiveFormat = "tbz2";
     }
-    if (ext.right(6) == "tar.xz") {
-        fmt = "txz";
+    if (completeSuffix.right(6) == "tar.xz") {
+        archiveFormat = "txz";
     }
 
     // RAR deploys using unrar directly
-    if (fmt == "rar") {
+    if (archiveFormat == "rar") {
         return new Volume(parent, new FileLoaderRarArchive(parent, path));
     }
     // Automatically recognizes various archive formats that SevenZip can deploy
-    if (FileLoader7zArchive::st_supportedArchiveFormats.contains(fmt)) {
-        return new Volume(parent, new FileLoader7zArchive(parent, path, fmt, qApp->ExtractSolidArchiveToTemporaryDir()));
+    if (FileLoader7zArchive::st_supportedArchiveFormats.contains(archiveFormat)) {
+        return new Volume(parent, new FileLoader7zArchive(parent, path, archiveFormat, qApp->ExtractSolidArchiveToTemporaryDir()));
     }
     if (IFileLoader::isImageFile(path)) {
         const QFileInfo imageInfo(path);
-        const QString dirpath = imageInfo.absolutePath();
-        Volume *fvd = new Volume(parent, qApp->ShowSubfolders() ? new FileLoaderSubDirectory(parent, dirpath) : new FileLoaderDirectory(parent, dirpath));
-        fvd->selectPageByName(imageInfo.fileName());
-        fvd->setOpenedWithSpecifiedImageFile(true);
-        return fvd;
+        const QString directoryPath = imageInfo.absolutePath();
+        Volume *volume = new Volume(parent, qApp->ShowSubfolders() ? new FileLoaderSubDirectory(parent, directoryPath) : new FileLoaderDirectory(parent, directoryPath));
+        volume->selectPageByName(imageInfo.fileName());
+        volume->setOpenedWithSpecifiedImageFile(true);
+        return volume;
     }
     return nullptr;
 }
 
 VolumeLoader::VolumeLoader(QString path)
     : QObject(nullptr),
-      Path(path),
+      m_path(path),
       m_volume(nullptr)
 {
 }
 
 Volume *VolumeLoader::build(bool onlyCover)
 {
-    QString pathbase = QDir::toNativeSeparators(Path);
-    QString subfilename;
-    if (Path.contains("::")) {
-        QStringList seps = Path.split("::");
-        pathbase = seps[0];
-        subfilename = seps[1];
+    QString volumePath = QDir::toNativeSeparators(m_path);
+    QString selectedPageName;
+    if (m_path.contains("::")) {
+        const QStringList pathParts = m_path.split("::");
+        volumePath = pathParts[0];
+        selectedPageName = pathParts[1];
     }
-    if (!(m_volume = CreateVolume(nullptr, pathbase))) {
+    if (!(m_volume = createVolume(nullptr, volumePath))) {
         return m_volume;
     }
     m_volume->moveToThread(QThread::currentThread());
@@ -82,12 +82,12 @@ Volume *VolumeLoader::build(bool onlyCover)
         delete m_volume;
         return m_volume = nullptr;
     }
-    Volume::CacheMode mode = onlyCover ? Volume::CoverOnly : Volume::Normal;
-    m_volume->setCacheMode(mode);
-    if (Filenames.isEmpty()) {
+    Volume::CacheMode cacheMode = onlyCover ? Volume::CoverOnly : Volume::Normal;
+    m_volume->setCacheMode(cacheMode);
+    if (m_pageNames.isEmpty()) {
         restoreReadProgress();
-    } else if (subfilename.length() > 0) {
-        m_volume->selectPageByName(subfilename);
+    } else if (!selectedPageName.isEmpty()) {
+        m_volume->selectPageByName(selectedPageName);
     }
     m_volume->handleReady();
     return m_volume;
@@ -95,16 +95,16 @@ Volume *VolumeLoader::build(bool onlyCover)
 
 Volume *VolumeLoader::buildAsync(QString path, bool onlyCover)
 {
-    VolumeLoader builder(path);
-    return builder.build(onlyCover);
+    VolumeLoader volumeLoader(path);
+    return volumeLoader.build(onlyCover);
 }
 
-Volume *VolumeLoader::buildForAssoc()
+Volume *VolumeLoader::buildForContainingImage()
 {
-    const QFileInfo imageInfo(QDir::fromNativeSeparators(Path));
+    const QFileInfo imageInfo(QDir::fromNativeSeparators(m_path));
     const QString volumeFolder = imageInfo.absolutePath();
-    m_subfilename = imageInfo.fileName();
-    if (!(m_volume = CreateVolume(nullptr, volumeFolder))) {
+    m_selectedPageName = imageInfo.fileName();
+    if (!(m_volume = createVolume(nullptr, volumeFolder))) {
         return m_volume;
     }
     if (m_volume->isArchive()) {
@@ -114,34 +114,34 @@ Volume *VolumeLoader::buildForAssoc()
 
     // Load the image.
     m_volume->enumerate();
-    if (!m_volume->selectPageByName(m_subfilename)) {
+    if (!m_volume->selectPageByName(m_selectedPageName)) {
         delete m_volume;
         return m_volume = nullptr;
     }
-    Ic = m_volume->currentImage();
+    m_initialImage = m_volume->currentImage();
 
     return m_volume;
 }
 
 ImageContent VolumeLoader::thumbnail()
 {
-    if (!(m_volume = CreateVolume(nullptr, Path))) {
+    if (!(m_volume = createVolume(nullptr, m_path))) {
         return ImageContent();
     }
     restoreReadProgress();
     m_volume->setCacheMode(Volume::CreateThumbnail);
     m_volume->handleReady();
-    auto ic = m_volume->currentImage();
+    ImageContent thumbnailContent = m_volume->currentImage();
     delete m_volume;
-    return ic;
+    return thumbnailContent;
 }
 
 void VolumeLoader::restoreReadProgress()
 {
-    // change page by progress.ini
-    QString volumepath = QDir::fromNativeSeparators(m_volume->volumePath());
-    if (qApp->OpenVolumeWithProgress() && !m_volume->openedWithSpecifiedImageFile() && qApp->readProgressStore()->contains(volumepath)) {
-        ReadProgress progress = qApp->readProgressStore()->at(volumepath);
+    // Restore the selected page from progress.ini when configured to do so.
+    const QString volumePath = QDir::fromNativeSeparators(m_volume->volumePath());
+    if (qApp->OpenVolumeWithProgress() && !m_volume->openedWithSpecifiedImageFile() && qApp->readProgressStore()->contains(volumePath)) {
+        const ReadProgress progress = qApp->readProgressStore()->at(volumePath);
         m_volume->selectPage(progress.resumePageIndex);
     }
     m_volume->moveToThread(QThread::currentThread());

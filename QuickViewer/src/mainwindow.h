@@ -38,7 +38,7 @@ public:
 
     void resetShortcutKeys();
     void makeHistoryMenu();
-    void resetVolume(Volume *newer);
+    void resetVolume(Volume *newVolume);
     void uncheckAllShaderMenus()
     {
         foreach (QAction *action, m_shaderMenuGroup) {

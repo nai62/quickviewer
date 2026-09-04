@@ -33,7 +33,7 @@ public:
     typedef QPair<uint, uint> ZoomFraction;
     explicit ImageView(QWidget *parent = Q_NULLPTR);
     void setRenderer(RendererType type = Native);
-    void setViewerSession(ViewerSession *manager);
+    void setViewerSession(ViewerSession *session);
     Qt::AnchorPoint hoverState() const { return m_hoverState; }
     void setResizeEventsSkipped(bool skipped) { m_skipResizeEvent = skipped; }
     bool isSlideShow() const { return m_slideshowTimer != nullptr; }

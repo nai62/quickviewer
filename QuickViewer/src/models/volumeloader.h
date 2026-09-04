@@ -9,10 +9,6 @@ class VolumeLoader : QObject
 {
     Q_OBJECT
 public:
-    QString Path;
-    QStringList Filenames;
-    ImageContent Ic;
-
     explicit VolumeLoader(QString path);
 
     /**
@@ -32,12 +28,12 @@ public:
     static Volume *buildAsync(QString path, bool onlyCover);
 
     /**
-     * @brief buildForAssoc
+     * @brief buildForContainingImage
      *
      * Special initialization method to skip the enumeration of image files
      * in the Volume and read the first image faster.
      */
-    Volume *buildForAssoc();
+    Volume *buildForContainingImage();
 
     /**
      * @brief thumbnail
@@ -51,12 +47,15 @@ public:
      * @brief A factory function that returns an instance of IFileVolume from the path of the specified file or directory
      * @return An object that inherits the IFileVolume interface. It is null if generation failed
      */
-    static Volume *CreateVolume(QObject *parent, QString path);
+    static Volume *createVolume(QObject *parent, QString path);
 
 private:
+    QString m_path;
+    QStringList m_pageNames;
+    ImageContent m_initialImage;
     Volume *m_volume;
     //    QFutureWatcher<void> m_watcher;
-    QString m_subfilename;
+    QString m_selectedPageName;
 };
 
 #endif // VOLUMELOADER_H
