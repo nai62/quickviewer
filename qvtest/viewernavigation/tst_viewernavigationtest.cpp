@@ -132,6 +132,52 @@ private slots:
         QCOMPARE(restoredManager.currentPageName(), QString("page-2.bmp"));
     }
 
+    void pageAndSpreadNavigationKeepTheirExistingStepSizes()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 6; ++page) {
+            QImage image(16, 24, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 40, 255, 255));
+            QVERIFY(image.save(directory.filePath(
+                QString("page-%1.bmp").arg(page))));
+        }
+
+        qApp->setOpenVolumeWithProgress(false);
+        qApp->setDualView(false);
+        PageManager singlePageManager(nullptr);
+        QVERIFY(singlePageManager.loadVolume(directory.path()));
+        QCOMPARE(singlePageManager.currentPage(), 0);
+        QCOMPARE(singlePageManager.currentPageCount(), 1);
+        QVERIFY(singlePageManager.nextPage());
+        QCOMPARE(singlePageManager.currentPage(), 1);
+        QVERIFY(singlePageManager.nextOnlyOnePage());
+        QCOMPARE(singlePageManager.currentPage(), 2);
+        QVERIFY(singlePageManager.prevOnlyOnePage());
+        QCOMPARE(singlePageManager.currentPage(), 1);
+        QVERIFY(singlePageManager.lastPage());
+        QCOMPARE(singlePageManager.currentPage(), 5);
+        QVERIFY(singlePageManager.firstPage());
+        QCOMPARE(singlePageManager.currentPage(), 0);
+
+        qApp->setDualView(true);
+        qApp->setFirstImageAsOnePageInDualView(false);
+        qApp->setWideImageAsOnePageInDualView(true);
+        PageManager spreadManager(nullptr);
+        QVERIFY(spreadManager.loadVolume(directory.path()));
+        QCOMPARE(spreadManager.currentPage(), 0);
+        QCOMPARE(spreadManager.currentPageCount(), 2);
+        QVERIFY(spreadManager.nextPage());
+        QCOMPARE(spreadManager.currentPage(), 2);
+        QCOMPARE(spreadManager.currentPageCount(), 2);
+        QVERIFY(spreadManager.nextOnlyOnePage());
+        QCOMPARE(spreadManager.currentPage(), 3);
+        QCOMPARE(spreadManager.currentPageCount(), 2);
+        QVERIFY(spreadManager.prevPage());
+        QCOMPARE(spreadManager.currentPage(), 1);
+        QCOMPARE(spreadManager.currentPageCount(), 2);
+    }
+
     void visiblePagesAreReadOnlySnapshots()
     {
         PageManager manager(nullptr);
