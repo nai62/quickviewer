@@ -288,14 +288,25 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->graphicsView, SIGNAL(slideShowStopped()), this, SLOT(handleSlideShowStopped()));
 
     setWindowTitle(QString("%1 v%2").arg(qApp->applicationName()).arg(qApp->applicationVersion()));
-    // WindowState Restoreing
+}
+
+void MainWindow::initializeStartup()
+{
+    // Platform-specific virtual functions must be invoked after the most-derived
+    // MainWindow has finished construction and before it becomes visible.
+    handleStayOnTopActionTriggered(qApp->StayOnTop());
+
+    // Restore the initial window state before the first visible frame.
     if (qApp->BeginAsFullscreen()) {
         if (qApp->HideMouseCursorInFullscreen()) {
             ui->graphicsView->setCursor(Qt::BlankCursor);
         }
         showFullScreen();
-    } else if (qApp->RestoreWindowState()) {
-        restoreState(qApp->WindowState());
+    } else {
+        if (qApp->RestoreWindowState()) {
+            restoreState(qApp->WindowState());
+        }
+        show();
     }
     if (isFullScreen()) {
         menuBar()->hide();
@@ -308,11 +319,8 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     if (!m_revealInitialFullscreen) {
-        // Build and paint a normal window before starting any potentially
-        // blocking image or archive load.
-        if (!isVisible()) {
-            show();
-        }
+        // Build and paint a normal window after all native window setup, then
+        // reveal its background before a potentially blocking volume load.
         QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
         if (layout()) {
             layout()->activate();
@@ -321,13 +329,6 @@ MainWindow::MainWindow(QWidget *parent)
         repaint();
         setWindowOpacity(1.0);
     }
-}
-
-void MainWindow::initializeStartup()
-{
-    // Platform-specific virtual functions must be invoked after the most-derived
-    // MainWindow has finished construction.
-    handleStayOnTopActionTriggered(qApp->StayOnTop());
 
     // when drop a folder/archive icon to this app
     if (qApp->arguments().length() >= 2) {
@@ -1186,8 +1187,12 @@ void MainWindow::handleStayOnTopActionTriggered(bool checked)
         flags &= ~Qt::WindowStaysOnTopHint;
     }
 
-    bool full = isFullScreen();
+    const bool visible = isVisible();
+    const bool full = isFullScreen();
     setWindowFlags(flags);
+    if (!visible) {
+        return;
+    }
     if (!full) {
         show();
         return;
