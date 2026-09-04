@@ -39,13 +39,13 @@ Volume::Volume(QObject *parent, IFileLoader *loader)
       m_imageLoadCache(qApp->MaxImagesCache()),
       m_loadContext(new ImageLoadContext(loader)),
       m_loader(loader),
-      m_cacheMode(CacheMode::Normal),
+      m_prefetchMode(PrefetchMode::Normal),
       m_viewportSize(),
-      m_enumerated(false),
+      m_pageListLoaded(false),
       m_openedWithSpecifiedImageFile(false)
 {
     m_volumePath = m_loader->volumePath();
-    connect(&m_watcher, SIGNAL(finished()), this, SLOT(handleEnumerationFinished()));
+    connect(&m_watcher, SIGNAL(finished()), this, SLOT(handlePageListLoaded()));
 }
 
 Volume::~Volume()
@@ -88,58 +88,37 @@ Volume::ImageLoadFuture Volume::scheduleResize(
     return QFuture<ImageContent>();
 }
 
-void Volume::enumerate()
+void Volume::loadPageList()
 {
     if (!m_loader) {
         m_pageNames.clear();
-        m_enumerated = true;
+        m_pageListLoaded = true;
         return;
     }
     m_pageNames = m_loader->contents();
-    m_enumerated = true;
-    sortForReady(qApp->ImageSortBy());
+    m_pageListLoaded = true;
+    applyPageSort(qApp->ImageSortBy());
 }
 
-ImageContent Volume::getImageBeforeEnumeration(QString subfileName)
+ImageContent Volume::loadImageBeforePageList(QString subfileName)
 {
     m_subfileName = subfileName;
     m_currentImage = Volume::futureLoadImageFromFileVolume(m_loadContext, subfileName, QSize());
-    enumerate();
+    loadPageList();
     return m_currentImage;
 }
 
-void Volume::handleEnumerationFinished()
+void Volume::handlePageListLoaded()
 {
-    // foreach(const QString& fl, m_pageNames) {
-    //     m_imageMetadataList << QvImageMetadata(this, fl);
-    // }
     const int index = m_pageNames.indexOf(m_subfileName);
     if (index >= 0) {
         m_imageLoadCache.insert(index, readyImageFuture(m_currentImage));
         selectPageAndRefresh(index);
     }
-    setCacheMode(Volume::Normal);
-    handleReady();
-    emit enumerationFinished();
+    setPrefetchMode(PrefetchMode::Normal);
+    preparePageLoads();
+    emit pageListLoaded();
 }
-
-// #ifdef Q_OS_WIN
-// #include <Shlwapi.h>
-
-// static bool fileNameDescendingLessThan(const QvImageMetadata& m1, const QvImageMetadata& m2)
-// {
-//     std::wstring ss1(m1.filename().toStdWString());
-//     std::wstring ss2(m2.filename().toStdWString());
-//     return ::StrCmpLogicalW(ss1.c_str(), ss2.c_str()) > 0;
-// }
-// #else
-
-// static bool fileNameDescendingLessThan(const QvImageMetadata& m1, const QvImageMetadata& m2)
-// {
-//     return m1.filename() > m2.filename();
-// }
-
-// #endif
 
 static bool fileNameDescendingLessThan(const QString &m1, const QString &m2)
 {
@@ -180,13 +159,13 @@ static bool modifiedTimeDescendingLessThan(const QvImageMetadata &m1, const QvIm
     return mm1.getMTime() > mm2.getMTime();
 }
 
-void Volume::sort(qvEnums::ImageSortBy sortBy)
+void Volume::sortPages(qvEnums::ImageSortBy sortBy)
 {
-    sortForReady(sortBy);
-    handleReady();
+    applyPageSort(sortBy);
+    preparePageLoads();
 }
 
-void Volume::sortForReady(qvEnums::ImageSortBy sortBy)
+void Volume::applyPageSort(qvEnums::ImageSortBy sortBy)
 {
     m_imageMetadataList.clear();
     foreach (const QString &fl, m_pageNames) {
@@ -228,7 +207,7 @@ void Volume::startSlideShow()
     std::shuffle(m_shuffledPageNames.begin(), m_shuffledPageNames.end(), g);
     m_currentPageIndex = 0;
     m_imageLoadCache.clear();
-    handleReady();
+    preparePageLoads();
 }
 
 void Volume::stopSlideShow()
@@ -239,7 +218,7 @@ void Volume::stopSlideShow()
     m_shuffledPageNames.clear();
     m_currentPageIndex = 0;
     m_imageLoadCache.clear();
-    handleReady();
+    preparePageLoads();
 }
 
 QString Volume::pageNameAt(int pageIndex)
@@ -258,23 +237,22 @@ QString Volume::pageNameAt(int pageIndex)
     return "";
 }
 
-void Volume::handleReady()
+void Volume::preparePageLoads()
 {
-    if (!m_enumerated) {
-        enumerate();
+    if (!m_pageListLoaded) {
+        loadPageList();
     }
     if (!m_loader || m_currentPageIndex < 0 || m_currentPageIndex >= m_pageNames.size() || m_loader->contents().isEmpty()) {
         return;
     }
 
-    //    qDebug() << "handleReady: m_currentPageIndex" << m_currentPageIndex;
-    switch (m_cacheMode) {
-    case CacheMode::CreateThumbnail:
+    switch (m_prefetchMode) {
+    case PrefetchMode::CreateThumbnail:
         m_currentImage = futureLoadImageFromFileVolume(m_loadContext, m_pageNames[0], QSize());
         return;
-    case CacheMode::CoverOnly:
+    case PrefetchMode::CoverOnly:
         for (int cnt : PrefetchPlanner::indexes(
-                 CacheMode::Normal, m_currentPageIndex, m_pageNames.size(), 2)) {
+                 PrefetchMode::Normal, m_currentPageIndex, m_pageNames.size(), 2)) {
             const ImageLoadFuture future = scheduleImageLoad(
                 m_pageNames[cnt], QSize(), cnt == m_currentPageIndex);
             if (future.isValid()) {
@@ -286,7 +264,7 @@ void Volume::handleReady()
         break;
     }
     const QList<int> indexes = PrefetchPlanner::indexes(
-        m_cacheMode, m_currentPageIndex, m_pageNames.size(), qApp->MaxImagesCache());
+        m_prefetchMode, m_currentPageIndex, m_pageNames.size(), qApp->MaxImagesCache());
     for (int cnt : indexes) {
         ImageLoadFuture *cachedImageLoad = m_imageLoadCache.find(cnt);
         if (qApp->Effect() < qvEnums::UsingFixedShader && cachedImageLoad && cachedImageLoad->isFinished()) {
@@ -307,7 +285,6 @@ void Volume::handleReady()
             }
         }
         if (!m_imageLoadCache.touch(cnt)) {
-            //            qDebug() << "handleReady()" << m_pageNames[cnt];
             const QSize pageSize = qApp->Effect() < qvEnums::UsingFixedShader
                                        ? m_viewportSize
                                        : QSize();
@@ -345,23 +322,21 @@ void Volume::moveToThread(QThread *targetThread)
 
 bool Volume::advanceOnePage()
 {
-    //    qDebug() << "nextPage: " << m_currentPageIndex << m_pageNames.size() <<  "prevCache.size()" << m_prevCache.size() << "nextCache.size()" << m_nextCache.size();
     if (!m_loader || m_currentPageIndex < 0 || m_currentPageIndex >= m_pageNames.size() - 1 || m_loader->contents().isEmpty()) {
         return false;
     }
     m_currentPageIndex++;
-    handleReady();
+    preparePageLoads();
     return true;
 }
 
 bool Volume::retreatOnePage()
 {
-    //    qDebug() << "prevPage: " << m_currentPageIndex << m_pageNames.size() <<  "prevCache.size()" << m_prevCache.size() << "nextCache.size()" << m_nextCache.size();
     if (!m_loader || m_currentPageIndex <= 0 || m_currentPageIndex >= m_pageNames.size() || m_loader->contents().isEmpty()) {
         return false;
     }
     m_currentPageIndex--;
-    handleReady();
+    preparePageLoads();
     return true;
 }
 
@@ -374,8 +349,7 @@ bool Volume::selectPage(int pageIndex)
         return true;
     }
     m_currentPageIndex = pageIndex;
-    //    bool result = selectPageAndRefresh(pageIndex);
-    handleReady();
+    preparePageLoads();
     return true;
 }
 
@@ -385,7 +359,7 @@ bool Volume::selectPageAndRefresh(int pageIndex)
         return false;
     }
     m_currentPageIndex = pageIndex;
-    handleReady();
+    preparePageLoads();
     return true;
 }
 
@@ -466,7 +440,6 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QByteA
         }
         QImageReader reader(&buffer, aformat.toUtf8());
 
-        //        QElapsedTimer et_canRead; et_canRead.start();
         if (!reader.canRead()) {
             aformat = "";
             break;
@@ -507,11 +480,6 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QByteA
             return ic;
         }
 
-        //        qint64 t_canRead = et_canRead.elapsed();
-        //        // Emptying the format of QImageReader will get the format of the internal QImageIoHandler
-        //        reader.setFormat("");
-
-        //        QElapsedTimer et_supportsAnimation; et_supportsAnimation.start();
         if (reader.supportsAnimation()) {
             QvMovie movie = QvMovie(bytes, aformat.toUtf8());
             ImageContent ic(path, bytes.length());
@@ -519,9 +487,6 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QByteA
             ic.originalSize = ic.loadedImageSize = reader.size();
             return ic;
         }
-        //        qint64 t_supportsAnimation = et_supportsAnimation.elapsed();
-        //        qDebug() << path << t_canRead << t_supportsAnimation;
-
         if (aformat == "apng") {
             bool lodepng_exist = IFileLoader::isImageFile("lodepng");
             aformat = lodepng_exist ? "lodepng" : "png";
@@ -555,7 +520,6 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QByteA
                 if (count >= 100 || aformat.startsWith("tif")) {
                     return ic;
                 }
-                //                if(count >= 100) return ImageContent(path);
                 QThread::currentThread()->usleep(40000);
             }
             if (baseSize.isEmpty()) {
@@ -576,7 +540,6 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QByteA
             parseExifTextExtents(src, info);
         }
 
-        //    ImageContent ic(QPixmap::fromImage(src), path, baseSize, info);
         ic.originalSize = baseSize;
         ic.exifInfo = info;
         if (src.isNull()) {
@@ -633,16 +596,11 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QByteA
             QSize srcSize = src.size();
             QSize halfSize = QSize((srcSize.width()) / 2, (srcSize.height()) / 2);
 
-            //qDebug() << path << "[3]width:" << srcSize;
             QImage half = QImage(halfSize.width(), halfSize.height(), src.format());
-            //qDebug() << path << "[2]Dest:" <<  half;
-
-            //        qDebug() << path << src;
             ResizeHalf::FMT fmt = (ResizeHalf::FMT)(src.depth() >> 3);
             ResizeHalf resizer(fmt);
             resizer.resizeHV(half.bits(), src.bits(), src.width(), srcSize.height(), half.bytesPerLine(), src.bytesPerLine());
 
-            //        ImageContent ic(QPixmap::fromImage(half), path, srcSizeReal, info);
             ic.loadedImage = half;
             ic.loadedImageSize = half.size();
         }
@@ -680,18 +638,12 @@ static ImageContent loadImageFromBytes(
     if (aformat == "png" && IFileLoader::isImageFile("apng")) {
         aformat = "apng";
     }
-    //    if(aformat == "png") {
-    //        bool lodepng_exist = IFileLoader::isImageFile("lodepng");
-    //        aformat = lodepng_exist ? "lodepng" : "png";
-    //    }
     return loadWithSpecifiedFormat(path, pageSize, bytes, aformat, 5);
 }
 
 static ImageContent futureLoadImageFromFileVolumeImpl(
     const QSharedPointer<ImageLoadContext> &context, QString path, QSize pageSize)
 {
-    //    qDebug() << "futureLoadImageFromFileVolume" << path << QThread::currentThread();
-
     return loadImageFromBytes(path, pageSize, context->load(path));
 }
 

@@ -298,7 +298,7 @@ private slots:
     {
         EmptyFileLoader loader;
         Volume volume(nullptr, &loader);
-        QSignalSpy enumerationSpy(&volume, &Volume::enumerationFinished);
+        QSignalSpy pageListLoadedSpy(&volume, &Volume::pageListLoaded);
 
         QCOMPARE(volume.currentPath(), QString());
         QCOMPARE(volume.currentPathWithSeparator(), QString());
@@ -310,8 +310,8 @@ private slots:
         QVERIFY(!volume.selectPage(0));
         QVERIFY(!volume.selectPageAndRefresh(0));
         QVERIFY(!volume.selectPageByName("missing.png"));
-        volume.handleEnumerationFinished();
-        QCOMPARE(enumerationSpy.count(), 1);
+        volume.handlePageListLoaded();
+        QCOMPARE(pageListLoadedSpy.count(), 1);
         volume.moveToThread(nullptr);
     }
 

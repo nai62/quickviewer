@@ -77,19 +77,19 @@ Volume *VolumeLoader::build(bool onlyCover)
         return m_volume;
     }
     m_volume->moveToThread(QThread::currentThread());
-    m_volume->enumerate();
+    m_volume->loadPageList();
     if (m_volume->pageCount() == 0) {
         delete m_volume;
         return m_volume = nullptr;
     }
-    Volume::CacheMode cacheMode = onlyCover ? Volume::CoverOnly : Volume::Normal;
-    m_volume->setCacheMode(cacheMode);
+    PrefetchMode prefetchMode = onlyCover ? PrefetchMode::CoverOnly : PrefetchMode::Normal;
+    m_volume->setPrefetchMode(prefetchMode);
     if (m_pageNames.isEmpty()) {
         restoreReadProgress();
     } else if (!selectedPageName.isEmpty()) {
         m_volume->selectPageByName(selectedPageName);
     }
-    m_volume->handleReady();
+    m_volume->preparePageLoads();
     return m_volume;
 }
 
@@ -113,7 +113,7 @@ Volume *VolumeLoader::buildForContainingImage()
     }
 
     // Load the image.
-    m_volume->enumerate();
+    m_volume->loadPageList();
     if (!m_volume->selectPageByName(m_selectedPageName)) {
         delete m_volume;
         return m_volume = nullptr;
@@ -129,8 +129,8 @@ ImageContent VolumeLoader::thumbnail()
         return ImageContent();
     }
     restoreReadProgress();
-    m_volume->setCacheMode(Volume::CreateThumbnail);
-    m_volume->handleReady();
+    m_volume->setPrefetchMode(PrefetchMode::CreateThumbnail);
+    m_volume->preparePageLoads();
     ImageContent thumbnailContent = m_volume->currentImage();
     delete m_volume;
     return thumbnailContent;

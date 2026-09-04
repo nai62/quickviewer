@@ -64,7 +64,7 @@ void ViewerSession::configureVolume(Volume *volume)
         return;
     }
     volume->setViewportSize(m_viewportSize);
-    connect(volume, &Volume::enumerationFinished, this, &ViewerSession::handleVolumeEnumerationFinished, Qt::UniqueConnection);
+    connect(volume, &Volume::pageListLoaded, this, &ViewerSession::handleVolumePageListLoaded, Qt::UniqueConnection);
 }
 
 void ViewerSession::setViewportSize(QSize size)
@@ -115,7 +115,7 @@ bool ViewerSession::loadVolume(QString path, bool coverOnly)
     setVolumeReady(loadedVolume);
     Volume *volume = loadedVolume.get();
     if (coverOnly) {
-        volume->setCacheMode(Volume::CoverOnly);
+        volume->setPrefetchMode(PrefetchMode::CoverOnly);
     } else {
         m_volumeNames = QStringList();
     }
@@ -303,7 +303,7 @@ void ViewerSession::startContainingVolumeLoad(const QString &normalizedPath,
         [](VolumeHandle) {});
 }
 
-void ViewerSession::handleVolumeEnumerationFinished()
+void ViewerSession::handleVolumePageListLoaded()
 {
     if (auto *source = qobject_cast<Volume *>(sender())) {
         if (source != activeVolume()) {
@@ -532,13 +532,12 @@ VolumeHandle ViewerSession::getOrLoadVolume(QString path, bool onlyCover, bool i
 
 bool ViewerSession::advanceSpread()
 {
-    //qDebug() << "ImageView::nextPage()" << m_currentPageIndex;
     Volume *volume = activeVolume();
-    if (!volume || !volume->isEnumerated() || volume->currentPageIndex() >= volume->pageCount() - 1) {
+    if (!volume || !volume->isPageListLoaded() || volume->currentPageIndex() >= volume->pageCount() - 1) {
         return false;
     }
 
-    volume->setCacheMode(Volume::NormalForward);
+    volume->setPrefetchMode(PrefetchMode::NormalForward);
     bool result = volume->advanceOnePage();
     if (!result) {
         return false;
@@ -559,16 +558,15 @@ bool ViewerSession::advanceSpread()
 bool ViewerSession::retreatSpread()
 {
     Volume *volume = activeVolume();
-    if (!volume || !volume->isEnumerated() || volume->currentPageIndex() < m_visiblePages.size()) {
+    if (!volume || !volume->isPageListLoaded() || volume->currentPageIndex() < m_visiblePages.size()) {
         return false;
     }
 
-    volume->setCacheMode(Volume::NormalBackward);
+    volume->setPrefetchMode(PrefetchMode::NormalBackward);
     bool result = volume->retreatOnePage();
     if (!result) {
         return false;
     }
-    //QVApplication* app = qApp;
     m_currentPageIndex--;
     if (qApp->DualView() && m_currentPageIndex >= 1) {
         const ImageContent currentContent = volume->pageAt(m_currentPageIndex);
@@ -581,7 +579,7 @@ bool ViewerSession::retreatSpread()
         m_currentPageIndex = 0;
     }
 
-    selectPage(m_currentPageIndex, Volume::NormalBackward);
+    selectPage(m_currentPageIndex, PrefetchMode::NormalBackward);
     return true;
 }
 
@@ -601,7 +599,7 @@ bool ViewerSession::fastForwardPage()
         m_currentPageIndex = volume->pageCount() - 1;
     }
 
-    return selectPage(m_currentPageIndex, Volume::FastForward);
+    return selectPage(m_currentPageIndex, PrefetchMode::FastForward);
 }
 
 bool ViewerSession::fastBackwardPage()
@@ -618,16 +616,16 @@ bool ViewerSession::fastBackwardPage()
     if (m_currentPageIndex < 0) {
         m_currentPageIndex = 0;
     }
-    return selectPage(m_currentPageIndex, Volume::FastBackward);
+    return selectPage(m_currentPageIndex, PrefetchMode::FastBackward);
 }
 
-bool ViewerSession::selectPage(int pageIndex, Volume::CacheMode cacheMode)
+bool ViewerSession::selectPage(int pageIndex, PrefetchMode prefetchMode)
 {
     Volume *volume = activeVolume();
     if (!volume || pageIndex < 0 || pageIndex >= volume->pageCount()) {
         return false;
     }
-    volume->setCacheMode(cacheMode);
+    volume->setPrefetchMode(prefetchMode);
     const bool result = volume->selectPage(pageIndex);
     if (!result) {
         return false;
@@ -646,7 +644,7 @@ bool ViewerSession::firstPage()
     if (!volume || volume->pageCount() == 0) {
         return false;
     }
-    volume->setCacheMode(Volume::Normal);
+    volume->setPrefetchMode(PrefetchMode::Normal);
     return selectPage(0);
 }
 
@@ -654,7 +652,7 @@ bool ViewerSession::lastPage()
 {
     Volume *volume = activeVolume();
     if (volume && volume->pageCount() > 0) {
-        volume->setCacheMode(Volume::Normal);
+        volume->setPrefetchMode(PrefetchMode::Normal);
         return selectPage(volume->pageCount() - 1);
     }
     return false;
@@ -666,7 +664,7 @@ bool ViewerSession::advanceOnePage()
     if (!volume || volume->pageCount() == 0 || volume->currentPageIndex() == volume->pageCount() - 1) {
         return false;
     }
-    volume->setCacheMode(Volume::Normal);
+    volume->setPrefetchMode(PrefetchMode::Normal);
     if (m_visiblePages.size() == 1) {
         volume->advanceOnePage();
     }
@@ -690,9 +688,8 @@ bool ViewerSession::retreatOnePage()
     if (volume->currentPageIndex() < m_visiblePages.size()) {
         return false;
     }
-    volume->setCacheMode(Volume::Normal);
+    volume->setPrefetchMode(PrefetchMode::Normal);
 
-    //QVApplication* app = qApp;
     m_currentPageIndex--;
     if (m_currentPageIndex < 0) {
         m_currentPageIndex = 0;
@@ -702,7 +699,6 @@ bool ViewerSession::retreatOnePage()
 
 bool ViewerSession::reloadVisiblePages()
 {
-    //qDebug() << "ImageView::reloadVisiblePages()";
     VolumeHandle volumeHandle = activeVolumeHandle();
     Volume *volume = volumeHandle.get();
     if (!volume || m_currentPageIndex < 0 || m_currentPageIndex >= volume->pageCount()) {
@@ -796,7 +792,7 @@ void ViewerSession::updateReadProgress()
 void ViewerSession::sortActiveVolumePages(qvEnums::ImageSortBy sortBy)
 {
     if (Volume *volume = activeVolume()) {
-        volume->sort(sortBy);
+        volume->sortPages(sortBy);
         firstPage();
     }
 }

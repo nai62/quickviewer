@@ -56,7 +56,7 @@ public:
     bool retreatSpread();
     bool fastForwardPage();
     bool fastBackwardPage();
-    bool selectPage(int pageIndex, Volume::CacheMode cacheMode = Volume::Normal);
+    bool selectPage(int pageIndex, PrefetchMode prefetchMode = PrefetchMode::Normal);
     bool firstPage();
     bool lastPage();
     bool advanceOnePage();
@@ -170,7 +170,7 @@ signals:
      */
     void initialImageDisplayFinished();
 public slots:
-    void handleVolumeEnumerationFinished();
+    void handleVolumePageListLoaded();
     void handleSlideShowStarted();
     void handleSlideShowStopped();
 

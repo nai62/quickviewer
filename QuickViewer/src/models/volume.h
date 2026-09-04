@@ -17,31 +17,21 @@ class VolumeLoader;
  * @brief The Volume class
  *
  * This class represents one volume (folder or archive).
- * Image pre-reading is performed by the prefetch algorithm specified by CacheMode.
+ * Image pre-reading is performed by the selected PrefetchMode algorithm.
  * Images in Volume are listed in advance and can be opened with numbers or subpaths.
  * Loaded images are kept in a least-recently-used cache.
  */
 class Volume : public QObject
 {
     Q_OBJECT
-    //    Q_DISABLE_COPY(IFileVolume)
 public:
-    using CacheMode = PrefetchMode;
-    static constexpr CacheMode Normal = CacheMode::Normal;
-    static constexpr CacheMode NormalForward = CacheMode::NormalForward;
-    static constexpr CacheMode NormalBackward = CacheMode::NormalBackward;
-    static constexpr CacheMode FastForward = CacheMode::FastForward;
-    static constexpr CacheMode FastBackward = CacheMode::FastBackward;
-    static constexpr CacheMode CoverOnly = CacheMode::CoverOnly;
-    static constexpr CacheMode CreateThumbnail = CacheMode::CreateThumbnail;
-
     using ImageLoadFuture = QFuture<ImageContent>;
 
     explicit Volume(QObject *parent, IFileLoader *loader);
     ~Volume();
-    void enumerate();
-    bool isEnumerated() { return m_enumerated; }
-    ImageContent getImageBeforeEnumeration(QString subfileName);
+    void loadPageList();
+    bool isPageListLoaded() { return m_pageListLoaded; }
+    ImageContent loadImageBeforePageList(QString subfileName);
     IFileLoader *fileLoader() { return m_loader; }
 
     static ImageContent futureLoadImageFromFileVolume(
@@ -54,8 +44,8 @@ public:
     bool isArchive() const { return m_loader && m_loader->isArchive(); }
     bool hasSubDirectories() const { return m_loader && m_loader->hasSubDirectories(); }
 
-    void sort(qvEnums::ImageSortBy sortBy);
-    void sortForReady(qvEnums::ImageSortBy sortBy);
+    void sortPages(qvEnums::ImageSortBy sortBy);
+    void applyPageSort(qvEnums::ImageSortBy sortBy);
     void startSlideShow();
     void stopSlideShow();
 
@@ -103,12 +93,12 @@ public:
         }
         return QDir(m_loader->volumePath()).absoluteFilePath(m_pageNames[pageIndex]);
     }
-    void setCacheMode(CacheMode cacheMode) { m_cacheMode = cacheMode; }
-    CacheMode cacheMode() const { return m_cacheMode; }
+    void setPrefetchMode(PrefetchMode prefetchMode) { m_prefetchMode = prefetchMode; }
+    PrefetchMode prefetchMode() const { return m_prefetchMode; }
 
     const ImageContent currentImage()
     {
-        if (m_cacheMode == CreateThumbnail) {
+        if (m_prefetchMode == PrefetchMode::CreateThumbnail) {
             return m_currentImage;
         }
         return m_currentImageLoad.isValid() ? m_currentImageLoad.result() : ImageContent();
@@ -141,15 +131,10 @@ public:
      * @brief Returns the number of pages the volume has
      */
     int pageCount() { return m_pageNames.size(); }
-    /**
-     * @brief handleReady Called when the application is ready. First, or the image to be displayed next and its file path are emitted
-     */
-    void handleReady();
+    /** Prepares the current page load and applies the active prefetch plan. */
+    void preparePageLoads();
     int currentPageIndex() { return m_currentPageIndex; }
 
-    //    QPixmap getIndexedImage(int pageIndex);
-    //    QString getIndexedImageName(int pageIndex) { return m_pageNames[pageIndex]; }
-    //    QString currentImageName() const { return m_pageNames[m_currentPageIndex]; }
     const ImageContent pageAt(int pageIndex);
     bool openedWithSpecifiedImageFile() { return m_openedWithSpecifiedImageFile; }
     void setOpenedWithSpecifiedImageFile(bool openedWithSpecifiedImageFile) { m_openedWithSpecifiedImageFile = openedWithSpecifiedImageFile; }
@@ -157,10 +142,10 @@ public:
     void moveToThread(QThread *targetThread);
 
 signals:
-    void enumerationFinished();
+    void pageListLoaded();
 
 public slots:
-    void handleEnumerationFinished();
+    void handlePageListLoaded();
 
 private:
     ImageLoadFuture scheduleImageLoad(const QString &path, const QSize &pageSize, bool requiredForDisplay);
@@ -180,9 +165,9 @@ private:
 
     QSharedPointer<ImageLoadContext> m_loadContext;
     IFileLoader *m_loader;
-    CacheMode m_cacheMode;
+    PrefetchMode m_prefetchMode;
     QSize m_viewportSize;
-    bool m_enumerated;
+    bool m_pageListLoaded;
     bool m_openedWithSpecifiedImageFile;
     QString m_volumePath;
 
