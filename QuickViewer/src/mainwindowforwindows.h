@@ -13,6 +13,9 @@ public:
     void setWindowTop(bool signalOnly) override;
     void setMailAttachment(QString path) override;
     bool eventFilter(QObject *obj, QEvent *event) override;
+
+protected:
+    bool setStartupWindowCloaked(bool cloaked) override;
 };
 
 #endif // MAINWINDOWFORWINDOWS_H

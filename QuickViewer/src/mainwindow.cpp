@@ -29,7 +29,8 @@ MainWindow::MainWindow(QWidget *parent)
       m_viewerWindowStateMaximized(false),
       m_sliderChanging(false),
       m_onWindowClosing(false),
-      m_revealInitialWindow(true)
+      m_revealInitialWindow(true),
+      m_startupWindowCloaked(false)
       //    , contextMenu(this)
       ,
       m_pageManager(this),
@@ -304,16 +305,22 @@ void MainWindow::initializeStartup()
         setWindowFlag(Qt::WindowStaysOnTopHint);
     }
 
-    // Restore the initial window state before the first visible frame.
+    // Restore all non-native state before creating the startup window.
     if (qApp->BeginAsFullscreen()) {
         if (qApp->HideMouseCursorInFullscreen()) {
             ui->graphicsView->setCursor(Qt::BlankCursor);
         }
+    } else if (qApp->RestoreWindowState()) {
+        restoreState(qApp->WindowState());
+    }
+
+    // Opacity is only a fallback on Windows: changing a layered window back
+    // to opaque is not atomic with DWM composition. Cloaking keeps the native
+    // window out of composition until its normal surface has been repainted.
+    m_startupWindowCloaked = setStartupWindowCloaked(true);
+    if (qApp->BeginAsFullscreen()) {
         showFullScreen();
     } else {
-        if (qApp->RestoreWindowState()) {
-            restoreState(qApp->WindowState());
-        }
         show();
     }
     if (isFullScreen()) {
@@ -331,9 +338,13 @@ void MainWindow::initializeStartup()
         setStayOnTop(true);
     }
 
-    // Finish all synchronous startup work before this timer runs. Paint once
-    // while transparent, then repaint after making the window opaque because
-    // Qt invalidates the native surface when it removes WS_EX_LAYERED.
+    // Settle the initial geometry now. Startup panels are added after this
+    // returns, when the splitter already has its final available width.
+    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+
+    // The timers run after the remaining synchronous startup work. Paint the
+    // final layout, switch to the normal surface while still cloaked, and only
+    // then let DWM compose the completed window.
     QTimer::singleShot(0, this, [this]() {
         if (!m_revealInitialWindow) {
             return;
@@ -349,11 +360,20 @@ void MainWindow::initializeStartup()
             }
             setWindowOpacity(1.0);
             repaint();
-            m_revealInitialWindow = false;
+            QTimer::singleShot(0, this, [this]() {
+                if (!m_revealInitialWindow) {
+                    return;
+                }
+                if (m_startupWindowCloaked) {
+                    setStartupWindowCloaked(false);
+                    m_startupWindowCloaked = false;
+                }
+                m_revealInitialWindow = false;
 
-            // Give the painted frame back to the event loop before loading a
-            // potentially blocking image or archive.
-            QTimer::singleShot(0, this, &MainWindow::loadStartupVolume);
+                // Give the completed frame back to the event loop before a
+                // potentially blocking image or archive load.
+                QTimer::singleShot(0, this, &MainWindow::loadStartupVolume);
+            });
         });
     });
 }

@@ -5,12 +5,39 @@
 #include "mainwindowforwindows.h"
 
 #include <Windows.h>
+#include <dwmapi.h>
 #include <mapi.h>
 #include <Shellapi.h>
 
 MainWindowForWindows::MainWindowForWindows(QWidget *parent)
     : MainWindow(parent)
 {}
+
+bool MainWindowForWindows::setStartupWindowCloaked(bool cloaked)
+{
+    using DwmSetWindowAttributeFunction = HRESULT(WINAPI *)(HWND, DWORD, LPCVOID, DWORD);
+    using DwmFlushFunction = HRESULT(WINAPI *)();
+    QLibrary dwmapi("dwmapi");
+    auto setWindowAttribute = reinterpret_cast<DwmSetWindowAttributeFunction>(dwmapi.resolve("DwmSetWindowAttribute"));
+    auto flush = reinterpret_cast<DwmFlushFunction>(dwmapi.resolve("DwmFlush"));
+    if (!setWindowAttribute) {
+        qWarning() << "DwmSetWindowAttribute is unavailable";
+        return false;
+    }
+
+    const auto hwnd = reinterpret_cast<HWND>(winId());
+    const BOOL value = cloaked ? TRUE : FALSE;
+    if (!cloaked && flush) {
+        flush();
+    }
+    const HRESULT result = setWindowAttribute(hwnd, DWMWA_CLOAK, &value, sizeof(value));
+    if (FAILED(result)) {
+        qWarning() << "Failed to" << (cloaked ? "cloak" : "uncloak")
+                   << "the startup window:" << Qt::hex << result;
+        return false;
+    }
+    return true;
+}
 
 bool MainWindowForWindows::moveToTrash(QString path)
 {

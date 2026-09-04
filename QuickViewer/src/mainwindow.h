@@ -77,6 +77,7 @@ public:
     void createRetouchWindow(bool docked);
 
 protected:
+    virtual bool setStartupWindowCloaked(bool) { return false; }
     void dragEnterEvent(QDragEnterEvent *e) override;
     void dropEvent(QDropEvent *e) override;
     //    void paintEvent( QPaintEvent *event ) override;
@@ -224,6 +225,7 @@ protected:
     bool m_sliderChanging;
     bool m_onWindowClosing;
     bool m_revealInitialWindow;
+    bool m_startupWindowCloaked;
 
     /**
      * @brief m_contextMenu Define on the context menu mainwindow.ui for the main screen and separate at startup
