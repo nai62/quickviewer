@@ -30,6 +30,7 @@ cd /d "%QV_BUILD_DIR%"
 if errorlevel 1 exit /b 2
 
 if /I "%~1"=="--tests-only" goto run_tests
+if /I "%~1"=="--build-viewer-only" goto build_viewer_incremental
 if /I "%~1"=="--viewer-only" (
     set "PATH=%QV_QT_DIR%\bin;%QV_BUILD_DIR%\lib;%PATH%"
     set "QV_TEST_FAILED=0"
@@ -38,7 +39,13 @@ if /I "%~1"=="--viewer-only" (
     exit /b 0
 )
 if /I "%~1"=="--release-only" goto build_release
+if /I "%~1"=="--full" goto build_debug_full
 
+echo ERROR: Select an explicit verification mode.
+echo Usage: %~nx0 --build-viewer-only ^| --viewer-only [test-function] ^| --tests-only ^| --full ^| --release-only
+exit /b 2
+
+:build_debug_full
 echo === Regenerating Debug build ===
 "%QV_QT_DIR%\bin\qmake.exe" -r "%QV_SOURCE_DIR%\QVproject.pro" CONFIG+=debug CONFIG-=release
 if errorlevel 1 exit /b 2
@@ -49,6 +56,27 @@ if errorlevel 1 exit /b 2
 call :stage_translations
 if errorlevel 1 exit /b 2
 goto run_tests
+
+:build_viewer_incremental
+if not defined QV_JOM set "QV_JOM=C:\Qt\Tools\QtCreator\bin\jom\jom.exe"
+if not defined QV_JOBS set "QV_JOBS=8"
+if not exist "%QV_JOM%" (
+    echo ERROR: jom not found: %QV_JOM%
+    exit /b 2
+)
+if not exist "%QV_BUILD_DIR%\QuickViewer\Makefile.Debug" (
+    echo ERROR: Configured QuickViewer Debug build not found under: %QV_BUILD_DIR%
+    echo Run the full Debug build explicitly once to initialize it.
+    exit /b 2
+)
+echo === Incrementally building QuickViewer with %QV_JOBS% jobs ===
+cd /d "%QV_BUILD_DIR%\QuickViewer"
+if errorlevel 1 exit /b 2
+"%QV_JOM%" -j %QV_JOBS% /f Makefile.Debug
+if errorlevel 1 exit /b 2
+call :stage_translations
+if errorlevel 1 exit /b 2
+exit /b 0
 
 :build_release
 echo === Regenerating Release build ===

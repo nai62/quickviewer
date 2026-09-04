@@ -17,14 +17,21 @@ Release: C:\build\quickviewer-msvc2022_64-release
 Override `QV_QT_DIR`, `QV_VCVARS`, or `QV_BUILD_DIR` before invoking the
 script when the local installation differs.
 
-## Running from native Windows
+## Verification policy
+
+Use targeted builds and relevant tests by default. Run the complete automated
+suite or a complete Release build only when the user explicitly requests full
+verification. The runner therefore requires an explicit mode and rejects an
+invocation with no option.
+
+## Running full verification from native Windows
 
 From a Windows command prompt in the repository root, write the verbose build
 output to a log instead of streaming it to the terminal:
 
 ```bat
 if not exist C:\build mkdir C:\build
-call scripts\test-windows.cmd > C:\build\quickviewer-test.log 2>&1
+call scripts\test-windows.cmd --full > C:\build\quickviewer-test.log 2>&1
 set "QV_TEST_EXIT=%ERRORLEVEL%"
 findstr /n /i /c:"Totals:" /c:"All tests passed" /c:": error " /c:"fatal error" /c:"FAILED" /c:"ERROR:" C:\build\quickviewer-test.log
 echo Exit code: %QV_TEST_EXIT%
@@ -32,6 +39,50 @@ echo Exit code: %QV_TEST_EXIT%
 
 The saved exit code is authoritative. The filtered output is only a concise
 summary; inspect the log around the first error if the exit code is nonzero.
+
+## Fast incremental viewer build
+
+Use the viewer-only incremental build during normal edit/build cycles. It does
+not rerun recursive qmake, rebuild unrelated libraries or tests, or execute the
+test suite. It uses the Debug build already configured under `QV_BUILD_DIR` and
+builds stale QuickViewer objects in parallel with `jom`:
+
+```bat
+scripts\test-windows.cmd --build-viewer-only
+```
+
+The default `jom` location is
+`C:\Qt\Tools\QtCreator\bin\jom\jom.exe`, and the default parallelism is eight
+jobs. Override either when needed:
+
+```bat
+set "QV_JOM=C:\path\to\jom.exe"
+set "QV_JOBS=12"
+scripts\test-windows.cmd --build-viewer-only
+```
+
+This mode requires an existing configured Debug build. If
+`%QV_BUILD_DIR%\QuickViewer\Makefile.Debug` is missing, initialize the build by
+running the full Debug build explicitly once.
+
+From WSL, keep the source tree on the WSL filesystem and the build directory on
+the Windows filesystem. Invoke the same incremental mode through `cmd.exe`:
+
+```bash
+repo_win_path="$(wslpath -w "$PWD")"
+(
+  cd /mnt/c
+  cmd.exe /d /c pushd "$repo_win_path" '&&' call \
+    'scripts\test-windows.cmd' --build-viewer-only
+)
+```
+
+Running MSVC against a WSL-hosted source tree still has cross-filesystem
+overhead. Keeping the incremental command scoped to the QuickViewer project
+avoids recursively checking every repository target and is the preferred
+day-to-day workflow. Use a Windows-hosted clone only if this targeted build is
+still unacceptably slow, since WSL-side Git and source-search operations can be
+slower under `/mnt/c`.
 
 ## Running from WSL
 
@@ -47,7 +98,8 @@ mkdir -p /mnt/c/build
 (
   cd /mnt/c
   cmd.exe /d /c pushd "$repo_win_path" '&&' call \
-    'scripts\test-windows.cmd' '>' 'C:\build\quickviewer-test.log' '2>&1'
+    'scripts\test-windows.cmd' --full \
+    '>' 'C:\build\quickviewer-test.log' '2>&1'
 )
 build_status=$?
 rg -n -i 'Totals:|All tests passed|: error |fatal error|FAILED|ERROR:' \
@@ -83,13 +135,18 @@ exit code, test totals, and bounded error context to their model context.
 
 ## Verification modes
 
-With no option, the runner regenerates the Debug qmake build, compiles all
-targets, stages the application translations, and runs every expected QtTest
-executable. The command below shows the direct form; use the logged form above
-for normal verification:
+The commands in this section are not part of the default edit/build loop. Run
+the complete automated suite or the complete Release build only when the user
+explicitly requests full verification. Otherwise, build the affected target
+and run only the relevant tests.
+
+With `--full`, the runner performs full verification: it regenerates the Debug
+qmake build, compiles all targets, stages the application translations, and
+runs every expected QtTest executable. Use the logged form above when full
+verification was explicitly requested:
 
 ```bat
-scripts\test-windows.cmd
+scripts\test-windows.cmd --full
 ```
 
 A missing test executable is a failure. Use the process exit code and current
@@ -115,9 +172,9 @@ scripts\test-windows.cmd --viewer-only
 scripts\test-windows.cmd --viewer-only fittingModeRelayoutsRenderedPage
 ```
 
-These commands speed up iteration but do not replace the complete verification
-required before handoff. Under WSL, pass the same option after the quoted
-script path in the `cmd.exe` command shown above.
+Under WSL, pass the same option after the quoted script path in the `cmd.exe`
+command shown above. Report exactly which targeted tests were run; do not imply
+that unrequested full verification was performed.
 
 ## C++ lint
 
