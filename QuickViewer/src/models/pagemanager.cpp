@@ -581,8 +581,6 @@ bool PageManager::prevPage()
         m_currentPage = 0;
     }
 
-    bookProgress();
-
     selectPage(m_currentPage, VolumeManager::NormalBackward);
     return true;
 }
@@ -637,6 +635,7 @@ bool PageManager::selectPage(int pageIndex, VolumeManager::CacheMode cacheMode)
     m_currentPage = pageIndex;
 
     reloadCurrentPage();
+    bookProgress();
     emit pageChanged();
     return true;
 }
@@ -676,6 +675,7 @@ bool PageManager::nextOnlyOnePage()
         m_currentPage = volume->size() - 1;
     }
     reloadCurrentPage();
+    bookProgress();
     emit pageChanged();
     return true;
 }

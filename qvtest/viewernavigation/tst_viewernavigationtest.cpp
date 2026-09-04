@@ -100,6 +100,38 @@ private slots:
         QVERIFY(view.renderedPageMetrics().notationalScaleAt(0) < 1.0);
     }
 
+    void selectedPageIsRestoredAsReadProgress()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 4; ++page) {
+            QImage image(16, 16, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 60, 255, 255));
+            QVERIFY(image.save(directory.filePath(
+                QString("page-%1.bmp").arg(page))));
+        }
+
+        qApp->setOpenVolumeWithProgress(false);
+        {
+            PageManager manager(nullptr);
+            QVERIFY(manager.loadVolume(directory.path()));
+            QVERIFY(manager.selectPage(2));
+            QCOMPARE(manager.currentPage(), 2);
+        }
+
+        const QString volumePath = QDir::fromNativeSeparators(directory.path());
+        QVERIFY(qApp->bookshelfManager()->contains(volumePath));
+        const BookProgress progress = qApp->bookshelfManager()->at(volumePath);
+        QCOMPARE(progress.Current, 2);
+        QCOMPARE(progress.CurrenPage, QString("page-2.bmp"));
+
+        qApp->setOpenVolumeWithProgress(true);
+        PageManager restoredManager(nullptr);
+        QVERIFY(restoredManager.loadVolume(directory.path()));
+        QCOMPARE(restoredManager.currentPage(), 2);
+        QCOMPARE(restoredManager.currentPageName(), QString("page-2.bmp"));
+    }
+
     void visiblePagesAreReadOnlySnapshots()
     {
         PageManager manager(nullptr);
