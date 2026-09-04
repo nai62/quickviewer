@@ -36,7 +36,7 @@ static QFuture<ImageContent> readyImageFuture(ImageContent content)
 VolumeManager::VolumeManager(QObject *parent, IFileLoader *loader)
     : QObject(parent),
       m_cnt(0),
-      m_imageCache(qApp->MaxImagesCache()),
+      m_imageLoadCache(qApp->MaxImagesCache()),
       m_loadContext(new ImageLoadContext(loader)),
       m_loader(loader),
       m_cacheMode(CacheMode::Normal),
@@ -50,11 +50,11 @@ VolumeManager::VolumeManager(QObject *parent, IFileLoader *loader)
 
 VolumeManager::~VolumeManager()
 {
-    m_imageCache.clear();
+    m_imageLoadCache.clear();
     m_loader = nullptr;
 }
 
-VolumeManager::future_image VolumeManager::scheduleImageLoad(
+VolumeManager::ImageLoadFuture VolumeManager::scheduleImageLoad(
     const QString &path, const QSize &pageSize, bool requiredForDisplay)
 {
     const QSharedPointer<ImageLoadContext> context = m_loadContext;
@@ -74,7 +74,7 @@ VolumeManager::future_image VolumeManager::scheduleImageLoad(
         futureLoadImageFromFileVolume(context, path, pageSize));
 }
 
-VolumeManager::future_image VolumeManager::scheduleResize(
+VolumeManager::ImageLoadFuture VolumeManager::scheduleResize(
     ImageContent content, const QSize &pageSize)
 {
     auto submission = imagePrefetchExecutor().submit(
@@ -103,9 +103,9 @@ void VolumeManager::enumerate()
 ImageContent VolumeManager::getImageBeforeEnumeration(QString subfileName)
 {
     m_subfilename = subfileName;
-    m_currentCacheSync = VolumeManager::futureLoadImageFromFileVolume(m_loadContext, subfileName, QSize());
+    m_currentImage = VolumeManager::futureLoadImageFromFileVolume(m_loadContext, subfileName, QSize());
     enumerate();
-    return m_currentCacheSync;
+    return m_currentImage;
 }
 
 void VolumeManager::handleEnumerationFinished()
@@ -115,7 +115,7 @@ void VolumeManager::handleEnumerationFinished()
     // }
     const int index = m_filelist.indexOf(m_subfilename);
     if (index >= 0) {
-        m_imageCache.insert(index, readyImageFuture(m_currentCacheSync));
+        m_imageLoadCache.insert(index, readyImageFuture(m_currentImage));
         findImageByIndex(index);
     }
     setCacheMode(VolumeManager::Normal);
@@ -213,7 +213,7 @@ void VolumeManager::sortForReady(qvEnums::ImageSortBy sortBy)
         break;
     }
     m_cnt = 0;
-    m_imageCache.clear();
+    m_imageLoadCache.clear();
 }
 
 void VolumeManager::startSlideShow()
@@ -227,7 +227,7 @@ void VolumeManager::startSlideShow()
     std::mt19937 g(rd());
     std::shuffle(m_randomfilelist.begin(), m_randomfilelist.end(), g);
     m_cnt = 0;
-    m_imageCache.clear();
+    m_imageLoadCache.clear();
     handleReady();
 }
 
@@ -238,7 +238,7 @@ void VolumeManager::stopSlideShow()
     }
     m_randomfilelist.clear();
     m_cnt = 0;
-    m_imageCache.clear();
+    m_imageLoadCache.clear();
     handleReady();
 }
 
@@ -270,15 +270,15 @@ void VolumeManager::handleReady()
     //    qDebug() << "handleReady: m_cnt" << m_cnt;
     switch (m_cacheMode) {
     case CacheMode::CreateThumbnail:
-        m_currentCacheSync = futureLoadImageFromFileVolume(m_loadContext, m_filelist[0], QSize());
+        m_currentImage = futureLoadImageFromFileVolume(m_loadContext, m_filelist[0], QSize());
         return;
     case CacheMode::CoverOnly:
         for (int cnt : PrefetchPlanner::indexes(
                  CacheMode::Normal, m_cnt, m_filelist.size(), 2)) {
-            const future_image future = scheduleImageLoad(
+            const ImageLoadFuture future = scheduleImageLoad(
                 m_filelist[cnt], QSize(), cnt == m_cnt);
             if (future.isValid()) {
-                m_imageCache.insert(cnt, future);
+                m_imageLoadCache.insert(cnt, future);
             }
         }
         return;
@@ -288,50 +288,47 @@ void VolumeManager::handleReady()
     const QList<int> indexes = PrefetchPlanner::indexes(
         m_cacheMode, m_cnt, m_filelist.size(), qApp->MaxImagesCache());
     for (int cnt : indexes) {
-        if (qApp->Effect() < qvEnums::UsingFixedShader && m_imageCache.contains(cnt) && m_imageCache.object(cnt).isFinished()) {
-            ImageContent ic = m_imageCache.object(cnt).result();
-            if (ic.loadedImageSize.isValid()) {
+        ImageLoadFuture *cachedImageLoad = m_imageLoadCache.find(cnt);
+        if (qApp->Effect() < qvEnums::UsingFixedShader && cachedImageLoad && cachedImageLoad->isFinished()) {
+            ImageContent cachedImage = cachedImageLoad->result();
+            if (cachedImage.loadedImageSize.isValid()) {
                 const QSize pageSize = m_viewportSize;
-                QSize resized = ic.exifInfo.Orientation == 6 || ic.exifInfo.Orientation == 8 ? QSize(pageSize.height(), pageSize.width()) : pageSize;
-                resized.setWidth(ic.loadedImageSize.width() * resized.height() / ic.loadedImageSize.height());
+                QSize resized = cachedImage.exifInfo.Orientation == 6 || cachedImage.exifInfo.Orientation == 8 ? QSize(pageSize.height(), pageSize.width()) : pageSize;
+                resized.setWidth(cachedImage.loadedImageSize.width() * resized.height() / cachedImage.loadedImageSize.height());
 
-                if (ic.resizedImage.size() != resized && !ic.loadedImage.isNull()) {
-                    qDebug() << ic.resizedImage.size() << resized;
-                    const future_image future = scheduleResize(
-                        ic, pageSize);
+                if (cachedImage.resizedImage.size() != resized && !cachedImage.loadedImage.isNull()) {
+                    qDebug() << cachedImage.resizedImage.size() << resized;
+                    const ImageLoadFuture future = scheduleResize(
+                        cachedImage, pageSize);
                     if (future.isValid()) {
-                        m_imageCache.insert(cnt, future);
+                        m_imageLoadCache.insert(cnt, future);
                     }
                 }
             }
         }
-        if (m_imageCache.checkShouldBeInserted(cnt)) {
+        if (!m_imageLoadCache.touch(cnt)) {
             //            qDebug() << "handleReady()" << m_filelist[cnt];
             const QSize pageSize = qApp->Effect() < qvEnums::UsingFixedShader
                                        ? m_viewportSize
                                        : QSize();
-            const future_image future = scheduleImageLoad(
+            const ImageLoadFuture future = scheduleImageLoad(
                 getIndexedFileName(cnt), pageSize, cnt == m_cnt);
             if (future.isValid()) {
-                m_imageCache.insertNoChecked(cnt, future);
-            } else {
-                m_imageCache.remove(cnt);
+                m_imageLoadCache.insert(cnt, future);
             }
         }
     }
-    m_currentCache = m_imageCache.object(m_cnt);
+    ImageLoadFuture *currentImageLoad = m_imageLoadCache.find(m_cnt);
+    m_currentImageLoad = currentImageLoad ? *currentImageLoad : ImageLoadFuture();
 }
 
 const ImageContent VolumeManager::getIndexedImageContent(int idx)
 {
-    if (idx < 0 || idx >= m_filelist.size() || !m_imageCache.contains(idx)) {
+    if (idx < 0 || idx >= m_filelist.size()) {
         return ImageContent();
     }
-    //    future_image cache = m_imageCache[idx];
-    future_image &cache = m_imageCache.object(idx);
-    //    if(!cache.isFinished())
-    //        cache.waitForFinished();
-    return cache.isValid() ? cache.result() : ImageContent();
+    ImageLoadFuture *imageLoad = m_imageLoadCache.find(idx);
+    return imageLoad && imageLoad->isValid() ? imageLoad->result() : ImageContent();
 }
 
 void VolumeManager::moveToThread(QThread *targetThread)
