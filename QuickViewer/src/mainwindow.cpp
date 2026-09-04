@@ -48,6 +48,13 @@ MainWindow::MainWindow(QWidget *parent)
     }
     setWindowOpacity(0.0);
 
+    connect(ui->catalogSplitter, &QSplitter::splitterMoved, this, [this]() {
+        if (!qApp->SaveFolderViewWidth() || !m_folderWindow || m_folderWindow->parentWidget() != ui->catalogSplitter) {
+            return;
+        }
+        qApp->setFolderViewWidth(ui->catalogSplitter->sizes().constFirst());
+    });
+
     m_menubarFontSize = ui->menuBar->font().pointSize();
     m_pageSliderHeight = ui->pageSlider->height();
     m_imageString.initialize(&m_pageManager, [view = ui->graphicsView] {

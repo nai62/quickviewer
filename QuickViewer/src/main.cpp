@@ -64,6 +64,7 @@ int main(int argc, char *argv[])
 #else
         MainWindow w;
 #endif
+        w.initializeStartup();
         QString dbpath = app.CatalogDatabasePath();
         ThumbnailManager manager(&w, dbpath);
         w.setThumbnailManager(&manager);
@@ -75,9 +76,6 @@ int main(int argc, char *argv[])
                 w.loadVolumeWithAssoc(string);
             }
         });
-        // initializeStartup() schedules the first visible frame, so call it
-        // after every synchronous startup component has been constructed.
-        w.initializeStartup();
         result = app.exec();
     }
     return result;
