@@ -39,7 +39,7 @@ SOURCES += \
     ../../QuickViewer/src/models/loupecontroller.cpp \
     ../../QuickViewer/src/models/pagecontent.cpp \
     ../../QuickViewer/src/models/renderedpages.cpp \
-    ../../QuickViewer/src/models/pagemanager.cpp \
+    ../../QuickViewer/src/models/viewersession.cpp \
     ../../QuickViewer/src/models/prefetchplanner.cpp \
     ../../QuickViewer/src/models/qvapplication.cpp \
     ../../QuickViewer/src/models/qvimagemetadata.cpp \
@@ -66,7 +66,7 @@ HEADERS += \
     ../../QuickViewer/src/models/lrucache.h \
     ../../QuickViewer/src/models/loupecontroller.h \
     ../../QuickViewer/src/models/pagecontent.h \
-    ../../QuickViewer/src/models/pagemanager.h \
+    ../../QuickViewer/src/models/viewersession.h \
     ../../QuickViewer/src/models/prefetchplanner.h \
     ../../QuickViewer/src/models/qvapplication.h \
     ../../QuickViewer/src/models/qvimagemetadata.h \

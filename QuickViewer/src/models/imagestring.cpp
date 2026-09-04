@@ -3,19 +3,19 @@
 #include "qvapplication.h"
 
 ImageString::ImageString()
-    : m_pageManager(nullptr)
+    : m_viewerSession(nullptr)
 {
 }
 
-void ImageString::initialize(PageManagerProtocol *pm, MetricsProvider metricsProvider)
+void ImageString::initialize(PageInfoProvider *pm, MetricsProvider metricsProvider)
 {
-    m_pageManager = pm;
+    m_viewerSession = pm;
     m_metricsProvider = std::move(metricsProvider);
 }
 
 QString ImageString::getTitleBarText()
 {
-    if (!m_pageManager || m_pageManager->size() == 0) {
+    if (!m_viewerSession || m_viewerSession->pageCount() == 0) {
         return QString("%1 v%2").arg(qApp->applicationName()).arg(qApp->applicationVersion());
     }
     return QString("%1 - %2")
@@ -59,10 +59,10 @@ QString ImageString::getFormatUsage()
 
 QString ImageString::formatString(QString fmt)
 {
-    if (!m_pageManager) {
+    if (!m_viewerSession) {
         return QString();
     }
-    const VisiblePages visiblePages = m_pageManager->visiblePages();
+    const VisiblePages visiblePages = m_viewerSession->visiblePages();
     const RenderedPageMetrics metrics = m_metricsProvider
                                             ? m_metricsProvider()
                                             : RenderedPageMetrics();
@@ -95,13 +95,13 @@ QString ImageString::formatString(QString fmt)
         switch (c.toLatin1()) {
             // Volume name (only folder/archive name), e.g. 'Sample Book')
         case 'v': {
-            QFileInfo info(m_pageManager->volumePath());
+            QFileInfo info(m_viewerSession->volumePath());
             result << info.fileName();
             break;
         }
             // Volume full path, e.g. 'C:/Users/qv/Desktop/Sample Book'
         case 'V':
-            result << m_pageManager->volumePath();
+            result << m_viewerSession->volumePath();
             break;
             // Image file name (only file name), e.g. 'page01.jpg'
         case 'p': {
@@ -115,7 +115,7 @@ QString ImageString::formatString(QString fmt)
             break;
             // Image file full path in volume, e.g. 'C:/Users/qv/Desktop/Sample Book/subpath/page01.jpg'
         case 'Q': {
-            result << m_pageManager->currentPagePath();
+            result << m_viewerSession->currentPagePath();
             break;
         }
             // Image size, e.g. '1920x1080'
@@ -157,9 +157,9 @@ QString ImageString::formatString(QString fmt)
             // Current page number of the volume e.g. '33/100' or '33-34/100'
         case 'n': {
             if (pageCount == 2) {
-                result << QString("%1-%2/%3").arg(m_pageManager->currentPage() + 1).arg(m_pageManager->currentPage() + 2).arg(m_pageManager->size());
+                result << QString("%1-%2/%3").arg(m_viewerSession->currentPageIndex() + 1).arg(m_viewerSession->currentPageIndex() + 2).arg(m_viewerSession->pageCount());
             } else {
-                result << QString("%1/%2").arg(m_pageManager->currentPage() + 1).arg(m_pageManager->size());
+                result << QString("%1/%2").arg(m_viewerSession->currentPageIndex() + 1).arg(m_viewerSession->pageCount());
             }
             break;
         }

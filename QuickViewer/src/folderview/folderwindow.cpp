@@ -220,7 +220,7 @@ void FolderWindow::setFolderPath(QString path, bool showParent)
     m_itemModel.setVolumes(&m_volumes);
 
     if (showParent) {
-        handlePageManagerVolumeChanged(path);
+        handleViewerSessionVolumeChanged(path);
     }
 }
 
@@ -354,7 +354,7 @@ void FolderWindow::handleReloadButtonClicked()
     setFolderPath(m_currentPath, false);
 }
 
-void FolderWindow::handlePageManagerVolumeChanged(QString path)
+void FolderWindow::handleViewerSessionVolumeChanged(QString path)
 {
     QFileInfo info(QDir::toNativeSeparators(path));
     if (!info.exists() || m_currentPath != info.absolutePath()) {

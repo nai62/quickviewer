@@ -115,7 +115,7 @@ SOURCES += \
     src/models/boundedexecutor.cpp \
     src/models/pagecontent.cpp \
     src/models/renderedpages.cpp \
-    src/models/pagemanager.cpp \
+    src/models/viewersession.cpp \
     src/models/prefetchplanner.cpp \
     src/models/qvapplication.cpp \
     src/models/shadermanager.cpp \
@@ -164,7 +164,7 @@ HEADERS  += \
     src/models/imageloadcontext.h \
     src/models/loupecontroller.h \
     src/models/pagecontent.h \
-    src/models/pagemanager.h \
+    src/models/viewersession.h \
     src/models/latestresultdispatcher.h \
     src/models/prefetchplanner.h \
     src/models/qvapplication.h \

@@ -6,7 +6,7 @@
 
 #include "volumemanager.h"
 #include "exifdialog.h"
-#include "models/pagemanager.h"
+#include "models/viewersession.h"
 #include "models/loupecontroller.h"
 #include "models/shadermanager.h"
 #include "models/renderedpages.h"
@@ -33,7 +33,7 @@ public:
     typedef QPair<uint, uint> ZoomFraction;
     explicit ImageView(QWidget *parent = Q_NULLPTR);
     void setRenderer(RendererType type = Native);
-    void setPageManager(PageManager *manager);
+    void setViewerSession(ViewerSession *manager);
     Qt::AnchorPoint hoverState() const { return m_hoverState; }
     void setResizeEventsSkipped(bool skipped) { m_skipResizeEvent = skipped; }
     bool isSlideShow() const { return m_slideshowTimer != nullptr; }
@@ -149,7 +149,7 @@ private:
     QCursor m_loupeCursor;
     LoupeController m_loupeController;
 
-    PageManager *m_pageManager;
+    ViewerSession *m_viewerSession;
     ShaderManager m_shaderManager;
     QTimer *m_slideshowTimer;
 
