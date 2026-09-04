@@ -19,7 +19,7 @@ QVApplication::QVApplication(int &argc, char **argv)
       m_effect(qvEnums::Bilinear),
       m_translator(nullptr),
       m_settings(nullptr),
-      m_bookshelfManager(nullptr),
+      m_readProgressStore(nullptr),
       m_languageSelector("quickviewer_", getTranslationPath()),
       m_qtbaseLanguageSelector("qt_", getTranslationPath())
 #if defined(Q_OS_WIN)
@@ -561,7 +561,7 @@ void QVApplication::loadSettings()
     QApplication::setStyleSheet(styleSheet);
     m_settings->endGroup();
 
-    m_bookshelfManager = new BookProgressManager(this);
+    m_readProgressStore = new ReadProgressStore(this);
 }
 
 void QVApplication::saveSettings()
@@ -718,6 +718,6 @@ void QVApplication::saveSettings()
 
     m_settings->sync();
     if (qApp->SaveReadProgress()) {
-        m_bookshelfManager->save();
+        m_readProgressStore->save();
     }
 }

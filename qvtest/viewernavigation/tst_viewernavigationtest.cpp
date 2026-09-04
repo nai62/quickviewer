@@ -120,16 +120,49 @@ private slots:
         }
 
         const QString volumePath = QDir::fromNativeSeparators(directory.path());
-        QVERIFY(qApp->bookshelfManager()->contains(volumePath));
-        const BookProgress progress = qApp->bookshelfManager()->at(volumePath);
-        QCOMPARE(progress.Current, 2);
-        QCOMPARE(progress.CurrenPage, QString("page-2.bmp"));
+        QVERIFY(qApp->readProgressStore()->contains(volumePath));
+        const ReadProgress progress = qApp->readProgressStore()->at(volumePath);
+        QCOMPARE(progress.resumePageIndex, 2);
+        QCOMPARE(progress.currentPageName, QString("page-2.bmp"));
 
         qApp->setOpenVolumeWithProgress(true);
         ViewerSession restoredManager(nullptr);
         QVERIFY(restoredManager.loadVolume(directory.path()));
         QCOMPARE(restoredManager.currentPageIndex(), 2);
         QCOMPARE(restoredManager.currentPageName(), QString("page-2.bmp"));
+    }
+
+    void readProgressKeepsLegacyIniKeys()
+    {
+        const QString volumePath = "read-progress-key-compatibility";
+        const ReadProgress progress = {
+            "Compatibility title",
+            volumePath,
+            "page-7.bmp",
+            12,
+            7,
+            false};
+        qApp->readProgressStore()->insert(volumePath, progress);
+        qApp->readProgressStore()->save();
+
+        QSettings settings(
+            qApp->getFilePathOfApplicationSetting(PROGRESS_INI),
+            QSettings::IniFormat);
+        bool found = false;
+        for (const QString &group : settings.childGroups()) {
+            settings.beginGroup(group);
+            if (settings.value("Path").toString() == volumePath) {
+                found = true;
+                QCOMPARE(settings.value("Title").toString(), QString("Compatibility title"));
+                QCOMPARE(settings.value("CurrenPage").toString(), QString("page-7.bmp"));
+                QCOMPARE(settings.value("Pages").toInt(), 12);
+                QCOMPARE(settings.value("Current").toInt(), 7);
+                QCOMPARE(settings.value("Completed").toBool(), false);
+                QVERIFY(!settings.contains("CurrentPage"));
+            }
+            settings.endGroup();
+        }
+        QVERIFY(found);
     }
 
     void pageAndSpreadNavigationKeepTheirExistingStepSizes()

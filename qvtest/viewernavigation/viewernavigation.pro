@@ -33,7 +33,7 @@ INCLUDEPATH += \
 SOURCES += \
     tst_viewernavigationtest.cpp \
     ../../QuickViewer/src/imageview.cpp \
-    ../../QuickViewer/src/models/bookprogressmanager.cpp \
+    ../../QuickViewer/src/models/readprogressstore.cpp \
     ../../QuickViewer/src/models/boundedexecutor.cpp \
     ../../QuickViewer/src/models/imagestring.cpp \
     ../../QuickViewer/src/models/loupecontroller.cpp \
@@ -59,7 +59,7 @@ SOURCES += \
 HEADERS += \
     ../../QuickViewer/src/qv_init.h \
     ../../QuickViewer/src/imageview.h \
-    ../../QuickViewer/src/models/bookprogressmanager.h \
+    ../../QuickViewer/src/models/readprogressstore.h \
     ../../QuickViewer/src/models/boundedexecutor.h \
     ../../QuickViewer/src/models/imagestring.h \
     ../../QuickViewer/src/models/latestresultdispatcher.h \

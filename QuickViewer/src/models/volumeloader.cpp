@@ -85,7 +85,7 @@ Volume *VolumeLoader::build(bool onlyCover)
     Volume::CacheMode mode = onlyCover ? Volume::CoverOnly : Volume::Normal;
     m_volume->setCacheMode(mode);
     if (Filenames.isEmpty()) {
-        checkBookProgress();
+        restoreReadProgress();
     } else if (subfilename.length() > 0) {
         m_volume->selectPageByName(subfilename);
     }
@@ -128,7 +128,7 @@ ImageContent VolumeLoader::thumbnail()
     if (!(m_volume = CreateVolume(nullptr, Path))) {
         return ImageContent();
     }
-    checkBookProgress();
+    restoreReadProgress();
     m_volume->setCacheMode(Volume::CreateThumbnail);
     m_volume->handleReady();
     auto ic = m_volume->currentImage();
@@ -136,13 +136,13 @@ ImageContent VolumeLoader::thumbnail()
     return ic;
 }
 
-void VolumeLoader::checkBookProgress()
+void VolumeLoader::restoreReadProgress()
 {
     // change page by progress.ini
     QString volumepath = QDir::fromNativeSeparators(m_volume->volumePath());
-    if (qApp->OpenVolumeWithProgress() && !m_volume->openedWithSpecifiedImageFile() && qApp->bookshelfManager()->contains(volumepath)) {
-        BookProgress book = qApp->bookshelfManager()->at(volumepath);
-        m_volume->selectPage(book.Current);
+    if (qApp->OpenVolumeWithProgress() && !m_volume->openedWithSpecifiedImageFile() && qApp->readProgressStore()->contains(volumepath)) {
+        ReadProgress progress = qApp->readProgressStore()->at(volumepath);
+        m_volume->selectPage(progress.resumePageIndex);
     }
     m_volume->moveToThread(QThread::currentThread());
 }

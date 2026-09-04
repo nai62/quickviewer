@@ -775,11 +775,11 @@ void ViewerSession::replaceVisiblePages(QVector<ImageContent> pages)
 void ViewerSession::updateReadProgress()
 {
     Volume *volume = activeVolume();
-    if (!volume || m_visiblePages.isEmpty() || !qApp->bookshelfManager()) {
+    if (!volume || m_visiblePages.isEmpty() || !qApp->readProgressStore()) {
         return;
     }
     QString path = QDir::fromNativeSeparators(volume->volumePath());
-    BookProgress book = {
+    ReadProgress progress = {
         QFileInfo(volume->volumePath()).fileName(),
         path,
         volume->pageNameAt(m_currentPageIndex),
@@ -787,10 +787,10 @@ void ViewerSession::updateReadProgress()
         m_currentPageIndex,
         false};
     if (m_currentPageIndex + m_visiblePages.size() >= pageCount()) {
-        book.Completed = true;
-        book.Current = 0;
+        progress.completed = true;
+        progress.resumePageIndex = 0;
     }
-    qApp->bookshelfManager()->insert(path, book);
+    qApp->readProgressStore()->insert(path, progress);
 }
 
 void ViewerSession::sortActiveVolumePages(qvEnums::ImageSortBy sortBy)

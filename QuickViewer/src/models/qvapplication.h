@@ -6,7 +6,7 @@
 #include <QtWidgets>
 
 #include "qv_init.h"
-#include "bookprogressmanager.h"
+#include "readprogressstore.h"
 #include "qlanguageselector.h"
 #include "qmousesequence.h"
 #include "qactionmanager.h"
@@ -266,7 +266,7 @@ public:
     void setHomeFolderPath(QString path) { m_homeFolderPath = path; }
     qvEnums::FolderViewSort FolderSortMode() { return m_folderSortMode; }
     void setFolderSortMode(qvEnums::FolderViewSort mode) { m_folderSortMode = mode; }
-    BookProgressManager *bookshelfManager() { return m_bookshelfManager; }
+    ReadProgressStore *readProgressStore() { return m_readProgressStore; }
     bool OpenVolumeWithProgress() { return m_openVolumeWithProgress; }
     void setOpenVolumeWithProgress(bool openVolumeWithProgress) { m_openVolumeWithProgress = openVolumeWithProgress; }
     bool ShowReadProgress() { return m_showReadProgress; }
@@ -473,7 +473,7 @@ private:
     QString m_uiTheme;
 
     QSettings *m_settings;
-    BookProgressManager *m_bookshelfManager;
+    ReadProgressStore *m_readProgressStore;
 
     QLanguageSelector m_languageSelector;
     QLanguageSelector m_qtbaseLanguageSelector;

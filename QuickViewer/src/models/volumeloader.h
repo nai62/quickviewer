@@ -46,7 +46,7 @@ public:
      */
     ImageContent thumbnail();
 
-    void checkBookProgress();
+    void restoreReadProgress();
     /**
      * @brief A factory function that returns an instance of IFileVolume from the path of the specified file or directory
      * @return An object that inherits the IFileVolume interface. It is null if generation failed

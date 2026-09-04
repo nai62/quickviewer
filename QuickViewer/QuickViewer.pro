@@ -111,7 +111,7 @@ SOURCES += \
     src/imageview.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
-    src/models/bookprogressmanager.cpp \
+    src/models/readprogressstore.cpp \
     src/models/boundedexecutor.cpp \
     src/models/pagecontent.cpp \
     src/models/renderedpages.cpp \
@@ -157,7 +157,7 @@ HEADERS  += \
     src/folderview/folderwindow.h \
     src/imageview.h \
     src/mainwindow.h \
-    src/models/bookprogressmanager.h \
+    src/models/readprogressstore.h \
     src/models/boundedexecutor.h \
     src/models/cursorscrollmapping.h \
     src/models/lrucache.h \
