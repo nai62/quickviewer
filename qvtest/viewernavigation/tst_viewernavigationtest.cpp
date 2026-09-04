@@ -238,7 +238,7 @@ private slots:
         QObject::connect(volume, &QObject::destroyed, this, [&destroyed] { destroyed = true; });
 
         VolumeHandle active = makeVolumeHandle(volume);
-        TimeOrderdCacheFutureSharedPtr<QString, VolumeManager> cache(1);
+        VolumeLoadCache cache(1);
         QString first = "first";
         QString second = "second";
         cache.insert(first, readyFuture(active));
