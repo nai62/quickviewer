@@ -209,7 +209,7 @@ win32 {
 }
 
 
-# PRECOMPILED_HEADER is temporarily disabled while auditing direct includes.
+PRECOMPILED_HEADER += src/pch.h
 
 FORMS    += \
     src/mainwindow.ui \
