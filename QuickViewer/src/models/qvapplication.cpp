@@ -2,13 +2,13 @@
 //#include <QtOpenGL>
 #include "fileloader7zarchive.h"
 
-#ifdef Q_OS_WIN
-#    include <shlobj.h>
-#endif
-
 #include "qvapplication.h"
 #include "qv_init.h"
 #include "ui_mainwindow.h"
+
+#ifdef Q_OS_WIN
+#    include <shlobj.h>
+#endif
 
 QVApplication::QVApplication(int &argc, char **argv)
     : QApplication(argc, argv),

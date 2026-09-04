@@ -180,7 +180,7 @@ HEADERS  += \
     src/optionsdialog.h \
     src/qv_init.h \
     src/renamedialog.h \
-    src/stdafx.h \
+    src/pch.h \
     src/widgets/flowlayout.h \
     src/widgets/pageslider.h \
     src/qlanguageselector/qlanguageselector.h \
@@ -209,10 +209,7 @@ win32 {
 }
 
 
-PRECOMPILED_HEADER += src/stdafx.h
-precompile_header:!isEmpty(PRECOMPILED_HEADER) {
-    DEFINES += USING_PCH
-}
+PRECOMPILED_HEADER += src/pch.h
 
 FORMS    += \
     src/mainwindow.ui \
