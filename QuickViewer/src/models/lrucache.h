@@ -21,6 +21,8 @@ struct DefaultEvictionHandler
  * Values are owned by the cache and should express their ownership through
  * RAII. EvictionHandler is invoked after a value is removed by replacement,
  * explicit removal, capacity eviction, or clear().
+ * find() does not update recency; call touch() explicitly when an access
+ * should mark an entry as recently used.
  */
 template <typename Key, typename Value, typename EvictionHandler = DefaultEvictionHandler>
 class LruCache
