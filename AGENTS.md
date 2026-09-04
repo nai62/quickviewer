@@ -21,9 +21,11 @@ These instructions apply to the entire repository.
 
 Follow the repository `TESTING.md` runbook for commands and environment details.
 
-- Logic or file-loading changes require the complete automated test suite.
-- Project/build-system or broadly shared changes also require a Release compile
-  and link.
+- Logic or file-loading changes require the relevant automated tests.
+- Project/build-system or broadly shared changes require a targeted compile and
+  link appropriate to the change.
+- Run the complete automated test suite or a complete Release compile and link
+  only when the user explicitly requests full verification.
 - Startup painting, fullscreen, OpenGL, input timing, and other GUI behavior
   require relevant automated tests plus explicit interactive Windows checks.
   If those checks were not performed, report them as remaining manual work.
