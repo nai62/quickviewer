@@ -29,7 +29,8 @@ MainWindow::MainWindow(QWidget *parent)
       m_viewerWindowStateMaximized(false),
       m_sliderChanging(false),
       m_onWindowClosing(false),
-      m_revealInitialFullscreen(false)
+      m_revealInitialWindow(true),
+      m_startupWindowCloaked(false)
       //    , contextMenu(this)
       ,
       m_pageManager(this),
@@ -46,8 +47,14 @@ MainWindow::MainWindow(QWidget *parent)
     if (!qApp->BeginAsFullscreen() && qApp->RestoreWindowState()) {
         restoreGeometry(qApp->WindowGeometry());
     }
-    m_revealInitialFullscreen = qApp->BeginAsFullscreen() || isFullScreen();
     setWindowOpacity(0.0);
+
+    connect(ui->catalogSplitter, &QSplitter::splitterMoved, this, [this]() {
+        if (!qApp->SaveFolderViewWidth() || !m_folderWindow || m_folderWindow->parentWidget() != ui->catalogSplitter) {
+            return;
+        }
+        qApp->setFolderViewWidth(ui->catalogSplitter->sizes().constFirst());
+    });
 
     m_menubarFontSize = ui->menuBar->font().pointSize();
     m_pageSliderHeight = ui->pageSlider->height();
@@ -288,14 +295,33 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->graphicsView, SIGNAL(slideShowStopped()), this, SLOT(handleSlideShowStopped()));
 
     setWindowTitle(QString("%1 v%2").arg(qApp->applicationName()).arg(qApp->applicationVersion()));
-    // WindowState Restoreing
+}
+
+void MainWindow::initializeStartup()
+{
+    const bool stayOnTop = qApp->StayOnTop();
+    if (stayOnTop) {
+        // Apply the portable flag before the native window is created.
+        setWindowFlag(Qt::WindowStaysOnTopHint);
+    }
+
+    // Restore all non-native state before creating the startup window.
     if (qApp->BeginAsFullscreen()) {
         if (qApp->HideMouseCursorInFullscreen()) {
             ui->graphicsView->setCursor(Qt::BlankCursor);
         }
-        showFullScreen();
     } else if (qApp->RestoreWindowState()) {
         restoreState(qApp->WindowState());
+    }
+
+    // Opacity is only a fallback on Windows: changing a layered window back
+    // to opaque is not atomic with DWM composition. Cloaking keeps the native
+    // window out of composition until its normal surface has been repainted.
+    m_startupWindowCloaked = setStartupWindowCloaked(true);
+    if (qApp->BeginAsFullscreen()) {
+        showFullScreen();
+    } else {
+        show();
     }
     if (isFullScreen()) {
         menuBar()->hide();
@@ -307,28 +333,53 @@ MainWindow::MainWindow(QWidget *parent)
         ui->graphicsView->refreshRenderedPages();
     }
 
-    if (!m_revealInitialFullscreen) {
-        // Build and paint a normal window before starting any potentially
-        // blocking image or archive load.
-        if (!isVisible()) {
-            show();
+    if (stayOnTop) {
+        // The Windows correction uses winId(), so run it only after show().
+        setStayOnTop(true);
+    }
+
+    // Settle the initial geometry now. Startup panels are added after this
+    // returns, when the splitter already has its final available width.
+    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+
+    // The timers run after the remaining synchronous startup work. Paint the
+    // final layout, switch to the normal surface while still cloaked, and only
+    // then let DWM compose the completed window.
+    QTimer::singleShot(0, this, [this]() {
+        if (!m_revealInitialWindow) {
+            return;
         }
-        QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
         if (layout()) {
             layout()->activate();
         }
         ui->graphicsView->refreshRenderedPages();
         repaint();
-        setWindowOpacity(1.0);
-    }
+        QTimer::singleShot(0, this, [this]() {
+            if (!m_revealInitialWindow) {
+                return;
+            }
+            setWindowOpacity(1.0);
+            repaint();
+            QTimer::singleShot(0, this, [this]() {
+                if (!m_revealInitialWindow) {
+                    return;
+                }
+                if (m_startupWindowCloaked) {
+                    setStartupWindowCloaked(false);
+                    m_startupWindowCloaked = false;
+                }
+                m_revealInitialWindow = false;
+
+                // Give the completed frame back to the event loop before a
+                // potentially blocking image or archive load.
+                QTimer::singleShot(0, this, &MainWindow::loadStartupVolume);
+            });
+        });
+    });
 }
 
-void MainWindow::initializeStartup()
+void MainWindow::loadStartupVolume()
 {
-    // Platform-specific virtual functions must be invoked after the most-derived
-    // MainWindow has finished construction.
-    handleStayOnTopActionTriggered(qApp->StayOnTop());
-
     // when drop a folder/archive icon to this app
     if (qApp->arguments().length() >= 2) {
         loadVolume(qApp->arguments().last());
@@ -341,40 +392,6 @@ void MainWindow::initializeStartup()
         loadVolume(bookmark, true);
         makeBookmarkMenu();
     }
-}
-
-void MainWindow::showEvent(QShowEvent *event)
-{
-    QMainWindow::showEvent(event);
-    if (!m_revealInitialFullscreen) {
-        return;
-    }
-
-    // Full-screen state and geometry are applied asynchronously by the native
-    // window system. Keep the initial designer-sized surface transparent until
-    // the full-screen show has crossed event-loop boundaries and been painted.
-    QTimer::singleShot(0, this, [this]() {
-        if (!m_revealInitialFullscreen) {
-            return;
-        }
-        if (!isFullScreen()) {
-            m_revealInitialFullscreen = false;
-            setWindowOpacity(1.0);
-            return;
-        }
-        if (layout()) {
-            layout()->activate();
-        }
-        ui->graphicsView->refreshRenderedPages();
-        repaint();
-        QTimer::singleShot(0, this, [this]() {
-            if (!m_revealInitialFullscreen) {
-                return;
-            }
-            m_revealInitialFullscreen = false;
-            setWindowOpacity(1.0);
-        });
-    });
 }
 
 MainWindow::~MainWindow()
@@ -1186,8 +1203,12 @@ void MainWindow::handleStayOnTopActionTriggered(bool checked)
         flags &= ~Qt::WindowStaysOnTopHint;
     }
 
-    bool full = isFullScreen();
+    const bool visible = isVisible();
+    const bool full = isFullScreen();
     setWindowFlags(flags);
+    if (!visible) {
+        return;
+    }
     if (!full) {
         show();
         return;

@@ -121,7 +121,12 @@ void FolderWindow::dropEvent(QDropEvent *e)
 void FolderWindow::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
-    qApp->setFolderViewWidth(event->size().width());
+    // Docked width is saved from QSplitter::splitterMoved. Ignore automatic
+    // layout resizes, which otherwise feed transient startup widths back into
+    // the next launch.
+    if (qApp->SaveFolderViewWidth() && isWindow() && isVisible()) {
+        qApp->setFolderViewWidth(event->size().width());
+    }
     resetPathLabel(event->size().width());
 }
 

@@ -77,12 +77,12 @@ public:
     void createRetouchWindow(bool docked);
 
 protected:
+    virtual bool setStartupWindowCloaked(bool) { return false; }
     void dragEnterEvent(QDragEnterEvent *e) override;
     void dropEvent(QDropEvent *e) override;
     //    void paintEvent( QPaintEvent *event ) override;
     void wheelEvent(QWheelEvent *e) override;
     void keyPressEvent(QKeyEvent *event) override;
-    void showEvent(QShowEvent *event) override;
     //    void contextMenuEvent(QContextMenuEvent *e) override;
     //    void mousePressEvent(QMouseEvent *e) override;
     void closeEvent(QCloseEvent *e) override;
@@ -216,12 +216,16 @@ private slots:
     void handleGraphicsViewFittingChanged(qvEnums::FitMode mode);
     void handleInitialImageDisplayFinished();
 
+private:
+    void loadStartupVolume();
+
 protected:
     Ui::MainWindow *ui;
     bool m_viewerWindowStateMaximized;
     bool m_sliderChanging;
     bool m_onWindowClosing;
-    bool m_revealInitialFullscreen;
+    bool m_revealInitialWindow;
+    bool m_startupWindowCloaked;
 
     /**
      * @brief m_contextMenu Define on the context menu mainwindow.ui for the main screen and separate at startup
