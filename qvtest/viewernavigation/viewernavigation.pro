@@ -45,7 +45,6 @@ SOURCES += \
     ../../QuickViewer/src/models/qvimagemetadata.cpp \
     ../../QuickViewer/src/models/qvmovie.cpp \
     ../../QuickViewer/src/models/shadermanager.cpp \
-    ../../QuickViewer/src/models/timeorderdcache.cpp \
     ../../QuickViewer/src/models/volumehandle.cpp \
     ../../QuickViewer/src/models/volumemanager.cpp \
     ../../QuickViewer/src/models/volumemanagerbuilder.cpp \
@@ -64,6 +63,7 @@ HEADERS += \
     ../../QuickViewer/src/models/boundedexecutor.h \
     ../../QuickViewer/src/models/imagestring.h \
     ../../QuickViewer/src/models/latestresultdispatcher.h \
+    ../../QuickViewer/src/models/lrucache.h \
     ../../QuickViewer/src/models/loupecontroller.h \
     ../../QuickViewer/src/models/pagecontent.h \
     ../../QuickViewer/src/models/pagemanager.h \
@@ -74,7 +74,6 @@ HEADERS += \
     ../../QuickViewer/src/models/renderedpages.h \
     ../../QuickViewer/src/models/renderedpagemetrics.h \
     ../../QuickViewer/src/models/shadermanager.h \
-    ../../QuickViewer/src/models/timeorderdcache.h \
     ../../QuickViewer/src/models/volumehandle.h \
     ../../QuickViewer/src/models/visiblepages.h \
     ../../QuickViewer/src/models/viewerstate.h \

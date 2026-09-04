@@ -3,11 +3,20 @@
 
 #include <QtGui>
 #include "latestresultdispatcher.h"
+#include "lrucache.h"
 #include "visiblepages.h"
 #include "viewerstate.h"
 #include "volumemanager.h"
 
 class VolumeManager;
+
+struct DeferVolumeLoadCleanup
+{
+    void operator()(QFuture<VolumeHandle> evictedLoad) const;
+};
+
+using VolumeLoadCache = LruCache<QString, QFuture<VolumeHandle>, DeferVolumeLoadCleanup>;
+
 class PageManagerProtocol
 {
 public:
@@ -136,10 +145,10 @@ public:
         m_pendingAssociatedPath.clear();
         m_pendingAssociatedBasePath.clear();
         m_pendingAssociatedFileName.clear();
-        m_initialImageLoads.invalidate();
-        m_volumeLoads.invalidate();
+        m_initialImageLoadDispatcher.invalidate();
+        m_volumeLoadDispatcher.invalidate();
         clearPages();
-        m_volumes.clear();
+        m_volumeLoadCache.clear();
     }
 signals:
     void visiblePagesChanged(VisiblePages pages);
@@ -167,7 +176,7 @@ private:
                                     const QString &basePath,
                                     const QString &subfileName);
     void finishInitialImageDisplay(quint64 generation);
-    VolumeHandle addVolumeCache(QString path, bool onlyCover, bool immediate);
+    VolumeHandle getOrLoadVolume(QString path, bool onlyCover, bool immediate);
     VolumeHandle activeVolumeHandle() const;
     VolumeManager *activeVolume() const;
     void setVolumeReady(VolumeHandle volume);
@@ -182,14 +191,14 @@ private:
     bool m_currentPageIsLandscape;
     bool m_allowSecondPage;
     QVector<ImageContent> m_pages;
-    TimeOrderdCacheFutureSharedPtr<QString, VolumeManager> m_volumes;
+    VolumeLoadCache m_volumeLoadCache;
     QStringList m_volumeNames;
 
     ViewerState m_state;
     QSize m_viewportSize;
 
-    LatestResultDispatcher<ImageContent> m_initialImageLoads;
-    LatestResultDispatcher<VolumeHandle> m_volumeLoads;
+    LatestResultDispatcher<ImageContent> m_initialImageLoadDispatcher;
+    LatestResultDispatcher<VolumeHandle> m_volumeLoadDispatcher;
     quint64 m_initialDisplayGeneration;
     QString m_pendingAssociatedPath;
     QString m_pendingAssociatedBasePath;

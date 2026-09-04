@@ -120,7 +120,6 @@ SOURCES += \
     src/models/qvapplication.cpp \
     src/models/shadermanager.cpp \
     src/models/thumbnailmanager.cpp \
-    src/models/timeorderdcache.cpp \
     src/models/volumehandle.cpp \
     src/optionsdialog.cpp \
     src/renamedialog.cpp \
@@ -161,7 +160,7 @@ HEADERS  += \
     src/models/bookprogressmanager.h \
     src/models/boundedexecutor.h \
     src/models/cursorscrollmapping.h \
-    src/models/futurecache.h \
+    src/models/lrucache.h \
     src/models/imageloadcontext.h \
     src/models/loupecontroller.h \
     src/models/pagecontent.h \
@@ -171,7 +170,6 @@ HEADERS  += \
     src/models/qvapplication.h \
     src/models/shadermanager.h \
     src/models/thumbnailmanager.h \
-    src/models/timeorderdcache.h \
     src/models/volumehandle.h \
     src/models/viewerstate.h \
     src/models/visiblepages.h \

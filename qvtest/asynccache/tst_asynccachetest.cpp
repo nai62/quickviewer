@@ -6,7 +6,14 @@
 #include <QWeakPointer>
 
 #include "boundedexecutor.h"
-#include "futurecache.h"
+#include "lrucache.h"
+
+struct RecordEvictedIntegers
+{
+    QList<int> *values;
+
+    void operator()(int value) const { values->append(value); }
+};
 
 class AsyncCacheTest : public QObject
 {
@@ -14,13 +21,16 @@ class AsyncCacheTest : public QObject
 
 private Q_SLOTS:
     void evictingUnfinishedFutureDoesNotWait();
+    void replacingValueInvokesEvictionHandler();
+    void findingMissingValueDoesNotInsertIt();
+    void touchingValueUpdatesRecencyWithoutInserting();
     void boundsActiveAndPendingJobs();
     void keepsTaskContextAliveUntilCompletion();
 };
 
 void AsyncCacheTest::evictingUnfinishedFutureDoesNotWait()
 {
-    FutureCache<int, int> cache(1);
+    LruCache<int, QFuture<int>> cache(1);
     QPromise<int> unfinished;
     QPromise<int> replacement;
     unfinished.start();
@@ -39,6 +49,43 @@ void AsyncCacheTest::evictingUnfinishedFutureDoesNotWait()
     QVERIFY(cache.contains(2));
     unfinished.addResult(1);
     unfinished.finish();
+}
+
+void AsyncCacheTest::replacingValueInvokesEvictionHandler()
+{
+    QList<int> evictedValues;
+    LruCache<int, int, RecordEvictedIntegers> cache(
+        1, RecordEvictedIntegers{&evictedValues});
+
+    cache.insert(1, 10);
+    cache.insert(1, 20);
+
+    QCOMPARE(evictedValues, QList<int>({10}));
+    QCOMPARE(*cache.find(1), 20);
+}
+
+void AsyncCacheTest::findingMissingValueDoesNotInsertIt()
+{
+    LruCache<int, int> cache;
+
+    QVERIFY(cache.find(1) == nullptr);
+    QVERIFY(!cache.contains(1));
+    QCOMPARE(cache.size(), 0);
+}
+
+void AsyncCacheTest::touchingValueUpdatesRecencyWithoutInserting()
+{
+    LruCache<int, int> cache(2);
+    cache.insert(1, 10);
+    cache.insert(2, 20);
+
+    QVERIFY(cache.touch(1));
+    QVERIFY(!cache.touch(3));
+    cache.insert(3, 30);
+
+    QVERIFY(cache.contains(1));
+    QVERIFY(!cache.contains(2));
+    QVERIFY(cache.contains(3));
 }
 
 void AsyncCacheTest::boundsActiveAndPendingJobs()

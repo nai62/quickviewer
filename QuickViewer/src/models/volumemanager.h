@@ -6,9 +6,8 @@
 #include <QtConcurrent>
 
 #include "fileloader.h"
-#include "timeorderdcache.h"
-#include "futurecache.h"
 #include "imageloadcontext.h"
+#include "lrucache.h"
 #include "pagecontent.h"
 #include "qvimagemetadata.h"
 #include "prefetchplanner.h"
@@ -20,7 +19,7 @@ class VolumeManagerBuilder;
  * This class manages a Volume (Folder or Archive).
  * Image pre-reading is performed by the prefetch algorithm specified by CacheMode.
  * Images in Volume are listed in advance and can be opened with numbers or subpaths.
- * The loaded image is cached by the FIFO method(TimeOrderdCache).
+ * Loaded images are kept in a least-recently-used cache.
  */
 class VolumeManager : public QObject
 {
@@ -36,7 +35,7 @@ public:
     static constexpr CacheMode CoverOnly = CacheMode::CoverOnly;
     static constexpr CacheMode CreateThumbnail = CacheMode::CreateThumbnail;
 
-    typedef QFuture<ImageContent> future_image;
+    using ImageLoadFuture = QFuture<ImageContent>;
 
     explicit VolumeManager(QObject *parent, IFileLoader *loader);
     ~VolumeManager();
@@ -110,9 +109,9 @@ public:
     const ImageContent currentImage()
     {
         if (m_cacheMode == CreateThumbnail) {
-            return m_currentCacheSync;
+            return m_currentImage;
         }
-        return m_currentCache.isValid() ? m_currentCache.result() : ImageContent();
+        return m_currentImageLoad.isValid() ? m_currentImageLoad.result() : ImageContent();
     }
     QString volumePath() { return m_loader ? m_loader->volumePath() : QString(); }
     QString realVolumePath() { return m_loader ? m_loader->realVolumePath() : QString(); }
@@ -164,8 +163,8 @@ public slots:
     void handleEnumerationFinished();
 
 private:
-    future_image scheduleImageLoad(const QString &path, const QSize &pageSize, bool requiredForDisplay);
-    future_image scheduleResize(ImageContent content, const QSize &pageSize);
+    ImageLoadFuture scheduleImageLoad(const QString &path, const QSize &pageSize, bool requiredForDisplay);
+    ImageLoadFuture scheduleResize(ImageContent content, const QSize &pageSize);
 
     /**
      * @brief m_cnt File counter in the volume
@@ -174,12 +173,10 @@ private:
     QList<QString> m_filelist;
     QList<QString> m_randomfilelist;
     QList<QvImageMetadata> m_imageMetadataList;
-    future_image m_currentCache;
-    ImageContent m_currentCacheSync;
+    ImageLoadFuture m_currentImageLoad;
+    ImageContent m_currentImage;
 
-    FutureCache<int, ImageContent> m_imageCache;
-    //    QMap<int, future_image> m_imageCache;
-    //    QList<int> m_pageCache;
+    LruCache<int, ImageLoadFuture> m_imageLoadCache;
 
     QSharedPointer<ImageLoadContext> m_loadContext;
     IFileLoader *m_loader;

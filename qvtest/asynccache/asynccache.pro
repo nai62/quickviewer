@@ -13,7 +13,7 @@ SOURCES += \
 
 HEADERS += \
     ../../QuickViewer/src/models/boundedexecutor.h \
-    ../../QuickViewer/src/models/futurecache.h
+    ../../QuickViewer/src/models/lrucache.h
 
 INCLUDEPATH += ../../QuickViewer/src/models
 
