@@ -8,7 +8,7 @@
 #include "fileloader.h"
 #include "imageloadcontext.h"
 #include "lrucache.h"
-#include "pagecontent.h"
+#include "imagecontent.h"
 #include "qvimagemetadata.h"
 #include "prefetchplanner.h"
 

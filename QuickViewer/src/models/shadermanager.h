@@ -45,7 +45,6 @@ public:
 private:
     void loadShader(QByteArray &target, QString path);
 
-//    ShaderEffect m_effect;
     qvEnums::ShaderEffect m_oldEffect;
     int pageCnt;
     QByteArray m_bicubic;

@@ -113,7 +113,8 @@ SOURCES += \
     src/mainwindow.cpp \
     src/models/readprogressstore.cpp \
     src/models/boundedexecutor.cpp \
-    src/models/pagecontent.cpp \
+    src/models/imagecontent.cpp \
+    src/models/renderedpage.cpp \
     src/models/renderedpages.cpp \
     src/models/viewersession.cpp \
     src/models/prefetchplanner.cpp \
@@ -165,7 +166,8 @@ HEADERS  += \
     src/models/imageloadcontext.h \
     src/models/loupecontroller.h \
     src/models/pagenavigator.h \
-    src/models/pagecontent.h \
+    src/models/imagecontent.h \
+    src/models/renderedpage.h \
     src/models/viewersession.h \
     src/models/latestresultdispatcher.h \
     src/models/prefetchplanner.h \

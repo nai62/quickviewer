@@ -352,35 +352,35 @@ private slots:
                  QString("sample.png|100x200|50%"));
     }
 
-    void pageItemUsesRenderSettingsSnapshot()
+    void renderedPageUsesRenderSettingsSnapshot()
     {
         QGraphicsScene scene;
         QImage image(400, 400, QImage::Format_RGB32);
         image.fill(Qt::red);
         PageRenderSettings settings;
         settings.pixelRatio = 2.0;
-        PageItem page(nullptr, &scene, ImageContent(image, "page.bmp", image.size(), {}, 0), settings);
+        RenderedPage page(nullptr, &scene, ImageContent(image, "page.bmp", image.size(), {}, 0), settings);
         settings.pixelRatio = 3.0;
 
         page.setPageLayoutFitting(QRect(0, 0, 100, 100),
-                                  PageItem::PageCenter,
+                                  RenderedPage::PageCenter,
                                   qvEnums::FitToRect,
                                   1.0);
-        QCOMPARE(page.displayScale, 0.5);
+        QCOMPARE(page.displayScale(), 0.5);
 
         page.setRenderSettings(settings);
         page.setPageLayoutFitting(QRect(0, 0, 100, 100),
-                                  PageItem::PageCenter,
+                                  RenderedPage::PageCenter,
                                   qvEnums::FitToRect,
                                   1.0);
-        QCOMPARE(page.displayScale, 0.75);
+        QCOMPARE(page.displayScale(), 0.75);
 
-        PageItem pageWithDefaults(nullptr, &scene, ImageContent(image, "preview.bmp", image.size(), {}, 0));
+        RenderedPage pageWithDefaults(nullptr, &scene, ImageContent(image, "preview.bmp", image.size(), {}, 0));
         pageWithDefaults.setPageLayoutFitting(QRect(0, 0, 100, 100),
-                                              PageItem::PageCenter,
+                                              RenderedPage::PageCenter,
                                               qvEnums::FitToRect,
                                               1.0);
-        QCOMPARE(pageWithDefaults.displayScale, 0.25);
+        QCOMPARE(pageWithDefaults.displayScale(), 0.25);
     }
 
     void emptyVolumeOperationsAreSafe()
@@ -665,8 +665,8 @@ private slots:
 
     void renderedPagesOwnItemsAndExposeSnapshots()
     {
-        static_assert(!std::is_copy_constructible_v<PageItem>);
-        static_assert(!std::is_copy_assignable_v<PageItem>);
+        static_assert(!std::is_copy_constructible_v<RenderedPage>);
+        static_assert(!std::is_copy_assignable_v<RenderedPage>);
 
         ViewerSession session(nullptr);
         ImageView view;
