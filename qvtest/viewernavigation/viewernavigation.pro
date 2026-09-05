@@ -45,6 +45,7 @@ SOURCES += \
     ../../QuickViewer/src/models/qvimagemetadata.cpp \
     ../../QuickViewer/src/models/qvmovie.cpp \
     ../../QuickViewer/src/models/shadermanager.cpp \
+    ../../QuickViewer/src/models/volumecache.cpp \
     ../../QuickViewer/src/models/volumehandle.cpp \
     ../../QuickViewer/src/models/volume.cpp \
     ../../QuickViewer/src/models/volumeloader.cpp \
@@ -74,6 +75,7 @@ HEADERS += \
     ../../QuickViewer/src/models/renderedpages.h \
     ../../QuickViewer/src/models/renderedpagemetrics.h \
     ../../QuickViewer/src/models/shadermanager.h \
+    ../../QuickViewer/src/models/volumecache.h \
     ../../QuickViewer/src/models/volumehandle.h \
     ../../QuickViewer/src/models/visiblepages.h \
     ../../QuickViewer/src/models/viewerstate.h \

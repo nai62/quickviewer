@@ -8,6 +8,7 @@
 #include "models/loupecontroller.h"
 #include "models/viewersession.h"
 #include "models/qvapplication.h"
+#include "models/volumecache.h"
 #include "models/volumehandle.h"
 
 class EmptyFileLoader final : public IFileLoader
@@ -401,30 +402,72 @@ private slots:
 
     void activeVolumeSurvivesCacheEviction()
     {
-        auto readyFuture = [](VolumeHandle handle) {
-            QPromise<VolumeHandle> promise;
-            promise.start();
-            QFuture<VolumeHandle> future = promise.future();
-            promise.addResult(std::move(handle));
-            promise.finish();
-            return future;
-        };
-
         auto *volume = new Volume(
             nullptr, new EmptyFileLoader);
         bool destroyed = false;
         QObject::connect(volume, &QObject::destroyed, this, [&destroyed] { destroyed = true; });
 
         VolumeHandle active = makeVolumeHandle(volume);
-        VolumeLoadCache cache(1);
-        QString first = "first";
-        QString second = "second";
-        cache.insert(first, readyFuture(active));
-        cache.insert(second, readyFuture({}));
+        VolumeCache cache(1);
+        const VolumeCacheKey first{"first", false, false};
+        const VolumeCacheKey second{"second", false, false};
+        cache.insertReady(first, active);
+        cache.insertReady(second, {});
 
         QVERIFY(!destroyed);
         active.reset();
         QTRY_VERIFY(destroyed);
+    }
+
+    void volumeCacheSharesLoadsAndDoesNotWaitWhenLookingUp()
+    {
+        VolumeCache cache(2);
+        const VolumeCacheKey key{"shared", false, false};
+        QPromise<VolumeHandle> pendingLoad;
+        pendingLoad.start();
+        int startCount = 0;
+        const auto startLoad = [&] {
+            ++startCount;
+            return pendingLoad.future();
+        };
+
+        const VolumeLoadFuture firstRequest = cache.request(key, startLoad);
+        const VolumeLoadFuture secondRequest = cache.request(key, startLoad);
+
+        QCOMPARE(startCount, 1);
+        QVERIFY(firstRequest.isValid());
+        QVERIFY(secondRequest.isValid());
+        QVERIFY(!cache.findReady(key));
+
+        VolumeHandle loadedVolume = makeVolumeHandle(
+            new Volume(nullptr, new EmptyFileLoader));
+        pendingLoad.addResult(loadedVolume);
+        pendingLoad.finish();
+
+        QCOMPARE(cache.findReady(key), loadedVolume);
+        QVERIFY(cache.markUsed(key));
+    }
+
+    void volumeCacheRetriesFailedLoads()
+    {
+        VolumeCache cache(1);
+        const VolumeCacheKey key{"retry", false, false};
+        int startCount = 0;
+        const auto failedLoad = [&] {
+            ++startCount;
+            QPromise<VolumeHandle> promise;
+            promise.start();
+            VolumeLoadFuture future = promise.future();
+            promise.addResult({});
+            promise.finish();
+            return future;
+        };
+
+        cache.request(key, failedLoad);
+        QVERIFY(!cache.findReady(key));
+        QVERIFY(!cache.contains(key));
+        cache.request(key, failedLoad);
+        QCOMPARE(startCount, 2);
     }
 
     void emptyImageViewNavigationIsSafe()

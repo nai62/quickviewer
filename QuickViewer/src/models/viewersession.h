@@ -3,19 +3,12 @@
 
 #include <QtGui>
 #include "latestresultdispatcher.h"
-#include "lrucache.h"
 #include "visiblepages.h"
 #include "viewerstate.h"
 #include "volume.h"
+#include "volumecache.h"
 
 class Volume;
-
-struct DeferredVolumeLoadCleanup
-{
-    void operator()(QFuture<VolumeHandle> evictedLoad) const;
-};
-
-using VolumeLoadCache = LruCache<QString, QFuture<VolumeHandle>, DeferredVolumeLoadCleanup>;
 
 class PageInfoProvider
 {
@@ -151,7 +144,7 @@ public:
         m_initialImageLoadDispatcher.invalidate();
         m_volumeLoadDispatcher.invalidate();
         clearVisiblePages();
-        m_volumeLoadCache.clear();
+        m_volumeCache.clear();
     }
 signals:
     void visiblePagesChanged(VisiblePages pages);
@@ -179,7 +172,8 @@ private:
                                    const QString &basePath,
                                    const QString &subfileName);
     void finishInitialImageDisplay(quint64 generation);
-    VolumeHandle getOrLoadVolume(QString path, bool onlyCover, bool immediate);
+    VolumeHandle loadCachedVolume(QString path, bool onlyCover);
+    void prefetchVolume(QString path);
     VolumeHandle activeVolumeHandle() const;
     Volume *activeVolume() const;
     void setVolumeReady(VolumeHandle volume);
@@ -194,7 +188,7 @@ private:
     bool m_firstVisiblePageIsLandscape;
     bool m_allowSecondVisiblePage;
     QVector<ImageContent> m_visiblePages;
-    VolumeLoadCache m_volumeLoadCache;
+    VolumeCache m_volumeCache;
     QStringList m_volumeNames;
 
     ViewerState m_state;

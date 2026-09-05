@@ -120,6 +120,7 @@ SOURCES += \
     src/models/qvapplication.cpp \
     src/models/shadermanager.cpp \
     src/models/thumbnailmanager.cpp \
+    src/models/volumecache.cpp \
     src/models/volumehandle.cpp \
     src/optionsdialog.cpp \
     src/renamedialog.cpp \
@@ -170,6 +171,7 @@ HEADERS  += \
     src/models/qvapplication.h \
     src/models/shadermanager.h \
     src/models/thumbnailmanager.h \
+    src/models/volumecache.h \
     src/models/volumehandle.h \
     src/models/viewerstate.h \
     src/models/visiblepages.h \
