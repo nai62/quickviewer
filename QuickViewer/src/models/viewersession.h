@@ -5,6 +5,7 @@
 #include <memory>
 #include "latestresultdispatcher.h"
 #include "pagenavigator.h"
+#include "visiblepagecomposer.h"
 #include "visiblepages.h"
 #include "viewerstate.h"
 #include "volume.h"
@@ -125,7 +126,6 @@ public:
         Volume *volume = activeVolume();
         return volume ? volume->pageCount() : 0;
     }
-    bool shouldShowSecondPage() const;
     void reset()
     {
         ++m_initialDisplayGeneration;
@@ -184,7 +184,6 @@ private:
     QHash<Volume *, SavedPagePosition> m_savedPagePositions;
     PrefetchMode m_prefetchMode;
 
-    bool m_firstVisiblePageIsLandscape;
     bool m_allowSecondVisiblePage;
     QVector<ImageContent> m_visiblePages;
     VolumeCache m_volumeCache;

@@ -7,6 +7,7 @@
 #include "models/imagestring.h"
 #include "models/loupecontroller.h"
 #include "models/pagenavigator.h"
+#include "models/visiblepagecomposer.h"
 #include "models/viewersession.h"
 #include "models/qvapplication.h"
 #include "models/volumecache.h"
@@ -119,6 +120,39 @@ private slots:
         QCOMPARE(navigator.currentPageIndex(), 2);
         navigator.reset();
         QCOMPARE(navigator.currentPageIndex(), 0);
+    }
+
+    void visiblePageComposerKeepsSpreadRulesAndPrefetchAnchor()
+    {
+        struct Case
+        {
+            const char *description;
+            VisiblePageCompositionRequest request;
+            QVector<int> expectedPageIndexes;
+            int expectedPrefetchAnchor;
+            bool shouldLoadSecondCandidate;
+        };
+        const QVector<Case> cases{
+            {"single view", {1, 4, false, false, {false, false, true, true}}, {1}, 1, false},
+            {"portrait spread", {1, 4, false, false, {true, false, true, true}}, {1, 2}, 2, true},
+            {"first page alone", {0, 4, false, false, {true, true, true, true}}, {0}, 0, false},
+            {"first page landscape", {1, 4, true, false, {true, false, true, true}}, {1}, 1, false},
+            {"second page landscape", {1, 4, false, true, {true, false, true, true}}, {1}, 1, true},
+            {"wide pages allowed", {1, 4, true, true, {true, false, false, true}}, {1, 2}, 2, true},
+            {"second page disallowed", {1, 4, false, false, {true, false, true, false}}, {1}, 1, false},
+            {"last page", {3, 4, false, false, {true, false, true, true}}, {3}, 3, false},
+            {"invalid page", {4, 4, false, false, {true, false, true, true}}, {}, -1, false},
+        };
+
+        for (const Case &testCase : cases) {
+            Q_UNUSED(testCase.description);
+            const VisiblePageComposition composition =
+                VisiblePageComposer::compose(testCase.request);
+            QCOMPARE(VisiblePageComposer::shouldLoadSecondPageCandidate(testCase.request),
+                     testCase.shouldLoadSecondCandidate);
+            QCOMPARE(composition.pageIndexes, testCase.expectedPageIndexes);
+            QCOMPARE(composition.prefetchAnchorIndex, testCase.expectedPrefetchAnchor);
+        }
     }
 
     void directImageTransitionsThroughStandalonePreview()

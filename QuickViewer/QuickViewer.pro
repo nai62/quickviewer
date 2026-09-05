@@ -116,6 +116,7 @@ SOURCES += \
     src/models/imagecontent.cpp \
     src/models/renderedpage.cpp \
     src/models/renderedpages.cpp \
+    src/models/visiblepagecomposer.cpp \
     src/models/viewersession.cpp \
     src/models/prefetchplanner.cpp \
     src/models/qvapplication.cpp \
@@ -168,6 +169,7 @@ HEADERS  += \
     src/models/pagenavigator.h \
     src/models/imagecontent.h \
     src/models/renderedpage.h \
+    src/models/visiblepagecomposer.h \
     src/models/viewersession.h \
     src/models/latestresultdispatcher.h \
     src/models/prefetchplanner.h \

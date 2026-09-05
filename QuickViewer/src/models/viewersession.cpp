@@ -34,7 +34,6 @@ static ImageContent waitForImageAt(const Volume &volume, int pageIndex)
 ViewerSession::ViewerSession(QObject *parent)
     : QObject(parent),
       m_prefetchMode(PrefetchMode::Normal),
-      m_firstVisiblePageIsLandscape(false),
       m_allowSecondVisiblePage(true),
       m_volumeCache(qApp->MaxVolumesCache()),
       m_state(EmptyViewerState{}),
@@ -705,27 +704,38 @@ bool ViewerSession::reloadVisiblePages()
     if (!volume || currentPageIndex < 0 || currentPageIndex >= volume->pageCount()) {
         return false;
     }
-    QVector<ImageContent> pages;
     ImageContent firstContent = waitForImageAt(*volume, currentPageIndex);
     firstContent.initializeAnimation();
-    const bool firstPageIsLandscape = firstContent.isLandscape();
-    pages.push_back(std::move(firstContent));
     if (activeVolume() != volume) {
         return false;
     }
-    m_firstVisiblePageIsLandscape = firstPageIsLandscape;
-    if (!(currentPageIndex == 0 && qApp->FirstImageAsOnePageInDualView()) && shouldShowSecondPage()) {
-        if (m_allowSecondVisiblePage && currentPageIndex < volume->pageCount() - 1) {
-            ImageContent secondContent = waitForImageAt(*volume, currentPageIndex + 1);
-            if (!qApp->WideImageAsOnePageInDualView() || (!firstPageIsLandscape && !secondContent.isLandscape())) {
-                secondContent.initializeAnimation();
-                pages.push_back(std::move(secondContent));
-                volume->updatePrefetchCache(
-                    currentPageIndex + 1, m_prefetchMode, m_viewportSize);
-                if (activeVolume() != volume) {
-                    return false;
-                }
-            }
+
+    VisiblePageCompositionRequest compositionRequest{
+        currentPageIndex,
+        volume->pageCount(),
+        firstContent.isLandscape(),
+        false,
+        {qApp->DualView(),
+         qApp->FirstImageAsOnePageInDualView(),
+         qApp->WideImageAsOnePageInDualView(),
+         m_allowSecondVisiblePage}};
+    ImageContent secondContent;
+    if (VisiblePageComposer::shouldLoadSecondPageCandidate(compositionRequest)) {
+        secondContent = waitForImageAt(*volume, currentPageIndex + 1);
+        compositionRequest.secondPageIsLandscape = secondContent.isLandscape();
+    }
+    const VisiblePageComposition composition =
+        VisiblePageComposer::compose(compositionRequest);
+
+    QVector<ImageContent> pages;
+    pages.push_back(std::move(firstContent));
+    if (composition.pageIndexes.size() == 2) {
+        secondContent.initializeAnimation();
+        pages.push_back(std::move(secondContent));
+        volume->updatePrefetchCache(
+            composition.prefetchAnchorIndex, m_prefetchMode, m_viewportSize);
+        if (activeVolume() != volume) {
+            return false;
         }
     }
     replaceVisiblePages(std::move(pages));
@@ -739,9 +749,6 @@ bool ViewerSession::appendVisiblePage(ImageContent content)
         return false;
     }
     content.initializeAnimation();
-    if (m_visiblePages.isEmpty()) {
-        m_firstVisiblePageIsLandscape = content.isLandscape();
-    }
     m_visiblePages.push_back(std::move(content));
     emit visiblePagesChanged(visiblePages());
     return true;
@@ -750,7 +757,6 @@ bool ViewerSession::appendVisiblePage(ImageContent content)
 void ViewerSession::clearVisiblePages()
 {
     m_visiblePages.clear();
-    m_firstVisiblePageIsLandscape = false;
     emit visiblePagesChanged({});
 }
 
@@ -845,11 +851,6 @@ QString ViewerSession::pageSignage(int pageIndex) const
         .arg(QDir::toNativeSeparators(volume->pagePathForName(m_visiblePages[pageIndex].path)))
         .arg(m_pageNavigator.currentPageIndex() + 1 + pageIndex)
         .arg(volume->pageCount());
-}
-
-bool ViewerSession::shouldShowSecondPage() const
-{
-    return qApp->DualView() && !(m_firstVisiblePageIsLandscape && qApp->WideImageAsOnePageInDualView());
 }
 
 QStringList ViewerSession::siblingVolumeNames(const QDir &directory)

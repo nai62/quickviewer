@@ -40,6 +40,7 @@ SOURCES += \
     ../../QuickViewer/src/models/imagecontent.cpp \
     ../../QuickViewer/src/models/renderedpage.cpp \
     ../../QuickViewer/src/models/renderedpages.cpp \
+    ../../QuickViewer/src/models/visiblepagecomposer.cpp \
     ../../QuickViewer/src/models/viewersession.cpp \
     ../../QuickViewer/src/models/prefetchplanner.cpp \
     ../../QuickViewer/src/models/qvapplication.cpp \
@@ -70,6 +71,7 @@ HEADERS += \
     ../../QuickViewer/src/models/pagenavigator.h \
     ../../QuickViewer/src/models/imagecontent.h \
     ../../QuickViewer/src/models/renderedpage.h \
+    ../../QuickViewer/src/models/visiblepagecomposer.h \
     ../../QuickViewer/src/models/viewersession.h \
     ../../QuickViewer/src/models/prefetchplanner.h \
     ../../QuickViewer/src/models/qvapplication.h \
