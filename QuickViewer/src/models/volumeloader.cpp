@@ -50,7 +50,6 @@ Volume *VolumeLoader::createVolume(QObject *parent, QString path)
         const QFileInfo imageInfo(path);
         const QString directoryPath = imageInfo.absolutePath();
         Volume *volume = new Volume(parent, qApp->ShowSubfolders() ? new FileLoaderSubDirectory(parent, directoryPath) : new FileLoaderDirectory(parent, directoryPath));
-        volume->selectPageByName(imageInfo.fileName());
         volume->setOpenedWithSpecifiedImageFile(true);
         return volume;
     }
@@ -64,14 +63,12 @@ VolumeLoader::VolumeLoader(QString path)
 {
 }
 
-Volume *VolumeLoader::build(bool onlyCover)
+Volume *VolumeLoader::buildLoadedVolume()
 {
     QString volumePath = QDir::toNativeSeparators(m_path);
-    QString selectedPageName;
     if (m_path.contains("::")) {
         const QStringList pathParts = m_path.split("::");
         volumePath = pathParts[0];
-        selectedPageName = pathParts[1];
     }
     if (!(m_volume = createVolume(nullptr, volumePath))) {
         return m_volume;
@@ -82,23 +79,27 @@ Volume *VolumeLoader::build(bool onlyCover)
         delete m_volume;
         return m_volume = nullptr;
     }
-    if (m_pageNames.isEmpty()) {
-        restoreReadProgress();
-    } else if (!selectedPageName.isEmpty()) {
-        m_volume->selectPageByName(selectedPageName);
-    }
-    if (onlyCover) {
-        m_volume->prefetchCoverImages();
-    } else {
-        m_volume->updatePrefetchCache();
-    }
     return m_volume;
 }
 
-Volume *VolumeLoader::buildAsync(QString path, bool onlyCover)
+Volume *VolumeLoader::build()
+{
+    return buildLoadedVolume();
+}
+
+Volume *VolumeLoader::buildForCoverPrefetch()
+{
+    Volume *volume = buildLoadedVolume();
+    if (volume) {
+        volume->prefetchCoverImages();
+    }
+    return volume;
+}
+
+Volume *VolumeLoader::buildForCoverPrefetchAsync(QString path)
 {
     VolumeLoader volumeLoader(path);
-    return volumeLoader.build(onlyCover);
+    return volumeLoader.buildForCoverPrefetch();
 }
 
 Volume *VolumeLoader::buildForContainingImage()
@@ -116,34 +117,25 @@ Volume *VolumeLoader::buildForContainingImage()
 
     // Load the image.
     m_volume->loadPageList();
-    if (!m_volume->selectPageByName(m_selectedPageName)) {
+    const int selectedPageIndex = m_volume->pageIndexForName(m_selectedPageName);
+    if (selectedPageIndex < 0) {
         delete m_volume;
         return m_volume = nullptr;
     }
-    const Volume::ImageLoadFuture initialImageLoad = m_volume->imageLoadAt(m_volume->currentPageIndex());
+    m_volume->updatePrefetchCache(
+        selectedPageIndex, PrefetchMode::Normal, QSize());
+    const Volume::ImageLoadFuture initialImageLoad = m_volume->imageLoadAt(selectedPageIndex);
     m_initialImage = initialImageLoad.isValid() ? initialImageLoad.result() : ImageContent();
 
     return m_volume;
 }
 
-ImageContent VolumeLoader::thumbnail()
+ImageContent VolumeLoader::loadThumbnailSourceImage()
 {
     if (!(m_volume = createVolume(nullptr, m_path))) {
         return ImageContent();
     }
-    restoreReadProgress();
     ImageContent thumbnailContent = m_volume->loadThumbnailSourceImage();
     delete m_volume;
     return thumbnailContent;
-}
-
-void VolumeLoader::restoreReadProgress()
-{
-    // Restore the selected page from progress.ini when configured to do so.
-    const QString volumePath = QDir::fromNativeSeparators(m_volume->volumePath());
-    if (qApp->OpenVolumeWithProgress() && !m_volume->openedWithSpecifiedImageFile() && qApp->readProgressStore()->contains(volumePath)) {
-        const ReadProgress progress = qApp->readProgressStore()->at(volumePath);
-        m_volume->selectPage(progress.resumePageIndex);
-    }
-    m_volume->moveToThread(QThread::currentThread());
 }

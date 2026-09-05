@@ -2,6 +2,7 @@
 #define VIEWERSESSION_H
 
 #include <QtGui>
+#include <memory>
 #include "latestresultdispatcher.h"
 #include "pagenavigator.h"
 #include "visiblepages.h"
@@ -147,6 +148,7 @@ public:
         m_volumeLoadDispatcher.invalidate();
         clearVisiblePages();
         m_volumeCache.clear();
+        m_savedPagePositions.clear();
     }
 signals:
     void visiblePagesChanged(VisiblePages pages);
@@ -180,9 +182,18 @@ private:
     Volume *activeVolume() const;
     void setVolumeReady(VolumeHandle volume);
     void configureVolume(Volume *volume);
+    void rememberActivePagePosition();
+    int initialPageIndex(const VolumeHandle &volume, const QString &pageName, bool coverOnly);
     void replaceVisiblePages(QVector<ImageContent> pages);
     static QStringList enumerateVolumes(const QDir &directory);
     PageNavigator m_pageNavigator;
+    struct SavedPagePosition
+    {
+        std::weak_ptr<Volume> volume;
+        int pageIndex = 0;
+    };
+    QHash<Volume *, SavedPagePosition> m_savedPagePositions;
+    PrefetchMode m_prefetchMode;
 
     bool m_firstVisiblePageIsLandscape;
     bool m_allowSecondVisiblePage;

@@ -49,29 +49,6 @@ public:
     void startSlideShow();
     void stopSlideShow();
 
-    QString currentPath()
-    {
-        if (!m_loader || m_currentPageIndex < 0 || m_currentPageIndex >= m_pageNames.size()) {
-            return "";
-        }
-        if (m_loader->isArchive()) {
-            return QString("%1::%2")
-                .arg(QDir::fromNativeSeparators(m_loader->volumePath()))
-                .arg(m_pageNames[m_currentPageIndex]);
-        } else {
-            return QDir::fromNativeSeparators(QDir(m_loader->volumePath()).absoluteFilePath(m_pageNames[m_currentPageIndex]));
-        }
-    }
-    QString currentPathWithSeparator()
-    {
-        if (!m_loader || m_currentPageIndex < 0 || m_currentPageIndex >= m_pageNames.size()) {
-            return "";
-        }
-        return QString("%1::%2")
-            .arg(QDir::fromNativeSeparators(m_loader->volumePath()))
-            .arg(m_pageNames[m_currentPageIndex]);
-    }
-
     QString pagePathForName(QString name)
     {
         if (!m_loader || name.isEmpty()) {
@@ -86,6 +63,7 @@ public:
         }
     }
     QString pageNameAt(int pageIndex);
+    int pageIndexForName(const QString &name) const;
     QString pagePathAt(int pageIndex)
     {
         if (pageIndex < 0 || pageIndex >= m_pageNames.size()) {
@@ -93,29 +71,17 @@ public:
         }
         return QDir(m_loader->volumePath()).absoluteFilePath(m_pageNames[pageIndex]);
     }
-    void setPrefetchMode(PrefetchMode prefetchMode) { m_prefetchMode = prefetchMode; }
-    PrefetchMode prefetchMode() const { return m_prefetchMode; }
-
-    const ImageContent currentImage()
+    QString pagePathWithSeparatorAt(int pageIndex)
     {
-        return m_currentImageLoad.isValid() ? m_currentImageLoad.result() : ImageContent();
+        if (!m_loader || pageIndex < 0 || pageIndex >= m_pageNames.size()) {
+            return "";
+        }
+        return QString("%1::%2")
+            .arg(QDir::fromNativeSeparators(m_loader->volumePath()))
+            .arg(m_pageNames[pageIndex]);
     }
     QString volumePath() { return m_loader ? m_loader->volumePath() : QString(); }
     QString realVolumePath() { return m_loader ? m_loader->realVolumePath() : QString(); }
-
-    bool advanceOnePage();
-    bool retreatOnePage();
-    bool selectPage(int pageIndex);
-
-    /**
-     * @brief Move to the file corresponding to the pageIndex value specified in the file list(Max is pageCount()-1)
-     */
-    bool selectPageAndRefresh(int pageIndex);
-
-    /**
-     * @brief Move to the file corresponding to the file name specified in the current file list
-     */
-    bool selectPageByName(QString name);
 
     /**
      * @brief loadImageByName Reads and returns the image corresponding to the file name specified in the file list without advancing the internal counter
@@ -128,15 +94,13 @@ public:
      * @brief Returns the number of pages the volume has
      */
     int pageCount() { return m_pageNames.size(); }
-    void updatePrefetchCache();
-    void prefetchCoverImages();
+    void updatePrefetchCache(int anchorPageIndex, PrefetchMode mode, QSize viewportSize);
+    void prefetchCoverImages(int anchorPageIndex = 0);
     ImageContent loadThumbnailSourceImage();
-    int currentPageIndex() { return m_currentPageIndex; }
 
     ImageLoadFuture imageLoadAt(int pageIndex) const;
     bool openedWithSpecifiedImageFile() { return m_openedWithSpecifiedImageFile; }
     void setOpenedWithSpecifiedImageFile(bool openedWithSpecifiedImageFile) { m_openedWithSpecifiedImageFile = openedWithSpecifiedImageFile; }
-    void setViewportSize(QSize size) { m_viewportSize = size; }
     void moveToThread(QThread *targetThread);
 
 signals:
@@ -149,21 +113,14 @@ private:
     ImageLoadFuture scheduleImageLoad(const QString &path, const QSize &pageSize, bool requiredForDisplay);
     ImageLoadFuture scheduleResize(ImageContent content, const QSize &pageSize);
 
-    /**
-     * @brief m_currentPageIndex File counter in the volume
-     */
-    int m_currentPageIndex;
     QList<QString> m_pageNames;
     QList<QString> m_shuffledPageNames;
     QList<QvImageMetadata> m_imageMetadataList;
-    ImageLoadFuture m_currentImageLoad;
     ImageContent m_initialImage;
     LruCache<int, ImageLoadFuture> m_imageLoadCache;
 
     QSharedPointer<ImageLoadContext> m_loadContext;
     IFileLoader *m_loader;
-    PrefetchMode m_prefetchMode;
-    QSize m_viewportSize;
     bool m_pageListLoaded;
     bool m_openedWithSpecifiedImageFile;
     QString m_volumePath;

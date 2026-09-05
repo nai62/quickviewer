@@ -268,6 +268,38 @@ private slots:
         QCOMPARE(spreadSession.visiblePageCount(), 2);
     }
 
+    void cachedVolumesKeepIndependentPagePositions()
+    {
+        QTemporaryDir rootDirectory;
+        QVERIFY(rootDirectory.isValid());
+        const QString firstVolumePath = rootDirectory.filePath("first");
+        const QString secondVolumePath = rootDirectory.filePath("second");
+        QVERIFY(QDir().mkpath(firstVolumePath));
+        QVERIFY(QDir().mkpath(secondVolumePath));
+        for (const QString &volumePath : {firstVolumePath, secondVolumePath}) {
+            for (int pageIndex = 0; pageIndex < 4; ++pageIndex) {
+                QImage image(16, 24, QImage::Format_RGB32);
+                image.fill(QColor::fromHsv(pageIndex * 40, 255, 255));
+                QVERIFY(image.save(QDir(volumePath).filePath(QString("page-%1.bmp").arg(pageIndex))));
+            }
+        }
+
+        qApp->setOpenVolumeWithProgress(false);
+        qApp->setDualView(false);
+        ViewerSession session(nullptr);
+        QVERIFY(session.loadVolume(firstVolumePath));
+        QVERIFY(session.selectPage(2));
+        QVERIFY(session.loadVolume(secondVolumePath));
+        QVERIFY(session.selectPage(1));
+
+        QVERIFY(session.loadVolume(firstVolumePath));
+        QCOMPARE(session.currentPageIndex(), 2);
+        QCOMPARE(session.currentPageName(), QString("page-2.bmp"));
+        QVERIFY(session.loadVolume(secondVolumePath));
+        QCOMPARE(session.currentPageIndex(), 1);
+        QCOMPARE(session.currentPageName(), QString("page-1.bmp"));
+    }
+
     void visiblePagesAreReadOnlySnapshots()
     {
         ViewerSession session(nullptr);
@@ -357,16 +389,12 @@ private slots:
         Volume volume(nullptr, &loader);
         QSignalSpy pageListLoadedSpy(&volume, &Volume::pageListLoaded);
 
-        QCOMPARE(volume.currentPath(), QString());
-        QCOMPARE(volume.currentPathWithSeparator(), QString());
         QCOMPARE(volume.pageNameAt(0), QString());
-        QVERIFY(volume.currentImage().loadedImage.isNull());
+        QCOMPARE(volume.pageIndexForName("missing.png"), -1);
+        QCOMPARE(volume.pagePathWithSeparatorAt(0), QString());
         QVERIFY(!volume.imageLoadAt(0).isValid());
-        QVERIFY(!volume.advanceOnePage());
-        QVERIFY(!volume.retreatOnePage());
-        QVERIFY(!volume.selectPage(0));
-        QVERIFY(!volume.selectPageAndRefresh(0));
-        QVERIFY(!volume.selectPageByName("missing.png"));
+        volume.updatePrefetchCache(
+            0, PrefetchMode::Normal, QSize(100, 100));
         volume.handlePageListLoaded();
         QCOMPARE(pageListLoadedSpy.count(), 1);
         volume.moveToThread(nullptr);
@@ -376,7 +404,7 @@ private slots:
     {
         auto *coverLoader = new MemoryFileLoader(3);
         Volume coverVolume(nullptr, coverLoader);
-        coverVolume.prefetchCoverImages();
+        coverVolume.prefetchCoverImages(0);
 
         const Volume::ImageLoadFuture firstCoverLoad = coverVolume.imageLoadAt(0);
         const Volume::ImageLoadFuture secondCoverLoad = coverVolume.imageLoadAt(1);

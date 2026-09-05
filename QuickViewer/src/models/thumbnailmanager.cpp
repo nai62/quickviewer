@@ -172,7 +172,7 @@ VolumeWorker ThumbnailManager::createSubVolumesConcurrent(QString dirpath, int v
 
     if (IFileLoader::isArchiveFile(dirpath)) {
         VolumeLoader volumeLoader(dirpath);
-        ImageContent thumbnailContent = volumeLoader.thumbnail();
+        ImageContent thumbnailContent = volumeLoader.loadThumbnailSourceImage();
         if (!thumbnailContent.loadedImage.isNull()) {
             vw.frontPage = createFileRecordFromArchive(dirpath, thumbnailContent, 0);
         }
