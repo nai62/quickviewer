@@ -32,7 +32,8 @@ MainWindow::MainWindow(QWidget *parent)
       m_onWindowClosing(false),
       m_revealInitialWindow(true),
       m_startupWindowCloaked(false),
-      m_startupPanelInitialized(false)
+      m_startupPanelInitialized(false),
+      m_deferredMenusInitialized(false)
       //    , contextMenu(this)
       ,
       m_viewerSession(this),
@@ -171,7 +172,6 @@ MainWindow::MainWindow(QWidget *parent)
     //    ui->actionShowFullscreenTitleBar->setChecked(qApp->ShowFullscreenTitleBar());
 
     // Languages
-    qApp->languageSelector()->initializeMenu(ui->menuChange_Language);
     connect(qApp->languageSelector(), SIGNAL(languageChanged(QString)), this, SLOT(handleLanguageSelectorLanguageChanged(QString)));
     connect(qApp->languageSelector(), SIGNAL(openTextEditorForLanguage(LanguageInfo)), this, SLOT(handleLanguageSelectorOpenTextEditorForLanguage(LanguageInfo)));
 
@@ -191,11 +191,9 @@ MainWindow::MainWindow(QWidget *parent)
     // so displaying the volume does not move the already rendered image.
 
     // History
-    makeHistoryMenu();
     connect(ui->menuHistory, SIGNAL(triggered(QAction *)), this, SLOT(handleHistoryMenuTriggered(QAction *)));
 
     // Bookmarks
-    makeBookmarkMenu();
     ui->actionLoadBookmark->setMenu(ui->menuLoadBookmark);
     connect(ui->menuLoadBookmark, SIGNAL(triggered(QAction *)), this, SLOT(handleLoadBookmarkMenuTriggered(QAction *)));
 
@@ -653,6 +651,9 @@ void MainWindow::loadVolume(QString path, bool allowSecondPage)
 
 void MainWindow::makeHistoryMenu()
 {
+    if (!m_deferredMenusInitialized) {
+        return;
+    }
     static const QString shortcuts = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     ui->menuHistory->clear();
     QStringList history = qApp->History();
@@ -664,6 +665,9 @@ void MainWindow::makeHistoryMenu()
 
 void MainWindow::makeBookmarkMenu()
 {
+    if (!m_deferredMenusInitialized) {
+        return;
+    }
     static const QString shortcuts = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     ui->menuLoadBookmark->clear();
     QStringList bookmarks = qApp->Bookmarks();
@@ -974,6 +978,8 @@ void MainWindow::handleInitialImageDisplayFinished()
 
 void MainWindow::completeDeferredStartupWork()
 {
+    initializeDeferredMenus();
+
     if (m_folderWindow) {
         if (!m_pendingFolderPath.isEmpty()) {
             const QString path = m_pendingFolderPath;
@@ -986,6 +992,17 @@ void MainWindow::completeDeferredStartupWork()
     const QString path = m_pendingFolderPath;
     m_pendingFolderPath.clear();
     initializeConfiguredStartupPanel(path);
+}
+
+void MainWindow::initializeDeferredMenus()
+{
+    if (m_deferredMenusInitialized) {
+        return;
+    }
+    m_deferredMenusInitialized = true;
+    qApp->languageSelector()->initializeMenu(ui->menuChange_Language);
+    makeHistoryMenu();
+    makeBookmarkMenu();
 }
 
 ////////////////////////////

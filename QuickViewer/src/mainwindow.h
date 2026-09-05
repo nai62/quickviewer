@@ -220,6 +220,7 @@ private:
     void loadStartupVolume();
     void revealStartupWindow();
     void completeDeferredStartupWork();
+    void initializeDeferredMenus();
     void initializeConfiguredStartupPanel(const QString &folderPath = QString());
 
 protected:
@@ -230,6 +231,7 @@ protected:
     bool m_revealInitialWindow;
     bool m_startupWindowCloaked;
     bool m_startupPanelInitialized;
+    bool m_deferredMenusInitialized;
 
     /**
      * @brief m_contextMenu Define on the context menu mainwindow.ui for the main screen and separate at startup
