@@ -58,7 +58,6 @@ signals:
      * @brief anchorHovered a signal when the mouse moved to one of 4 edges on this widget
      */
     void anchorHovered(Qt::AnchorPoint anchor) const;
-    //    void pageChanged() const;
 
     void fittingChanged(qvEnums::FitMode mode) const;
     void scrollModeChanged(bool scrolling) const;

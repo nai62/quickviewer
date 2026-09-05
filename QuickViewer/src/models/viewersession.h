@@ -23,16 +23,6 @@ public:
     virtual QString currentPagePath() const = 0;
 };
 
-constexpr QEvent::Type ReloadedEventType = static_cast<QEvent::Type>(QEvent::User + 50);
-
-class ReloadedEvent : public QEvent
-{
-public:
-    ReloadedEvent()
-        : QEvent(ReloadedEventType)
-    {}
-};
-
 class ViewerSession : public QObject, public PageInfoProvider
 {
     Q_OBJECT
@@ -57,7 +47,7 @@ public:
     bool advanceOnePage();
     bool retreatOnePage();
     bool reloadVisiblePages();
-    bool addVisiblePage(ImageContent content, bool append);
+    bool appendVisiblePage(ImageContent content);
     void clearVisiblePages();
     QSize viewportSize() const { return m_viewportSize; }
     void setViewportSize(QSize size);
@@ -67,7 +57,6 @@ public:
     void notifyInitialImagePainted();
     void updateReadProgress();
     void sortActiveVolumePages(qvEnums::ImageSortBy sortBy);
-    bool eventFilter(QObject *obj, QEvent *event) override;
 
     // Get String
     int visiblePageCount() const { return m_visiblePages.size(); }
@@ -185,7 +174,7 @@ private:
     void rememberActivePagePosition();
     int initialPageIndex(const VolumeHandle &volume, const QString &pageName, bool coverOnly);
     void replaceVisiblePages(QVector<ImageContent> pages);
-    static QStringList enumerateVolumes(const QDir &directory);
+    static QStringList siblingVolumeNames(const QDir &directory);
     PageNavigator m_pageNavigator;
     struct SavedPagePosition
     {
@@ -210,8 +199,6 @@ private:
     QString m_pendingContainingImagePath;
     QString m_pendingContainingVolumePath;
     QString m_pendingContainingPageName;
-
-    //    VolumeLoader m_builderForAssoc;
 };
 
 #endif // VIEWERSESSION_H

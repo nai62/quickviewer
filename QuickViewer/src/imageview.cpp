@@ -604,7 +604,6 @@ void ImageView::handleHideMouseCursorInFullscreenActionTriggered(bool checked)
 void ImageView::mouseMoveEvent(QMouseEvent *e)
 {
     QGraphicsView::mouseMoveEvent(e);
-    //    qDebug() << "qApp->HideMouseCursorInFullscreen()" << qApp->HideMouseCursorInFullscreen();
     int NOT_HOVER_AREA = width() / 3;
     int hover_border = qApp->LargeToolbarIcons() ? 3 * HOVER_BORDER : HOVER_BORDER;
     if (e->pos().x() < hover_border && e->pos().y() < height() - hover_border) {
@@ -639,7 +638,6 @@ void ImageView::mouseMoveEvent(QMouseEvent *e)
     } else {
         setCursor(Qt::ArrowCursor);
     }
-    //    qDebug() << qApp->ScrollWithCursorWhenZooming() << scene()->sceneRect() << size();
     if (m_loupeController.isActive()) {
         updateLoupeScrollFromCursor();
     } else if (qApp->ScrollWithCursorWhenZooming() && (scene()->sceneRect().width() > width() || scene()->sceneRect().height() > height())) {

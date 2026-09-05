@@ -47,7 +47,6 @@ private:
     QString m_path;
     ImageContent m_initialImage;
     Volume *m_volume;
-    //    QFutureWatcher<void> m_watcher;
     QString m_selectedPageName;
 };
 

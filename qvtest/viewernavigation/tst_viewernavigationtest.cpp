@@ -309,7 +309,7 @@ private slots:
             ++notificationCount;
             latest = std::move(pages);
         });
-        QVERIFY(session.addVisiblePage(ImageContent("first.bmp", 0), true));
+        QVERIFY(session.appendVisiblePage(ImageContent("first.bmp", 0)));
 
         const VisiblePages pages = session.visiblePages();
         QCOMPARE(notificationCount, 1);
@@ -320,10 +320,10 @@ private slots:
         QVERIFY(pages.first() != nullptr);
         QCOMPARE(pages.first()->path, QString("first.bmp"));
 
-        QVERIFY(session.addVisiblePage(ImageContent("second.bmp", 0), true));
+        QVERIFY(session.appendVisiblePage(ImageContent("second.bmp", 0)));
         QCOMPARE(notificationCount, 2);
         QCOMPARE(latest.count(), 2);
-        QVERIFY(!session.addVisiblePage(ImageContent("third.bmp", 0), true));
+        QVERIFY(!session.appendVisiblePage(ImageContent("third.bmp", 0)));
         QCOMPARE(notificationCount, 2);
 
         session.clearVisiblePages();
@@ -341,9 +341,8 @@ private slots:
 
         ViewerSession session(nullptr);
         QImage image(100, 200, QImage::Format_RGB32);
-        QVERIFY(session.addVisiblePage(
-            ImageContent(image, "sample.png", image.size(), {}, 1024),
-            true));
+        QVERIFY(session.appendVisiblePage(
+            ImageContent(image, "sample.png", image.size(), {}, 1024)));
         imageString.initialize(&session, [] {
             return RenderedPageMetrics(QVector<qreal>{0.5});
         });
@@ -656,7 +655,7 @@ private slots:
         view.setViewerSession(&session);
 
         const QImage image(8, 8, QImage::Format_ARGB32);
-        session.addVisiblePage(ImageContent(image, "preview.png", image.size(), {}, 0), true);
+        session.appendVisiblePage(ImageContent(image, "preview.png", image.size(), {}, 0));
 
         view.handleNextPageOrVolumeActionTriggered();
         view.handlePrevPageOrVolumeActionTriggered();
@@ -718,9 +717,8 @@ private slots:
 
         QImage image(640, 480, QImage::Format_ARGB32);
         image.fill(Qt::red);
-        QVERIFY(session.addVisiblePage(
-            ImageContent(image, "fitting.png", image.size(), {}, 0),
-            true));
+        QVERIFY(session.appendVisiblePage(
+            ImageContent(image, "fitting.png", image.size(), {}, 0)));
 
         qApp->setFitting(false);
         view.refreshRenderedPages();
@@ -752,9 +750,8 @@ private slots:
 
         QImage image(640, 480, QImage::Format_ARGB32);
         image.fill(Qt::red);
-        QVERIFY(session.addVisiblePage(
-            ImageContent(image, "shortcut.png", image.size(), {}, 0),
-            true));
+        QVERIFY(session.appendVisiblePage(
+            ImageContent(image, "shortcut.png", image.size(), {}, 0)));
 
         qApp->setFitting(false);
         fittingAction.setChecked(false);

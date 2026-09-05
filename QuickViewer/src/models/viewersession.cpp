@@ -42,10 +42,7 @@ ViewerSession::ViewerSession(QObject *parent)
       m_initialImageLoadDispatcher(),
       m_volumeLoadDispatcher(),
       m_initialDisplayGeneration(0)
-//    , m_builderForAssoc("", this)
-{
-    installEventFilter(this);
-}
+{}
 
 VolumeHandle ViewerSession::activeVolumeHandle() const
 {
@@ -188,9 +185,9 @@ bool ViewerSession::loadVolumeWithFile(QString path, bool allowSecondPage)
     const QString subfileName = imageInfo.fileName();
     if (m_volumeCache.contains(volumeCacheKey(basePath)) || (allowSecondPage && qApp->DualView())) {
         m_allowSecondVisiblePage = allowSecondPage;
-        bool result = loadVolume(QString("%1::%2").arg(basePath).arg(subfileName));
+        const bool loaded = loadVolume(QString("%1::%2").arg(basePath).arg(subfileName));
         m_allowSecondVisiblePage = true;
-        return result;
+        return loaded;
     }
 
     m_initialImageLoadDispatcher.invalidate();
@@ -402,35 +399,35 @@ bool ViewerSession::nextVolume()
     if (!volume) {
         return false;
     }
-    QDir dir(volume->volumePath());
+    QDir parentDirectory(volume->volumePath());
     const QFileInfo fileInfo(volume->volumePath());
-    const QString current = fileInfo.fileName();
-    if (!dir.cdUp()) {
+    const QString currentVolumeName = fileInfo.fileName();
+    if (!parentDirectory.cdUp()) {
         return false;
     }
     if (m_volumeNames.isEmpty()) {
-        m_volumeNames = enumerateVolumes(dir);
+        m_volumeNames = siblingVolumeNames(parentDirectory);
     }
     bool beforeMatch = true;
     bool loaded = false;
     int preloadCount = 0;
-    foreach (const QString &name, m_volumeNames) {
+    foreach (const QString &volumeName, m_volumeNames) {
         if (beforeMatch) {
-            if (name == current) {
+            if (volumeName == currentVolumeName) {
                 beforeMatch = false;
             }
             continue;
         }
-        const QString path = dir.filePath(name);
+        const QString volumePath = parentDirectory.filePath(volumeName);
         if (preloadCount++ == 0) {
             // Continue searching if the next volume cannot be loaded.
-            if (!loadVolume(path, true)) {
+            if (!loadVolume(volumePath, true)) {
                 preloadCount = 0;
             } else {
                 loaded = true;
             }
         } else {
-            prefetchVolume(path);
+            prefetchVolume(volumePath);
         }
         // preloadCount <- MaxVolumesCache()
         // 0            <- 1
@@ -456,38 +453,38 @@ bool ViewerSession::prevVolume()
     if (!volume) {
         return false;
     }
-    QDir dir(volume->volumePath());
+    QDir parentDirectory(volume->volumePath());
     const QFileInfo fileInfo(volume->volumePath());
-    const QString current = fileInfo.fileName();
-    if (!dir.cdUp()) {
+    const QString currentVolumeName = fileInfo.fileName();
+    if (!parentDirectory.cdUp()) {
         return false;
     }
     int matchCount = 0;
     bool loaded = false;
     if (m_volumeNames.isEmpty()) {
-        m_volumeNames = enumerateVolumes(dir);
+        m_volumeNames = siblingVolumeNames(parentDirectory);
     }
-    QListIterator<QString> it(m_volumeNames);
-    it.toBack();
+    QListIterator<QString> volumeNameIterator(m_volumeNames);
+    volumeNameIterator.toBack();
     bool beforeMatch = true;
-    while (it.hasPrevious()) {
-        const QString name = it.previous();
+    while (volumeNameIterator.hasPrevious()) {
+        const QString volumeName = volumeNameIterator.previous();
         if (beforeMatch) {
-            if (name == current) {
+            if (volumeName == currentVolumeName) {
                 beforeMatch = false;
             }
             continue;
         }
-        const QString path = dir.filePath(name);
+        const QString volumePath = parentDirectory.filePath(volumeName);
         if (matchCount++ == 0) {
             // Continue searching if the previous volume cannot be loaded.
-            if (!loadVolume(path, true)) {
+            if (!loadVolume(volumePath, true)) {
                 matchCount = 0;
             } else {
                 loaded = true;
             }
         } else {
-            prefetchVolume(path);
+            prefetchVolume(volumePath);
         }
         // preloadCount <- MaxVolumesCache()
         // 0            <- 1
@@ -736,20 +733,16 @@ bool ViewerSession::reloadVisiblePages()
     return true;
 }
 
-bool ViewerSession::addVisiblePage(ImageContent content, bool append)
+bool ViewerSession::appendVisiblePage(ImageContent content)
 {
     if (m_visiblePages.size() >= VisiblePages::Capacity) {
         return false;
     }
     content.initializeAnimation();
-    if (!append || m_visiblePages.isEmpty()) {
+    if (m_visiblePages.isEmpty()) {
         m_firstVisiblePageIsLandscape = content.isLandscape();
     }
-    if (append) {
-        m_visiblePages.push_back(std::move(content));
-    } else {
-        m_visiblePages.push_front(std::move(content));
-    }
+    m_visiblePages.push_back(std::move(content));
     emit visiblePagesChanged(visiblePages());
     return true;
 }
@@ -800,31 +793,6 @@ void ViewerSession::sortActiveVolumePages(qvEnums::ImageSortBy sortBy)
         volume->sortPages(sortBy);
         firstPage();
     }
-}
-
-bool ViewerSession::eventFilter(QObject *obj, QEvent *event)
-{
-    switch (event->type()) {
-    case ReloadedEventType: {
-        VolumeHandle volume = activeVolumeHandle();
-        if (!volume) {
-            return true;
-        }
-        reloadVisiblePages();
-        if (activeVolume() != volume.get()) {
-            return true;
-        }
-        emit pageChanged();
-        if (activeVolume() == volume.get()) {
-            emit volumeChanged(volume->volumePath());
-        }
-        return true;
-    }
-
-    default:
-        break;
-    }
-    return QObject::eventFilter(obj, event);
 }
 
 QString ViewerSession::currentPageNumberText() const
@@ -884,7 +852,7 @@ bool ViewerSession::shouldShowSecondPage() const
     return qApp->DualView() && !(m_firstVisiblePageIsLandscape && qApp->WideImageAsOnePageInDualView());
 }
 
-QStringList ViewerSession::enumerateVolumes(const QDir &directory)
+QStringList ViewerSession::siblingVolumeNames(const QDir &directory)
 {
     QStringList folders = directory.entryList(QDir::NoDotAndDotDot | QDir::Dirs, QDir::Name);
     IFileLoader::sortFiles(folders);
