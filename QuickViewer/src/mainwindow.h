@@ -218,6 +218,8 @@ private slots:
 
 private:
     void loadStartupVolume();
+    void revealStartupWindow();
+    void completeDeferredStartupWork();
     void initializeConfiguredStartupPanel(const QString &folderPath = QString());
 
 protected:

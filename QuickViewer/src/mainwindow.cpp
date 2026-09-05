@@ -344,9 +344,9 @@ void MainWindow::initializeStartup()
     // returns, when the splitter already has its final available width.
     QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
-    // The timers run after the remaining synchronous startup work. Paint the
-    // final layout, switch to the normal surface while still cloaked, and only
-    // then let DWM compose the completed window.
+    // Start the requested volume once the event loop is running, while the
+    // window is still cloaked. The first completed image paint reveals the
+    // final surface; an empty or failed startup request reveals it here.
     QTimer::singleShot(0, this, [this]() {
         if (!m_revealInitialWindow) {
             return;
@@ -354,30 +354,26 @@ void MainWindow::initializeStartup()
         if (layout()) {
             layout()->activate();
         }
-        ui->graphicsView->refreshRenderedPages();
-        repaint();
-        QTimer::singleShot(0, this, [this]() {
-            if (!m_revealInitialWindow) {
-                return;
-            }
-            setWindowOpacity(1.0);
-            repaint();
-            QTimer::singleShot(0, this, [this]() {
-                if (!m_revealInitialWindow) {
-                    return;
-                }
-                if (m_startupWindowCloaked) {
-                    setStartupWindowCloaked(false);
-                    m_startupWindowCloaked = false;
-                }
-                m_revealInitialWindow = false;
-
-                // Give the completed frame back to the event loop before a
-                // potentially blocking image or archive load.
-                QTimer::singleShot(0, this, &MainWindow::loadStartupVolume);
-            });
-        });
+        loadStartupVolume();
+        if (!m_viewerSession.initialImagePaintPending()) {
+            revealStartupWindow();
+            QTimer::singleShot(0, this, &MainWindow::completeDeferredStartupWork);
+        }
     });
+}
+
+void MainWindow::revealStartupWindow()
+{
+    if (!m_revealInitialWindow) {
+        return;
+    }
+    setWindowOpacity(1.0);
+    repaint();
+    if (m_startupWindowCloaked) {
+        setStartupWindowCloaked(false);
+        m_startupWindowCloaked = false;
+    }
+    m_revealInitialWindow = false;
 }
 
 void MainWindow::loadStartupVolume()
@@ -971,6 +967,12 @@ bool MainWindow::changeFolderPath(QString path)
 }
 
 void MainWindow::handleInitialImageDisplayFinished()
+{
+    revealStartupWindow();
+    QTimer::singleShot(0, this, &MainWindow::completeDeferredStartupWork);
+}
+
+void MainWindow::completeDeferredStartupWork()
 {
     if (m_folderWindow) {
         if (!m_pendingFolderPath.isEmpty()) {
