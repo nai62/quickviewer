@@ -571,6 +571,8 @@ public:
 
 bool FileLoader7zArchive::initializeLib()
 {
+    static QMutex initializeMutex;
+    QMutexLocker locker(&initializeMutex);
     if(!c7zipLib) {
         c7zipLib = new C7ZipLibrary();
         c7ziplib_alive = c7zipLib->Initialize();

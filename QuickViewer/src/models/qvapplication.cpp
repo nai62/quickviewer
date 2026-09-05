@@ -81,8 +81,6 @@ QVApplication::QVApplication(int &argc, char **argv)
     registerDefaultMouseMap();
     loadSettings();
 
-    FileLoader7zArchive::initializeLib();
-
     // Qt6 has a limit on loading large images, but this is inconvenient,
     // so we will relax this limit (and in the future make it a configurable value).
     QImageReader::setAllocationLimit(1024);

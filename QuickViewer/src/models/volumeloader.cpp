@@ -44,6 +44,7 @@ Volume *VolumeLoader::createVolume(QObject *parent, QString path)
         return new Volume(parent, new FileLoaderRarArchive(parent, path));
     }
     // Automatically recognizes various archive formats that SevenZip can deploy
+    FileLoader7zArchive::initializeLib();
     if (FileLoader7zArchive::st_supportedArchiveFormats.contains(archiveFormat)) {
         return new Volume(parent, new FileLoader7zArchive(parent, path, archiveFormat, qApp->ExtractSolidArchiveToTemporaryDir()));
     }
