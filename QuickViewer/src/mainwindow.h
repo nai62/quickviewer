@@ -217,6 +217,7 @@ private slots:
     void handleInitialImageDisplayFinished();
 
 private:
+    void saveVisibleFolderViewWidth();
     void loadStartupVolume();
     void revealStartupWindow();
     void completeDeferredStartupWork();

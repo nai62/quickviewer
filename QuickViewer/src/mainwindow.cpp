@@ -54,10 +54,10 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowOpacity(0.0);
 
     connect(ui->catalogSplitter, &QSplitter::splitterMoved, this, [this]() {
-        if (!qApp->SaveFolderViewWidth() || !m_folderWindow || m_folderWindow->parentWidget() != ui->catalogSplitter) {
+        if (!m_folderWindow || m_folderWindow->parentWidget() != ui->catalogSplitter) {
             return;
         }
-        qApp->setFolderViewWidth(ui->catalogSplitter->sizes().constFirst());
+        saveVisibleFolderViewWidth();
     });
 
     m_menubarFontSize = ui->menuBar->font().pointSize();
@@ -415,6 +415,16 @@ MainWindow::~MainWindow()
     qApp->saveSettings();
 }
 
+void MainWindow::saveVisibleFolderViewWidth()
+{
+    if (!qApp->SaveFolderViewWidth() || !m_folderWindow || !m_folderWindow->isVisible()) {
+        return;
+    }
+    if (m_folderWindow->parentWidget() == ui->catalogSplitter || m_folderWindow->isWindow()) {
+        qApp->setFolderViewWidth(m_folderWindow->width());
+    }
+}
+
 void MainWindow::resetShortcutKeys()
 {
     QMap<QString, QAction *> &actions = qApp->keyActions().actions();
@@ -526,6 +536,10 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 
 void MainWindow::closeEvent(QCloseEvent *)
 {
+    // Capture the final layout rather than every automatic resize. In
+    // particular, fullscreen can redistribute the splitter without emitting
+    // splitterMoved.
+    saveVisibleFolderViewWidth();
     m_onWindowClosing = true;
     delete m_contextMenu;
     m_contextMenu = nullptr;
@@ -988,7 +1002,6 @@ void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
     qApp->setShowOptionViewOnStartup(qvEnums::FolderStartup);
     if (docked) {
         closeAllDockedWindow();
-        int lastwidth = qApp->FolderViewWidth();
         m_folderWindow = new FolderWindow(nullptr, ui);
         if (!deferFolderLoad) {
             m_folderWindow->setFolderPath(oldpath, false);
@@ -1001,7 +1014,10 @@ void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
         }
         auto sizes = ui->catalogSplitter->sizes();
         int sum = sizes[0] + sizes[1];
-        sizes[0] = qApp->SaveFolderViewWidth() ? lastwidth : 200;
+        const int requestedWidth = qApp->SaveFolderViewWidth() ? qApp->FolderViewWidth() : 200;
+        // Avoid invalid splitter sizes first; QSplitter then applies the
+        // widgets' effective minimum and maximum sizes.
+        sizes[0] = qBound(0, requestedWidth, sum);
         sizes[1] = sum - sizes[0];
         ui->catalogSplitter->setSizes(sizes);
         m_folderWindow->setAsInnerWidget();
@@ -1610,6 +1626,9 @@ void MainWindow::handleSaveReadProgressActionTriggered(bool checked)
 void MainWindow::handleSaveFolderViewWidthActionTriggered(bool checked)
 {
     qApp->setSaveFolderViewWidth(checked);
+    if (checked) {
+        saveVisibleFolderViewWidth();
+    }
 }
 
 void MainWindow::resetVolumeCaption()

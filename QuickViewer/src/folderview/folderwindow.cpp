@@ -34,6 +34,11 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *)
     m_sortModeMenu = ui->menuSort;
     ui->menuBar->removeAction(ui->menuItemContext->menuAction());
     m_itemContextMenu = ui->menuItemContext;
+
+    // Freeze the panel's effective minimum before a path or folder entries
+    // are loaded. The constraint represents the controls needed by the UI,
+    // not the contents of the current folder.
+    setMinimumWidth(minimumSizeHint().width());
 }
 
 FolderWindow::~FolderWindow()
