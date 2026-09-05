@@ -736,8 +736,9 @@ void MainWindow::reserveConfiguredStartupPanelSpace()
     case qvEnums::NoViewStartup:
         return;
     case qvEnums::FolderStartup:
-        panelWidth = qApp->SaveFolderViewWidth() ? qApp->FolderViewWidth() : 200;
-        break;
+        m_startupPanelInitialized = true;
+        createFolderWindow(true, QString(), true);
+        return;
     case qvEnums::CatalogStartup:
         panelWidth = qApp->SaveCatalogViewWidth() ? qApp->CatalogViewWidth() : 200;
         break;
@@ -952,9 +953,9 @@ void MainWindow::handleFolderWindowOpenVolume(QString path)
     loadVolume(path);
 }
 
-void MainWindow::createFolderWindow(bool docked, QString path)
+void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
 {
-    const bool deferFolderLoad = m_viewerSession.initialImagePaintPending();
+    const bool deferFolderLoad = deferLoad || m_viewerSession.initialImagePaintPending();
     QString oldpath = path;
     if (m_folderWindow) {
         oldpath = m_folderWindow->currentPath();
