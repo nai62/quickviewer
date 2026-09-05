@@ -300,6 +300,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::initializeStartup()
 {
+    // restoreGeometry() in the constructor can restore fullscreen even when
+    // the explicit "Begin as fullscreen" option is disabled.
+    const bool startFullscreen = qApp->BeginAsFullscreen() || isFullScreen();
     const bool stayOnTop = qApp->StayOnTop();
     if (stayOnTop) {
         // Apply the portable flag before the native window is created.
@@ -307,7 +310,7 @@ void MainWindow::initializeStartup()
     }
 
     // Restore all non-native state before creating the startup window.
-    if (qApp->BeginAsFullscreen()) {
+    if (startFullscreen) {
         if (qApp->HideMouseCursorInFullscreen()) {
             ui->graphicsView->setCursor(Qt::BlankCursor);
         }
@@ -316,13 +319,15 @@ void MainWindow::initializeStartup()
     }
     StartupProfiler::mark("startup.window-state-restored");
 
-    // Opacity is only a fallback on Windows: changing a layered window back
-    // to opaque is not atomic with DWM composition. Cloaking keeps the native
-    // window out of composition until its normal surface has been repainted.
-    m_startupWindowCloaked = setStartupWindowCloaked(true);
-    if (qApp->BeginAsFullscreen()) {
+    if (startFullscreen) {
+        // Let Windows observe the native fullscreen transition. Creating and
+        // showing it while DWM-cloaked leaves the taskbar above the window.
         showFullScreen();
     } else {
+        // Opacity is only a fallback on Windows: changing a layered window
+        // back to opaque is not atomic with DWM composition. Cloaking keeps a
+        // normal startup window out of composition until it is repainted.
+        m_startupWindowCloaked = setStartupWindowCloaked(true);
         show();
     }
     StartupProfiler::mark("startup.window-shown");

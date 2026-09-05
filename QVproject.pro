@@ -14,21 +14,25 @@ SUBDIRS = \
     prefetchplannertest \
     latestresultdispatchertest \
     asynccachetest \
-    viewernavigationtest
+    viewernavigationtest \
+    windowstartuptest
 
 prefetchplannertest.subdir = qvtest/prefetchplanner
 latestresultdispatchertest.subdir = qvtest/latestresultdispatcher
 asynccachetest.subdir = qvtest/asynccache
 viewernavigationtest.subdir = qvtest/viewernavigation
+windowstartuptest.subdir = qvtest/windowstartup
 
 fileloader.depends = Qt7z/Qt7z unrar
 QuickViewer.depends = ResizeHalf easyexif fileloader zimg qsvgrenderer
 qvtest.depends = fileloader
 viewernavigationtest.depends = ResizeHalf easyexif fileloader zimg qsvgrenderer
+windowstartuptest.depends = ResizeHalf easyexif fileloader zimg qsvgrenderer
 
 contains(DEFINES, QV_WITH_LUMINOR) {
     SUBDIRS += luminor
     QuickViewer.depends += luminor
+    windowstartuptest.depends += luminor
 }
 
 win32 {

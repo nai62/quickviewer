@@ -38,11 +38,18 @@ if /I "%~1"=="--viewer-only" (
     if not "!QV_TEST_FAILED!"=="0" exit /b 1
     exit /b 0
 )
+if /I "%~1"=="--startup-only" (
+    set "PATH=%QV_QT_DIR%\bin;%QV_BUILD_DIR%\lib;%PATH%"
+    set "QV_TEST_FAILED=0"
+    call :run_test tst_windowstartuptest.exe %~2
+    if not "!QV_TEST_FAILED!"=="0" exit /b 1
+    exit /b 0
+)
 if /I "%~1"=="--release-only" goto build_release
 if /I "%~1"=="--full" goto build_debug_full
 
 echo ERROR: Select an explicit verification mode.
-echo Usage: %~nx0 --build-viewer-only ^| --viewer-only [test-function] ^| --tests-only ^| --full ^| --release-only
+echo Usage: %~nx0 --build-viewer-only ^| --viewer-only [test-function] ^| --startup-only [test-function] ^| --tests-only ^| --full ^| --release-only
 exit /b 2
 
 :build_debug_full
@@ -103,6 +110,7 @@ call :run_test tst_asynccachetest.exe
 call :run_test tst_latestresultdispatchertest.exe
 call :run_test tst_fileloadertest.exe
 call :run_test tst_viewernavigationtest.exe
+call :run_test tst_windowstartuptest.exe
 
 if not "!QV_TEST_FAILED!"=="0" (
     echo === One or more tests failed ===
