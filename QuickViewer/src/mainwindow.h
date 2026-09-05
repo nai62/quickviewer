@@ -66,7 +66,7 @@ public:
 
     // FolderWindow
     bool isFolderSearching();
-    void createFolderWindow(bool docked, QString path = "");
+    void createFolderWindow(bool docked, QString path = "", bool deferLoad = false);
     bool changeFolderPath(QString path);
 
     // CatalogWindow

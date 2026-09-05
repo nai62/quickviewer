@@ -172,6 +172,32 @@ scripts\test-windows.cmd --viewer-only
 scripts\test-windows.cmd --viewer-only fittingModeRelayoutsRenderedPage
 ```
 
+Run only the window startup regression suite:
+
+```bat
+scripts\test-windows.cmd --startup-only
+```
+
+To build this test without rebuilding the other projects, use a Visual Studio
+developer prompt with the existing dependency libraries in `QV_BUILD_DIR`:
+
+```bat
+set "QV_SOURCE_DIR=C:\path\to\quickviewer"
+set "QV_BUILD_DIR=C:\build\quickviewer-msvc2022_64-debug"
+if not exist "%QV_BUILD_DIR%\qvtest\windowstartup" mkdir "%QV_BUILD_DIR%\qvtest\windowstartup"
+cd /d "%QV_BUILD_DIR%\qvtest\windowstartup"
+C:\Qt\6.11.2\msvc2022_64\bin\qmake.exe "%QV_SOURCE_DIR%\qvtest\windowstartup\windowstartup.pro" CONFIG+=debug CONFIG-=release
+C:\Qt\Tools\QtCreator\bin\jom\jom.exe -j 8 /f Makefile.Debug
+call "%QV_SOURCE_DIR%\scripts\test-windows.cmd" --startup-only
+```
+
+The test exercises the real `MainWindow` with a recording replacement for DWM
+cloaking. It covers explicit fullscreen startup and fullscreen restored from
+saved geometry, plus normal and maximized startup. It verifies the startup
+branch, not the Windows taskbar's visual behavior. Interactive checks must
+include exiting in fullscreen and reopening with `BeginAsFullscreen=false`
+and `RestoreWindowState=true`.
+
 Under WSL, pass the same option after the quoted script path in the `cmd.exe`
 command shown above. Report exactly which targeted tests were run; do not imply
 that unrequested full verification was performed.

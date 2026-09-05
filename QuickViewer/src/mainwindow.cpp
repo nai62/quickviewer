@@ -300,6 +300,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::initializeStartup()
 {
+    // restoreGeometry() in the constructor can restore fullscreen even when
+    // the explicit "Begin as fullscreen" option is disabled.
+    const bool startFullscreen = qApp->BeginAsFullscreen() || isFullScreen();
     const bool stayOnTop = qApp->StayOnTop();
     if (stayOnTop) {
         // Apply the portable flag before the native window is created.
@@ -307,23 +310,27 @@ void MainWindow::initializeStartup()
     }
 
     // Restore all non-native state before creating the startup window.
-    if (qApp->BeginAsFullscreen()) {
+    if (startFullscreen) {
         if (qApp->HideMouseCursorInFullscreen()) {
             ui->graphicsView->setCursor(Qt::BlankCursor);
         }
     } else if (qApp->RestoreWindowState()) {
         restoreState(qApp->WindowState());
     }
+    StartupProfiler::mark("startup.window-state-restored");
 
-    // Opacity is only a fallback on Windows: changing a layered window back
-    // to opaque is not atomic with DWM composition. Cloaking keeps the native
-    // window out of composition until its normal surface has been repainted.
-    m_startupWindowCloaked = setStartupWindowCloaked(true);
-    if (qApp->BeginAsFullscreen()) {
+    if (startFullscreen) {
+        // Let Windows observe the native fullscreen transition. Creating and
+        // showing it while DWM-cloaked leaves the taskbar above the window.
         showFullScreen();
     } else {
+        // Opacity is only a fallback on Windows: changing a layered window
+        // back to opaque is not atomic with DWM composition. Cloaking keeps a
+        // normal startup window out of composition until it is repainted.
+        m_startupWindowCloaked = setStartupWindowCloaked(true);
         show();
     }
+    StartupProfiler::mark("startup.window-shown");
     if (isFullScreen()) {
         menuBar()->hide();
         ui->mainToolBar->hide();
@@ -342,9 +349,11 @@ void MainWindow::initializeStartup()
     // Reserve a deferred docked panel's final width before the first image is
     // laid out. The lightweight placeholder is replaced after the first paint.
     reserveConfiguredStartupPanelSpace();
+    StartupProfiler::mark("startup.panel-ready");
 
     // Settle the initial geometry now, including any reserved panel width.
     QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+    StartupProfiler::mark("startup.initial-events-processed");
 
     // Start the requested volume once the event loop is running, while the
     // window is still cloaked. The first completed image paint reveals the
@@ -736,8 +745,9 @@ void MainWindow::reserveConfiguredStartupPanelSpace()
     case qvEnums::NoViewStartup:
         return;
     case qvEnums::FolderStartup:
-        panelWidth = qApp->SaveFolderViewWidth() ? qApp->FolderViewWidth() : 200;
-        break;
+        m_startupPanelInitialized = true;
+        createFolderWindow(true, QString(), true);
+        return;
     case qvEnums::CatalogStartup:
         panelWidth = qApp->SaveCatalogViewWidth() ? qApp->CatalogViewWidth() : 200;
         break;
@@ -952,9 +962,9 @@ void MainWindow::handleFolderWindowOpenVolume(QString path)
     loadVolume(path);
 }
 
-void MainWindow::createFolderWindow(bool docked, QString path)
+void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
 {
-    const bool deferFolderLoad = m_viewerSession.initialImagePaintPending();
+    const bool deferFolderLoad = deferLoad || m_viewerSession.initialImagePaintPending();
     QString oldpath = path;
     if (m_folderWindow) {
         oldpath = m_folderWindow->currentPath();
