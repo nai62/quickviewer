@@ -25,6 +25,12 @@ static VolumeCacheKey volumeCacheKey(const QString &volumePath)
         qApp->ExtractSolidArchiveToTemporaryDir()};
 }
 
+static ImageContent waitForImageAt(const Volume &volume, int pageIndex)
+{
+    const Volume::ImageLoadFuture imageLoad = volume.imageLoadAt(pageIndex);
+    return imageLoad.isValid() ? imageLoad.result() : ImageContent();
+}
+
 ViewerSession::ViewerSession(QObject *parent)
     : QObject(parent),
       m_currentPageIndex(0),
@@ -559,8 +565,8 @@ bool ViewerSession::retreatSpread()
     }
     m_currentPageIndex--;
     if (qApp->DualView() && m_currentPageIndex >= 1) {
-        const ImageContent currentContent = volume->pageAt(m_currentPageIndex);
-        const ImageContent previousContent = volume->pageAt(m_currentPageIndex - 1);
+        const ImageContent currentContent = waitForImageAt(*volume, m_currentPageIndex);
+        const ImageContent previousContent = waitForImageAt(*volume, m_currentPageIndex - 1);
         if (!qApp->WideImageAsOnePageInDualView() || (!currentContent.isLandscape() && !previousContent.isLandscape())) {
             m_currentPageIndex--;
         }
@@ -695,7 +701,7 @@ bool ViewerSession::reloadVisiblePages()
         return false;
     }
     QVector<ImageContent> pages;
-    ImageContent firstContent = volume->pageAt(m_currentPageIndex);
+    ImageContent firstContent = waitForImageAt(*volume, m_currentPageIndex);
     firstContent.initializeAnimation();
     const bool firstPageIsLandscape = firstContent.isLandscape();
     pages.push_back(std::move(firstContent));
@@ -705,7 +711,7 @@ bool ViewerSession::reloadVisiblePages()
     m_firstVisiblePageIsLandscape = firstPageIsLandscape;
     if (!(m_currentPageIndex == 0 && qApp->FirstImageAsOnePageInDualView()) && shouldShowSecondPage()) {
         if (m_allowSecondVisiblePage && volume->currentPageIndex() < volume->pageCount() - 1) {
-            ImageContent secondContent = volume->pageAt(m_currentPageIndex + 1);
+            ImageContent secondContent = waitForImageAt(*volume, m_currentPageIndex + 1);
             if (!qApp->WideImageAsOnePageInDualView() || (!firstPageIsLandscape && !secondContent.isLandscape())) {
                 volume->advanceOnePage();
                 secondContent.initializeAnimation();

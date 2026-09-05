@@ -311,13 +311,13 @@ ImageContent Volume::loadThumbnailSourceImage()
     return futureLoadImageFromFileVolume(m_loadContext, m_pageNames[0], QSize());
 }
 
-const ImageContent Volume::pageAt(int pageIndex)
+Volume::ImageLoadFuture Volume::imageLoadAt(int pageIndex) const
 {
     if (pageIndex < 0 || pageIndex >= m_pageNames.size()) {
-        return ImageContent();
+        return {};
     }
-    ImageLoadFuture *imageLoad = m_imageLoadCache.find(pageIndex);
-    return imageLoad && imageLoad->isValid() ? imageLoad->result() : ImageContent();
+    const ImageLoadFuture *imageLoad = m_imageLoadCache.find(pageIndex);
+    return imageLoad ? *imageLoad : ImageLoadFuture();
 }
 
 void Volume::moveToThread(QThread *targetThread)

@@ -347,7 +347,7 @@ private slots:
         QCOMPARE(volume.currentPathWithSeparator(), QString());
         QCOMPARE(volume.pageNameAt(0), QString());
         QVERIFY(volume.currentImage().loadedImage.isNull());
-        QVERIFY(volume.pageAt(0).loadedImage.isNull());
+        QVERIFY(!volume.imageLoadAt(0).isValid());
         QVERIFY(!volume.advanceOnePage());
         QVERIFY(!volume.retreatOnePage());
         QVERIFY(!volume.selectPage(0));
@@ -364,9 +364,13 @@ private slots:
         Volume coverVolume(nullptr, coverLoader);
         coverVolume.prefetchCoverImages();
 
-        QVERIFY(!coverVolume.pageAt(0).loadedImage.isNull());
-        QVERIFY(!coverVolume.pageAt(1).loadedImage.isNull());
-        QVERIFY(coverVolume.pageAt(2).loadedImage.isNull());
+        const Volume::ImageLoadFuture firstCoverLoad = coverVolume.imageLoadAt(0);
+        const Volume::ImageLoadFuture secondCoverLoad = coverVolume.imageLoadAt(1);
+        QVERIFY(firstCoverLoad.isValid());
+        QVERIFY(secondCoverLoad.isValid());
+        QVERIFY(!firstCoverLoad.result().loadedImage.isNull());
+        QVERIFY(!secondCoverLoad.result().loadedImage.isNull());
+        QVERIFY(!coverVolume.imageLoadAt(2).isValid());
         QStringList coverRequests = coverLoader->requestedNames();
         coverRequests.sort();
         QCOMPARE(coverRequests,

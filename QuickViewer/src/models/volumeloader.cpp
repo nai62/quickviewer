@@ -120,7 +120,8 @@ Volume *VolumeLoader::buildForContainingImage()
         delete m_volume;
         return m_volume = nullptr;
     }
-    m_initialImage = m_volume->currentImage();
+    const Volume::ImageLoadFuture initialImageLoad = m_volume->imageLoadAt(m_volume->currentPageIndex());
+    m_initialImage = initialImageLoad.isValid() ? initialImageLoad.result() : ImageContent();
 
     return m_volume;
 }

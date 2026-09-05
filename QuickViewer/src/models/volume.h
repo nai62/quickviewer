@@ -133,7 +133,7 @@ public:
     ImageContent loadThumbnailSourceImage();
     int currentPageIndex() { return m_currentPageIndex; }
 
-    const ImageContent pageAt(int pageIndex);
+    ImageLoadFuture imageLoadAt(int pageIndex) const;
     bool openedWithSpecifiedImageFile() { return m_openedWithSpecifiedImageFile; }
     void setOpenedWithSpecifiedImageFile(bool openedWithSpecifiedImageFile) { m_openedWithSpecifiedImageFile = openedWithSpecifiedImageFile; }
     void setViewportSize(QSize size) { m_viewportSize = size; }
