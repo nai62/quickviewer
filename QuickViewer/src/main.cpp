@@ -4,6 +4,7 @@
 #include "qvapplication.h"
 #include "thumbnailmanager.h"
 #include "qnamedpipe.h"
+#include "startupprofiler.h"
 
 #if defined(Q_OS_WIN)
 #    include "mainwindowforwindows.h"
@@ -17,6 +18,7 @@
 
 int main(int argc, char *argv[])
 {
+    StartupProfiler::start();
 #ifdef Q_OS_WIN
     {
         // Activate the direct2d QPA plugin when 'UseDirect2D' of quickviewer.ini is true.
@@ -43,6 +45,7 @@ int main(int argc, char *argv[])
 #endif
 
     QVApplication app(argc, argv);
+    StartupProfiler::mark("application.constructed");
     app.setEffectEnabled(Qt::UI_AnimateCombo, false);
     app.myInstallTranslator();
     int result = 0;
@@ -64,6 +67,7 @@ int main(int argc, char *argv[])
 #else
         MainWindow w;
 #endif
+        StartupProfiler::mark("mainwindow.constructed");
         w.initializeStartup();
         QString dbpath = app.CatalogDatabasePath();
         ThumbnailManager manager(&w, dbpath);

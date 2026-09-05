@@ -4,6 +4,7 @@
 #include "pagedisplayformatter.h"
 #include "qvapplication.h"
 #include "volumeloader.h"
+#include "startupprofiler.h"
 
 struct VolumeLocation
 {
@@ -138,6 +139,7 @@ bool ViewerSession::initialImagePaintPending() const
 
 bool ViewerSession::loadVolume(QString path, bool coverOnly)
 {
+    StartupProfiler::mark("session.load-volume.begin");
     rememberActivePagePosition();
     const quint64 generation = ++m_initialDisplayGeneration;
     m_state = LoadingViewerState{generation};
@@ -148,6 +150,7 @@ bool ViewerSession::loadVolume(QString path, bool coverOnly)
     m_volumeLoadDispatcher.invalidate();
     clearVisiblePages();
     VolumeHandle loadedVolume = loadCachedVolume(path, coverOnly);
+    StartupProfiler::mark("session.volume-built");
     if (!loadedVolume) {
         m_state = FailedViewerState{};
         emit volumeChanged("");
@@ -306,6 +309,12 @@ void ViewerSession::finishInitialImageDisplay(quint64 generation)
     m_pendingContainingVolumePath.clear();
     m_pendingContainingPageName.clear();
 
+    StartupProfiler::mark("first-image-painted");
+    if (StartupProfiler::enabled()) {
+        StartupProfiler::flush();
+        QTimer::singleShot(0, qApp, &QCoreApplication::quit);
+        return;
+    }
     if (shouldStartContainingVolume && !normalizedPath.isEmpty()) {
         startContainingVolumeLoad(normalizedPath, basePath, subfileName);
     }
@@ -646,6 +655,7 @@ bool ViewerSession::fastBackwardPage()
 
 bool ViewerSession::selectPage(int pageIndex, PrefetchMode prefetchMode)
 {
+    StartupProfiler::mark("session.select-page.begin");
     Volume *volume = activeVolume();
     if (!volume || pageIndex < 0 || pageIndex >= volume->pageCount()) {
         return false;
@@ -655,6 +665,7 @@ bool ViewerSession::selectPage(int pageIndex, PrefetchMode prefetchMode)
     }
     m_prefetchMode = prefetchMode;
     volume->updatePrefetchCache(pageIndex, prefetchMode, m_viewportSize);
+    StartupProfiler::mark("session.prefetch-scheduled");
 
     reloadVisiblePages();
     updateReadProgress();
@@ -715,6 +726,7 @@ bool ViewerSession::reloadVisiblePages()
         return false;
     }
     ImageContent firstContent = waitForImageAt(*volume, currentPageIndex);
+    StartupProfiler::mark("session.first-image-ready");
     firstContent.initializeAnimation();
     if (activeVolume() != volume) {
         return false;
