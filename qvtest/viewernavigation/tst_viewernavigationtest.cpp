@@ -6,6 +6,7 @@
 #include "models/cursorscrollmapping.h"
 #include "models/imagestring.h"
 #include "models/loupecontroller.h"
+#include "models/pagedisplayformatter.h"
 #include "models/pagenavigator.h"
 #include "models/visiblepagecomposer.h"
 #include "models/viewersession.h"
@@ -153,6 +154,26 @@ private slots:
             QCOMPARE(composition.pageIndexes, testCase.expectedPageIndexes);
             QCOMPARE(composition.prefetchAnchorIndex, testCase.expectedPrefetchAnchor);
         }
+    }
+
+    void pageDisplayFormatterKeepsExistingTextFormats()
+    {
+        QCOMPARE(PageDisplayFormatter::pageNumberText(0, 12, 1), QString("(1/12)"));
+        QCOMPARE(PageDisplayFormatter::pageNumberText(4, 12, 2), QString("(5-6/12)"));
+        QCOMPARE(PageDisplayFormatter::pageNumberText(-1, 12, 1), QString());
+
+        const QVector<PageDisplayEntry> onePage{{"first.png", {640, 480}}};
+        QCOMPARE(PageDisplayFormatter::statusText(0, 12, onePage),
+                 QString("first.png (1/12)[640x480]"));
+        const QVector<PageDisplayEntry> spread{
+            {"first.png", {640, 480}}, {"second.png", {800, 600}}};
+        QCOMPARE(PageDisplayFormatter::statusText(4, 12, spread),
+                 QString("first.png (5-6/12)[640x480] | second.png [800x600]"));
+        QCOMPARE(PageDisplayFormatter::statusText(0, 12, {}), QString());
+
+        QCOMPARE(PageDisplayFormatter::signageText("book/page.png", 4, 12),
+                 QString("book/page.png (5/12)"));
+        QCOMPARE(PageDisplayFormatter::signageText({}, 4, 12), QString());
     }
 
     void directImageTransitionsThroughStandalonePreview()

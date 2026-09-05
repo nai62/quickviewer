@@ -114,6 +114,7 @@ SOURCES += \
     src/models/readprogressstore.cpp \
     src/models/boundedexecutor.cpp \
     src/models/imagecontent.cpp \
+    src/models/pagedisplayformatter.cpp \
     src/models/renderedpage.cpp \
     src/models/renderedpages.cpp \
     src/models/visiblepagecomposer.cpp \
@@ -168,6 +169,7 @@ HEADERS  += \
     src/models/loupecontroller.h \
     src/models/pagenavigator.h \
     src/models/imagecontent.h \
+    src/models/pagedisplayformatter.h \
     src/models/renderedpage.h \
     src/models/visiblepagecomposer.h \
     src/models/viewersession.h \

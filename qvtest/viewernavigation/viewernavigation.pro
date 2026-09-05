@@ -38,6 +38,7 @@ SOURCES += \
     ../../QuickViewer/src/models/imagestring.cpp \
     ../../QuickViewer/src/models/loupecontroller.cpp \
     ../../QuickViewer/src/models/imagecontent.cpp \
+    ../../QuickViewer/src/models/pagedisplayformatter.cpp \
     ../../QuickViewer/src/models/renderedpage.cpp \
     ../../QuickViewer/src/models/renderedpages.cpp \
     ../../QuickViewer/src/models/visiblepagecomposer.cpp \
@@ -70,6 +71,7 @@ HEADERS += \
     ../../QuickViewer/src/models/loupecontroller.h \
     ../../QuickViewer/src/models/pagenavigator.h \
     ../../QuickViewer/src/models/imagecontent.h \
+    ../../QuickViewer/src/models/pagedisplayformatter.h \
     ../../QuickViewer/src/models/renderedpage.h \
     ../../QuickViewer/src/models/visiblepagecomposer.h \
     ../../QuickViewer/src/models/viewersession.h \

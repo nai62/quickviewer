@@ -1,6 +1,7 @@
 #include "viewersession.h"
 
 #include "fileloadersubdirectory.h"
+#include "pagedisplayformatter.h"
 #include "qvapplication.h"
 #include "volumeloader.h"
 
@@ -807,38 +808,23 @@ QString ViewerSession::currentPageNumberText() const
     if (!volume || volume->pageCount() == 0 || m_visiblePages.isEmpty()) {
         return "";
     }
-    if (m_visiblePages.size() == 2) {
-        return QString("(%1-%2/%3)").arg(m_pageNavigator.currentPageIndex() + 1).arg(m_pageNavigator.currentPageIndex() + 2).arg(volume->pageCount());
-    }
-    return QString("(%1/%2)").arg(m_pageNavigator.currentPageIndex() + 1).arg(volume->pageCount());
+    return PageDisplayFormatter::pageNumberText(
+        m_pageNavigator.currentPageIndex(), volume->pageCount(), m_visiblePages.size());
 }
 
 QString ViewerSession::currentPageStatusText() const
 {
-    const QString pageNumberText = currentPageNumberText();
-    QString status;
-    switch (m_visiblePages.size()) {
-    case 1:
-        status = QString("%1 %2[%3x%4]")
-                     .arg(m_visiblePages[0].path)
-                     .arg(pageNumberText)
-                     .arg(m_visiblePages[0].originalSize.width())
-                     .arg(m_visiblePages[0].originalSize.height());
-        break;
-    case 2:
-        status = QString("%1 %2[%3x%4] | %5 [%6x%7]")
-                     .arg(m_visiblePages[0].path)
-                     .arg(pageNumberText)
-                     .arg(m_visiblePages[0].originalSize.width())
-                     .arg(m_visiblePages[0].originalSize.height())
-                     .arg(m_visiblePages[1].path)
-                     .arg(m_visiblePages[1].originalSize.width())
-                     .arg(m_visiblePages[1].originalSize.height());
-        break;
-    default:
-        break;
+    Volume *volume = activeVolume();
+    if (!volume) {
+        return {};
     }
-    return status;
+    QVector<PageDisplayEntry> visiblePages;
+    visiblePages.reserve(m_visiblePages.size());
+    for (const ImageContent &content : m_visiblePages) {
+        visiblePages.push_back({content.path, content.originalSize});
+    }
+    return PageDisplayFormatter::statusText(
+        m_pageNavigator.currentPageIndex(), volume->pageCount(), visiblePages);
 }
 
 QString ViewerSession::pageSignage(int pageIndex) const
@@ -847,10 +833,10 @@ QString ViewerSession::pageSignage(int pageIndex) const
     if (!volume || pageIndex < 0 || m_visiblePages.size() <= pageIndex) {
         return "";
     }
-    return QString("%1 (%2/%3)")
-        .arg(QDir::toNativeSeparators(volume->pagePathForName(m_visiblePages[pageIndex].path)))
-        .arg(m_pageNavigator.currentPageIndex() + 1 + pageIndex)
-        .arg(volume->pageCount());
+    return PageDisplayFormatter::signageText(
+        QDir::toNativeSeparators(volume->pagePathForName(m_visiblePages[pageIndex].path)),
+        m_pageNavigator.currentPageIndex() + pageIndex,
+        volume->pageCount());
 }
 
 QStringList ViewerSession::siblingVolumeNames(const QDir &directory)
