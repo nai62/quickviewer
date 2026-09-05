@@ -222,6 +222,8 @@ private:
     void completeDeferredStartupWork();
     void initializeDeferredMenus();
     void initializeConfiguredStartupPanel(const QString &folderPath = QString());
+    void reserveConfiguredStartupPanelSpace();
+    bool replaceStartupPanelPlaceholder(QWidget *panel);
 
 protected:
     Ui::MainWindow *ui;
@@ -247,6 +249,7 @@ protected:
     QList<QAction *> m_languageMenuGroup;
     QList<QAction *> m_sortByMenuGroup;
     ThumbnailManager *m_thumbManager;
+    QWidget *m_startupPanelPlaceholder;
     FolderWindow *m_folderWindow;
     QString m_pendingFolderPath;
     CatalogWindow *m_catalogWindow;

@@ -38,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent)
       ,
       m_viewerSession(this),
       m_thumbManager(nullptr),
+      m_startupPanelPlaceholder(nullptr),
       m_folderWindow(nullptr),
       m_catalogWindow(nullptr),
       m_retouchWindow(nullptr),
@@ -338,8 +339,11 @@ void MainWindow::initializeStartup()
         setStayOnTop(true);
     }
 
-    // Settle the initial geometry now. Startup panels are added after this
-    // returns, when the splitter already has its final available width.
+    // Reserve a deferred docked panel's final width before the first image is
+    // laid out. The lightweight placeholder is replaced after the first paint.
+    reserveConfiguredStartupPanelSpace();
+
+    // Settle the initial geometry now, including any reserved panel width.
     QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
     // Start the requested volume once the event loop is running, while the
@@ -720,6 +724,58 @@ void MainWindow::initializeConfiguredStartupPanel(const QString &folderPath)
     }
 }
 
+void MainWindow::reserveConfiguredStartupPanelSpace()
+{
+    const bool startupVolumeRequested = qApp->arguments().length() >= 2 || (qApp->AutoLoaded() && !qApp->LastViewPath().isEmpty());
+    if (!startupVolumeRequested || qApp->ShowPanelSeparateWindow() || m_startupPanelPlaceholder) {
+        return;
+    }
+
+    int panelWidth = 0;
+    switch (qApp->ShowOptionViewOnStartup()) {
+    case qvEnums::NoViewStartup:
+        return;
+    case qvEnums::FolderStartup:
+        panelWidth = qApp->SaveFolderViewWidth() ? qApp->FolderViewWidth() : 200;
+        break;
+    case qvEnums::CatalogStartup:
+        panelWidth = qApp->SaveCatalogViewWidth() ? qApp->CatalogViewWidth() : 200;
+        break;
+    case qvEnums::RetouchStartup:
+        panelWidth = 200;
+        break;
+    }
+
+    m_startupPanelPlaceholder = new QWidget(ui->catalogSplitter);
+    m_startupPanelPlaceholder->setObjectName(QStringLiteral("startupPanelPlaceholder"));
+    ui->catalogSplitter->insertWidget(0, m_startupPanelPlaceholder);
+    auto sizes = ui->catalogSplitter->sizes();
+    const int sum = sizes[0] + sizes[1];
+    sizes[0] = panelWidth;
+    sizes[1] = sum - panelWidth;
+    ui->catalogSplitter->setSizes(sizes);
+}
+
+bool MainWindow::replaceStartupPanelPlaceholder(QWidget *panel)
+{
+    if (!m_startupPanelPlaceholder) {
+        return false;
+    }
+    const int index = ui->catalogSplitter->indexOf(m_startupPanelPlaceholder);
+    if (index < 0) {
+        delete m_startupPanelPlaceholder;
+        m_startupPanelPlaceholder = nullptr;
+        return false;
+    }
+
+    QWidget *placeholder = m_startupPanelPlaceholder;
+    m_startupPanelPlaceholder = nullptr;
+    QWidget *replaced = ui->catalogSplitter->replaceWidget(index, panel);
+    Q_ASSERT(replaced == placeholder);
+    delete replaced;
+    return true;
+}
+
 void MainWindow::handleExitActionTriggered()
 {
     close();
@@ -930,7 +986,9 @@ void MainWindow::createFolderWindow(bool docked, QString path)
         connect(m_folderWindow, SIGNAL(closed()), this, SLOT(handleFolderWindowClosed()));
         connect(m_folderWindow, SIGNAL(openVolume(QString)), this, SLOT(handleFolderWindowOpenVolume(QString)));
         connect(&m_viewerSession, SIGNAL(volumeChanged(QString)), m_folderWindow, SLOT(handleViewerSessionVolumeChanged(QString)));
-        ui->catalogSplitter->insertWidget(0, m_folderWindow);
+        if (!replaceStartupPanelPlaceholder(m_folderWindow)) {
+            ui->catalogSplitter->insertWidget(0, m_folderWindow);
+        }
         auto sizes = ui->catalogSplitter->sizes();
         int sum = sizes[0] + sizes[1];
         sizes[0] = qApp->SaveFolderViewWidth() ? lastwidth : 200;
@@ -1051,7 +1109,9 @@ void MainWindow::createCatalogWindow(bool docked)
         m_catalogWindow->setThumbnailManager(m_thumbManager);
         connect(m_catalogWindow, SIGNAL(closed()), this, SLOT(handleCatalogWindowClosed()));
         connect(m_catalogWindow, SIGNAL(openVolume(QString)), this, SLOT(handleCatalogWindowOpenVolume(QString)));
-        ui->catalogSplitter->insertWidget(0, m_catalogWindow);
+        if (!replaceStartupPanelPlaceholder(m_catalogWindow)) {
+            ui->catalogSplitter->insertWidget(0, m_catalogWindow);
+        }
         auto sizes = ui->catalogSplitter->sizes();
         int sum = sizes[0] + sizes[1];
         sizes[0] = qApp->SaveCatalogViewWidth() ? lastwidth : 200;
@@ -1112,7 +1172,9 @@ void MainWindow::createRetouchWindow(bool docked)
 
     if (docked) {
         closeAllDockedWindow();
-        ui->catalogSplitter->insertWidget(0, m_retouchWindow);
+        if (!replaceStartupPanelPlaceholder(m_retouchWindow)) {
+            ui->catalogSplitter->insertWidget(0, m_retouchWindow);
+        }
         auto sizes = ui->catalogSplitter->sizes();
         int sum = sizes[0] + sizes[1];
         sizes[0] = 200;
