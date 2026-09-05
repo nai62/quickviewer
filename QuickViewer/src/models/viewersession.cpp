@@ -272,6 +272,11 @@ void ViewerSession::notifyInitialImagePainted()
     });
 }
 
+void ViewerSession::notifyPagePresentationChanged()
+{
+    emit pageChanged();
+}
+
 void ViewerSession::finishInitialImageDisplay(quint64 generation)
 {
     if (generation != m_initialDisplayGeneration) {

@@ -56,6 +56,7 @@ public:
     ViewerStateKind stateKind() const { return viewerStateKind(m_state); }
     void deferFolderWorkUntilNextPaint();
     void notifyInitialImagePainted();
+    void notifyPagePresentationChanged();
     void updateReadProgress();
     void sortActiveVolumePages(qvEnums::ImageSortBy sortBy);
 

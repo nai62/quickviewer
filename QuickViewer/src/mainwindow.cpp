@@ -1226,7 +1226,6 @@ void MainWindow::handleGraphicsViewFittingChanged(qvEnums::FitMode mode)
 
 void MainWindow::handleViewerSessionPageChanged()
 {
-    //qDebug() << "handleViewerSessionPageChanged";
     int maxVolume = m_viewerSession.pageCount();
     if (maxVolume <= 0) {
         return;
@@ -1247,7 +1246,6 @@ void MainWindow::handleViewerSessionPageChanged()
     m_sliderChanging = false;
 
     // StatusBar
-    //    m_pageCaption = m_viewerSession.currentPageStatusText();
     m_pageCaption = m_imageString.getStatusBarText();
 
     // Elide text(Otherwise the width of the main window will be forcibly changed)
@@ -1287,7 +1285,6 @@ void MainWindow::handleViewerSessionVolumeChanged(QString path)
 
 void MainWindow::handlePageSliderValueChanged(int value)
 {
-    //qDebug() << "handlePageSliderValueChanged " << value << m_sliderChanging;
     if (m_sliderChanging) {
         return;
     }

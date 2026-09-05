@@ -415,7 +415,7 @@ void ImageView::resizeEvent(QResizeEvent *event)
         }
         if (!m_skipResizeEvent && m_viewerSession) {
             refreshRenderedPages();
-            m_viewerSession->pageChanged();
+            m_viewerSession->notifyPagePresentationChanged();
         }
         m_resizeEventDepth--;
     }

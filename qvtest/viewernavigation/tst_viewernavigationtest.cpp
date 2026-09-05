@@ -389,6 +389,16 @@ private slots:
         QCOMPARE(pages.first()->path, QString("first.bmp"));
     }
 
+    void pagePresentationUpdatesUseAnExplicitOperation()
+    {
+        ViewerSession session(nullptr);
+        QSignalSpy pageChangedSpy(&session, &ViewerSession::pageChanged);
+
+        session.notifyPagePresentationChanged();
+
+        QCOMPARE(pageChangedSpy.count(), 1);
+    }
+
     void imageStringUsesValueSnapshots()
     {
         ImageString imageString;
