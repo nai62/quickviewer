@@ -33,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent)
       m_startupWindowCloaked(false)
       //    , contextMenu(this)
       ,
-      m_pageManager(this),
+      m_viewerSession(this),
       m_thumbManager(nullptr),
       m_folderWindow(nullptr),
       m_catalogWindow(nullptr),
@@ -58,7 +58,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_menubarFontSize = ui->menuBar->font().pointSize();
     m_pageSliderHeight = ui->pageSlider->height();
-    m_imageString.initialize(&m_pageManager, [view = ui->graphicsView] {
+    m_imageString.initialize(&m_viewerSession, [view = ui->graphicsView] {
         return view->renderedPageMetrics();
     });
 
@@ -77,8 +77,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionCheckVersion->setMenuRole(QAction::ApplicationSpecificRole);
 #endif
 
-    ui->graphicsView->setPageManager(&m_pageManager);
-    connect(&m_pageManager, &PageManager::initialImageDisplayFinished, this, &MainWindow::handleInitialImageDisplayFinished);
+    ui->graphicsView->setViewerSession(&m_viewerSession);
+    connect(&m_viewerSession, &ViewerSession::initialImageDisplayFinished, this, &MainWindow::handleInitialImageDisplayFinished);
     setAcceptDrops(true);
 
     // Mapping to Key-Action Table and Key Config Dialog
@@ -287,10 +287,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->mainToolBar->installEventFilter(this);
     ui->pageFrame->installEventFilter(this);
 
-    connect(&m_pageManager, SIGNAL(pageChanged()), this, SLOT(handlePageManagerPageChanged()));
-    connect(&m_pageManager, SIGNAL(volumeChanged(QString)), this, SLOT(handlePageManagerVolumeChanged(QString)));
+    connect(&m_viewerSession, SIGNAL(pageChanged()), this, SLOT(handleViewerSessionPageChanged()));
+    connect(&m_viewerSession, SIGNAL(volumeChanged(QString)), this, SLOT(handleViewerSessionVolumeChanged(QString)));
     connect(ui->graphicsView, SIGNAL(scrollModeChanged(bool)), this, SLOT(handleScrollModeChanged(bool)));
-    connect(ui->graphicsView, SIGNAL(zoomingChanged()), this, SLOT(handlePageManagerPageChanged()));
+    connect(ui->graphicsView, SIGNAL(zoomingChanged()), this, SLOT(handleViewerSessionPageChanged()));
     connect(ui->graphicsView, SIGNAL(fittingChanged(qvEnums::FitMode)), this, SLOT(handleGraphicsViewFittingChanged(qvEnums::FitMode)));
     connect(ui->graphicsView, SIGNAL(slideShowStopped()), this, SLOT(handleSlideShowStopped()));
 
@@ -396,12 +396,12 @@ void MainWindow::loadStartupVolume()
 
 MainWindow::~MainWindow()
 {
-    if (qApp->AutoLoaded() && m_pageManager.currentPageCount() > 0) {
-        QString path = QDir::fromNativeSeparators(m_pageManager.currentPagePath());
+    if (qApp->AutoLoaded() && m_viewerSession.visiblePageCount() > 0) {
+        QString path = QDir::fromNativeSeparators(m_viewerSession.currentPagePath());
         qApp->setLastViewPath(path);
     }
     delete ui;
-    m_pageManager.dispose();
+    m_viewerSession.reset();
     qApp->saveSettings();
 }
 
@@ -632,15 +632,15 @@ void MainWindow::loadVolume(QString path, bool allowSecondPage)
 {
     QStringList seps = path.split("::");
     if (!IFileLoader::isArchiveFile(seps[0]) && IFileLoader::isImageFile(path)) {
-        m_pageManager.loadVolumeWithFile(path, allowSecondPage);
+        m_viewerSession.loadVolumeWithFile(path, allowSecondPage);
         changeFolderPath(QFileInfo(QDir::fromNativeSeparators(path)).absolutePath());
         return;
     }
-    if (m_pageManager.loadVolume(path)) {
-        if (m_pageManager.isArchive()) {
-            m_pageManager.deferFolderWorkUntilNextPaint();
+    if (m_viewerSession.loadVolume(path)) {
+        if (m_viewerSession.isArchive()) {
+            m_viewerSession.deferFolderWorkUntilNextPaint();
         }
-        changeFolderPath(m_pageManager.volumePath());
+        changeFolderPath(m_viewerSession.volumePath());
         return;
     }
 
@@ -882,7 +882,7 @@ void MainWindow::handleFolderWindowOpenVolume(QString path)
 
 void MainWindow::createFolderWindow(bool docked, QString path)
 {
-    const bool deferFolderLoad = m_pageManager.initialImagePaintPending();
+    const bool deferFolderLoad = m_viewerSession.initialImagePaintPending();
     QString oldpath = path;
     if (m_folderWindow) {
         oldpath = m_folderWindow->currentPath();
@@ -898,7 +898,7 @@ void MainWindow::createFolderWindow(bool docked, QString path)
     }
 
     if (oldpath.isEmpty()) {
-        oldpath = m_pageManager.volumePath();
+        oldpath = m_viewerSession.volumePath();
         if (oldpath.isEmpty()) {
             oldpath = qApp->HomeFolderPath();
         }
@@ -913,7 +913,7 @@ void MainWindow::createFolderWindow(bool docked, QString path)
         }
         connect(m_folderWindow, SIGNAL(closed()), this, SLOT(handleFolderWindowClosed()));
         connect(m_folderWindow, SIGNAL(openVolume(QString)), this, SLOT(handleFolderWindowOpenVolume(QString)));
-        connect(&m_pageManager, SIGNAL(volumeChanged(QString)), m_folderWindow, SLOT(handlePageManagerVolumeChanged(QString)));
+        connect(&m_viewerSession, SIGNAL(volumeChanged(QString)), m_folderWindow, SLOT(handleViewerSessionVolumeChanged(QString)));
         ui->catalogSplitter->insertWidget(0, m_folderWindow);
         auto sizes = ui->catalogSplitter->sizes();
         int sum = sizes[0] + sizes[1];
@@ -932,7 +932,7 @@ void MainWindow::createFolderWindow(bool docked, QString path)
         }
         connect(m_folderWindow, SIGNAL(closed()), this, SLOT(handleFolderWindowClosed()));
         connect(m_folderWindow, SIGNAL(openVolume(QString)), this, SLOT(handleFolderWindowOpenVolume(QString)));
-        connect(&m_pageManager, SIGNAL(volumeChanged(QString)), m_folderWindow, SLOT(handlePageManagerVolumeChanged(QString)));
+        connect(&m_viewerSession, SIGNAL(volumeChanged(QString)), m_folderWindow, SLOT(handleViewerSessionVolumeChanged(QString)));
         m_folderWindow->show();
     }
     ui->actionShowFolder->setChecked(true);
@@ -940,7 +940,7 @@ void MainWindow::createFolderWindow(bool docked, QString path)
 
 bool MainWindow::changeFolderPath(QString path)
 {
-    if (m_pageManager.initialImagePaintPending()) {
+    if (m_viewerSession.initialImagePaintPending()) {
         m_pendingFolderPath = path;
         return false;
     }
@@ -1069,7 +1069,7 @@ void MainWindow::createRetouchWindow(bool docked)
     if (m_retouchWindow) {
         handleRetouchWindowClosed();
     }
-    if (m_pageManager.visiblePages().isEmpty()) {
+    if (m_viewerSession.visiblePages().isEmpty()) {
         return;
     }
     qApp->setShowOptionViewOnStartup(qvEnums::RetouchStartup);
@@ -1101,10 +1101,10 @@ void MainWindow::createRetouchWindow(bool docked)
 
 void MainWindow::handleOpenExifActionTriggered()
 {
-    if (m_exifDialog || m_pageManager.currentPageCount() == 0) {
+    if (m_exifDialog || m_viewerSession.visiblePageCount() == 0) {
         return;
     }
-    const VisiblePages pages = m_pageManager.visiblePages();
+    const VisiblePages pages = m_viewerSession.visiblePages();
     const ImageContent *page = pages.first();
     if (!page || page->exifInfo.ImageWidth == 0) {
         return;
@@ -1224,30 +1224,28 @@ void MainWindow::handleGraphicsViewFittingChanged(qvEnums::FitMode mode)
     ui->actionFitToWidth->setChecked(mode == qvEnums::FitToWidth);
 }
 
-void MainWindow::handlePageManagerPageChanged()
+void MainWindow::handleViewerSessionPageChanged()
 {
-    //qDebug() << "handlePageManagerPageChanged";
-    int maxVolume = m_pageManager.size();
+    int maxVolume = m_viewerSession.pageCount();
     if (maxVolume <= 0) {
         return;
     }
     // PageSlider
-    ui->pageLabel->setText(m_pageManager.currentPageNumberText());
+    ui->pageLabel->setText(m_viewerSession.currentPageNumberText());
     m_sliderChanging = true;
 
     // at DualView Mode, last 2 page should be [volume.size()-2, volume.size()-1]
     // so the last page should not changed by the slider
     // the logical last page is [volume.size()-2]
-    if (qApp->DualView() && ((m_pageManager.size() - m_pageManager.currentPage()) & 0x1) == 0) {
+    if (qApp->DualView() && ((m_viewerSession.pageCount() - m_viewerSession.currentPageIndex()) & 0x1) == 0) {
         maxVolume--;
     }
 
     ui->pageSlider->setMaximum(maxVolume);
-    ui->pageSlider->setValue(m_pageManager.currentPage() + 1);
+    ui->pageSlider->setValue(m_viewerSession.currentPageIndex() + 1);
     m_sliderChanging = false;
 
     // StatusBar
-    //    m_pageCaption = m_pageManager.currentPageStatusText();
     m_pageCaption = m_imageString.getStatusBarText();
 
     // Elide text(Otherwise the width of the main window will be forcibly changed)
@@ -1261,14 +1259,14 @@ void MainWindow::handlePageManagerPageChanged()
     }
 
     if (m_exifDialog) {
-        const VisiblePages pages = m_pageManager.visiblePages();
+        const VisiblePages pages = m_viewerSession.visiblePages();
         if (const ImageContent *page = pages.first()) {
             m_exifDialog->setExif(*page);
         }
     }
 }
 
-void MainWindow::handlePageManagerVolumeChanged(QString path)
+void MainWindow::handleViewerSessionVolumeChanged(QString path)
 {
     if (path.isEmpty()) {
         handlePageNoLongerNeeded();
@@ -1287,12 +1285,11 @@ void MainWindow::handlePageManagerVolumeChanged(QString path)
 
 void MainWindow::handlePageSliderValueChanged(int value)
 {
-    //qDebug() << "handlePageSliderValueChanged " << value << m_sliderChanging;
     if (m_sliderChanging) {
         return;
     }
     m_sliderChanging = true;
-    m_pageManager.selectPage(value - 1);
+    m_viewerSession.selectPage(value - 1);
     m_sliderChanging = false;
 }
 
@@ -1713,8 +1710,8 @@ void MainWindow::handleOpenOptionsDialogActionTriggered()
     bool checkered = qApp->UseCheckeredPattern();
     if (dialog.exec() == QDialog::Accepted) {
         dialog.reflectResults();
-        if (m_pageManager.size() > 0) {
-            handlePageManagerPageChanged();
+        if (m_viewerSession.pageCount() > 0) {
+            handleViewerSessionPageChanged();
         }
         if (back != qApp->BackgroundColor() || back2 != qApp->BackgroundColor2() || checkered != qApp->UseCheckeredPattern()) {
             ui->graphicsView->resetBackgroundColor();
@@ -1809,10 +1806,10 @@ void MainWindow::handleExitApplicationOrFullscreenActionTriggered()
 
 void MainWindow::handleMailAttachmentActionTriggered()
 {
-    if (m_pageManager.isArchive()) {
+    if (m_viewerSession.isArchive()) {
         return;
     }
-    QString path = m_pageManager.currentPagePath();
+    QString path = m_viewerSession.currentPagePath();
     if (!path.length()) {
         return;
     }
@@ -1821,12 +1818,12 @@ void MainWindow::handleMailAttachmentActionTriggered()
 
 void MainWindow::handleRenameImageFileActionTriggered()
 {
-    if (!m_pageManager.isFolder() || m_pageManager.currentPageCount() == 0) {
+    if (!m_viewerSession.isFolder() || m_viewerSession.visiblePageCount() == 0) {
         return;
     }
-    RenameDialog dialog(this, m_pageManager.realVolumePath(), m_pageManager.currentPageName());
+    RenameDialog dialog(this, m_viewerSession.realVolumePath(), m_viewerSession.currentPageName());
     if (dialog.exec() == QDialog::Accepted) {
-        m_pageManager.loadVolume(QDir(m_pageManager.realVolumePath()).absoluteFilePath(dialog.newName()));
+        m_viewerSession.loadVolume(QDir(m_viewerSession.realVolumePath()).absoluteFilePath(dialog.newName()));
     }
 }
 
@@ -1837,10 +1834,10 @@ void MainWindow::handleConfirmDeletePageActionTriggered(bool checked)
 
 void MainWindow::handleRecyclePageActionTriggered()
 {
-    if (m_pageManager.currentPageCount() <= 0 || !m_pageManager.isFolder()) {
+    if (m_viewerSession.visiblePageCount() <= 0 || !m_viewerSession.isFolder()) {
         return;
     }
-    QString path = m_pageManager.currentPagePath();
+    QString path = m_viewerSession.currentPagePath();
     if (!path.length()) {
         return;
     }
@@ -1858,7 +1855,7 @@ void MainWindow::handleRecyclePageActionTriggered()
         msgBox.setText(message);
 
         //icon
-        const VisiblePages pages = m_pageManager.visiblePages();
+        const VisiblePages pages = m_viewerSession.visiblePages();
         const ImageContent *page = pages.first();
         if (!page) {
             return;
@@ -1872,16 +1869,16 @@ void MainWindow::handleRecyclePageActionTriggered()
         }
     }
     if (moveToTrash(path)) {
-        m_pageManager.reloadVolumeAfterRemoveImage();
+        m_viewerSession.reloadVolumeAfterImageRemoval();
     }
 }
 
 void MainWindow::handleDeletePageActionTriggered()
 {
-    if (m_pageManager.currentPageCount() <= 0 || !m_pageManager.isFolder()) {
+    if (m_viewerSession.visiblePageCount() <= 0 || !m_viewerSession.isFolder()) {
         return;
     }
-    QString path = m_pageManager.currentPagePath();
+    QString path = m_viewerSession.currentPagePath();
     if (!path.length()) {
         return;
     }
@@ -1899,7 +1896,7 @@ void MainWindow::handleDeletePageActionTriggered()
         msgBox.setText(message);
 
         //icon
-        const VisiblePages pages = m_pageManager.visiblePages();
+        const VisiblePages pages = m_viewerSession.visiblePages();
         const ImageContent *page = pages.first();
         if (!page) {
             return;
@@ -1914,7 +1911,7 @@ void MainWindow::handleDeletePageActionTriggered()
     }
     QFile file(path);
     if (file.remove()) {
-        m_pageManager.reloadVolumeAfterRemoveImage();
+        m_viewerSession.reloadVolumeAfterImageRemoval();
     }
 }
 
@@ -1936,7 +1933,7 @@ void MainWindow::handleRestoreWindowStateActionTriggered(bool checked)
 
 void MainWindow::handleSlideShowActionTriggered()
 {
-    if (m_pageManager.size() == 0) {
+    if (m_viewerSession.pageCount() == 0) {
         return;
     }
     if (!qApp->SlideShowOnNormalWindow() && !isFullScreen()) {
@@ -2036,10 +2033,10 @@ void MainWindow::handleShaderCpuLanczos4ActionTriggered()
 
 void MainWindow::handleSaveBookmarkActionTriggered()
 {
-    if (!m_pageManager.currentPageCount()) {
+    if (!m_viewerSession.visiblePageCount()) {
         return;
     }
-    QString path = QDir::fromNativeSeparators(m_pageManager.currentPagePath());
+    QString path = QDir::fromNativeSeparators(m_viewerSession.currentPagePath());
     qApp->addBookMark(path);
     makeBookmarkMenu();
     ui->statusBar->showMessage(tr("Bookmark Saved."));
@@ -2065,7 +2062,7 @@ void MainWindow::handleLoadBookmarkMenuTriggered(QAction *action)
         return;
     }
     QString path = action->data().toString();
-    m_pageManager.loadVolume(QDir::toNativeSeparators(path));
+    m_viewerSession.loadVolume(QDir::toNativeSeparators(path));
 }
 
 void MainWindow::handleSortByFileNameActionTriggered()
@@ -2076,7 +2073,7 @@ void MainWindow::handleSortByFileNameActionTriggered()
         return;
     }
     qApp->setImageSortBy(qvEnums::SortByFileName);
-    m_pageManager.sort(qvEnums::SortByFileName);
+    m_viewerSession.sortActiveVolumePages(qvEnums::SortByFileName);
 }
 
 void MainWindow::handleSortByFileNameDescendingActionTriggered()
@@ -2087,7 +2084,7 @@ void MainWindow::handleSortByFileNameDescendingActionTriggered()
         return;
     }
     qApp->setImageSortBy(qvEnums::SortByFileNameDescending);
-    m_pageManager.sort(qvEnums::SortByFileNameDescending);
+    m_viewerSession.sortActiveVolumePages(qvEnums::SortByFileNameDescending);
 }
 
 void MainWindow::handleSortByFileSizeActionTriggered()
@@ -2098,7 +2095,7 @@ void MainWindow::handleSortByFileSizeActionTriggered()
         return;
     }
     qApp->setImageSortBy(qvEnums::SortByFileSize);
-    m_pageManager.sort(qvEnums::SortByFileSize);
+    m_viewerSession.sortActiveVolumePages(qvEnums::SortByFileSize);
 }
 
 void MainWindow::handleSortByFileSizeDescendingActionTriggered()
@@ -2109,7 +2106,7 @@ void MainWindow::handleSortByFileSizeDescendingActionTriggered()
         return;
     }
     qApp->setImageSortBy(qvEnums::SortByFileSizeDescending);
-    m_pageManager.sort(qvEnums::SortByFileSizeDescending);
+    m_viewerSession.sortActiveVolumePages(qvEnums::SortByFileSizeDescending);
 }
 
 void MainWindow::handleSortByModifiedTimeActionTriggered()
@@ -2120,7 +2117,7 @@ void MainWindow::handleSortByModifiedTimeActionTriggered()
         return;
     }
     qApp->setImageSortBy(qvEnums::SortByModifiedTime);
-    m_pageManager.sort(qvEnums::SortByModifiedTime);
+    m_viewerSession.sortActiveVolumePages(qvEnums::SortByModifiedTime);
 }
 
 void MainWindow::handleSortByModifiedTimeDescendingActionTriggered()
@@ -2131,5 +2128,5 @@ void MainWindow::handleSortByModifiedTimeDescendingActionTriggered()
         return;
     }
     qApp->setImageSortBy(qvEnums::SortByModifiedTimeDescending);
-    m_pageManager.sort(qvEnums::SortByModifiedTimeDescending);
+    m_viewerSession.sortActiveVolumePages(qvEnums::SortByModifiedTimeDescending);
 }

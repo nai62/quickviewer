@@ -5,7 +5,7 @@
 
 #include <QVector>
 
-#include "pagecontent.h"
+#include "imagecontent.h"
 
 class VisiblePages
 {

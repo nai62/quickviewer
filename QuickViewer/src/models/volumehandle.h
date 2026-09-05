@@ -3,15 +3,15 @@
 
 #include <memory>
 
-class VolumeManager;
+class Volume;
 
-struct VolumeManagerDeleter
+struct VolumeDeleter
 {
-    void operator()(VolumeManager *volume) const noexcept;
+    void operator()(Volume *volume) const noexcept;
 };
 
-using VolumeHandle = std::shared_ptr<VolumeManager>;
+using VolumeHandle = std::shared_ptr<Volume>;
 
-VolumeHandle makeVolumeHandle(VolumeManager *volume);
+VolumeHandle makeVolumeHandle(Volume *volume);
 
 #endif // VOLUMEHANDLE_H

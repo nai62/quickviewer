@@ -4,9 +4,9 @@
 #include <QtCore>
 #include <QtWidgets>
 
-#include "volumemanager.h"
+#include "volume.h"
 #include "exifdialog.h"
-#include "models/pagemanager.h"
+#include "models/viewersession.h"
 #include "models/loupecontroller.h"
 #include "models/shadermanager.h"
 #include "models/renderedpages.h"
@@ -33,7 +33,7 @@ public:
     typedef QPair<uint, uint> ZoomFraction;
     explicit ImageView(QWidget *parent = Q_NULLPTR);
     void setRenderer(RendererType type = Native);
-    void setPageManager(PageManager *manager);
+    void setViewerSession(ViewerSession *session);
     Qt::AnchorPoint hoverState() const { return m_hoverState; }
     void setResizeEventsSkipped(bool skipped) { m_skipResizeEvent = skipped; }
     bool isSlideShow() const { return m_slideshowTimer != nullptr; }
@@ -58,7 +58,6 @@ signals:
      * @brief anchorHovered a signal when the mouse moved to one of 4 edges on this widget
      */
     void anchorHovered(Qt::AnchorPoint anchor) const;
-    //    void pageChanged() const;
 
     void fittingChanged(qvEnums::FitMode mode) const;
     void scrollModeChanged(bool scrolling) const;
@@ -149,7 +148,7 @@ private:
     QCursor m_loupeCursor;
     LoupeController m_loupeController;
 
-    PageManager *m_pageManager;
+    ViewerSession *m_viewerSession;
     ShaderManager m_shaderManager;
     QTimer *m_slideshowTimer;
 

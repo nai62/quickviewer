@@ -40,7 +40,7 @@ public slots:
     void handleNextButtonClicked();
     void handleParentButtonClicked();
     void handleReloadButtonClicked();
-    void handlePageManagerVolumeChanged(QString);
+    void handleViewerSessionVolumeChanged(QString);
     void handleFolderViewItemSelected(const QModelIndex &index);
     void handleFolderViewItemDoubleClicked(const QModelIndex &index);
     void handleSetAsHomeFolderActionTriggered();

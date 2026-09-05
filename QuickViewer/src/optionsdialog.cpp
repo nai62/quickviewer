@@ -1,9 +1,9 @@
 #include "optionsdialog.h"
 #include "ui_optionsdialog.h"
 #include "qvapplication.h"
-#include "pagemanager.h"
+#include "viewersession.h"
 
-class SamplePageContent : public PageManagerProtocol
+class SamplePageContent : public PageInfoProvider
 {
 public:
     SamplePageContent()
@@ -25,8 +25,8 @@ public:
                 easyexif::EXIFInfo(),
                 1234567)});
     }
-    int size() const override { return m_size; }
-    int currentPage() const override { return m_currentPage; }
+    int pageCount() const override { return m_size; }
+    int currentPageIndex() const override { return m_currentPage; }
     VisiblePages visiblePages() const override { return m_pages; }
     QString volumePath() const override { return m_volumePath; }
     QString currentPagePath() const override

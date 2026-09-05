@@ -3,7 +3,7 @@
 
 #include <QDialog>
 #include "exif.h"
-#include "pagecontent.h"
+#include "imagecontent.h"
 
 namespace Ui {
 class ExifDialog;

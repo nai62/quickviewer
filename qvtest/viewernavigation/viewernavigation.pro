@@ -33,21 +33,25 @@ INCLUDEPATH += \
 SOURCES += \
     tst_viewernavigationtest.cpp \
     ../../QuickViewer/src/imageview.cpp \
-    ../../QuickViewer/src/models/bookprogressmanager.cpp \
+    ../../QuickViewer/src/models/readprogressstore.cpp \
     ../../QuickViewer/src/models/boundedexecutor.cpp \
     ../../QuickViewer/src/models/imagestring.cpp \
     ../../QuickViewer/src/models/loupecontroller.cpp \
-    ../../QuickViewer/src/models/pagecontent.cpp \
+    ../../QuickViewer/src/models/imagecontent.cpp \
+    ../../QuickViewer/src/models/pagedisplayformatter.cpp \
+    ../../QuickViewer/src/models/renderedpage.cpp \
     ../../QuickViewer/src/models/renderedpages.cpp \
-    ../../QuickViewer/src/models/pagemanager.cpp \
+    ../../QuickViewer/src/models/visiblepagecomposer.cpp \
+    ../../QuickViewer/src/models/viewersession.cpp \
     ../../QuickViewer/src/models/prefetchplanner.cpp \
     ../../QuickViewer/src/models/qvapplication.cpp \
     ../../QuickViewer/src/models/qvimagemetadata.cpp \
     ../../QuickViewer/src/models/qvmovie.cpp \
     ../../QuickViewer/src/models/shadermanager.cpp \
+    ../../QuickViewer/src/models/volumecache.cpp \
     ../../QuickViewer/src/models/volumehandle.cpp \
-    ../../QuickViewer/src/models/volumemanager.cpp \
-    ../../QuickViewer/src/models/volumemanagerbuilder.cpp \
+    ../../QuickViewer/src/models/volume.cpp \
+    ../../QuickViewer/src/models/volumeloader.cpp \
     ../../QuickViewer/src/qactionmanager/keyconfigdialog.cpp \
     ../../QuickViewer/src/qactionmanager/mouseconfigdialog.cpp \
     ../../QuickViewer/src/qactionmanager/qactionmanager.cpp \
@@ -59,14 +63,18 @@ SOURCES += \
 HEADERS += \
     ../../QuickViewer/src/qv_init.h \
     ../../QuickViewer/src/imageview.h \
-    ../../QuickViewer/src/models/bookprogressmanager.h \
+    ../../QuickViewer/src/models/readprogressstore.h \
     ../../QuickViewer/src/models/boundedexecutor.h \
     ../../QuickViewer/src/models/imagestring.h \
     ../../QuickViewer/src/models/latestresultdispatcher.h \
     ../../QuickViewer/src/models/lrucache.h \
     ../../QuickViewer/src/models/loupecontroller.h \
-    ../../QuickViewer/src/models/pagecontent.h \
-    ../../QuickViewer/src/models/pagemanager.h \
+    ../../QuickViewer/src/models/pagenavigator.h \
+    ../../QuickViewer/src/models/imagecontent.h \
+    ../../QuickViewer/src/models/pagedisplayformatter.h \
+    ../../QuickViewer/src/models/renderedpage.h \
+    ../../QuickViewer/src/models/visiblepagecomposer.h \
+    ../../QuickViewer/src/models/viewersession.h \
     ../../QuickViewer/src/models/prefetchplanner.h \
     ../../QuickViewer/src/models/qvapplication.h \
     ../../QuickViewer/src/models/qvimagemetadata.h \
@@ -74,11 +82,12 @@ HEADERS += \
     ../../QuickViewer/src/models/renderedpages.h \
     ../../QuickViewer/src/models/renderedpagemetrics.h \
     ../../QuickViewer/src/models/shadermanager.h \
+    ../../QuickViewer/src/models/volumecache.h \
     ../../QuickViewer/src/models/volumehandle.h \
     ../../QuickViewer/src/models/visiblepages.h \
     ../../QuickViewer/src/models/viewerstate.h \
-    ../../QuickViewer/src/models/volumemanager.h \
-    ../../QuickViewer/src/models/volumemanagerbuilder.h \
+    ../../QuickViewer/src/models/volume.h \
+    ../../QuickViewer/src/models/volumeloader.h \
     ../../QuickViewer/src/qactionmanager/keyconfigdialog.h \
     ../../QuickViewer/src/qactionmanager/mouseconfigdialog.h \
     ../../QuickViewer/src/qactionmanager/qactionmanager.h \

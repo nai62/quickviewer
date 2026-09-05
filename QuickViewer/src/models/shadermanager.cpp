@@ -5,7 +5,7 @@
 #ifndef QV_WITHOUT_OPENGL
 #    include <QtOpenGL>
 #    include <QtOpenGL/private/qgraphicsshadereffect_p.h>
-#    include "pagecontent.h"
+#    include "imagecontent.h"
 
 class LanczosShaderEffect : public QGraphicsShaderEffect
 {

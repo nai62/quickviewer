@@ -5,8 +5,8 @@
 
 #include "thumbnailmanager.h"
 #include "qc_init.h"
-#include "volumemanager.h"
-#include "volumemanagerbuilder.h"
+#include "volume.h"
+#include "volumeloader.h"
 
 #ifdef Q_OS_WIN
 #    include <Shlwapi.h>
@@ -171,16 +171,10 @@ VolumeWorker ThumbnailManager::createSubVolumesConcurrent(QString dirpath, int v
     vw.parent_id = parent_id;
 
     if (IFileLoader::isArchiveFile(dirpath)) {
-        //        VolumeManager* fv = VolumeManager::CreateVolumeWithOnlyCover(nullptr, dirpath, nullptr, VolumeManager::CreateThumbnail);
-        //        if(fv) {
-        //            ImageContent ic = fv->currentImage();
-        //            vw.frontPage = createFileRecordFromArchive(dirpath, ic, 0);
-        //            delete fv;
-        //        }
-        VolumeManagerBuilder builder(dirpath);
-        ImageContent ic = builder.thumbnail();
-        if (!ic.loadedImage.isNull()) {
-            vw.frontPage = createFileRecordFromArchive(dirpath, ic, 0);
+        VolumeLoader volumeLoader(dirpath);
+        ImageContent thumbnailContent = volumeLoader.loadThumbnailSourceImage();
+        if (!thumbnailContent.loadedImage.isNull()) {
+            vw.frontPage = createFileRecordFromArchive(dirpath, thumbnailContent, 0);
         }
 
         if (m_catalogWatcher.isStarted()) {

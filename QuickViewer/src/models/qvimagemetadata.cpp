@@ -1,7 +1,7 @@
 #include "qvimagemetadata.h"
-#include "volumemanager.h"
+#include "volume.h"
 
-QvImageMetadata::QvImageMetadata(VolumeManager *volume, QString filename)
+QvImageMetadata::QvImageMetadata(Volume *volume, QString filename)
     : QObject(volume)
 {
     m_volume = volume;
@@ -11,7 +11,7 @@ QvImageMetadata::QvImageMetadata(VolumeManager *volume, QString filename)
 QDateTime QvImageMetadata::getMTime()
 {
     if (m_volume->isArchive()) {
-        return m_volume->FileLoader()->getFileModified(m_filename);
+        return m_volume->fileLoader()->getFileModified(m_filename);
     }
     if (m_info.fileName().isEmpty()) {
         initFileInfo();
@@ -22,7 +22,7 @@ QDateTime QvImageMetadata::getMTime()
 qint64 QvImageMetadata::getFileSize()
 {
     if (m_volume->isArchive()) {
-        return m_volume->FileLoader()->getFileSize(m_filename);
+        return m_volume->fileLoader()->getFileSize(m_filename);
     }
     if (m_info.fileName().isEmpty()) {
         initFileInfo();
@@ -54,6 +54,6 @@ QSize QvImageMetadata::getDimension()
 void QvImageMetadata::initFileInfo()
 {
     if (!m_volume->isArchive()) {
-        m_info = QFileInfo(m_volume->getPathByFileName(m_filename));
+        m_info = QFileInfo(m_volume->pagePathForName(m_filename));
     }
 }

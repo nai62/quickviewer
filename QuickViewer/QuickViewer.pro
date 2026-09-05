@@ -111,15 +111,19 @@ SOURCES += \
     src/imageview.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
-    src/models/bookprogressmanager.cpp \
+    src/models/readprogressstore.cpp \
     src/models/boundedexecutor.cpp \
-    src/models/pagecontent.cpp \
+    src/models/imagecontent.cpp \
+    src/models/pagedisplayformatter.cpp \
+    src/models/renderedpage.cpp \
     src/models/renderedpages.cpp \
-    src/models/pagemanager.cpp \
+    src/models/visiblepagecomposer.cpp \
+    src/models/viewersession.cpp \
     src/models/prefetchplanner.cpp \
     src/models/qvapplication.cpp \
     src/models/shadermanager.cpp \
     src/models/thumbnailmanager.cpp \
+    src/models/volumecache.cpp \
     src/models/volumehandle.cpp \
     src/optionsdialog.cpp \
     src/renamedialog.cpp \
@@ -129,8 +133,8 @@ SOURCES += \
     src/qnamedpipe/qnamedpipe.cpp \
     src/qfullscreenframe/qinnerframe.cpp \
     src/models/qvmovie.cpp \
-    src/models/volumemanager.cpp \
-    src/models/volumemanagerbuilder.cpp \
+    src/models/volume.cpp \
+    src/models/volumeloader.cpp \
     src/qactionmanager/keyconfigdialog.cpp \
     src/qactionmanager/mouseconfigdialog.cpp \
     src/qactionmanager/qactionmanager.cpp \
@@ -157,19 +161,24 @@ HEADERS  += \
     src/folderview/folderwindow.h \
     src/imageview.h \
     src/mainwindow.h \
-    src/models/bookprogressmanager.h \
+    src/models/readprogressstore.h \
     src/models/boundedexecutor.h \
     src/models/cursorscrollmapping.h \
     src/models/lrucache.h \
     src/models/imageloadcontext.h \
     src/models/loupecontroller.h \
-    src/models/pagecontent.h \
-    src/models/pagemanager.h \
+    src/models/pagenavigator.h \
+    src/models/imagecontent.h \
+    src/models/pagedisplayformatter.h \
+    src/models/renderedpage.h \
+    src/models/visiblepagecomposer.h \
+    src/models/viewersession.h \
     src/models/latestresultdispatcher.h \
     src/models/prefetchplanner.h \
     src/models/qvapplication.h \
     src/models/shadermanager.h \
     src/models/thumbnailmanager.h \
+    src/models/volumecache.h \
     src/models/volumehandle.h \
     src/models/viewerstate.h \
     src/models/visiblepages.h \
@@ -185,8 +194,8 @@ HEADERS  += \
     src/qnamedpipe/qnamedpipe.h \
     src/qfullscreenframe/qinnerframe.h \
     src/models/qvmovie.h \
-    src/models/volumemanager.h \
-    src/models/volumemanagerbuilder.h \
+    src/models/volume.h \
+    src/models/volumeloader.h \
     src/qactionmanager/keyconfigdialog.h \
     src/qactionmanager/mouseconfigdialog.h \
     src/qactionmanager/qactionmanager.h \

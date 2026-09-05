@@ -13,7 +13,7 @@ ImageView::ImageView(QWidget *parent)
       m_rendererViewport(nullptr),
       m_hoverState(Qt::AnchorHorizontalCenter),
       m_loupeCursor(QCursor(QPixmap(":/icons/loupe_cursor"), 20, 23)),
-      m_pageManager(nullptr),
+      m_viewerSession(nullptr),
       m_shaderManager(this),
       m_slideshowTimer(nullptr),
       m_committedGestureScale(1.0),
@@ -100,24 +100,24 @@ void ImageView::setRenderer(RendererType type)
     setViewport(m_rendererViewport);
 }
 
-void ImageView::setPageManager(PageManager *manager)
+void ImageView::setViewerSession(ViewerSession *session)
 {
-    if (!manager) {
+    if (!session) {
         return;
     }
-    m_pageManager = manager;
-    m_pageManager->setViewportSize(viewport()->size());
-    connect(manager, &PageManager::visiblePagesChanged, this, &ImageView::handleVisiblePagesChanged);
-    connect(manager, SIGNAL(readyForPaint()), this, SLOT(refreshRenderedPages()));
-    connect(manager, SIGNAL(volumeChanged(QString)), this, SLOT(handleVolumeChanged(QString)));
-    connect(this, SIGNAL(slideShowStarted()), manager, SLOT(handleSlideShowStarted()));
-    connect(this, SIGNAL(slideShowStopped()), manager, SLOT(handleSlideShowStopped()));
-    handleVisiblePagesChanged(manager->visiblePages());
+    m_viewerSession = session;
+    m_viewerSession->setViewportSize(viewport()->size());
+    connect(session, &ViewerSession::visiblePagesChanged, this, &ImageView::handleVisiblePagesChanged);
+    connect(session, SIGNAL(readyForPaint()), this, SLOT(refreshRenderedPages()));
+    connect(session, SIGNAL(volumeChanged(QString)), this, SLOT(handleVolumeChanged(QString)));
+    connect(this, SIGNAL(slideShowStarted()), session, SLOT(handleSlideShowStarted()));
+    connect(this, SIGNAL(slideShowStopped()), session, SLOT(handleSlideShowStopped()));
+    handleVisiblePagesChanged(session->visiblePages());
 }
 
 void ImageView::toggleSlideShow()
 {
-    if (!m_pageManager) {
+    if (!m_viewerSession) {
         return;
     }
     if (m_slideshowTimer) {
@@ -152,16 +152,16 @@ void ImageView::resetBackgroundColor()
 
 void ImageView::handleVolumeChanged(QString)
 {
-    if (!m_pageManager) {
+    if (!m_viewerSession) {
         return;
     }
-    m_pageRotations = QVector<int>(m_pageManager->size());
+    m_pageRotations = QVector<int>(m_viewerSession->pageCount());
 }
 
 ImageView::AddRenderedPageResult ImageView::addRenderedPage(ImageContent content, bool append)
 {
     const int pageCount = renderedPageCount();
-    if (m_pageManager == nullptr || pageCount >= 2) {
+    if (m_viewerSession == nullptr || pageCount >= 2) {
         return AddRenderedPageResult::Rejected;
     }
     const bool landscape = content.loadedImage.width() > content.loadedImage.height();
@@ -208,8 +208,8 @@ void ImageView::refreshRenderedPages()
         setRenderer(OpenGL);
     }
     const int renderedCount = renderedPageCount();
-    if (renderedCount > 0 && m_pageManager) {
-        const int currentPage = m_pageManager->currentPage();
+    if (renderedCount > 0 && m_viewerSession) {
+        const int currentPage = m_viewerSession->currentPageIndex();
         PageRenderRequest request;
         request.settings = pageRenderSettings();
         RenderedPageLayout &layout = request.layout;
@@ -227,7 +227,7 @@ void ImageView::refreshRenderedPages()
                 m_pageRotations.value(currentPage + index, 0));
             layout.signage.push_back(
                 qApp->ShowFullscreenSignage() && m_isFullScreen
-                    ? m_pageManager->pageSignage(index)
+                    ? m_viewerSession->pageSignage(index)
                     : QString());
         }
         const QRect sceneRect = m_renderedPages.layout(
@@ -390,8 +390,8 @@ void ImageView::setCursor(const QCursor &cursor)
 void ImageView::paintEvent(QPaintEvent *event)
 {
     QGraphicsView::paintEvent(event);
-    if (m_pageManager) {
-        m_pageManager->notifyInitialImagePainted();
+    if (m_viewerSession) {
+        m_viewerSession->notifyInitialImagePainted();
     }
 }
 
@@ -401,8 +401,8 @@ void ImageView::resizeEvent(QResizeEvent *event)
         scene()->setSceneRect(QRect(QPoint(), event->size()));
     }
     QGraphicsView::resizeEvent(event);
-    if (m_pageManager) {
-        m_pageManager->setViewportSize(event->size());
+    if (m_viewerSession) {
+        m_viewerSession->setViewportSize(event->size());
     }
     if (m_resizeEventDepth == 0) {
         m_resizeEventDepth++;
@@ -413,9 +413,9 @@ void ImageView::resizeEvent(QResizeEvent *event)
             setTransform(scaling);
             m_lastScreenPixelRatio = newRatio;
         }
-        if (!m_skipResizeEvent && m_pageManager) {
+        if (!m_skipResizeEvent && m_viewerSession) {
             refreshRenderedPages();
-            m_pageManager->pageChanged();
+            m_viewerSession->notifyPagePresentationChanged();
         }
         m_resizeEventDepth--;
     }
@@ -427,8 +427,8 @@ void ImageView::handleNextPageActionTriggered()
         refreshRenderedPages();
         return;
     }
-    if (m_pageManager) {
-        m_pageManager->nextPage();
+    if (m_viewerSession) {
+        m_viewerSession->advanceSpread();
     }
     if (isSlideShow()) {
         toggleSlideShow();
@@ -442,8 +442,8 @@ void ImageView::handlePrevPageActionTriggered()
         return;
     }
     m_openSeparatedPageFromEnd = true;
-    if (m_pageManager) {
-        m_pageManager->prevPage();
+    if (m_viewerSession) {
+        m_viewerSession->retreatSpread();
     }
     if (isSlideShow()) {
         toggleSlideShow();
@@ -457,9 +457,9 @@ void ImageView::handleNextPageOrVolumeActionTriggered()
         refreshRenderedPages();
         return;
     }
-    if (m_pageManager) {
-        if (!m_pageManager->nextPage() && m_pageManager->nextVolume()) {
-            m_pageManager->firstPage();
+    if (m_viewerSession) {
+        if (!m_viewerSession->advanceSpread() && m_viewerSession->nextVolume()) {
+            m_viewerSession->firstPage();
         }
     }
     if (isSlideShow()) {
@@ -473,9 +473,9 @@ void ImageView::handlePrevPageOrVolumeActionTriggered()
         refreshRenderedPages();
         return;
     }
-    if (m_pageManager) {
-        if (!m_pageManager->prevPage() && m_pageManager->prevVolume()) {
-            m_pageManager->lastPage();
+    if (m_viewerSession) {
+        if (!m_viewerSession->retreatSpread() && m_viewerSession->prevVolume()) {
+            m_viewerSession->lastPage();
         }
     }
     if (isSlideShow()) {
@@ -485,8 +485,8 @@ void ImageView::handlePrevPageOrVolumeActionTriggered()
 
 void ImageView::handleFastForwardActionTriggered()
 {
-    if (m_pageManager) {
-        m_pageManager->fastForwardPage();
+    if (m_viewerSession) {
+        m_viewerSession->fastForwardPage();
     }
     if (isSlideShow()) {
         toggleSlideShow();
@@ -495,8 +495,8 @@ void ImageView::handleFastForwardActionTriggered()
 
 void ImageView::handleFastBackwardActionTriggered()
 {
-    if (m_pageManager) {
-        m_pageManager->fastBackwardPage();
+    if (m_viewerSession) {
+        m_viewerSession->fastBackwardPage();
     }
     if (isSlideShow()) {
         toggleSlideShow();
@@ -505,8 +505,8 @@ void ImageView::handleFastBackwardActionTriggered()
 
 void ImageView::handleFirstPageActionTriggered()
 {
-    if (m_pageManager) {
-        m_pageManager->firstPage();
+    if (m_viewerSession) {
+        m_viewerSession->firstPage();
     }
     if (isSlideShow()) {
         toggleSlideShow();
@@ -515,8 +515,8 @@ void ImageView::handleFirstPageActionTriggered()
 
 void ImageView::handleLastPageActionTriggered()
 {
-    if (m_pageManager) {
-        m_pageManager->lastPage();
+    if (m_viewerSession) {
+        m_viewerSession->lastPage();
     }
     if (isSlideShow()) {
         toggleSlideShow();
@@ -525,24 +525,24 @@ void ImageView::handleLastPageActionTriggered()
 
 void ImageView::handleNextOnePageActionTriggered()
 {
-    if (m_pageManager) {
-        m_pageManager->nextOnlyOnePage();
+    if (m_viewerSession) {
+        m_viewerSession->advanceOnePage();
     }
 }
 
 void ImageView::handlePrevOnePageActionTriggered()
 {
-    if (m_pageManager) {
-        m_pageManager->prevOnlyOnePage();
+    if (m_viewerSession) {
+        m_viewerSession->retreatOnePage();
     }
 }
 
 void ImageView::handleRotateActionTriggered()
 {
-    if (!m_pageManager || m_pageRotations.empty()) {
+    if (!m_viewerSession || m_pageRotations.empty()) {
         return;
     }
-    const int page = m_pageManager->currentPage();
+    const int page = m_viewerSession->currentPageIndex();
     if (page < 0 || page >= m_pageRotations.size()) {
         return;
     }
@@ -553,37 +553,37 @@ void ImageView::handleRotateActionTriggered()
 void ImageView::handleShowSubfoldersActionTriggered(bool checked)
 {
     qApp->setShowSubfolders(checked);
-    if (!m_pageManager) {
+    if (!m_viewerSession) {
         return;
     }
-    if (m_pageManager->isFolder()) {
-        m_pageManager->reloadVolumeAfterRemoveImage();
+    if (m_viewerSession->isFolder()) {
+        m_viewerSession->reloadVolumeAfterImageRemoval();
     }
 }
 
 void ImageView::handleSlideShowTimerTimeout()
 {
-    if (!m_pageManager) {
+    if (!m_viewerSession) {
         return;
     }
-    int page = m_pageManager->currentPage();
-    m_pageManager->nextPage();
-    if (page == m_pageManager->currentPage()) {
-        m_pageManager->firstPage();
+    int page = m_viewerSession->currentPageIndex();
+    m_viewerSession->advanceSpread();
+    if (page == m_viewerSession->currentPageIndex()) {
+        m_viewerSession->firstPage();
     }
 }
 
 void ImageView::handleNextVolumeActionTriggered()
 {
-    if (m_pageManager) {
-        m_pageManager->nextVolume();
+    if (m_viewerSession) {
+        m_viewerSession->nextVolume();
     }
 }
 
 void ImageView::handlePrevVolumeActionTriggered()
 {
-    if (m_pageManager) {
-        m_pageManager->prevVolume();
+    if (m_viewerSession) {
+        m_viewerSession->prevVolume();
     }
 }
 
@@ -604,7 +604,6 @@ void ImageView::handleHideMouseCursorInFullscreenActionTriggered(bool checked)
 void ImageView::mouseMoveEvent(QMouseEvent *e)
 {
     QGraphicsView::mouseMoveEvent(e);
-    //    qDebug() << "qApp->HideMouseCursorInFullscreen()" << qApp->HideMouseCursorInFullscreen();
     int NOT_HOVER_AREA = width() / 3;
     int hover_border = qApp->LargeToolbarIcons() ? 3 * HOVER_BORDER : HOVER_BORDER;
     if (e->pos().x() < hover_border && e->pos().y() < height() - hover_border) {
@@ -639,7 +638,6 @@ void ImageView::mouseMoveEvent(QMouseEvent *e)
     } else {
         setCursor(Qt::ArrowCursor);
     }
-    //    qDebug() << qApp->ScrollWithCursorWhenZooming() << scene()->sceneRect() << size();
     if (m_loupeController.isActive()) {
         updateLoupeScrollFromCursor();
     } else if (qApp->ScrollWithCursorWhenZooming() && (scene()->sceneRect().width() > width() || scene()->sceneRect().height() > height())) {
@@ -760,8 +758,8 @@ void ImageView::handleDualViewActionTriggered(bool checked)
 {
     qApp->setDualView(checked);
 
-    if (m_pageManager) {
-        m_pageManager->reloadCurrentPage();
+    if (m_viewerSession) {
+        m_viewerSession->reloadVisiblePages();
     }
     refreshRenderedPages();
 }
@@ -822,8 +820,8 @@ void ImageView::handleZoomOutActionTriggered()
 void ImageView::handleWideImageAsOneViewActionTriggered(bool checked)
 {
     qApp->setWideImageAsOnePageInDualView(checked);
-    if (m_pageManager) {
-        m_pageManager->reloadCurrentPage();
+    if (m_viewerSession) {
+        m_viewerSession->reloadVisiblePages();
     }
     refreshRenderedPages();
 }
@@ -831,8 +829,8 @@ void ImageView::handleWideImageAsOneViewActionTriggered(bool checked)
 void ImageView::handleFirstImageAsOneViewActionTriggered(bool checked)
 {
     qApp->setFirstImageAsOnePageInDualView(checked);
-    if (m_pageManager) {
-        m_pageManager->reloadCurrentPage();
+    if (m_viewerSession) {
+        m_viewerSession->reloadVisiblePages();
     }
     refreshRenderedPages();
 }
@@ -866,12 +864,12 @@ void ImageView::handleScrollWithCursorWhenZoomingActionTriggered(bool checked)
 
 void ImageView::handleOpenFilerActionTriggered()
 {
-    if (!m_pageManager) {
+    if (!m_viewerSession) {
         return;
     }
-    QString path = m_pageManager->volumePath();
-    if (m_pageManager->isFolder()) {
-        path = m_pageManager->currentPagePath();
+    QString path = m_viewerSession->volumePath();
+    if (m_viewerSession->isFolder()) {
+        path = m_viewerSession->currentPagePath();
     }
 #if defined(Q_OS_WIN)
     const QString explorer = QLatin1String("explorer.exe ");
@@ -919,10 +917,10 @@ void ImageView::handleCopyPageActionTriggered()
 
 void ImageView::handleCopyFileActionTriggered()
 {
-    if (!m_pageManager) {
+    if (!m_viewerSession) {
         return;
     }
-    const QString currentPath = m_pageManager->currentPagePath();
+    const QString currentPath = m_viewerSession->currentPagePath();
     if (currentPath.isEmpty()) {
         return;
     }

@@ -1,12 +1,12 @@
 
-#include "bookprogressmanager.h"
+#include "readprogressstore.h"
 #include "qvapplication.h"
 
-BookProgressManager::BookProgressManager(QObject *parent)
+ReadProgressStore::ReadProgressStore(QObject *parent)
     : QObject(parent)
 {
     connect(&m_initializeWatcher, SIGNAL(finished()), SLOT(handleInitializationFinished()));
-    QFuture<BookProgressMap> future = QtConcurrent::run(&BookProgressManager::initializeAsync);
+    QFuture<ReadProgressMap> future = QtConcurrent::run(&ReadProgressStore::initializeAsync);
     m_initializeWatcher.setFuture(future);
 }
 
@@ -15,33 +15,33 @@ static QString getProgressIniPath()
     return qApp->getFilePathOfApplicationSetting(PROGRESS_INI);
 }
 
-void BookProgressManager::save()
+void ReadProgressStore::save()
 {
     QSettings settings(getProgressIniPath(), QSettings::IniFormat, this);
     //settings.setIniCodec(QTextCodec::codecForName("UTF-8"));
 
-    QStringList titles;
-    foreach (const BookProgress &book, m_books.values()) {
-        QString group = QString("Volume_%1").arg(titles.size() + 1, 4, 10, QChar('0'));
+    QStringList groupNames;
+    foreach (const ReadProgress &progress, m_progressByVolumePath.values()) {
+        QString group = QString("Volume_%1").arg(groupNames.size() + 1, 4, 10, QChar('0'));
         settings.beginGroup(group);
-        settings.setValue("Title", book.Title);
-        settings.setValue("Path", book.Path);
-        settings.setValue("CurrenPage", book.CurrenPage);
-        settings.setValue("Pages", book.Pages);
-        settings.setValue("Current", book.Current);
-        settings.setValue("Completed", book.Completed);
+        settings.setValue("Title", progress.volumeTitle);
+        settings.setValue("Path", progress.volumePath);
+        settings.setValue("CurrenPage", progress.currentPageName);
+        settings.setValue("Pages", progress.totalPageCount);
+        settings.setValue("Current", progress.resumePageIndex);
+        settings.setValue("Completed", progress.completed);
         settings.endGroup();
-        titles << group;
+        groupNames << group;
     }
     settings.sync();
 }
 
-BookProgressManager::BookProgressMap BookProgressManager::initializeAsync()
+ReadProgressStore::ReadProgressMap ReadProgressStore::initializeAsync()
 {
     QSettings settings(getProgressIniPath(), QSettings::IniFormat);
     //settings.setIniCodec(QTextCodec::codecForName("UTF-8"));
 
-    BookProgressMap result;
+    ReadProgressMap result;
     QStringList groups = settings.childGroups();
     foreach (const QString g, groups) {
         settings.beginGroup(g);
@@ -54,15 +54,15 @@ BookProgressManager::BookProgressMap BookProgressManager::initializeAsync()
         int pages = settings.value("Pages", 0).toInt();
         int current = settings.value("Current", 0).toInt();
         bool completed = settings.value("Completed", false).toBool();
-        BookProgress book = {
+        ReadProgress progress = {
             title, path, currentPage, pages, current, completed};
-        result[path] = book;
+        result[path] = progress;
         settings.endGroup();
     }
     return result;
 }
 
-void BookProgressManager::handleInitializationFinished()
+void ReadProgressStore::handleInitializationFinished()
 {
-    m_books = m_initializeWatcher.result();
+    m_progressByVolumePath = m_initializeWatcher.result();
 }

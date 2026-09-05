@@ -7,7 +7,7 @@
 #include <optional>
 #include <utility>
 
-#include "pagecontent.h"
+#include "renderedpage.h"
 #include "renderedpagemetrics.h"
 #include "visiblepages.h"
 
@@ -57,10 +57,10 @@ public:
     RenderedPageMetrics metrics() const;
 
 private:
-    PageItem *at(int index);
-    const PageItem *at(int index) const;
+    RenderedPage *at(int index);
+    const RenderedPage *at(int index) const;
 
-    std::array<std::unique_ptr<PageItem>, Capacity> m_pages;
+    std::array<std::unique_ptr<RenderedPage>, Capacity> m_pages;
 };
 
 #endif // RENDEREDPAGES_H
