@@ -114,9 +114,7 @@ bool ViewerSession::loadVolume(QString path, bool coverOnly)
     }
     setVolumeReady(loadedVolume);
     Volume *volume = loadedVolume.get();
-    if (coverOnly) {
-        volume->setPrefetchMode(PrefetchMode::CoverOnly);
-    } else {
+    if (!coverOnly) {
         m_volumeNames = QStringList();
     }
     m_currentPageIndex = 0;

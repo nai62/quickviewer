@@ -98,9 +98,6 @@ public:
 
     const ImageContent currentImage()
     {
-        if (m_prefetchMode == PrefetchMode::CreateThumbnail) {
-            return m_currentImage;
-        }
         return m_currentImageLoad.isValid() ? m_currentImageLoad.result() : ImageContent();
     }
     QString volumePath() { return m_loader ? m_loader->volumePath() : QString(); }
@@ -131,8 +128,9 @@ public:
      * @brief Returns the number of pages the volume has
      */
     int pageCount() { return m_pageNames.size(); }
-    /** Prepares the current page load and applies the active prefetch plan. */
-    void preparePageLoads();
+    void updatePrefetchCache();
+    void prefetchCoverImages();
+    ImageContent loadThumbnailSourceImage();
     int currentPageIndex() { return m_currentPageIndex; }
 
     const ImageContent pageAt(int pageIndex);
@@ -159,8 +157,7 @@ private:
     QList<QString> m_shuffledPageNames;
     QList<QvImageMetadata> m_imageMetadataList;
     ImageLoadFuture m_currentImageLoad;
-    ImageContent m_currentImage;
-
+    ImageContent m_initialImage;
     LruCache<int, ImageLoadFuture> m_imageLoadCache;
 
     QSharedPointer<ImageLoadContext> m_loadContext;

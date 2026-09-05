@@ -28,6 +28,48 @@ public:
     InflateCacheMode getCacheMode() override { return InflateNoCached; }
 };
 
+class MemoryFileLoader final : public IFileLoader
+{
+public:
+    explicit MemoryFileLoader(int imageCount, QObject *parent = nullptr)
+        : IFileLoader(parent)
+    {
+        for (int imageIndex = 0; imageIndex < imageCount; ++imageIndex) {
+            const QString name = QString("page-%1.bmp").arg(imageIndex);
+            QImage image(16 + imageIndex, 24 + imageIndex, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(imageIndex * 60, 255, 255));
+            QByteArray bytes;
+            QBuffer buffer(&bytes);
+            buffer.open(QIODevice::WriteOnly);
+            image.save(&buffer, "BMP");
+            m_names.append(name);
+            m_images.insert(name, bytes);
+        }
+    }
+
+    QString volumePath() override { return "memory"; }
+    QString realVolumePath() override { return "memory"; }
+    bool isArchive() override { return false; }
+    bool isValid() override { return true; }
+    bool hasSubDirectories() override { return false; }
+    QStringList contents() override { return m_names; }
+    QStringList subArchives() override { return {}; }
+    QByteArray getFile(QString name, QMutex &mutex) override
+    {
+        QMutexLocker locker(&mutex);
+        m_requestedNames.append(name);
+        return m_images.value(name);
+    }
+    InflateCacheMode getCacheMode() override { return InflateNoCached; }
+
+    QStringList requestedNames() const { return m_requestedNames; }
+
+private:
+    QStringList m_names;
+    QHash<QString, QByteArray> m_images;
+    QStringList m_requestedNames;
+};
+
 class ViewerNavigationTest : public QObject
 {
     Q_OBJECT
@@ -313,6 +355,31 @@ private slots:
         volume.handlePageListLoaded();
         QCOMPARE(pageListLoadedSpy.count(), 1);
         volume.moveToThread(nullptr);
+    }
+
+    void volumeSeparatesCoverAndThumbnailImageLoading()
+    {
+        auto *coverLoader = new MemoryFileLoader(3);
+        Volume coverVolume(nullptr, coverLoader);
+        coverVolume.prefetchCoverImages();
+
+        QVERIFY(!coverVolume.pageAt(0).loadedImage.isNull());
+        QVERIFY(!coverVolume.pageAt(1).loadedImage.isNull());
+        QVERIFY(coverVolume.pageAt(2).loadedImage.isNull());
+        QStringList coverRequests = coverLoader->requestedNames();
+        coverRequests.sort();
+        QCOMPARE(coverRequests,
+                 QStringList({"page-0.bmp", "page-1.bmp"}));
+
+        auto *thumbnailLoader = new MemoryFileLoader(3);
+        Volume thumbnailVolume(nullptr, thumbnailLoader);
+        const ImageContent thumbnailSource = thumbnailVolume.loadThumbnailSourceImage();
+
+        QCOMPARE(thumbnailSource.path, QString("page-0.bmp"));
+        QCOMPARE(thumbnailSource.loadedImage.size(), QSize(16, 24));
+        QVERIFY(thumbnailSource.resizedImage.isNull());
+        QCOMPARE(thumbnailLoader->requestedNames(),
+                 QStringList({"page-0.bmp"}));
     }
 
     void volumeHandleDestroysOnOwnerThread()

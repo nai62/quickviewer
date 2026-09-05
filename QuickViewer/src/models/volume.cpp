@@ -103,20 +103,20 @@ void Volume::loadPageList()
 ImageContent Volume::loadImageBeforePageList(QString subfileName)
 {
     m_subfileName = subfileName;
-    m_currentImage = Volume::futureLoadImageFromFileVolume(m_loadContext, subfileName, QSize());
+    m_initialImage = Volume::futureLoadImageFromFileVolume(m_loadContext, subfileName, QSize());
     loadPageList();
-    return m_currentImage;
+    return m_initialImage;
 }
 
 void Volume::handlePageListLoaded()
 {
     const int index = m_pageNames.indexOf(m_subfileName);
     if (index >= 0) {
-        m_imageLoadCache.insert(index, readyImageFuture(m_currentImage));
+        m_imageLoadCache.insert(index, readyImageFuture(m_initialImage));
         selectPageAndRefresh(index);
     }
     setPrefetchMode(PrefetchMode::Normal);
-    preparePageLoads();
+    updatePrefetchCache();
     emit pageListLoaded();
 }
 
@@ -162,7 +162,7 @@ static bool modifiedTimeDescendingLessThan(const QvImageMetadata &m1, const QvIm
 void Volume::sortPages(qvEnums::ImageSortBy sortBy)
 {
     applyPageSort(sortBy);
-    preparePageLoads();
+    updatePrefetchCache();
 }
 
 void Volume::applyPageSort(qvEnums::ImageSortBy sortBy)
@@ -207,7 +207,7 @@ void Volume::startSlideShow()
     std::shuffle(m_shuffledPageNames.begin(), m_shuffledPageNames.end(), g);
     m_currentPageIndex = 0;
     m_imageLoadCache.clear();
-    preparePageLoads();
+    updatePrefetchCache();
 }
 
 void Volume::stopSlideShow()
@@ -218,7 +218,7 @@ void Volume::stopSlideShow()
     m_shuffledPageNames.clear();
     m_currentPageIndex = 0;
     m_imageLoadCache.clear();
-    preparePageLoads();
+    updatePrefetchCache();
 }
 
 QString Volume::pageNameAt(int pageIndex)
@@ -237,7 +237,7 @@ QString Volume::pageNameAt(int pageIndex)
     return "";
 }
 
-void Volume::preparePageLoads()
+void Volume::updatePrefetchCache()
 {
     if (!m_pageListLoaded) {
         loadPageList();
@@ -246,23 +246,6 @@ void Volume::preparePageLoads()
         return;
     }
 
-    switch (m_prefetchMode) {
-    case PrefetchMode::CreateThumbnail:
-        m_currentImage = futureLoadImageFromFileVolume(m_loadContext, m_pageNames[0], QSize());
-        return;
-    case PrefetchMode::CoverOnly:
-        for (int cnt : PrefetchPlanner::indexes(
-                 PrefetchMode::Normal, m_currentPageIndex, m_pageNames.size(), 2)) {
-            const ImageLoadFuture future = scheduleImageLoad(
-                m_pageNames[cnt], QSize(), cnt == m_currentPageIndex);
-            if (future.isValid()) {
-                m_imageLoadCache.insert(cnt, future);
-            }
-        }
-        return;
-    default:
-        break;
-    }
     const QList<int> indexes = PrefetchPlanner::indexes(
         m_prefetchMode, m_currentPageIndex, m_pageNames.size(), qApp->MaxImagesCache());
     for (int cnt : indexes) {
@@ -299,6 +282,35 @@ void Volume::preparePageLoads()
     m_currentImageLoad = currentImageLoad ? *currentImageLoad : ImageLoadFuture();
 }
 
+void Volume::prefetchCoverImages()
+{
+    if (!m_pageListLoaded) {
+        loadPageList();
+    }
+    if (!m_loader || m_currentPageIndex < 0 || m_currentPageIndex >= m_pageNames.size() || m_loader->contents().isEmpty()) {
+        return;
+    }
+    for (int pageIndex : PrefetchPlanner::indexes(
+             PrefetchMode::Normal, m_currentPageIndex, m_pageNames.size(), 2)) {
+        const ImageLoadFuture future = scheduleImageLoad(
+            m_pageNames[pageIndex], QSize(), pageIndex == m_currentPageIndex);
+        if (future.isValid()) {
+            m_imageLoadCache.insert(pageIndex, future);
+        }
+    }
+}
+
+ImageContent Volume::loadThumbnailSourceImage()
+{
+    if (!m_pageListLoaded) {
+        loadPageList();
+    }
+    if (!m_loader || m_pageNames.isEmpty() || m_loader->contents().isEmpty()) {
+        return ImageContent();
+    }
+    return futureLoadImageFromFileVolume(m_loadContext, m_pageNames[0], QSize());
+}
+
 const ImageContent Volume::pageAt(int pageIndex)
 {
     if (pageIndex < 0 || pageIndex >= m_pageNames.size()) {
@@ -326,7 +338,7 @@ bool Volume::advanceOnePage()
         return false;
     }
     m_currentPageIndex++;
-    preparePageLoads();
+    updatePrefetchCache();
     return true;
 }
 
@@ -336,7 +348,7 @@ bool Volume::retreatOnePage()
         return false;
     }
     m_currentPageIndex--;
-    preparePageLoads();
+    updatePrefetchCache();
     return true;
 }
 
@@ -349,7 +361,7 @@ bool Volume::selectPage(int pageIndex)
         return true;
     }
     m_currentPageIndex = pageIndex;
-    preparePageLoads();
+    updatePrefetchCache();
     return true;
 }
 
@@ -359,7 +371,7 @@ bool Volume::selectPageAndRefresh(int pageIndex)
         return false;
     }
     m_currentPageIndex = pageIndex;
-    preparePageLoads();
+    updatePrefetchCache();
     return true;
 }
 

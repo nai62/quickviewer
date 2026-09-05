@@ -82,14 +82,16 @@ Volume *VolumeLoader::build(bool onlyCover)
         delete m_volume;
         return m_volume = nullptr;
     }
-    PrefetchMode prefetchMode = onlyCover ? PrefetchMode::CoverOnly : PrefetchMode::Normal;
-    m_volume->setPrefetchMode(prefetchMode);
     if (m_pageNames.isEmpty()) {
         restoreReadProgress();
     } else if (!selectedPageName.isEmpty()) {
         m_volume->selectPageByName(selectedPageName);
     }
-    m_volume->preparePageLoads();
+    if (onlyCover) {
+        m_volume->prefetchCoverImages();
+    } else {
+        m_volume->updatePrefetchCache();
+    }
     return m_volume;
 }
 
@@ -129,9 +131,7 @@ ImageContent VolumeLoader::thumbnail()
         return ImageContent();
     }
     restoreReadProgress();
-    m_volume->setPrefetchMode(PrefetchMode::CreateThumbnail);
-    m_volume->preparePageLoads();
-    ImageContent thumbnailContent = m_volume->currentImage();
+    ImageContent thumbnailContent = m_volume->loadThumbnailSourceImage();
     delete m_volume;
     return thumbnailContent;
 }
