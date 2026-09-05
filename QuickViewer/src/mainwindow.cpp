@@ -31,11 +31,14 @@ MainWindow::MainWindow(QWidget *parent)
       m_sliderChanging(false),
       m_onWindowClosing(false),
       m_revealInitialWindow(true),
-      m_startupWindowCloaked(false)
+      m_startupWindowCloaked(false),
+      m_startupPanelInitialized(false),
+      m_deferredMenusInitialized(false)
       //    , contextMenu(this)
       ,
       m_viewerSession(this),
       m_thumbManager(nullptr),
+      m_startupPanelPlaceholder(nullptr),
       m_folderWindow(nullptr),
       m_catalogWindow(nullptr),
       m_retouchWindow(nullptr),
@@ -170,7 +173,6 @@ MainWindow::MainWindow(QWidget *parent)
     //    ui->actionShowFullscreenTitleBar->setChecked(qApp->ShowFullscreenTitleBar());
 
     // Languages
-    qApp->languageSelector()->initializeMenu(ui->menuChange_Language);
     connect(qApp->languageSelector(), SIGNAL(languageChanged(QString)), this, SLOT(handleLanguageSelectorLanguageChanged(QString)));
     connect(qApp->languageSelector(), SIGNAL(openTextEditorForLanguage(LanguageInfo)), this, SLOT(handleLanguageSelectorOpenTextEditorForLanguage(LanguageInfo)));
 
@@ -190,11 +192,9 @@ MainWindow::MainWindow(QWidget *parent)
     // so displaying the volume does not move the already rendered image.
 
     // History
-    makeHistoryMenu();
     connect(ui->menuHistory, SIGNAL(triggered(QAction *)), this, SLOT(handleHistoryMenuTriggered(QAction *)));
 
     // Bookmarks
-    makeBookmarkMenu();
     ui->actionLoadBookmark->setMenu(ui->menuLoadBookmark);
     connect(ui->menuLoadBookmark, SIGNAL(triggered(QAction *)), this, SLOT(handleLoadBookmarkMenuTriggered(QAction *)));
 
@@ -339,13 +339,16 @@ void MainWindow::initializeStartup()
         setStayOnTop(true);
     }
 
-    // Settle the initial geometry now. Startup panels are added after this
-    // returns, when the splitter already has its final available width.
+    // Reserve a deferred docked panel's final width before the first image is
+    // laid out. The lightweight placeholder is replaced after the first paint.
+    reserveConfiguredStartupPanelSpace();
+
+    // Settle the initial geometry now, including any reserved panel width.
     QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
-    // The timers run after the remaining synchronous startup work. Paint the
-    // final layout, switch to the normal surface while still cloaked, and only
-    // then let DWM compose the completed window.
+    // Start the requested volume once the event loop is running, while the
+    // window is still cloaked. The first completed image paint reveals the
+    // final surface; an empty or failed startup request reveals it here.
     QTimer::singleShot(0, this, [this]() {
         if (!m_revealInitialWindow) {
             return;
@@ -353,30 +356,26 @@ void MainWindow::initializeStartup()
         if (layout()) {
             layout()->activate();
         }
-        ui->graphicsView->refreshRenderedPages();
-        repaint();
-        QTimer::singleShot(0, this, [this]() {
-            if (!m_revealInitialWindow) {
-                return;
-            }
-            setWindowOpacity(1.0);
-            repaint();
-            QTimer::singleShot(0, this, [this]() {
-                if (!m_revealInitialWindow) {
-                    return;
-                }
-                if (m_startupWindowCloaked) {
-                    setStartupWindowCloaked(false);
-                    m_startupWindowCloaked = false;
-                }
-                m_revealInitialWindow = false;
-
-                // Give the completed frame back to the event loop before a
-                // potentially blocking image or archive load.
-                QTimer::singleShot(0, this, &MainWindow::loadStartupVolume);
-            });
-        });
+        loadStartupVolume();
+        if (!m_viewerSession.initialImagePaintPending()) {
+            revealStartupWindow();
+            QTimer::singleShot(0, this, &MainWindow::completeDeferredStartupWork);
+        }
     });
+}
+
+void MainWindow::revealStartupWindow()
+{
+    if (!m_revealInitialWindow) {
+        return;
+    }
+    setWindowOpacity(1.0);
+    repaint();
+    if (m_startupWindowCloaked) {
+        setStartupWindowCloaked(false);
+        m_startupWindowCloaked = false;
+    }
+    m_revealInitialWindow = false;
 }
 
 void MainWindow::loadStartupVolume()
@@ -656,6 +655,9 @@ void MainWindow::loadVolume(QString path, bool allowSecondPage)
 
 void MainWindow::makeHistoryMenu()
 {
+    if (!m_deferredMenusInitialized) {
+        return;
+    }
     static const QString shortcuts = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     ui->menuHistory->clear();
     QStringList history = qApp->History();
@@ -667,6 +669,9 @@ void MainWindow::makeHistoryMenu()
 
 void MainWindow::makeBookmarkMenu()
 {
+    if (!m_deferredMenusInitialized) {
+        return;
+    }
     static const QString shortcuts = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     ui->menuLoadBookmark->clear();
     QStringList bookmarks = qApp->Bookmarks();
@@ -691,11 +696,24 @@ void MainWindow::setThumbnailManager(ThumbnailManager *manager)
 {
     m_thumbManager = manager;
 
+    const bool startupVolumeRequested = qApp->arguments().length() >= 2 || (qApp->AutoLoaded() && !qApp->LastViewPath().isEmpty());
+    if (!startupVolumeRequested) {
+        initializeConfiguredStartupPanel();
+    }
+}
+
+void MainWindow::initializeConfiguredStartupPanel(const QString &folderPath)
+{
+    if (m_startupPanelInitialized || !m_thumbManager) {
+        return;
+    }
+    m_startupPanelInitialized = true;
+
     switch (qApp->ShowOptionViewOnStartup()) {
     case qvEnums::NoViewStartup:
         break;
     case qvEnums::FolderStartup:
-        createFolderWindow(!qApp->ShowPanelSeparateWindow());
+        createFolderWindow(!qApp->ShowPanelSeparateWindow(), folderPath);
         break;
     case qvEnums::CatalogStartup:
         createCatalogWindow(!qApp->ShowPanelSeparateWindow());
@@ -704,6 +722,58 @@ void MainWindow::setThumbnailManager(ThumbnailManager *manager)
         createRetouchWindow(!qApp->ShowPanelSeparateWindow());
         break;
     }
+}
+
+void MainWindow::reserveConfiguredStartupPanelSpace()
+{
+    const bool startupVolumeRequested = qApp->arguments().length() >= 2 || (qApp->AutoLoaded() && !qApp->LastViewPath().isEmpty());
+    if (!startupVolumeRequested || qApp->ShowPanelSeparateWindow() || m_startupPanelPlaceholder) {
+        return;
+    }
+
+    int panelWidth = 0;
+    switch (qApp->ShowOptionViewOnStartup()) {
+    case qvEnums::NoViewStartup:
+        return;
+    case qvEnums::FolderStartup:
+        panelWidth = qApp->SaveFolderViewWidth() ? qApp->FolderViewWidth() : 200;
+        break;
+    case qvEnums::CatalogStartup:
+        panelWidth = qApp->SaveCatalogViewWidth() ? qApp->CatalogViewWidth() : 200;
+        break;
+    case qvEnums::RetouchStartup:
+        panelWidth = 200;
+        break;
+    }
+
+    m_startupPanelPlaceholder = new QWidget(ui->catalogSplitter);
+    m_startupPanelPlaceholder->setObjectName(QStringLiteral("startupPanelPlaceholder"));
+    ui->catalogSplitter->insertWidget(0, m_startupPanelPlaceholder);
+    auto sizes = ui->catalogSplitter->sizes();
+    const int sum = sizes[0] + sizes[1];
+    sizes[0] = panelWidth;
+    sizes[1] = sum - panelWidth;
+    ui->catalogSplitter->setSizes(sizes);
+}
+
+bool MainWindow::replaceStartupPanelPlaceholder(QWidget *panel)
+{
+    if (!m_startupPanelPlaceholder) {
+        return false;
+    }
+    const int index = ui->catalogSplitter->indexOf(m_startupPanelPlaceholder);
+    if (index < 0) {
+        delete m_startupPanelPlaceholder;
+        m_startupPanelPlaceholder = nullptr;
+        return false;
+    }
+
+    QWidget *placeholder = m_startupPanelPlaceholder;
+    m_startupPanelPlaceholder = nullptr;
+    QWidget *replaced = ui->catalogSplitter->replaceWidget(index, panel);
+    Q_ASSERT(replaced == placeholder);
+    delete replaced;
+    return true;
 }
 
 void MainWindow::handleExitActionTriggered()
@@ -916,7 +986,9 @@ void MainWindow::createFolderWindow(bool docked, QString path)
         connect(m_folderWindow, SIGNAL(closed()), this, SLOT(handleFolderWindowClosed()));
         connect(m_folderWindow, SIGNAL(openVolume(QString)), this, SLOT(handleFolderWindowOpenVolume(QString)));
         connect(&m_viewerSession, SIGNAL(volumeChanged(QString)), m_folderWindow, SLOT(handleViewerSessionVolumeChanged(QString)));
-        ui->catalogSplitter->insertWidget(0, m_folderWindow);
+        if (!replaceStartupPanelPlaceholder(m_folderWindow)) {
+            ui->catalogSplitter->insertWidget(0, m_folderWindow);
+        }
         auto sizes = ui->catalogSplitter->sizes();
         int sum = sizes[0] + sizes[1];
         sizes[0] = qApp->SaveFolderViewWidth() ? lastwidth : 200;
@@ -958,21 +1030,37 @@ bool MainWindow::changeFolderPath(QString path)
 
 void MainWindow::handleInitialImageDisplayFinished()
 {
-    if (m_pendingFolderPath.isEmpty()) {
-        return;
-    }
+    revealStartupWindow();
+    QTimer::singleShot(0, this, &MainWindow::completeDeferredStartupWork);
+}
+
+void MainWindow::completeDeferredStartupWork()
+{
+    initializeDeferredMenus();
 
     if (m_folderWindow) {
-        const QString path = m_pendingFolderPath;
-        m_pendingFolderPath.clear();
-        m_folderWindow->setFolderPath(path, false);
+        if (!m_pendingFolderPath.isEmpty()) {
+            const QString path = m_pendingFolderPath;
+            m_pendingFolderPath.clear();
+            m_folderWindow->setFolderPath(path, false);
+        }
         return;
     }
 
-    if (m_thumbManager && qApp->ShowOptionViewOnStartup() == qvEnums::FolderStartup) {
-        const QString path = m_pendingFolderPath;
-        createFolderWindow(!qApp->ShowPanelSeparateWindow(), path);
+    const QString path = m_pendingFolderPath;
+    m_pendingFolderPath.clear();
+    initializeConfiguredStartupPanel(path);
+}
+
+void MainWindow::initializeDeferredMenus()
+{
+    if (m_deferredMenusInitialized) {
+        return;
     }
+    m_deferredMenusInitialized = true;
+    qApp->languageSelector()->initializeMenu(ui->menuChange_Language);
+    makeHistoryMenu();
+    makeBookmarkMenu();
 }
 
 ////////////////////////////
@@ -1021,7 +1109,9 @@ void MainWindow::createCatalogWindow(bool docked)
         m_catalogWindow->setThumbnailManager(m_thumbManager);
         connect(m_catalogWindow, SIGNAL(closed()), this, SLOT(handleCatalogWindowClosed()));
         connect(m_catalogWindow, SIGNAL(openVolume(QString)), this, SLOT(handleCatalogWindowOpenVolume(QString)));
-        ui->catalogSplitter->insertWidget(0, m_catalogWindow);
+        if (!replaceStartupPanelPlaceholder(m_catalogWindow)) {
+            ui->catalogSplitter->insertWidget(0, m_catalogWindow);
+        }
         auto sizes = ui->catalogSplitter->sizes();
         int sum = sizes[0] + sizes[1];
         sizes[0] = qApp->SaveCatalogViewWidth() ? lastwidth : 200;
@@ -1082,7 +1172,9 @@ void MainWindow::createRetouchWindow(bool docked)
 
     if (docked) {
         closeAllDockedWindow();
-        ui->catalogSplitter->insertWidget(0, m_retouchWindow);
+        if (!replaceStartupPanelPlaceholder(m_retouchWindow)) {
+            ui->catalogSplitter->insertWidget(0, m_retouchWindow);
+        }
         auto sizes = ui->catalogSplitter->sizes();
         int sum = sizes[0] + sizes[1];
         sizes[0] = 200;

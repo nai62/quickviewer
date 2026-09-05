@@ -218,6 +218,12 @@ private slots:
 
 private:
     void loadStartupVolume();
+    void revealStartupWindow();
+    void completeDeferredStartupWork();
+    void initializeDeferredMenus();
+    void initializeConfiguredStartupPanel(const QString &folderPath = QString());
+    void reserveConfiguredStartupPanelSpace();
+    bool replaceStartupPanelPlaceholder(QWidget *panel);
 
 protected:
     Ui::MainWindow *ui;
@@ -226,6 +232,8 @@ protected:
     bool m_onWindowClosing;
     bool m_revealInitialWindow;
     bool m_startupWindowCloaked;
+    bool m_startupPanelInitialized;
+    bool m_deferredMenusInitialized;
 
     /**
      * @brief m_contextMenu Define on the context menu mainwindow.ui for the main screen and separate at startup
@@ -241,6 +249,7 @@ protected:
     QList<QAction *> m_languageMenuGroup;
     QList<QAction *> m_sortByMenuGroup;
     ThumbnailManager *m_thumbManager;
+    QWidget *m_startupPanelPlaceholder;
     FolderWindow *m_folderWindow;
     QString m_pendingFolderPath;
     CatalogWindow *m_catalogWindow;

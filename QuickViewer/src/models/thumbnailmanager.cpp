@@ -108,7 +108,6 @@ ThumbnailManager::ThumbnailManager(QObject *parent, QString dbpath)
         qDebug() << "Error: connection with database fail" << dbpath;
     } else {
         qDebug() << "Database: connection ok";
-        QtConcurrent::run([&] { return volumes(); });
     }
 }
 
