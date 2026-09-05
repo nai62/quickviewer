@@ -312,29 +312,33 @@ void ViewerSession::finishInitialImageDisplay(quint64 generation)
     emit initialImageDisplayFinished();
 }
 
-void ViewerSession::startContainingVolumeLoad(const QString &normalizedPath,
+void ViewerSession::startContainingVolumeLoad(const QString &normalizedImagePath,
                                               const QString &basePath,
                                               const QString &subfileName)
 {
+    const VolumeCacheKey cacheKey = volumeCacheKey(basePath);
     QThread *guiThread = thread();
-    const QFuture<VolumeHandle> volumeLoad = QtConcurrent::run([normalizedPath, guiThread] {
-        VolumeLoader volumeLoader(normalizedPath);
-        Volume *volume = volumeLoader.buildForContainingImage();
-        if (volume) {
-            volume->moveToThread(guiThread);
-        }
-        return makeVolumeHandle(volume);
+    const VolumeLoadFuture volumeLoad = m_volumeCache.request(cacheKey, [normalizedImagePath, guiThread] {
+        return QtConcurrent::run([normalizedImagePath, guiThread] {
+            VolumeLoader volumeLoader(normalizedImagePath);
+            Volume *volume = volumeLoader.buildForContainingImage();
+            if (volume) {
+                volume->moveToThread(guiThread);
+            }
+            return makeVolumeHandle(volume);
+        });
     });
     m_volumeLoadDispatcher.submit(
         volumeLoad,
-        [this, basePath, subfileName](VolumeHandle loadedVolume) {
+        [this, basePath, subfileName, cacheKey](VolumeHandle loadedVolume) {
             if (!loadedVolume) {
+                m_volumeCache.invalidate(cacheKey);
                 loadVolume(QString("%1::%2").arg(basePath).arg(subfileName));
                 return;
             }
             configureVolume(loadedVolume.get());
             emit volumeChanged("");
-            m_volumeCache.insertReady(volumeCacheKey(basePath), loadedVolume);
+            m_volumeCache.markUsed(cacheKey);
             setVolumeReady(loadedVolume);
             Volume *volume = loadedVolume.get();
             clearVisiblePages();

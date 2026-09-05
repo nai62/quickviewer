@@ -162,7 +162,7 @@ public slots:
     void handleSlideShowStopped();
 
 private:
-    void startContainingVolumeLoad(const QString &normalizedPath,
+    void startContainingVolumeLoad(const QString &normalizedImagePath,
                                    const QString &basePath,
                                    const QString &subfileName);
     void finishInitialImageDisplay(quint64 generation);
