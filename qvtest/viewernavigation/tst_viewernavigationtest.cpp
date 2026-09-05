@@ -6,6 +6,7 @@
 #include "models/cursorscrollmapping.h"
 #include "models/imagestring.h"
 #include "models/loupecontroller.h"
+#include "models/pagenavigator.h"
 #include "models/viewersession.h"
 #include "models/qvapplication.h"
 #include "models/volumecache.h"
@@ -105,6 +106,19 @@ private slots:
         QCOMPARE(session.currentPageStatusText(), QString());
         QCOMPARE(session.pageSignage(0), QString());
         QCOMPARE(session.pageSignage(-1), QString());
+    }
+
+    void pageNavigatorOwnsValidatedPagePosition()
+    {
+        PageNavigator navigator;
+        QCOMPARE(navigator.currentPageIndex(), 0);
+        QVERIFY(!navigator.selectPage(-1, 3));
+        QVERIFY(!navigator.selectPage(3, 3));
+        QCOMPARE(navigator.currentPageIndex(), 0);
+        QVERIFY(navigator.selectPage(2, 3));
+        QCOMPARE(navigator.currentPageIndex(), 2);
+        navigator.reset();
+        QCOMPARE(navigator.currentPageIndex(), 0);
     }
 
     void directImageTransitionsThroughStandalonePreview()

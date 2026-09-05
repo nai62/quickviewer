@@ -164,6 +164,7 @@ HEADERS  += \
     src/models/lrucache.h \
     src/models/imageloadcontext.h \
     src/models/loupecontroller.h \
+    src/models/pagenavigator.h \
     src/models/pagecontent.h \
     src/models/viewersession.h \
     src/models/latestresultdispatcher.h \

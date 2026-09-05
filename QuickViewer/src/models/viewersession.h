@@ -3,6 +3,7 @@
 
 #include <QtGui>
 #include "latestresultdispatcher.h"
+#include "pagenavigator.h"
 #include "visiblepages.h"
 #include "viewerstate.h"
 #include "volume.h"
@@ -72,7 +73,7 @@ public:
     /**
      * Returns the zero-based index of the first currently visible page.
      */
-    int currentPageIndex() const override { return m_currentPageIndex; }
+    int currentPageIndex() const override { return m_pageNavigator.currentPageIndex(); }
     VisiblePages visiblePages() const override { return VisiblePages(m_visiblePages); }
     QString currentPagePath() const override
     {
@@ -88,7 +89,8 @@ public:
         if (!volume || volume->isArchive() || volume->pageCount() <= 1) {
             return "";
         }
-        const int index = volume->pageCount() - 1 == m_currentPageIndex ? m_currentPageIndex - 1 : m_currentPageIndex + 1;
+        const int currentPageIndex = m_pageNavigator.currentPageIndex();
+        const int index = volume->pageCount() - 1 == currentPageIndex ? currentPageIndex - 1 : currentPageIndex + 1;
         return QDir::toNativeSeparators(volume->pagePathAt(index));
     }
     QString currentPageName() const { return m_visiblePages.isEmpty() ? QString() : m_visiblePages[0].path; }
@@ -180,10 +182,7 @@ private:
     void configureVolume(Volume *volume);
     void replaceVisiblePages(QVector<ImageContent> pages);
     static QStringList enumerateVolumes(const QDir &directory);
-    /**
-     * @brief Index of the first currently visible page
-     */
-    int m_currentPageIndex;
+    PageNavigator m_pageNavigator;
 
     bool m_firstVisiblePageIsLandscape;
     bool m_allowSecondVisiblePage;

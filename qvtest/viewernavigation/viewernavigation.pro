@@ -66,6 +66,7 @@ HEADERS += \
     ../../QuickViewer/src/models/latestresultdispatcher.h \
     ../../QuickViewer/src/models/lrucache.h \
     ../../QuickViewer/src/models/loupecontroller.h \
+    ../../QuickViewer/src/models/pagenavigator.h \
     ../../QuickViewer/src/models/pagecontent.h \
     ../../QuickViewer/src/models/viewersession.h \
     ../../QuickViewer/src/models/prefetchplanner.h \
