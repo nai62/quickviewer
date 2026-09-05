@@ -176,6 +176,19 @@ Under WSL, pass the same option after the quoted script path in the `cmd.exe`
 command shown above. Report exactly which targeted tests were run; do not imply
 that unrequested full verification was performed.
 
+## Profiling first-image display
+
+Set `QV_PROFILE_FIRST_IMAGE` to a TSV output path, then launch a built viewer
+with an image or archive. The viewer records elapsed microseconds, thread IDs,
+and phase names, and exits immediately after the first image is painted, before
+starting deferred folder-view work.
+
+```bat
+set "QV_PROFILE_FIRST_IMAGE=C:\build\qv-first-image.tsv"
+start "" /wait "C:\build\quickviewer-msvc2022_64-release\bin\QuickViewer.exe" "C:\path\book.rar"
+set "QV_PROFILE_FIRST_IMAGE="
+```
+
 ## C++ lint
 
 Install Python 3 and clang-format 18. From the repository root, check C++ files

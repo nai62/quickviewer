@@ -10,6 +10,7 @@
 #include "boundedexecutor.h"
 #include "svgnative/SVGDocument.h"
 #include "svgnative/ports/qt/QSVGRenderer.h"
+#include "startupprofiler.h"
 
 using namespace SVGNative;
 
@@ -87,6 +88,7 @@ Volume::ImageLoadFuture Volume::scheduleResize(
 
 void Volume::loadPageList()
 {
+    StartupProfiler::mark("volume.page-list.begin");
     if (!m_loader) {
         m_pageNames.clear();
         m_pageListLoaded = true;
@@ -95,6 +97,7 @@ void Volume::loadPageList()
     m_pageNames = m_loader->contents();
     m_pageListLoaded = true;
     applyPageSort(qApp->ImageSortBy());
+    StartupProfiler::mark("volume.page-list.end");
 }
 
 ImageContent Volume::loadImageBeforePageList(QString subfileName)
@@ -600,7 +603,12 @@ static ImageContent loadImageFromBytes(
 static ImageContent futureLoadImageFromFileVolumeImpl(
     const QSharedPointer<ImageLoadContext> &context, QString path, QSize pageSize)
 {
-    return loadImageFromBytes(path, pageSize, context->load(path));
+    StartupProfiler::mark("image-worker.extract.begin");
+    const QByteArray bytes = context->load(path);
+    StartupProfiler::mark("image-worker.extract.end");
+    ImageContent content = loadImageFromBytes(path, pageSize, bytes);
+    StartupProfiler::mark("image-worker.decode-resize.end");
+    return content;
 }
 
 ImageContent Volume::futureLoadImageFromFileVolume(

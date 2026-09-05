@@ -122,6 +122,7 @@ SOURCES += \
     src/models/prefetchplanner.cpp \
     src/models/qvapplication.cpp \
     src/models/shadermanager.cpp \
+    src/startupprofiler.cpp \
     src/models/thumbnailmanager.cpp \
     src/models/volumecache.cpp \
     src/models/volumehandle.cpp \
@@ -203,6 +204,7 @@ HEADERS  += \
     src/qactionmanager/shortcutbutton.h \
     src/models/imagestring.h \
     src/retouchwindow.h \
+    src/startupprofiler.h \
     src/models/fileoperator.h \
     src/qlanguageselector/qtexttranslator.h \
     src/models/qvimagemetadata.h

@@ -4,6 +4,7 @@
 #include "fileloader7zarchive.h"
 #include "fileloaderrararchive.h"
 #include "qvapplication.h"
+#include "startupprofiler.h"
 
 Volume *VolumeLoader::createVolume(QObject *parent, QString path)
 {
@@ -65,6 +66,7 @@ VolumeLoader::VolumeLoader(QString path)
 
 Volume *VolumeLoader::buildLoadedVolume()
 {
+    StartupProfiler::mark("volume-loader.begin");
     QString volumePath = QDir::toNativeSeparators(m_path);
     if (m_path.contains("::")) {
         const QStringList pathParts = m_path.split("::");
@@ -73,8 +75,10 @@ Volume *VolumeLoader::buildLoadedVolume()
     if (!(m_volume = createVolume(nullptr, volumePath))) {
         return m_volume;
     }
+    StartupProfiler::mark("volume-loader.created");
     m_volume->moveToThread(QThread::currentThread());
     m_volume->loadPageList();
+    StartupProfiler::mark("volume-loader.page-list-loaded");
     if (m_volume->pageCount() == 0) {
         delete m_volume;
         return m_volume = nullptr;

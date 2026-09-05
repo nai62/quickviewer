@@ -18,6 +18,7 @@
 #include "fileloader.h"
 #include "qinnerframe.h"
 #include "retouchwindow.h"
+#include "startupprofiler.h"
 
 #ifdef Q_OS_WIN
 #    include "fileassocdialog.h"
@@ -380,6 +381,7 @@ void MainWindow::initializeStartup()
 
 void MainWindow::loadStartupVolume()
 {
+    StartupProfiler::mark("startup-volume.begin");
     // when drop a folder/archive icon to this app
     if (qApp->arguments().length() >= 2) {
         loadVolume(qApp->arguments().last());
