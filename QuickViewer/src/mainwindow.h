@@ -218,6 +218,7 @@ private slots:
 
 private:
     void loadStartupVolume();
+    void initializeConfiguredStartupPanel(const QString &folderPath = QString());
 
 protected:
     Ui::MainWindow *ui;
@@ -226,6 +227,7 @@ protected:
     bool m_onWindowClosing;
     bool m_revealInitialWindow;
     bool m_startupWindowCloaked;
+    bool m_startupPanelInitialized;
 
     /**
      * @brief m_contextMenu Define on the context menu mainwindow.ui for the main screen and separate at startup

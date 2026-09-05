@@ -31,7 +31,8 @@ MainWindow::MainWindow(QWidget *parent)
       m_sliderChanging(false),
       m_onWindowClosing(false),
       m_revealInitialWindow(true),
-      m_startupWindowCloaked(false)
+      m_startupWindowCloaked(false),
+      m_startupPanelInitialized(false)
       //    , contextMenu(this)
       ,
       m_viewerSession(this),
@@ -691,11 +692,24 @@ void MainWindow::setThumbnailManager(ThumbnailManager *manager)
 {
     m_thumbManager = manager;
 
+    const bool startupVolumeRequested = qApp->arguments().length() >= 2 || (qApp->AutoLoaded() && !qApp->LastViewPath().isEmpty());
+    if (!startupVolumeRequested) {
+        initializeConfiguredStartupPanel();
+    }
+}
+
+void MainWindow::initializeConfiguredStartupPanel(const QString &folderPath)
+{
+    if (m_startupPanelInitialized || !m_thumbManager) {
+        return;
+    }
+    m_startupPanelInitialized = true;
+
     switch (qApp->ShowOptionViewOnStartup()) {
     case qvEnums::NoViewStartup:
         break;
     case qvEnums::FolderStartup:
-        createFolderWindow(!qApp->ShowPanelSeparateWindow());
+        createFolderWindow(!qApp->ShowPanelSeparateWindow(), folderPath);
         break;
     case qvEnums::CatalogStartup:
         createCatalogWindow(!qApp->ShowPanelSeparateWindow());
@@ -958,21 +972,18 @@ bool MainWindow::changeFolderPath(QString path)
 
 void MainWindow::handleInitialImageDisplayFinished()
 {
-    if (m_pendingFolderPath.isEmpty()) {
-        return;
-    }
-
     if (m_folderWindow) {
-        const QString path = m_pendingFolderPath;
-        m_pendingFolderPath.clear();
-        m_folderWindow->setFolderPath(path, false);
+        if (!m_pendingFolderPath.isEmpty()) {
+            const QString path = m_pendingFolderPath;
+            m_pendingFolderPath.clear();
+            m_folderWindow->setFolderPath(path, false);
+        }
         return;
     }
 
-    if (m_thumbManager && qApp->ShowOptionViewOnStartup() == qvEnums::FolderStartup) {
-        const QString path = m_pendingFolderPath;
-        createFolderWindow(!qApp->ShowPanelSeparateWindow(), path);
-    }
+    const QString path = m_pendingFolderPath;
+    m_pendingFolderPath.clear();
+    initializeConfiguredStartupPanel(path);
 }
 
 ////////////////////////////
