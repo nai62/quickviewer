@@ -69,9 +69,12 @@ int main(int argc, char *argv[])
 #endif
         StartupProfiler::mark("mainwindow.constructed");
         w.initializeStartup();
+        StartupProfiler::mark("startup.initialized");
         QString dbpath = app.CatalogDatabasePath();
         ThumbnailManager manager(&w, dbpath);
+        StartupProfiler::mark("thumbnail-manager.constructed");
         w.setThumbnailManager(&manager);
+        StartupProfiler::mark("thumbnail-manager.attached");
         w.connect(&pipe, &QNamedPipe::received, &w, [&](QByteArray bytes) {
             if (bytes.size() == 1) {
                 w.setWindowTop(false);
@@ -80,6 +83,7 @@ int main(int argc, char *argv[])
                 w.loadVolumeWithAssoc(string);
             }
         });
+        StartupProfiler::mark("event-loop.begin");
         result = app.exec();
     }
     return result;

@@ -314,6 +314,7 @@ void MainWindow::initializeStartup()
     } else if (qApp->RestoreWindowState()) {
         restoreState(qApp->WindowState());
     }
+    StartupProfiler::mark("startup.window-state-restored");
 
     // Opacity is only a fallback on Windows: changing a layered window back
     // to opaque is not atomic with DWM composition. Cloaking keeps the native
@@ -324,6 +325,7 @@ void MainWindow::initializeStartup()
     } else {
         show();
     }
+    StartupProfiler::mark("startup.window-shown");
     if (isFullScreen()) {
         menuBar()->hide();
         ui->mainToolBar->hide();
@@ -342,9 +344,11 @@ void MainWindow::initializeStartup()
     // Reserve a deferred docked panel's final width before the first image is
     // laid out. The lightweight placeholder is replaced after the first paint.
     reserveConfiguredStartupPanelSpace();
+    StartupProfiler::mark("startup.panel-ready");
 
     // Settle the initial geometry now, including any reserved panel width.
     QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+    StartupProfiler::mark("startup.initial-events-processed");
 
     // Start the requested volume once the event loop is running, while the
     // window is still cloaked. The first completed image paint reveals the
