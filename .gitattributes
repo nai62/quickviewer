@@ -18,11 +18,5 @@ qvtest/**/*.h text eol=lf
 qvtest/**/*.hh text eol=lf
 qvtest/**/*.hpp text eol=lf
 
-# Leave nested submodule line endings under their own repositories' control.
-QuickViewer/src/qactionmanager/** !text !eol
-QuickViewer/src/qfullscreenframe/** !text !eol
-QuickViewer/src/qlanguageselector/** !text !eol
-QuickViewer/src/qnamedpipe/** !text !eol
-
 *.cmd text eol=crlf
 *.bat text eol=crlf
