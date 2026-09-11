@@ -1,40 +1,36 @@
 #include "optionsdialog.h"
 #include "ui_optionsdialog.h"
 #include "qvapplication.h"
-#include "imageview.h"
-#include "pagemanager.h"
+#include "viewersession.h"
 
-class SamplePageContent : public PageContentProtocol, public PageManagerProtocol
+class SamplePageContent : public PageInfoProvider
 {
 public:
     SamplePageContent()
-        : m_size(20)
-        , m_currentPage(10)
-        , m_volumePath("C:\\SampleBook")
+        : m_size(20),
+          m_currentPage(10),
+          m_volumePath("C:\\SampleBook")
     {
-        m_pages = {PageContent(nullptr, nullptr,
-                        ImageContent(
-                            QImage(1000, 1200, QImage::Format_RGB32),
-                            "page11.jpg",
-                            QSize(1000,1200),
-                            easyexif::EXIFInfo(),
-                            1234567)),
-                   PageContent(nullptr, nullptr,
-                        ImageContent(
-                            QImage(1000, 1200, QImage::Format_RGB32),
-                            "page12.jpg",
-                            QSize(1000,1200),
-                            easyexif::EXIFInfo(),
-                            1234567))
-                  };
-        m_pages[0].NotationalScale = 0.5;
-        m_pages[1].NotationalScale = 0.5;
+        m_pages = VisiblePages(QVector<ImageContent>{
+            ImageContent(
+                QImage(1000, 1200, QImage::Format_RGB32),
+                "page11.jpg",
+                QSize(1000, 1200),
+                easyexif::EXIFInfo(),
+                1234567),
+            ImageContent(
+                QImage(1000, 1200, QImage::Format_RGB32),
+                "page12.jpg",
+                QSize(1000, 1200),
+                easyexif::EXIFInfo(),
+                1234567)});
     }
-    int size() { return m_size; }
-    int currentPage() { return m_currentPage; }
-    QString volumePath() { return m_volumePath; }
-    QVector<PageContent>* pages() { return &m_pages; }
-    QString currentPagePath() override {
+    int pageCount() const override { return m_size; }
+    int currentPageIndex() const override { return m_currentPage; }
+    VisiblePages visiblePages() const override { return m_pages; }
+    QString volumePath() const override { return m_volumePath; }
+    QString currentPagePath() const override
+    {
         return QString("%1\\%2")
             .arg(m_volumePath)
             .arg("page11.jpg");
@@ -44,19 +40,32 @@ private:
     int m_size;
     int m_currentPage;
     QString m_volumePath;
-    QVector<PageContent> m_pages;
+    VisiblePages m_pages;
 };
 
 static SamplePageContent *stSamplePageContent;
 
 OptionsDialog::OptionsDialog(QWidget *parent)
-    : QDialog(parent)
-    , ui(new Ui::OptionsDialog)
+    : QDialog(parent),
+      ui(new Ui::OptionsDialog)
 {
     ui->setupUi(this);
-    if(!stSamplePageContent)
+    connect(
+        ui->radioButtonWindowTitleUserDefined,
+        &QRadioButton::toggled,
+        this,
+        &OptionsDialog::handleWindowTitleUserDefinedRadioButtonToggled);
+    connect(
+        ui->radioButtonStatusBarUserDefined,
+        &QRadioButton::toggled,
+        this,
+        &OptionsDialog::handleStatusBarUserDefinedRadioButtonToggled);
+    if (!stSamplePageContent) {
         stSamplePageContent = new SamplePageContent;
-    m_imageString.initialize(stSamplePageContent, stSamplePageContent);
+    }
+    m_imageString.initialize(stSamplePageContent, [] {
+        return RenderedPageMetrics(QVector<qreal>{0.5, 0.5});
+    });
 #ifndef Q_OS_WIN
     ui->checkBoxUseDirect2D->setVisible(false);
 #endif
@@ -70,6 +79,8 @@ OptionsDialog::OptionsDialog(QWidget *parent)
     ui->spinVolumes->setValue(m_maxVolumesCache);
     ui->spinImages->setValue(qApp->MaxImagesCache());
     ui->spinMaxTextureSize->setValue(qApp->MaxTextureSize());
+    ui->spinSvgRasterMaximumWidth->setValue(qApp->SvgRasterMaximumWidth());
+    ui->spinSvgRasterMaximumHeight->setValue(qApp->SvgRasterMaximumHeight());
     ui->checkBoxCheckeredPattern->setChecked(m_useCheckeredPattern);
     ui->checkBoxUseFastDctForJPEG->setChecked(qApp->UseFastDCTForJPEG());
     ui->checkBoxExtractSolidToTemporary->setChecked(qApp->ExtractSolidArchiveToTemporaryDir());
@@ -100,35 +111,42 @@ OptionsDialog::OptionsDialog(QWidget *parent)
 
     ui->lineEditWindowTitleUserStyle->setText(qApp->TitleTextFormat());
     ui->labelWindowTitleSample->setText(m_imageString.formatString(qApp->TitleTextFormat()));
-    if(qApp->TitleTextFormat() == QV_WINDOWTITLE_FORMAT) {
+    if (qApp->TitleTextFormat() == QV_WINDOWTITLE_FORMAT) {
         ui->radioButtonWindowTitleNormalStyle->setChecked(true);
-    } else if(qApp->TitleTextFormat() == IRFANVIEW_WINDOWTITLE_FORMAT) {
+    } else if (qApp->TitleTextFormat() == IRFANVIEW_WINDOWTITLE_FORMAT) {
         ui->radioButtonWindowTitleIrfanViewStyle->setChecked(true);
     } else {
         ui->radioButtonWindowTitleUserDefined->setChecked(true);
     }
-    if(!ui->radioButtonWindowTitleUserDefined->isChecked())
+    if (!ui->radioButtonWindowTitleUserDefined->isChecked()) {
         ui->lineEditWindowTitleUserStyle->setEnabled(false);
+    }
 
     ui->lineEditStatusBarUserStyle->setText(qApp->StatusTextFormat());
     ui->labelStatusBarSample->setText(m_imageString.formatString(qApp->StatusTextFormat()));
-    if(qApp->StatusTextFormat() == QV_STATUSBAR_FORMAT)
+    if (qApp->StatusTextFormat() == QV_STATUSBAR_FORMAT) {
         ui->radioButtonStatusBarNormalStyle->setChecked(true);
-    else if(qApp->StatusTextFormat() == IRFANVIEW_STATUSBAR_FORMAT)
+    } else if (qApp->StatusTextFormat() == IRFANVIEW_STATUSBAR_FORMAT) {
         ui->radioButtonStatusBarIrfanViewStyle->setChecked(true);
-    else
+    } else {
         ui->radioButtonStatusBarUserDefined->setChecked(true);
-    if(!ui->radioButtonStatusBarUserDefined->isChecked())
+    }
+    if (!ui->radioButtonStatusBarUserDefined->isChecked()) {
         ui->lineEditStatusBarUserStyle->setEnabled(false);
+    }
 
-
-    ui->comboBoxHowToLoadSVG->setCurrentText(qApp->HowToLoadSVG());
+    ui->comboBoxHowToLoadSVG->clear();
+    ui->comboBoxHowToLoadSVG->addItem(
+        tr("resvg (Recommended)"), qvEnums::Resvg);
+    ui->comboBoxHowToLoadSVG->addItem(
+        tr("Qt SVG (Compatibility mode)"), qvEnums::QtSvg);
+    ui->comboBoxHowToLoadSVG->setCurrentIndex(
+        ui->comboBoxHowToLoadSVG->findData(qApp->SvgLoaderBackend()));
     ui->comboBoxThemeSelector->setCurrentText(qApp->UiTheme());
 }
 
 OptionsDialog::~OptionsDialog()
 {
-
 }
 
 void OptionsDialog::reflectResults()
@@ -159,25 +177,30 @@ void OptionsDialog::reflectResults()
     qApp->setTopWindowWhenRunWithAssoc(ui->checkBoxTopWindowWhenRunWithAssoc->isChecked());
     qApp->setTopWindowWhenDropped(ui->checkBoxTopWindowWhenDropped->isChecked());
 
-    if(ui->radioButtonWindowTitleNormalStyle->isChecked())
+    if (ui->radioButtonWindowTitleNormalStyle->isChecked()) {
         qApp->setTitleTextFormat(QV_WINDOWTITLE_FORMAT);
-    else if(ui->radioButtonWindowTitleIrfanViewStyle->isChecked())
+    } else if (ui->radioButtonWindowTitleIrfanViewStyle->isChecked()) {
         qApp->setTitleTextFormat(IRFANVIEW_WINDOWTITLE_FORMAT);
-    else
+    } else {
         qApp->setTitleTextFormat(ui->lineEditWindowTitleUserStyle->text());
+    }
 
-    if(ui->radioButtonStatusBarNormalStyle->isChecked())
+    if (ui->radioButtonStatusBarNormalStyle->isChecked()) {
         qApp->setStatusTextFormat(QV_STATUSBAR_FORMAT);
-    else if(ui->radioButtonStatusBarIrfanViewStyle->isChecked())
+    } else if (ui->radioButtonStatusBarIrfanViewStyle->isChecked()) {
         qApp->setStatusTextFormat(IRFANVIEW_STATUSBAR_FORMAT);
-    else
+    } else {
         qApp->setStatusTextFormat(ui->lineEditStatusBarUserStyle->text());
+    }
 
-    qApp->setHowToLoadSVG(ui->comboBoxHowToLoadSVG->currentText());
+    qApp->setSvgLoaderBackend(static_cast<qvEnums::SvgLoaderBackend>(
+        ui->comboBoxHowToLoadSVG->currentData().toInt()));
+    qApp->setSvgRasterMaximumWidth(ui->spinSvgRasterMaximumWidth->value());
+    qApp->setSvgRasterMaximumHeight(ui->spinSvgRasterMaximumHeight->value());
     qApp->setUiTheme(ui->comboBoxThemeSelector->currentText());
 }
 
-void OptionsDialog::resetColorButton(QPushButton* btn, QColor color)
+void OptionsDialog::resetColorButton(QPushButton *btn, QColor color)
 {
     QPixmap pix(16, 16);
     pix.fill(color);
@@ -189,7 +212,7 @@ void OptionsDialog::resetColorBox()
 {
     QPixmap pattern(48, 48);
     QBrush brush;
-    if(!m_useCheckeredPattern) {
+    if (!m_useCheckeredPattern) {
         brush = QBrush(m_backgroundColor, Qt::SolidPattern);
 
         ui->labelColor2->setEnabled(false);
@@ -214,77 +237,88 @@ void OptionsDialog::resetColorBox()
 void OptionsDialog::resetWindowTitleSample()
 {
     QString format;
-    format = ui->radioButtonWindowTitleNormalStyle->isChecked()    ? QV_WINDOWTITLE_FORMAT
-           : ui->radioButtonWindowTitleIrfanViewStyle->isChecked() ? IRFANVIEW_WINDOWTITLE_FORMAT
-           : ui->lineEditWindowTitleUserStyle->text();
+    if (ui->radioButtonWindowTitleNormalStyle->isChecked()) {
+        format = QV_WINDOWTITLE_FORMAT;
+    } else if (ui->radioButtonWindowTitleIrfanViewStyle->isChecked()) {
+        format = IRFANVIEW_WINDOWTITLE_FORMAT;
+    } else {
+        format = ui->lineEditWindowTitleUserStyle->text();
+    }
     ui->labelWindowTitleSample->setText(m_imageString.formatString(format));
-
 }
 
 void OptionsDialog::resetStatusbarSample()
 {
     QString format;
-    format = ui->radioButtonStatusBarNormalStyle->isChecked()    ? QV_STATUSBAR_FORMAT
-           : ui->radioButtonStatusBarIrfanViewStyle->isChecked() ? IRFANVIEW_STATUSBAR_FORMAT
-           : ui->lineEditStatusBarUserStyle->text();
+    if (ui->radioButtonStatusBarNormalStyle->isChecked()) {
+        format = QV_STATUSBAR_FORMAT;
+    } else if (ui->radioButtonStatusBarIrfanViewStyle->isChecked()) {
+        format = IRFANVIEW_STATUSBAR_FORMAT;
+    } else {
+        format = ui->lineEditStatusBarUserStyle->text();
+    }
     ui->labelStatusBarSample->setText(m_imageString.formatString(format));
 }
 
-void OptionsDialog::onBtnColorSelect_clicked()
+void OptionsDialog::handlePrimaryColorButtonClicked()
 {
     QColorDialog dialog(this);
     dialog.setCurrentColor(m_backgroundColor);
-    if(dialog.exec() == QDialog::Accepted) {
+    if (dialog.exec() == QDialog::Accepted) {
         m_backgroundColor = dialog.currentColor();
         resetColorButton(ui->btnColorSelect, m_backgroundColor);
         resetColorBox();
     }
 }
 
-void OptionsDialog::onBtnColorSelect2_clicked()
+void OptionsDialog::handleSecondaryColorButtonClicked()
 {
     QColorDialog dialog(this);
     dialog.setCurrentColor(m_backgroundColor2);
-    if(dialog.exec() == QDialog::Accepted) {
+    if (dialog.exec() == QDialog::Accepted) {
         m_backgroundColor2 = dialog.currentColor();
         resetColorButton(ui->btnColorSelect2, m_backgroundColor2);
         resetColorBox();
     }
 }
 
-void OptionsDialog::onCheckBoxCheckeredPattern_clicked(bool enabled)
+void OptionsDialog::handleCheckeredPatternCheckBoxClicked(bool checked)
 {
-    m_useCheckeredPattern = enabled;
+    m_useCheckeredPattern = checked;
     resetColorBox();
 }
 
-void OptionsDialog::onRadioButtonWindowTitle_triggered(bool)
-{
-    resetWindowTitleSample();
-    ui->lineEditWindowTitleUserStyle->setEnabled(ui->radioButtonWindowTitleUserDefined->isChecked());
-}
-
-void OptionsDialog::onRadioButtonStatusBar_triggered(bool)
-{
-    resetStatusbarSample();
-    ui->lineEditStatusBarUserStyle->setEnabled(ui->radioButtonStatusBarUserDefined->isChecked());
-}
-
-void OptionsDialog::onLineEditWindowTitleUserStyle_textEdited(QString text)
+void OptionsDialog::handleWindowTitleStyleRadioButtonToggled()
 {
     resetWindowTitleSample();
 }
 
-void OptionsDialog::onLineEditStatusBarUserStyle_textEdited(QString text)
+void OptionsDialog::handleWindowTitleUserDefinedRadioButtonToggled(bool checked)
+{
+    ui->lineEditWindowTitleUserStyle->setEnabled(checked);
+}
+
+void OptionsDialog::handleStatusBarStyleRadioButtonToggled()
 {
     resetStatusbarSample();
 }
 
-void OptionsDialog::onCheckBoxShowUsage_clicked(bool enabled)
+void OptionsDialog::handleStatusBarUserDefinedRadioButtonToggled(bool checked)
 {
-    ui->labelFormatUsage->setVisible(enabled);
-}
-void OptionsDialog::onCheckBoxDontShrinkForLargeImage_clicked(bool enabled)
-{
+    ui->lineEditStatusBarUserStyle->setEnabled(checked);
 }
 
+void OptionsDialog::handleWindowTitleUserStyleLineEditTextEdited(QString text)
+{
+    resetWindowTitleSample();
+}
+
+void OptionsDialog::handleStatusBarUserStyleLineEditTextEdited(QString text)
+{
+    resetStatusbarSample();
+}
+
+void OptionsDialog::handleShowUsageCheckBoxClicked(bool checked)
+{
+    ui->labelFormatUsage->setVisible(checked);
+}

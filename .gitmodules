@@ -4,12 +4,6 @@
 [submodule "zimg/zimg"]
 	path = zimg/zimg
 	url = https://github.com/sekrit-twc/zimg
-[submodule "zlib/zlib"]
-	path = zlib/zlib
-	url = https://github.com/madler/zlib
-[submodule "quazip/quazip"]
-	path = quazip/quazip
-	url = https://github.com/kanryu/quazip
 [submodule "QuickViewer/src/qfullscreenframe"]
 	path = QuickViewer/src/qfullscreenframe
 	url = https://github.com/kanryu/qfullscreenframe
@@ -19,25 +13,15 @@
 [submodule "QuickViewer/src/qnamedpipe"]
 	path = QuickViewer/src/qnamedpipe
 	url = https://github.com/kanryu/qnamedpipe
-[submodule "libexpat/libexpat"]
-	path = libexpat/libexpat
-	url = https://github.com/libexpat/libexpat
 [submodule "easyexif/easyexif"]
 	path = easyexif/easyexif
 	url = https://github.com/mayanklahiri/easyexif
-[submodule "QuickViewer/src/qactionmanager"]
-	path = QuickViewer/src/qactionmanager
-	url = https://github.com/kanryu/qactionmanager
-[submodule "exiv2/exiv2"]
-	path = exiv2/exiv2
-	url = https://github.com/Exiv2/exiv2
 [submodule "luminor/luminor"]
 	path = luminor/luminor
 	url = https://github.com/kanryu/luminor
 [submodule "Qt7z/Qt7z/lib7zip"]
 	path = Qt7z/Qt7z/lib7zip
 	url = https://github.com/kanryu/lib7zip
-[submodule "qsvgrenderer/svg-native-viewer"]
-	path = qsvgrenderer/svg-native-viewer
-	url = https://github.com/kanryu/svg-native-viewer
-	branch = kanryu/qt6port
+[submodule "resvg/resvg"]
+	path = resvg/resvg
+	url = https://github.com/linebender/resvg.git

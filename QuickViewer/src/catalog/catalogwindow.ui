@@ -14,7 +14,7 @@
    <bool>true</bool>
   </property>
   <property name="windowTitle">
-   <string>CatalogDisplay</string>
+   <string>Catalog</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../../toolbar.qrc">
@@ -79,13 +79,13 @@
        </size>
       </property>
       <property name="toolTip">
-       <string>switch display format</string>
+       <string>Switch display format</string>
       </property>
       <property name="statusTip">
        <string/>
       </property>
       <property name="accessibleName">
-       <string>switch display format</string>
+       <string>Switch display format</string>
       </property>
       <property name="text">
        <string/>
@@ -115,7 +115,7 @@
        </size>
       </property>
       <property name="toolTip">
-       <string>catalog management</string>
+       <string>Manage catalogs</string>
       </property>
       <property name="statusTip">
        <string/>
@@ -293,7 +293,7 @@ QFrame.layout {
      <normaloff>:/icons/arrow_left_icon</normaloff>:/icons/arrow_left_icon</iconset>
    </property>
    <property name="text">
-    <string>Prev</string>
+    <string>Previous</string>
    </property>
   </action>
   <action name="actionNext">
@@ -326,7 +326,7 @@ QFrame.layout {
      <normaloff>:/icons/folder_view_icon_red</normaloff>:/icons/folder_view_icon_red</iconset>
    </property>
    <property name="text">
-    <string>DisplaySide-By-Side</string>
+    <string>Icons and titles</string>
    </property>
   </action>
   <action name="actionFolderViewIconNoText">
@@ -338,10 +338,10 @@ QFrame.layout {
      <normaloff>:/icons/folder_view_icon_green</normaloff>:/icons/folder_view_icon_green</iconset>
    </property>
    <property name="text">
-    <string>IconOnly</string>
+    <string>Icons only</string>
    </property>
    <property name="iconText">
-    <string>IconOnly</string>
+    <string>Icons only</string>
    </property>
   </action>
   <action name="actionFolderViewSelect">
@@ -359,18 +359,18 @@ QFrame.layout {
      <normaloff>:/icons/catalog_icon</normaloff>:/icons/catalog_icon</iconset>
    </property>
    <property name="text">
-    <string>CatalogManagement</string>
+    <string>Manage catalogs</string>
    </property>
    <property name="iconText">
-    <string>CatalogManagement</string>
+    <string>Manage catalogs</string>
    </property>
    <property name="toolTip">
-    <string>CatalogManagement</string>
+    <string>Manage catalogs</string>
    </property>
   </action>
   <action name="actionCloseWindow">
    <property name="text">
-    <string>&amp;CloseWindow</string>
+    <string>&amp;Close</string>
    </property>
   </action>
   <action name="actionTitleWithoutOptions">
@@ -378,7 +378,7 @@ QFrame.layout {
     <bool>true</bool>
    </property>
    <property name="text">
-    <string extracomment="Ability to remove and display (parenthesized) text from Volume title in the catalog">Remove (Options) from book title</string>
+    <string extracomment="Ability to remove and display (parenthesized) text from Volume title in the catalog">Remove parenthesized text from book title</string>
    </property>
   </action>
   <action name="actionSearchTitleWithOptions">
@@ -386,7 +386,7 @@ QFrame.layout {
     <bool>true</bool>
    </property>
    <property name="text">
-    <string extracomment="Ability to search with the title removed (parenthesized) removed from the title of Volume in the catalog">Remove (Options) from book title when searching</string>
+    <string extracomment="Ability to search with the title removed (parenthesized) removed from the title of Volume in the catalog">Ignore parenthesized text when searching titles</string>
    </property>
   </action>
  </widget>
@@ -399,7 +399,7 @@ QFrame.layout {
    <sender>folderViewButton</sender>
    <signal>clicked()</signal>
    <receiver>CatalogWindow</receiver>
-   <slot>onFolderViewButton_clicked()</slot>
+   <slot>handleFolderViewButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>86</x>
@@ -415,7 +415,7 @@ QFrame.layout {
    <sender>searchCombo</sender>
    <signal>editTextChanged(QString)</signal>
    <receiver>CatalogWindow</receiver>
-   <slot>onSearchCombo_editTextChanged(QString)</slot>
+   <slot>handleSearchComboBoxEditTextChanged(QString)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>589</x>
@@ -431,7 +431,7 @@ QFrame.layout {
    <sender>actionFolderViewIcon</sender>
    <signal>triggered()</signal>
    <receiver>CatalogWindow</receiver>
-   <slot>onActionFolderViewIcon_triggered()</slot>
+   <slot>handleFolderViewIconActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -447,7 +447,7 @@ QFrame.layout {
    <sender>actionFolderViewIconNoText</sender>
    <signal>triggered()</signal>
    <receiver>CatalogWindow</receiver>
-   <slot>onActionFolderViewNotext_triggered()</slot>
+   <slot>handleFolderViewIconNoTextActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -463,7 +463,7 @@ QFrame.layout {
    <sender>actionFolderViewList</sender>
    <signal>triggered()</signal>
    <receiver>CatalogWindow</receiver>
-   <slot>onActionFolderViewList_triggered()</slot>
+   <slot>handleFolderViewListActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -479,7 +479,7 @@ QFrame.layout {
    <sender>manageCatalogButton</sender>
    <signal>clicked()</signal>
    <receiver>CatalogWindow</receiver>
-   <slot>onManageCatalogButton_clicked()</slot>
+   <slot>handleManageCatalogButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>456</x>
@@ -495,7 +495,7 @@ QFrame.layout {
    <sender>searchCombo</sender>
    <signal>currentIndexChanged(QString)</signal>
    <receiver>CatalogWindow</receiver>
-   <slot>onSearchCombo_currentIndexChanged(QString)</slot>
+   <slot>handleSearchComboBoxCurrentIndexChanged(QString)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>388</x>
@@ -527,7 +527,7 @@ QFrame.layout {
    <sender>actionManageCatalogs</sender>
    <signal>triggered()</signal>
    <receiver>CatalogWindow</receiver>
-   <slot>onActionFolderViewNotext_triggered()</slot>
+   <slot>handleFolderViewIconNoTextActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -543,7 +543,7 @@ QFrame.layout {
    <sender>volumeList</sender>
    <signal>doubleClicked(QModelIndex)</signal>
    <receiver>CatalogWindow</receiver>
-   <slot>on_itemDoubleClicked(QModelIndex)</slot>
+   <slot>handleVolumeListItemDoubleClicked(QModelIndex)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>356</x>
@@ -557,18 +557,15 @@ QFrame.layout {
   </connection>
  </connections>
  <slots>
-  <slot>on_treeItemChanged(QString)</slot>
-  <slot>onFolderViewButton_clicked()</slot>
-  <slot>onSearchCombo_editTextChanged(QString)</slot>
-  <slot>onActionFolderViewList_triggered()</slot>
-  <slot>onActionFolderViewIcon_triggered()</slot>
-  <slot>onActionFolderViewNotext_triggered()</slot>
-  <slot>on_itemDoubleClicked(QListWidgetItem*)</slot>
-  <slot>on_searchTextFinished()</slot>
-  <slot>onSearchCombo_currentIndexChanged(QString)</slot>
-  <slot>onActionSearchTitleWithOptions_triggered(bool)</slot>
-  <slot>onActionCatalogTitleWithoutOptions_triggered(bool)</slot>
-  <slot>on_itemDoubleClicked(QModelIndex)</slot>
-  <slot>onManageCatalogButton_clicked()</slot>
+  <slot>handleFolderViewButtonClicked()</slot>
+  <slot>handleSearchComboBoxEditTextChanged(QString)</slot>
+  <slot>handleFolderViewListActionTriggered()</slot>
+  <slot>handleFolderViewIconActionTriggered()</slot>
+  <slot>handleFolderViewIconNoTextActionTriggered()</slot>
+  <slot>handleSearchComboBoxCurrentIndexChanged(QString)</slot>
+  <slot>handleSearchTitleWithOptionsActionTriggered(bool)</slot>
+  <slot>handleCatalogTitleWithoutOptionsActionTriggered(bool)</slot>
+  <slot>handleVolumeListItemDoubleClicked(QModelIndex)</slot>
+  <slot>handleManageCatalogButtonClicked()</slot>
  </slots>
 </ui>

@@ -1,0 +1,71 @@
+---
+BasedOnStyle: LLVM
+Language: Cpp
+
+# Preserve the established four-space/Allman function style while normalizing
+# control statements as `if (...) {`.
+AccessModifierOffset: -4
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel: false
+  AfterClass: true
+  AfterControlStatement: Never
+  AfterEnum: false
+  AfterExternBlock: false
+  AfterFunction: true
+  AfterNamespace: false
+  AfterStruct: true
+  AfterUnion: true
+  BeforeCatch: false
+  BeforeElse: false
+  BeforeLambdaBody: false
+  BeforeWhile: false
+  IndentBraces: false
+  SplitEmptyFunction: false
+
+SpaceBeforeParens: ControlStatements
+SpaceBeforeAssignmentOperators: true
+BreakBeforeBinaryOperators: None
+
+# A control statement must never have an unbraced body. This also makes the
+# format check catch dangling-if constructs before clang-tidy is run.
+InsertBraces: true
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortBlocksOnASingleLine: Never
+
+# With no column limit, clang-format preserves existing line breaks inside
+# statements unless another rule requires changing them.
+ColumnLimit: 0
+IndentWidth: 4
+ContinuationIndentWidth: 4
+ConstructorInitializerIndentWidth: 4
+UseTab: Never
+LineEnding: LF
+Standard: c++17
+PointerAlignment: Right
+DerivePointerAlignment: false
+QualifierAlignment: Leave
+BinPackArguments: false
+BinPackParameters: false
+AlwaysBreakTemplateDeclarations: Yes
+PackConstructorInitializers: Never
+NamespaceIndentation: None
+IndentAccessModifiers: false
+IndentCaseBlocks: false
+IndentCaseLabels: false
+IndentPPDirectives: AfterHash
+PPIndentWidth: 4
+SortIncludes: Never
+IncludeBlocks: Preserve
+SortUsingDeclarations: Never
+FixNamespaceComments: false
+ReflowComments: false
+AlignTrailingComments:
+  Kind: Leave
+SpacesInLineCommentPrefix:
+  Minimum: 0
+  Maximum: -1
+...

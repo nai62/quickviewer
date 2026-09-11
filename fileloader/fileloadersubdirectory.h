@@ -3,16 +3,12 @@
 
 #include "fileloaderdirectory.h"
 
+// Source-compatible wrapper for callers that request recursive traversal.
+// The behavior itself lives in FileLoaderDirectory::TraversalMode.
 class FileLoaderSubDirectory : public FileLoaderDirectory
 {
 public:
-    FileLoaderSubDirectory(QObject* parent, QString path);
-
-    ~FileLoaderSubDirectory() {}
-    bool hasSubDirectories() override { return true; }
-protected:
-    void initialize() override;
-    void getFilesWithSubdirs(QString path, QString subpath);
+    FileLoaderSubDirectory(QObject *parent, QString path);
 };
 
 #endif // FILELOADERSUBDIRECTORY_H

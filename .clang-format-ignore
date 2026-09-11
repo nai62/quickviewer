@@ -1,0 +1,13 @@
+# Third-party and externally maintained sources are not formatted.
+Qt7z/**
+ResizeHalf/**
+easyexif/**
+luminor/**
+qsvgrenderer/**
+unrar/**
+zimg/**
+
+# These directories are Git submodules nested below QuickViewer/src.
+QuickViewer/src/qfullscreenframe/**
+QuickViewer/src/qlanguageselector/**
+QuickViewer/src/qnamedpipe/**

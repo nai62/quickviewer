@@ -18,7 +18,6 @@ win32-msvc* {
     CONFIG += c++17
     win32: CONFIG += staticlib
     QMAKE_LFLAGS += -Wl,-rpath,../lib
-    QMAKE_CXXFLAGS += -std=c++11
     DEFINES += NTDDI_VERSION=NTDDI_VISTA
 }
 
@@ -57,12 +56,3 @@ LIBS += -lunrar
 #DEFINES += QT7Z_STATIC
 INCLUDEPATH += ../Qt7z/Qt7z
 LIBS += -lQt7z
-
-unix {
-#    SOURCES += $$PWD/fileloaderziparchive.cpp
-#    HEADERS += $$PWD/fileloaderziparchive.h
-#    DEFINES += QUAZIP_STATIC
-#    INCLUDEPATH += $$PWD/../quazip/quazip/quazip $$PWD/../zlib/zlib
-#    LIBS += -lquazip -lzlib
-}
-

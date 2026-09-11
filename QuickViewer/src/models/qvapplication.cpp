@@ -2,84 +2,88 @@
 //#include <QtOpenGL>
 #include "fileloader7zarchive.h"
 
-#ifdef Q_OS_WIN
-#include <shlobj.h>
-#endif
-
 #include "qvapplication.h"
+#include "svgloader.h"
 #include "qv_init.h"
 #include "ui_mainwindow.h"
 
+#ifdef Q_OS_WIN
+#    include <shlobj.h>
+#endif
+
 QVApplication::QVApplication(int &argc, char **argv)
-    : QApplication(argc, argv)
-    , m_mainThread(QThread::currentThread())
-    , m_maxTextureSize(4096)
-    , m_imageSortBy(qvEnums::SortByFileName)
-    , m_innerFrameShowing(false)
-    , m_effect(qvEnums::Bilinear)
-    , m_translator(nullptr)
-    , m_settings(nullptr)
-    , m_bookshelfManager(nullptr)
-    , m_languageSelector("quickviewer_", getTranslationPath())
-    , m_qtbaseLanguageSelector("qt_", getTranslationPath())
+    : QApplication(argc, argv),
+      m_mainThread(QThread::currentThread()),
+      m_maxTextureSize(4096),
+      m_imageSortBy(qvEnums::SortByFileName),
+      m_svgLoaderBackend(qvEnums::Resvg),
+      m_svgRasterMaximumWidth(SvgLoader::DefaultMaximumWidth),
+      m_svgRasterMaximumHeight(SvgLoader::DefaultMaximumHeight),
+      m_innerFrameShowing(false),
+      m_effect(qvEnums::Bilinear),
+      m_translator(nullptr),
+      m_settings(nullptr),
+      m_readProgressStore(nullptr),
+      m_languageSelector("quickviewer_", getTranslationPath()),
+      m_qtbaseLanguageSelector("qt_", getTranslationPath())
 #if defined(Q_OS_WIN)
-    , m_portable(true)
+      ,
+      m_portable(true)
 #endif
 {
     setApplicationVersion(APP_VERSION);
     setApplicationName(APP_NAME);
     //setOrganizationName(APP_ORGANIZATION);
-//    qDebug() << "TranslationsPath" << QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+    //    qDebug() << "TranslationsPath" << QLibraryInfo::location(QLibraryInfo::TranslationsPath);
 
 #if defined(Q_OS_WIN)
     // Since there is an evil implementation that forcibly installs QuickViewer in Windows "C:/Program Files", the specification is changed as follows.
     // Once assuming that it is a Portable environment, if there is QuickViewer in "C:/Program Files", it corresponds by denying it.
     QByteArray programFiles = qgetenv("ProgramFiles");
     QString appdir = applicationDirPath();
-    if(QDir::toNativeSeparators(appdir).startsWith(programFiles))
+    if (QDir::toNativeSeparators(appdir).startsWith(programFiles)) {
         m_portable = false;
+    }
 
-    if(!m_portable)
+    if (!m_portable)
 #endif
     {
         // In a non-portable environment, QuickViewer creates a directory for the application
         // in a fixed PATH inside the user directory, and stores data files in it.
-#  if    defined(Q_OS_MAC) || defined(Q_OS_LINUX)
+#if defined(Q_OS_MAC) || defined(Q_OS_LINUX)
         QString datapath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)).filePath(QV_DATADIR);
-#  elif  defined(Q_OS_WIN)
+#elif defined(Q_OS_WIN)
         QString datapath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
 //        qDebug() << datapath;
-#  endif
+#endif
         QDir dir(datapath);
         QFile filedatabase(dir.filePath(QV_THUMBNAILS));
-        if(!filedatabase.exists()) {
-            if(!dir.exists())
+        if (!filedatabase.exists()) {
+            if (!dir.exists()) {
                 dir.mkpath(".");
+            }
             // write out thumbnail database from the resource into Application data directory
             QFile resdatabase(QStringLiteral(":/databases/thumbnail_database"));
             qDebug() << resdatabase.exists();
-            if(resdatabase.open(QIODevice::ReadOnly)) {
+            if (resdatabase.open(QIODevice::ReadOnly)) {
                 auto dat = resdatabase.readAll();
-                if(filedatabase.open(QIODevice::WriteOnly)) {
+                if (filedatabase.open(QIODevice::WriteOnly)) {
                     filedatabase.write(dat);
                     filedatabase.close();
                 }
             }
-
         }
     }
-//#endif
+    //#endif
     m_settings = new QSettings(getFilePathOfApplicationSetting(APP_INI), QSettings::IniFormat, this);
 
     m_languageSelector.initialize();
     m_qtbaseLanguageSelector.copyLanguages(m_languageSelector.Languages());
     //m_settings->setIniCodec(QTextCodec::codecForName("UTF-8"));
     connect(&m_languageSelector, SIGNAL(languageChanged(QString)), &m_qtbaseLanguageSelector, SLOT(resetTranslator(QString)));
-    registDefaultKeyMap();
-    registDefaultMouseMap();
+    registerDefaultKeyMap();
+    registerDefaultMouseMap();
     loadSettings();
-
-    FileLoader7zArchive::initializeLib();
 
     // Qt6 has a limit on loading large images, but this is inconvenient,
     // so we will relax this limit (and in the future make it a configurable value).
@@ -99,7 +103,7 @@ QString QVApplication::getApplicationFilePath(QString subFilePath)
 QString QVApplication::getFilePathOfApplicationSetting(QString subFilePath)
 {
 #ifdef Q_OS_WIN
-    if(m_portable) {
+    if (m_portable) {
         return getApplicationFilePath(subFilePath);
     } else {
         return QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).filePath(subFilePath);
@@ -118,11 +122,31 @@ QString QVApplication::getTranslationPath()
 {
     // ATTENTION:
     // default 'QLibraryInfo::location(TranslationsPath)' is "[QTDIR]/translations"
-#ifdef _DEBUG
+#if defined(Q_OS_WIN) || defined(_DEBUG)
+    // Windows packages and local out-of-source builds deploy QuickViewer's
+    // own catalogs beside the executable. The Qt installation directory only
+    // contains Qt's catalogs, so using it makes Release builds fall back to
+    // the untranslated English UI.
     return getApplicationFilePath("translations");
 #else
     return QLibraryInfo::location(QLibraryInfo::TranslationsPath);
 #endif
+}
+
+void QVApplication::setSvgRasterMaximumWidth(int width)
+{
+    m_svgRasterMaximumWidth = qBound(
+        SvgLoader::MinimumRasterDimension,
+        width,
+        SvgLoader::MaximumRasterDimension);
+}
+
+void QVApplication::setSvgRasterMaximumHeight(int height)
+{
+    m_svgRasterMaximumHeight = qBound(
+        SvgLoader::MinimumRasterDimension,
+        height,
+        SvgLoader::MaximumRasterDimension);
 }
 
 QString QVApplication::CatalogDatabasePath()
@@ -135,11 +159,12 @@ void QVApplication::myInstallTranslator()
     m_languageSelector.resetTranslator(UiLanguage());
     // It is "" when it is started for the first time,
     // but it is better to set the value in order to cause unnecessary processing
-    if(m_uiLanguage.isEmpty())
+    if (m_uiLanguage.isEmpty()) {
         setUiLanguage(m_languageSelector.language());
+    }
 }
 
-void QVApplication::registDefaultKeyMap()
+void QVApplication::registerDefaultKeyMap()
 {
     // Default key configs
     m_keyActions.addDefaultKey("actionExitApplicationOrFullscreen", QKeySequence("Esc"));
@@ -172,7 +197,7 @@ void QVApplication::registDefaultKeyMap()
     m_keyActions.addDefaultKey("actionMaximizeOrNormal", QKeySequence("Return, Num+Enter"));
 }
 
-void QVApplication::registDefaultMouseMap()
+void QVApplication::registerDefaultMouseMap()
 {
     // Default mouse configs
     m_mouseActions.addDefaultKey("actionNextPage", QMouseSequence("+::WheelDown, +::ForwardButton"));
@@ -184,131 +209,130 @@ void QVApplication::registDefaultMouseMap()
     m_mouseActions.addDefaultKey("actionFullscreen", QMouseSequence("+::MiddleButton"));
 }
 
-void QVApplication::registActions(Ui::MainWindow *ui)
+void QVApplication::registerActions(Ui::MainWindow *ui)
 {
     // File
     QString groupName = tr("File", "File Action Group");
-    m_keyActions.registAction("actionOpenFolder", ui->actionOpenFolder, groupName);
-    m_keyActions.registAction("actionClearHistory", ui->actionClearHistory, groupName);
-    m_keyActions.registAction("actionAutoLoaded", ui->actionAutoLoaded, groupName);
-    m_keyActions.registAction("actionExit", ui->actionExit, groupName);
-
+    m_keyActions.registerAction("actionOpenFolder", ui->actionOpenFolder, groupName);
+    m_keyActions.registerAction("actionClearHistory", ui->actionClearHistory, groupName);
+    m_keyActions.registerAction("actionAutoLoaded", ui->actionAutoLoaded, groupName);
+    m_keyActions.registerAction("actionExit", ui->actionExit, groupName);
 
     // Bookmark
     groupName = tr("Bookmark", "Bookmark Action Group");
-    m_keyActions.registAction("actionClearBookmarks", ui->actionClearBookmarks, groupName);
-    m_keyActions.registAction("actionLoadBookmark", ui->actionLoadBookmark, groupName);
-    m_keyActions.registAction("actionSaveBookmark", ui->actionSaveBookmark, groupName);
+    m_keyActions.registerAction("actionClearBookmarks", ui->actionClearBookmarks, groupName);
+    m_keyActions.registerAction("actionLoadBookmark", ui->actionLoadBookmark, groupName);
+    m_keyActions.registerAction("actionSaveBookmark", ui->actionSaveBookmark, groupName);
 
     // Navigation
     groupName = tr("Navigation", "Navigation Action Group");
-    m_keyActions.registAction("actionNextPage", ui->actionNextPage, groupName);
-    m_keyActions.registAction("actionPrevPage", ui->actionPrevPage, groupName);
-    m_keyActions.registAction("actionNextPageOrVolume", ui->actionNextPageOrVolume, groupName);
-    m_keyActions.registAction("actionPrevPageOrVolume", ui->actionPrevPageOrVolume, groupName);
-    m_keyActions.registAction("actionTurnPageOnLeft", ui->actionTurnPageOnLeft, groupName);
-    m_keyActions.registAction("actionTurnPageOnRight", ui->actionTurnPageOnRight, groupName);
-    m_keyActions.registAction("actionFastForward", ui->actionFastForward, groupName);
-    m_keyActions.registAction("actionFastBackward", ui->actionFastBackward, groupName);
-    m_keyActions.registAction("actionLastPage", ui->actionLastPage, groupName);
-    m_keyActions.registAction("actionFirstPage", ui->actionFirstPage, groupName);
-    m_keyActions.registAction("actionNextVolume", ui->actionNextVolume, groupName);
-    m_keyActions.registAction("actionPrevVolume", ui->actionPrevVolume, groupName);
-    m_keyActions.registAction("actionNextOnePage", ui->actionNextOnePage, groupName);
-    m_keyActions.registAction("actionPrevOnePage", ui->actionPrevOnePage, groupName);
-    m_keyActions.registAction("actionSlideShow", ui->actionSlideShow, groupName);
+    m_keyActions.registerAction("actionNextPage", ui->actionNextPage, groupName);
+    m_keyActions.registerAction("actionPrevPage", ui->actionPrevPage, groupName);
+    m_keyActions.registerAction("actionNextPageOrVolume", ui->actionNextPageOrVolume, groupName);
+    m_keyActions.registerAction("actionPrevPageOrVolume", ui->actionPrevPageOrVolume, groupName);
+    m_keyActions.registerAction("actionTurnPageOnLeft", ui->actionTurnPageOnLeft, groupName);
+    m_keyActions.registerAction("actionTurnPageOnRight", ui->actionTurnPageOnRight, groupName);
+    m_keyActions.registerAction("actionFastForward", ui->actionFastForward, groupName);
+    m_keyActions.registerAction("actionFastBackward", ui->actionFastBackward, groupName);
+    m_keyActions.registerAction("actionLastPage", ui->actionLastPage, groupName);
+    m_keyActions.registerAction("actionFirstPage", ui->actionFirstPage, groupName);
+    m_keyActions.registerAction("actionNextVolume", ui->actionNextVolume, groupName);
+    m_keyActions.registerAction("actionPrevVolume", ui->actionPrevVolume, groupName);
+    m_keyActions.registerAction("actionNextOnePage", ui->actionNextOnePage, groupName);
+    m_keyActions.registerAction("actionPrevOnePage", ui->actionPrevOnePage, groupName);
+    m_keyActions.registerAction("actionSlideShow", ui->actionSlideShow, groupName);
 
     // Folder
     groupName = tr("Folder", "Folder Action Group");
-    m_keyActions.registAction("actionShowFolder", ui->actionShowFolder, groupName);
-    m_keyActions.registAction("actionShowSubfolders", ui->actionShowSubfolders, groupName);
+    m_keyActions.registerAction("actionShowFolder", ui->actionShowFolder, groupName);
+    m_keyActions.registerAction("actionShowSubfolders", ui->actionShowSubfolders, groupName);
 
     // Catalog
     groupName = tr("Catalog", "Catalog Action Group");
-    m_keyActions.registAction("actionShowCatalog", ui->actionShowCatalog, groupName);
-    m_keyActions.registAction("actionSearchTitleWithOptions", ui->actionSearchTitleWithOptions, groupName);
-    m_keyActions.registAction("actionCatalogTitleWithoutOptions", ui->actionCatalogTitleWithoutOptions, groupName);
-    m_keyActions.registAction("actionCatalogIconLongText", ui->actionCatalogIconLongText, groupName);
+    m_keyActions.registerAction("actionShowCatalog", ui->actionShowCatalog, groupName);
+    m_keyActions.registerAction("actionSearchTitleWithOptions", ui->actionSearchTitleWithOptions, groupName);
+    m_keyActions.registerAction("actionCatalogTitleWithoutOptions", ui->actionCatalogTitleWithoutOptions, groupName);
+    m_keyActions.registerAction("actionCatalogIconLongText", ui->actionCatalogIconLongText, groupName);
 
     // Image
     groupName = tr("Image", "Image Action Group");
-    m_keyActions.registAction("actionRotate", ui->actionRotate, groupName);
-    m_keyActions.registAction("actionFitting", ui->actionFitting, groupName);
-    m_keyActions.registAction("actionFitToWindow", ui->actionFitToWindow, groupName);
-    m_keyActions.registAction("actionFitToWidth", ui->actionFitToWidth, groupName);
-    m_keyActions.registAction("actionZoomIn", ui->actionZoomIn, groupName);
-    m_keyActions.registAction("actionZoomOut", ui->actionZoomOut, groupName);
-    m_keyActions.registAction("actionDontEnlargeSmallImagesOnFitting", ui->actionDontEnlargeSmallImagesOnFitting, groupName);
-    m_keyActions.registAction("actionScrollWithCursorWhenZooming", ui->actionScrollWithCursorWhenZooming, groupName);
-    m_keyActions.registAction("actionLoupeTool", ui->actionLoupeTool, groupName);
+    m_keyActions.registerAction("actionRotate", ui->actionRotate, groupName);
+    m_keyActions.registerAction("actionFitting", ui->actionFitting, groupName);
+    m_keyActions.registerAction("actionFitToWindow", ui->actionFitToWindow, groupName);
+    m_keyActions.registerAction("actionFitToWidth", ui->actionFitToWidth, groupName);
+    m_keyActions.registerAction("actionZoomIn", ui->actionZoomIn, groupName);
+    m_keyActions.registerAction("actionZoomOut", ui->actionZoomOut, groupName);
+    m_keyActions.registerAction("actionDontEnlargeSmallImagesOnFitting", ui->actionDontEnlargeSmallImagesOnFitting, groupName);
+    m_keyActions.registerAction("actionScrollWithCursorWhenZooming", ui->actionScrollWithCursorWhenZooming, groupName);
+    m_keyActions.registerAction("actionLoupeTool", ui->actionLoupeTool, groupName);
 
     groupName = tr("Dual View", "Dual View Action Group");
-    m_keyActions.registAction("actionDualView", ui->actionDualView, groupName);
-    m_keyActions.registAction("actionRightSideBook", ui->actionRightSideBook, groupName);
-    m_keyActions.registAction("actionWideImageAsOneView", ui->actionWideImageAsOneView, groupName);
-    m_keyActions.registAction("actionFirstImageAsOneView", ui->actionFirstImageAsOneView, groupName);
-    m_keyActions.registAction("actionSeparatePagesWhenWideImage", ui->actionSeparatePagesWhenWideImage, groupName);
+    m_keyActions.registerAction("actionDualView", ui->actionDualView, groupName);
+    m_keyActions.registerAction("actionRightSideBook", ui->actionRightSideBook, groupName);
+    m_keyActions.registerAction("actionWideImageAsOneView", ui->actionWideImageAsOneView, groupName);
+    m_keyActions.registerAction("actionFirstImageAsOneView", ui->actionFirstImageAsOneView, groupName);
+    m_keyActions.registerAction("actionSeparatePagesWhenWideImage", ui->actionSeparatePagesWhenWideImage, groupName);
 
     // View
     groupName = tr("View", "View Action Group");
-    m_keyActions.registAction("actionLargeToolbarIcons", ui->actionLargeToolbarIcons, groupName);
-    m_keyActions.registAction("actionShowToolBar", ui->actionShowToolBar, groupName);
-    m_keyActions.registAction("actionShowStatusBar", ui->actionShowStatusBar, groupName);
-    m_keyActions.registAction("actionShowPageBar", ui->actionShowPageBar, groupName);
-    m_keyActions.registAction("actionShowMenuBar", ui->actionShowMenuBar, groupName);
-    m_keyActions.registAction("actionShowFullscreenSignage", ui->actionShowFullscreenSignage, groupName);
-    m_keyActions.registAction("actionRestoreWindowState", ui->actionRestoreWindowState, groupName);
-    m_keyActions.registAction("actionFullscreen", ui->actionFullscreen, groupName);
-    m_keyActions.registAction("actionExitApplicationOrFullscreen", ui->actionExitApplicationOrFullscreen, groupName);
-    m_keyActions.registAction("actionMaximizeOrNormal", ui->actionMaximizeOrNormal, groupName);
-    m_keyActions.registAction("actionShowPanelSeparateWindow", ui->actionShowPanelSeparateWindow, groupName);
-    m_keyActions.registAction("actionStayOnTop", ui->actionStayOnTop, groupName);
-    m_keyActions.registAction("actionHideMouseCursorInFullscreen", ui->actionHideMouseCursorInFullscreen, groupName);
-    m_keyActions.registAction("actionSortByFileName", ui->actionSortByFileName, groupName);
-    m_keyActions.registAction("actionSortByFileNameDescending", ui->actionSortByFileNameDescending, groupName);
-    m_keyActions.registAction("actionSortByFileSize", ui->actionSortByFileSize, groupName);
-    m_keyActions.registAction("actionSortByFileSizeDescending", ui->actionSortByFileSizeDescending, groupName);
-    m_keyActions.registAction("actionSortByModifiedTime", ui->actionSortByModifiedTime, groupName);
-    m_keyActions.registAction("actionSortByModifiedTimeDescending", ui->actionSortByModifiedTimeDescending, groupName);
+    m_keyActions.registerAction("actionLargeToolbarIcons", ui->actionLargeToolbarIcons, groupName);
+    m_keyActions.registerAction("actionShowToolBar", ui->actionShowToolBar, groupName);
+    m_keyActions.registerAction("actionShowStatusBar", ui->actionShowStatusBar, groupName);
+    m_keyActions.registerAction("actionShowPageBar", ui->actionShowPageBar, groupName);
+    m_keyActions.registerAction("actionShowMenuBar", ui->actionShowMenuBar, groupName);
+    m_keyActions.registerAction("actionShowFullscreenSignage", ui->actionShowFullscreenSignage, groupName);
+    m_keyActions.registerAction("actionRestoreWindowState", ui->actionRestoreWindowState, groupName);
+    m_keyActions.registerAction("actionFullscreen", ui->actionFullscreen, groupName);
+    m_keyActions.registerAction("actionExitApplicationOrFullscreen", ui->actionExitApplicationOrFullscreen, groupName);
+    m_keyActions.registerAction("actionMaximizeOrNormal", ui->actionMaximizeOrNormal, groupName);
+    m_keyActions.registerAction("actionShowPanelSeparateWindow", ui->actionShowPanelSeparateWindow, groupName);
+    m_keyActions.registerAction("actionStayOnTop", ui->actionStayOnTop, groupName);
+    m_keyActions.registerAction("actionHideMouseCursorInFullscreen", ui->actionHideMouseCursorInFullscreen, groupName);
+    m_keyActions.registerAction("actionSortByFileName", ui->actionSortByFileName, groupName);
+    m_keyActions.registerAction("actionSortByFileNameDescending", ui->actionSortByFileNameDescending, groupName);
+    m_keyActions.registerAction("actionSortByFileSize", ui->actionSortByFileSize, groupName);
+    m_keyActions.registerAction("actionSortByFileSizeDescending", ui->actionSortByFileSizeDescending, groupName);
+    m_keyActions.registerAction("actionSortByModifiedTime", ui->actionSortByModifiedTime, groupName);
+    m_keyActions.registerAction("actionSortByModifiedTimeDescending", ui->actionSortByModifiedTimeDescending, groupName);
 
     // ContextMenu
     groupName = tr("ContextMenu", "ContextMenu Action Group");
-    m_keyActions.registAction("actionContextMenu", ui->actionContextMenu, groupName);
-    m_keyActions.registAction("actionOpenFiler", ui->actionOpenFiler, groupName);
-    m_keyActions.registAction("actionOpenExif", ui->actionOpenExif, groupName);
-    m_keyActions.registAction("actionCopyPage", ui->actionCopyPage, groupName);
-    m_keyActions.registAction("actionCopyFile", ui->actionCopyFile, groupName);
-    m_keyActions.registAction("actionRecyclePage", ui->actionRecyclePage, groupName);
-    m_keyActions.registAction("actionDeletePage", ui->actionDeletePage, groupName);
-    m_keyActions.registAction("actionMailAttachment", ui->actionMailAttachment, groupName);
-    m_keyActions.registAction("actionRenameImageFile", ui->actionRenameImageFile, groupName);
-    m_keyActions.registAction("actionShowToolBar", ui->actionShowToolBar, groupName);
-    m_keyActions.registAction("actionShowToolBar", ui->actionShowToolBar, groupName);
-    m_keyActions.registAction("actionShowToolBar", ui->actionShowToolBar, groupName);
+    m_keyActions.registerAction("actionContextMenu", ui->actionContextMenu, groupName);
+    m_keyActions.registerAction("actionOpenFiler", ui->actionOpenFiler, groupName);
+    m_keyActions.registerAction("actionOpenExif", ui->actionOpenExif, groupName);
+    m_keyActions.registerAction("actionCopyPage", ui->actionCopyPage, groupName);
+    m_keyActions.registerAction("actionCopyFile", ui->actionCopyFile, groupName);
+    m_keyActions.registerAction("actionRecyclePage", ui->actionRecyclePage, groupName);
+    m_keyActions.registerAction("actionDeletePage", ui->actionDeletePage, groupName);
+    m_keyActions.registerAction("actionMailAttachment", ui->actionMailAttachment, groupName);
+    m_keyActions.registerAction("actionRenameImageFile", ui->actionRenameImageFile, groupName);
+    m_keyActions.registerAction("actionShowToolBar", ui->actionShowToolBar, groupName);
+    m_keyActions.registerAction("actionShowToolBar", ui->actionShowToolBar, groupName);
+    m_keyActions.registerAction("actionShowToolBar", ui->actionShowToolBar, groupName);
 
     // Shader
     groupName = tr("Shader", "Shader Action Group");
-    m_keyActions.registAction("actionShaderBilinear", ui->actionShaderBilinear, groupName);
+    m_keyActions.registerAction("actionShaderBilinear", ui->actionShaderBilinear, groupName);
 #ifndef QV_WITHOUT_OPENGL
-    m_keyActions.registAction("actionShaderBicubic", ui->actionShaderBicubic, groupName);
-    m_keyActions.registAction("actionShaderLanczos", ui->actionShaderLanczos, groupName);
+    m_keyActions.registerAction("actionShaderBicubic", ui->actionShaderBicubic, groupName);
+    m_keyActions.registerAction("actionShaderLanczos", ui->actionShaderLanczos, groupName);
 #endif
-//    m_keyActions.registAction("actionShaderBilinearBeforeCpuBicubic", ui->actionShaderBilinearBeforeCpuBicubic, groupName);
-    m_keyActions.registAction("actionShaderCpuBicubic", ui->actionShaderCpuBicubic, groupName);
-    m_keyActions.registAction("actionShaderCpuSpline16", ui->actionShaderCpuSpline16, groupName);
-    m_keyActions.registAction("actionShaderCpuSpline36", ui->actionShaderCpuSpline36, groupName);
-    m_keyActions.registAction("actionShaderCpuLanczos3", ui->actionShaderCpuLanczos3, groupName);
-    m_keyActions.registAction("actionShaderCpuLanczos4", ui->actionShaderCpuLanczos4, groupName);
-    m_keyActions.registAction("actionShaderNearestNeighbor", ui->actionShaderNearestNeighbor, groupName);
+    //    m_keyActions.registerAction("actionShaderBilinearBeforeCpuBicubic", ui->actionShaderBilinearBeforeCpuBicubic, groupName);
+    m_keyActions.registerAction("actionShaderCpuBicubic", ui->actionShaderCpuBicubic, groupName);
+    m_keyActions.registerAction("actionShaderCpuSpline16", ui->actionShaderCpuSpline16, groupName);
+    m_keyActions.registerAction("actionShaderCpuSpline36", ui->actionShaderCpuSpline36, groupName);
+    m_keyActions.registerAction("actionShaderCpuLanczos3", ui->actionShaderCpuLanczos3, groupName);
+    m_keyActions.registerAction("actionShaderCpuLanczos4", ui->actionShaderCpuLanczos4, groupName);
+    m_keyActions.registerAction("actionShaderNearestNeighbor", ui->actionShaderNearestNeighbor, groupName);
 
     // Help
     groupName = tr("Help", "Help Action Group");
-    m_keyActions.registAction("actionOpenKeyConfig", ui->actionOpenKeyConfig, groupName);
-    m_keyActions.registAction("actionOpenMouseConfig", ui->actionOpenMouseConfig, groupName);
-    m_keyActions.registAction("actionOpenOptionsDialog", ui->actionOpenOptionsDialog, groupName);
-    m_keyActions.registAction("actionProjectWeb", ui->actionProjectWeb, groupName);
-    m_keyActions.registAction("actionCheckVersion", ui->actionCheckVersion, groupName);
-    m_keyActions.registAction("actionAppVersion", ui->actionAppVersion, groupName);
+    m_keyActions.registerAction("actionOpenKeyConfig", ui->actionOpenKeyConfig, groupName);
+    m_keyActions.registerAction("actionOpenMouseConfig", ui->actionOpenMouseConfig, groupName);
+    m_keyActions.registerAction("actionOpenOptionsDialog", ui->actionOpenOptionsDialog, groupName);
+    m_keyActions.registerAction("actionProjectWeb", ui->actionProjectWeb, groupName);
+    m_keyActions.registerAction("actionCheckVersion", ui->actionCheckVersion, groupName);
+    m_keyActions.registerAction("actionAppVersion", ui->actionAppVersion, groupName);
 
     m_mouseActions.actions() = m_keyActions.actions();
     m_mouseActions.nameByGroups() = m_keyActions.nameByGroups();
@@ -317,29 +341,30 @@ void QVApplication::registActions(Ui::MainWindow *ui)
 void QVApplication::addHistory(QString path)
 {
     const QString unixpath = QDir::fromNativeSeparators(path);
-    if(m_history.contains(unixpath)) {
+    if (m_history.contains(unixpath)) {
         m_history.removeOne(unixpath);
     }
     m_history.push_front(unixpath);
-    while(m_history.size() > m_maxHistoryCount)
+    while (m_history.size() > m_maxHistoryCount) {
         m_history.pop_back();
+    }
 }
 
 void QVApplication::addBookMark(QString path, bool canDumplication)
 {
     const QString unixpath = QDir::fromNativeSeparators(path);
-    if(canDumplication) {
+    if (canDumplication) {
         m_bookmarks.push_front(unixpath);
         return;
     }
-    if(m_bookmarks.contains(unixpath)) {
+    if (m_bookmarks.contains(unixpath)) {
         m_bookmarks.removeOne(unixpath);
     }
     m_bookmarks.push_front(unixpath);
-    while(m_bookmarks.size() > m_maxBookmarkCount)
+    while (m_bookmarks.size() > m_maxBookmarkCount) {
         m_bookmarks.pop_back();
+    }
 }
-
 
 QString QVApplication::getDefaultPictureFolderPath()
 {
@@ -350,13 +375,12 @@ QString QVApplication::getDefaultPictureFolderPath()
     LPITEMIDLIST pidl;
     std::string str;
     IMalloc *pMalloc;
-    WCHAR szPath[MAX_PATH+1];
+    WCHAR szPath[MAX_PATH + 1];
 
     SHGetMalloc(&pMalloc);
-    result = ::SHGetSpecialFolderLocation(NULL, nFolder, &pidl);
+    result = ::SHGetSpecialFolderLocation(nullptr, nFolder, &pidl);
 
-    if (SUCCEEDED(result))
-    {
+    if (SUCCEEDED(result)) {
         ::SHGetPathFromIDList(pidl, szPath);
         path = QString::fromWCharArray(szPath);
         pMalloc->Free(pidl);
@@ -378,7 +402,7 @@ void QVApplication::loadSettings()
         QString sortByString = m_settings->value("ImageSortBy", "SortByFileName").toString();
         int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("ImageSortBy");
         m_imageSortBy = (qvEnums::ImageSortBy)qvEnums::staticMetaObject.enumerator(enumIdx)
-                .keysToValue(sortByString.toLatin1().data());
+                            .keysToValue(sortByString.toLatin1().data());
     }
     m_fitting = m_settings->value("Fitting", true).toBool();
     {
@@ -402,7 +426,7 @@ void QVApplication::loadSettings()
     m_slideShowWait = m_settings->value("SlideShowWait", 5000).toInt();
     QRect rec = QGuiApplication::primaryScreen()->geometry();
     uint32_t desktop_width = rec.width();
-    uint32_t maxTextureSize = desktop_width < 2048 ? 4096 : (uint32_t)(desktop_width*2.1);
+    uint32_t maxTextureSize = desktop_width < 2048 ? 4096 : (uint32_t)(desktop_width * 2.1);
     qDebug() << "desktop width:" << rec.width();
     m_maxTextureSize = m_settings->value("MaxTextureSize", maxTextureSize).toInt();
 #ifdef Q_PROCESSOR_X86_64
@@ -414,24 +438,31 @@ void QVApplication::loadSettings()
 #endif
     m_backgroundColor = QColor(m_settings->value("BackgroundColor", "0x797979").toString().toUInt(nullptr, 16));
     m_backgroundColor2 = QColor(m_settings->value("BackgroundColor2", "0x5e5e5e").toString().toUInt(nullptr, 16));
-    m_useCheckeredPattern  = m_settings->value("UseCheckeredPattern", true).toBool();
-    m_dontEnlargeSmallImagesOnFitting  = m_settings->value("DontEnlargeSmallImagesOnFitting", true).toBool();
-    m_showFullscreenSignage  = m_settings->value("ShowFullscreenSignage", false).toBool();
-    m_dontShrinkForLargeImage  = m_settings->value("DontShrinkForLargeImage", false).toBool();
-//    m_showFullscreenTitleBar = m_settings->value("ShowFullscreenTitleBar", true).toBool();
+    m_useCheckeredPattern = m_settings->value("UseCheckeredPattern", true).toBool();
+    m_dontEnlargeSmallImagesOnFitting = m_settings->value("DontEnlargeSmallImagesOnFitting", true).toBool();
+    m_showFullscreenSignage = m_settings->value("ShowFullscreenSignage", false).toBool();
+    m_dontShrinkForLargeImage = m_settings->value("DontShrinkForLargeImage", false).toBool();
+    //    m_showFullscreenTitleBar = m_settings->value("ShowFullscreenTitleBar", true).toBool();
     m_useDirect2D = m_settings->value("UseDirect2D", false).toBool();
     m_useFastDCTForJPEG = m_settings->value("UseFastDCTForJPEG", true).toBool();
-    m_howToLoadSVG = m_settings->value("HowToLoadSVG", "imageformat").toString();
-    m_showPanelSeparateWindow  = m_settings->value("ShowPanelSeparateWindow", false).toBool();
-    m_largeToolbarIcons  = m_settings->value("LargeToolbarIcons", false).toBool();
+    m_svgLoaderBackend = SvgLoader::backendFromStorageValue(
+        m_settings->value("HowToLoadSVG", "resvg").toString());
+    m_svgRasterMaximumWidth = SvgLoader::validatedRasterDimension(
+        m_settings->value("SvgRasterMaximumWidth", SvgLoader::DefaultMaximumWidth).toInt(),
+        SvgLoader::DefaultMaximumWidth);
+    m_svgRasterMaximumHeight = SvgLoader::validatedRasterDimension(
+        m_settings->value("SvgRasterMaximumHeight", SvgLoader::DefaultMaximumHeight).toInt(),
+        SvgLoader::DefaultMaximumHeight);
+    m_showPanelSeparateWindow = m_settings->value("ShowPanelSeparateWindow", false).toBool();
+    m_largeToolbarIcons = m_settings->value("LargeToolbarIcons", false).toBool();
 
-    m_hideMenuBarParmanently   = m_settings->value("HideMenuBarParmanently",   false).toBool();
-    m_hideToolBarParmanently   = m_settings->value("HideToolBarParmanently",   false).toBool();
-    m_hidePageBarParmanently   = m_settings->value("HidePageBarParmanently",   false).toBool();
+    m_hideMenuBarParmanently = m_settings->value("HideMenuBarParmanently", false).toBool();
+    m_hideToolBarParmanently = m_settings->value("HideToolBarParmanently", false).toBool();
+    m_hidePageBarParmanently = m_settings->value("HidePageBarParmanently", false).toBool();
 
-    m_hideMenuBarInFullscreen   = m_settings->value("HideMenuBarInFullscreen", false).toBool();
-    m_hideToolBarInFullscreen   = m_settings->value("HideToolBarInFullscreen", false).toBool();
-    m_hidePageBarInFullscreen   = m_settings->value("HidePageBarInFullscreen", false).toBool();
+    m_hideMenuBarInFullscreen = m_settings->value("HideMenuBarInFullscreen", false).toBool();
+    m_hideToolBarInFullscreen = m_settings->value("HideToolBarInFullscreen", false).toBool();
+    m_hidePageBarInFullscreen = m_settings->value("HidePageBarInFullscreen", false).toBool();
     m_hideScrollBarInFullscreen = m_settings->value("HideScrollBarInFullscreen", true).toBool();
     m_hideMouseCursorInFullscreen = m_settings->value("HideMouseCursorInFullscreen", false).toBool();
 
@@ -445,7 +476,7 @@ void QVApplication::loadSettings()
         QString showOptionstring = m_settings->value("ShowOptionViewOnStartup", "FolderStartup").toString();
         int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("OptionViewOnStartup");
         m_showOptionViewOnStartup = (qvEnums::OptionViewOnStartup)qvEnums::staticMetaObject.enumerator(enumIdx)
-                .keysToValue(showOptionstring.toLatin1().data());
+                                        .keysToValue(showOptionstring.toLatin1().data());
     }
     m_slideShowOnNormalWindow = m_settings->value("SlideShowOnNormalWindow", true).toBool();
     m_slideShowRandomly = m_settings->value("SlideshowRandomly", false).toBool();
@@ -453,22 +484,22 @@ void QVApplication::loadSettings()
 
     // WindowState
     m_settings->beginGroup("WindowState");
-    m_restoreWindowState  = m_settings->value("RestoreWindowState", false).toBool();
-    m_windowGeometry  = m_settings->value("WindowGeometry", "").toByteArray();
-    m_windowState  = m_settings->value("WindowState", "").toByteArray();
-    m_beginAsFullscreen  = m_settings->value("BeginAsFullscreen", false).toBool();
+    m_restoreWindowState = m_settings->value("RestoreWindowState", false).toBool();
+    m_windowGeometry = m_settings->value("WindowGeometry", "").toByteArray();
+    m_windowState = m_settings->value("WindowState", "").toByteArray();
+    m_beginAsFullscreen = m_settings->value("BeginAsFullscreen", false).toBool();
     m_settings->endGroup();
 
     // File
     m_settings->beginGroup("File");
-    m_autoLoaded  = m_settings->value("AutoLoaded", false).toBool();
+    m_autoLoaded = m_settings->value("AutoLoaded", false).toBool();
     m_history = m_settings->value("History", QStringList()).value<QStringList>();
     m_maxHistoryCount = m_settings->value("MaxHistoryCount", 36).toInt();
     m_bookmarks = m_settings->value("Bookmarks", QStringList()).value<QStringList>();
     m_maxBookmarkCount = m_settings->value("MaxBookmarkCount", 20).toInt();
-    m_prohibitMultipleRunning  = m_settings->value("ProhibitMultipleRunning", false).toBool();
+    m_prohibitMultipleRunning = m_settings->value("ProhibitMultipleRunning", false).toBool();
     m_lastViewPath = m_settings->value("LastViewPath", "").toString();
-    m_dontSavingHistory  = m_settings->value("DontSavingHistory", false).toBool();
+    m_dontSavingHistory = m_settings->value("DontSavingHistory", false).toBool();
     m_extractSolidArchiveToTemporaryDir = m_settings->value("ExtractSolidArchiveToTemporaryDir", true).toBool();
     m_lastOpenedFolderPath = m_settings->value("LastOpenedFolderPath", "").toString();
     m_settings->endGroup();
@@ -497,7 +528,7 @@ void QVApplication::loadSettings()
         m_catalogViewModeSetting = (qvEnums::CatalogViewMode)qvEnums::staticMetaObject.enumerator(enumIdx).keysToValue(viewModestring.toLatin1().data());
     }
 #ifdef Q_OS_WIN
-    if(m_portable) {
+    if (m_portable) {
         m_catalogDatabasePath = m_settings->value("CatalogDatabasePath", "database/thumbnail.sqlite3.db").toString();
     } else {
         m_catalogDatabasePath = m_settings->value("CatalogDatabasePath", "thumbnail.sqlite3.db").toString();
@@ -517,15 +548,15 @@ void QVApplication::loadSettings()
 
     // KeyConfig
     m_settings->beginGroup("KeyConfig");
-    foreach(const QString& action, m_settings->childKeys()) {
+    foreach (const QString &action, m_settings->childKeys()) {
         QString str = m_settings->value(action, "").toString();
-        m_keyActions.updateKey(action,  QKeySequence(str), true);
+        m_keyActions.updateKey(action, QKeySequence(str), true);
     }
     m_settings->endGroup();
 
     // MouseConfig
     m_settings->beginGroup("MouseConfig");
-    foreach(const QString& action, m_settings->childKeys()) {
+    foreach (const QString &action, m_settings->childKeys()) {
         QString str = m_settings->value(action, "").toString();
         m_mouseActions.updateKey(action, QMouseSequence(str), true);
     }
@@ -548,14 +579,14 @@ void QVApplication::loadSettings()
     m_settings->beginGroup("Appearance");
     m_uiTheme = m_settings->value("UiTheme", "Default").toString();
     //QString themeFilePath = getApplicationFilePath(":/themes/"+m_uiTheme+".qss"); //Local files
-    QString themeFilePath(":/themes/"+m_uiTheme+".qss"); // Resource files
+    QString themeFilePath(":/themes/" + m_uiTheme + ".qss"); // Resource files
     QFile File(themeFilePath);
     File.open(QFile::ReadOnly);
     QString styleSheet = QString(File.readAll());
     QApplication::setStyleSheet(styleSheet);
     m_settings->endGroup();
 
-    m_bookshelfManager = new BookProgressManager(this);
+    m_readProgressStore = new ReadProgressStore(this);
 }
 
 void QVApplication::saveSettings()
@@ -598,10 +629,12 @@ void QVApplication::saveSettings()
     m_settings->setValue("DontEnlargeSmallImagesOnFitting", m_dontEnlargeSmallImagesOnFitting);
     m_settings->setValue("ShowFullscreenSignage", m_showFullscreenSignage);
     m_settings->setValue("DontShrinkForLargeImage", m_dontShrinkForLargeImage);
-//    m_settings->setValue("ShowFullscreenTitleBar", m_showFullscreenTitleBar);
+    //    m_settings->setValue("ShowFullscreenTitleBar", m_showFullscreenTitleBar);
     m_settings->setValue("UseDirect2D", m_useDirect2D);
     m_settings->setValue("UseFastDCTForJPEG", m_useFastDCTForJPEG);
-    m_settings->setValue("HowToLoadSVG", m_howToLoadSVG);
+    m_settings->setValue("HowToLoadSVG", SvgLoader::storageValue(m_svgLoaderBackend));
+    m_settings->setValue("SvgRasterMaximumWidth", m_svgRasterMaximumWidth);
+    m_settings->setValue("SvgRasterMaximumHeight", m_svgRasterMaximumHeight);
     m_settings->setValue("ShowPanelSeparateWindow", m_showPanelSeparateWindow);
     m_settings->setValue("LargeToolbarIcons", m_largeToolbarIcons);
 
@@ -624,7 +657,7 @@ void QVApplication::saveSettings()
     {
         int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("OptionViewOnStartup");
         QString optionViewstring = QString(qvEnums::staticMetaObject.enumerator(enumIdx)
-                                           .valueToKey(m_showOptionViewOnStartup));
+                                               .valueToKey(m_showOptionViewOnStartup));
         m_settings->setValue("ShowOptionViewOnStartup", optionViewstring);
     }
     m_settings->setValue("SlideShowOnNormalWindow", m_slideShowOnNormalWindow);
@@ -682,14 +715,14 @@ void QVApplication::saveSettings()
     m_settings->endGroup();
 
     m_settings->beginGroup("KeyConfig");
-    foreach(const QString& action, m_keyActions.keyMaps().keys()) {
+    foreach (const QString &action, m_keyActions.keyMaps().keys()) {
         QKeySequence seqs = m_keyActions.keyMaps()[action];
         m_settings->setValue(action, seqs.toString());
     }
     m_settings->endGroup();
 
     m_settings->beginGroup("MouseConfig");
-    foreach(const QString& action, m_mouseActions.keyMaps().keys()) {
+    foreach (const QString &action, m_mouseActions.keyMaps().keys()) {
         QMouseSequence seqs = m_mouseActions.keyMaps()[action];
         m_settings->setValue(action, seqs.toString());
     }
@@ -711,6 +744,7 @@ void QVApplication::saveSettings()
     m_settings->endGroup();
 
     m_settings->sync();
-    if(qApp->SaveReadProgress())
-        m_bookshelfManager->save();
+    if (qApp->SaveReadProgress()) {
+        m_readProgressStore->save();
+    }
 }
