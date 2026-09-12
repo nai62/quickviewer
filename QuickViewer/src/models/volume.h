@@ -35,8 +35,8 @@ public:
     IFileLoader *fileLoader() { return m_loader; }
 
     static ImageContent futureLoadImageFromFileVolume(
-        QSharedPointer<ImageLoadContext> context, QString path, QSize pageSize, QSize decodeTargetSize = QSize());
-    static ImageContent loadImageFromFile(QString path, QSize pageSize, QSize decodeTargetSize = QSize());
+        QSharedPointer<ImageLoadContext> context, QString path, QSize pageSize, QSize decodeTargetSize = QSize(), bool loadDetailedMetadata = true);
+    static ImageContent loadImageFromFile(QString path, QSize pageSize, QSize decodeTargetSize = QSize(), bool loadDetailedMetadata = true);
     static ImageContent resizeImageForViewport(ImageContent content, QSize pageSize);
     static QString FullPathToVolumePath(QString path);
     static QString FullPathToSubFilePath(QString path);
@@ -115,15 +115,17 @@ private:
         const QSize &pageSize,
         bool requiredForDisplay,
         const QSize &decodeTargetSize = QSize(),
+        bool loadDetailedMetadata = true,
         int pageIndex = -1,
         quint64 generation = 0);
     ImageLoadFuture scheduleResize(ImageContent content, const QSize &pageSize);
+    ImageLoadFuture scheduleMetadataLoad(ImageContent content, const QString &path, quint64 generation);
 
     QList<QString> m_pageNames;
     QList<QString> m_shuffledPageNames;
     QList<QvImageMetadata> m_imageMetadataList;
     ImageContent m_initialImage;
-    LruCache<int, ImageLoadFuture> m_imageLoadCache;
+    mutable LruCache<int, ImageLoadFuture> m_imageLoadCache;
     LruCache<int, ImageLoadFuture> m_previewLoadCache;
 
     QSharedPointer<ImageLoadContext> m_loadContext;

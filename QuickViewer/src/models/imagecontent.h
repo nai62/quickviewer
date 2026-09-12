@@ -45,6 +45,7 @@ struct ImageContent
     easyexif::EXIFInfo exifInfo;
     size_t fileSize = 0;
     bool isPreview = false;
+    bool hasDetailedMetadata = false;
     RetouchParameters appliedRetouchParameters;
     qvEnums::ShaderEffect appliedResizeMode = qvEnums::Bilinear;
 
