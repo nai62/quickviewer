@@ -4,15 +4,6 @@
 [submodule "zimg/zimg"]
 	path = zimg/zimg
 	url = https://github.com/sekrit-twc/zimg
-[submodule "QuickViewer/src/qfullscreenframe"]
-	path = QuickViewer/src/qfullscreenframe
-	url = https://github.com/kanryu/qfullscreenframe
-[submodule "QuickViewer/src/qlanguageselector"]
-	path = QuickViewer/src/qlanguageselector
-	url = https://github.com/kanryu/qlanguageselector
-[submodule "QuickViewer/src/qnamedpipe"]
-	path = QuickViewer/src/qnamedpipe
-	url = https://github.com/kanryu/qnamedpipe
 [submodule "easyexif/easyexif"]
 	path = easyexif/easyexif
 	url = https://github.com/mayanklahiri/easyexif
