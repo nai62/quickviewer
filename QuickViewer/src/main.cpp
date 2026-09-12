@@ -1,5 +1,7 @@
 #include <QtCore>
 
+#include "benchmark/imagebenchmarkrunner.h"
+
 #include "qv_init.h"
 #include "qvapplication.h"
 #include "thumbnailmanager.h"
@@ -45,6 +47,10 @@ int main(int argc, char *argv[])
 #endif
 
     QVApplication app(argc, argv);
+    if (ImageBenchmarkRunner::isRequested(app.arguments())) {
+        return ImageBenchmarkRunner::run(app.arguments());
+    }
+
     StartupProfiler::mark("application.constructed");
     app.setEffectEnabled(Qt::UI_AnimateCombo, false);
     app.myInstallTranslator();
