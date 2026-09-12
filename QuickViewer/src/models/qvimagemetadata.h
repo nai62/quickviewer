@@ -30,16 +30,16 @@ public:
     }
 
     QString filename() const { return m_filename; }
-    QDateTime getMTime();
-    qint64 getFileSize();
-    QSize getDimension();
+    QDateTime getMTime() const;
+    qint64 getFileSize() const;
+    QSize getDimension() const;
 
 private:
-    void initFileInfo();
+    void initFileInfo() const;
     Volume *m_volume;
     QString m_filename;
-    QFileInfo m_info;
-    QSize m_dimension;
+    mutable QFileInfo m_info;
+    mutable QSize m_dimension;
 };
 
 #endif // QVIMAGEMETADATA_H

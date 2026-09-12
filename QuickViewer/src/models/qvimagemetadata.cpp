@@ -8,7 +8,7 @@ QvImageMetadata::QvImageMetadata(Volume *volume, QString filename)
     m_filename = filename;
 }
 
-QDateTime QvImageMetadata::getMTime()
+QDateTime QvImageMetadata::getMTime() const
 {
     if (m_volume->isArchive()) {
         return m_volume->fileLoader()->getFileModified(m_filename);
@@ -19,7 +19,7 @@ QDateTime QvImageMetadata::getMTime()
     return m_info.lastModified();
 }
 
-qint64 QvImageMetadata::getFileSize()
+qint64 QvImageMetadata::getFileSize() const
 {
     if (m_volume->isArchive()) {
         return m_volume->fileLoader()->getFileSize(m_filename);
@@ -30,7 +30,7 @@ qint64 QvImageMetadata::getFileSize()
     return m_info.size();
 }
 
-QSize QvImageMetadata::getDimension()
+QSize QvImageMetadata::getDimension() const
 {
     if (!m_dimension.isEmpty()) {
         return m_dimension;
@@ -51,7 +51,7 @@ QSize QvImageMetadata::getDimension()
     return m_dimension = reader.size();
 }
 
-void QvImageMetadata::initFileInfo()
+void QvImageMetadata::initFileInfo() const
 {
     if (!m_volume->isArchive()) {
         m_info = QFileInfo(m_volume->pagePathForName(m_filename));

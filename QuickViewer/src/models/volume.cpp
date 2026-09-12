@@ -185,27 +185,19 @@ static bool fileNameDescendingGreaterThan(const QString &m1, const QString &m2)
 
 static bool fileSizeLessThan(const QvImageMetadata &m1, const QvImageMetadata &m2)
 {
-    QvImageMetadata &mm1 = const_cast<QvImageMetadata &>(m1);
-    QvImageMetadata &mm2 = const_cast<QvImageMetadata &>(m2);
-    return mm1.getFileSize() < mm2.getFileSize();
+    return m1.getFileSize() < m2.getFileSize();
 }
 static bool fileSizeDescendingLessThan(const QvImageMetadata &m1, const QvImageMetadata &m2)
 {
-    QvImageMetadata &mm1 = const_cast<QvImageMetadata &>(m1);
-    QvImageMetadata &mm2 = const_cast<QvImageMetadata &>(m2);
-    return mm1.getFileSize() > mm2.getFileSize();
+    return m1.getFileSize() > m2.getFileSize();
 }
 static bool modifiedTimeLessThan(const QvImageMetadata &m1, const QvImageMetadata &m2)
 {
-    QvImageMetadata &mm1 = const_cast<QvImageMetadata &>(m1);
-    QvImageMetadata &mm2 = const_cast<QvImageMetadata &>(m2);
-    return mm1.getMTime() < mm2.getMTime();
+    return m1.getMTime() < m2.getMTime();
 }
 static bool modifiedTimeDescendingLessThan(const QvImageMetadata &m1, const QvImageMetadata &m2)
 {
-    QvImageMetadata &mm1 = const_cast<QvImageMetadata &>(m1);
-    QvImageMetadata &mm2 = const_cast<QvImageMetadata &>(m2);
-    return mm1.getMTime() > mm2.getMTime();
+    return m1.getMTime() > m2.getMTime();
 }
 
 void Volume::sortPages(qvEnums::ImageSortBy sortBy)
