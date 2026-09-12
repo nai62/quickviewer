@@ -31,3 +31,6 @@
 [submodule "spng/miniz"]
 	path = spng/miniz
 	url = https://github.com/richgel999/miniz
+[submodule "spng/zlib"]
+	path = spng/zlib
+	url = https://github.com/madler/zlib.git
