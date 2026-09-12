@@ -17,7 +17,7 @@ public:
      * @brief isArchive
      * @return return true, if the instance treates an archive file
      */
-    bool isArchive() { return true; }
+    bool isArchive() const override { return true; }
     /**
      * @brief isValid
      * @return return true, if the instance can load images

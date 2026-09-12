@@ -17,7 +17,7 @@ public:
     FileLoaderDirectory(QObject *parent, QString path, TraversalMode traversalMode = TraversalMode::CurrentDirectory);
     ~FileLoaderDirectory() override {}
 
-    bool isArchive() override { return false; }
+    bool isArchive() const override { return false; }
     bool isValid() override { return m_valid; }
     bool hasSubDirectories() override { return m_traversalMode == TraversalMode::Recursive; }
     QString volumePath() override { return m_volumepath; }

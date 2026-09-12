@@ -42,7 +42,7 @@ public:
 
     virtual QString volumePath() = 0;
     virtual QString realVolumePath() = 0;
-    virtual bool isArchive() = 0;
+    virtual bool isArchive() const = 0;
     virtual bool isValid() = 0;
     virtual bool hasSubDirectories() = 0;
     virtual QStringList contents() = 0;
