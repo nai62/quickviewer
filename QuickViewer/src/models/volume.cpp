@@ -968,7 +968,16 @@ static bool tryDecodeWebP(
 #endif
 }
 
-static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QSize decodeTargetSize, bool loadDetailedMetadata, QByteArray bytes, QString aformat, uint loopcount)
+static ImageContent loadWithSpecifiedFormat(
+    QString path,
+    QSize pageSize,
+    QSize decodeTargetSize,
+    bool loadDetailedMetadata,
+    QByteArray bytes,
+    QString aformat,
+    uint loopcount,
+    const ImageDecodePolicy &decodePolicy,
+    ImageDecodeMetrics *metrics)
 {
     for (;;) {
         int maxTextureSize = qApp->MaxTextureSize();
@@ -982,11 +991,20 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QSize 
             aformat = "jpg";
         }
         if (aformat == "svg") {
+            QElapsedTimer decodeTimer;
+            if (metrics) {
+                decodeTimer.start();
+            }
             const SvgLoader::RenderResult rendered = SvgLoader::render(
                 bytes,
                 path,
                 QSize(qApp->SvgRasterMaximumWidth(), qApp->SvgRasterMaximumHeight()),
                 qApp->SvgLoaderBackend());
+            if (metrics) {
+                metrics->format = "svg";
+                metrics->decoderBackend = "svgloader";
+                metrics->decodeNanoseconds += decodeTimer.nsecsElapsed();
+            }
             ImageContent ic(rendered.image, path, rendered.sourceSize, info, bytes.length());
             ic.hasDetailedMetadata = true;
             return ic;
@@ -995,11 +1013,40 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QSize 
         QImage src;
         QSize baseSize;
         const QString normalizedFormat = aformat.toLower();
+        if (metrics) {
+            if (normalizedFormat == TURBO_JPEG_FMT || normalizedFormat == "jpeg") {
+                metrics->format = "jpg";
+            } else if (normalizedFormat == "apng" || normalizedFormat == "lodepng") {
+                metrics->format = "png";
+            } else {
+                metrics->format = normalizedFormat;
+            }
+        }
         bool nativeDecoded = false;
-        if (normalizedFormat == "jpg" || normalizedFormat == "jpeg" || normalizedFormat == TURBO_JPEG_FMT) {
+        if ((normalizedFormat == "jpg" || normalizedFormat == "jpeg" || normalizedFormat == TURBO_JPEG_FMT) && decodePolicy.jpeg != JpegDecoderPreference::Qt) {
+            QElapsedTimer decodeTimer;
+            if (metrics) {
+                decodeTimer.start();
+            }
             nativeDecoded = tryDecodeTurboJpeg(bytes, decodeTargetSize, maxTextureSize, src, baseSize);
-        } else if (normalizedFormat == "webp") {
+            if (metrics) {
+                metrics->decodeNanoseconds += decodeTimer.nsecsElapsed();
+                if (nativeDecoded) {
+                    metrics->decoderBackend = "turbojpeg";
+                }
+            }
+        } else if (normalizedFormat == "webp" && decodePolicy.webp != WebPDecoderPreference::Qt) {
+            QElapsedTimer decodeTimer;
+            if (metrics) {
+                decodeTimer.start();
+            }
             nativeDecoded = tryDecodeWebP(bytes, decodeTargetSize, maxTextureSize, src, baseSize);
+            if (metrics) {
+                metrics->decodeNanoseconds += decodeTimer.nsecsElapsed();
+                if (nativeDecoded) {
+                    metrics->decoderBackend = "libwebp";
+                }
+            }
         }
 
         ImageContent ic(path, bytes.length());
@@ -1013,7 +1060,15 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QSize 
             }
 
             if (reader.supportsAnimation()) {
+                QElapsedTimer decodeTimer;
+                if (metrics) {
+                    decodeTimer.start();
+                }
                 QvMovie movie = QvMovie(bytes, aformat.toUtf8());
+                if (metrics) {
+                    metrics->decoderBackend = QString("qmovie:%1").arg(QString::fromLatin1(reader.format()));
+                    metrics->decodeNanoseconds += decodeTimer.nsecsElapsed();
+                }
                 ic.movie = movie;
                 ic.originalSize = ic.loadedImageSize = reader.size();
                 ic.hasDetailedMetadata = true;
@@ -1038,6 +1093,10 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QSize 
             }
 
             QImage tmp;
+            QElapsedTimer decodeTimer;
+            if (metrics) {
+                decodeTimer.start();
+            }
             // QImage processing sometimes fails
             for (int count = 1;; count++) {
                 tmp = reader.read();
@@ -1046,9 +1105,16 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QSize 
                 }
                 qDebug() << "[0]" << path << tmp << count;
                 if (count >= 100 || aformat.startsWith("tif")) {
+                    if (metrics) {
+                        metrics->decodeNanoseconds += decodeTimer.nsecsElapsed();
+                    }
                     return ic;
                 }
                 QThread::currentThread()->usleep(40000);
+            }
+            if (metrics) {
+                metrics->decoderBackend = QString("qimagereader:%1").arg(QString::fromLatin1(reader.format()));
+                metrics->decodeNanoseconds += decodeTimer.nsecsElapsed();
             }
             if (baseSize.isEmpty()) {
                 baseSize = loadingSize = tmp.size();
@@ -1156,18 +1222,33 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QSize 
     if (!loopcount) {
         return ImageContent(path, bytes.length());
     }
-    return loadWithSpecifiedFormat(path, pageSize, decodeTargetSize, loadDetailedMetadata, bytes, aformat, loopcount - 1);
+    return loadWithSpecifiedFormat(path, pageSize, decodeTargetSize, loadDetailedMetadata, bytes, aformat, loopcount - 1, decodePolicy, metrics);
 }
 
-static ImageContent loadImageFromBytes(
-    QString path, QSize pageSize, QSize decodeTargetSize, bool loadDetailedMetadata, const QByteArray &bytes)
+ImageContent Volume::decodeImageBytes(
+    const QString &path,
+    const QByteArray &bytes,
+    QSize pageSize,
+    QSize decodeTargetSize,
+    bool loadDetailedMetadata,
+    const ImageDecodePolicy &decodePolicy,
+    ImageDecodeMetrics *metrics)
 {
+    if (metrics) {
+        *metrics = ImageDecodeMetrics();
+    }
     if (bytes.isNull() || bytes.isEmpty()) {
         return ImageContent();
     }
+
+    QElapsedTimer pipelineTimer;
+    if (metrics) {
+        pipelineTimer.start();
+    }
+
     QString aformat;
     if (IFileLoader::isExifJpegImageFile(path)) {
-        if (IFileLoader::supportsImageFormat(TURBO_JPEG_FMT)) {
+        if (decodePolicy.jpeg == JpegDecoderPreference::Auto && IFileLoader::supportsImageFormat(TURBO_JPEG_FMT)) {
             aformat = TURBO_JPEG_FMT;
         } else {
             aformat = "jpg";
@@ -1179,7 +1260,16 @@ static ImageContent loadImageFromBytes(
     if (aformat == "png" && IFileLoader::supportsImageFormat("apng")) {
         aformat = "apng";
     }
-    return loadWithSpecifiedFormat(path, pageSize, decodeTargetSize, loadDetailedMetadata, bytes, aformat, 5);
+
+    ImageContent content = loadWithSpecifiedFormat(path, pageSize, decodeTargetSize, loadDetailedMetadata, bytes, aformat, 5, decodePolicy, metrics);
+    if (metrics) {
+        metrics->pipelineNanoseconds = pipelineTimer.nsecsElapsed();
+        if (!metrics->sourceSize.isValid()) {
+            metrics->sourceSize = content.originalSize;
+        }
+        metrics->outputSize = content.loadedImageSize;
+    }
+    return content;
 }
 
 static ImageContent enrichDetailedMetadata(
@@ -1205,7 +1295,7 @@ static ImageContent futureLoadImageFromFileVolumeImpl(
     StartupProfiler::mark("image-worker.extract.begin");
     const QByteArray bytes = context->load(path);
     StartupProfiler::mark("image-worker.extract.end");
-    ImageContent content = loadImageFromBytes(path, pageSize, decodeTargetSize, loadDetailedMetadata, bytes);
+    ImageContent content = Volume::decodeImageBytes(path, bytes, pageSize, decodeTargetSize, loadDetailedMetadata);
     StartupProfiler::mark("image-worker.decode-resize.end");
     return content;
 }
@@ -1229,7 +1319,7 @@ ImageContent Volume::loadImageFromFile(QString path, QSize pageSize, QSize decod
         return ImageContent();
     }
 
-    return loadImageFromBytes(path, pageSize, decodeTargetSize, loadDetailedMetadata, file.readAll());
+    return decodeImageBytes(path, file.readAll(), pageSize, decodeTargetSize, loadDetailedMetadata);
 }
 
 ImageContent Volume::resizeImageForViewport(ImageContent content, QSize pageSize)

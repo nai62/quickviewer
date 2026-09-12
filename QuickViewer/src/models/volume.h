@@ -9,6 +9,7 @@
 #include "imageloadcontext.h"
 #include "lrucache.h"
 #include "imagecontent.h"
+#include "imageloadmetrics.h"
 #include "qvimagemetadata.h"
 #include "prefetchplanner.h"
 
@@ -37,6 +38,14 @@ public:
 
     static ImageContent futureLoadImageFromFileVolume(
         QSharedPointer<ImageLoadContext> context, QString path, QSize pageSize, QSize decodeTargetSize = QSize(), bool loadDetailedMetadata = true);
+    static ImageContent decodeImageBytes(
+        const QString &path,
+        const QByteArray &bytes,
+        QSize pageSize = QSize(),
+        QSize decodeTargetSize = QSize(),
+        bool loadDetailedMetadata = true,
+        const ImageDecodePolicy &decodePolicy = ImageDecodePolicy(),
+        ImageDecodeMetrics *metrics = nullptr);
     static ImageContent loadImageFromFile(QString path, QSize pageSize, QSize decodeTargetSize = QSize(), bool loadDetailedMetadata = true);
     static ImageContent resizeImageForViewport(ImageContent content, QSize pageSize);
     static QString FullPathToVolumePath(QString path);
