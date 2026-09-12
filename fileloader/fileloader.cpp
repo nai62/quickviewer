@@ -68,6 +68,11 @@ bool IFileLoader::isImageFile(QString path)
     return supportedImageFormats().contains(fileSuffix(path).toLatin1());
 }
 
+bool IFileLoader::supportsImageFormat(const QByteArray &format)
+{
+    return QImageReader::supportedImageFormats().contains(format.toLower());
+}
+
 bool IFileLoader::isArchiveFile(QString path)
 {
     return archiveFormats().contains(fileSuffix(path));

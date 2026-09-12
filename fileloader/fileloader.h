@@ -32,6 +32,7 @@ public:
     virtual ~IFileLoader() {}
 
     static bool isImageFile(QString path);
+    static bool supportsImageFormat(const QByteArray &format);
     static bool isArchiveFile(QString path);
     static bool isExifJpegImageFile(QString path);
     static bool isExifRawImageFile(QString path);

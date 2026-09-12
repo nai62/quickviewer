@@ -418,7 +418,7 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QByteA
             return ic;
         }
         if (aformat == "apng") {
-            bool lodepng_exist = IFileLoader::isImageFile("lodepng");
+            bool lodepng_exist = IFileLoader::supportsImageFormat("lodepng");
             aformat = lodepng_exist ? "lodepng" : "png";
             break;
         }
@@ -556,7 +556,7 @@ static ImageContent loadImageFromBytes(
     }
     QString aformat;
     if (IFileLoader::isExifJpegImageFile(path)) {
-        if (IFileLoader::isImageFile("turbojpeg")) {
+        if (IFileLoader::supportsImageFormat(TURBO_JPEG_FMT)) {
             aformat = TURBO_JPEG_FMT;
         } else {
             aformat = "jpg";
@@ -565,7 +565,7 @@ static ImageContent loadImageFromBytes(
         aformat = QFileInfo(path.toLower()).suffix();
     }
     // Extension "png" might be an APNG.
-    if (aformat == "png" && IFileLoader::isImageFile("apng")) {
+    if (aformat == "png" && IFileLoader::supportsImageFormat("apng")) {
         aformat = "apng";
     }
     return loadWithSpecifiedFormat(path, pageSize, bytes, aformat, 5);
