@@ -3,16 +3,16 @@
 
 #include <QtGui>
 #if QT_VERSION_MAJOR >= 5
-#  include <QtWidgets>
+#    include <QtWidgets>
 #endif
 
 #include "qtexttranslator.h"
 
 #ifndef LANGUAGES_INI
-  #define LANGUAGES_INI "languages.ini"
+#    define LANGUAGES_INI "languages.ini"
 #endif
 #ifndef LANGUAGE_DEFUALT
-  #define LANGUAGE_DEFUALT "English"
+#    define LANGUAGE_DEFUALT "English"
 #endif
 
 struct LanguageInfo
@@ -47,7 +47,6 @@ struct LanguageInfo
     bool OpenTextEditor;
 };
 
-
 /**
  * @brief The QLanguageSelector class
  *
@@ -69,7 +68,7 @@ public:
      * @param prefix: prefix of *.qm files  e.g. [prefix][langageId].qm
      * @param path: The path of the directory where the qm file is stored
      */
-    QLanguageSelector(QString prefix, QString path="translations/");
+    QLanguageSelector(QString prefix, QString path = "translations/");
 
     QString language() { return m_uiLanguage; }
 
@@ -79,7 +78,7 @@ public:
      * Load language.ini and recognize the list of languages this application can switch.
      * Besides the usual binary(.qm) format, it supports text format (TransConf) converted from TS(.ts) format.
      */
-    void initialize(QString path="");
+    void initialize(QString path = "");
 
     /**
      * @brief initializeMenu
@@ -90,7 +89,7 @@ public:
      * Each menu is checkable, and the currently selected menu is checked.
      * When the user selects a menu, the display language of the application is changed.
      */
-    void initializeMenu(QMenu* parent);
+    void initializeMenu(QMenu *parent);
 
     /**
      * @brief getLanguageInfo
@@ -112,9 +111,8 @@ public:
 
     void setForceUseText(bool force) { m_forceUseText = force; }
     bool ForceUseText() const { return m_forceUseText; }
-    void copyLanguages(QMap<QString, LanguageInfo>& languages) { m_languages = languages; }
-    QMap<QString, LanguageInfo>& Languages() { return m_languages; }
-
+    void copyLanguages(QMap<QString, LanguageInfo> &languages) { m_languages = languages; }
+    QMap<QString, LanguageInfo> &Languages() { return m_languages; }
 
 signals:
     /**
@@ -155,7 +153,7 @@ private:
     bool m_userSelecting;
 
     QMap<QString, LanguageInfo> m_languages;
-    QList<QAction*> m_actions;
+    QList<QAction *> m_actions;
     QStringList m_languageList;
 
     void clearLanguageMenus();

@@ -68,7 +68,7 @@ signals:
     void received(QByteArray bytes);
 
 private:
-    QNamedPipePrivate* d;
+    QNamedPipePrivate *d;
 };
 
 #endif // QNAMEDPIPE_H

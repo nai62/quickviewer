@@ -23,13 +23,12 @@ class QTextTranslator : public QTranslator
 {
     Q_OBJECT
 public:
-    QTextTranslator(QObject* parent, QString path, QTextTranslator* reverse=nullptr);
+    QTextTranslator(QObject *parent, QString path, QTextTranslator *reverse = nullptr);
     virtual ~QTextTranslator() {}
 
-    QString translate(const char *context, const char *sourceText,
-                                const char *disambiguation = Q_NULLPTR, int n = -1) const override;
+    QString translate(const char *context, const char *sourceText, const char *disambiguation = Q_NULLPTR, int n = -1) const override;
 
-    QString getString(const QString& group, const QString& key) const;
+    QString getString(const QString &group, const QString &key) const;
 
     bool isEmpty() const override;
 
@@ -37,8 +36,7 @@ protected:
     typedef QHash<QString, QString> InnerMap;
     typedef QHash<QString, InnerMap> TransMap;
     TransMap m_trans;
-    QTextTranslator* m_reverse;
+    QTextTranslator *m_reverse;
 };
-
 
 #endif // QTEXTTRANSLATOR_H

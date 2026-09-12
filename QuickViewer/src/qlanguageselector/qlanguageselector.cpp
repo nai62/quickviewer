@@ -1,62 +1,64 @@
 #include "qlanguageselector.h"
 
 QLanguageSelector::QLanguageSelector(QString prefix, QString path)
-    : QObject(nullptr)
-    , m_translator(nullptr)
-    , m_reversed(nullptr)
-    , m_path(path)
-    , m_prefix(prefix)
-    , m_forceUseText(false)
-    , m_textEditorOpened(false)
-    , m_userSelecting(false)
+    : QObject(nullptr),
+      m_translator(nullptr),
+      m_reversed(nullptr),
+      m_path(path),
+      m_prefix(prefix),
+      m_forceUseText(false),
+      m_textEditorOpened(false),
+      m_userSelecting(false)
 {
     //initialize();
 }
 
-
 LanguageInfo QLanguageSelector::getLanguageInfo(QString languageId)
 {
-    if(m_languages.contains(languageId))
+    if (m_languages.contains(languageId)) {
         return m_languages[languageId];
+    }
     return getSystemLanguageInfo();
 }
 
 LanguageInfo QLanguageSelector::getSystemLanguageInfo()
 {
     auto systemLocale = QLocale::system();
-    foreach(const QString& lang, m_languageList) {
+    foreach (const QString &lang, m_languageList) {
         LanguageInfo info = m_languages[lang];
         auto locale = QLocale(info.Code);
-        if(locale.name() == systemLocale.name())
+        if (locale.name() == systemLocale.name()) {
             return info;
+        }
     }
     return m_languages[LANGUAGE_DEFUALT];
 }
-
 
 void QLanguageSelector::resetTranslator(QString languageId)
 {
     LanguageInfo info = getLanguageInfo(languageId);
     m_uiLanguage = info.Caption;
-    if(m_translator) {
+    if (m_translator) {
         qApp->removeTranslator(m_translator);
         delete m_translator;
         m_translator = nullptr;
     }
-    if(!info.TextFile.isEmpty() && (m_forceUseText || info.OpenTextEditor)) {
+    if (!info.TextFile.isEmpty() && (m_forceUseText || info.OpenTextEditor)) {
         QDir translationDir(m_path);
-        if(m_reversed == nullptr && !m_reverseFile.isEmpty()) {
+        if (m_reversed == nullptr && !m_reverseFile.isEmpty()) {
             m_reversed = new QTextTranslator(this, translationDir.filePath(m_reverseFile));
         }
-        if(m_reversed != nullptr) {
+        if (m_reversed != nullptr) {
             m_translator = new QTextTranslator(this, translationDir.filePath(info.TextFile), m_reversed);
             qApp->installTranslator(m_translator);
         }
     } else {
         m_translator = new QTranslator;
         bool exist = m_translator->load(QLocale(info.Code),
-                                     "", m_prefix, m_path);
-        if(exist) {
+                                        "",
+                                        m_prefix,
+                                        m_path);
+        if (exist) {
             qApp->installTranslator(m_translator);
         } else {
             delete m_translator;
@@ -73,9 +75,9 @@ void QLanguageSelector::initialize(QString path)
     QSettings settings(inipath, QSettings::IniFormat, this);
 
     QStringList groups = settings.childGroups();
-    foreach(const QString g, groups) {
+    foreach (const QString g, groups) {
         settings.beginGroup(g);
-        if(g == "QLanguageSelector") {
+        if (g == "QLanguageSelector") {
             m_reverseFile = settings.value("ReverseFile", "").toString();
             m_forceUseText = settings.value("ForceUseText", false).toBool();
         } else {
@@ -95,23 +97,24 @@ void QLanguageSelector::initialize(QString path)
 
 void QLanguageSelector::clearLanguageMenus()
 {
-    foreach(QAction *action, m_actions) {
+    foreach (QAction *action, m_actions) {
         action->setChecked(false);
     }
 }
 
-void QLanguageSelector::initializeMenu(QMenu* parent)
+void QLanguageSelector::initializeMenu(QMenu *parent)
 {
     auto self = this;
     bool useText = false;
-    foreach(const QString& lang, m_languageList) {
+    foreach (const QString &lang, m_languageList) {
         LanguageInfo info = m_languages[lang];
-        if(!info.TextFile.isEmpty())
+        if (!info.TextFile.isEmpty()) {
             useText = true;
-        if(!info.OpenTextEditor) {
-            QAction* action = parent->addAction(info.Caption);
+        }
+        if (!info.OpenTextEditor) {
+            QAction *action = parent->addAction(info.Caption);
             action->setCheckable(true);
-            if(m_uiLanguage == info.Caption) {
+            if (m_uiLanguage == info.Caption) {
                 action->setChecked(true);
             }
             connect(action, &QAction::triggered, this, [=]() {
@@ -125,9 +128,9 @@ void QLanguageSelector::initializeMenu(QMenu* parent)
             continue;
         }
         parent->addSeparator();
-        QAction* action = parent->addAction(info.Caption);
+        QAction *action = parent->addAction(info.Caption);
         action->setCheckable(true);
-        if(m_uiLanguage == info.Caption) {
+        if (m_uiLanguage == info.Caption) {
             action->setChecked(true);
         }
         connect(action, &QAction::triggered, this, [=]() {
@@ -136,18 +139,18 @@ void QLanguageSelector::initializeMenu(QMenu* parent)
             m_userSelecting = true;
             self->resetTranslator(info.Caption);
             m_userSelecting = false;
-            if(!m_textEditorOpened && info.OpenTextEditor) {
+            if (!m_textEditorOpened && info.OpenTextEditor) {
                 emit openTextEditorForLanguage(info);
                 m_textEditorOpened = true;
             }
         });
         m_actions << action;
     }
-    if(useText) {
+    if (useText) {
         parent->addSeparator();
-        QAction* action = parent->addAction(tr("Always use text translation", "Menu text that uses textual translation rather than regular qm format"));
+        QAction *action = parent->addAction(tr("Always use text translation", "Menu text that uses textual translation rather than regular qm format"));
         action->setCheckable(true);
-        if(m_forceUseText) {
+        if (m_forceUseText) {
             action->setChecked(true);
         }
         connect(action, &QAction::triggered, this, [=]() {

@@ -1,8 +1,7 @@
 #include "qtexttranslator.h"
 
-
 QTextTranslator::QTextTranslator(QObject *parent, QString path, QTextTranslator *reverse)
-    : QTranslator (parent)
+    : QTranslator(parent)
 {
     m_reverse = reverse;
     QSettings settings(path, QSettings::IniFormat, this);
@@ -16,10 +15,10 @@ QTextTranslator::QTextTranslator(QObject *parent, QString path, QTextTranslator 
     // translate("Context", "Source Text") --> "Translated Text"
     //
     QStringList groups = settings.childGroups();
-    foreach(const QString g, groups) {
+    foreach (const QString g, groups) {
         settings.beginGroup(g);
         InnerMap map;
-        foreach(const QString& key, settings.allKeys()) {
+        foreach (const QString &key, settings.allKeys()) {
             QString reversed = reverse != nullptr ? reverse->getString(g, key) : "";
             QString message = settings.value(key, reversed).toString();
             map.insert(reversed.isEmpty() ? key : reversed, message);
@@ -39,11 +38,11 @@ QString QTextTranslator::translate(const char *context, const char *sourceText, 
 QString QTextTranslator::getString(const QString &group, const QString &key) const
 {
     auto itr = m_trans.find(group);
-    if(itr == m_trans.end()) {
+    if (itr == m_trans.end()) {
         return QString();
     }
     auto itr2 = itr.value().find(key);
-    if(itr2 == itr.value().end()) {
+    if (itr2 == itr.value().end()) {
         return QString();
     }
     return itr2.value();

@@ -1,24 +1,25 @@
 #include "qinnerframe.h"
 
 QInnerFrame::QInnerFrame(QWidget *parent, Qt::AnchorPoint anchor, int autoCloseSpace)
-    : QFrame(parent)
-    , m_mainWindow(parent)
-    , m_topWidget(nullptr)
-    , m_anchor(anchor)
-	, m_autoCloseSpace(autoCloseSpace)
-    , m_toShowNormal(false)
-    , m_valid(true)
+    : QFrame(parent),
+      m_mainWindow(parent),
+      m_topWidget(nullptr),
+      m_anchor(anchor),
+      m_autoCloseSpace(autoCloseSpace),
+      m_toShowNormal(false),
+      m_valid(true)
 {
-    connect(&m_timer, &QTimer::timeout, this, [&]{
-        if(!isMinimized())
+    connect(&m_timer, &QTimer::timeout, this, [&] {
+        if (!isMinimized()) {
             closeWhenMouseIsOut();
+        }
     });
     m_mainWindow->installEventFilter(this);
 
     // Since no background is set, borrow the setting of the top level Widget
     auto layout = new QBoxLayout(
-                Qt::AnchorTop || Qt::AnchorBottom ? QBoxLayout::TopToBottom : QBoxLayout::LeftToRight,
-                this);
+        Qt::AnchorTop || Qt::AnchorBottom ? QBoxLayout::TopToBottom : QBoxLayout::LeftToRight,
+        this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     setLayout(layout);
@@ -32,8 +33,8 @@ QInnerFrame::QInnerFrame(QWidget *parent, Qt::AnchorPoint anchor, int autoCloseS
 bool QInnerFrame::eventFilter(QObject *watched, QEvent *event)
 {
 //    qDebug() << watched << event;
-    if(m_mainWindow == dynamic_cast<QWidget*>(watched)) {
-        switch(event->type()) {
+    if (m_mainWindow == dynamic_cast<QWidget *>(watched)) {
+        switch (event->type()) {
         case QEvent::Resize:
             close();
             break;
@@ -51,29 +52,30 @@ void QInnerFrame::showWithoutTitleBar()
 
     QRect rectMain = mainGeometry();
     setMaximumHeight(size().height());
-    switch(m_anchor) {
+    switch (m_anchor) {
     case Qt::AnchorTop:
         setGeometry(QRect(rectMain.topLeft(),
-                                   QSize(rectMain.width(), height())));
+                          QSize(rectMain.width(), height())));
         break;
     case Qt::AnchorBottom:
-        setGeometry(QRect(QPoint(rectMain.left(), rectMain.bottom()-height()+1),
-                                   QSize(rectMain.width(), height())));
+        setGeometry(QRect(QPoint(rectMain.left(), rectMain.bottom() - height() + 1),
+                          QSize(rectMain.width(), height())));
         break;
     case Qt::AnchorLeft:
         setGeometry(QRect(rectMain.topLeft(),
-                                   QSize(width(), rectMain.height())));
+                          QSize(width(), rectMain.height())));
         break;
     case Qt::AnchorRight:
-        setGeometry(QRect(QPoint(rectMain.right()-width()+1, rectMain.top()),
-                                   QSize(width(), rectMain.height())));
+        setGeometry(QRect(QPoint(rectMain.right() - width() + 1, rectMain.top()),
+                          QSize(width(), rectMain.height())));
         break;
     default:
         break;
     }
     closeWhenMouseIsOut();
-    if(isValid())
+    if (isValid()) {
         m_timer.start(2000);
+    }
 }
 
 void QInnerFrame::closeAndShowNormal()
@@ -89,7 +91,7 @@ void QInnerFrame::closeEvent(QCloseEvent *event)
     m_valid = false;
     emit deinit();
 
-    if(m_toShowNormal) {
+    if (m_toShowNormal) {
         emit toShowNormal();
     }
     QFrame::closeEvent(event);
@@ -99,28 +101,28 @@ void QInnerFrame::closeEvent(QCloseEvent *event)
 void QInnerFrame::closeWhenMouseIsOut()
 {
     QPoint ptInMain = m_mainWindow->mapFromGlobal(cursor().pos());
-    if(!mainGeometry().contains(ptInMain)) {
+    if (!mainGeometry().contains(ptInMain)) {
         close();
         return;
     }
-    switch(m_anchor) {
+    switch (m_anchor) {
     case Qt::AnchorTop:
-        if(ptInMain.y() > height()+ m_autoCloseSpace) {
+        if (ptInMain.y() > height() + m_autoCloseSpace) {
             close();
         }
         break;
     case Qt::AnchorBottom:
-        if(ptInMain.y() < m_mainWindow->height()-height()- m_autoCloseSpace) {
+        if (ptInMain.y() < m_mainWindow->height() - height() - m_autoCloseSpace) {
             close();
         }
         break;
     case Qt::AnchorLeft:
-        if(ptInMain.x() > width()+ m_autoCloseSpace) {
+        if (ptInMain.x() > width() + m_autoCloseSpace) {
             close();
         }
         break;
     case Qt::AnchorRight:
-        if(ptInMain.x() < m_mainWindow->width()-width()- m_autoCloseSpace) {
+        if (ptInMain.x() < m_mainWindow->width() - width() - m_autoCloseSpace) {
             close();
         }
         break;
