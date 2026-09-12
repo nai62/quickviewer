@@ -26,13 +26,18 @@ bool BoundedExecutor::enqueue(Job job)
     bool rejected = false;
     {
         QMutexLocker locker(&m_mutex);
+        job.sequence = m_nextSequence++;
         if (!m_acceptingJobs) {
             rejected = true;
         } else if (m_activeJobs < m_maximumConcurrency) {
             ++m_activeJobs;
             launchImmediately = true;
         } else if (m_pendingJobs.size() < m_maximumPendingJobs) {
-            m_pendingJobs.enqueue(std::move(job));
+            auto position = m_pendingJobs.begin();
+            while (position != m_pendingJobs.end() && (position->priority > job.priority || (position->priority == job.priority && position->sequence < job.sequence))) {
+                ++position;
+            }
+            m_pendingJobs.insert(position, std::move(job));
             return true;
         } else {
             rejected = true;
@@ -64,13 +69,30 @@ void BoundedExecutor::jobFinished()
         QMutexLocker locker(&m_mutex);
         --m_activeJobs;
         if (!m_pendingJobs.isEmpty()) {
-            next = m_pendingJobs.dequeue();
+            next = m_pendingJobs.takeFirst();
             ++m_activeJobs;
             hasNext = true;
         }
     }
     if (hasNext) {
         launch(std::move(next));
+    }
+}
+
+void BoundedExecutor::cancelPendingOlderThan(quint64 owner, quint64 generation)
+{
+    QList<Job> cancelled;
+    {
+        QMutexLocker locker(&m_mutex);
+        for (int i = m_pendingJobs.size() - 1; i >= 0; --i) {
+            const Job &job = m_pendingJobs.at(i);
+            if (job.owner == owner && job.generation < generation) {
+                cancelled.append(m_pendingJobs.takeAt(i));
+            }
+        }
+    }
+    for (Job &job : cancelled) {
+        job.cancel();
     }
 }
 

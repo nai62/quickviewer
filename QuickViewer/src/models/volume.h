@@ -110,7 +110,12 @@ public slots:
     void handlePageListLoaded();
 
 private:
-    ImageLoadFuture scheduleImageLoad(const QString &path, const QSize &pageSize, bool requiredForDisplay);
+    ImageLoadFuture scheduleImageLoad(
+        const QString &path,
+        const QSize &pageSize,
+        bool requiredForDisplay,
+        int pageIndex = -1,
+        quint64 generation = 0);
     ImageLoadFuture scheduleResize(ImageContent content, const QSize &pageSize);
 
     QList<QString> m_pageNames;
@@ -124,6 +129,10 @@ private:
     bool m_pageListLoaded;
     bool m_openedWithSpecifiedImageFile;
     QString m_volumePath;
+    quint64 m_prefetchOwnerId;
+    quint64 m_prefetchGeneration;
+    int m_lastPrefetchAnchor;
+    PrefetchMode m_lastPrefetchMode;
 
     // fast image loading
     QString m_subfileName;

@@ -1,4 +1,5 @@
 #include <QtGui>
+#include <atomic>
 #include <random>
 
 #include "volume.h"
@@ -9,6 +10,8 @@
 #include "boundedexecutor.h"
 #include "svgloader.h"
 #include "startupprofiler.h"
+
+static std::atomic<quint64> nextPrefetchOwnerId{1};
 
 static BoundedExecutor &imagePrefetchExecutor()
 {
@@ -36,7 +39,11 @@ Volume::Volume(QObject *parent, IFileLoader *loader)
       m_loadContext(new ImageLoadContext(loader)),
       m_loader(loader),
       m_pageListLoaded(false),
-      m_openedWithSpecifiedImageFile(false)
+      m_openedWithSpecifiedImageFile(false),
+      m_prefetchOwnerId(nextPrefetchOwnerId.fetch_add(1, std::memory_order_relaxed)),
+      m_prefetchGeneration(0),
+      m_lastPrefetchAnchor(-1),
+      m_lastPrefetchMode(PrefetchMode::Normal)
 {
     m_volumePath = m_loader->volumePath();
     connect(&m_watcher, SIGNAL(finished()), this, SLOT(handlePageListLoaded()));
@@ -48,14 +55,36 @@ Volume::~Volume()
     m_loader = nullptr;
 }
 
+static BoundedExecutor::Priority prefetchPriorityForPage(int pageIndex, int anchorPageIndex)
+{
+    if (pageIndex < 0 || pageIndex == anchorPageIndex) {
+        return BoundedExecutor::Priority::Critical;
+    }
+    const int distance = qAbs(pageIndex - anchorPageIndex);
+    if (distance == 1) {
+        return BoundedExecutor::Priority::High;
+    }
+    if (distance <= 3) {
+        return BoundedExecutor::Priority::Normal;
+    }
+    return BoundedExecutor::Priority::Low;
+}
+
 Volume::ImageLoadFuture Volume::scheduleImageLoad(
-    const QString &path, const QSize &pageSize, bool requiredForDisplay)
+    const QString &path,
+    const QSize &pageSize,
+    bool requiredForDisplay,
+    int pageIndex,
+    quint64 generation)
 {
     const QSharedPointer<ImageLoadContext> context = m_loadContext;
     auto submission = imagePrefetchExecutor().submit(
         [context, path, pageSize] {
             return futureLoadImageFromFileVolume(context, path, pageSize);
-        });
+        },
+        prefetchPriorityForPage(pageIndex, m_lastPrefetchAnchor),
+        m_prefetchOwnerId,
+        generation);
     if (submission.accepted) {
         return submission.future;
     }
@@ -240,10 +269,21 @@ void Volume::updatePrefetchCache(
         return;
     }
 
+    if (anchorPageIndex != m_lastPrefetchAnchor || mode != m_lastPrefetchMode) {
+        m_lastPrefetchAnchor = anchorPageIndex;
+        m_lastPrefetchMode = mode;
+        ++m_prefetchGeneration;
+        imagePrefetchExecutor().cancelPendingOlderThan(m_prefetchOwnerId, m_prefetchGeneration);
+    }
+
     const QList<int> indexes = PrefetchPlanner::indexes(
         mode, anchorPageIndex, m_pageNames.size(), qApp->MaxImagesCache());
     for (int cnt : indexes) {
         ImageLoadFuture *cachedImageLoad = m_imageLoadCache.find(cnt);
+        if (cachedImageLoad && cachedImageLoad->isCanceled()) {
+            m_imageLoadCache.remove(cnt);
+            cachedImageLoad = nullptr;
+        }
         if (qApp->Effect() < qvEnums::UsingFixedShader && cachedImageLoad && cachedImageLoad->isFinished()) {
             ImageContent cachedImage = cachedImageLoad->result();
             if (cachedImage.loadedImageSize.isValid()) {
@@ -266,7 +306,7 @@ void Volume::updatePrefetchCache(
                                        ? viewportSize
                                        : QSize();
             const ImageLoadFuture future = scheduleImageLoad(
-                pageNameAt(cnt), pageSize, cnt == anchorPageIndex);
+                pageNameAt(cnt), pageSize, cnt == anchorPageIndex, cnt, m_prefetchGeneration);
             if (future.isValid()) {
                 m_imageLoadCache.insert(cnt, future);
             }
@@ -285,7 +325,7 @@ void Volume::prefetchCoverImages(int anchorPageIndex)
     for (int pageIndex : PrefetchPlanner::indexes(
              PrefetchMode::Normal, anchorPageIndex, m_pageNames.size(), 2)) {
         const ImageLoadFuture future = scheduleImageLoad(
-            m_pageNames[pageIndex], QSize(), pageIndex == anchorPageIndex);
+            m_pageNames[pageIndex], QSize(), pageIndex == anchorPageIndex, pageIndex, m_prefetchGeneration);
         if (future.isValid()) {
             m_imageLoadCache.insert(pageIndex, future);
         }
