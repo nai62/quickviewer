@@ -27,13 +27,13 @@ void PrefetchPlannerTest::preservesNormalPlan()
 void PrefetchPlannerTest::preservesForwardPlan()
 {
     QCOMPARE(PrefetchPlanner::offsets(PrefetchMode::NormalForward, 22),
-             QList<int>({10, 11, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7}));
+             QList<int>({0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}));
 }
 
 void PrefetchPlannerTest::preservesBackwardPlan()
 {
     QCOMPARE(PrefetchPlanner::offsets(PrefetchMode::NormalBackward, 22),
-             QList<int>({-9, -10, -7, -8, 0, 1, -1, -2, -3, -4, -5, -6}));
+             QList<int>({0, -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, 1}));
 }
 
 void PrefetchPlannerTest::preservesFastForwardPlan()
@@ -59,7 +59,7 @@ void PrefetchPlannerTest::respectsCacheCapacity_data()
     QTest::newRow("forward-6") << PrefetchMode::NormalForward << 6
                                << QList<int>({0, 1, 2, 3, 4, 5});
     QTest::newRow("backward-6") << PrefetchMode::NormalBackward << 6
-                                << QList<int>({0, 1, -1, -2, -3, -4});
+                                << QList<int>({0, -1, -2, -3, -4, 1});
     QTest::newRow("fast-forward-6") << PrefetchMode::FastForward << 6
                                     << QList<int>({0, 1, 10, 11, -10, -9});
     QTest::newRow("fast-backward-6") << PrefetchMode::FastBackward << 6
