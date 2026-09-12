@@ -8,19 +8,32 @@ SUBDIRS = \
     unrar \
     fileloader \
     zimg \
-    qsvgrenderer \
     QuickViewer \
+    qvtest \
+    prefetchplannertest \
+    latestresultdispatchertest \
+    asynccachetest \
+    svgloadertest \
+    viewernavigationtest \
+    windowstartuptest
 
-#   qvtest
-
+prefetchplannertest.subdir = qvtest/prefetchplanner
+latestresultdispatchertest.subdir = qvtest/latestresultdispatcher
+asynccachetest.subdir = qvtest/asynccache
+svgloadertest.subdir = qvtest/svgloader
+viewernavigationtest.subdir = qvtest/viewernavigation
+windowstartuptest.subdir = qvtest/windowstartup
 
 fileloader.depends = Qt7z/Qt7z unrar
-QuickViewer.depends = ResizeHalf easyexif fileloader zimg qsvgrenderer
+QuickViewer.depends = ResizeHalf easyexif fileloader zimg
 qvtest.depends = fileloader
+viewernavigationtest.depends = ResizeHalf easyexif fileloader zimg
+windowstartuptest.depends = ResizeHalf easyexif fileloader zimg
 
 contains(DEFINES, QV_WITH_LUMINOR) {
     SUBDIRS += luminor
     QuickViewer.depends += luminor
+    windowstartuptest.depends += luminor
 }
 
 win32 {
@@ -28,9 +41,6 @@ win32 {
 }
 
 unix {
-#    SUBDIRS += zlib quazip Qt7z/lib7z/lib7z.pro
-#    quazip.depends = zlib
-#    fileloader.depends += quazip zlib
 #    SUBDIRS += Qt7z/lib7z/lib7z.pro
 #    fileloader.depends += Qt7z/lib7z/lib7z.pro
 }
@@ -39,7 +49,6 @@ unix {
 CODECFORSRC = UTF-8
 
 TRANSLATIONS = \
-    QuickViewer/translations/quickviewer_en.ts \
     QuickViewer/translations/quickviewer_ja.ts \
     QuickViewer/translations/quickviewer_es.ts \
     QuickViewer/translations/quickviewer_zh.ts \

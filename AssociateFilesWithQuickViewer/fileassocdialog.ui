@@ -24,7 +24,7 @@
       <item row="0" column="0">
        <widget class="QCheckBox" name="checkBoxJpeg">
         <property name="text">
-         <string>JPEG Image (*.jpg, *.jpeg)</string>
+         <string>JPEG Image (*.jpg, *.jpeg, *.jpe)</string>
         </property>
        </widget>
       </item>
@@ -91,38 +91,45 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="0" colspan="2">
+      <item row="5" column="0">
+       <widget class="QCheckBox" name="checkBoxHeif">
+        <property name="text">
+         <string>HEIF Image (*.heic, *.heif)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0" colspan="2">
        <widget class="Line" name="line">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
        </widget>
       </item>
-      <item row="6" column="0">
+      <item row="7" column="0">
        <widget class="QCheckBox" name="checkBoxRawCanon">
         <property name="text">
-         <string>Canon Raw Format (*.crw, *.cr2)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="1">
-       <widget class="QCheckBox" name="checkBoxRawNicon">
-        <property name="text">
-         <string>Nicon Raw Format (*.nef)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0">
-       <widget class="QCheckBox" name="checkBoxRawSony">
-        <property name="text">
-         <string>Sony Raw Format (*.arw)</string>
+         <string>Canon RAW format (*.crw, *.cr2)</string>
         </property>
        </widget>
       </item>
       <item row="7" column="1">
+       <widget class="QCheckBox" name="checkBoxRawNicon">
+        <property name="text">
+         <string>Nikon RAW format (*.nef)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0">
+       <widget class="QCheckBox" name="checkBoxRawSony">
+        <property name="text">
+         <string>Sony RAW format (*.arw)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="1">
        <widget class="QCheckBox" name="checkBoxRawDng">
         <property name="toolTip">
-         <string>for Ricoh, Casio, Pentax, Nokia, Leica, etc..</string>
+         <string>Used by Ricoh, Casio, Pentax, Nokia, Leica, and others</string>
         </property>
         <property name="text">
          <string>Adobe Digital Negative Format (*.dng)</string>
@@ -178,7 +185,7 @@
       </palette>
      </property>
      <property name="text">
-      <string>If you press the OK button you will write a registry. Cancel if unnecessary.</string>
+      <string>Click OK to update the Windows registry, or Cancel to leave it unchanged.</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -190,14 +197,14 @@
      <item>
       <widget class="QPushButton" name="btnAllOff">
        <property name="text">
-        <string extracomment="Button to turn off all check box">AllInvalid</string>
+        <string extracomment="Button to turn off all check box">Clear all</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="btnAllOn">
        <property name="text">
-        <string extracomment="Button to turn all check boxes on">AllValid</string>
+        <string extracomment="Button to turn all check boxes on">Select all</string>
        </property>
       </widget>
      </item>
@@ -223,7 +230,7 @@
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
    <receiver>FileAssocDialog</receiver>
-   <slot>on_tryRegist_triggered()</slot>
+   <slot>handleButtonBoxAccepted()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>248</x>
@@ -255,7 +262,7 @@
    <sender>btnAllOff</sender>
    <signal>clicked()</signal>
    <receiver>FileAssocDialog</receiver>
-   <slot>on_allOff_triggered()</slot>
+   <slot>handleAllOffButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>152</x>
@@ -271,7 +278,7 @@
    <sender>btnAllOn</sender>
    <signal>clicked()</signal>
    <receiver>FileAssocDialog</receiver>
-   <slot>on_allOn_triggered()</slot>
+   <slot>handleAllOnButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>54</x>
@@ -286,8 +293,8 @@
  </connections>
  <slots>
   <signal>closed()</signal>
-  <slot>on_allOn_triggered()</slot>
-  <slot>on_allOff_triggered()</slot>
-  <slot>on_tryRegist_triggered()</slot>
+  <slot>handleAllOnButtonClicked()</slot>
+  <slot>handleAllOffButtonClicked()</slot>
+  <slot>handleButtonBoxAccepted()</slot>
  </slots>
 </ui>

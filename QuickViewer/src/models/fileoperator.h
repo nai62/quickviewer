@@ -13,13 +13,11 @@
 class FileOperator : public QObject
 {
     Q_OBJECT
-    enum OperateAs
-    {
+    enum OperateAs {
         AsFile,
         AsVolume,
     };
-    enum OperateMode
-    {
+    enum OperateMode {
         CopyMode,
         MoveMode,
         CommandMode,

@@ -282,8 +282,23 @@
      <addaction name="actionSortByModifiedTime"/>
      <addaction name="actionSortByModifiedTimeDescending"/>
     </widget>
+ <widget class="QMenu" name="menuShader">
+     <property name="title">
+      <string>&amp;Rendering</string>
+     </property>
+     <addaction name="actionShaderBilinear"/>
+     <addaction name="separator"/>
+     <addaction name="actionShaderCpuBicubic"/>
+     <addaction name="actionShaderCpuLanczos4"/>
+     <addaction name="separator"/>
+     <addaction name="actionShaderCpuLanczos3"/>
+     <addaction name="actionShaderNearestNeighbor"/>
+     <addaction name="actionShaderBicubic"/>
+     <addaction name="actionShaderLanczos"/>
+     <addaction name="actionShaderBilinearBeforeCpuBicubic"/>
+    </widget>
     <addaction name="menu_Sort_by"/>
-    <addaction name="separator"/>
+     <addaction name="separator"/>
     <addaction name="actionLargeToolbarIcons"/>
     <addaction name="actionShowMenuBar"/>
     <addaction name="actionShowToolBar"/>
@@ -301,23 +316,28 @@
     <addaction name="actionShowPanelSeparateWindow"/>
     <addaction name="actionStayOnTop"/>
    </widget>
-   <widget class="QMenu" name="menuHelp">
+   <widget class="QMenu" name="menuTools">
     <property name="title">
-     <string>&amp;Help</string>
+     <string>&amp;Tools</string>
     </property>
-    <widget class="QMenu" name="menuChange_Language">
+<widget class="QMenu" name="menuChange_Language">
      <property name="title">
       <string notr="true">Language</string>
      </property>
     </widget>
-    <addaction name="menuChange_Language"/>
+    <addaction name="actionOpenOptionsDialog"/>
     <addaction name="actionOpenKeyConfig"/>
     <addaction name="actionOpenMouseConfig"/>
-    <addaction name="actionOpenOptionsDialog"/>
-    <addaction name="actionRegistAssocsUAC"/>
-    <addaction name="actionRegistAssocs"/>
+    <addaction name="menuChange_Language"/>
     <addaction name="separator"/>
-    <addaction name="actionProjectWeb"/>
+    <addaction name="actionRegisterFileAssociations"/>
+    <addaction name="actionRegisterFileAssociationsAsAdministrator"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+        <addaction name="actionProjectWeb"/>
     <addaction name="actionCheckVersion"/>
     <addaction name="separator"/>
     <addaction name="actionAppVersion"/>
@@ -328,7 +348,7 @@
     </property>
     <widget class="QMenu" name="menuLoadBookmark">
      <property name="title">
-      <string extracomment="Button to restore saved image page from registered bookmark">LoadBookmark</string>
+      <string extracomment="Button to restore saved image page from registered bookmark">Load bookmark</string>
      </property>
      <property name="icon">
       <iconset resource="../toolbar.qrc">
@@ -355,28 +375,13 @@
     <addaction name="actionNextPageOrVolume"/>
     <addaction name="actionPrevPageOrVolume"/>
    </widget>
-   <widget class="QMenu" name="menuShader">
-    <property name="title">
-     <string>&amp;Shader</string>
-    </property>
-    <addaction name="actionShaderBilinear"/>
-    <addaction name="separator"/>
-    <addaction name="actionShaderCpuBicubic"/>
-    <addaction name="actionShaderCpuLanczos4"/>
-    <addaction name="separator"/>
-    <addaction name="actionShaderCpuLanczos3"/>
-    <addaction name="actionShaderNearestNeighbor"/>
-    <addaction name="actionShaderBicubic"/>
-    <addaction name="actionShaderLanczos"/>
-    <addaction name="actionShaderBilinearBeforeCpuBicubic"/>
-   </widget>
-   <widget class="QMenu" name="menuContextMenu">
+      <widget class="QMenu" name="menuContextMenu">
     <property name="title">
      <string>ContextMenu</string>
     </property>
     <widget class="QMenu" name="menu_Shader">
      <property name="title">
-      <string>&amp;Shader</string>
+      <string>&amp;Rendering</string>
      </property>
      <addaction name="actionShaderBilinear"/>
      <addaction name="separator"/>
@@ -391,7 +396,7 @@
     </widget>
     <widget class="QMenu" name="menuEdit_the_image">
      <property name="title">
-      <string>Edit the image</string>
+      <string>Image actions</string>
      </property>
      <addaction name="actionCopyPage"/>
      <addaction name="actionCopyFile"/>
@@ -489,6 +494,7 @@
    <addaction name="menu_Image"/>
    <addaction name="menuView"/>
    <addaction name="menuShader"/>
+   <addaction name="menuTools"/>
    <addaction name="menuHelp"/>
    <addaction name="menuContextMenu"/>
   </widget>
@@ -503,7 +509,7 @@
      <normaloff>:/icons/page_next_icon2</normaloff>:/icons/page_next_icon2</iconset>
    </property>
    <property name="text">
-    <string extracomment="Switch to the next image button">&amp;NextImage</string>
+    <string extracomment="Switch to the next image button">&amp;Next</string>
    </property>
   </action>
   <action name="actionPrevPage">
@@ -512,7 +518,7 @@
      <normaloff>:/icons/page_previous_icon2</normaloff>:/icons/page_previous_icon2</iconset>
    </property>
    <property name="text">
-    <string extracomment="Switch to previous image button">&amp;PrevImage</string>
+    <string extracomment="Switch to previous image button">&amp;Previous</string>
    </property>
   </action>
   <action name="actionZoomIn">
@@ -521,10 +527,10 @@
      <normaloff>:/icons/power_plus_icon</normaloff>:/icons/power_plus_icon</iconset>
    </property>
    <property name="text">
-    <string extracomment="Button for enlarging the currently displayed image">Zoom&amp;In</string>
+    <string extracomment="Button for enlarging the currently displayed image">Zoom &amp;in</string>
    </property>
    <property name="toolTip">
-    <string>ZoomIn</string>
+    <string>Zoom in</string>
    </property>
   </action>
   <action name="actionZoomOut">
@@ -533,10 +539,10 @@
      <normaloff>:/icons/power_minus_icon</normaloff>:/icons/power_minus_icon</iconset>
    </property>
    <property name="text">
-    <string extracomment="Reduce the image currently displayed button">Zoom&amp;Out</string>
+    <string extracomment="Reduce the image currently displayed button">Zoom &amp;out</string>
    </property>
    <property name="toolTip">
-    <string>ZoomOut</string>
+    <string>Zoom out</string>
    </property>
   </action>
   <action name="actionFitting">
@@ -548,7 +554,7 @@
      <normaloff>:/icons/maximize_icon</normaloff>:/icons/maximize_icon</iconset>
    </property>
    <property name="text">
-    <string extracomment="Automatically resize the image according to the size of the window">&amp;Fitting</string>
+    <string extracomment="Automatically resize the image according to the size of the window">&amp;Fit mode</string>
    </property>
   </action>
   <action name="actionDualView">
@@ -560,7 +566,7 @@
      <normaloff>:/icons/dualview</normaloff>:/icons/dualview</iconset>
    </property>
    <property name="text">
-    <string extracomment="Arranging two images side by side like when opening a book">2page &amp;Spread</string>
+    <string extracomment="Arranging two images side by side like when opening a book">2-page &amp;spread</string>
    </property>
   </action>
   <action name="actionFullscreen">
@@ -572,7 +578,7 @@
      <normaloff>:/icons/fullscreen</normaloff>:/icons/fullscreen</iconset>
    </property>
    <property name="text">
-    <string extracomment="Button to switch the window display to full screen">Fullscreen</string>
+    <string extracomment="Button to switch the window display to full screen">Full screen</string>
    </property>
   </action>
   <action name="actionAppVersion">
@@ -589,7 +595,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string extracomment="Opening the image automatically when opening the application the last time it was started">&amp;Auto load last used</string>
+    <string extracomment="Opening the image automatically when opening the application the last time it was started">&amp;Reopen last viewed item</string>
    </property>
   </action>
   <action name="actionRightSideBook">
@@ -597,12 +603,12 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string extracomment="Books written in vertical writing such as Japanese and Chinese read from right, so read from right page to left page">Bound on the &amp;right side</string>
+    <string extracomment="Books written in vertical writing such as Japanese and Chinese read from right, so read from right page to left page">&amp;Right-bound</string>
    </property>
   </action>
   <action name="actionOpenFolder">
    <property name="text">
-    <string extracomment="A menu for displaying a dialog for selecting an image to be displayed">&amp;Open Image Folder</string>
+    <string extracomment="Open an image or archive for viewing">&amp;Open...</string>
    </property>
   </action>
   <action name="actionWideImageAsOneView">
@@ -610,7 +616,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string extracomment="Automatically switch because it may spread 2 pages are combined into one image in the digital book">&amp;Always display one landscape image even in 2 page display</string>
+    <string extracomment="Automatically switch because it may spread 2 pages are combined into one image in the digital book">&amp;Keep wide images together in 2-page view</string>
    </property>
   </action>
   <action name="actionLastPage">
@@ -619,7 +625,7 @@
      <normaloff>:/icons/page_last_icon</normaloff>:/icons/page_last_icon</iconset>
    </property>
    <property name="text">
-    <string extracomment="Switch to the last image of Volume currently displayed button">&amp;LastPage</string>
+    <string extracomment="Switch to the last image of Volume currently displayed button">&amp;Last page</string>
    </property>
   </action>
   <action name="actionFirstPage">
@@ -628,7 +634,7 @@
      <normaloff>:/icons/page_first_icon</normaloff>:/icons/page_first_icon</iconset>
    </property>
    <property name="text">
-    <string extracomment="Switch to the first image of the currently displayed Volume button">&amp;FirstPage</string>
+    <string extracomment="Switch to the first image of the currently displayed Volume button">&amp;First page</string>
    </property>
   </action>
   <action name="actionShowStatusBar">
@@ -639,7 +645,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Show Status&amp;Bar</string>
+    <string>Show status &amp;bar</string>
    </property>
   </action>
   <action name="actionShowPageBar">
@@ -647,7 +653,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show &amp;PageBar</string>
+    <string>Show &amp;page bar</string>
    </property>
   </action>
   <action name="actionOpenFiler">
@@ -664,12 +670,12 @@
      <normaloff>:/icons/exif_icon</normaloff>:/icons/exif_icon</iconset>
    </property>
    <property name="text">
-    <string extracomment="Button to display JPEG EXIF information (if any)">Exif &amp;Information</string>
+    <string extracomment="Button to display JPEG EXIF information (if any)">EXIF &amp;information</string>
    </property>
   </action>
   <action name="actionCheckVersion">
    <property name="text">
-    <string extracomment="A menu to start up the browser to check whether the currently used QuickViewer is the latest version on the project web page">Check &amp;version in browser</string>
+    <string extracomment="A menu to start up the browser to check whether the currently used QuickViewer is the latest version on the project web page">Check for &amp;updates...</string>
    </property>
   </action>
   <action name="actionNextVolume">
@@ -678,7 +684,7 @@
      <normaloff>:/icons/volume_next_icon</normaloff>:/icons/volume_next_icon</iconset>
    </property>
    <property name="text">
-    <string extracomment="Switch to the next Volume in the same folder as the currently displayed Volume button">N&amp;extVolume</string>
+    <string extracomment="Switch to the next Volume in the same folder as the currently displayed Volume button">N&amp;ext volume</string>
    </property>
   </action>
   <action name="actionPrevVolume">
@@ -687,22 +693,22 @@
      <normaloff>:/icons/volume_prev_icon</normaloff>:/icons/volume_prev_icon</iconset>
    </property>
    <property name="text">
-    <string extracomment="Switch to the previous Volume in the same folder as Volume currently being displayed Button">P&amp;rev Volume</string>
+    <string extracomment="Switch to the previous Volume in the same folder as Volume currently being displayed Button">P&amp;revious volume</string>
    </property>
   </action>
   <action name="actionNextOnePage">
    <property name="text">
-    <string extracomment="Because there are times when the page is missing due to bookbinding convenience, digital books will fit the left and right pages with this operation">Next &amp;one page only</string>
+    <string extracomment="Because there are times when the page is missing due to bookbinding convenience, digital books will fit the left and right pages with this operation">Next &amp;page</string>
    </property>
   </action>
   <action name="actionPrevOnePage">
    <property name="text">
-    <string extracomment="Because there are times when the page is missing due to bookbinding convenience, digital books will fit the left and right pages with this operation">Prev o&amp;ne page only</string>
+    <string extracomment="Because there are times when the page is missing due to bookbinding convenience, digital books will fit the left and right pages with this operation">Previous p&amp;age</string>
    </property>
   </action>
   <action name="actionExitApplicationOrFullscreen">
    <property name="text">
-    <string extracomment="Function that cancels it while full screen is displayed and terminates the application otherwise">ExitApplicationOrFullscreen</string>
+    <string extracomment="Function that cancels it while full screen is displayed and terminates the application otherwise">Exit application or full screen</string>
    </property>
   </action>
   <action name="actionShowToolBar">
@@ -710,7 +716,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show &amp;ToolBar</string>
+    <string>Show &amp;toolbar</string>
    </property>
   </action>
   <action name="actionFirstImageAsOneView">
@@ -718,7 +724,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string extracomment="In the case of a digital book, since the first image is a cover page, only one image is displayed">Always open &amp;first images even withas only one page</string>
+    <string extracomment="In the case of a digital book, since the first image is a cover page, only one image is displayed">Display &amp;first page alone</string>
    </property>
   </action>
   <action name="actionShowMenuBar">
@@ -726,12 +732,12 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show &amp;MenuBar</string>
+    <string>Show &amp;menu bar</string>
    </property>
   </action>
   <action name="actionClearHistory">
    <property name="text">
-    <string extracomment="Menu for clearing the history of opening images">&amp;Clear History</string>
+    <string extracomment="Menu for clearing the history of opening images">&amp;Clear history</string>
    </property>
   </action>
   <action name="actionStayOnTop">
@@ -743,7 +749,7 @@
      <normaloff>:/icons/stayontop_icon</normaloff>:/icons/stayontop_icon</iconset>
    </property>
    <property name="text">
-    <string extracomment="When on it keeps the window always on top">Stay On &amp;Top</string>
+    <string extracomment="When on it keeps the window always on top">Stay on &amp;top</string>
    </property>
   </action>
   <action name="actionCopyPage">
@@ -807,7 +813,7 @@
      <normaloff>:/icons/page_next_fast_icon</normaloff>:/icons/page_next_fast_icon</iconset>
    </property>
    <property name="text">
-    <string extracomment="Switch to 10 images in Volume button">FastForward</string>
+    <string extracomment="Switch to 10 images in Volume button">Skip forward 10 pages</string>
    </property>
   </action>
   <action name="actionFastBackward">
@@ -816,12 +822,12 @@
      <normaloff>:/icons/page_previous_fast_icon</normaloff>:/icons/page_previous_fast_icon</iconset>
    </property>
    <property name="text">
-    <string extracomment="Switch to the previous 10 images in Volume button">FastBackward</string>
+    <string extracomment="Switch to the previous 10 images in Volume button">Skip back 10 pages</string>
    </property>
   </action>
   <action name="actionCopyFile">
    <property name="text">
-    <string extracomment="Menu to copy currently displayed image file on Explorer">Copy File to clipboard</string>
+    <string extracomment="Menu to copy currently displayed image file on Explorer">Copy file to clipboard</string>
    </property>
   </action>
   <action name="actionRotate">
@@ -851,7 +857,7 @@
      <normaloff>:/icons/bookmark_save_icon</normaloff>:/icons/bookmark_save_icon</iconset>
    </property>
    <property name="text">
-    <string extracomment="Button to add the currently displayed volume and page to bookmark">AddBookmark</string>
+    <string extracomment="Button to add the currently displayed volume and page to bookmark">Add bookmark</string>
    </property>
   </action>
   <action name="actionManageBookmarks">
@@ -860,7 +866,7 @@
      <normaloff>:/icons/bookmark_manage_icon</normaloff>:/icons/bookmark_manage_icon</iconset>
    </property>
    <property name="text">
-    <string>ManageBookmarks</string>
+    <string>Manage bookmarks</string>
    </property>
   </action>
   <action name="actionLoadBookmark">
@@ -869,17 +875,17 @@
      <normaloff>:/icons/bookmark_load_icon</normaloff>:/icons/bookmark_load_icon</iconset>
    </property>
    <property name="text">
-    <string extracomment="Button to restore saved image page from registered bookmark">LoadBookmark</string>
+    <string extracomment="Button to restore saved image page from registered bookmark">Load bookmark</string>
    </property>
   </action>
   <action name="actionClearBookmarks">
    <property name="text">
-    <string extracomment="Button to delete all saved bookmarks">clearBookmarks</string>
+    <string extracomment="Button to delete all saved bookmarks">Clear bookmarks</string>
    </property>
   </action>
   <action name="actionProjectWeb">
    <property name="text">
-    <string extracomment="Button to display the web page of the project in the browser">Display Home&amp;page in browser</string>
+    <string extracomment="Button to display the web page of the project in the browser">Project &amp;website</string>
    </property>
   </action>
   <action name="actionShowCatalog">
@@ -902,7 +908,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string extracomment="Ability to remove and display (parenthesized) text from Volume title in the catalog">Remove (Options) from Book Title</string>
+    <string extracomment="Ability to remove and display (parenthesized) text from Volume title in the catalog">Remove parenthesized text from book title</string>
    </property>
   </action>
   <action name="actionSearchTitleWithOptions">
@@ -910,7 +916,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string extracomment="Ability to search with the title removed (parenthesized) removed from the title of Volume in the catalog">Remove (Options) from book title when searching</string>
+    <string extracomment="Ability to search with the title removed (parenthesized) removed from the title of Volume in the catalog">Ignore parenthesized text when searching titles</string>
    </property>
   </action>
   <action name="actionCatalogViewIcon">
@@ -922,10 +928,10 @@
      <normaloff>:/icons/folder_view_icon_red</normaloff>:/icons/folder_view_icon_red</iconset>
    </property>
    <property name="text">
-    <string extracomment="For Volume in the catalog, a mode to list up icons and titles vertically">CatalogViewIcon</string>
+    <string extracomment="For Volume in the catalog, a mode to list up icons and titles vertically">Icons and titles</string>
    </property>
    <property name="toolTip">
-    <string>CatalogViewIcon</string>
+    <string>Icons and titles</string>
    </property>
   </action>
   <action name="actionCatalogViewIconNoText">
@@ -937,7 +943,7 @@
      <normaloff>:/icons/folder_view_icon_green</normaloff>:/icons/folder_view_icon_green</iconset>
    </property>
    <property name="text">
-    <string extracomment="Mode to list Volume in the catalog with only the icons side by side">IconViewOnly</string>
+    <string extracomment="Mode to list Volume in the catalog with only the icons side by side">Icons only</string>
    </property>
   </action>
   <action name="actionCatalogViewList">
@@ -946,10 +952,10 @@
      <normaloff>:/icons/folder_view_list_blue</normaloff>:/icons/folder_view_list_blue</iconset>
    </property>
    <property name="text">
-    <string extracomment="Mode to list volumes in the catalog with icons and titles arranged side by side">CatalogViewList</string>
+    <string extracomment="Mode to list volumes in the catalog with icons and titles arranged side by side">List</string>
    </property>
    <property name="toolTip">
-    <string>CatalogViewList</string>
+    <string>List</string>
    </property>
   </action>
   <action name="actionShowTagBar">
@@ -957,17 +963,17 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string extracomment="Squeeze the Volume of the catalog Function to erase the bar displaying the tag button">ShowTagBar</string>
+    <string extracomment="Squeeze the Volume of the catalog Function to erase the bar displaying the tag button">Show tag bar</string>
    </property>
   </action>
   <action name="actionShowMainMenuBar">
    <property name="text">
-    <string>Sh&amp;ow/Hide MainMenuBar</string>
+    <string>Sh&amp;ow/hide menu bar</string>
    </property>
   </action>
   <action name="actionMailAttachment">
    <property name="text">
-    <string extracomment="Menu to attach the currently displayed image to the mail software and start up">Activate your e-mail software with an attachment</string>
+    <string extracomment="Menu to attach the currently displayed image to the mail software and start up">Send image by email...</string>
    </property>
   </action>
   <action name="actionCatalogIconLongText">
@@ -975,7 +981,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string extracomment="Functions to be used when the Volume title in the catalog is long">Larger &amp;grid to display long title</string>
+    <string extracomment="Functions to be used when the Volume title in the catalog is long">Larger &amp;grid for long titles</string>
    </property>
   </action>
   <action name="actionShowFolder">
@@ -1015,7 +1021,7 @@
      <normaloff>:/icons/subfolders_icon</normaloff>:/icons/subfolders_icon</iconset>
    </property>
    <property name="text">
-    <string extracomment="When enumerating images, subfolders are also included in the range">Open with Subfolders Image</string>
+    <string extracomment="When enumerating images, subfolders are also included in the range">Include images in subfolders</string>
    </property>
   </action>
   <action name="actionOpenVolumeWithProgress">
@@ -1023,7 +1029,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string extracomment="A setting menu that allows you to advance the page to the point you read when you reopen Volume that you read a part way up again">Previously opened page in Preview</string>
+    <string extracomment="A setting menu that allows you to advance the page to the point you read when you reopen Volume that you read a part way up again">Open at last-read page</string>
    </property>
   </action>
   <action name="actionShowReadProgress">
@@ -1031,7 +1037,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string extracomment="Ability to display read information read in the middle in FolderWindow">Show how far you read</string>
+    <string extracomment="Ability to display read information read in the middle in FolderWindow">Show reading progress</string>
    </property>
   </action>
   <action name="actionOpenOptionsDialog">
@@ -1049,7 +1055,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string extracomment="Ability to display an image smaller than the window as it is when fit is displayed">Don't enlarge small images on Fitting</string>
+    <string extracomment="Ability to display an image smaller than the window as it is when fit is displayed">Don't upscale small images</string>
    </property>
   </action>
   <action name="actionChange_Language">
@@ -1062,7 +1068,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string extracomment="Ability to always launch applications in full screen">Fullscreen on startup</string>
+    <string extracomment="Ability to always launch applications in full screen">Full screen on startup</string>
    </property>
   </action>
   <action name="actionShowFullscreenSignage">
@@ -1070,7 +1076,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string extracomment="Signage that displays the file name of the image at full screen display">Show texts on Fullscreen</string>
+    <string extracomment="Signage that displays the file name of the image at full screen display">Show image information in full screen</string>
    </property>
   </action>
   <action name="actionOpenKeyConfig">
@@ -1079,7 +1085,7 @@
      <normaloff>:/icons/preference_icon</normaloff>:/icons/preference_icon</iconset>
    </property>
    <property name="text">
-    <string extracomment="Menu that displays a dialog for changing keyboard shortcuts">&amp;Key Config</string>
+    <string extracomment="Menu that displays a dialog for changing keyboard shortcuts">&amp;Keyboard Shortcuts...</string>
    </property>
   </action>
   <action name="actionConfirmDeletePage">
@@ -1090,9 +1096,9 @@
     <string extracomment="A function to display a confirmation screen when moving the currently displayed image to Recycle Bin">Confirm moving image to &amp;Recycle Bin</string>
    </property>
   </action>
-  <action name="actionRegistAssocsUAC">
+  <action name="actionRegisterFileAssociationsAsAdministrator">
    <property name="text">
-    <string extracomment="Ability to associate QuickViewer and image files on Explorer (Host Global)">Image Associations (requires Admin)</string>
+    <string extracomment="Ability to associate QuickViewer and image files on Explorer (Host Global)">File Associations... (administrator)</string>
    </property>
   </action>
   <action name="actionContextMenu">
@@ -1102,7 +1108,7 @@
   </action>
   <action name="actionOpenMouseConfig">
    <property name="text">
-    <string>&amp;Mouse Config</string>
+    <string>&amp;Mouse Settings...</string>
    </property>
   </action>
   <action name="actionDeletePage">
@@ -1110,9 +1116,9 @@
     <string>Delete the image</string>
    </property>
   </action>
-  <action name="actionRegistAssocs">
+  <action name="actionRegisterFileAssociations">
    <property name="text">
-    <string extracomment="Ability to associate QuickViewer and image files on Explorer (Host Global)">Image Associations (only you)</string>
+    <string extracomment="Ability to associate QuickViewer and image files on Explorer (Host Global)">File Associations... (current user)</string>
    </property>
   </action>
   <action name="actionSavingHistory">
@@ -1132,7 +1138,7 @@
      <normaloff>:/icons/child_separate</normaloff>:/icons/child_separate</iconset>
    </property>
    <property name="text">
-    <string extracomment="Flag separating the catalog and folder windows into independent windows">Undock into separate window</string>
+    <string extracomment="Flag separating the catalog and folder windows into independent windows">Open panels in separate windows</string>
    </property>
   </action>
   <action name="actionLargeToolbarIcons">
@@ -1140,17 +1146,17 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Large menubar and toolbar</string>
+    <string>Large menu and toolbar</string>
    </property>
   </action>
   <action name="actionTurnPageOnLeft">
    <property name="text">
-    <string>Turn over the page on the left</string>
+    <string>Turn left page</string>
    </property>
   </action>
   <action name="actionTurnPageOnRight">
    <property name="text">
-    <string>Turn over the page on the right</string>
+    <string>Turn right page</string>
    </property>
   </action>
   <action name="actionSeparatePagesWhenWideImage">
@@ -1158,7 +1164,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string extracomment="Flag to display images on the left and right sides with a portrait display">Divide wide image into 2 pages</string>
+    <string extracomment="Flag to display images on the left and right sides with a portrait display">Split wide images into two pages</string>
    </property>
   </action>
   <action name="actionLoupeTool">
@@ -1170,7 +1176,7 @@
      <normaloff>:/icons/loupe</normaloff>:/icons/loupe</iconset>
    </property>
    <property name="text">
-    <string>Loupe Tool</string>
+    <string>Loupe</string>
    </property>
   </action>
   <action name="actionScrollWithCursorWhenZooming">
@@ -1178,7 +1184,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string extracomment="Flag to scroll the image with moving the mouse pointer instead of displaying the scroll bar">Scroll with mouse cursor on zooming</string>
+    <string extracomment="Flag to scroll the image with moving the mouse pointer instead of displaying the scroll bar">Pan with mouse movement when zoomed</string>
    </property>
   </action>
   <action name="actionFitToWidth">
@@ -1214,7 +1220,7 @@
      <normaloff>:/icons/retouch_icon</normaloff>:/icons/retouch_icon</iconset>
    </property>
    <property name="text">
-    <string extracomment="a menu test which show window changes brightness of the image">Change Brightness, Contrast or Gamma value</string>
+    <string extracomment="a menu test which show window changes brightness of the image">Image adjustments...</string>
    </property>
   </action>
   <action name="actionShaderCpuSpline16">
@@ -1256,7 +1262,7 @@
   </action>
   <action name="actionPrevPageOrVolume">
    <property name="text">
-    <string extracomment="Switch to previous image, or to previous volume if the page is last button">Prev page or volume</string>
+    <string extracomment="Switch to previous image, or to previous volume if the page is last button">Previous page or volume</string>
    </property>
   </action>
   <action name="actionSaveCatalogViewWidth">
@@ -1264,7 +1270,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string extracomment="Flag to restore the width of Catalog view">Save the Catalog view width</string>
+    <string extracomment="Flag to restore the width of Catalog view">Remember catalog pane width</string>
    </property>
   </action>
   <action name="actionSaveFolderViewWidth">
@@ -1272,7 +1278,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string extracomment="Flag to restore the width of Folder view">Save the Folder display width</string>
+    <string extracomment="Flag to restore the width of Folder view">Remember folder pane width</string>
    </property>
   </action>
   <action name="actionSaveReadProgress">
@@ -1280,7 +1286,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string extracomment="Flag to save progress.ini">Save how far you read</string>
+    <string extracomment="Flag to save progress.ini">Save reading progress</string>
    </property>
   </action>
   <action name="actionHideMouseCursorInFullscreen">
@@ -1288,7 +1294,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Hide the mouse cursor on fullscreen</string>
+    <string>Hide mouse cursor in full screen</string>
    </property>
   </action>
   <action name="action_Sort_by">
@@ -1301,7 +1307,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Filename</string>
+    <string>File name</string>
    </property>
   </action>
   <action name="actionSortByFileNameDescending">
@@ -1309,7 +1315,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Filename(descending)</string>
+    <string>File name (descending)</string>
    </property>
   </action>
   <action name="actionSortByFileSize">
@@ -1325,7 +1331,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>File size(descending)</string>
+    <string>File size (descending)</string>
    </property>
   </action>
   <action name="actionSortByModifiedTime">
@@ -1333,7 +1339,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Modified Time</string>
+    <string>Modified time</string>
    </property>
   </action>
   <action name="actionSortByModifiedTimeDescending">
@@ -1341,7 +1347,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Modified Time(descending)</string>
+    <string>Modified time (descending)</string>
    </property>
   </action>
  </widget>
@@ -1352,47 +1358,46 @@
    <extends>QGraphicsView</extends>
    <header>imageview.h</header>
    <slots>
-    <signal>fittingChanged(bool)</signal>
+    <signal>fittingChanged(qvEnums::FitMode)</signal>
     <signal>anchorHovered(Qt::AnchorPoint)</signal>
-    <slot>on_image_changing(QImage)</slot>
-    <slot>on_fitting_triggered(bool)</slot>
-    <slot>on_dualView_triggered(bool)</slot>
-    <slot>on_scaleUp_triggered()</slot>
-    <slot>on_scaleDown_triggered()</slot>
-    <slot>on_rightSideBook_triggered(bool)</slot>
-    <slot>on_wideImageAsOneView_triggered(bool)</slot>
-    <slot>on_openFiler_triggered()</slot>
-    <slot>on_nextPage_triggered()</slot>
-    <slot>on_prevPage_triggered()</slot>
-    <slot>on_firstPage_triggered()</slot>
-    <slot>on_lastPage_triggered()</slot>
-    <slot>on_nextOnlyOnePage_triggered()</slot>
-    <slot>on_prevOnlyOnePage_triggered()</slot>
-    <slot>on_firstImageAsOneView_triggered(bool)</slot>
-    <slot>on_copyPage_triggered()</slot>
-    <slot>on_nextVolume_triggered()</slot>
-    <slot>on_prevVolume_triggered()</slot>
-    <slot>on_fastForwardPage_triggered()</slot>
-    <slot>on_fastBackwardPage_triggered()</slot>
-    <slot>on_copyFile_triggered()</slot>
-    <slot>on_rotatePage_triggered()</slot>
-    <slot>on_showSubfolders_triggered(bool)</slot>
-    <slot>on_dontEnlargeSmallImagesOnFitting(bool)</slot>
-    <slot>onActionSeparatePagesWhenWideImage_triggered(bool)</slot>
-    <slot>onActionLoupe_triggered(bool)</slot>
-    <slot>onActionScrollWithCursorWhenZooming_triggered(bool)</slot>
-    <slot>onActionShowFullscreenSignage_triggered(bool)</slot>
-    <slot>on_fitToWidth_triggered(bool)</slot>
-    <slot>on_fitToWindow_triggered(bool)</slot>
-    <slot>onActionNextPageOrVolume_triggered()</slot>
-    <slot>onActionPrevPageOrVolume_triggered()</slot>
-    <slot>onActionHideMouseCursorInFullscreen_triggered(bool)</slot>
-    <slot>onActionSortByFileName_triggered(bool)</slot>
-    <slot>onActionSortByFileNameDescending_triggered(bool)</slot>
-    <slot>onActionSortByFileSize_triggered(bool)</slot>
-    <slot>onActionSortByFileSizeDescending_triggered(bool)</slot>
-    <slot>onActionSortByModifiedTime_triggered(bool)</slot>
-    <slot>onActionSortByModifiedTimeDescending_triggered(bool)</slot>
+    <slot>handleFittingActionTriggered(bool)</slot>
+    <slot>handleDualViewActionTriggered(bool)</slot>
+    <slot>handleZoomInActionTriggered()</slot>
+    <slot>handleZoomOutActionTriggered()</slot>
+    <slot>handleRightSideBookActionTriggered(bool)</slot>
+    <slot>handleWideImageAsOneViewActionTriggered(bool)</slot>
+    <slot>handleOpenFilerActionTriggered()</slot>
+    <slot>handleNextPageActionTriggered()</slot>
+    <slot>handlePrevPageActionTriggered()</slot>
+    <slot>handleFirstPageActionTriggered()</slot>
+    <slot>handleLastPageActionTriggered()</slot>
+    <slot>handleNextOnePageActionTriggered()</slot>
+    <slot>handlePrevOnePageActionTriggered()</slot>
+    <slot>handleFirstImageAsOneViewActionTriggered(bool)</slot>
+    <slot>handleCopyPageActionTriggered()</slot>
+    <slot>handleNextVolumeActionTriggered()</slot>
+    <slot>handlePrevVolumeActionTriggered()</slot>
+    <slot>handleFastForwardActionTriggered()</slot>
+    <slot>handleFastBackwardActionTriggered()</slot>
+    <slot>handleCopyFileActionTriggered()</slot>
+    <slot>handleRotateActionTriggered()</slot>
+    <slot>handleShowSubfoldersActionTriggered(bool)</slot>
+    <slot>handleDontEnlargeSmallImagesOnFittingActionTriggered(bool)</slot>
+    <slot>handleSeparatePagesWhenWideImageActionTriggered(bool)</slot>
+    <slot>handleLoupeToolActionTriggered(bool)</slot>
+    <slot>handleScrollWithCursorWhenZoomingActionTriggered(bool)</slot>
+    <slot>handleShowFullscreenSignageActionTriggered(bool)</slot>
+    <slot>handleFitToWidthActionTriggered(bool)</slot>
+    <slot>handleFitToWindowActionTriggered(bool)</slot>
+    <slot>handleNextPageOrVolumeActionTriggered()</slot>
+    <slot>handlePrevPageOrVolumeActionTriggered()</slot>
+    <slot>handleHideMouseCursorInFullscreenActionTriggered(bool)</slot>
+    <slot>handleSortByFileNameActionTriggered()</slot>
+    <slot>handleSortByFileNameDescendingActionTriggered()</slot>
+    <slot>handleSortByFileSizeActionTriggered()</slot>
+    <slot>handleSortByFileSizeDescendingActionTriggered()</slot>
+    <slot>handleSortByModifiedTimeActionTriggered()</slot>
+    <slot>handleSortByModifiedTimeDescendingActionTriggered()</slot>
    </slots>
   </customwidget>
   <customwidget>
@@ -1409,7 +1414,7 @@
    <sender>actionNextPage</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_nextPage_triggered()</slot>
+   <slot>handleNextPageActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1425,7 +1430,7 @@
    <sender>actionPrevPage</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_prevPage_triggered()</slot>
+   <slot>handlePrevPageActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1441,7 +1446,7 @@
    <sender>actionZoomIn</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_scaleUp_triggered()</slot>
+   <slot>handleZoomInActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1457,7 +1462,7 @@
    <sender>actionZoomOut</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_scaleDown_triggered()</slot>
+   <slot>handleZoomOutActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1473,7 +1478,7 @@
    <sender>actionFitting</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_fitting_triggered(bool)</slot>
+   <slot>handleFittingActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1489,7 +1494,7 @@
    <sender>actionDualView</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_dualView_triggered(bool)</slot>
+   <slot>handleDualViewActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1505,7 +1510,7 @@
    <sender>actionFullscreen</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionFullscreen_triggered()</slot>
+   <slot>handleFullscreenActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1521,7 +1526,7 @@
    <sender>actionAppVersion</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionAppVersion_triggered()</slot>
+   <slot>handleAppVersionActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1537,7 +1542,7 @@
    <sender>actionAutoLoaded</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionAutoLoaded_triggered(bool)</slot>
+   <slot>handleAutoLoadedActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1553,7 +1558,7 @@
    <sender>actionRightSideBook</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_rightSideBook_triggered(bool)</slot>
+   <slot>handleRightSideBookActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1569,7 +1574,7 @@
    <sender>actionOpenFolder</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionOpenfolder_triggered()</slot>
+   <slot>handleOpenFolderActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1585,7 +1590,7 @@
    <sender>actionWideImageAsOneView</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_wideImageAsOneView_triggered(bool)</slot>
+   <slot>handleWideImageAsOneViewActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1601,7 +1606,7 @@
    <sender>actionFirstPage</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_firstPage_triggered()</slot>
+   <slot>handleFirstPageActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1617,7 +1622,7 @@
    <sender>actionLastPage</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_lastPage_triggered()</slot>
+   <slot>handleLastPageActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1633,7 +1638,7 @@
    <sender>actionShowPageBar</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionShowPageBar_triggered(bool)</slot>
+   <slot>handleShowPageBarActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1649,7 +1654,7 @@
    <sender>actionShowStatusBar</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionShowStatusBar_triggered(bool)</slot>
+   <slot>handleShowStatusBarActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1665,7 +1670,7 @@
    <sender>actionOpenExif</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionOpenExif_triggered()</slot>
+   <slot>handleOpenExifActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1681,7 +1686,7 @@
    <sender>actionOpenFiler</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_openFiler_triggered()</slot>
+   <slot>handleOpenFilerActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1697,7 +1702,7 @@
    <sender>actionCheckVersion</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionCheckVersion_triggered()</slot>
+   <slot>handleCheckVersionActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1713,7 +1718,7 @@
    <sender>actionNextVolume</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_nextVolume_triggered()</slot>
+   <slot>handleNextVolumeActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1729,7 +1734,7 @@
    <sender>actionPrevVolume</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_prevVolume_triggered()</slot>
+   <slot>handlePrevVolumeActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1745,7 +1750,7 @@
    <sender>actionNextOnePage</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_nextOnlyOnePage_triggered()</slot>
+   <slot>handleNextOnePageActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1761,7 +1766,7 @@
    <sender>actionPrevOnePage</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_prevOnlyOnePage_triggered()</slot>
+   <slot>handlePrevOnePageActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1777,7 +1782,7 @@
    <sender>actionExitApplicationOrFullscreen</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionExitApplicationOrFullscreen_triggered()</slot>
+   <slot>handleExitApplicationOrFullscreenActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1793,7 +1798,7 @@
    <sender>actionExit</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionExit_triggered()</slot>
+   <slot>handleExitActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1809,7 +1814,7 @@
    <sender>actionShowToolBar</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionShowToolBar_triggered(bool)</slot>
+   <slot>handleShowToolBarActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1825,7 +1830,7 @@
    <sender>actionFirstImageAsOneView</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_firstImageAsOneView_triggered(bool)</slot>
+   <slot>handleFirstImageAsOneViewActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1841,7 +1846,7 @@
    <sender>actionShowMenuBar</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionShowMenuBar_triggered(bool)</slot>
+   <slot>handleShowMenuBarActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1857,7 +1862,7 @@
    <sender>actionClearHistory</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionClearHistory_triggered()</slot>
+   <slot>handleClearHistoryActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1873,7 +1878,7 @@
    <sender>actionStayOnTop</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionStayOnTop_triggered(bool)</slot>
+   <slot>handleStayOnTopActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1889,7 +1894,7 @@
    <sender>actionCopyPage</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_copyPage_triggered()</slot>
+   <slot>handleCopyPageActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1905,7 +1910,7 @@
    <sender>actionRecyclePage</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionRecyclePage_triggered()</slot>
+   <slot>handleRecyclePageActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1921,7 +1926,7 @@
    <sender>actionShaderNearestNeighbor</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionShaderNearestNeighbor_triggered()</slot>
+   <slot>handleShaderNearestNeighborActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1937,7 +1942,7 @@
    <sender>actionShaderBilinear</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionShaderBilinear_triggered()</slot>
+   <slot>handleShaderBilinearActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1953,7 +1958,7 @@
    <sender>actionShaderBicubic</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionShaderBicubic_triggered()</slot>
+   <slot>handleShaderBicubicActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1969,7 +1974,7 @@
    <sender>actionShaderLanczos</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionShaderLanczos_triggered()</slot>
+   <slot>handleShaderLanczosActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1985,7 +1990,7 @@
    <sender>actionMaximizeOrNormal</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionMaximizeOrNormal_triggered()</slot>
+   <slot>handleMaximizeOrNormalActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2001,7 +2006,7 @@
    <sender>actionFastForward</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_fastForwardPage_triggered()</slot>
+   <slot>handleFastForwardActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2017,7 +2022,7 @@
    <sender>actionFastBackward</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_fastBackwardPage_triggered()</slot>
+   <slot>handleFastBackwardActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2033,7 +2038,7 @@
    <sender>actionRestoreWindowState</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionRestoreWindowState_triggered(bool)</slot>
+   <slot>handleRestoreWindowStateActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2049,7 +2054,7 @@
    <sender>actionCopyFile</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_copyFile_triggered()</slot>
+   <slot>handleCopyFileActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2065,7 +2070,7 @@
    <sender>actionRotate</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_rotatePage_triggered()</slot>
+   <slot>handleRotateActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2081,7 +2086,7 @@
    <sender>actionSlideShow</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionSlideShow_triggered(bool)</slot>
+   <slot>handleSlideShowActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2097,7 +2102,7 @@
    <sender>actionSaveBookmark</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionSaveBookmark_triggered()</slot>
+   <slot>handleSaveBookmarkActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2113,7 +2118,7 @@
    <sender>actionClearBookmarks</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionClearBookmarks_triggered()</slot>
+   <slot>handleClearBookmarksActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2129,7 +2134,7 @@
    <sender>actionLoadBookmark</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionLoadBookmark_triggered()</slot>
+   <slot>handleLoadBookmarkActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2145,7 +2150,7 @@
    <sender>pageSlider</sender>
    <signal>valueChanged(int)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onPageSlider_valueChanged(int)</slot>
+   <slot>handlePageSliderValueChanged(int)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>403</x>
@@ -2161,7 +2166,7 @@
    <sender>graphicsView</sender>
    <signal>anchorHovered(Qt::AnchorPoint)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onGraphicsView_anchorHovered(Qt::AnchorPoint)</slot>
+   <slot>handleGraphicsViewAnchorHovered(Qt::AnchorPoint)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>350</x>
@@ -2177,7 +2182,7 @@
    <sender>actionProjectWeb</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionProjectWeb_triggered()</slot>
+   <slot>handleProjectWebActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2193,7 +2198,7 @@
    <sender>actionShowCatalog</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionShowCatalog_triggered()</slot>
+   <slot>handleShowCatalogActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2209,7 +2214,7 @@
    <sender>actionCatalogTitleWithoutOptions</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionCatalogTitleWithoutOptions_triggered(bool)</slot>
+   <slot>handleCatalogTitleWithoutOptionsActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2225,7 +2230,7 @@
    <sender>actionSearchTitleWithOptions</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionSearchTitleWithOptions_triggered(bool)</slot>
+   <slot>handleSearchTitleWithOptionsActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2241,7 +2246,7 @@
    <sender>actionCatalogViewList</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionCatalogViewList_triggered()</slot>
+   <slot>handleCatalogViewListActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2257,7 +2262,7 @@
    <sender>actionCatalogViewIcon</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionCatalogViewIcon_triggered()</slot>
+   <slot>handleCatalogViewIconActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2273,7 +2278,7 @@
    <sender>actionCatalogViewIconNoText</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionCatalogViewIconNoText_triggered()</slot>
+   <slot>handleCatalogViewIconNoTextActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2289,7 +2294,7 @@
    <sender>actionShowTagBar</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionShowTagBar_triggered(bool)</slot>
+   <slot>handleShowTagBarActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2305,7 +2310,7 @@
    <sender>actionMailAttachment</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionMailAttachment_triggered()</slot>
+   <slot>handleMailAttachmentActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2321,7 +2326,7 @@
    <sender>actionCatalogIconLongText</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionCatalogIconLongText_triggered(bool)</slot>
+   <slot>handleCatalogIconLongTextActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2337,7 +2342,7 @@
    <sender>actionShowFolder</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionShowFolder_triggered()</slot>
+   <slot>handleShowFolderActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2353,7 +2358,7 @@
    <sender>actionShaderBilinearBeforeCpuBicubic</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionShaderBilinearBeforeCpuBicubic_triggered()</slot>
+   <slot>handleShaderBilinearBeforeCpuBicubicActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2369,7 +2374,7 @@
    <sender>actionShaderCpuBicubic</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionShaderCpuBicubic_triggered()</slot>
+   <slot>handleShaderCpuBicubicActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2385,7 +2390,7 @@
    <sender>actionShowSubfolders</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_showSubfolders_triggered(bool)</slot>
+   <slot>handleShowSubfoldersActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2401,7 +2406,7 @@
    <sender>actionOpenVolumeWithProgress</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionOpenVolumeWithProgress_triggered(bool)</slot>
+   <slot>handleOpenVolumeWithProgressActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2417,7 +2422,7 @@
    <sender>actionShowReadProgress</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionShowReadProgress_triggered(bool)</slot>
+   <slot>handleShowReadProgressActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2433,7 +2438,7 @@
    <sender>actionOpenOptionsDialog</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionOpenOptionsDialog_triggered()</slot>
+   <slot>handleOpenOptionsDialogActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2449,7 +2454,7 @@
    <sender>actionRenameImageFile</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionRenameImageFile_triggered()</slot>
+   <slot>handleRenameImageFileActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2465,7 +2470,7 @@
    <sender>actionDontEnlargeSmallImagesOnFitting</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_dontEnlargeSmallImagesOnFitting(bool)</slot>
+   <slot>handleDontEnlargeSmallImagesOnFittingActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2481,7 +2486,7 @@
    <sender>actionBeginAsFullscreen</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionBeginAsFullscreen_triggered(bool)</slot>
+   <slot>handleBeginAsFullscreenActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2497,7 +2502,7 @@
    <sender>actionShowFullscreenSignage</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>onActionShowFullscreenSignage_triggered(bool)</slot>
+   <slot>handleShowFullscreenSignageActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2513,7 +2518,7 @@
    <sender>actionOpenKeyConfig</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionOpenKeyConfig_triggered()</slot>
+   <slot>handleOpenKeyConfigActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2529,7 +2534,7 @@
    <sender>actionConfirmDeletePage</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionConfirmDeletePage_triggered(bool)</slot>
+   <slot>handleConfirmDeletePageActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2542,10 +2547,10 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionRegistAssocsUAC</sender>
+   <sender>actionRegisterFileAssociationsAsAdministrator</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionRegistAssocsUAC_triggered()</slot>
+   <slot>handleRegisterFileAssociationsAsAdministratorActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2561,7 +2566,7 @@
    <sender>actionContextMenu</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionContextMenu_triggered()</slot>
+   <slot>handleContextMenuActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2577,7 +2582,7 @@
    <sender>actionOpenMouseConfig</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionOpenMouseConfig_triggered()</slot>
+   <slot>handleOpenMouseConfigActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2593,7 +2598,7 @@
    <sender>actionDeletePage</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionDeletePage_triggered()</slot>
+   <slot>handleDeletePageActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2606,10 +2611,10 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionRegistAssocs</sender>
+   <sender>actionRegisterFileAssociations</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionRegistAssocs_triggered()</slot>
+   <slot>handleRegisterFileAssociationsActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2625,7 +2630,7 @@
    <sender>actionSavingHistory</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onSavingHistory_triggered(bool)</slot>
+   <slot>handleSavingHistoryActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2641,7 +2646,7 @@
    <sender>actionShowPanelSeparateWindow</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionShowPanelSeparateWindow_triggered(bool)</slot>
+   <slot>handleShowPanelSeparateWindowActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2657,7 +2662,7 @@
    <sender>actionLargeToolbarIcons</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionLargeToolbarIcons_triggered(bool)</slot>
+   <slot>handleLargeToolbarIconsActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2673,7 +2678,7 @@
    <sender>actionTurnPageOnLeft</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionTurnPageOnLeft_triggered()</slot>
+   <slot>handleTurnPageOnLeftActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2689,7 +2694,7 @@
    <sender>actionTurnPageOnRight</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionTurnPageOnRight_triggered()</slot>
+   <slot>handleTurnPageOnRightActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2705,7 +2710,7 @@
    <sender>actionSeparatePagesWhenWideImage</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>onActionSeparatePagesWhenWideImage_triggered(bool)</slot>
+   <slot>handleSeparatePagesWhenWideImageActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2721,7 +2726,7 @@
    <sender>actionLoupeTool</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>onActionLoupe_triggered(bool)</slot>
+   <slot>handleLoupeToolActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2737,7 +2742,7 @@
    <sender>actionScrollWithCursorWhenZooming</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>onActionScrollWithCursorWhenZooming_triggered(bool)</slot>
+   <slot>handleScrollWithCursorWhenZoomingActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2753,7 +2758,7 @@
    <sender>actionFitToWidth</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_fitToWidth_triggered(bool)</slot>
+   <slot>handleFitToWidthActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2769,7 +2774,7 @@
    <sender>actionFitToWindow</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>on_fitToWindow_triggered(bool)</slot>
+   <slot>handleFitToWindowActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2785,7 +2790,7 @@
    <sender>actionShowRetouchWindow</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionShowBrightnessWindow_triggered(bool)</slot>
+   <slot>handleShowRetouchWindowActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2801,7 +2806,7 @@
    <sender>actionShaderCpuSpline16</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionShaderCpuSpline16_triggered()</slot>
+   <slot>handleShaderCpuSpline16ActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2817,7 +2822,7 @@
    <sender>actionShaderCpuSpline36</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionShaderCpuSpline36_triggered()</slot>
+   <slot>handleShaderCpuSpline36ActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2833,7 +2838,7 @@
    <sender>actionShaderCpuLanczos3</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionShaderCpuLanczos3_triggered()</slot>
+   <slot>handleShaderCpuLanczos3ActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2849,7 +2854,7 @@
    <sender>actionShaderCpuLanczos4</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionShaderCpuLanczos4_triggered()</slot>
+   <slot>handleShaderCpuLanczos4ActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2865,7 +2870,7 @@
    <sender>actionPrevPageOrVolume</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>onActionPrevPageOrVolume_triggered()</slot>
+   <slot>handlePrevPageOrVolumeActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2881,7 +2886,7 @@
    <sender>actionNextPageOrVolume</sender>
    <signal>triggered()</signal>
    <receiver>graphicsView</receiver>
-   <slot>onActionNextPageOrVolume_triggered()</slot>
+   <slot>handleNextPageOrVolumeActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2897,7 +2902,7 @@
    <sender>actionSaveCatalogViewWidth</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionSaveCatalogViewWidth_triggered(bool)</slot>
+   <slot>handleSaveCatalogViewWidthActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2913,7 +2918,7 @@
    <sender>actionSaveFolderViewWidth</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionSaveFolderViewWidth_triggered(bool)</slot>
+   <slot>handleSaveFolderViewWidthActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2929,7 +2934,7 @@
    <sender>actionSaveReadProgress</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionSaveReadProgress_triggered(bool)</slot>
+   <slot>handleSaveReadProgressActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2945,7 +2950,7 @@
    <sender>actionHideMouseCursorInFullscreen</sender>
    <signal>triggered(bool)</signal>
    <receiver>graphicsView</receiver>
-   <slot>onActionHideMouseCursorInFullscreen_triggered(bool)</slot>
+   <slot>handleHideMouseCursorInFullscreenActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2961,7 +2966,7 @@
    <sender>actionSortByFileName</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionSortByFileName_triggered(bool)</slot>
+   <slot>handleSortByFileNameActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2977,7 +2982,7 @@
    <sender>actionSortByFileNameDescending</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionSortByFileNameDescending_triggered(bool)</slot>
+   <slot>handleSortByFileNameDescendingActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2993,7 +2998,7 @@
    <sender>actionSortByFileSize</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionSortByFileSize_triggered(bool)</slot>
+   <slot>handleSortByFileSizeActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -3009,7 +3014,7 @@
    <sender>actionSortByFileSizeDescending</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionSortByFileSizeDescending_triggered(bool)</slot>
+   <slot>handleSortByFileSizeDescendingActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -3025,7 +3030,7 @@
    <sender>actionSortByModifiedTime</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionSortByModifiedTime_triggered(bool)</slot>
+   <slot>handleSortByModifiedTimeActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -3041,7 +3046,7 @@
    <sender>actionSortByModifiedTimeDescending</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>onActionSortByModifiedTimeDescending_triggered(bool)</slot>
+   <slot>handleSortByModifiedTimeDescendingActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -3055,90 +3060,84 @@
   </connection>
  </connections>
  <slots>
-  <slot>on_nextPage_triggered()</slot>
-  <slot>on_prevPage_triggered()</slot>
-  <slot>on_scaleUp_triggered()</slot>
-  <slot>on_scaleDown_triggered()</slot>
-  <slot>onActionFullscreen_triggered()</slot>
-  <slot>onActionAppVersion_triggered()</slot>
-  <slot>onActionAutoLoaded_triggered(bool)</slot>
-  <slot>onActionOpenfolder_triggered()</slot>
-  <slot>on_firstPage_triggered()</slot>
-  <slot>on_lastPage_triggered()</slot>
-  <slot>onActionShowPageBar_triggered(bool)</slot>
-  <slot>onActionShowStatusBar_triggered(bool)</slot>
-  <slot>onActionOpenKeyConfig_triggered()</slot>
-  <slot>onActionCheckVersion_triggered()</slot>
-  <slot>onActionExitApplicationOrFullscreen_triggered()</slot>
-  <slot>onActionExit_triggered()</slot>
-  <slot>onActionShowToolBar_triggered(bool)</slot>
-  <slot>onActionShowMenuBar_triggered(bool)</slot>
-  <slot>onActionClearHistory_triggered()</slot>
-  <slot>onActionStayOnTop_triggered(bool)</slot>
-  <slot>onActionDeletePage_triggered()</slot>
-  <slot>onActionShaderNearestNeighbor_triggered()</slot>
-  <slot>onActionShaderBilinear_triggered()</slot>
-  <slot>onActionShaderBicubic_triggered()</slot>
-  <slot>onActionShaderLanczos_triggered()</slot>
-  <slot>onActionMaximizeOrNormal_triggered()</slot>
-  <slot>onActionRestoreWindowState_triggered(bool)</slot>
-  <slot>onActionSlideShow_triggered(bool)</slot>
-  <slot>onActionSaveBookmark_triggered()</slot>
-  <slot>onActionClearBookmarks_triggered()</slot>
-  <slot>on_loadBookmarkMenu_triggered(QAction*)</slot>
-  <slot>onActionLoadBookmark_triggered()</slot>
-  <slot>onPageSlider_valueChanged(int)</slot>
-  <slot>onGraphicsView_anchorHovered(Qt::AnchorPoint)</slot>
-  <slot>onGraphicsView_fittingChanged(bool)</slot>
-  <slot>onActionProjectWeb_triggered()</slot>
-  <slot>onActionShowCatalog_triggered()</slot>
-  <slot>onActionSearchTitleWithOptions_triggered(bool)</slot>
-  <slot>onActionCatalogTitleWithoutOptions_triggered(bool)</slot>
-  <slot>onActionCatalogViewList_triggered()</slot>
-  <slot>onActionCatalogViewIcon_triggered()</slot>
-  <slot>onActionCatalogViewIconNoText_triggered()</slot>
-  <slot>onActionShowTagBar_triggered(bool)</slot>
-  <slot>onActionMailAttachment_triggered()</slot>
-  <slot>onActionCatalogIconLongText_triggered(bool)</slot>
-  <slot>onActionShowFolder_triggered()</slot>
-  <slot>on_folderWindowClosed_triggered()</slot>
-  <slot>onActionShaderBilinearBeforeCpuBicubic_triggered()</slot>
-  <slot>onActionShaderCpuBicubic_triggered()</slot>
-  <slot>onActionOpenVolumeWithProgress_triggered(bool)</slot>
-  <slot>onActionShowReadProgress_triggered(bool)</slot>
-  <slot>onActionOpenOptionsDialog_triggered()</slot>
-  <slot>onActionRenameImageFile_triggered()</slot>
-  <slot>onActionOpenExif_triggered()</slot>
-  <slot>onActionBeginAsFullscreen_triggered(bool)</slot>
-  <slot>onActionShowFullscreenSignage_triggered(bool)</slot>
-  <slot>onActionConfirmDeletePage_triggered(bool)</slot>
-  <slot>onActionRegistAssocsUAC_triggered()</slot>
-  <slot>onActionShowFullscreenTitleBar_triggered(bool)</slot>
-  <slot>onActionContextMenu_triggered()</slot>
-  <slot>onActionOpenMouseConfig_triggered()</slot>
-  <slot>onActionRecyclePage_triggered()</slot>
-  <slot>onActionSuppressKeyRepeat_triggered(bool)</slot>
-  <slot>onActionRegistAssocs_triggered()</slot>
-  <slot>onSavingHistory_triggered(bool)</slot>
-  <slot>onShowFullpathOfVolume_triggered(bool)</slot>
-  <slot>onActionShowPanelSeparateWindow_triggered(bool)</slot>
-  <slot>onActionLargeToolbarIcons_triggered(bool)</slot>
-  <slot>onActionTurnPageOnLeft_triggered()</slot>
-  <slot>onActionTurnPageOnRight_triggered()</slot>
-  <slot>onActionShowBrightnessWindow_triggered(bool)</slot>
-  <slot>onActionShaderCpuSpline16_triggered()</slot>
-  <slot>onActionShaderCpuSpline36_triggered()</slot>
-  <slot>onActionShaderCpuLanczos3_triggered()</slot>
-  <slot>onActionShaderCpuLanczos4_triggered()</slot>
-  <slot>onActionSaveCatalogViewWidth_triggered(bool)</slot>
-  <slot>onActionSaveFolderViewWidth_triggered(bool)</slot>
-  <slot>onActionDisableCreationProgress_triggered(bool)</slot>
-  <slot>onActionSaveReadProgress_triggered(bool)</slot>
-  <slot>onActionSortByFileName_triggered(bool)</slot>
-  <slot>onActionSortByFileNameDescending_triggered(bool)</slot>
-  <slot>onActionSortByFileSize_triggered(bool)</slot>
-  <slot>onActionSortByFileSizeDescending_triggered(bool)</slot>
-  <slot>onActionSortByModifiedTime_triggered(bool)</slot>
-  <slot>onActionSortByModifiedTimeDescending_triggered(bool)</slot>
+  <slot>handleNextPageActionTriggered()</slot>
+  <slot>handlePrevPageActionTriggered()</slot>
+  <slot>handleZoomInActionTriggered()</slot>
+  <slot>handleZoomOutActionTriggered()</slot>
+  <slot>handleFullscreenActionTriggered()</slot>
+  <slot>handleAppVersionActionTriggered()</slot>
+  <slot>handleAutoLoadedActionTriggered(bool)</slot>
+  <slot>handleOpenFolderActionTriggered()</slot>
+  <slot>handleFirstPageActionTriggered()</slot>
+  <slot>handleLastPageActionTriggered()</slot>
+  <slot>handleShowPageBarActionTriggered(bool)</slot>
+  <slot>handleShowStatusBarActionTriggered(bool)</slot>
+  <slot>handleOpenKeyConfigActionTriggered()</slot>
+  <slot>handleCheckVersionActionTriggered()</slot>
+  <slot>handleExitApplicationOrFullscreenActionTriggered()</slot>
+  <slot>handleExitActionTriggered()</slot>
+  <slot>handleShowToolBarActionTriggered(bool)</slot>
+  <slot>handleShowMenuBarActionTriggered(bool)</slot>
+  <slot>handleClearHistoryActionTriggered()</slot>
+  <slot>handleStayOnTopActionTriggered(bool)</slot>
+  <slot>handleDeletePageActionTriggered()</slot>
+  <slot>handleShaderNearestNeighborActionTriggered()</slot>
+  <slot>handleShaderBilinearActionTriggered()</slot>
+  <slot>handleShaderBicubicActionTriggered()</slot>
+  <slot>handleShaderLanczosActionTriggered()</slot>
+  <slot>handleMaximizeOrNormalActionTriggered()</slot>
+  <slot>handleRestoreWindowStateActionTriggered(bool)</slot>
+  <slot>handleSlideShowActionTriggered()</slot>
+  <slot>handleSaveBookmarkActionTriggered()</slot>
+  <slot>handleClearBookmarksActionTriggered()</slot>
+  <slot>handleLoadBookmarkActionTriggered()</slot>
+  <slot>handlePageSliderValueChanged(int)</slot>
+  <slot>handleGraphicsViewAnchorHovered(Qt::AnchorPoint)</slot>
+  <slot>handleProjectWebActionTriggered()</slot>
+  <slot>handleShowCatalogActionTriggered()</slot>
+  <slot>handleSearchTitleWithOptionsActionTriggered(bool)</slot>
+  <slot>handleCatalogTitleWithoutOptionsActionTriggered(bool)</slot>
+  <slot>handleCatalogViewListActionTriggered()</slot>
+  <slot>handleCatalogViewIconActionTriggered()</slot>
+  <slot>handleCatalogViewIconNoTextActionTriggered()</slot>
+  <slot>handleShowTagBarActionTriggered(bool)</slot>
+  <slot>handleMailAttachmentActionTriggered()</slot>
+  <slot>handleCatalogIconLongTextActionTriggered(bool)</slot>
+  <slot>handleShowFolderActionTriggered()</slot>
+  <slot>handleShaderBilinearBeforeCpuBicubicActionTriggered()</slot>
+  <slot>handleShaderCpuBicubicActionTriggered()</slot>
+  <slot>handleOpenVolumeWithProgressActionTriggered(bool)</slot>
+  <slot>handleShowReadProgressActionTriggered(bool)</slot>
+  <slot>handleOpenOptionsDialogActionTriggered()</slot>
+  <slot>handleRenameImageFileActionTriggered()</slot>
+  <slot>handleOpenExifActionTriggered()</slot>
+  <slot>handleBeginAsFullscreenActionTriggered(bool)</slot>
+  <slot>handleShowFullscreenSignageActionTriggered(bool)</slot>
+  <slot>handleConfirmDeletePageActionTriggered(bool)</slot>
+  <slot>handleRegisterFileAssociationsAsAdministratorActionTriggered()</slot>
+  <slot>handleContextMenuActionTriggered()</slot>
+  <slot>handleOpenMouseConfigActionTriggered()</slot>
+  <slot>handleRecyclePageActionTriggered()</slot>
+  <slot>handleRegisterFileAssociationsActionTriggered()</slot>
+  <slot>handleSavingHistoryActionTriggered(bool)</slot>
+  <slot>handleShowPanelSeparateWindowActionTriggered(bool)</slot>
+  <slot>handleLargeToolbarIconsActionTriggered(bool)</slot>
+  <slot>handleTurnPageOnLeftActionTriggered()</slot>
+  <slot>handleTurnPageOnRightActionTriggered()</slot>
+  <slot>handleShowRetouchWindowActionTriggered()</slot>
+  <slot>handleShaderCpuSpline16ActionTriggered()</slot>
+  <slot>handleShaderCpuSpline36ActionTriggered()</slot>
+  <slot>handleShaderCpuLanczos3ActionTriggered()</slot>
+  <slot>handleShaderCpuLanczos4ActionTriggered()</slot>
+  <slot>handleSaveCatalogViewWidthActionTriggered(bool)</slot>
+  <slot>handleSaveFolderViewWidthActionTriggered(bool)</slot>
+  <slot>handleDisableCreationProgressActionTriggered(bool)</slot>
+  <slot>handleSaveReadProgressActionTriggered(bool)</slot>
+  <slot>handleSortByFileNameActionTriggered()</slot>
+  <slot>handleSortByFileNameDescendingActionTriggered()</slot>
+  <slot>handleSortByFileSizeActionTriggered()</slot>
+  <slot>handleSortByFileSizeDescendingActionTriggered()</slot>
+  <slot>handleSortByModifiedTimeActionTriggered()</slot>
+  <slot>handleSortByModifiedTimeDescendingActionTriggered()</slot>
  </slots>
 </ui>

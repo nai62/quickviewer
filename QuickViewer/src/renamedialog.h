@@ -11,12 +11,12 @@ class RenameDialog : public QDialog
 {
     Q_OBJECT
 public:
-    RenameDialog(QWidget* parent, QString path, QString filename);
+    RenameDialog(QWidget *parent, QString path, QString filename);
     QString newName();
 
 public slots:
-    void on_textChanged_triggered(QString text);
-    void on_tryChangingFilenameAndAccept_triggered();
+    void handleFilenameLineEditTextChanged(QString text);
+    void handleButtonBoxAccepted();
 
 private:
     Ui::RenameDialog *ui;

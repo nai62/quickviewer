@@ -6,7 +6,7 @@
 class PageSlider : public QSlider
 {
 public:
-    PageSlider(QWidget* parent);
+    PageSlider(QWidget *parent);
 };
 
 #endif // PAGESLIDER_H

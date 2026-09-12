@@ -4,6 +4,8 @@
 #
 #-------------------------------------------------
 
+include(../QVproject.pri)
+
 QT       += testlib core gui concurrent
 
 TARGET = tst_fileloadertest
@@ -29,17 +31,19 @@ SOURCES += \
 
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
+DESTDIR = ../lib
+
 win32 {
     LIBS += -luser32 -ladvapi32 -lShlwapi -loleaut32 -lole32 -lshell32
+    QMAKE_POST_LINK += $$QMAKE_COPY /B $$shell_quote($$shell_path($$PWD/../Qt7z/Qt7z/windll/$${TARGET_ARCH}/7z.dll)) $$shell_path($${DESTDIR}) $$escape_expand(\n\t)
 }
 unix {
     DEFINES += _UNIX
 }
 
 
-DESTDIR = ../lib
 LIBS += -L../lib -lunrar -lQt7z -lfileloader
-INCLUDEPATH += ../fileloader
+INCLUDEPATH += ../fileloader ../unrar
 
 OTHER_FILES += \
     data/deflate-mbcs.zip \

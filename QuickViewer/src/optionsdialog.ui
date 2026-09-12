@@ -82,7 +82,7 @@
                  <string>Increasing the number, the behavior of &quot;NextImage&quot; / &quot;PrevImage&quot; improves but, increases memory consumption. 6 is appropriate for 32 bit version.</string>
                 </property>
                 <property name="text">
-                 <string extracomment="Maximum number of images that an application simultaneously manages on memory">Number of images managed simultaneously (Restart is required)</string>
+                 <string extracomment="Maximum number of images that an application simultaneously manages on memory">Images kept in memory (restart required)</string>
                 </property>
                </widget>
               </item>
@@ -111,7 +111,7 @@
                  <string>Increasing the number, the behavior of &quot;NextVolume&quot; / &quot;PrevVolume&quot; improves but, increases memory consumption. 1 is appropriate for 32 bit version.</string>
                 </property>
                 <property name="text">
-                 <string extracomment="Maximum number of volumes that an application simultaneously manages on memory">Number of volumes managed simultaneously (Restart is required)</string>
+                 <string extracomment="Maximum number of volumes that an application simultaneously manages on memory">Volumes kept in memory (restart required)</string>
                 </property>
                </widget>
               </item>
@@ -131,17 +131,17 @@
               <item row="2" column="0">
                <widget class="QLabel" name="label_2">
                 <property name="toolTip">
-                 <string>Increasing the value increases the display time of per image</string>
+                 <string>Higher values display each image for longer.</string>
                 </property>
                 <property name="text">
-                 <string extracomment="Wait time when images are automatically switched in slide show">SlideShow Delay (millisecond)</string>
+                 <string extracomment="Wait time when images are automatically switched in slide show">Slideshow delay (ms)</string>
                 </property>
                </widget>
               </item>
               <item row="2" column="1">
                <widget class="QSpinBox" name="spinSlideshow">
                 <property name="toolTip">
-                 <string>Increasing the value increases the display time of per image</string>
+                 <string>Higher values display each image for longer.</string>
                 </property>
                 <property name="minimum">
                  <number>500</number>
@@ -163,7 +163,7 @@
                  <string>Increasing the value will degrade performance. Approximately twice the value of your display is appropriate.</string>
                 </property>
                 <property name="text">
-                 <string extracomment="Keeping a huge image as it is will degrade performance, so if it is larger than this value it automatically shrinks">Maximum size to hold the image (pixel)</string>
+                 <string extracomment="Keeping a huge image as it is will degrade performance, so if it is larger than this value it automatically shrinks">Maximum image size (pixels)</string>
                 </property>
                </widget>
               </item>
@@ -189,75 +189,75 @@
               <item row="5" column="0">
                <widget class="QCheckBox" name="checkBoxDontShrinkForLargeImage">
                 <property name="toolTip">
-                 <string>(Performance degradation)Disables automatic shrinking of images on loading.</string>
+                 <string>Disables automatic downscaling when loading large images. This may reduce performance.</string>
                 </property>
                 <property name="text">
-                 <string>Keeps even large images at their original size</string>
+                 <string>Keep large images at their original size</string>
                 </property>
                </widget>
               </item>
               <item row="7" column="0">
                <widget class="QCheckBox" name="checkBoxUseFastDctForJPEG">
                 <property name="toolTip">
-                 <string>Speed up JPEG loading in exchange for quality of display.</string>
+                 <string>Speeds up JPEG decoding at the cost of some image quality.</string>
                 </property>
                 <property name="text">
-                 <string extracomment="Option to use TJFLAG_FASTDCT on libjpeg-turbo">Use fast DCT for loading JPEG</string>
+                 <string extracomment="Option to use TJFLAG_FASTDCT on libjpeg-turbo">Use fast DCT for JPEG decoding</string>
                 </property>
                </widget>
               </item>
               <item row="8" column="0">
                <widget class="QCheckBox" name="checkBoxExtractSolidToTemporary">
                 <property name="toolTip">
-                 <string>It takes time to develop all contents, but switching of images becomes faster.</string>
+                 <string>Initial extraction takes longer, but switching images is faster afterward.</string>
                 </property>
                 <property name="text">
-                 <string extracomment="Flag to expand contents of solid compressed archive to temporary directory">Extract solid archives to temporary directory</string>
+                 <string extracomment="Flag to expand contents of solid compressed archive to temporary directory">Extract solid archives to a temporary directory</string>
                 </property>
                </widget>
               </item>
               <item row="9" column="0">
                <widget class="QCheckBox" name="checkBoxProhibitMultipleRunning">
                 <property name="text">
-                 <string>Prohibit multiple running (Restart is required)</string>
+                 <string>Allow only one QuickViewer instance (restart required)</string>
                 </property>
                </widget>
               </item>
               <item row="10" column="0">
                <widget class="QCheckBox" name="checkBoxTopWindowWhenRunWithAssoc">
                 <property name="text">
-                 <string comment="Check box to activate the window when activated by image association">Activate the window when launched with image association</string>
+                 <string comment="Check box to activate the window when activated by image association">Activate window when opened from a file association</string>
                 </property>
                </widget>
               </item>
               <item row="10" column="1">
                <widget class="QCheckBox" name="checkBoxUseDirect2D">
                 <property name="toolTip">
-                 <string>In a high-resolution environment, it may not work properly unless it is Direct2D. Normally it may be off</string>
+                 <string>Direct2D may improve rendering on high-resolution displays. Leave this off unless needed.</string>
                 </property>
                 <property name="text">
-                 <string extracomment="Normally it is drawing with Windows GDI, but switching to drawing by Direct2D. QPA is loaded at startup.">Rendering with Direct2D (Restart is required)</string>
+                 <string extracomment="Normally it is drawing with Windows GDI, but switching to drawing by Direct2D. QPA is loaded at startup.">Use Direct2D rendering (restart required)</string>
                 </property>
                </widget>
               </item>
               <item row="11" column="0">
                <widget class="QCheckBox" name="checkBoxTopWindowWhenDropped">
                 <property name="text">
-                 <string comment="Check box to activate the window when an image dropped on">Activate the window when an image dropped on</string>
+                 <string comment="Check box to activate the window when an image dropped on">Activate window when an image is dropped onto it</string>
                 </property>
                </widget>
               </item>
               <item row="11" column="1">
                <widget class="QCheckBox" name="checkBoxSlideshowRandomly">
                 <property name="text">
-                 <string extracomment="The text of the check box. Slideshow usually moves to the next page in the current sorting order, but displays it in random order">Randomly display in slideshow</string>
+                 <string extracomment="The text of the check box. Slideshow usually moves to the next page in the current sorting order, but displays it in random order">Randomize slideshow order</string>
                 </property>
                </widget>
               </item>
               <item row="13" column="0">
                <widget class="QLabel" name="labelSvgLoaderSelector">
                 <property name="text">
-                 <string>How to load SVG</string>
+                 <string>SVG loading method</string>
                 </property>
                </widget>
               </item>
@@ -269,31 +269,56 @@
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
-               <item>
-                <property name="text">
-                 <string>imageformat</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>qtsvg</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>svg-native-loader</string>
-                </property>
-               </item>
                </widget>
               </item>
               <item row="14" column="0">
-               <widget class="QLabel" name="labelThemeSelector">
+               <widget class="QLabel" name="labelSvgRasterMaximumWidth">
                 <property name="text">
-                 <string>QuickViewer theme</string>
+                 <string>Maximum SVG raster width</string>
                 </property>
                </widget>
               </item>
               <item row="14" column="1">
+               <widget class="QSpinBox" name="spinSvgRasterMaximumWidth">
+                <property name="minimum">
+                 <number>100</number>
+                </property>
+                <property name="maximum">
+                 <number>10000</number>
+                </property>
+                <property name="value">
+                 <number>1920</number>
+                </property>
+               </widget>
+              </item>
+              <item row="15" column="0">
+               <widget class="QLabel" name="labelSvgRasterMaximumHeight">
+                <property name="text">
+                 <string>Maximum SVG raster height</string>
+                </property>
+               </widget>
+              </item>
+              <item row="15" column="1">
+               <widget class="QSpinBox" name="spinSvgRasterMaximumHeight">
+                <property name="minimum">
+                 <number>100</number>
+                </property>
+                <property name="maximum">
+                 <number>10000</number>
+                </property>
+                <property name="value">
+                 <number>1080</number>
+                </property>
+               </widget>
+              </item>
+              <item row="16" column="0">
+               <widget class="QLabel" name="labelThemeSelector">
+                <property name="text">
+                 <string>Theme</string>
+                </property>
+               </widget>
+              </item>
+              <item row="16" column="1">
                <widget class="QComboBox" name="comboBoxThemeSelector">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -325,7 +350,7 @@
               </sizepolicy>
              </property>
              <property name="title">
-              <string extracomment="Title of frame to change background color or pattern">BackgroundPattern</string>
+              <string extracomment="Title of frame to change background color or pattern">Background</string>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout">
               <item>
@@ -346,7 +371,7 @@
                     </sizepolicy>
                    </property>
                    <property name="text">
-                    <string>BackgroundColor1</string>
+                    <string>Background color</string>
                    </property>
                   </widget>
                  </item>
@@ -379,7 +404,7 @@
                  <item row="2" column="0">
                   <widget class="QLabel" name="labelColor2">
                    <property name="text">
-                    <string>BackgroundColor2</string>
+                    <string>Alternate background color</string>
                    </property>
                   </widget>
                  </item>
@@ -438,7 +463,7 @@
      </widget>
      <widget class="QWidget" name="toolbars">
       <attribute name="title">
-       <string>Tool bars</string>
+       <string>Interface</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_6">
        <item>
@@ -453,27 +478,27 @@
           <enum>Qt::LeftToRight</enum>
          </property>
          <property name="title">
-          <string>Hide permanently</string>
+          <string>Always hide</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
            <widget class="QCheckBox" name="checkBoxHideMenuBarParmanently">
             <property name="text">
-             <string extracomment="Flag to suppress the automatic display of the page bar">Hide menu bar permanently</string>
+             <string extracomment="Flag to suppress the automatic display of the page bar">Always hide menu bar</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="checkBoxHideToolBarParmanently">
             <property name="text">
-             <string extracomment="Flag to suppress the automatic display of the page bar">Hide tool bar permanently</string>
+             <string extracomment="Flag to suppress the automatic display of the page bar">Always hide toolbar</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="checkBoxHidePageBarParmanently">
             <property name="text">
-             <string extracomment="Flag to suppress the automatic display of the page bar">Hide page bar permanently</string>
+             <string extracomment="Flag to suppress the automatic display of the page bar">Always hide page bar</string>
             </property>
            </widget>
           </item>
@@ -502,7 +527,7 @@
           <item>
            <widget class="QCheckBox" name="checkBoxHideToolBarInFullscreen">
             <property name="text">
-             <string extracomment="Flag to suppress the automatic display of the scrollbars in fullscreen">Hide tool bar in full screen</string>
+             <string extracomment="Flag to suppress the automatic display of the scrollbars in fullscreen">Hide toolbar in full screen</string>
             </property>
            </widget>
           </item>
@@ -516,7 +541,7 @@
           <item>
            <widget class="QCheckBox" name="checkBoxHideScrollBarInFullscreen">
             <property name="text">
-             <string extracomment="Flag to suppress the automatic display of the scrollbars in fullscreen">Hide scroll bars in full screen</string>
+             <string extracomment="Flag to suppress the automatic display of the scrollbars in fullscreen">Hide scrollbars in full screen</string>
             </property>
            </widget>
           </item>
@@ -543,7 +568,7 @@
      </widget>
      <widget class="QWidget" name="CaptionFormat">
       <attribute name="title">
-       <string>Caption Format</string>
+       <string>Display text</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
@@ -570,13 +595,13 @@
               </sizepolicy>
              </property>
              <property name="title">
-              <string>Window Title Format</string>
+              <string>Window title format</string>
              </property>
              <layout class="QFormLayout" name="formLayout_4">
               <item row="0" column="0">
                <widget class="QRadioButton" name="radioButtonWindowTitleNormalStyle">
                 <property name="text">
-                 <string>Normal style</string>
+                 <string>Default</string>
                 </property>
                </widget>
               </item>
@@ -1434,7 +1459,7 @@
               <item row="2" column="0">
                <widget class="QRadioButton" name="radioButtonWindowTitleUserDefined">
                 <property name="text">
-                 <string>User Defined Style</string>
+                 <string>Custom</string>
                 </property>
                </widget>
               </item>
@@ -1451,7 +1476,7 @@
               <item row="4" column="0">
                <widget class="QLabel" name="label_10">
                 <property name="text">
-                 <string>Display Sample:</string>
+                 <string>Preview:</string>
                 </property>
                </widget>
               </item>
@@ -1477,13 +1502,13 @@
               </sizepolicy>
              </property>
              <property name="title">
-              <string>StatusBar Caption Format</string>
+              <string>Status bar format</string>
              </property>
              <layout class="QFormLayout" name="formLayout_3">
               <item row="0" column="0">
                <widget class="QRadioButton" name="radioButtonStatusBarNormalStyle">
                 <property name="text">
-                 <string>Normal style</string>
+                 <string>Default</string>
                 </property>
                </widget>
               </item>
@@ -2341,7 +2366,7 @@
               <item row="2" column="0">
                <widget class="QRadioButton" name="radioButtonStatusBarUserDefined">
                 <property name="text">
-                 <string>User Defined Style</string>
+                 <string>Custom</string>
                 </property>
                </widget>
               </item>
@@ -2358,7 +2383,7 @@
               <item row="4" column="0">
                <widget class="QLabel" name="label_11">
                 <property name="text">
-                 <string>Display Sample:</string>
+                 <string>Preview:</string>
                 </property>
                </widget>
               </item>
@@ -2378,7 +2403,7 @@
            <item>
             <widget class="QGroupBox" name="groupBox_4">
              <property name="title">
-              <string>Format Usage</string>
+              <string>Format syntax</string>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_2">
               <item>
@@ -2394,7 +2419,7 @@
               <item>
                <widget class="QCheckBox" name="checkBoxShowUsage">
                 <property name="text">
-                 <string>Show the usage</string>
+                 <string>Show format help</string>
                 </property>
                </widget>
               </item>
@@ -2459,7 +2484,7 @@
    <sender>btnColorSelect</sender>
    <signal>clicked()</signal>
    <receiver>OptionsDialog</receiver>
-   <slot>onBtnColorSelect_clicked()</slot>
+   <slot>handlePrimaryColorButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>402</x>
@@ -2475,7 +2500,7 @@
    <sender>btnColorSelect2</sender>
    <signal>clicked()</signal>
    <receiver>OptionsDialog</receiver>
-   <slot>onBtnColorSelect2_clicked()</slot>
+   <slot>handleSecondaryColorButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>218</x>
@@ -2491,7 +2516,7 @@
    <sender>checkBoxCheckeredPattern</sender>
    <signal>clicked(bool)</signal>
    <receiver>OptionsDialog</receiver>
-   <slot>onCheckBoxCheckeredPattern_clicked(bool)</slot>
+   <slot>handleCheckeredPatternCheckBoxClicked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>122</x>
@@ -2507,7 +2532,7 @@
    <sender>radioButtonWindowTitleIrfanViewStyle</sender>
    <signal>toggled(bool)</signal>
    <receiver>OptionsDialog</receiver>
-   <slot>onRadioButtonWindowTitle_triggered(bool)</slot>
+   <slot>handleWindowTitleStyleRadioButtonToggled()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>78</x>
@@ -2523,7 +2548,7 @@
    <sender>radioButtonWindowTitleNormalStyle</sender>
    <signal>toggled(bool)</signal>
    <receiver>OptionsDialog</receiver>
-   <slot>onRadioButtonWindowTitle_triggered(bool)</slot>
+   <slot>handleWindowTitleStyleRadioButtonToggled()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>72</x>
@@ -2539,7 +2564,7 @@
    <sender>radioButtonWindowTitleUserDefined</sender>
    <signal>toggled(bool)</signal>
    <receiver>OptionsDialog</receiver>
-   <slot>onRadioButtonWindowTitle_triggered(bool)</slot>
+   <slot>handleWindowTitleStyleRadioButtonToggled()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>88</x>
@@ -2555,7 +2580,7 @@
    <sender>lineEditStatusBarUserStyle</sender>
    <signal>textEdited(QString)</signal>
    <receiver>OptionsDialog</receiver>
-   <slot>onLineEditStatusBarUserStyle_textEdited(QString)</slot>
+   <slot>handleStatusBarUserStyleLineEditTextEdited(QString)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>284</x>
@@ -2571,7 +2596,7 @@
    <sender>lineEditWindowTitleUserStyle</sender>
    <signal>textEdited(QString)</signal>
    <receiver>OptionsDialog</receiver>
-   <slot>onLineEditWindowTitleUserStyle_textEdited(QString)</slot>
+   <slot>handleWindowTitleUserStyleLineEditTextEdited(QString)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>284</x>
@@ -2587,7 +2612,7 @@
    <sender>radioButtonStatusBarIrfanViewStyle</sender>
    <signal>toggled(bool)</signal>
    <receiver>OptionsDialog</receiver>
-   <slot>onRadioButtonStatusBar_triggered(bool)</slot>
+   <slot>handleStatusBarStyleRadioButtonToggled()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>78</x>
@@ -2603,7 +2628,7 @@
    <sender>radioButtonStatusBarNormalStyle</sender>
    <signal>toggled(bool)</signal>
    <receiver>OptionsDialog</receiver>
-   <slot>onRadioButtonStatusBar_triggered(bool)</slot>
+   <slot>handleStatusBarStyleRadioButtonToggled()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>72</x>
@@ -2619,7 +2644,7 @@
    <sender>radioButtonStatusBarUserDefined</sender>
    <signal>toggled(bool)</signal>
    <receiver>OptionsDialog</receiver>
-   <slot>onRadioButtonStatusBar_triggered(bool)</slot>
+   <slot>handleStatusBarStyleRadioButtonToggled()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>88</x>
@@ -2635,7 +2660,7 @@
    <sender>checkBoxShowUsage</sender>
    <signal>clicked(bool)</signal>
    <receiver>OptionsDialog</receiver>
-   <slot>onCheckBoxShowUsage_clicked(bool)</slot>
+   <slot>handleShowUsageCheckBoxClicked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>227</x>
@@ -2649,13 +2674,13 @@
   </connection>
  </connections>
  <slots>
-  <slot>onBtnColorSelect_clicked()</slot>
-  <slot>onBtnColorSelect2_clicked()</slot>
-  <slot>onCheckBoxCheckeredPattern_clicked(bool)</slot>
-  <slot>onRadioButtonWindowTitle_triggered(bool)</slot>
-  <slot>onLineEditWindowTitleUserStyle_textEdited(QString)</slot>
-  <slot>onLineEditStatusBarUserStyle_textEdited(QString)</slot>
-  <slot>onRadioButtonStatusBar_triggered(bool)</slot>
-  <slot>onCheckBoxShowUsage_clicked(bool)</slot>
+  <slot>handlePrimaryColorButtonClicked()</slot>
+  <slot>handleSecondaryColorButtonClicked()</slot>
+  <slot>handleCheckeredPatternCheckBoxClicked(bool)</slot>
+  <slot>handleWindowTitleStyleRadioButtonToggled()</slot>
+  <slot>handleWindowTitleUserStyleLineEditTextEdited(QString)</slot>
+  <slot>handleStatusBarUserStyleLineEditTextEdited(QString)</slot>
+  <slot>handleStatusBarStyleRadioButtonToggled()</slot>
+  <slot>handleShowUsageCheckBoxClicked(bool)</slot>
  </slots>
 </ui>

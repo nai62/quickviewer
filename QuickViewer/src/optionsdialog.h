@@ -6,8 +6,7 @@
 #include "imagestring.h"
 
 #define IRFANVIEW_WINDOWTITLE_FORMAT "%p %2| %p"
-#define IRFANVIEW_STATUSBAR_FORMAT   "%s %n %m %f / %b %2| %s %m %f / %b"
-
+#define IRFANVIEW_STATUSBAR_FORMAT "%s %n %m %f / %b %2| %s %m %f / %b"
 
 namespace Ui {
 class OptionsDialog;
@@ -20,22 +19,23 @@ public:
     OptionsDialog(QWidget *parent);
     ~OptionsDialog();
     void reflectResults();
-    void resetColorButton(QPushButton* btn, QColor color);
+    void resetColorButton(QPushButton *btn, QColor color);
     void resetColorBox();
     void resetWindowTitleSample();
     void resetStatusbarSample();
     void initFormatUsage();
 
 public slots:
-    void onBtnColorSelect_clicked();
-    void onBtnColorSelect2_clicked();
-    void onCheckBoxCheckeredPattern_clicked(bool enabled);
-    void onRadioButtonWindowTitle_triggered(bool enabled);
-    void onRadioButtonStatusBar_triggered(bool enabled);
-    void onLineEditWindowTitleUserStyle_textEdited(QString text);
-    void onLineEditStatusBarUserStyle_textEdited(QString text);
-    void onCheckBoxShowUsage_clicked(bool enabled);
-    void onCheckBoxDontShrinkForLargeImage_clicked(bool enabled);
+    void handlePrimaryColorButtonClicked();
+    void handleSecondaryColorButtonClicked();
+    void handleCheckeredPatternCheckBoxClicked(bool checked);
+    void handleWindowTitleStyleRadioButtonToggled();
+    void handleWindowTitleUserDefinedRadioButtonToggled(bool checked);
+    void handleStatusBarStyleRadioButtonToggled();
+    void handleStatusBarUserDefinedRadioButtonToggled(bool checked);
+    void handleWindowTitleUserStyleLineEditTextEdited(QString text);
+    void handleStatusBarUserStyleLineEditTextEdited(QString text);
+    void handleShowUsageCheckBoxClicked(bool checked);
 
 private:
     Ui::OptionsDialog *ui;

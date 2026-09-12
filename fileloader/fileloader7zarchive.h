@@ -8,7 +8,7 @@ class FileLoader7zArchivePrivate;
 class FileLoader7zArchive : public IFileLoader
 {
 public:
-    FileLoader7zArchive(QObject* parent, QString sevenzippath, QString extensionOfFile, bool extractSolidArchiveToTemporaryDir=false);
+    FileLoader7zArchive(QObject *parent, QString sevenzippath, QString extensionOfFile, bool extractSolidArchiveToTemporaryDir = false);
 
     ~FileLoader7zArchive();
     /**
@@ -44,7 +44,7 @@ public:
      * @param mutex if the method needs to lock resource, must be use the mutex
      * @return file binary data
      */
-    QByteArray getFile(QString filename, QMutex& mutex);
+    QByteArray getFile(QString filename, QMutex &mutex);
 
     quint64 getFileSize(QString filename);
     QDateTime getFileModified(QString filename);
@@ -62,7 +62,7 @@ public:
     static QStringList st_supportedArchiveFormats;
 
 protected:
-    FileLoader7zArchivePrivate* d;
+    FileLoader7zArchivePrivate *d;
     QString m_volumepath;
     QString m_extensionOfFile;
     QStringList m_imageFileList;
@@ -72,8 +72,7 @@ protected:
 
     bool m_extractSolidArchiveToTemporaryDir;
     QFutureWatcher<void> watcher;
-    QTemporaryDir* m_temp;
-
+    QTemporaryDir *m_temp;
 
     void initialize();
 };
@@ -92,7 +91,5 @@ protected:
 //     */
 //    bool isSupported(QString path) { return path.toLower().endsWith(".7z"); }
 //};
-
-
 
 #endif // FILEVOLUME7ZARCHIVE_H

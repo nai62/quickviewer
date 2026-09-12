@@ -11,13 +11,13 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>RenameDialog</string>
+   <string>Rename image</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string extracomment="Label text prompting for file name">EditFilename</string>
+      <string extracomment="Label text prompting for file name">File name:</string>
      </property>
     </widget>
    </item>
@@ -55,7 +55,7 @@
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
    <receiver>RenameDialog</receiver>
-   <slot>on_tryChangingFilenameAndAccept_triggered()</slot>
+   <slot>handleButtonBoxAccepted()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>248</x>
@@ -87,7 +87,7 @@
    <sender>editFilename</sender>
    <signal>textChanged(QString)</signal>
    <receiver>RenameDialog</receiver>
-   <slot>on_textChanged_triggered(QString)</slot>
+   <slot>handleFilenameLineEditTextChanged(QString)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>199</x>
@@ -101,7 +101,7 @@
   </connection>
  </connections>
  <slots>
-  <slot>on_textChanged_triggered(QString)</slot>
-  <slot>on_tryChangingFilenameAndAccept_triggered()</slot>
+  <slot>handleFilenameLineEditTextChanged(QString)</slot>
+  <slot>handleButtonBoxAccepted()</slot>
  </slots>
 </ui>

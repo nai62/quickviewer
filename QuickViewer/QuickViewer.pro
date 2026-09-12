@@ -5,6 +5,9 @@
 #-------------------------------------------------
 
 include(../QVproject.pri)
+isEmpty(QV_APP_SOURCE): QV_APP_SOURCE = $$PWD
+RESVG_SOURCE_ROOT = $$clean_path($$QV_APP_SOURCE/../resvg/resvg)
+include(../resvg/resvg.pri)
 
 QT       += core gui concurrent sql svgwidgets
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -39,14 +42,12 @@ INCLUDEPATH += ../ResizeHalf/ResizeHalf
 INCLUDEPATH += ../easyexif/easyexif
 INCLUDEPATH += ../fileloader
 INCLUDEPATH += ../zimg
-INCLUDEPATH += ../qsvgrenderer/svg-native-viewer/svgnative/include
 INCLUDEPATH += ./src ./src/catalog ./src/widgets ./src/models ./src/folderview
 INCLUDEPATH += ./src/qfullscreenframe ./src/qlanguageselector ./src/qnamedpipe ./src/qactionmanager
 
 
 LIBDIR = ../lib
 
-#LIBS += -L$${LIBDIR}  -leasyexif -lresizehalf -lfileloader -lQt7z -lunrar -lzimg -lzlib -lquazip
 LIBS += -L$${LIBDIR}  -leasyexif -lresizehalf -lfileloader -lQt7z -lunrar -lzimg
 
 contains(DEFINES, QV_WITH_LUMINOR) {
@@ -71,12 +72,10 @@ win32 {
             QMAKE_LFLAGS += /LARGEADDRESSAWARE
         }
     }
-    LIBS += -luser32 -ladvapi32 -lShlwapi -loleaut32 -lole32 -luuid -lQSVGNative0
+    LIBS += -luser32 -ladvapi32 -lShlwapi -loleaut32 -lole32 -luuid
 
     # copy official 7z.dll to build/bin/
     QMAKE_POST_LINK += $$QMAKE_COPY /B $$shell_quote($$shell_path($$PWD/../Qt7z/Qt7z/windll/$${TARGET_ARCH}/7z.dll)) $$shell_path($${DESTDIR}) $$escape_expand(\n\t)
-    # copy QSVGNative.dll to build/bin/
-    QMAKE_POST_LINK += $$QMAKE_COPY /B $$shell_quote($$shell_path($${DESTDIR}/../lib/QSVGNative0.dll)) $$shell_path($${DESTDIR})
 }
 linux {
     DEFINES += _UNIX
@@ -112,13 +111,22 @@ SOURCES += \
     src/imageview.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
-    src/models/bookprogressmanager.cpp \
-    src/models/pagecontent.cpp \
-    src/models/pagemanager.cpp \
+    src/models/readprogressstore.cpp \
+    src/models/boundedexecutor.cpp \
+    src/models/imagecontent.cpp \
+    src/models/pagedisplayformatter.cpp \
+    src/models/renderedpage.cpp \
+    src/models/renderedpages.cpp \
+    src/models/visiblepagecomposer.cpp \
+    src/models/viewersession.cpp \
+    src/models/prefetchplanner.cpp \
     src/models/qvapplication.cpp \
     src/models/shadermanager.cpp \
+    src/models/svgloader.cpp \
+    src/startupprofiler.cpp \
     src/models/thumbnailmanager.cpp \
-    src/models/timeorderdcache.cpp \
+    src/models/volumecache.cpp \
+    src/models/volumehandle.cpp \
     src/optionsdialog.cpp \
     src/renamedialog.cpp \
     src/widgets/flowlayout.cpp \
@@ -127,15 +135,16 @@ SOURCES += \
     src/qnamedpipe/qnamedpipe.cpp \
     src/qfullscreenframe/qinnerframe.cpp \
     src/models/qvmovie.cpp \
-    src/models/volumemanager.cpp \
-    src/models/volumemanagerbuilder.cpp \
+    src/models/volume.cpp \
+    src/models/volumeloader.cpp \
     src/qactionmanager/keyconfigdialog.cpp \
     src/qactionmanager/mouseconfigdialog.cpp \
     src/qactionmanager/qactionmanager.cpp \
     src/qactionmanager/qmousesequence.cpp \
     src/qactionmanager/shortcutbutton.cpp \
     src/models/imagestring.cpp \
-    src/brightnesswindow.cpp \
+    src/models/loupecontroller.cpp \
+    src/retouchwindow.cpp \
     src/models/fileoperator.cpp \
     src/qlanguageselector/qtexttranslator.cpp \
     src/models/qvimagemetadata.cpp
@@ -154,32 +163,50 @@ HEADERS  += \
     src/folderview/folderwindow.h \
     src/imageview.h \
     src/mainwindow.h \
-    src/models/bookprogressmanager.h \
-    src/models/pagecontent.h \
-    src/models/pagemanager.h \
+    src/models/readprogressstore.h \
+    src/models/boundedexecutor.h \
+    src/models/cursorscrollmapping.h \
+    src/models/lrucache.h \
+    src/models/imageloadcontext.h \
+    src/models/loupecontroller.h \
+    src/models/pagenavigator.h \
+    src/models/imagecontent.h \
+    src/models/pagedisplayformatter.h \
+    src/models/renderedpage.h \
+    src/models/visiblepagecomposer.h \
+    src/models/viewersession.h \
+    src/models/latestresultdispatcher.h \
+    src/models/prefetchplanner.h \
     src/models/qvapplication.h \
     src/models/shadermanager.h \
+    src/models/svgloader.h \
     src/models/thumbnailmanager.h \
-    src/models/timeorderdcache.h \
+    src/models/volumecache.h \
+    src/models/volumehandle.h \
+    src/models/viewerstate.h \
+    src/models/visiblepages.h \
+    src/models/renderedpages.h \
+    src/models/renderedpagemetrics.h \
     src/optionsdialog.h \
     src/qv_init.h \
     src/renamedialog.h \
-    src/stdafx.h \
+    src/pch.h \
     src/widgets/flowlayout.h \
     src/widgets/pageslider.h \
     src/qlanguageselector/qlanguageselector.h \
     src/qnamedpipe/qnamedpipe.h \
     src/qfullscreenframe/qinnerframe.h \
     src/models/qvmovie.h \
-    src/models/volumemanager.h \
-    src/models/volumemanagerbuilder.h \
+    src/models/volume.h \
+    src/models/volumeloader.h \
     src/qactionmanager/keyconfigdialog.h \
     src/qactionmanager/mouseconfigdialog.h \
     src/qactionmanager/qactionmanager.h \
     src/qactionmanager/qmousesequence.h \
     src/qactionmanager/shortcutbutton.h \
     src/models/imagestring.h \
-    src/brightnesswindow.h \
+    src/retouchwindow.h \
+    src/startupprofiler.h \
     src/models/fileoperator.h \
     src/qlanguageselector/qtexttranslator.h \
     src/models/qvimagemetadata.h
@@ -193,10 +220,7 @@ win32 {
 }
 
 
-PRECOMPILED_HEADER += src/stdafx.h
-precompile_header:!isEmpty(PRECOMPILED_HEADER) {
-    DEFINES += USING_PCH
-}
+PRECOMPILED_HEADER += src/pch.h
 
 FORMS    += \
     src/mainwindow.ui \
@@ -209,7 +233,7 @@ FORMS    += \
     src/optionsdialog.ui \
     src/renamedialog.ui \
     ../AssociateFilesWithQuickViewer/fileassocdialog.ui \
-    src/brightnesswindow.ui
+    src/retouchwindow.ui
 
 RESOURCES += toolbar.qrc \
     themes.qrc
@@ -269,7 +293,7 @@ win32 : !CONFIG(debug, debug|release) {
     mingw {
         MY_DEFAULT_INSTALL = ../../QuickViewer-$${VERSION}-mingw-$${TARGET_ARCH}
 
-        install_target.files = $${DESTDIR}/QuickViewer.exe $${DESTDIR}/AssociateFilesWithQuickViewer.exe $${LIBDIR}/QSVGNative0.dll $${LIBDIR}/fileloader.dll $$PWD/../Qt7z/Qt7z/windll/$${TARGET_ARCH}/7z.dll
+        install_target.files = $${DESTDIR}/QuickViewer.exe $${DESTDIR}/AssociateFilesWithQuickViewer.exe $${LIBDIR}/fileloader.dll $$PWD/../Qt7z/Qt7z/windll/$${TARGET_ARCH}/7z.dll
 
         INSTALLS += install_target install_deploy_files install_translations install_assoc_icons
     } else {
@@ -284,7 +308,6 @@ win32 : !CONFIG(debug, debug|release) {
         install_target.files = \
             $${DESTDIR}/QuickViewer.exe \
             $${DESTDIR}/AssociateFilesWithQuickViewer.exe \
-            $${LIBDIR}/QSVGNative0.dll \
             $$PWD/../Qt7z/Qt7z/windll/$${TARGET_ARCH}/7z.dll \
 
         install_qrawspeed.path = $${MY_DEFAULT_INSTALL}/imageformats
@@ -301,6 +324,13 @@ win32 : !CONFIG(debug, debug|release) {
         install_qvavif.files = \
             ../../../qt-avif-image-plugin/imageformats-$${TARGET_ARCH}/qavif6.dll \
 
+        install_qvheif.path = $${MY_DEFAULT_INSTALL}/imageformats
+        install_qvheif.files = \
+            ../../../qt-heic-image-plugin/qtbuild_6.11.2/kimg_heif6.dll \
+
+        install_qvheif_runtime.path = $${MY_DEFAULT_INSTALL}
+        install_qvheif_runtime.files = $$files(../../../qt-heic-image-plugin/3rdparty/install/bin/*.dll)
+
         # dlls instead of vcredist_xxx.exe
         install_msvcrt.PATH = C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Redist/MSVC/14.38.33130/x64/Microsoft.VC143.CRT
         install_msvcrt.path = $${MY_DEFAULT_INSTALL}
@@ -313,7 +343,7 @@ win32 : !CONFIG(debug, debug|release) {
             "$${install_msvcrt.PATH}/vccorlib140.dll" \
             "$${install_msvcrt.PATH}/vcruntime140.dll"
 
-        INSTALLS += install_target install_deploy_files install_translations install_translations2 install_qrawspeed install_qvavif install_msvcrt install_assoc_icons
+        INSTALLS += install_target install_deploy_files install_translations install_translations2 install_qrawspeed install_qvavif install_qvheif install_qvheif_runtime install_msvcrt install_assoc_icons
     }
     install_deploy_files.path = $${MY_DEFAULT_INSTALL}
     install_deploy_files.files = \
