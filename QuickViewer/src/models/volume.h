@@ -124,6 +124,7 @@ private:
     QList<QvImageMetadata> m_imageMetadataList;
     ImageContent m_initialImage;
     LruCache<int, ImageLoadFuture> m_imageLoadCache;
+    LruCache<int, ImageLoadFuture> m_previewLoadCache;
 
     QSharedPointer<ImageLoadContext> m_loadContext;
     IFileLoader *m_loader;

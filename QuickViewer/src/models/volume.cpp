@@ -36,6 +36,7 @@ static QFuture<ImageContent> readyImageFuture(ImageContent content)
 Volume::Volume(QObject *parent, IFileLoader *loader)
     : QObject(parent),
       m_imageLoadCache(qApp->MaxImagesCache()),
+      m_previewLoadCache(qApp->MaxImagesCache()),
       m_loadContext(new ImageLoadContext(loader)),
       m_loader(loader),
       m_pageListLoaded(false),
@@ -52,6 +53,7 @@ Volume::Volume(QObject *parent, IFileLoader *loader)
 Volume::~Volume()
 {
     m_imageLoadCache.clear();
+    m_previewLoadCache.clear();
     m_loader = nullptr;
 }
 
@@ -81,7 +83,9 @@ Volume::ImageLoadFuture Volume::scheduleImageLoad(
     const QSharedPointer<ImageLoadContext> context = m_loadContext;
     auto submission = imagePrefetchExecutor().submit(
         [context, path, pageSize, decodeTargetSize] {
-            return futureLoadImageFromFileVolume(context, path, pageSize, decodeTargetSize);
+            ImageContent content = futureLoadImageFromFileVolume(context, path, pageSize, decodeTargetSize);
+            content.isPreview = decodeTargetSize.isValid() && !decodeTargetSize.isEmpty();
+            return content;
         },
         prefetchPriorityForPage(pageIndex, m_lastPrefetchAnchor),
         m_prefetchOwnerId,
@@ -215,6 +219,7 @@ void Volume::applyPageSort(qvEnums::ImageSortBy sortBy)
         break;
     }
     m_imageLoadCache.clear();
+    m_previewLoadCache.clear();
 }
 
 void Volume::startSlideShow()
@@ -228,6 +233,7 @@ void Volume::startSlideShow()
     std::mt19937 g(rd());
     std::shuffle(m_shuffledPageNames.begin(), m_shuffledPageNames.end(), g);
     m_imageLoadCache.clear();
+    m_previewLoadCache.clear();
 }
 
 void Volume::stopSlideShow()
@@ -237,6 +243,7 @@ void Volume::stopSlideShow()
     }
     m_shuffledPageNames.clear();
     m_imageLoadCache.clear();
+    m_previewLoadCache.clear();
 }
 
 QString Volume::pageNameAt(int pageIndex)
@@ -260,6 +267,25 @@ int Volume::pageIndexForName(const QString &name) const
     return m_pageNames.indexOf(QDir::toNativeSeparators(name));
 }
 
+static QSize previewDecodeSize(const QSize &viewportSize)
+{
+    const int maxTextureSize = qApp->MaxTextureSize();
+    if (!viewportSize.isValid() || viewportSize.isEmpty()) {
+        const int fallback = qMin(maxTextureSize, 2048);
+        return QSize(fallback, fallback);
+    }
+
+    const QSize oversampled(
+        qMin(maxTextureSize, qMax(1, viewportSize.width() * 3 / 2)),
+        qMin(maxTextureSize, qMax(1, viewportSize.height() * 3 / 2)));
+    return oversampled;
+}
+
+static bool shouldPrefetchFullResolution(int pageIndex, int anchorPageIndex)
+{
+    return qAbs(pageIndex - anchorPageIndex) <= 3;
+}
+
 void Volume::updatePrefetchCache(
     int anchorPageIndex, PrefetchMode mode, QSize viewportSize)
 {
@@ -280,12 +306,19 @@ void Volume::updatePrefetchCache(
     const QList<int> indexes = PrefetchPlanner::indexes(
         mode, anchorPageIndex, m_pageNames.size(), qApp->MaxImagesCache());
     for (int cnt : indexes) {
-        ImageLoadFuture *cachedImageLoad = m_imageLoadCache.find(cnt);
+        const bool fullResolution = shouldPrefetchFullResolution(cnt, anchorPageIndex);
+        if (fullResolution) {
+            m_previewLoadCache.remove(cnt);
+        } else if (m_imageLoadCache.touch(cnt)) {
+            continue;
+        }
+        LruCache<int, ImageLoadFuture> &cache = fullResolution ? m_imageLoadCache : m_previewLoadCache;
+        ImageLoadFuture *cachedImageLoad = cache.find(cnt);
         if (cachedImageLoad && cachedImageLoad->isCanceled()) {
-            m_imageLoadCache.remove(cnt);
+            cache.remove(cnt);
             cachedImageLoad = nullptr;
         }
-        if (qApp->Effect() < qvEnums::UsingFixedShader && cachedImageLoad && cachedImageLoad->isFinished()) {
+        if (fullResolution && qApp->Effect() < qvEnums::UsingFixedShader && cachedImageLoad && cachedImageLoad->isFinished()) {
             ImageContent cachedImage = cachedImageLoad->result();
             if (cachedImage.loadedImageSize.isValid()) {
                 const QSize pageSize = viewportSize;
@@ -297,19 +330,25 @@ void Volume::updatePrefetchCache(
                     const ImageLoadFuture future = scheduleResize(
                         cachedImage, pageSize);
                     if (future.isValid()) {
-                        m_imageLoadCache.insert(cnt, future);
+                        cache.insert(cnt, future);
                     }
                 }
             }
         }
-        if (!m_imageLoadCache.touch(cnt)) {
-            const QSize pageSize = qApp->Effect() < qvEnums::UsingFixedShader
+        if (!cache.touch(cnt)) {
+            const QSize pageSize = fullResolution && qApp->Effect() < qvEnums::UsingFixedShader
                                        ? viewportSize
                                        : QSize();
+            const QSize decodeTargetSize = fullResolution ? QSize() : previewDecodeSize(viewportSize);
             const ImageLoadFuture future = scheduleImageLoad(
-                pageNameAt(cnt), pageSize, cnt == anchorPageIndex, QSize(), cnt, m_prefetchGeneration);
+                pageNameAt(cnt),
+                pageSize,
+                cnt == anchorPageIndex,
+                decodeTargetSize,
+                cnt,
+                m_prefetchGeneration);
             if (future.isValid()) {
-                m_imageLoadCache.insert(cnt, future);
+                cache.insert(cnt, future);
             }
         }
     }
@@ -597,6 +636,11 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QSize 
             ic.loadedImage = half;
             ic.loadedImageSize = half.size();
         }
+        if (decodeTargetSize.isValid() && !decodeTargetSize.isEmpty() && !ic.loadedImage.isNull() && (ic.loadedImage.width() > decodeTargetSize.width() || ic.loadedImage.height() > decodeTargetSize.height())) {
+            ic.loadedImage = ic.loadedImage.scaled(decodeTargetSize, Qt::KeepAspectRatio, Qt::FastTransformation);
+            ic.loadedImageSize = ic.loadedImage.size();
+        }
+
         // CPU resizing before Page Viewing
         if (!pageSize.isEmpty() && !ic.loadedImage.isNull()) {
             QSize newsize = ic.exifInfo.Orientation == 6 || ic.exifInfo.Orientation == 8 ? QSize(pageSize.height(), pageSize.width()) : pageSize;

@@ -44,6 +44,7 @@ struct ImageContent
     QString path;
     easyexif::EXIFInfo exifInfo;
     size_t fileSize = 0;
+    bool isPreview = false;
     RetouchParameters appliedRetouchParameters;
     qvEnums::ShaderEffect appliedResizeMode = qvEnums::Bilinear;
 
