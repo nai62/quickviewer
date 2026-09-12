@@ -259,7 +259,7 @@ void Volume::stopSlideShow()
     m_previewLoadCache.clear();
 }
 
-QString Volume::pageNameAt(int pageIndex)
+QString Volume::pageNameAt(int pageIndex) const
 {
     if (pageIndex < 0 || pageIndex >= m_pageNames.size()) {
         return "";

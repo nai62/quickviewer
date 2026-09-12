@@ -30,9 +30,10 @@ public:
     explicit Volume(QObject *parent, IFileLoader *loader);
     ~Volume();
     void loadPageList();
-    bool isPageListLoaded() { return m_pageListLoaded; }
+    bool isPageListLoaded() const { return m_pageListLoaded; }
     ImageContent loadImageBeforePageList(QString subfileName);
     IFileLoader *fileLoader() { return m_loader; }
+    const IFileLoader *fileLoader() const { return m_loader; }
 
     static ImageContent futureLoadImageFromFileVolume(
         QSharedPointer<ImageLoadContext> context, QString path, QSize pageSize, QSize decodeTargetSize = QSize(), bool loadDetailedMetadata = true);
@@ -49,7 +50,7 @@ public:
     void startSlideShow();
     void stopSlideShow();
 
-    QString pagePathForName(QString name)
+    QString pagePathForName(const QString &name) const
     {
         if (!m_loader || name.isEmpty()) {
             return "";
@@ -62,16 +63,16 @@ public:
             return QDir(m_loader->realVolumePath()).absoluteFilePath(name);
         }
     }
-    QString pageNameAt(int pageIndex);
+    QString pageNameAt(int pageIndex) const;
     int pageIndexForName(const QString &name) const;
-    QString pagePathAt(int pageIndex)
+    QString pagePathAt(int pageIndex) const
     {
         if (pageIndex < 0 || pageIndex >= m_pageNames.size()) {
             return "";
         }
         return QDir(m_loader->volumePath()).absoluteFilePath(m_pageNames[pageIndex]);
     }
-    QString pagePathWithSeparatorAt(int pageIndex)
+    QString pagePathWithSeparatorAt(int pageIndex) const
     {
         if (!m_loader || pageIndex < 0 || pageIndex >= m_pageNames.size()) {
             return "";
@@ -80,8 +81,8 @@ public:
             .arg(QDir::fromNativeSeparators(m_loader->volumePath()))
             .arg(m_pageNames[pageIndex]);
     }
-    QString volumePath() { return m_loader ? m_loader->volumePath() : QString(); }
-    QString realVolumePath() { return m_loader ? m_loader->realVolumePath() : QString(); }
+    QString volumePath() const { return m_loader ? m_loader->volumePath() : QString(); }
+    QString realVolumePath() const { return m_loader ? m_loader->realVolumePath() : QString(); }
 
     /**
      * @brief loadImageByName Reads and returns the image corresponding to the file name specified in the file list without advancing the internal counter
@@ -93,13 +94,13 @@ public:
     /**
      * @brief Returns the number of pages the volume has
      */
-    int pageCount() { return m_pageNames.size(); }
+    int pageCount() const { return m_pageNames.size(); }
     void updatePrefetchCache(int anchorPageIndex, PrefetchMode mode, QSize viewportSize);
     void prefetchCoverImages(int anchorPageIndex = 0);
     ImageContent loadThumbnailSourceImage();
 
     ImageLoadFuture imageLoadAt(int pageIndex) const;
-    bool openedWithSpecifiedImageFile() { return m_openedWithSpecifiedImageFile; }
+    bool openedWithSpecifiedImageFile() const { return m_openedWithSpecifiedImageFile; }
     void setOpenedWithSpecifiedImageFile(bool openedWithSpecifiedImageFile) { m_openedWithSpecifiedImageFile = openedWithSpecifiedImageFile; }
     void moveToThread(QThread *targetThread);
 
