@@ -99,6 +99,7 @@ macos {
 
 
 SOURCES += \
+    src/benchmark/imagebenchmarkrunner.cpp \
     src/catalog/catalogwindow.cpp \
     src/catalog/databasesettingdialog.cpp \
     src/catalog/managedatabasedialog.cpp \
@@ -151,6 +152,7 @@ SOURCES += \
 
 
 HEADERS  += \
+    src/benchmark/imagebenchmarkrunner.h \
     src/catalog/catalogwindow.h \
     src/catalog/databasesettingdialog.h \
     src/catalog/managedatabasedialog.h \
@@ -168,6 +170,7 @@ HEADERS  += \
     src/models/cursorscrollmapping.h \
     src/models/lrucache.h \
     src/models/imageloadcontext.h \
+    src/models/imageloadmetrics.h \
     src/models/loupecontroller.h \
     src/models/pagenavigator.h \
     src/models/imagecontent.h \
