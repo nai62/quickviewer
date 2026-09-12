@@ -68,7 +68,7 @@ void BoundedExecutor::jobFinished()
     {
         QMutexLocker locker(&m_mutex);
         --m_activeJobs;
-        if (!m_pendingJobs.isEmpty()) {
+        if (m_activeJobs < m_maximumConcurrency && !m_pendingJobs.isEmpty()) {
             next = m_pendingJobs.takeFirst();
             ++m_activeJobs;
             hasNext = true;
@@ -93,6 +93,28 @@ void BoundedExecutor::cancelPendingOlderThan(quint64 owner, quint64 generation)
     }
     for (Job &job : cancelled) {
         job.cancel();
+    }
+}
+
+void BoundedExecutor::setMaximumConcurrency(int maximumConcurrency)
+{
+    QList<Job> jobsToLaunch;
+    {
+        QMutexLocker locker(&m_mutex);
+        const int boundedConcurrency = qMax(1, maximumConcurrency);
+        if (boundedConcurrency == m_maximumConcurrency) {
+            return;
+        }
+        m_maximumConcurrency = boundedConcurrency;
+        m_pool.setMaxThreadCount(m_maximumConcurrency);
+        while (m_activeJobs < m_maximumConcurrency && !m_pendingJobs.isEmpty()) {
+            jobsToLaunch.append(m_pendingJobs.takeFirst());
+            ++m_activeJobs;
+        }
+    }
+
+    for (Job &job : jobsToLaunch) {
+        launch(std::move(job));
     }
 }
 

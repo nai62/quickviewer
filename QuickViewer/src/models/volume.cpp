@@ -15,10 +15,10 @@ static std::atomic<quint64> nextPrefetchOwnerId{1};
 
 static BoundedExecutor &imagePrefetchExecutor()
 {
-    static constexpr int MaximumPrefetchThreads = 4;
+    static constexpr int InitialPrefetchThreads = 4;
     static constexpr int MaximumPendingPrefetchJobs = 128;
     static BoundedExecutor executor(
-        qBound(1, QThread::idealThreadCount(), MaximumPrefetchThreads),
+        qBound(1, QThread::idealThreadCount(), InitialPrefetchThreads),
         MaximumPendingPrefetchJobs);
     return executor;
 }
@@ -267,6 +267,15 @@ int Volume::pageIndexForName(const QString &name) const
     return m_pageNames.indexOf(QDir::toNativeSeparators(name));
 }
 
+static int recommendedPrefetchConcurrency(const IFileLoader *loader)
+{
+    const int idealThreads = qMax(1, QThread::idealThreadCount());
+    if (loader && loader->isArchive()) {
+        return qBound(1, (idealThreads + 3) / 4, 4);
+    }
+    return qBound(2, (idealThreads + 1) / 2, 8);
+}
+
 static QSize previewDecodeSize(const QSize &viewportSize)
 {
     const int maxTextureSize = qApp->MaxTextureSize();
@@ -295,6 +304,8 @@ void Volume::updatePrefetchCache(
     if (!m_loader || anchorPageIndex < 0 || anchorPageIndex >= m_pageNames.size() || m_loader->contents().isEmpty()) {
         return;
     }
+
+    imagePrefetchExecutor().setMaximumConcurrency(recommendedPrefetchConcurrency(m_loader));
 
     if (anchorPageIndex != m_lastPrefetchAnchor || mode != m_lastPrefetchMode) {
         m_lastPrefetchAnchor = anchorPageIndex;
@@ -362,6 +373,7 @@ void Volume::prefetchCoverImages(int anchorPageIndex)
     if (!m_loader || anchorPageIndex < 0 || anchorPageIndex >= m_pageNames.size() || m_loader->contents().isEmpty()) {
         return;
     }
+    imagePrefetchExecutor().setMaximumConcurrency(recommendedPrefetchConcurrency(m_loader));
     for (int pageIndex : PrefetchPlanner::indexes(
              PrefetchMode::Normal, anchorPageIndex, m_pageNames.size(), 2)) {
         const ImageLoadFuture future = scheduleImageLoad(

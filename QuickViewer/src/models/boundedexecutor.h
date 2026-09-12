@@ -70,6 +70,7 @@ public:
     }
 
     void cancelPendingOlderThan(quint64 owner, quint64 generation);
+    void setMaximumConcurrency(int maximumConcurrency);
 
     int activeCount() const;
     int pendingCount() const;
@@ -95,7 +96,7 @@ private:
     QThreadPool m_pool;
     QList<Job> m_pendingJobs;
     int m_activeJobs;
-    const int m_maximumConcurrency;
+    int m_maximumConcurrency;
     const int m_maximumPendingJobs;
     bool m_acceptingJobs;
     quint64 m_nextSequence = 0;
