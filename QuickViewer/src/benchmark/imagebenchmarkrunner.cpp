@@ -3,7 +3,9 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <cstring>
 #include <functional>
+#include <utility>
 
 #include <QCommandLineParser>
 #include <QDateTime>
@@ -23,6 +25,7 @@ namespace {
 enum class BenchmarkMode {
     SourceDecode,
     DecodeOnly,
+    DecoderCompare,
 };
 
 struct BenchmarkOptions
@@ -34,6 +37,7 @@ struct BenchmarkOptions
     int runs = 5;
     int warmup = 2;
     ImageDecodePolicy decodePolicy;
+    QStringList jpegCompareDecoders{"qt", "turbojpeg"};
 };
 
 struct BenchmarkRecord
@@ -42,7 +46,9 @@ struct BenchmarkRecord
     QString entry;
     QString format;
     QString container;
+    QString requestedDecoder;
     QString decoder;
+    QString fallbackReason;
     QString mode;
     QString sizeBucket;
     int run = 0;
@@ -68,7 +74,15 @@ using ByteLoader = std::function<QByteArray()>;
 
 QString modeName(BenchmarkMode mode)
 {
-    return mode == BenchmarkMode::DecodeOnly ? "decode-only" : "source-decode";
+    switch (mode) {
+    case BenchmarkMode::SourceDecode:
+        return "source-decode";
+    case BenchmarkMode::DecodeOnly:
+        return "decode-only";
+    case BenchmarkMode::DecoderCompare:
+        return "decoder-compare";
+    }
+    return "unknown";
 }
 
 QString normalizeFormat(const QString &entry, const QString &measuredFormat)
@@ -213,6 +227,174 @@ bool parseWebPDecoder(const QString &value, WebPDecoderPreference &preference)
     return false;
 }
 
+QString jpegDecoderName(JpegDecoderPreference preference)
+{
+    switch (preference) {
+    case JpegDecoderPreference::Auto:
+        return "auto";
+    case JpegDecoderPreference::Qt:
+        return "qt";
+    case JpegDecoderPreference::TurboJpeg:
+        return "turbojpeg";
+    }
+    return "unknown";
+}
+
+QString webpDecoderName(WebPDecoderPreference preference)
+{
+    switch (preference) {
+    case WebPDecoderPreference::Auto:
+        return "auto";
+    case WebPDecoderPreference::Qt:
+        return "qt";
+    case WebPDecoderPreference::LibWebP:
+        return "libwebp";
+    }
+    return "unknown";
+}
+
+bool isJpegEntry(const QString &entry)
+{
+    const QString suffix = QFileInfo(entry).suffix().toLower();
+    return suffix == "jpg" || suffix == "jpeg" || suffix == "jpe" || suffix == "jif" || suffix == "jfif" || suffix == "jfi";
+}
+
+QString requestedDecoderForEntry(const BenchmarkOptions &options, const QString &entry)
+{
+    const QString suffix = QFileInfo(entry).suffix().toLower();
+    if (isJpegEntry(entry)) {
+        return jpegDecoderName(options.decodePolicy.jpeg);
+    }
+    if (suffix == "webp") {
+        return webpDecoderName(options.decodePolicy.webp);
+    }
+    return "default";
+}
+
+bool decoderMatchesRequest(const QString &requestedDecoder, const QString &actualDecoder)
+{
+    if (requestedDecoder == "qt") {
+        return actualDecoder.startsWith("qimagereader:") || actualDecoder.startsWith("qmovie:");
+    }
+    return requestedDecoder == actualDecoder;
+}
+
+bool jpegHasIccProfileForBenchmark(const QByteArray &bytes)
+{
+    const auto *data = reinterpret_cast<const unsigned char *>(bytes.constData());
+    const qsizetype size = bytes.size();
+    if (size < 4 || data[0] != 0xFF || data[1] != 0xD8) {
+        return false;
+    }
+
+    qsizetype offset = 2;
+    while (offset + 4 <= size) {
+        if (data[offset] != 0xFF) {
+            ++offset;
+            continue;
+        }
+        while (offset < size && data[offset] == 0xFF) {
+            ++offset;
+        }
+        if (offset >= size) {
+            break;
+        }
+        const unsigned char marker = data[offset++];
+        if (marker == 0xD9 || marker == 0xDA) {
+            break;
+        }
+        if (marker == 0x01 || (marker >= 0xD0 && marker <= 0xD7)) {
+            continue;
+        }
+        if (offset + 2 > size) {
+            break;
+        }
+        const quint16 segmentLength = static_cast<quint16>((data[offset] << 8) | data[offset + 1]);
+        if (segmentLength < 2 || offset + segmentLength > size) {
+            break;
+        }
+        if (marker == 0xE2 && segmentLength >= 14 && std::memcmp(data + offset + 2, "ICC_PROFILE\0", 12) == 0) {
+            return true;
+        }
+        offset += segmentLength;
+    }
+    return false;
+}
+
+int jpegComponentCountForBenchmark(const QByteArray &bytes)
+{
+    const auto *data = reinterpret_cast<const unsigned char *>(bytes.constData());
+    const qsizetype size = bytes.size();
+    if (size < 4 || data[0] != 0xFF || data[1] != 0xD8) {
+        return 0;
+    }
+
+    qsizetype offset = 2;
+    while (offset + 4 <= size) {
+        if (data[offset] != 0xFF) {
+            ++offset;
+            continue;
+        }
+        while (offset < size && data[offset] == 0xFF) {
+            ++offset;
+        }
+        if (offset >= size) {
+            break;
+        }
+        const unsigned char marker = data[offset++];
+        if (marker == 0xD9 || marker == 0xDA) {
+            break;
+        }
+        if (marker == 0x01 || (marker >= 0xD0 && marker <= 0xD7)) {
+            continue;
+        }
+        if (offset + 2 > size) {
+            break;
+        }
+        const quint16 segmentLength = static_cast<quint16>((data[offset] << 8) | data[offset + 1]);
+        if (segmentLength < 2 || offset + segmentLength > size) {
+            break;
+        }
+        const bool isStartOfFrame = marker >= 0xC0 && marker <= 0xCF && marker != 0xC4 && marker != 0xC8 && marker != 0xCC;
+        if (isStartOfFrame && segmentLength >= 8) {
+            return data[offset + 7];
+        }
+        offset += segmentLength;
+    }
+    return 0;
+}
+
+QString jpegFallbackReason(const QByteArray &bytes)
+{
+    if (jpegHasIccProfileForBenchmark(bytes)) {
+        return "icc-profile";
+    }
+    if (jpegComponentCountForBenchmark(bytes) == 4) {
+        return "four-component-jpeg";
+    }
+    return "other";
+}
+
+bool parseJpegCompareDecoders(const QString &value, QStringList &decoders)
+{
+    QStringList parsed;
+    for (const QString &part : value.split(',', Qt::SkipEmptyParts)) {
+        const QString decoder = part.trimmed().toLower();
+        if (decoder != "qt" && decoder != "turbojpeg") {
+            return false;
+        }
+        if (parsed.contains(decoder)) {
+            return false;
+        }
+        parsed.append(decoder);
+    }
+    if (parsed.size() != 2) {
+        return false;
+    }
+    decoders = parsed;
+    return true;
+}
+
 bool parseOptions(const QStringList &arguments, BenchmarkOptions &options, QString &error, QString &helpText)
 {
     QCommandLineParser parser;
@@ -222,9 +404,10 @@ bool parseOptions(const QStringList &arguments, BenchmarkOptions &options, QStri
     parser.addOption(QCommandLineOption("recursive", "Include images in subdirectories when a directory is specified."));
     parser.addOption(QCommandLineOption("runs", "Number of measured runs per image.", "count", "5"));
     parser.addOption(QCommandLineOption("warmup", "Number of unmeasured warmup runs per image.", "count", "2"));
-    parser.addOption(QCommandLineOption("benchmark-mode", "Benchmark mode: source-decode or decode-only.", "mode", "source-decode"));
+    parser.addOption(QCommandLineOption("benchmark-mode", "Benchmark mode: source-decode, decode-only, or decoder-compare.", "mode", "source-decode"));
     parser.addOption(QCommandLineOption("output", "CSV output path. A timestamped file is used when omitted.", "path"));
     parser.addOption(QCommandLineOption("jpeg-decoder", "JPEG decoder: auto, qt, or turbojpeg.", "backend", "auto"));
+    parser.addOption(QCommandLineOption("jpeg-decoders", "Comma-separated JPEG decoder pair for decoder-compare.", "backends", "qt,turbojpeg"));
     parser.addOption(QCommandLineOption("webp-decoder", "WebP decoder: auto, qt, or libwebp.", "backend", "auto"));
     parser.addPositionalArgument("input", "Image, directory, or archive to benchmark. Multiple inputs are allowed.", "[input...]");
 
@@ -260,8 +443,10 @@ bool parseOptions(const QStringList &arguments, BenchmarkOptions &options, QStri
         options.mode = BenchmarkMode::SourceDecode;
     } else if (mode == "decode-only") {
         options.mode = BenchmarkMode::DecodeOnly;
+    } else if (mode == "decoder-compare") {
+        options.mode = BenchmarkMode::DecoderCompare;
     } else {
-        error = "--benchmark-mode must be source-decode or decode-only.";
+        error = "--benchmark-mode must be source-decode, decode-only, or decoder-compare.";
         return false;
     }
     if (!parseJpegDecoder(parser.value("jpeg-decoder"), options.decodePolicy.jpeg)) {
@@ -270,6 +455,10 @@ bool parseOptions(const QStringList &arguments, BenchmarkOptions &options, QStri
     }
     if (!parseWebPDecoder(parser.value("webp-decoder"), options.decodePolicy.webp)) {
         error = "--webp-decoder must be auto, qt, or libwebp.";
+        return false;
+    }
+    if (!parseJpegCompareDecoders(parser.value("jpeg-decoders"), options.jpegCompareDecoders)) {
+        error = "--jpeg-decoders must contain qt and turbojpeg exactly once each.";
         return false;
     }
 
@@ -289,12 +478,15 @@ BenchmarkRecord measureOnce(
     const QString &container,
     int run,
     const ByteLoader &loader,
-    const QByteArray *preloadedBytes)
+    const QByteArray *preloadedBytes,
+    const ImageDecodePolicy &decodePolicy,
+    const QString &requestedDecoder)
 {
     BenchmarkRecord record;
     record.input = input;
     record.entry = entry;
     record.container = container;
+    record.requestedDecoder = requestedDecoder;
     record.mode = modeName(options.mode);
     record.run = run;
 
@@ -318,7 +510,7 @@ BenchmarkRecord measureOnce(
         QSize(),
         QSize(),
         true,
-        options.decodePolicy,
+        decodePolicy,
         &metrics);
     record.totalNanoseconds = totalTimer.nsecsElapsed();
     record.sourceSize = metrics.sourceSize;
@@ -330,7 +522,19 @@ BenchmarkRecord measureOnce(
     record.sizeBucket = sizeBucket(record.sourceSize);
     record.megapixelsPerSecond = decodeThroughput(record.sourceSize, record.decodeNanoseconds);
     record.success = !content.loadedImage.isNull() || content.originalSize.isValid();
+    if (options.mode == BenchmarkMode::DecoderCompare && !record.success) {
+        record.fallbackReason = "decode-failure";
+    } else if (options.mode == BenchmarkMode::DecoderCompare && !decoderMatchesRequest(requestedDecoder, record.decoder)) {
+        record.fallbackReason = requestedDecoder == "turbojpeg" ? jpegFallbackReason(*bytes) : "unexpected-backend";
+    }
     return record;
+}
+
+ImageDecodePolicy comparePolicy(const BenchmarkOptions &options, const QString &decoder)
+{
+    ImageDecodePolicy policy = options.decodePolicy;
+    policy.jpeg = decoder == "qt" ? JpegDecoderPreference::Qt : JpegDecoderPreference::TurboJpeg;
+    return policy;
 }
 
 void warmUp(
@@ -339,10 +543,57 @@ void warmUp(
     const QString &entry,
     const QString &container,
     const ByteLoader &loader,
-    const QByteArray *preloadedBytes)
+    const QByteArray *preloadedBytes,
+    const ImageDecodePolicy &decodePolicy,
+    const QString &requestedDecoder)
 {
     for (int run = 0; run < options.warmup; ++run) {
-        measureOnce(options, input, entry, container, run, loader, preloadedBytes);
+        measureOnce(options, input, entry, container, run, loader, preloadedBytes, decodePolicy, requestedDecoder);
+    }
+}
+
+void benchmarkComparisonSample(
+    const BenchmarkOptions &options,
+    const QString &input,
+    const QString &entry,
+    const QString &container,
+    const ByteLoader &loader,
+    QVector<BenchmarkRecord> &records)
+{
+    if (!isJpegEntry(entry)) {
+        return;
+    }
+
+    const QByteArray bytes = loader();
+    const QByteArray *preloaded = &bytes;
+    auto runIteration = [&](int iteration, int recordedRun, bool appendRecords) {
+        QStringList decoders = options.jpegCompareDecoders;
+        if ((iteration & 1) != 0) {
+            std::reverse(decoders.begin(), decoders.end());
+        }
+        for (const QString &decoder : decoders) {
+            const ImageDecodePolicy policy = comparePolicy(options, decoder);
+            BenchmarkRecord record = measureOnce(
+                options,
+                input,
+                entry,
+                container,
+                recordedRun,
+                loader,
+                preloaded,
+                policy,
+                decoder);
+            if (appendRecords) {
+                records.append(std::move(record));
+            }
+        }
+    };
+
+    for (int run = 0; run < options.warmup; ++run) {
+        runIteration(run, 0, false);
+    }
+    for (int run = 1; run <= options.runs; ++run) {
+        runIteration(options.warmup + run - 1, run, true);
     }
 }
 
@@ -354,6 +605,11 @@ void benchmarkSample(
     const ByteLoader &loader,
     QVector<BenchmarkRecord> &records)
 {
+    if (options.mode == BenchmarkMode::DecoderCompare) {
+        benchmarkComparisonSample(options, input, entry, container, loader, records);
+        return;
+    }
+
     QByteArray preloadedBytes;
     const QByteArray *preloaded = nullptr;
     if (options.mode == BenchmarkMode::DecodeOnly) {
@@ -361,9 +617,19 @@ void benchmarkSample(
         preloaded = &preloadedBytes;
     }
 
-    warmUp(options, input, entry, container, loader, preloaded);
+    const QString requestedDecoder = requestedDecoderForEntry(options, entry);
+    warmUp(options, input, entry, container, loader, preloaded, options.decodePolicy, requestedDecoder);
     for (int run = 1; run <= options.runs; ++run) {
-        records.append(measureOnce(options, input, entry, container, run, loader, preloaded));
+        records.append(measureOnce(
+            options,
+            input,
+            entry,
+            container,
+            run,
+            loader,
+            preloaded,
+            options.decodePolicy,
+            requestedDecoder));
     }
 }
 
@@ -494,13 +760,15 @@ bool writeCsv(const QString &path, const QVector<BenchmarkRecord> &records, QStr
     }
 
     QTextStream out(&file);
-    out << "input,entry,format,container,decoder,mode,size_bucket,run,input_bytes,source_width,source_height,output_width,output_height,source_load_us,decode_us,postprocess_us,total_us,megapixels_per_second,success\n";
+    out << "input,entry,format,container,requested_decoder,decoder,fallback_reason,mode,size_bucket,run,input_bytes,source_width,source_height,output_width,output_height,source_load_us,decode_us,postprocess_us,total_us,megapixels_per_second,success\n";
     for (const BenchmarkRecord &record : records) {
         out << csvField(record.input) << ','
             << csvField(record.entry) << ','
             << csvField(record.format) << ','
             << csvField(record.container) << ','
+            << csvField(record.requestedDecoder) << ','
             << csvField(record.decoder) << ','
+            << csvField(record.fallbackReason) << ','
             << csvField(record.mode) << ','
             << csvField(record.sizeBucket) << ','
             << record.run << ','
@@ -519,8 +787,165 @@ bool writeCsv(const QString &path, const QVector<BenchmarkRecord> &records, QStr
     return true;
 }
 
+double percentile(QVector<double> values, double fraction)
+{
+    if (values.isEmpty()) {
+        return 0.0;
+    }
+    std::sort(values.begin(), values.end());
+    const int count = static_cast<int>(values.size());
+    const int index = qBound(0, static_cast<int>(std::ceil(count * fraction)) - 1, count - 1);
+    return values[index];
+}
+
+QString formatTable(const QStringList &headers, const QVector<QStringList> &rows, const QVector<bool> &rightAligned)
+{
+    QVector<int> widths(headers.size());
+    for (int column = 0; column < headers.size(); ++column) {
+        widths[column] = headers[column].size();
+    }
+    for (const QStringList &row : rows) {
+        for (int column = 0; column < qMin(row.size(), widths.size()); ++column) {
+            widths[column] = qMax(widths[column], row[column].size());
+        }
+    }
+
+    auto formattedRow = [&](const QStringList &row) {
+        QString line;
+        for (int column = 0; column < widths.size(); ++column) {
+            if (column > 0) {
+                line += "  ";
+            }
+            const QString value = row.value(column);
+            const bool alignRight = column < rightAligned.size() && rightAligned[column];
+            line += alignRight ? value.rightJustified(widths[column]) : value.leftJustified(widths[column]);
+        }
+        return line;
+    };
+
+    QString text = formattedRow(headers) + '\n';
+    QStringList separators;
+    for (int column = 0; column < widths.size(); ++column) {
+        separators.append(QString(widths[column], '-'));
+    }
+    text += formattedRow(separators) + '\n';
+    for (const QStringList &row : rows) {
+        text += formattedRow(row) + '\n';
+    }
+    return text;
+}
+
+QString buildParsedOptionsSummary(const BenchmarkOptions &options)
+{
+    QVector<QStringList> rows{
+        {"benchmark", "true"},
+        {"benchmark-mode", modeName(options.mode)},
+        {"recursive", options.recursive ? "true" : "false"},
+        {"runs", QString::number(options.runs)},
+        {"warmup", QString::number(options.warmup)},
+        {"output", options.outputPath},
+        {"jpeg-decoder", jpegDecoderName(options.decodePolicy.jpeg)},
+        {"jpeg-decoders", options.jpegCompareDecoders.join(',')},
+        {"webp-decoder", webpDecoderName(options.decodePolicy.webp)},
+    };
+    for (int i = 0; i < options.inputs.size(); ++i) {
+        rows.append({QString("input[%1]").arg(i), options.inputs[i]});
+    }
+    return formatTable({"option", "value"}, rows, {false, false});
+}
+
+QString comparisonImageKey(const BenchmarkRecord &record)
+{
+    static const QChar separator(0x1F);
+    return record.input + separator + record.entry;
+}
+
+QString buildComparisonSummary(const BenchmarkOptions &options, const QVector<BenchmarkRecord> &records)
+{
+    if (options.mode != BenchmarkMode::DecoderCompare || options.jpegCompareDecoders.size() != 2) {
+        return {};
+    }
+
+    struct ImageValues
+    {
+        QMap<QString, QVector<double>> validDecodeMilliseconds;
+        QMap<QString, QString> fallbackReasons;
+    };
+
+    QMap<QString, ImageValues> images;
+    for (const BenchmarkRecord &record : records) {
+        ImageValues &image = images[comparisonImageKey(record)];
+        if (record.success && decoderMatchesRequest(record.requestedDecoder, record.decoder)) {
+            image.validDecodeMilliseconds[record.requestedDecoder].append(nanosecondsToMilliseconds(record.decodeNanoseconds));
+        } else if (!record.fallbackReason.isEmpty()) {
+            image.fallbackReasons[record.requestedDecoder] = record.fallbackReason;
+        } else if (!record.success) {
+            image.fallbackReasons[record.requestedDecoder] = "decode-failure";
+        }
+    }
+
+    const QString baseline = options.jpegCompareDecoders[0];
+    const QString candidate = options.jpegCompareDecoders[1];
+    QMap<QString, QVector<double>> perImageMedians;
+    QVector<double> speedups;
+    QMap<QString, int> exclusionReasons;
+    int pairedImages = 0;
+
+    for (auto it = images.cbegin(); it != images.cend(); ++it) {
+        const ImageValues &image = it.value();
+        const QVector<double> baselineRuns = image.validDecodeMilliseconds.value(baseline);
+        const QVector<double> candidateRuns = image.validDecodeMilliseconds.value(candidate);
+        if (baselineRuns.size() == options.runs && candidateRuns.size() == options.runs) {
+            const double baselineMedian = median(baselineRuns);
+            const double candidateMedian = median(candidateRuns);
+            perImageMedians[baseline].append(baselineMedian);
+            perImageMedians[candidate].append(candidateMedian);
+            if (candidateMedian > 0.0) {
+                speedups.append(baselineMedian / candidateMedian);
+            }
+            ++pairedImages;
+            continue;
+        }
+
+        QString reason = image.fallbackReasons.value(candidate);
+        if (reason.isEmpty()) {
+            reason = image.fallbackReasons.value(baseline);
+        }
+        if (reason.isEmpty()) {
+            reason = "incomplete-pair";
+        }
+        ++exclusionReasons[reason];
+    }
+
+    QString text;
+    QTextStream out(&text);
+    out << "Paired JPEG decoder comparison\n";
+    QVector<QStringList> overview{
+        {"images considered", QString::number(images.size())},
+        {"paired images", QString::number(pairedImages)},
+        {"excluded images", QString::number(images.size() - pairedImages)},
+        {QString("%1 median decode ms").arg(baseline), QString::number(median(perImageMedians.value(baseline)), 'f', 3)},
+        {QString("%1 median decode ms").arg(candidate), QString::number(median(perImageMedians.value(candidate)), 'f', 3)},
+        {QString("%1 median speedup vs %2").arg(candidate, baseline), QString("%1x").arg(QString::number(median(speedups), 'f', 3))},
+        {"speedup p10", QString("%1x").arg(QString::number(percentile(speedups, 0.10), 'f', 3))},
+        {"speedup p90", QString("%1x").arg(QString::number(percentile(speedups, 0.90), 'f', 3))},
+    };
+    out << formatTable({"metric", "value"}, overview, {false, true});
+
+    if (!exclusionReasons.isEmpty()) {
+        out << "\nExcluded/fallback images\n";
+        QVector<QStringList> rows;
+        for (auto it = exclusionReasons.cbegin(); it != exclusionReasons.cend(); ++it) {
+            rows.append({it.key(), QString::number(it.value())});
+        }
+        out << formatTable({"reason", "images"}, rows, {false, true});
+    }
+    return text;
+}
+
 QString buildSummary(const BenchmarkOptions &options, const QVector<BenchmarkRecord> &records)
 {
+    static const QChar separator(0x1F);
     QMap<QString, AggregateValues> groups;
     int failures = 0;
     for (const BenchmarkRecord &record : records) {
@@ -528,8 +953,14 @@ QString buildSummary(const BenchmarkOptions &options, const QVector<BenchmarkRec
             ++failures;
             continue;
         }
-        const QString key = QString("%1\t%2\t%3\t%4")
-                                .arg(record.format, record.container, record.decoder, record.sizeBucket);
+        const QString key = QStringList{
+            record.format,
+            record.container,
+            record.requestedDecoder,
+            record.decoder,
+            record.sizeBucket,
+        }
+                                .join(separator);
         AggregateValues &values = groups[key];
         values.decodeMilliseconds.append(nanosecondsToMilliseconds(record.decodeNanoseconds));
         values.totalMilliseconds.append(nanosecondsToMilliseconds(record.totalNanoseconds));
@@ -540,25 +971,45 @@ QString buildSummary(const BenchmarkOptions &options, const QVector<BenchmarkRec
 
     QString summaryText;
     QTextStream out(&summaryText);
-    out << "QuickViewer image benchmark\n"
-        << "mode=" << modeName(options.mode)
-        << " runs=" << options.runs
-        << " warmup=" << options.warmup
-        << " records=" << records.size()
-        << " failures=" << failures << "\n\n";
-    out << "format\tcontainer\tdecoder\tsize\tn\tmedian decode ms\tp95 decode ms\tmedian total ms\tmedian MP/s\n";
+    out << "QuickViewer image benchmark\n\n"
+        << "Parsed options\n"
+        << buildParsedOptionsSummary(options) << '\n'
+        << "Result\n";
+    out << formatTable(
+        {"metric", "value"},
+        {
+            {"records", QString::number(records.size())},
+            {"failures", QString::number(failures)},
+        },
+        {false, true});
+
+    out << "\nAggregate results\n";
+    QVector<QStringList> aggregateRows;
     for (auto it = groups.cbegin(); it != groups.cend(); ++it) {
-        const QStringList parts = it.key().split('\t');
+        const QStringList parts = it.key().split(separator);
         const AggregateValues &values = it.value();
-        out << parts.value(0) << '\t'
-            << parts.value(1) << '\t'
-            << parts.value(2) << '\t'
-            << parts.value(3) << '\t'
-            << values.decodeMilliseconds.size() << '\t'
-            << QString::number(median(values.decodeMilliseconds), 'f', 3) << '\t'
-            << QString::number(percentile95(values.decodeMilliseconds), 'f', 3) << '\t'
-            << QString::number(median(values.totalMilliseconds), 'f', 3) << '\t'
-            << QString::number(median(values.megapixelsPerSecond), 'f', 1) << '\n';
+        aggregateRows.append({
+            parts.value(0),
+            parts.value(1),
+            parts.value(2),
+            parts.value(3),
+            parts.value(4),
+            QString::number(values.decodeMilliseconds.size()),
+            QString::number(median(values.decodeMilliseconds), 'f', 3),
+            QString::number(percentile95(values.decodeMilliseconds), 'f', 3),
+            QString::number(median(values.totalMilliseconds), 'f', 3),
+            QString::number(median(values.megapixelsPerSecond), 'f', 1),
+        });
+    }
+    out << formatTable(
+        {"format", "container", "requested", "actual", "size", "n", "median decode ms", "p95 decode ms", "median total ms", "median MP/s"},
+        aggregateRows,
+        {false, false, false, false, false, true, true, true, true, true});
+
+    const QString comparisonSummary = buildComparisonSummary(options, records);
+    if (!comparisonSummary.isEmpty()) {
+        out << '\n'
+            << comparisonSummary;
     }
     return summaryText;
 }
