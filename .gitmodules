@@ -25,3 +25,9 @@
 [submodule "resvg/resvg"]
 	path = resvg/resvg
 	url = https://github.com/linebender/resvg.git
+[submodule "spng/libspng"]
+	path = spng/libspng
+	url = https://github.com/randy408/libspng
+[submodule "spng/miniz"]
+	path = spng/miniz
+	url = https://github.com/richgel999/miniz

@@ -9,6 +9,12 @@ enum class JpegDecoderPreference {
     TurboJpeg,
 };
 
+enum class PngDecoderPreference {
+    Auto,
+    Qt,
+    LibSpng,
+};
+
 enum class WebPDecoderPreference {
     Auto,
     Qt,
@@ -18,6 +24,7 @@ enum class WebPDecoderPreference {
 struct ImageDecodePolicy
 {
     JpegDecoderPreference jpeg = JpegDecoderPreference::Auto;
+    PngDecoderPreference png = PngDecoderPreference::Auto;
     WebPDecoderPreference webp = WebPDecoderPreference::Auto;
 };
 

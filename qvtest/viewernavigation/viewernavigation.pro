@@ -29,6 +29,7 @@ INCLUDEPATH += \
     ../../easyexif/easyexif \
     ../../fileloader \
     ../../zimg \
+    ../../spng/libspng/spng \
     ../../AssociateFilesWithQuickViewer
 
 SOURCES += \
@@ -106,7 +107,7 @@ FORMS += \
     ../../QuickViewer/src/qactionmanager/keyconfigdialog.ui
 
 DESTDIR = ../../lib
-LIBS += -L../../lib -leasyexif -lresizehalf -lfileloader -lQt7z -lunrar -lzimg
+LIBS += -L../../lib -leasyexif -lresizehalf -lfileloader -lQt7z -lunrar -lzimg -lspng
 
 contains(DEFINES, QV_WITH_LUMINOR) {
     INCLUDEPATH += ../../luminor

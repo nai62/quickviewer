@@ -28,6 +28,11 @@ enum class BenchmarkMode {
     DecoderCompare,
 };
 
+enum class CompareFormat {
+    Jpeg,
+    Png,
+};
+
 struct BenchmarkOptions
 {
     QStringList inputs;
@@ -37,7 +42,9 @@ struct BenchmarkOptions
     int runs = 5;
     int warmup = 2;
     ImageDecodePolicy decodePolicy;
+    CompareFormat compareFormat = CompareFormat::Jpeg;
     QStringList jpegCompareDecoders{"qt", "turbojpeg"};
+    QStringList pngCompareDecoders{"qt", "libspng"};
 };
 
 struct BenchmarkRecord
@@ -209,6 +216,24 @@ bool parseJpegDecoder(const QString &value, JpegDecoderPreference &preference)
     return false;
 }
 
+bool parsePngDecoder(const QString &value, PngDecoderPreference &preference)
+{
+    const QString normalized = value.toLower();
+    if (normalized == "auto") {
+        preference = PngDecoderPreference::Auto;
+        return true;
+    }
+    if (normalized == "qt") {
+        preference = PngDecoderPreference::Qt;
+        return true;
+    }
+    if (normalized == "libspng") {
+        preference = PngDecoderPreference::LibSpng;
+        return true;
+    }
+    return false;
+}
+
 bool parseWebPDecoder(const QString &value, WebPDecoderPreference &preference)
 {
     const QString normalized = value.toLower();
@@ -240,6 +265,19 @@ QString jpegDecoderName(JpegDecoderPreference preference)
     return "unknown";
 }
 
+QString pngDecoderName(PngDecoderPreference preference)
+{
+    switch (preference) {
+    case PngDecoderPreference::Auto:
+        return "auto";
+    case PngDecoderPreference::Qt:
+        return "qt";
+    case PngDecoderPreference::LibSpng:
+        return "libspng";
+    }
+    return "unknown";
+}
+
 QString webpDecoderName(WebPDecoderPreference preference)
 {
     switch (preference) {
@@ -259,11 +297,34 @@ bool isJpegEntry(const QString &entry)
     return suffix == "jpg" || suffix == "jpeg" || suffix == "jpe" || suffix == "jif" || suffix == "jfif" || suffix == "jfi";
 }
 
+bool isPngEntry(const QString &entry)
+{
+    return QFileInfo(entry).suffix().compare("png", Qt::CaseInsensitive) == 0;
+}
+
+QString compareFormatName(CompareFormat format)
+{
+    return format == CompareFormat::Png ? "png" : "jpeg";
+}
+
+const QStringList &comparisonDecoders(const BenchmarkOptions &options)
+{
+    return options.compareFormat == CompareFormat::Png ? options.pngCompareDecoders : options.jpegCompareDecoders;
+}
+
+bool isComparisonEntry(const BenchmarkOptions &options, const QString &entry)
+{
+    return options.compareFormat == CompareFormat::Png ? isPngEntry(entry) : isJpegEntry(entry);
+}
+
 QString requestedDecoderForEntry(const BenchmarkOptions &options, const QString &entry)
 {
     const QString suffix = QFileInfo(entry).suffix().toLower();
     if (isJpegEntry(entry)) {
         return jpegDecoderName(options.decodePolicy.jpeg);
+    }
+    if (isPngEntry(entry)) {
+        return pngDecoderName(options.decodePolicy.png);
     }
     if (suffix == "webp") {
         return webpDecoderName(options.decodePolicy.webp);
@@ -375,12 +436,79 @@ QString jpegFallbackReason(const QByteArray &bytes)
     return "other";
 }
 
+bool pngHasChunkForBenchmark(const QByteArray &bytes, const char chunkType[5])
+{
+    static constexpr unsigned char PngSignature[] = {0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A};
+    const auto *data = reinterpret_cast<const unsigned char *>(bytes.constData());
+    const qsizetype size = bytes.size();
+    if (size < 8 || std::memcmp(data, PngSignature, sizeof(PngSignature)) != 0) {
+        return false;
+    }
+
+    qsizetype offset = 8;
+    while (offset + 12 <= size) {
+        const quint32 chunkLength = (static_cast<quint32>(data[offset]) << 24) | (static_cast<quint32>(data[offset + 1]) << 16) | (static_cast<quint32>(data[offset + 2]) << 8) | static_cast<quint32>(data[offset + 3]);
+        if (static_cast<quint64>(chunkLength) > static_cast<quint64>(size - offset - 12)) {
+            return false;
+        }
+        const char *type = reinterpret_cast<const char *>(data + offset + 4);
+        if (std::memcmp(type, chunkType, 4) == 0) {
+            return true;
+        }
+        if (std::memcmp(type, "IEND", 4) == 0) {
+            break;
+        }
+        offset += static_cast<qsizetype>(chunkLength) + 12;
+    }
+    return false;
+}
+
+QString pngFallbackReason(const QByteArray &bytes)
+{
+    if (pngHasChunkForBenchmark(bytes, "acTL")) {
+        return "animated-png";
+    }
+    if (pngHasChunkForBenchmark(bytes, "iCCP")) {
+        return "icc-profile";
+    }
+    if (pngHasChunkForBenchmark(bytes, "gAMA")) {
+        return "gamma-chunk";
+    }
+    if (pngHasChunkForBenchmark(bytes, "cHRM")) {
+        return "chromaticities";
+    }
+    if (bytes.size() >= 25 && static_cast<unsigned char>(bytes[24]) > 8) {
+        return "high-bit-depth";
+    }
+    return "other";
+}
+
 bool parseJpegCompareDecoders(const QString &value, QStringList &decoders)
 {
     QStringList parsed;
     for (const QString &part : value.split(',', Qt::SkipEmptyParts)) {
         const QString decoder = part.trimmed().toLower();
         if (decoder != "qt" && decoder != "turbojpeg") {
+            return false;
+        }
+        if (parsed.contains(decoder)) {
+            return false;
+        }
+        parsed.append(decoder);
+    }
+    if (parsed.size() != 2) {
+        return false;
+    }
+    decoders = parsed;
+    return true;
+}
+
+bool parsePngCompareDecoders(const QString &value, QStringList &decoders)
+{
+    QStringList parsed;
+    for (const QString &part : value.split(',', Qt::SkipEmptyParts)) {
+        const QString decoder = part.trimmed().toLower();
+        if (decoder != "qt" && decoder != "libspng") {
             return false;
         }
         if (parsed.contains(decoder)) {
@@ -407,8 +535,11 @@ bool parseOptions(const QStringList &arguments, BenchmarkOptions &options, QStri
     parser.addOption(QCommandLineOption("benchmark-mode", "Benchmark mode: source-decode, decode-only, or decoder-compare.", "mode", "source-decode"));
     parser.addOption(QCommandLineOption("output", "CSV output path. A timestamped file is used when omitted.", "path"));
     parser.addOption(QCommandLineOption("jpeg-decoder", "JPEG decoder: auto, qt, or turbojpeg.", "backend", "auto"));
-    parser.addOption(QCommandLineOption("jpeg-decoders", "Comma-separated JPEG decoder pair for decoder-compare.", "backends", "qt,turbojpeg"));
+    parser.addOption(QCommandLineOption("png-decoder", "PNG decoder: auto, qt, or libspng.", "backend", "auto"));
     parser.addOption(QCommandLineOption("webp-decoder", "WebP decoder: auto, qt, or libwebp.", "backend", "auto"));
+    parser.addOption(QCommandLineOption("compare-format", "Image format for decoder-compare: jpeg or png.", "format", "jpeg"));
+    parser.addOption(QCommandLineOption("jpeg-decoders", "Comma-separated JPEG decoder pair for decoder-compare.", "backends", "qt,turbojpeg"));
+    parser.addOption(QCommandLineOption("png-decoders", "Comma-separated PNG decoder pair for decoder-compare.", "backends", "qt,libspng"));
     parser.addPositionalArgument("input", "Image, directory, or archive to benchmark. Multiple inputs are allowed.", "[input...]");
 
     if (!parser.parse(arguments)) {
@@ -453,12 +584,29 @@ bool parseOptions(const QStringList &arguments, BenchmarkOptions &options, QStri
         error = "--jpeg-decoder must be auto, qt, or turbojpeg.";
         return false;
     }
+    if (!parsePngDecoder(parser.value("png-decoder"), options.decodePolicy.png)) {
+        error = "--png-decoder must be auto, qt, or libspng.";
+        return false;
+    }
     if (!parseWebPDecoder(parser.value("webp-decoder"), options.decodePolicy.webp)) {
         error = "--webp-decoder must be auto, qt, or libwebp.";
         return false;
     }
+    const QString compareFormat = parser.value("compare-format").toLower();
+    if (compareFormat == "jpeg" || compareFormat == "jpg") {
+        options.compareFormat = CompareFormat::Jpeg;
+    } else if (compareFormat == "png") {
+        options.compareFormat = CompareFormat::Png;
+    } else {
+        error = "--compare-format must be jpeg or png.";
+        return false;
+    }
     if (!parseJpegCompareDecoders(parser.value("jpeg-decoders"), options.jpegCompareDecoders)) {
         error = "--jpeg-decoders must contain qt and turbojpeg exactly once each.";
+        return false;
+    }
+    if (!parsePngCompareDecoders(parser.value("png-decoders"), options.pngCompareDecoders)) {
+        error = "--png-decoders must contain qt and libspng exactly once each.";
         return false;
     }
 
@@ -525,7 +673,13 @@ BenchmarkRecord measureOnce(
     if (options.mode == BenchmarkMode::DecoderCompare && !record.success) {
         record.fallbackReason = "decode-failure";
     } else if (options.mode == BenchmarkMode::DecoderCompare && !decoderMatchesRequest(requestedDecoder, record.decoder)) {
-        record.fallbackReason = requestedDecoder == "turbojpeg" ? jpegFallbackReason(*bytes) : "unexpected-backend";
+        if (requestedDecoder == "turbojpeg") {
+            record.fallbackReason = jpegFallbackReason(*bytes);
+        } else if (requestedDecoder == "libspng") {
+            record.fallbackReason = pngFallbackReason(*bytes);
+        } else {
+            record.fallbackReason = "unexpected-backend";
+        }
     }
     return record;
 }
@@ -533,7 +687,11 @@ BenchmarkRecord measureOnce(
 ImageDecodePolicy comparePolicy(const BenchmarkOptions &options, const QString &decoder)
 {
     ImageDecodePolicy policy = options.decodePolicy;
-    policy.jpeg = decoder == "qt" ? JpegDecoderPreference::Qt : JpegDecoderPreference::TurboJpeg;
+    if (options.compareFormat == CompareFormat::Png) {
+        policy.png = decoder == "qt" ? PngDecoderPreference::Qt : PngDecoderPreference::LibSpng;
+    } else {
+        policy.jpeg = decoder == "qt" ? JpegDecoderPreference::Qt : JpegDecoderPreference::TurboJpeg;
+    }
     return policy;
 }
 
@@ -560,14 +718,14 @@ void benchmarkComparisonSample(
     const ByteLoader &loader,
     QVector<BenchmarkRecord> &records)
 {
-    if (!isJpegEntry(entry)) {
+    if (!isComparisonEntry(options, entry)) {
         return;
     }
 
     const QByteArray bytes = loader();
     const QByteArray *preloaded = &bytes;
     auto runIteration = [&](int iteration, int recordedRun, bool appendRecords) {
-        QStringList decoders = options.jpegCompareDecoders;
+        QStringList decoders = comparisonDecoders(options);
         if ((iteration & 1) != 0) {
             std::reverse(decoders.begin(), decoders.end());
         }
@@ -845,8 +1003,11 @@ QString buildParsedOptionsSummary(const BenchmarkOptions &options)
         {"warmup", QString::number(options.warmup)},
         {"output", options.outputPath},
         {"jpeg-decoder", jpegDecoderName(options.decodePolicy.jpeg)},
-        {"jpeg-decoders", options.jpegCompareDecoders.join(',')},
+        {"png-decoder", pngDecoderName(options.decodePolicy.png)},
         {"webp-decoder", webpDecoderName(options.decodePolicy.webp)},
+        {"compare-format", compareFormatName(options.compareFormat)},
+        {"jpeg-decoders", options.jpegCompareDecoders.join(',')},
+        {"png-decoders", options.pngCompareDecoders.join(',')},
     };
     for (int i = 0; i < options.inputs.size(); ++i) {
         rows.append({QString("input[%1]").arg(i), options.inputs[i]});
@@ -862,7 +1023,8 @@ QString comparisonImageKey(const BenchmarkRecord &record)
 
 QString buildComparisonSummary(const BenchmarkOptions &options, const QVector<BenchmarkRecord> &records)
 {
-    if (options.mode != BenchmarkMode::DecoderCompare || options.jpegCompareDecoders.size() != 2) {
+    const QStringList &decoders = comparisonDecoders(options);
+    if (options.mode != BenchmarkMode::DecoderCompare || decoders.size() != 2) {
         return {};
     }
 
@@ -884,8 +1046,8 @@ QString buildComparisonSummary(const BenchmarkOptions &options, const QVector<Be
         }
     }
 
-    const QString baseline = options.jpegCompareDecoders[0];
-    const QString candidate = options.jpegCompareDecoders[1];
+    const QString baseline = decoders[0];
+    const QString candidate = decoders[1];
     QMap<QString, QVector<double>> perImageMedians;
     QVector<double> speedups;
     QMap<QString, int> exclusionReasons;
@@ -919,7 +1081,7 @@ QString buildComparisonSummary(const BenchmarkOptions &options, const QVector<Be
 
     QString text;
     QTextStream out(&text);
-    out << "Paired JPEG decoder comparison\n";
+    out << QString("Paired %1 decoder comparison\n").arg(options.compareFormat == CompareFormat::Png ? "PNG" : "JPEG");
     QVector<QStringList> overview{
         {"images considered", QString::number(images.size())},
         {"paired images", QString::number(pairedImages)},
