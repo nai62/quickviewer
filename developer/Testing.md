@@ -189,6 +189,12 @@ printf 'Exit code: %s\n' "$build_status"
 For Release, replace the command with
 `scripts\verify-windows.cmd release`.
 
+## Performance benchmarks
+
+Image loading and decoder performance should be measured with a Release build.
+See [Benchmark.md](Benchmark.md) for the benchmark CLI, paired decoder
+comparison mode, and output format.
+
 ## Profiling first-image display
 
 ```bat
