@@ -35,8 +35,8 @@ public:
     IFileLoader *fileLoader() { return m_loader; }
 
     static ImageContent futureLoadImageFromFileVolume(
-        QSharedPointer<ImageLoadContext> context, QString path, QSize pageSize);
-    static ImageContent loadImageFromFile(QString path, QSize pageSize);
+        QSharedPointer<ImageLoadContext> context, QString path, QSize pageSize, QSize decodeTargetSize = QSize());
+    static ImageContent loadImageFromFile(QString path, QSize pageSize, QSize decodeTargetSize = QSize());
     static ImageContent resizeImageForViewport(ImageContent content, QSize pageSize);
     static QString FullPathToVolumePath(QString path);
     static QString FullPathToSubFilePath(QString path);
@@ -114,6 +114,7 @@ private:
         const QString &path,
         const QSize &pageSize,
         bool requiredForDisplay,
+        const QSize &decodeTargetSize = QSize(),
         int pageIndex = -1,
         quint64 generation = 0);
     ImageLoadFuture scheduleResize(ImageContent content, const QSize &pageSize);

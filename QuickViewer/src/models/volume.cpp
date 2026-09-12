@@ -74,13 +74,14 @@ Volume::ImageLoadFuture Volume::scheduleImageLoad(
     const QString &path,
     const QSize &pageSize,
     bool requiredForDisplay,
+    const QSize &decodeTargetSize,
     int pageIndex,
     quint64 generation)
 {
     const QSharedPointer<ImageLoadContext> context = m_loadContext;
     auto submission = imagePrefetchExecutor().submit(
-        [context, path, pageSize] {
-            return futureLoadImageFromFileVolume(context, path, pageSize);
+        [context, path, pageSize, decodeTargetSize] {
+            return futureLoadImageFromFileVolume(context, path, pageSize, decodeTargetSize);
         },
         prefetchPriorityForPage(pageIndex, m_lastPrefetchAnchor),
         m_prefetchOwnerId,
@@ -306,7 +307,7 @@ void Volume::updatePrefetchCache(
                                        ? viewportSize
                                        : QSize();
             const ImageLoadFuture future = scheduleImageLoad(
-                pageNameAt(cnt), pageSize, cnt == anchorPageIndex, cnt, m_prefetchGeneration);
+                pageNameAt(cnt), pageSize, cnt == anchorPageIndex, QSize(), cnt, m_prefetchGeneration);
             if (future.isValid()) {
                 m_imageLoadCache.insert(cnt, future);
             }
@@ -325,7 +326,7 @@ void Volume::prefetchCoverImages(int anchorPageIndex)
     for (int pageIndex : PrefetchPlanner::indexes(
              PrefetchMode::Normal, anchorPageIndex, m_pageNames.size(), 2)) {
         const ImageLoadFuture future = scheduleImageLoad(
-            m_pageNames[pageIndex], QSize(), pageIndex == anchorPageIndex, pageIndex, m_prefetchGeneration);
+            m_pageNames[pageIndex], QSize(), pageIndex == anchorPageIndex, QSize(), pageIndex, m_prefetchGeneration);
         if (future.isValid()) {
             m_imageLoadCache.insert(pageIndex, future);
         }
@@ -419,7 +420,31 @@ static QZimg::FilterMode filterModeForShaderEffect(qvEnums::ShaderEffect effect)
         return QZimg::ResizeBicubic;
     }
 }
-static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QByteArray bytes, QString aformat, uint loopcount)
+static QSize constrainedDecodeSize(const QSize &sourceSize, const QSize &requestedSize, int maxTextureSize)
+{
+    if (!sourceSize.isValid()) {
+        return QSize();
+    }
+
+    QSize limit(maxTextureSize, maxTextureSize);
+    if (requestedSize.isValid() && !requestedSize.isEmpty()) {
+        limit.setWidth(qMin(limit.width(), requestedSize.width()));
+        limit.setHeight(qMin(limit.height(), requestedSize.height()));
+    }
+    if (sourceSize.width() <= limit.width() && sourceSize.height() <= limit.height()) {
+        return sourceSize;
+    }
+    return sourceSize.scaled(limit, Qt::KeepAspectRatio);
+}
+
+static bool shouldUseDecoderScaling(const QString &format, const QImageReader &reader)
+{
+    const QString normalized = format.toLower();
+    const bool hotRaster = normalized == "jpg" || normalized == "jpeg" || normalized == TURBO_JPEG_FMT || normalized == "webp";
+    return hotRaster && reader.supportsOption(QImageIOHandler::ScaledSize);
+}
+
+static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QSize decodeTargetSize, QByteArray bytes, QString aformat, uint loopcount)
 {
     for (;;) {
         int maxTextureSize = qApp->MaxTextureSize();
@@ -462,19 +487,17 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QByteA
             aformat = lodepng_exist ? "lodepng" : "png";
             break;
         }
-        // turbjpeg can turbo rescaling when loading
         QSize baseSize = reader.size();
         QSize loadingSize = baseSize;
-        // qrawspeed plugin can also load rescaled raw images(using built in thumbnail),
-        // but usualy thumbnails are too small, so we don't use
-        if (reader.format() == TURBO_JPEG_FMT) {
-            if (!qApp->UseFastDCTForJPEG()) {
-                reader.setQuality(0);
+        if (reader.format() == TURBO_JPEG_FMT && !qApp->UseFastDCTForJPEG()) {
+            reader.setQuality(0);
+        }
+        if (shouldUseDecoderScaling(aformat, reader)) {
+            const QSize targetSize = constrainedDecodeSize(baseSize, decodeTargetSize, maxTextureSize);
+            if (targetSize.isValid() && targetSize != baseSize) {
+                loadingSize = targetSize;
+                reader.setScaledSize(loadingSize);
             }
-            while (loadingSize.width() > maxTextureSize || loadingSize.height() > maxTextureSize) {
-                loadingSize = QSize((loadingSize.width() + 1) >> 1, (loadingSize.height() + 1) >> 1);
-            }
-            reader.setScaledSize(loadingSize);
         }
         QImage src;
         ImageContent ic(path, bytes.length());
@@ -523,7 +546,7 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QByteA
             QImage src2;
             switch (src.depth()) {
             case 32:
-                if ((src.width() | 0x3) > 0) {
+                if ((src.width() & 0x3) != 0 || (src.height() & 0x1) != 0) {
                     // QImage processing sometimes fails
                     for (int count = 1;; count++) {
                         src2 = src.copy(QRect(0, 0, src.width() >> 2 << 2, src.height() >> 1 << 1));
@@ -543,7 +566,7 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QByteA
                 if (src.format() != QImage::Format::Format_Grayscale8 && src.format() != QImage::Format::Format_RGB888) {
                     src = src.convertToFormat(QImage::Format::Format_RGB888);
                 }
-                if ((src.width() | 0xF) > 0) {
+                if ((src.width() & 0xF) != 0 || (src.height() & 0x1) != 0) {
                     // QImage processing sometimes fails
                     int count = 0;
                     do {
@@ -585,11 +608,11 @@ static ImageContent loadWithSpecifiedFormat(QString path, QSize pageSize, QByteA
     if (!loopcount) {
         return ImageContent(path, bytes.length());
     }
-    return loadWithSpecifiedFormat(path, pageSize, bytes, aformat, loopcount - 1);
+    return loadWithSpecifiedFormat(path, pageSize, decodeTargetSize, bytes, aformat, loopcount - 1);
 }
 
 static ImageContent loadImageFromBytes(
-    QString path, QSize pageSize, const QByteArray &bytes)
+    QString path, QSize pageSize, QSize decodeTargetSize, const QByteArray &bytes)
 {
     if (bytes.isNull() || bytes.isEmpty()) {
         return ImageContent();
@@ -608,40 +631,40 @@ static ImageContent loadImageFromBytes(
     if (aformat == "png" && IFileLoader::supportsImageFormat("apng")) {
         aformat = "apng";
     }
-    return loadWithSpecifiedFormat(path, pageSize, bytes, aformat, 5);
+    return loadWithSpecifiedFormat(path, pageSize, decodeTargetSize, bytes, aformat, 5);
 }
 
 static ImageContent futureLoadImageFromFileVolumeImpl(
-    const QSharedPointer<ImageLoadContext> &context, QString path, QSize pageSize)
+    const QSharedPointer<ImageLoadContext> &context, QString path, QSize pageSize, QSize decodeTargetSize)
 {
     StartupProfiler::mark("image-worker.extract.begin");
     const QByteArray bytes = context->load(path);
     StartupProfiler::mark("image-worker.extract.end");
-    ImageContent content = loadImageFromBytes(path, pageSize, bytes);
+    ImageContent content = loadImageFromBytes(path, pageSize, decodeTargetSize, bytes);
     StartupProfiler::mark("image-worker.decode-resize.end");
     return content;
 }
 
 ImageContent Volume::futureLoadImageFromFileVolume(
-    QSharedPointer<ImageLoadContext> context, QString path, QSize pageSize)
+    QSharedPointer<ImageLoadContext> context, QString path, QSize pageSize, QSize decodeTargetSize)
 {
     QElapsedTimer et_load;
     et_load.start();
-    ImageContent ic = futureLoadImageFromFileVolumeImpl(context, path, pageSize);
+    ImageContent ic = futureLoadImageFromFileVolumeImpl(context, path, pageSize, decodeTargetSize);
     qint64 t_load = et_load.elapsed();
 
     qDebug() << "futureLoadImageFromFileVolume" << path << t_load << "ms, resizedImage=" << !ic.resizedImage.isNull();
     return ic;
 }
 
-ImageContent Volume::loadImageFromFile(QString path, QSize pageSize)
+ImageContent Volume::loadImageFromFile(QString path, QSize pageSize, QSize decodeTargetSize)
 {
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) {
         return ImageContent();
     }
 
-    return loadImageFromBytes(path, pageSize, file.readAll());
+    return loadImageFromBytes(path, pageSize, decodeTargetSize, file.readAll());
 }
 
 ImageContent Volume::resizeImageForViewport(ImageContent content, QSize pageSize)
