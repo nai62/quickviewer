@@ -19,6 +19,7 @@ on:
       - "qvtest/**/*.hpp"
       - ".clang-format"
       - ".clang-format-ignore"
+      - ".gitattributes"
       - "scripts/lint-cpp.py"
 
 permissions:
