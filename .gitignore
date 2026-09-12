@@ -2,3 +2,4 @@
 QuickViewer-*
 .svn
 build/*
+/results
