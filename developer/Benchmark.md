@@ -10,6 +10,13 @@ On the default Windows verification layout, build with:
 scripts\verify-windows.cmd release
 ```
 
+The libspng backend is built from pinned submodules: libspng v0.7.4 and
+miniz 2.2.0. Initialize submodules before configuring a fresh checkout:
+
+```bat
+git submodule update --init --recursive
+```
+
 The executable is then normally located at:
 
 ```text
@@ -57,20 +64,23 @@ QuickViewer.exe --benchmark C:\images --benchmark-mode decode-only
 Use `decode-only` when comparing decoder cost without filesystem or archive
 extraction time.
 
-## Paired JPEG decoder comparison
+## Paired decoder comparison
 
-`decoder-compare` performs a paired JPEG comparison. Each JPEG is loaded or
-extracted once, then the exact same compressed bytes are passed to both
-requested decoders. Decoder order is reversed on alternating iterations to
-reduce ordering bias. Non-JPEG inputs are skipped in this mode.
+`decoder-compare` performs a paired comparison for one image format. Each
+selected image is loaded or extracted once, then the exact same compressed
+bytes are passed to both requested decoders. Decoder order is reversed on
+alternating iterations to reduce ordering bias. Other image formats are
+skipped.
 
-The default comparison is Qt versus TurboJPEG:
+JPEG is the default comparison format. Qt versus TurboJPEG can be measured
+with:
 
 ```bat
 QuickViewer.exe ^
   --benchmark C:\images ^
   --recursive ^
   --benchmark-mode decoder-compare ^
+  --compare-format jpeg ^
   --jpeg-decoders qt,turbojpeg ^
   --runs 10 ^
   --warmup 2 ^
@@ -85,20 +95,41 @@ default `qt,turbojpeg`, speedup is calculated for each image as:
 median Qt decode time / median TurboJPEG decode time
 ```
 
-The reported median speedup is the median of those per-image ratios, rather
-than a ratio of aggregate medians. An image is included in the paired result
-only when every measured run used the requested backend successfully for both
-decoders.
+PNG can be compared in the same way with Qt versus libspng:
 
-TurboJPEG requests may fall back to the Qt image reader for unsupported inputs.
-The CSV records requested and actual backends separately. The benchmark also
-classifies common JPEG exclusions as `icc-profile`, `four-component-jpeg`, or
-`other`; these classifications are intended for benchmark diagnostics rather
-than as a complete JPEG validator.
+```bat
+QuickViewer.exe ^
+  --benchmark C:\images ^
+  --recursive ^
+  --benchmark-mode decoder-compare ^
+  --compare-format png ^
+  --png-decoders qt,libspng ^
+  --runs 10 ^
+  --warmup 2 ^
+  --output results\png-compare.csv
+```
 
-`--jpeg-decoder` controls ordinary `source-decode` and `decode-only` runs. In
-`decoder-compare` mode, the JPEG decoder is selected separately for each side
-of the comparison from `--jpeg-decoders`.
+`--png-decoders` must contain `qt` and `libspng` exactly once each. With
+`qt,libspng`, the reported per-image speedup is the median Qt decode time
+divided by the median libspng decode time.
+
+For both formats, the reported median speedup is the median of the per-image
+ratios rather than a ratio of aggregate medians. An image is included in the
+paired result only when every measured run used the requested backend
+successfully for both decoders.
+
+Native decoder requests may fall back to the Qt image reader when preserving
+viewer behavior requires features the fast path does not handle. The CSV
+records requested and actual backends separately. Common JPEG exclusions are
+classified as `icc-profile`, `four-component-jpeg`, or `other`. Common libspng
+exclusions are classified as `animated-png`, `icc-profile`, `gamma-chunk`,
+`chromaticities`, `high-bit-depth`, or `other`. These classifications are
+benchmark diagnostics rather than complete format validators.
+
+`--jpeg-decoder` and `--png-decoder` control ordinary `source-decode` and
+`decode-only` runs. In `decoder-compare` mode, the decoder is selected
+separately for each side of the comparison from the format-specific decoder
+pair.
 
 ## Decoder selection
 
@@ -107,6 +138,15 @@ For ordinary modes, JPEG can be selected with:
 ```text
 --jpeg-decoder auto|qt|turbojpeg
 ```
+
+PNG can be selected with:
+
+```text
+--png-decoder auto|qt|libspng
+```
+
+`auto` uses libspng for eligible static PNG images. Animated PNG, color-managed
+PNG variants that require Qt metadata handling, and 16-bit PNG fall back to Qt.
 
 WebP can be selected with:
 
