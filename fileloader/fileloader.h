@@ -32,6 +32,7 @@ public:
     virtual ~IFileLoader() {}
 
     static bool isImageFile(QString path);
+    static bool supportsImageFormat(const QByteArray &format);
     static bool isArchiveFile(QString path);
     static bool isExifJpegImageFile(QString path);
     static bool isExifRawImageFile(QString path);
@@ -39,17 +40,17 @@ public:
     static void sortFiles(QStringList &filenames);
     static bool caseInsensitiveLessThan(const QString &s1, const QString &s2);
 
-    virtual QString volumePath() = 0;
-    virtual QString realVolumePath() = 0;
-    virtual bool isArchive() = 0;
-    virtual bool isValid() = 0;
-    virtual bool hasSubDirectories() = 0;
+    virtual QString volumePath() const = 0;
+    virtual QString realVolumePath() const = 0;
+    virtual bool isArchive() const = 0;
+    virtual bool isValid() const = 0;
+    virtual bool hasSubDirectories() const = 0;
     virtual QStringList contents() = 0;
-    virtual QStringList subArchives() = 0;
+    virtual QStringList subArchives() const = 0;
     virtual QByteArray getFile(QString filename, QMutex &mutex) = 0;
-    virtual quint64 getFileSize(QString filename);
-    virtual QDateTime getFileModified(QString filename);
-    virtual InflateCacheMode getCacheMode() = 0;
+    virtual quint64 getFileSize(QString filename) const;
+    virtual QDateTime getFileModified(QString filename) const;
+    virtual InflateCacheMode getCacheMode() const = 0;
 
 signals:
     void imageLoaded(QString name, QByteArray data);

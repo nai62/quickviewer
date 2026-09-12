@@ -17,19 +17,19 @@ public:
      * @brief isArchive
      * @return return true, if the instance treates an archive file
      */
-    bool isArchive() { return true; }
+    bool isArchive() const override { return true; }
     /**
      * @brief isValid
      * @return return true, if the instance can load images
      */
-    bool isValid() { return m_valid; }
-    bool hasSubDirectories() override { return true; }
+    bool isValid() const override { return m_valid; }
+    bool hasSubDirectories() const override { return true; }
     /**
      * @brief volumePath
      * @return the path of the instance
      */
-    QString volumePath() { return m_volumepath; }
-    QString realVolumePath() { return volumePath(); }
+    QString volumePath() const override { return m_volumepath; }
+    QString realVolumePath() const override { return volumePath(); }
     /**
      * @brief contents
      * @return all image files without parent path(filename only)
@@ -39,7 +39,7 @@ public:
      * @brief subArchives
      * @return all archive files with in the instance
      */
-    QStringList subArchives() { return m_subArchiveList; }
+    QStringList subArchives() const override { return m_subArchiveList; }
     /**
      * @brief getFile get a file specified by filename
      * @param filename
@@ -53,7 +53,7 @@ public:
      *
      * Indicates the state when Volume created or has already been decompressed.
      */
-    InflateCacheMode getCacheMode() { return InflateNoCached; }
+    InflateCacheMode getCacheMode() const override { return InflateNoCached; }
 
 protected:
     QString m_volumepath;

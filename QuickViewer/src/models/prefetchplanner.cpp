@@ -13,7 +13,7 @@ QList<int> PrefetchPlanner::offsets(PrefetchMode mode, int cacheCapacity)
         }
         break;
     case PrefetchMode::NormalForward:
-        result = {10, 11, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7};
+        result = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
         if (result.size() > cacheCapacity) {
             QMutableListIterator<int> i(result);
             while (i.hasNext()) {
@@ -24,7 +24,7 @@ QList<int> PrefetchPlanner::offsets(PrefetchMode mode, int cacheCapacity)
         }
         break;
     case PrefetchMode::NormalBackward:
-        result = {-9, -10, -7, -8, 0, 1, -1, -2, -3, -4, -5, -6};
+        result = {0, -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, 1};
         if (result.size() > cacheCapacity) {
             QMutableListIterator<int> i(result);
             while (i.hasNext()) {

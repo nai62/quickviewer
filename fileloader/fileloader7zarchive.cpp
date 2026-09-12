@@ -674,22 +674,22 @@ QByteArray FileLoader7zArchive::getFile(QString name, QMutex &mutex)
     return bytes;
 }
 
-quint64 FileLoader7zArchive::getFileSize(QString filename)
+quint64 FileLoader7zArchive::getFileSize(QString filename) const
 {
-    if (!d->m_fileinfomap.contains(filename)) {
+    const auto info = d->m_fileinfomap.constFind(filename);
+    if (info == d->m_fileinfomap.cend()) {
         return 0;
     }
-    Qt7zFileInfo info = d->m_fileinfomap[filename];
-    return info.size;
+    return info.value().size;
 }
 
-QDateTime FileLoader7zArchive::getFileModified(QString filename)
+QDateTime FileLoader7zArchive::getFileModified(QString filename) const
 {
-    if (!d->m_fileinfomap.contains(filename)) {
+    const auto info = d->m_fileinfomap.constFind(filename);
+    if (info == d->m_fileinfomap.cend()) {
         return QDateTime();
     }
-    Qt7zFileInfo info = d->m_fileinfomap[filename];
-    return info.Modified;
+    return info.value().Modified;
 }
 
 FileLoader7zArchive::~FileLoader7zArchive()

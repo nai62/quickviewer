@@ -4,7 +4,7 @@
 #include <QFuture>
 #include <QMutex>
 #include <QPromise>
-#include <QQueue>
+#include <QList>
 #include <QSharedPointer>
 #include <QThreadPool>
 
@@ -15,6 +15,13 @@
 class BoundedExecutor
 {
 public:
+    enum class Priority {
+        Low = 0,
+        Normal,
+        High,
+        Critical,
+    };
+
     template <typename T>
     struct Submission
     {
@@ -30,7 +37,7 @@ public:
 
     template <typename Function,
               typename T = std::invoke_result_t<std::decay_t<Function>>>
-    Submission<T> submit(Function &&function)
+    Submission<T> submit(Function &&function, Priority priority = Priority::Normal, quint64 owner = 0, quint64 generation = 0)
     {
         auto promise = QSharedPointer<QPromise<T>>::create();
         promise->start();
@@ -38,6 +45,9 @@ public:
         submission.future = promise->future();
 
         Job job;
+        job.priority = priority;
+        job.owner = owner;
+        job.generation = generation;
         job.run = [promise, function = std::forward<Function>(function)]() mutable {
             try {
                 if constexpr (std::is_void_v<T>) {
@@ -59,6 +69,9 @@ public:
         return submission;
     }
 
+    void cancelPendingOlderThan(quint64 owner, quint64 generation);
+    void setMaximumConcurrency(int maximumConcurrency);
+
     int activeCount() const;
     int pendingCount() const;
     int maximumConcurrency() const { return m_maximumConcurrency; }
@@ -69,6 +82,10 @@ private:
     {
         std::function<void()> run;
         std::function<void()> cancel;
+        Priority priority = Priority::Normal;
+        quint64 owner = 0;
+        quint64 generation = 0;
+        quint64 sequence = 0;
     };
 
     bool enqueue(Job job);
@@ -77,11 +94,12 @@ private:
 
     mutable QMutex m_mutex;
     QThreadPool m_pool;
-    QQueue<Job> m_pendingJobs;
+    QList<Job> m_pendingJobs;
     int m_activeJobs;
-    const int m_maximumConcurrency;
+    int m_maximumConcurrency;
     const int m_maximumPendingJobs;
     bool m_acceptingJobs;
+    quint64 m_nextSequence = 0;
 };
 
 #endif // BOUNDEDEXECUTOR_H

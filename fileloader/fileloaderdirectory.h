@@ -17,15 +17,15 @@ public:
     FileLoaderDirectory(QObject *parent, QString path, TraversalMode traversalMode = TraversalMode::CurrentDirectory);
     ~FileLoaderDirectory() override {}
 
-    bool isArchive() override { return false; }
-    bool isValid() override { return m_valid; }
-    bool hasSubDirectories() override { return m_traversalMode == TraversalMode::Recursive; }
-    QString volumePath() override { return m_volumepath; }
-    QString realVolumePath() override { return m_directory.path(); }
+    bool isArchive() const override { return false; }
+    bool isValid() const override { return m_valid; }
+    bool hasSubDirectories() const override { return m_traversalMode == TraversalMode::Recursive; }
+    QString volumePath() const override { return m_volumepath; }
+    QString realVolumePath() const override { return m_directory.path(); }
     QStringList contents() override;
-    QStringList subArchives() override { return m_subArchiveList; }
+    QStringList subArchives() const override { return m_subArchiveList; }
     QByteArray getFile(QString filename, QMutex &mutex) override;
-    InflateCacheMode getCacheMode() override { return InflateNoCached; }
+    InflateCacheMode getCacheMode() const override { return InflateNoCached; }
 
 private:
     void initialize();
