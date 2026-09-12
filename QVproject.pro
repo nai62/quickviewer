@@ -8,6 +8,7 @@ SUBDIRS = \
     unrar \
     fileloader \
     zimg \
+    spng \
     QuickViewer \
     qvtest \
     prefetchplannertest \
@@ -25,10 +26,10 @@ viewernavigationtest.subdir = qvtest/viewernavigation
 windowstartuptest.subdir = qvtest/windowstartup
 
 fileloader.depends = Qt7z/Qt7z unrar
-QuickViewer.depends = ResizeHalf easyexif fileloader zimg
+QuickViewer.depends = ResizeHalf easyexif fileloader zimg spng
 qvtest.depends = fileloader
-viewernavigationtest.depends = ResizeHalf easyexif fileloader zimg
-windowstartuptest.depends = ResizeHalf easyexif fileloader zimg
+viewernavigationtest.depends = ResizeHalf easyexif fileloader zimg spng
+windowstartuptest.depends = ResizeHalf easyexif fileloader zimg spng
 
 contains(DEFINES, QV_WITH_LUMINOR) {
     SUBDIRS += luminor

@@ -4,7 +4,11 @@
 #include <climits>
 #include <cstring>
 #include <limits>
+#include <memory>
 #include <random>
+
+#define SPNG_STATIC
+#include <spng.h>
 
 #include "volume.h"
 #include "ResizeHalf.h"
@@ -659,6 +663,81 @@ static bool webpHasFeature(const QByteArray &bytes, unsigned char featureMask)
     return (static_cast<unsigned char>(data[20]) & featureMask) != 0;
 }
 
+static bool pngHasChunk(const QByteArray &bytes, const char chunkType[5])
+{
+    static constexpr unsigned char PngSignature[] = {0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A};
+    const auto *data = reinterpret_cast<const unsigned char *>(bytes.constData());
+    const qsizetype size = bytes.size();
+    if (size < 8 || std::memcmp(data, PngSignature, sizeof(PngSignature)) != 0) {
+        return false;
+    }
+
+    qsizetype offset = 8;
+    while (offset + 12 <= size) {
+        const quint32 chunkLength = (static_cast<quint32>(data[offset]) << 24) | (static_cast<quint32>(data[offset + 1]) << 16) | (static_cast<quint32>(data[offset + 2]) << 8) | static_cast<quint32>(data[offset + 3]);
+        if (static_cast<quint64>(chunkLength) > static_cast<quint64>(size - offset - 12)) {
+            return false;
+        }
+        const char *type = reinterpret_cast<const char *>(data + offset + 4);
+        if (std::memcmp(type, chunkType, 4) == 0) {
+            return true;
+        }
+        if (std::memcmp(type, "IEND", 4) == 0) {
+            break;
+        }
+        offset += static_cast<qsizetype>(chunkLength) + 12;
+    }
+    return false;
+}
+
+static bool tryDecodeSpng(
+    const QByteArray &bytes,
+    QImage &decoded,
+    QSize &sourceSize)
+{
+    if (bytes.isEmpty() || pngHasChunk(bytes, "acTL") || pngHasChunk(bytes, "iCCP") || pngHasChunk(bytes, "gAMA") || pngHasChunk(bytes, "cHRM")) {
+        return false;
+    }
+
+    using SpngContext = std::unique_ptr<spng_ctx, decltype(&spng_ctx_free)>;
+    SpngContext context(spng_ctx_new(0), &spng_ctx_free);
+    if (!context) {
+        return false;
+    }
+    if (spng_set_png_buffer(context.get(), bytes.constData(), static_cast<size_t>(bytes.size())) != 0) {
+        return false;
+    }
+
+    spng_ihdr ihdr{};
+    if (spng_get_ihdr(context.get(), &ihdr) != 0 || ihdr.width == 0 || ihdr.height == 0 || ihdr.width > INT_MAX || ihdr.height > INT_MAX || ihdr.bit_depth > 8) {
+        return false;
+    }
+    sourceSize = QSize(static_cast<int>(ihdr.width), static_cast<int>(ihdr.height));
+
+    size_t outputSize = 0;
+    if (spng_decoded_image_size(context.get(), SPNG_FMT_RGBA8, &outputSize) != 0) {
+        return false;
+    }
+    const quint64 expectedSize = static_cast<quint64>(ihdr.width) * ihdr.height * 4;
+    if (outputSize != expectedSize || expectedSize > static_cast<quint64>(std::numeric_limits<qsizetype>::max())) {
+        return false;
+    }
+
+    QImage image(sourceSize, QImage::Format_RGBA8888);
+    if (image.isNull() || static_cast<quint64>(image.sizeInBytes()) < expectedSize) {
+        return false;
+    }
+    if (spng_decode_image(context.get(), image.bits(), outputSize, SPNG_FMT_RGBA8, SPNG_DECODE_TRNS) != 0) {
+        return false;
+    }
+    if (pngHasChunk(bytes, "sRGB")) {
+        image.setColorSpace(QColorSpace(QColorSpace::SRgb));
+    }
+
+    decoded = std::move(image);
+    return true;
+}
+
 class NativeTurboJpegApi
 {
 public:
@@ -1033,6 +1112,18 @@ static ImageContent loadWithSpecifiedFormat(
                 metrics->decodeNanoseconds += decodeTimer.nsecsElapsed();
                 if (nativeDecoded) {
                     metrics->decoderBackend = "turbojpeg";
+                }
+            }
+        } else if ((normalizedFormat == "png" || normalizedFormat == "apng") && decodePolicy.png != PngDecoderPreference::Qt) {
+            QElapsedTimer decodeTimer;
+            if (metrics) {
+                decodeTimer.start();
+            }
+            nativeDecoded = tryDecodeSpng(bytes, src, baseSize);
+            if (metrics) {
+                metrics->decodeNanoseconds += decodeTimer.nsecsElapsed();
+                if (nativeDecoded) {
+                    metrics->decoderBackend = "libspng";
                 }
             }
         } else if (normalizedFormat == "webp" && decodePolicy.webp != WebPDecoderPreference::Qt) {

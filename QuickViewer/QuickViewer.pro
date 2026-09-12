@@ -42,13 +42,14 @@ INCLUDEPATH += ../ResizeHalf/ResizeHalf
 INCLUDEPATH += ../easyexif/easyexif
 INCLUDEPATH += ../fileloader
 INCLUDEPATH += ../zimg
+INCLUDEPATH += ../spng/libspng/spng
 INCLUDEPATH += ./src ./src/catalog ./src/widgets ./src/models ./src/folderview
 INCLUDEPATH += ./src/qfullscreenframe ./src/qlanguageselector ./src/qnamedpipe ./src/qactionmanager
 
 
 LIBDIR = ../lib
 
-LIBS += -L$${LIBDIR}  -leasyexif -lresizehalf -lfileloader -lQt7z -lunrar -lzimg
+LIBS += -L$${LIBDIR}  -leasyexif -lresizehalf -lfileloader -lQt7z -lunrar -lzimg -lspng
 
 contains(DEFINES, QV_WITH_LUMINOR) {
     INCLUDEPATH += $$PWD/../luminor
