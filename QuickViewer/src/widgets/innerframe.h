@@ -1,10 +1,10 @@
-#ifndef QINNERFRAME_H
-#define QINNERFRAME_H
+#ifndef INNERFRAME_H
+#define INNERFRAME_H
 
 #include <QtWidgets>
 
 /**
- * @brief The QInnerFrame class
+ * @brief The InnerFrame class
  *
  * A frame to display additional widgets overlay of main widget,
  * which need not be the outermost.
@@ -12,11 +12,11 @@
  * Frames can be displayed at the top, bottom, left, or right of the parent.
  * It closes automatically when the mouse cursor leaves the frame.
  */
-class QInnerFrame : public QFrame
+class InnerFrame : public QFrame
 {
     Q_OBJECT
 public:
-    QInnerFrame(QWidget *parent, Qt::AnchorPoint anchor = Qt::AnchorTop, int autoCloseSpace = 30);
+    InnerFrame(QWidget *parent, Qt::AnchorPoint anchor = Qt::AnchorTop, int autoCloseSpace = 30);
     /**
      * @brief showWithoutTitleBar
      * Show the frame without title bar
@@ -35,13 +35,13 @@ public:
 signals:
     /**
      * @brief init
-     * Called before QFullscreenFrame is displayed. To register the widgets
+     * Called before InnerFrame is displayed. To register the widgets
      * you want to display in the frame, use SLOT registered in this SIGNAL.
      */
     void init();
     /**
      * @brief deinit
-     * Called before QFullscreenFrame closes.
+     * Called before InnerFrame closes.
      * In order to collect the widgets passed to this frame, register SLOT in this SIGNAL.
      */
     void deinit();
@@ -89,4 +89,4 @@ private:
     QTimer m_timer;
 };
 
-#endif // QINNERFRAME_H
+#endif // INNERFRAME_H

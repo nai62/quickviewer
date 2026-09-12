@@ -44,7 +44,7 @@ INCLUDEPATH += ../fileloader
 INCLUDEPATH += ../zimg
 INCLUDEPATH += ../spng/libspng/spng
 INCLUDEPATH += ./src ./src/catalog ./src/widgets ./src/models ./src/folderview
-INCLUDEPATH += ./src/qfullscreenframe ./src/qlanguageselector ./src/qnamedpipe ./src/qactionmanager
+INCLUDEPATH += ./src/qlanguageselector ./src/qnamedpipe ./src/qactionmanager
 
 
 LIBDIR = ../lib
@@ -135,7 +135,7 @@ SOURCES += \
     src/widgets/pageslider.cpp \
     src/qlanguageselector/qlanguageselector.cpp \
     src/qnamedpipe/qnamedpipe.cpp \
-    src/qfullscreenframe/qinnerframe.cpp \
+    src/widgets/innerframe.cpp \
     src/models/qvmovie.cpp \
     src/models/volume.cpp \
     src/models/volumeloader.cpp \
@@ -199,7 +199,7 @@ HEADERS  += \
     src/widgets/pageslider.h \
     src/qlanguageselector/qlanguageselector.h \
     src/qnamedpipe/qnamedpipe.h \
-    src/qfullscreenframe/qinnerframe.h \
+    src/widgets/innerframe.h \
     src/models/qvmovie.h \
     src/models/volume.h \
     src/models/volumeloader.h \

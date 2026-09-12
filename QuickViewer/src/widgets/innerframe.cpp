@@ -1,6 +1,6 @@
-#include "qinnerframe.h"
+#include "innerframe.h"
 
-QInnerFrame::QInnerFrame(QWidget *parent, Qt::AnchorPoint anchor, int autoCloseSpace)
+InnerFrame::InnerFrame(QWidget *parent, Qt::AnchorPoint anchor, int autoCloseSpace)
     : QFrame(parent),
       m_mainWindow(parent),
       m_topWidget(nullptr),
@@ -30,7 +30,7 @@ QInnerFrame::QInnerFrame(QWidget *parent, Qt::AnchorPoint anchor, int autoCloseS
     setPalette(Pal);
 }
 
-bool QInnerFrame::eventFilter(QObject *watched, QEvent *event)
+bool InnerFrame::eventFilter(QObject *watched, QEvent *event)
 {
 //    qDebug() << watched << event;
     if (m_mainWindow == dynamic_cast<QWidget *>(watched)) {
@@ -45,7 +45,7 @@ bool QInnerFrame::eventFilter(QObject *watched, QEvent *event)
     return false;
 }
 
-void QInnerFrame::showWithoutTitleBar()
+void InnerFrame::showWithoutTitleBar()
 {
     emit init();
     showNormal();
@@ -78,13 +78,13 @@ void QInnerFrame::showWithoutTitleBar()
     }
 }
 
-void QInnerFrame::closeAndShowNormal()
+void InnerFrame::closeAndShowNormal()
 {
     m_toShowNormal = true;
     close();
 }
 
-void QInnerFrame::closeEvent(QCloseEvent *event)
+void InnerFrame::closeEvent(QCloseEvent *event)
 {
     m_timer.stop();
     m_mainWindow->removeEventFilter(this);
@@ -98,7 +98,7 @@ void QInnerFrame::closeEvent(QCloseEvent *event)
     emit closed();
 }
 
-void QInnerFrame::closeWhenMouseIsOut()
+void InnerFrame::closeWhenMouseIsOut()
 {
     QPoint ptInMain = m_mainWindow->mapFromGlobal(cursor().pos());
     if (!mainGeometry().contains(ptInMain)) {
@@ -131,7 +131,7 @@ void QInnerFrame::closeWhenMouseIsOut()
     }
 }
 
-QRect QInnerFrame::mainGeometry()
+QRect InnerFrame::mainGeometry()
 {
     return QRect(QPoint(), m_mainWindow->size());
 }
