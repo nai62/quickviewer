@@ -1,22 +1,10 @@
-.gitattributes
+# Normalize all text files to LF in the repository and working tree.
+* text=auto eol=lf
+
+# Windows command scripts require/prefer CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Vendored sources.
 Qt7z/* linguist-vendored
 doc/* linguist-vendored
-
-# Normalize formatter-owned C/C++ sources to LF in the index and working tree.
-QuickViewer/**/*.c text eol=lf
-QuickViewer/**/*.cc text eol=lf
-QuickViewer/**/*.cpp text eol=lf
-QuickViewer/**/*.cxx text eol=lf
-QuickViewer/**/*.h text eol=lf
-QuickViewer/**/*.hh text eol=lf
-QuickViewer/**/*.hpp text eol=lf
-qvtest/**/*.c text eol=lf
-qvtest/**/*.cc text eol=lf
-qvtest/**/*.cpp text eol=lf
-qvtest/**/*.cxx text eol=lf
-qvtest/**/*.h text eol=lf
-qvtest/**/*.hh text eol=lf
-qvtest/**/*.hpp text eol=lf
-
-*.cmd text eol=crlf
-*.bat text eol=crlf
