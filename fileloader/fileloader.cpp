@@ -112,13 +112,13 @@ bool IFileLoader::caseInsensitiveLessThan(const QString &s1, const QString &s2)
 }
 #endif
 
-quint64 IFileLoader::getFileSize(QString filename)
+quint64 IFileLoader::getFileSize(QString filename) const
 {
     Q_UNUSED(filename);
     return 0;
 }
 
-QDateTime IFileLoader::getFileModified(QString filename)
+QDateTime IFileLoader::getFileModified(QString filename) const
 {
     Q_UNUSED(filename);
     return QDateTime();

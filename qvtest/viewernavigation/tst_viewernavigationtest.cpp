@@ -21,15 +21,15 @@ public:
         : IFileLoader(parent)
     {}
 
-    QString volumePath() override { return "empty"; }
-    QString realVolumePath() override { return "empty"; }
-    bool isArchive() override { return false; }
-    bool isValid() override { return true; }
-    bool hasSubDirectories() override { return false; }
+    QString volumePath() const override { return "empty"; }
+    QString realVolumePath() const override { return "empty"; }
+    bool isArchive() const override { return false; }
+    bool isValid() const override { return true; }
+    bool hasSubDirectories() const override { return false; }
     QStringList contents() override { return {}; }
-    QStringList subArchives() override { return {}; }
+    QStringList subArchives() const override { return {}; }
     QByteArray getFile(QString, QMutex &) override { return {}; }
-    InflateCacheMode getCacheMode() override { return InflateNoCached; }
+    InflateCacheMode getCacheMode() const override { return InflateNoCached; }
 };
 
 class MemoryFileLoader final : public IFileLoader
@@ -51,20 +51,20 @@ public:
         }
     }
 
-    QString volumePath() override { return "memory"; }
-    QString realVolumePath() override { return "memory"; }
-    bool isArchive() override { return false; }
-    bool isValid() override { return true; }
-    bool hasSubDirectories() override { return false; }
+    QString volumePath() const override { return "memory"; }
+    QString realVolumePath() const override { return "memory"; }
+    bool isArchive() const override { return false; }
+    bool isValid() const override { return true; }
+    bool hasSubDirectories() const override { return false; }
     QStringList contents() override { return m_names; }
-    QStringList subArchives() override { return {}; }
+    QStringList subArchives() const override { return {}; }
     QByteArray getFile(QString name, QMutex &mutex) override
     {
         QMutexLocker locker(&mutex);
         m_requestedNames.append(name);
         return m_images.value(name);
     }
-    InflateCacheMode getCacheMode() override { return InflateNoCached; }
+    InflateCacheMode getCacheMode() const override { return InflateNoCached; }
 
     QStringList requestedNames() const { return m_requestedNames; }
 
