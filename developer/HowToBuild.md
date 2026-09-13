@@ -207,9 +207,9 @@ Historically, some runtime source directories were linked manually:
 
 ```shell
 cd [build]/bin
-ln -s ../../quickviewer/QuickViewer/database database
-ln -s ../../quickviewer/QuickViewer/shaders shaders
-ln -s ../../quickviewer/QuickViewer/translations translations
+ln -s ../../quickviewer/apps/quickviewer/database database
+ln -s ../../quickviewer/apps/quickviewer/shaders shaders
+ln -s ../../quickviewer/apps/quickviewer/translations translations
 ```
 
 The current Windows scripts stage translations automatically.
