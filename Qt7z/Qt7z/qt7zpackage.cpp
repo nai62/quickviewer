@@ -1,11 +1,9 @@
 #include <qcoreapplication.h>
 #ifdef _WIN32
-#include <windows.h>
+#    include <windows.h>
 #endif
 #include <lib7zip.h>
 #include "qt7zpackage_p.h"
-
-
 
 /** Used by lib7zip when reading binary streams.
  *  Specifically, read 7z from the file
@@ -17,11 +15,12 @@ private:
     QString m_strFileName;
     wstring m_strFileExt;
     int m_nFileSize;
+
 public:
-    Qt7zStreamReader(QIODevice *inStream, QString fileName) :
-        m_inStream(inStream),
-        m_strFileName(fileName),
-        m_strFileExt(L"7z")
+    Qt7zStreamReader(QIODevice *inStream, QString fileName)
+        : m_inStream(inStream),
+          m_strFileName(fileName),
+          m_strFileExt(L"7z")
     {
     }
 
@@ -38,15 +37,17 @@ public:
 
     virtual int Read(void *data, unsigned int size, unsigned int *processedSize)
     {
-        if (!m_inStream)
+        if (!m_inStream) {
             return 1;
-        auto readBytes = m_inStream->read((char*)data, size);
+        }
+        auto readBytes = m_inStream->read((char *)data, size);
 
         wprintf(L"Read:%d %d\n", size, readBytes);
 
         if (readBytes >= 0) {
-            if (processedSize != nullptr)
+            if (processedSize != nullptr) {
                 *processedSize = readBytes;
+            }
 
             return 0;
         }
@@ -57,30 +58,29 @@ public:
     virtual int Seek(__int64 offset, unsigned int seekOrigin, unsigned __int64 *newPosition)
     {
         bool result = false;
-        switch(seekOrigin) {
+        switch (seekOrigin) {
         case SEEK_SET:
             result = m_inStream->seek(offset);
             break;
-        case SEEK_CUR:
-            {
-                auto pos = m_inStream->pos();
-                result = m_inStream->seek(pos+offset);
-                break;
-            }
-        case SEEK_END:
-            {
-                auto sz = m_inStream->size();
-                result = m_inStream->seek(sz+offset);
-                break;
-            }
+        case SEEK_CUR: {
+            auto pos = m_inStream->pos();
+            result = m_inStream->seek(pos + offset);
+            break;
+        }
+        case SEEK_END: {
+            auto sz = m_inStream->size();
+            result = m_inStream->seek(sz + offset);
+            break;
+        }
         }
         return result == true ? 0 : 1;
     }
 
-    virtual int GetSize(unsigned __int64 * size)
+    virtual int GetSize(unsigned __int64 *size)
     {
-        if (size)
+        if (size) {
             *size = m_inStream->size();
+        }
         return 0;
     }
 };
@@ -95,11 +95,12 @@ private:
     QString m_strFileName;
     wstring m_strFileExt;
     int m_nFileSize;
+
 public:
-    Qt7zStreamWriter(QIODevice *outStream, QString fileName) :
-      m_outStream(outStream),
-      m_strFileName(fileName),
-      m_strFileExt(L"7z")
+    Qt7zStreamWriter(QIODevice *outStream, QString fileName)
+        : m_outStream(outStream),
+          m_strFileName(fileName),
+          m_strFileExt(L"7z")
     {
     }
 
@@ -115,13 +116,13 @@ public:
 
     virtual int Write(const void *data, unsigned int size, unsigned int *processedSize)
     {
-        auto writeBytes = m_outStream->write((char*)data, size);
+        auto writeBytes = m_outStream->write((char *)data, size);
         wprintf(L"Write:%d %d\n", size, writeBytes);
 
-        if (writeBytes >= 0)
-        {
-            if (processedSize != NULL)
+        if (writeBytes >= 0) {
+            if (processedSize != NULL) {
                 *processedSize = writeBytes;
+            }
 
             m_nFileSize += writeBytes;
             return 0;
@@ -133,22 +134,20 @@ public:
     virtual int Seek(__int64 offset, unsigned int seekOrigin, unsigned __int64 *newPosition)
     {
         bool result = false;
-        switch(seekOrigin) {
+        switch (seekOrigin) {
         case SEEK_SET:
             result = m_outStream->seek(offset);
             break;
-        case SEEK_CUR:
-            {
-                auto pos = m_outStream->pos();
-                result = m_outStream->seek(pos+offset);
-                break;
-            }
-        case SEEK_END:
-            {
-                auto sz = m_outStream->size();
-                result = m_outStream->seek(sz+offset);
-                break;
-            }
+        case SEEK_CUR: {
+            auto pos = m_outStream->pos();
+            result = m_outStream->seek(pos + offset);
+            break;
+        }
+        case SEEK_END: {
+            auto sz = m_outStream->size();
+            result = m_outStream->seek(sz + offset);
+            break;
+        }
         }
         return result == true ? 0 : 1;
     }
@@ -160,30 +159,30 @@ public:
     }
 };
 
-Qt7zPackagePrivate::Qt7zPackagePrivate(Qt7zPackage *q) :
-    m_q(q) ,
-    m_client(nullptr) ,
-    m_isOpen(false)
+Qt7zPackagePrivate::Qt7zPackagePrivate(Qt7zPackage *q)
+    : m_q(q),
+      m_client(nullptr),
+      m_isOpen(false)
 {
     init();
 }
 
 Qt7zPackagePrivate::Qt7zPackagePrivate(Qt7zPackage *q,
-                                       const QString &packagePath) :
-    m_q(q) ,
-    m_packagePath(packagePath) ,
-    m_client(nullptr) ,
-    m_isOpen(false)
+                                       const QString &packagePath)
+    : m_q(q),
+      m_packagePath(packagePath),
+      m_client(nullptr),
+      m_isOpen(false)
 {
     init();
 }
-
 Qt7zPackagePrivate::~Qt7zPackagePrivate()
 {
 //    m_codecs.reset(nullptr);
 }
 
-static Qt7zFileInfo fromC7ZipArchiveItem(C7ZipArchiveItem& item, QString packagePath, size_t pre_total) {
+static Qt7zFileInfo fromC7ZipArchiveItem(C7ZipArchiveItem &item, QString packagePath, size_t pre_total)
+{
     Qt7zFileInfo prop;
     std::wstring strVal;
 //    item.GetStringProperty(PropertyIndexEnum::kpidSolid, strVal);
@@ -204,8 +203,8 @@ static Qt7zFileInfo fromC7ZipArchiveItem(C7ZipArchiveItem& item, QString package
 
     uint64_t uintval;
     item.GetUInt64Property(PropertyIndexEnum::kpidSize, uintval);
-    prop.size = (size_t) uintval;
-    prop.pre_total = (size_t) pre_total;
+    prop.size = (size_t)uintval;
+    prop.pre_total = (size_t)pre_total;
 //    item.GetUInt64Property(PropertyIndexEnum::kpidPackSize, prop.PackSize);
 //    item.GetUInt64Property(PropertyIndexEnum::kpidAttrib, prop.Attributes);
 //    item.GetUInt64Property(PropertyIndexEnum::kpidPhySize, prop.PhysicalSize);
@@ -236,7 +235,7 @@ bool Qt7zPackagePrivate::open()
     m_file.setFileName(m_packagePath);
     m_pInStream = new Qt7zStreamReader(&m_file, m_packagePath);
 
-    if(lib7zip->OpenArchive(m_pInStream, &m_pArchive)) {
+    if (lib7zip->OpenArchive(m_pInStream, &m_pArchive)) {
         unsigned int numItems = 0;
 
         m_pArchive->GetItemCount(&numItems);
@@ -244,13 +243,11 @@ bool Qt7zPackagePrivate::open()
         wprintf(L"%d\n", numItems);
         size_t pre_total = 0;
 
-        for(uint32_t i = 0;i < numItems;i++) {
-            C7ZipArchiveItem * pArchiveItem = NULL;
+        for (uint32_t i = 0; i < numItems; i++) {
+            C7ZipArchiveItem *pArchiveItem = NULL;
 
             if (m_pArchive->GetItemInfo(i, &pArchiveItem)) {
-                wprintf(L"%d,%ls,%d\n", pArchiveItem->GetArchiveIndex(),
-                        pArchiveItem->GetFullPath().c_str(),
-                        pArchiveItem->IsDir());
+                wprintf(L"%d,%ls,%d\n", pArchiveItem->GetArchiveIndex(), pArchiveItem->GetFullPath().c_str(), pArchiveItem->IsDir());
 
                 // add each path of the content file
                 wstring fullpath = pArchiveItem->GetFullPath();
@@ -265,8 +262,7 @@ bool Qt7zPackagePrivate::open()
                 m_fileNameToIndex.insert(fileName, i);
             } //if
         }//for
-    }
-    else {
+    } else {
         wprintf(L"open archive Test7Zip.7z fail\n");
     }
     m_isOpen = true;
@@ -282,11 +278,11 @@ bool Qt7zPackagePrivate::extractToDir(const QString &dirpath)
     wprintf(L"%d\n", numItems);
     size_t pre_total = 0;
 
-    for(uint32_t i = 0;i < numItems;i++) {
+    for (uint32_t i = 0; i < numItems; i++) {
         Qt7zFileInfo info = m_fileInfoList[i];
         const QString abso = QDir(dirpath).filePath(QString::number(i));
         QFile file(abso);
-        if(file.open(QIODevice::ReadOnly)) {
+        if (file.open(QIODevice::ReadOnly)) {
             Qt7zStreamWriter oStream(&file, info.fileName);
             m_pArchive->Extract(i, &oStream);
             file.close();
@@ -300,13 +296,13 @@ bool Qt7zPackagePrivate::extractToDir(const QString &dirpath)
 
 void Qt7zPackagePrivate::init()
 {
-    if(lib7zip == nullptr) {
+    if (lib7zip == nullptr) {
         lib7zip = new C7ZipLibrary();
         if (!lib7zip->Initialize()) {
-    		wprintf(L"initialize fail!\n");
+            wprintf(L"initialize fail!\n");
             lib7zip_fatal_error = true;
-    		return;
-    	}
+            return;
+        }
     }
 }
 
@@ -318,17 +314,17 @@ void Qt7zPackagePrivate::reset()
     m_fileInfoList.clear();
 }
 
-Qt7zPackage::Qt7zPackage() :
-    m_p(new Qt7zPackagePrivate(this))
-    , m_solid(false)
+Qt7zPackage::Qt7zPackage()
+    : m_p(new Qt7zPackagePrivate(this)),
+      m_solid(false)
 {
 }
 
 Qt7zPackage::Qt7zPackage(const QString &packagePath)
-  : m_p(new Qt7zPackagePrivate(this, packagePath))
-  , m_tempDir(nullptr)
-  , m_solid(false)
-  , m_extractSolidArchiveToDir(false)
+    : m_p(new Qt7zPackagePrivate(this, packagePath)),
+      m_tempDir(nullptr),
+      m_solid(false),
+      m_extractSolidArchiveToDir(false)
 {
 }
 
@@ -338,7 +334,7 @@ Qt7zPackage::~Qt7zPackage()
     if (m_p) {
         delete m_p;
     }
-    if(m_tempDir) {
+    if (m_tempDir) {
         delete m_tempDir;
     }
 }
@@ -424,7 +420,7 @@ bool Qt7zPackage::extractFile(const QString &name, QIODevice *outStream)
     }
     uint32_t index = *indexIt;
 //    Qt7zArchiveItemProperties fileInfo = m_p->m_fileInfoList[index];
-    
+
 //	C7ZipArchiveItem * pArchiveItem = nullptr;
 //    if (!m_p->m_pArchive->GetItemInfo(index, &pArchiveItem)) {
 //        qWarning() << "Qt7z: Fail to extract file" << name;
@@ -445,4 +441,3 @@ bool Qt7zPackage::extractToDir(const QString &dirpath)
     qDebug() << "tempdir:" << m_tempDir->path();
     return m_p->extractToDir(m_tempDir->path());
 }
-

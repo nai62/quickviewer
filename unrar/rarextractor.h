@@ -20,23 +20,23 @@ struct RARFileInfo
     QString comment;
     QByteArray data;
     RARFileInfo() {}
-    RARFileInfo(const RARFileInfo& rhs)
-        : fileName(rhs.fileName)
-        , arcName(rhs.arcName)
-        , m_password(rhs.m_password)
-        , flags(rhs.flags)
-        , packSize(rhs.packSize)
-        , unpSize(rhs.unpSize)
-        , hostOS(rhs.hostOS)
-        , fileCRC(rhs.fileCRC)
-        , fileTime(rhs.fileTime)
-        , unpVer(rhs.unpVer)
-        , method(rhs.method)
-        , fileAttr(rhs.fileAttr)
-        , comment(rhs.comment)
-        , data(rhs.data)
+    RARFileInfo(const RARFileInfo &rhs)
+        : fileName(rhs.fileName),
+          arcName(rhs.arcName),
+          m_password(rhs.m_password),
+          flags(rhs.flags),
+          packSize(rhs.packSize),
+          unpSize(rhs.unpSize),
+          hostOS(rhs.hostOS),
+          fileCRC(rhs.fileCRC),
+          fileTime(rhs.fileTime),
+          unpVer(rhs.unpVer),
+          method(rhs.method),
+          fileAttr(rhs.fileAttr),
+          comment(rhs.comment),
+          data(rhs.data)
     {}
-    bool isEncrypted() const {return flags & 0x04;}
+    bool isEncrypted() const { return flags & 0x04; }
 };
 
 class RarExtractor
@@ -61,7 +61,8 @@ public:
     void scanFileInfo();
     bool isOpen() const { return m_mode != OpenModeNotOpen; }
     QStringList fileNameList() const;
-    RARFileInfo& getFileInfo(QString filename) {
+    RARFileInfo &getFileInfo(QString filename)
+    {
         int idx = m_fileNameToIndexInsensitive[filename.toLower()];
         return m_fileInfoList[idx];
     }
@@ -85,6 +86,5 @@ public:
     QHash<QString, int> m_fileNameToIndexInsensitive;
     QCache<int, QByteArray> m_dataCache;
 };
-
 
 #endif // RAREXTRACTOR_H

@@ -36,18 +36,18 @@ DEFINES += QT_DEPRECATED_WARNINGS EXECUTE_ON_UAC
 
 LIBS += -lole32
 
-INCLUDEPATH += ../QuickViewer/src/qlanguageselector
+INCLUDEPATH += ../QuickViewer/src/i18n
 
 SOURCES += \
         main.cpp \
         fileassocdialog.cpp \
-    ../QuickViewer/src/qlanguageselector/qlanguageselector.cpp \
-    ../QuickViewer/src/qlanguageselector/qtexttranslator.cpp
+    ../QuickViewer/src/i18n/languagemanager.cpp \
+    ../QuickViewer/src/i18n/texttranslator.cpp
 
 HEADERS += \
         fileassocdialog.h \
-    ../QuickViewer/src/qlanguageselector/qlanguageselector.h \
-    ../QuickViewer/src/qlanguageselector/qtexttranslator.h
+    ../QuickViewer/src/i18n/languagemanager.h \
+    ../QuickViewer/src/i18n/texttranslator.h
 
 FORMS += \
         fileassocdialog.ui
@@ -91,4 +91,4 @@ OTHER_FILES += \
     icons/qv_raw.ico \
     icons/qv_tga.ico \
     icons/qv_tiff.ico \
-    icons/qv_webp.ico \
+    icons/qv_webp.ico

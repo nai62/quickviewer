@@ -44,7 +44,7 @@ INCLUDEPATH += ../fileloader
 INCLUDEPATH += ../zimg
 INCLUDEPATH += ../spng/libspng/spng
 INCLUDEPATH += ./src ./src/catalog ./src/widgets ./src/models ./src/folderview
-INCLUDEPATH += ./src/qfullscreenframe ./src/qlanguageselector ./src/qnamedpipe ./src/qactionmanager
+INCLUDEPATH += ./src/i18n ./src/qnamedpipe ./src/qactionmanager
 
 
 LIBDIR = ../lib
@@ -133,9 +133,9 @@ SOURCES += \
     src/renamedialog.cpp \
     src/widgets/flowlayout.cpp \
     src/widgets/pageslider.cpp \
-    src/qlanguageselector/qlanguageselector.cpp \
+    src/i18n/languagemanager.cpp \
     src/qnamedpipe/qnamedpipe.cpp \
-    src/qfullscreenframe/qinnerframe.cpp \
+    src/widgets/innerframe.cpp \
     src/models/qvmovie.cpp \
     src/models/volume.cpp \
     src/models/volumeloader.cpp \
@@ -148,7 +148,7 @@ SOURCES += \
     src/models/loupecontroller.cpp \
     src/retouchwindow.cpp \
     src/models/fileoperator.cpp \
-    src/qlanguageselector/qtexttranslator.cpp \
+    src/i18n/texttranslator.cpp \
     src/models/qvimagemetadata.cpp
 
 
@@ -197,9 +197,9 @@ HEADERS  += \
     src/pch.h \
     src/widgets/flowlayout.h \
     src/widgets/pageslider.h \
-    src/qlanguageselector/qlanguageselector.h \
+    src/i18n/languagemanager.h \
     src/qnamedpipe/qnamedpipe.h \
-    src/qfullscreenframe/qinnerframe.h \
+    src/widgets/innerframe.h \
     src/models/qvmovie.h \
     src/models/volume.h \
     src/models/volumeloader.h \
@@ -212,7 +212,7 @@ HEADERS  += \
     src/retouchwindow.h \
     src/startupprofiler.h \
     src/models/fileoperator.h \
-    src/qlanguageselector/qtexttranslator.h \
+    src/i18n/texttranslator.h \
     src/models/qvimagemetadata.h
 
 win32 {
@@ -453,7 +453,7 @@ linux : !CONFIG(debug, debug|release) : contains(DEFINES, QV_PORTABLE) {
         $${PWD}/../README.md \
         $${PWD}/../LICENSE \
 
-    install_deploy_files.commands = linuxdeployqt $${MY_DEFAULT_INSTALL}/QuickViewer.desktop -qmake=$$[QT_INSTALL_BINS]/qmake -bundle-non-qt-libs -exclude-libs=libqsqlmimer,libqsqlmysql,libqsqlodbc,libqsqlpsql^M
+    install_deploy_files.commands = linuxdeployqt $${MY_DEFAULT_INSTALL}/QuickViewer.desktop -qmake=$$[QT_INSTALL_BINS]/qmake -bundle-non-qt-libs -exclude-libs=libqsqlmimer,libqsqlmysql,libqsqlodbc,libqsqlpsql
     install_deploy_files.depends = install_install_target install_install_libs install_install_desktop
 
 #    install_translations.commands = ldd $${MY_DEFAULT_INSTALL}/usr/bin/QuickViewer | awk \'\$$1==\"libstdc++.so.$${GCC_MAJOR}\" {print \$$3}\' | xargs cp -t $${MY_DEFAULT_INSTALL}/usr/lib

@@ -1,23 +1,25 @@
 #include "rarextractor.h"
 #include "unrar/rar.hpp"
 
-
 struct RARFileWriter
 {
-    RARFileInfo* info;
+    RARFileInfo *info;
     QBuffer buffer;
-    RARFileWriter(RARFileInfo* i) : info(i) {buffer.open(QIODevice::ReadWrite);}
+    RARFileWriter(RARFileInfo *i)
+        : info(i)
+    {
+        buffer.open(QIODevice::ReadWrite);
+    }
     static int CALLBACK procCallback(UINT msg, LPARAM self, LPARAM addr, LPARAM size);
-    void commit() {
+    void commit()
+    {
         buffer.seek(0);
 //        qDebug() << "commit:" << info->fileName << buffer.size();
         info->data = buffer.readAll();
     }
 };
 
-
-int RARFileWriter::procCallback(UINT msg, LPARAM rawSelf,
-                                   LPARAM p1, LPARAM p2)
+int RARFileWriter::procCallback(UINT msg, LPARAM rawSelf, LPARAM p1, LPARAM p2)
 {
     RARFileWriter *self = reinterpret_cast<RARFileWriter *>(rawSelf);
 
@@ -29,33 +31,32 @@ int RARFileWriter::procCallback(UINT msg, LPARAM rawSelf,
         char *passBuf = reinterpret_cast<char *>(p1);
         int passBufSize = p2;
         std::string str = self->info->m_password.toStdString();
-        strncpy(passBuf, str.c_str(),
-                qMin(str.length(), (std::string::size_type)passBufSize));
+        strncpy(passBuf, str.c_str(), qMin(str.length(), (std::string::size_type)passBufSize));
     }
 
     return 1;
 }
 
 RarExtractor::RarExtractor()
-    : m_hArc(nullptr)
-    , m_mode(OpenModeNotOpen)
-    , m_error(ERAR_SUCCESS)
-    , m_isHeadersEncrypted(false)
-    , m_isFilesEncrypted(false)
-    , m_hasScaned(false)
-    , m_curIndex(0)
-    , m_dataCache(MAX_DATA_CACHE_KIB)
+    : m_hArc(nullptr),
+      m_mode(OpenModeNotOpen),
+      m_error(ERAR_SUCCESS),
+      m_isHeadersEncrypted(false),
+      m_isFilesEncrypted(false),
+      m_hasScaned(false),
+      m_curIndex(0),
+      m_dataCache(MAX_DATA_CACHE_KIB)
 {}
 RarExtractor::RarExtractor(const QString &arcName)
-    : m_hArc(nullptr)
-    , m_mode(OpenModeNotOpen)
-    , m_error(ERAR_SUCCESS)
-    , m_arcName(arcName)
-    , m_isHeadersEncrypted(false)
-    , m_isFilesEncrypted(false)
-    , m_hasScaned(false)
-    , m_curIndex(0)
-    , m_dataCache(MAX_DATA_CACHE_KIB)
+    : m_hArc(nullptr),
+      m_mode(OpenModeNotOpen),
+      m_error(ERAR_SUCCESS),
+      m_arcName(arcName),
+      m_isHeadersEncrypted(false),
+      m_isFilesEncrypted(false),
+      m_hasScaned(false),
+      m_curIndex(0),
+      m_dataCache(MAX_DATA_CACHE_KIB)
 {
 }
 
@@ -71,8 +72,8 @@ bool RarExtractor::open(OpenMode mode, const QString &password)
     RAROpenArchiveDataEx arcData = {0};
     wchar_t arcNameW[RarExtractor::MAX_ARC_NAME_SIZE] = {0};
     int arcNameLen = m_arcName
-            .left(RarExtractor::MAX_ARC_NAME_SIZE - 1)
-            .toWCharArray(arcNameW);
+                         .left(RarExtractor::MAX_ARC_NAME_SIZE - 1)
+                         .toWCharArray(arcNameW);
 //    arcNameW[arcNameLen] = '\0';
     arcData.ArcNameW = arcNameW;
     arcData.ArcName = 0;
@@ -168,12 +169,11 @@ void RarExtractor::scanFileInfo()
         info.fileAttr = hData.FileAttr;
         info.comment = m_comment;
 
-        if(m_mode==OpenModeExtract) {
+        if (m_mode == OpenModeExtract) {
             RARFileWriter writer(&info);
             RARSetCallback(m_hArc,
                            RARFileWriter::procCallback,
                            reinterpret_cast<LPARAM>(&writer));
-
 
             if (info.flags & 0x04) {
                 m_isFilesEncrypted = true;
@@ -213,7 +213,7 @@ QByteArray RarExtractor::fileData(QString fileName)
 {
     int cs = Qt::CaseSensitive;
 
-    if(m_mode==OpenModeExtract) {
+    if (m_mode == OpenModeExtract) {
         return getFileInfo(fileName).data;
     }
     QHash<QString, int>::const_iterator it;
@@ -230,12 +230,13 @@ QByteArray RarExtractor::fileData(QString fileName)
     }
 
     const int targetIndex = it.value();
-    if(const QByteArray *cached = m_dataCache.object(targetIndex))
+    if (const QByteArray *cached = m_dataCache.object(targetIndex)) {
         return *cached;
+    }
 
     // UnRAR is sequential. Continue from the current archive cursor for
     // forward reads and reopen only when an uncached read moves backwards.
-    if(targetIndex < m_curIndex && !reopen()) {
+    if (targetIndex < m_curIndex && !reopen()) {
         qWarning() << "QtRAR::setCurrentFile: fail to reopen to reset cursor";
         return QByteArray();
     }
@@ -287,7 +288,6 @@ QByteArray RarExtractor::fileData(QString fileName)
                    RARFileWriter::procCallback,
                    reinterpret_cast<LPARAM>(&writer));
 
-
     if (info.flags & 0x04) {
         m_isFilesEncrypted = true;
     }
@@ -303,9 +303,8 @@ QByteArray RarExtractor::fileData(QString fileName)
 
     const qsizetype cacheCost = qMax<qsizetype>(
         1, (info.data.size() + 1023) / 1024);
-    if(cacheCost <= MAX_DATA_CACHE_KIB) {
-        m_dataCache.insert(targetIndex, new QByteArray(info.data),
-                           static_cast<int>(cacheCost));
+    if (cacheCost <= MAX_DATA_CACHE_KIB) {
+        m_dataCache.insert(targetIndex, new QByteArray(info.data), static_cast<int>(cacheCost));
     }
 
     return info.data;

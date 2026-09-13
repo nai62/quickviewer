@@ -7,7 +7,7 @@
 
 #include "qv_init.h"
 #include "readprogressstore.h"
-#include "qlanguageselector.h"
+#include "languagemanager.h"
 #include "qmousesequence.h"
 #include "qactionmanager.h"
 
@@ -317,7 +317,7 @@ public:
     // Others
     QString UiLanguage() { return m_uiLanguage; }
     void setUiLanguage(QString uiLanguage) { m_uiLanguage = uiLanguage; }
-    QLanguageSelector *languageSelector() { return &m_languageSelector; }
+    LanguageManager *languageSelector() { return &m_languageSelector; }
     bool ConfirmDeletePage() { return m_confirmDeletePage; }
     void setConfirmDeletePage(bool confirmDeletePage) { m_confirmDeletePage = confirmDeletePage; }
 
@@ -481,8 +481,8 @@ private:
     QSettings *m_settings;
     ReadProgressStore *m_readProgressStore;
 
-    QLanguageSelector m_languageSelector;
-    QLanguageSelector m_qtbaseLanguageSelector;
+    LanguageManager m_languageSelector;
+    LanguageManager m_qtbaseLanguageSelector;
 
 #if defined(Q_OS_WIN)
     // System Dependable

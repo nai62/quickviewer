@@ -7,7 +7,6 @@
 #include "qt7zpackage.h"
 #include "qt7zfileinfo.h"
 
-
 using namespace lib7zip;
 
 //class ExtractCallback;
@@ -118,11 +117,11 @@ using namespace lib7zip;
 //        item.GetUInt64Property(PropertyIndexEnum::kpidTotalSize, prop.TotalSize);
 //        item.GetUInt64Property(PropertyIndexEnum::kpidFreeSpace, prop.FreeSpace);
 //        item.GetUInt64Property(PropertyIndexEnum::kpidClusterSize, prop.ClusterSize);
-        
+
 //        item.GetFileTimeProperty(PropertyIndexEnum::kpidCTime, prop.Created);
 //        item.GetFileTimeProperty(PropertyIndexEnum::kpidATime, prop.Accessed);
 //        item.GetFileTimeProperty(PropertyIndexEnum::kpidMTime, prop.Modified);
-        
+
 //        item.GetBoolProperty(PropertyIndexEnum::kpidSolid, prop.IsSolid);
 //        item.GetBoolProperty(PropertyIndexEnum::kpidEncrypted, prop.IsEncrypted);
 //        item.GetBoolProperty(PropertyIndexEnum::kpidIsDir, prop.IsDir);
@@ -133,6 +132,7 @@ using namespace lib7zip;
 class Qt7zPackagePrivate
 {
     friend class Qt7zPackage;
+
 public:
     Qt7zPackagePrivate(Qt7zPackage *q);
     Qt7zPackagePrivate(Qt7zPackage *q, const QString &packagePath);
@@ -144,7 +144,7 @@ public:
     Qt7zPackage *m_q;
     QList<Qt7zFileInfo> m_fileInfoList;
     QStringList m_fileNameList;
-    static C7ZipLibrary* lib7zip;
+    static C7ZipLibrary *lib7zip;
     static bool lib7zip_fatal_error;
 
 private:
@@ -154,29 +154,12 @@ private:
     QString m_packagePath;
     bool m_isOpen;
     QHash<QString, uint32_t> m_fileNameToIndex;
-    
+
     QFile m_file;
-    C7ZipArchive* m_pArchive;
-    C7ZipInStream* m_pInStream;
+    C7ZipArchive *m_pArchive;
+    C7ZipInStream *m_pInStream;
 
 //    QScopedPointer<CCodecs> m_codecs;
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif // QT7ZPACKAGE_P_H

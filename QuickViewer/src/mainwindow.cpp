@@ -16,7 +16,7 @@
 #include "qnamedpipe.h"
 #include "qmousesequence.h"
 #include "fileloader.h"
-#include "qinnerframe.h"
+#include "innerframe.h"
 #include "retouchwindow.h"
 #include "startupprofiler.h"
 
@@ -828,8 +828,8 @@ void MainWindow::handleGraphicsViewAnchorHovered(Qt::AnchorPoint anchor)
         return;
     }
     if (anchor == Qt::AnchorTop && (showMenubar || showToolbar)) {
-        QInnerFrame *innerFrame = new QInnerFrame(ui->graphicsView);
-        connect(innerFrame, &QInnerFrame::init, this, [=] {
+        InnerFrame *innerFrame = new InnerFrame(ui->graphicsView);
+        connect(innerFrame, &InnerFrame::init, this, [=] {
             if (showMenubar) {
                 innerFrame->layout()->addWidget(ui->menuBar);
                 ui->menuBar->setVisible(true);
@@ -842,7 +842,7 @@ void MainWindow::handleGraphicsViewAnchorHovered(Qt::AnchorPoint anchor)
             ui->mainToolBar->setCursor(Qt::ArrowCursor);
             qApp->setInnerFrameShowing(true);
         });
-        connect(innerFrame, &QInnerFrame::deinit, this, [=] {
+        connect(innerFrame, &InnerFrame::deinit, this, [=] {
             //            qDebug() << showToolbar << showMenubar << fullscreen;
             bool fullscreen2 = isFullScreen();
             if (showToolbar || fullscreen2) {
@@ -862,26 +862,26 @@ void MainWindow::handleGraphicsViewAnchorHovered(Qt::AnchorPoint anchor)
             qApp->setInnerFrameShowing(false);
         });
         connect(this, SIGNAL(changingFullscreen(bool)), innerFrame, SLOT(close()));
-        connect(innerFrame, &QInnerFrame::closed, this, [=] {
+        connect(innerFrame, &InnerFrame::closed, this, [=] {
             delete innerFrame;
         });
         innerFrame->showWithoutTitleBar();
     }
     if (anchor == Qt::AnchorBottom && !qApp->HidePageBarParmanently() && (showPageBar || fullscreen)) {
-        QInnerFrame *innerFrame = new QInnerFrame(ui->graphicsView, Qt::AnchorBottom, qApp->LargeToolbarIcons() ? 60 : 30);
-        connect(innerFrame, &QInnerFrame::init, this, [&] {
+        InnerFrame *innerFrame = new InnerFrame(ui->graphicsView, Qt::AnchorBottom, qApp->LargeToolbarIcons() ? 60 : 30);
+        connect(innerFrame, &InnerFrame::init, this, [&] {
             innerFrame->layout()->addWidget(ui->pageFrame);
             ui->pageFrame->show();
             qApp->setInnerFrameShowing(true);
             ui->pageFrame->setCursor(Qt::ArrowCursor);
         });
-        connect(innerFrame, &QInnerFrame::deinit, this, [&] {
+        connect(innerFrame, &InnerFrame::deinit, this, [&] {
             ui->pageFrame->hide();
             ui->verticalViewPage->layout()->addWidget(ui->pageFrame);
             qApp->setInnerFrameShowing(false);
         });
         connect(this, SIGNAL(changingFullscreen(bool)), innerFrame, SLOT(close()));
-        connect(innerFrame, &QInnerFrame::closed, this, [=] {
+        connect(innerFrame, &InnerFrame::closed, this, [=] {
             delete innerFrame;
         });
         innerFrame->showWithoutTitleBar();

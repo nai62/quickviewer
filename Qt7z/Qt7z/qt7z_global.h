@@ -5,15 +5,15 @@
 
 #ifdef QT7Z_STATIC
 
-#define QT7ZSHARED_EXPORT
+#    define QT7ZSHARED_EXPORT
 
 #else
 
-#if defined(QT7Z_LIBRARY)
-#  define QT7ZSHARED_EXPORT Q_DECL_EXPORT
-#else
-#  define QT7ZSHARED_EXPORT Q_DECL_IMPORT
-#endif
+#    if defined(QT7Z_LIBRARY)
+#        define QT7ZSHARED_EXPORT Q_DECL_EXPORT
+#    else
+#        define QT7ZSHARED_EXPORT Q_DECL_IMPORT
+#    endif
 
 #endif    // QT7Z_STATIC
 

@@ -9,8 +9,8 @@ class QLuminor : public QObject
 public:
     explicit QLuminor(QObject *parent = nullptr);
 
-    static QImage toLuminor(const QImage& src, float brightness, float contrast, float gamma);
-    static QImage toLuminorRGBA(const QImage& src, float brightness, float contrast, float gamma);
+    static QImage toLuminor(const QImage &src, float brightness, float contrast, float gamma);
+    static QImage toLuminorRGBA(const QImage &src, float brightness, float contrast, float gamma);
 };
 
 #endif // QLUMINOR_H

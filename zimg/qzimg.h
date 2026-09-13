@@ -21,7 +21,6 @@ public:
     Q_ENUM(FilterMode)
 #endif
 
-
     explicit QZimg(QObject *parent = 0);
     ~QZimg();
 
@@ -32,7 +31,7 @@ public:
      * @param stridePack packed byte size for each line(64 bytes aligned, or 64x4 bytes aligned for Format_ARGB32)
      * @return a image which have 64byte aligned stride bytes for each line
      */
-    static QImage createPackedImage(QSize size, QImage::Format fmt, int stridePack=64);
+    static QImage createPackedImage(QSize size, QImage::Format fmt, int stridePack = 64);
 
     /**
      * @brief stridePackedImage
@@ -40,16 +39,15 @@ public:
      * @param stridePack
      * @return a image which have 64byte aligned stride bytes for each line
      */
-    static QImage toPackedImage(const QImage& src, int stridePack=64);
+    static QImage toPackedImage(const QImage &src, int stridePack = 64);
 
-    static QImage scaled(const QImage& src, const QSize& s, Qt::AspectRatioMode aspectMode = Qt::IgnoreAspectRatio,
-                         FilterMode mode = ResizeBicubic);
+    static QImage scaled(const QImage &src, const QSize &s, Qt::AspectRatioMode aspectMode = Qt::IgnoreAspectRatio, FilterMode mode = ResizeBicubic);
 
 signals:
 
 public slots:
 private:
-    QZimgPrivate* d;
+    QZimgPrivate *d;
 };
 
 #endif // QZIMG_H
