@@ -21,8 +21,7 @@ INCLUDEPATH += \
     ../../QuickViewer/src/widgets \
     ../../QuickViewer/src/models \
     ../../QuickViewer/src/folderview \
-    ../../QuickViewer/src/qfullscreenframe \
-    ../../QuickViewer/src/qlanguageselector \
+    ../../QuickViewer/src/i18n \
     ../../QuickViewer/src/qnamedpipe \
     ../../QuickViewer/src/qactionmanager \
     ../../ResizeHalf/ResizeHalf \
@@ -61,8 +60,8 @@ SOURCES += \
     ../../QuickViewer/src/qactionmanager/qactionmanager.cpp \
     ../../QuickViewer/src/qactionmanager/qmousesequence.cpp \
     ../../QuickViewer/src/qactionmanager/shortcutbutton.cpp \
-    ../../QuickViewer/src/qlanguageselector/qlanguageselector.cpp \
-    ../../QuickViewer/src/qlanguageselector/qtexttranslator.cpp
+    ../../QuickViewer/src/i18n/languagemanager.cpp \
+    ../../QuickViewer/src/i18n/texttranslator.cpp
 
 HEADERS += \
     ../../QuickViewer/src/qv_init.h \
@@ -99,8 +98,8 @@ HEADERS += \
     ../../QuickViewer/src/qactionmanager/qactionmanager.h \
     ../../QuickViewer/src/qactionmanager/qmousesequence.h \
     ../../QuickViewer/src/qactionmanager/shortcutbutton.h \
-    ../../QuickViewer/src/qlanguageselector/qlanguageselector.h \
-    ../../QuickViewer/src/qlanguageselector/qtexttranslator.h
+    ../../QuickViewer/src/i18n/languagemanager.h \
+    ../../QuickViewer/src/i18n/texttranslator.h
 
 FORMS += \
     ../../QuickViewer/src/mainwindow.ui \
