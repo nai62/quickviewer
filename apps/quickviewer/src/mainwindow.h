@@ -15,6 +15,50 @@ class CatalogWindow;
 class ThumbnailManager;
 class RetouchWindow;
 
+class ArchiveOpenWarningController
+{
+public:
+    ArchiveOpenWarningController(QWidget *parent, ViewerSession *session)
+        : m_parent(parent)
+    {
+        m_connection = QObject::connect(
+            session,
+            &ViewerSession::archiveOpenFailed,
+            parent,
+            [this](const QString &path, ArchiveOpenError error) {
+                if (error != ArchiveOpenError::PasswordProtected) {
+                    return;
+                }
+                const QString warningKey = QDir::fromNativeSeparators(path);
+                if (m_passwordWarningsInFlight.contains(warningKey)) {
+                    return;
+                }
+
+                m_passwordWarningsInFlight.insert(warningKey);
+                QMessageBox messageBox(
+                    QMessageBox::Warning,
+                    QCoreApplication::translate("MainWindow", "Cannot Open Archive"),
+                    QCoreApplication::translate(
+                        "MainWindow",
+                        "This archive is password-protected. Password-protected archives are not supported."),
+                    QMessageBox::Ok,
+                    m_parent);
+                messageBox.exec();
+                m_passwordWarningsInFlight.remove(warningKey);
+            });
+    }
+
+    ~ArchiveOpenWarningController()
+    {
+        QObject::disconnect(m_connection);
+    }
+
+private:
+    QWidget *m_parent;
+    QSet<QString> m_passwordWarningsInFlight;
+    QMetaObject::Connection m_connection;
+};
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -245,6 +289,7 @@ protected:
     QString m_pageCaption;
 
     ViewerSession m_viewerSession;
+    ArchiveOpenWarningController m_archiveOpenWarningController{this, &m_viewerSession};
     ImageString m_imageString;
     QList<QAction *> m_shaderMenuGroup;
     QList<QAction *> m_languageMenuGroup;
