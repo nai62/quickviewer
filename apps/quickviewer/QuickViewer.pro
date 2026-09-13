@@ -49,7 +49,7 @@ INCLUDEPATH += ../../components/i18n ./src/qnamedpipe ./src/qactionmanager
 
 LIBDIR = ../../lib
 
-LIBS += -L$${LIBDIR}  -leasyexif -lresizehalf -lfileloader -lQt7z -lunrar -lzimg -lspng
+LIBS += -L$${LIBDIR}  -leasyexif -lresizehalf -lfileloader -lunrar -lzimg -lspng
 
 contains(DEFINES, QV_WITH_LUMINOR) {
     INCLUDEPATH += $$PWD/../../components/qluminor

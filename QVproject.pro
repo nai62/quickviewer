@@ -2,7 +2,6 @@ include("QVproject.pri")
 
 TEMPLATE = subdirs
 SUBDIRS = \
-    Qt7z \
     ResizeHalf \
     easyexif \
     unrar \
@@ -18,7 +17,6 @@ SUBDIRS = \
     viewernavigationtest \
     windowstartuptest
 
-Qt7z.file = components/qt7z/Qt7z.pro
 ResizeHalf.file = qmake/third_party/resizehalf/ResizeHalf.pro
 easyexif.file = qmake/third_party/easyexif/easyexif.pro
 unrar.file = components/rarextractor/unrar.pro
@@ -34,7 +32,7 @@ svgloadertest.file = tests/svgloader/svgloader.pro
 viewernavigationtest.file = tests/viewernavigation/viewernavigation.pro
 windowstartuptest.file = tests/windowstartup/windowstartup.pro
 
-fileloader.depends = Qt7z unrar
+fileloader.depends = unrar
 QuickViewer.depends = ResizeHalf easyexif fileloader zimg spng
 qvtest.depends = fileloader
 viewernavigationtest.depends = ResizeHalf easyexif fileloader zimg spng
@@ -50,11 +48,6 @@ contains(DEFINES, QV_WITH_LUMINOR) {
 win32 {
     SUBDIRS += AssociateFilesWithQuickViewer
     AssociateFilesWithQuickViewer.file = apps/associate-files/AssociateFilesWithQuickViewer.pro
-}
-
-unix {
-#    SUBDIRS += qmake/third_party/lib7z/lib7z.pro
-#    fileloader.depends += qmake/third_party/lib7z/lib7z.pro
 }
 
 

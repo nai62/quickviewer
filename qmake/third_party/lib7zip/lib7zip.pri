@@ -1,11 +1,10 @@
-
-
 #DEFINES += QT7Z_LIBRARY QT7Z_STATIC EXTERNAL_CODECS
 DEFINES += QT_DEPRECATED_WARNINGS
 
-SEVENZIP_ROOT = $$clean_path($$PWD/../../third_party/7zip/7zip)
-P7ZIP_ROOT = $$clean_path($$PWD/../../third_party/p7zip)
-LIB7ZIP_ROOT = $$clean_path($$PWD/../../third_party/lib7zip)
+THIRD_PARTY_ROOT = $$clean_path($$PWD/../../../third_party)
+SEVENZIP_ROOT = $$THIRD_PARTY_ROOT/7zip/7zip
+P7ZIP_ROOT = $$THIRD_PARTY_ROOT/p7zip
+LIB7ZIP_ROOT = $$THIRD_PARTY_ROOT/lib7zip
 
 win32 {
 #    DEFINES += QT7Z_STATIC_LINK
@@ -111,18 +110,17 @@ unix {
     DEFINES += _UNICODE
     DEFINES += UNIX_USE_WIN_FILE
 #    DEFINES += LOCALE_IS_UTF8
-    DEFINES+=USE_LIB7Z_DLL
+    DEFINES += USE_LIB7Z_DLL
 
-LIBS += -ldl
+    LIBS += -ldl
 
-
-   INCLUDEPATH += \
-       $$P7ZIP_ROOT \
-       $$P7ZIP_ROOT/CPP \
-       $$P7ZIP_ROOT/CPP/include_windows \
-       $$P7ZIP_ROOT/CPP/7zip/Archive/Common \
-       $$P7ZIP_ROOT/CPP/Common \
-       $$LIB7ZIP_ROOT/src \
+    INCLUDEPATH += \
+        $$P7ZIP_ROOT \
+        $$P7ZIP_ROOT/CPP \
+        $$P7ZIP_ROOT/CPP/include_windows \
+        $$P7ZIP_ROOT/CPP/7zip/Archive/Common \
+        $$P7ZIP_ROOT/CPP/Common \
+        $$LIB7ZIP_ROOT/src \
 
     HEADERS += \
         $$LIB7ZIP_ROOT/src/7ZipArchiveOpenCallback.h \

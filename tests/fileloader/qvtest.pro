@@ -42,7 +42,7 @@ unix {
 }
 
 
-LIBS += -L../../lib -lunrar -lQt7z -lfileloader
+LIBS += -L../../lib -lunrar -lfileloader
 INCLUDEPATH += ../../components/fileloader ../../components/rarextractor
 
 OTHER_FILES += \

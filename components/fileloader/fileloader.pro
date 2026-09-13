@@ -27,10 +27,8 @@ win32 {
 unix {
     DEFINES += _UNIX
 }
-INCLUDEPATH += \
-        ../../third_party/7zip/7zip \
-        ../../third_party/7zip/7zip/CPP \
-        ../../third_party/lib7zip/src \
+
+include(../../qmake/third_party/lib7zip/lib7zip.pri)
 
 SOURCES += \
     $$PWD/fileloader.cpp \
@@ -52,7 +50,3 @@ LIBS += -L../../lib
 DEFINES += UNRAR RARDLL
 INCLUDEPATH += ../rarextractor
 LIBS += -lunrar
-
-#DEFINES += QT7Z_STATIC
-INCLUDEPATH += ../qt7z
-LIBS += -lQt7z
