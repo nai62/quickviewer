@@ -533,7 +533,7 @@ private slots:
     {
         VolumeCache cache(2);
         const VolumeCacheKey key{"shared", false, false};
-        QPromise<VolumeHandle> pendingLoad;
+        QPromise<CachedVolumeLoadResult> pendingLoad;
         pendingLoad.start();
         int startCount = 0;
         const auto startLoad = [&] {
@@ -547,14 +547,14 @@ private slots:
         QCOMPARE(startCount, 1);
         QVERIFY(firstRequest.isValid());
         QVERIFY(secondRequest.isValid());
-        QVERIFY(!cache.findReady(key));
+        QVERIFY(!cache.findReady(key).volume);
 
         VolumeHandle loadedVolume = makeVolumeHandle(
             new Volume(nullptr, new EmptyFileLoader));
-        pendingLoad.addResult(loadedVolume);
+        pendingLoad.addResult({loadedVolume, ArchiveOpenError::None});
         pendingLoad.finish();
 
-        QCOMPARE(cache.findReady(key), loadedVolume);
+        QCOMPARE(cache.findReady(key).volume, loadedVolume);
         QVERIFY(cache.markUsed(key));
     }
 
@@ -565,7 +565,7 @@ private slots:
         int startCount = 0;
         const auto failedLoad = [&] {
             ++startCount;
-            QPromise<VolumeHandle> promise;
+            QPromise<CachedVolumeLoadResult> promise;
             promise.start();
             VolumeLoadFuture future = promise.future();
             promise.addResult({});
@@ -574,7 +574,7 @@ private slots:
         };
 
         cache.request(key, failedLoad);
-        QVERIFY(!cache.findReady(key));
+        QVERIFY(!cache.findReady(key).volume);
         QVERIFY(!cache.contains(key));
         cache.request(key, failedLoad);
         QCOMPARE(startCount, 2);
