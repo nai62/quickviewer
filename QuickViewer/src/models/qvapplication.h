@@ -146,7 +146,7 @@ public:
     QColor BackgroundColor() { return m_backgroundColor; }
     void setBackgroundColor(QColor backgroundColor) { m_backgroundColor = backgroundColor; }
     QColor BackgroundColor2() { return m_backgroundColor2; }
-    void setBackgroundColor2(QColor backgroundColor2) { m_backgroundColor2 = backgroundColor2; }
+    void setBackgroundColor2(QColor backgroundColor) { m_backgroundColor2 = backgroundColor; }
     bool UseCheckeredPattern() { return m_useCheckeredPattern; }
     void setUseCheckeredPattern(bool useCheckeredPattern) { m_useCheckeredPattern = useCheckeredPattern; }
     bool ShowFullscreenSignage() { return m_showFullscreenSignage; }
@@ -304,7 +304,7 @@ public:
     bool SaveCatalogViewWidth() { return m_saveCatalogViewWidth; }
     void setSaveCatalogViewWidth(bool saveCatalogViewWidth) { m_saveCatalogViewWidth = saveCatalogViewWidth; }
     int CatalogViewWidth() { return m_catalogViewWidth; }
-    void setCatalogViewWidth(int folderViewWidth) { m_catalogViewWidth = folderViewWidth; }
+    void setCatalogViewWidth(int catalogViewWidth) { m_catalogViewWidth = catalogViewWidth; }
 
     // ShaderEffect
     qvEnums::ShaderEffect Effect() { return m_effect; }
