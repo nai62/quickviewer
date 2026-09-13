@@ -13,7 +13,7 @@ LoadLanguageFile "${NSISDIR}\Contrib\Language files\Japanese.nlf"
 # App Name
 Name "QuickViewer"
 # Installer Exectable
-OutFile "..\..\${APPNAME}-Installer-${APPVERSION}.exe"
+OutFile "..\..\..\${APPNAME}-Installer-${APPVERSION}.exe"
 # Installed Directory Path
 InstallDir "$PROGRAMFILES64\${AppDir}"
  
