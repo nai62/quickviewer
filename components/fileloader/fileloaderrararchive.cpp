@@ -26,7 +26,7 @@ FileLoaderRarArchive::FileLoaderRarArchive(QObject *parent, QString rarpath)
       d(new RarExtractor(m_volumepath))
 {
     if (!d->open(RarExtractor::OpenModeList)) {
-        rejectArchive(mapRarError(d->error()));
+        rejectArchive(mapRarError(d->archiveError()));
         return;
     }
     initialize();
@@ -53,8 +53,8 @@ QStringList FileLoaderRarArchive::contents()
 
 void FileLoaderRarArchive::initialize()
 {
-    if (!d || d->error() != RarArchiveError::None) {
-        rejectArchive(d ? mapRarError(d->error()) : ArchiveOpenError::Corrupt);
+    if (!d || d->archiveError() != RarArchiveError::None) {
+        rejectArchive(d ? mapRarError(d->archiveError()) : ArchiveOpenError::Corrupt);
         return;
     }
 

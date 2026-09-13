@@ -65,7 +65,7 @@ public:
 
     QByteArray fileData(QString filename);
     RarFileDataResult fileDataResult(QString filename);
-    RarArchiveError error() const { return m_archiveError; }
+    RarArchiveError archiveError() const { return m_archiveError; }
     void markPasswordRequested() { m_passwordRequested = true; }
 
     Qt::HANDLE m_hArc;
