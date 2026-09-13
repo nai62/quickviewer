@@ -180,13 +180,13 @@ static void verifyRarArchive(const QString &archivePath, const QString &firstNam
 
 void FileLoaderTest::testCase5_rar4()
 {
-    verifyRarArchive(QString(SRCDIR "../Qt7z/Qt7z/p7zip/check/test/7za433_rar4.rar"),
+    verifyRarArchive(QString(SRCDIR "../../third_party/p7zip/check/test/7za433_rar4.rar"),
                      QString("7za433_rar4/bin/7za.exe"));
 }
 
 void FileLoaderTest::testCase6_rar5()
 {
-    verifyRarArchive(QString(SRCDIR "../Qt7z/Qt7z/p7zip/check/test/7za433_rar.rar"),
+    verifyRarArchive(QString(SRCDIR "../../third_party/p7zip/check/test/7za433_rar.rar"),
                      QString("7za433_rar/bin/7za.exe"));
 }
 
