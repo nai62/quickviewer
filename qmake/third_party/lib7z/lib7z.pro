@@ -8,13 +8,13 @@ CONFIG += dll
 CONFIG += warn_off
 TEMPLATE = lib
 
-DESTDIR = ../../lib
+DESTDIR = ../../../lib
 
 unix: LIBS += -ldl
 
 DEFINES+=USE_LIB7Z_DLL
 
-P7ZIP = $$PWD/../Qt7z/p7zip
+P7ZIP = $$clean_path($$PWD/../../../third_party/p7zip)
 
 INCLUDEPATH += \
   $$P7ZIP/CPP/myWindows \
@@ -280,4 +280,3 @@ SOURCES +=  \
   $$P7ZIP/CPP/myWindows/wine_date_and_time.cpp \
 
 macx: LIBS += -framework CoreFoundation
-
