@@ -36,21 +36,21 @@ DEFINES += QT_DEPRECATED_WARNINGS EXECUTE_ON_UAC
 
 LIBS += -lole32
 
-INCLUDEPATH += ../QuickViewer/src/i18n
+INCLUDEPATH += ../../components/file-association ../../components/i18n
 
 SOURCES += \
         main.cpp \
-        fileassocdialog.cpp \
-    ../QuickViewer/src/i18n/languagemanager.cpp \
-    ../QuickViewer/src/i18n/texttranslator.cpp
+        ../../components/file-association/fileassocdialog.cpp \
+        ../../components/i18n/languagemanager.cpp \
+        ../../components/i18n/texttranslator.cpp
 
 HEADERS += \
-        fileassocdialog.h \
-    ../QuickViewer/src/i18n/languagemanager.h \
-    ../QuickViewer/src/i18n/texttranslator.h
+        ../../components/file-association/fileassocdialog.h \
+        ../../components/i18n/languagemanager.h \
+        ../../components/i18n/texttranslator.h
 
 FORMS += \
-        fileassocdialog.ui
+        ../../components/file-association/fileassocdialog.ui
 
 RC_ICONS = app_icon2.ico
 #!CONFIG(debug, debug|release):!mingw {
@@ -70,12 +70,12 @@ contains(TARGET_ARCH, x86_64) {
     TARGET_ARCH = x86
 }
 
-DESTDIR = ../bin
+DESTDIR = ../../bin
 
 DISTFILES += \
-    ../QuickViewer/translations/quickviewer_ja.qm \
-    ../QuickViewer/translations/quickviewer_es.qm \
-    ../QuickViewer/translations/quickviewer_zh.qm \
+    ../quickviewer/translations/quickviewer_ja.qm \
+    ../quickviewer/translations/quickviewer_es.qm \
+    ../quickviewer/translations/quickviewer_zh.qm \
 
 RESOURCES += \
     resources.qrc

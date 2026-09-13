@@ -4,10 +4,10 @@
 #
 #-------------------------------------------------
 
-include(../QVproject.pri)
+include(../../QVproject.pri)
 isEmpty(QV_APP_SOURCE): QV_APP_SOURCE = $$PWD
-RESVG_SOURCE_ROOT = $$clean_path($$QV_APP_SOURCE/../resvg/resvg)
-include(../resvg/resvg.pri)
+RESVG_SOURCE_ROOT = $$clean_path($$QV_APP_SOURCE/../../third_party/resvg)
+include(../../qmake/third_party/resvg/resvg.pri)
 
 QT       += core gui concurrent sql svgwidgets
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -36,31 +36,31 @@ DEFINES += \
 
 CODECFORSRC = UTF-8
 
-DESTDIR = ../bin
+DESTDIR = ../../bin
 
-INCLUDEPATH += ../ResizeHalf/ResizeHalf
-INCLUDEPATH += ../easyexif/easyexif
-INCLUDEPATH += ../fileloader
-INCLUDEPATH += ../zimg
-INCLUDEPATH += ../spng/libspng/spng
+INCLUDEPATH += ../../third_party/resizehalf
+INCLUDEPATH += ../../third_party/easyexif
+INCLUDEPATH += ../../components/fileloader
+INCLUDEPATH += ../../components/qzimg
+INCLUDEPATH += ../../third_party/libspng/spng
 INCLUDEPATH += ./src ./src/catalog ./src/widgets ./src/models ./src/folderview
-INCLUDEPATH += ./src/i18n ./src/qnamedpipe ./src/qactionmanager
+INCLUDEPATH += ../../components/i18n ./src/qnamedpipe ./src/qactionmanager
 
 
-LIBDIR = ../lib
+LIBDIR = ../../lib
 
 LIBS += -L$${LIBDIR}  -leasyexif -lresizehalf -lfileloader -lQt7z -lunrar -lzimg -lspng
 
 contains(DEFINES, QV_WITH_LUMINOR) {
-    INCLUDEPATH += $$PWD/../luminor
+    INCLUDEPATH += $$PWD/../../components/qluminor
     win32 {
-        LIBS += -L$$PWD/../luminor/$${LUMINOR_BIN_PATH} -lluminor -lluminor_rgba -lhalide_runtime -lqluminor
+        LIBS += -L$$PWD/../../third_party/luminor/$${LUMINOR_BIN_PATH} -lluminor -lluminor_rgba -lhalide_runtime -lqluminor
     }
     unix {
-        LIBS += -L$$PWD/../luminor/$${LUMINOR_BIN_PATH} \
-                $$PWD/../luminor/$${LUMINOR_BIN_PATH}/luminor.o \
-                $$PWD/../luminor/$${LUMINOR_BIN_PATH}/luminor_rgba.o \
-                $$PWD/../luminor/$${LUMINOR_BIN_PATH}/halide_runtime.a \
+        LIBS += -L$$PWD/../../third_party/luminor/$${LUMINOR_BIN_PATH} \
+                $$PWD/../../third_party/luminor/$${LUMINOR_BIN_PATH}/luminor.o \
+                $$PWD/../../third_party/luminor/$${LUMINOR_BIN_PATH}/luminor_rgba.o \
+                $$PWD/../../third_party/luminor/$${LUMINOR_BIN_PATH}/halide_runtime.a \
                 -lqluminor -ldl
     }
 }
@@ -76,7 +76,7 @@ win32 {
     LIBS += -luser32 -ladvapi32 -lShlwapi -loleaut32 -lole32 -luuid
 
     # copy official 7z.dll to build/bin/
-    QMAKE_POST_LINK += $$QMAKE_COPY /B $$shell_quote($$shell_path($$PWD/../Qt7z/Qt7z/windll/$${TARGET_ARCH}/7z.dll)) $$shell_path($${DESTDIR}) $$escape_expand(\n\t)
+    QMAKE_POST_LINK += $$QMAKE_COPY /B $$shell_quote($$shell_path($$PWD/../../third_party/7zip/windll/$${TARGET_ARCH}/7z.dll)) $$shell_path($${DESTDIR}) $$escape_expand(\n\t)
 }
 linux {
     DEFINES += _UNIX
@@ -133,7 +133,7 @@ SOURCES += \
     src/renamedialog.cpp \
     src/widgets/flowlayout.cpp \
     src/widgets/pageslider.cpp \
-    src/i18n/languagemanager.cpp \
+    ../../components/i18n/languagemanager.cpp \
     src/qnamedpipe/qnamedpipe.cpp \
     src/widgets/innerframe.cpp \
     src/models/qvmovie.cpp \
@@ -148,7 +148,7 @@ SOURCES += \
     src/models/loupecontroller.cpp \
     src/retouchwindow.cpp \
     src/models/fileoperator.cpp \
-    src/i18n/texttranslator.cpp \
+    ../../components/i18n/texttranslator.cpp \
     src/models/qvimagemetadata.cpp
 
 
@@ -197,7 +197,7 @@ HEADERS  += \
     src/pch.h \
     src/widgets/flowlayout.h \
     src/widgets/pageslider.h \
-    src/i18n/languagemanager.h \
+    ../../components/i18n/languagemanager.h \
     src/qnamedpipe/qnamedpipe.h \
     src/widgets/innerframe.h \
     src/models/qvmovie.h \
@@ -212,13 +212,13 @@ HEADERS  += \
     src/retouchwindow.h \
     src/startupprofiler.h \
     src/models/fileoperator.h \
-    src/i18n/texttranslator.h \
+    ../../components/i18n/texttranslator.h \
     src/models/qvimagemetadata.h
 
 win32 {
-    INCLUDEPATH += ../AssociateFilesWithQuickViewer
-    SOURCES += src/mainwindowforwindows.cpp ../AssociateFilesWithQuickViewer/fileassocdialog.cpp
-    HEADERS += src/mainwindowforwindows.h ../AssociateFilesWithQuickViewer/fileassocdialog.h
+    INCLUDEPATH += ../../components/file-association
+    SOURCES += src/mainwindowforwindows.cpp ../../components/file-association/fileassocdialog.cpp
+    HEADERS += src/mainwindowforwindows.h ../../components/file-association/fileassocdialog.h
     *g++*: DEFINES += NTDDI_VERSION=NTDDI_VISTA
 
 }
@@ -236,7 +236,7 @@ FORMS    += \
     src/folderview/folderwindow.ui \
     src/optionsdialog.ui \
     src/renamedialog.ui \
-    ../AssociateFilesWithQuickViewer/fileassocdialog.ui \
+    ../../components/file-association/fileassocdialog.ui \
     src/retouchwindow.ui
 
 RESOURCES += toolbar.qrc \
@@ -295,16 +295,16 @@ DBDIR += database/
 # win32 depoying, please add 'jom install' into build setting on qt-creator
 win32 : !CONFIG(debug, debug|release) {
     mingw {
-        MY_DEFAULT_INSTALL = ../../QuickViewer-$${VERSION}-mingw-$${TARGET_ARCH}
+        MY_DEFAULT_INSTALL = ../../../QuickViewer-$${VERSION}-mingw-$${TARGET_ARCH}
 
-        install_target.files = $${DESTDIR}/QuickViewer.exe $${DESTDIR}/AssociateFilesWithQuickViewer.exe $${LIBDIR}/fileloader.dll $$PWD/../Qt7z/Qt7z/windll/$${TARGET_ARCH}/7z.dll
+        install_target.files = $${DESTDIR}/QuickViewer.exe $${DESTDIR}/AssociateFilesWithQuickViewer.exe $${LIBDIR}/fileloader.dll $$PWD/../../third_party/7zip/windll/$${TARGET_ARCH}/7z.dll
 
         INSTALLS += install_target install_deploy_files install_translations install_assoc_icons
     } else {
         contains(DEFINES, QV_PORTABLE) {
-            MY_DEFAULT_INSTALL = ../../QuickViewer-portable-$${VERSION}-$${TARGET_ARCH}
+            MY_DEFAULT_INSTALL = ../../../QuickViewer-portable-$${VERSION}-$${TARGET_ARCH}
         } else {
-            MY_DEFAULT_INSTALL = ../../QuickViewer-$${VERSION}/$${TARGET_ARCH}
+            MY_DEFAULT_INSTALL = ../../../QuickViewer-$${VERSION}/$${TARGET_ARCH}
         }
 
         install_target.path = $${MY_DEFAULT_INSTALL}
@@ -312,28 +312,28 @@ win32 : !CONFIG(debug, debug|release) {
         install_target.files = \
             $${DESTDIR}/QuickViewer.exe \
             $${DESTDIR}/AssociateFilesWithQuickViewer.exe \
-            $$PWD/../Qt7z/Qt7z/windll/$${TARGET_ARCH}/7z.dll \
+            $$PWD/../../third_party/7zip/windll/$${TARGET_ARCH}/7z.dll \
 
         install_qrawspeed.path = $${MY_DEFAULT_INSTALL}/imageformats
         install_qrawspeed.files = \
-            ../../../qrawspeed/imageformats-$${TARGET_ARCH}/qrawspeed0.dll \
-            ../../../qrawspeed/imageformats-$${TARGET_ARCH}/qapng.dll \
-            ../../../qrawspeed/imageformats-$${TARGET_ARCH}/qjp2.dll \
-            ../../../qrawspeed/imageformats-$${TARGET_ARCH}/qdds.dll \
-            ../../../qrawspeed/imageformats-$${TARGET_ARCH}/qjpegxr.dll \
+            ../../../../qrawspeed/imageformats-$${TARGET_ARCH}/qrawspeed0.dll \
+            ../../../../qrawspeed/imageformats-$${TARGET_ARCH}/qapng.dll \
+            ../../../../qrawspeed/imageformats-$${TARGET_ARCH}/qjp2.dll \
+            ../../../../qrawspeed/imageformats-$${TARGET_ARCH}/qdds.dll \
+            ../../../../qrawspeed/imageformats-$${TARGET_ARCH}/qjpegxr.dll \
 
-#            ../../../qrawspeed/imageformats-$${TARGET_ARCH}/qlodepng0.dll \
+#            ../../../../qrawspeed/imageformats-$${TARGET_ARCH}/qlodepng0.dll \
 
         install_qvavif.path = $${MY_DEFAULT_INSTALL}/imageformats
         install_qvavif.files = \
-            ../../../qt-avif-image-plugin/imageformats-$${TARGET_ARCH}/qavif6.dll \
+            ../../../../qt-avif-image-plugin/imageformats-$${TARGET_ARCH}/qavif6.dll \
 
         install_qvheif.path = $${MY_DEFAULT_INSTALL}/imageformats
         install_qvheif.files = \
-            ../../../qt-heic-image-plugin/qtbuild_6.11.2/kimg_heif6.dll \
+            ../../../../qt-heic-image-plugin/qtbuild_6.11.2/kimg_heif6.dll \
 
         install_qvheif_runtime.path = $${MY_DEFAULT_INSTALL}
-        install_qvheif_runtime.files = $$files(../../../qt-heic-image-plugin/3rdparty/install/bin/*.dll)
+        install_qvheif_runtime.files = $$files(../../../../qt-heic-image-plugin/3rdparty/install/bin/*.dll)
 
         # dlls instead of vcredist_xxx.exe
         install_msvcrt.PATH = C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Redist/MSVC/14.38.33130/x64/Microsoft.VC143.CRT
@@ -351,8 +351,8 @@ win32 : !CONFIG(debug, debug|release) {
     }
     install_deploy_files.path = $${MY_DEFAULT_INSTALL}
     install_deploy_files.files = \
-        $${PWD}/../README.md \
-        $${PWD}/../LICENSE
+        $${PWD}/../../README.md \
+        $${PWD}/../../LICENSE
 
     install_deploy_files.commands = $$shell_path($$[QT_INSTALL_BINS]/windeployqt) --release --compiler-runtime $$shell_path($${MY_DEFAULT_INSTALL}/QuickViewer.exe)
 
@@ -377,17 +377,17 @@ win32 : !CONFIG(debug, debug|release) {
 
     install_assoc_icons.path = $${MY_DEFAULT_INSTALL}/iconengines
     install_assoc_icons.files = \
-        ../AssociateFilesWithQuickViewer/icons/qv_apng.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_bmp.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_dds.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_gif.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_icon.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_jpeg.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_png.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_raw.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_tga.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_tiff.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_webp.ico \
+        ../associate-files/icons/qv_apng.ico \
+        ../associate-files/icons/qv_bmp.ico \
+        ../associate-files/icons/qv_dds.ico \
+        ../associate-files/icons/qv_gif.ico \
+        ../associate-files/icons/qv_icon.ico \
+        ../associate-files/icons/qv_jpeg.ico \
+        ../associate-files/icons/qv_png.ico \
+        ../associate-files/icons/qv_raw.ico \
+        ../associate-files/icons/qv_tga.ico \
+        ../associate-files/icons/qv_tiff.ico \
+        ../associate-files/icons/qv_webp.ico \
 
     install_shaders.path = $${MY_DEFAULT_INSTALL}/shaders
     install_shaders.files = $$SHADERS
@@ -423,7 +423,7 @@ linux : !CONFIG(debug, debug|release) : contains(DEFINES, QV_PORTABLE) {
 
     APPDIR = QuickViewer-$${VERSION}-$${TARGET_ARCH}.AppDir
     APPIMAGE = QuickViewer-$${VERSION}-$${TARGET_ARCH}.AppImage
-    MY_DEFAULT_INSTALL = $${OUT_PWD}/../../$${APPDIR}
+    MY_DEFAULT_INSTALL = $${OUT_PWD}/../../../$${APPDIR}
     message(DESTDIR $${DESTDIR})
 
     # for(var, $$list($$enumerate_vars())) {
@@ -432,26 +432,26 @@ linux : !CONFIG(debug, debug|release) : contains(DEFINES, QV_PORTABLE) {
     # }
 
     install_target.files = \
-        $${OUT_PWD}/../bin/QuickViewer \
-        $${OUT_PWD}/../../bundle/7z.so \
+        $${OUT_PWD}/../../bin/QuickViewer \
+        $${OUT_PWD}/../../../bundle/7z.so \
 
     install_target.path = $${MY_DEFAULT_INSTALL}/usr/bin
 
     install_libs.files = \
-        $${OUT_PWD}/../lib/libfileloader.so.1 \
+        $${OUT_PWD}/../../lib/libfileloader.so.1 \
 
     install_libs.path = $${MY_DEFAULT_INSTALL}/usr/lib
 
     install_desktop.files = \
         $${PWD}/QuickViewer.desktop \
-        $${PWD}/../docs/quickviewer.png \
+        $${PWD}/../../docs/quickviewer.png \
 
     install_desktop.path = $${MY_DEFAULT_INSTALL}
 
     install_deploy_files.path = $${MY_DEFAULT_INSTALL}
     install_deploy_files.files = \
-        $${PWD}/../README.md \
-        $${PWD}/../LICENSE \
+        $${PWD}/../../README.md \
+        $${PWD}/../../LICENSE \
 
     install_deploy_files.commands = linuxdeployqt $${MY_DEFAULT_INSTALL}/QuickViewer.desktop -qmake=$$[QT_INSTALL_BINS]/qmake -bundle-non-qt-libs -exclude-libs=libqsqlmimer,libqsqlmysql,libqsqlodbc,libqsqlpsql
     install_deploy_files.depends = install_install_target install_install_libs install_install_desktop
@@ -473,17 +473,17 @@ linux : !CONFIG(debug, debug|release) : contains(DEFINES, QV_PORTABLE) {
 
     install_assoc_icons.path = $${MY_DEFAULT_INSTALL}/usr/shared/icons
     install_assoc_icons.files = \
-        ../AssociateFilesWithQuickViewer/icons/qv_apng.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_bmp.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_dds.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_gif.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_icon.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_jpeg.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_png.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_raw.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_tga.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_tiff.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_webp.ico \
+        ../associate-files/icons/qv_apng.ico \
+        ../associate-files/icons/qv_bmp.ico \
+        ../associate-files/icons/qv_dds.ico \
+        ../associate-files/icons/qv_gif.ico \
+        ../associate-files/icons/qv_icon.ico \
+        ../associate-files/icons/qv_jpeg.ico \
+        ../associate-files/icons/qv_png.ico \
+        ../associate-files/icons/qv_raw.ico \
+        ../associate-files/icons/qv_tga.ico \
+        ../associate-files/icons/qv_tiff.ico \
+        ../associate-files/icons/qv_webp.ico \
 
     install_appimage.path = $${MY_DEFAULT_INSTALL}/..
     install_appimage.files = $${APPIMAGE}
@@ -494,10 +494,10 @@ linux : !CONFIG(debug, debug|release) : contains(DEFINES, QV_PORTABLE) {
 
 #    contains(DEFINES, QV_PORTABLE) {
 #        install_deploy_files.files += $${PWD}/AppRun
-#        install_deploy_files.files -= $${PWD}/../LICENSE
+#        install_deploy_files.files -= $${PWD}/../../LICENSE
 
 #        install_apprun.path = $${MY_DEFAULT_INSTALL}
-#        install_apprun.files = $${PWD}/../LICENSE
+#        install_apprun.files = $${PWD}/../../LICENSE
 #        install_apprun.commands = chmod 755 $${MY_DEFAULT_INSTALL}/AppRun
 #        install_apprun.depends = install_install_deploy_files
 #    }
@@ -517,7 +517,7 @@ linux : !CONFIG(debug, debug|release) : contains(DEFINES, QV_PORTABLE) {
 linux : !CONFIG(debug, debug|release) : !contains(DEFINES, QV_PORTABLE) {
     APPDIR = QuickViewer-$${VERSION}-$${TARGET_ARCH}.AppDir
     APPIMAGE = QuickViewer-$${VERSION}-$${TARGET_ARCH}.AppImage
-    MY_DEFAULT_INSTALL = ../../$${APPDIR}
+    MY_DEFAULT_INSTALL = ../../../$${APPDIR}
 
     install_target.files = $${DESTDIR}/QuickViewer
     install_target.path = $${QV_BIN_PATH}
@@ -531,8 +531,8 @@ linux : !CONFIG(debug, debug|release) : !contains(DEFINES, QV_PORTABLE) {
 
     install_deploy_files.path = $${QV_SHARED_PATH}/QuickViewer
     install_deploy_files.files = \
-        $${PWD}/../README.md \
-        $${PWD}/../LICENSE \
+        $${PWD}/../../README.md \
+        $${PWD}/../../LICENSE \
 
     install_deploy_files.depends = install_install_target install_install_libs
 
@@ -550,17 +550,17 @@ linux : !CONFIG(debug, debug|release) : !contains(DEFINES, QV_PORTABLE) {
 
     install_assoc_icons.path = $${QV_SHARED_PATH}/QuickViewer/icons
     install_assoc_icons.files = \
-        ../AssociateFilesWithQuickViewer/icons/qv_apng.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_bmp.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_dds.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_gif.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_icon.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_jpeg.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_png.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_raw.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_tga.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_tiff.ico \
-        ../AssociateFilesWithQuickViewer/icons/qv_webp.ico \
+        ../associate-files/icons/qv_apng.ico \
+        ../associate-files/icons/qv_bmp.ico \
+        ../associate-files/icons/qv_dds.ico \
+        ../associate-files/icons/qv_gif.ico \
+        ../associate-files/icons/qv_icon.ico \
+        ../associate-files/icons/qv_jpeg.ico \
+        ../associate-files/icons/qv_png.ico \
+        ../associate-files/icons/qv_raw.ico \
+        ../associate-files/icons/qv_tga.ico \
+        ../associate-files/icons/qv_tiff.ico \
+        ../associate-files/icons/qv_webp.ico \
 
     INSTALLS += install_target install_libs install_deploy_files install_translations install_assoc_icons
 }
@@ -568,17 +568,17 @@ linux : !CONFIG(debug, debug|release) : !contains(DEFINES, QV_PORTABLE) {
 macos : !CONFIG(debug, debug|release) {
     APPDIR = QuickViewer.app
     APPIMAGE = QuickViewer-$${VERSION}-$${TARGET_ARCH}.dmg
-    MY_DEFAULT_INSTALL = ../../$${APPDIR}
+    MY_DEFAULT_INSTALL = ../../../$${APPDIR}
 
     install_target.files = $${DESTDIR}/$${APPDIR}
-    install_target.path = ../../
+    install_target.path = ../../../
 
     install_libs.files = $${DESTDIR}/../lib/lib7z.1.0.dylib $${DESTDIR}/../lib/libfileloader.1.0.dylib
-    install_libs.commands = cp -rfp $${DESTDIR}/$${APPDIR} ../../
+    install_libs.commands = cp -rfp $${DESTDIR}/$${APPDIR} ../../../
     install_libs.path = $${MY_DEFAULT_INSTALL}/Contents/Frameworks
 
     install_deploy_files.path = $${MY_DEFAULT_INSTALL}/Contents
-    install_deploy_files.files = $${PWD}/../README.md
+    install_deploy_files.files = $${PWD}/../../README.md
     install_deploy_files.commands = $$shell_path($$[QT_INSTALL_BINS]/macdeployqt) $${MY_DEFAULT_INSTALL} -libpath=$$${DESTDIR}/../lib
     install_deploy_files.depends = install_install_target install_install_libs
 
@@ -603,7 +603,7 @@ macos : !CONFIG(debug, debug|release) {
 
     install_rename_dmg.path = $${MY_DEFAULT_INSTALL}/Contents
     install_rename_dmg.files = test
-    install_rename_dmg.commands = mv ../../QuickViewer.dmg ../../$${APPIMAGE}
+    install_rename_dmg.commands = mv ../../../QuickViewer.dmg ../../../$${APPIMAGE}
     install_rename_dmg.depends = install_install_dmg
 
     INSTALLS += install_target install_libs install_desktop install_deploy_files install_translations install_db install_dmg install_rename_dmg
