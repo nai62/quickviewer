@@ -1,24 +1,24 @@
-[submodule "ResizeHalf/ResizeHalf"]
-	path = ResizeHalf/ResizeHalf
+[submodule "third_party/resizehalf"]
+	path = third_party/resizehalf
 	url = https://github.com/chikuzen/ResizeHalf
-[submodule "zimg/zimg"]
-	path = zimg/zimg
+[submodule "third_party/zimg"]
+	path = third_party/zimg
 	url = https://github.com/sekrit-twc/zimg
-[submodule "easyexif/easyexif"]
-	path = easyexif/easyexif
+[submodule "third_party/easyexif"]
+	path = third_party/easyexif
 	url = https://github.com/mayanklahiri/easyexif
-[submodule "luminor/luminor"]
-	path = luminor/luminor
+[submodule "third_party/luminor/luminor"]
+	path = third_party/luminor/luminor
 	url = https://github.com/kanryu/luminor
-[submodule "Qt7z/Qt7z/lib7zip"]
-	path = Qt7z/Qt7z/lib7zip
+[submodule "third_party/lib7zip"]
+	path = third_party/lib7zip
 	url = https://github.com/kanryu/lib7zip
-[submodule "resvg/resvg"]
-	path = resvg/resvg
+[submodule "third_party/resvg"]
+	path = third_party/resvg
 	url = https://github.com/linebender/resvg.git
-[submodule "spng/libspng"]
-	path = spng/libspng
+[submodule "third_party/libspng"]
+	path = third_party/libspng
 	url = https://github.com/randy408/libspng
-[submodule "spng/zlib"]
-	path = spng/zlib
+[submodule "third_party/zlib"]
+	path = third_party/zlib
 	url = https://github.com/madler/zlib.git

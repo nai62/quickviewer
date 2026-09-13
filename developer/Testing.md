@@ -99,7 +99,7 @@ jobs: 8
 
 Override with `QV_JOM` and `QV_JOBS`.
 
-The incremental mode requires `%QV_BUILD_DIR%\QuickViewer\Makefile`. Initialize
+The incremental mode requires `%QV_BUILD_DIR%\apps\quickviewer\Makefile`. Initialize
 the Debug tree once with:
 
 ```bat
@@ -132,9 +132,9 @@ To build the startup test alone:
 ```bat
 set "QV_SOURCE_DIR=C:\path\to\quickviewer"
 set "QV_BUILD_DIR=C:\build\quickviewer-msvc2022_64-debug"
-if not exist "%QV_BUILD_DIR%\qvtest\windowstartup" mkdir "%QV_BUILD_DIR%\qvtest\windowstartup"
-cd /d "%QV_BUILD_DIR%\qvtest\windowstartup"
-C:\Qt\6.11.2\msvc2022_64\bin\qmake.exe "%QV_SOURCE_DIR%\qvtest\windowstartup\windowstartup.pro" CONFIG+=debug CONFIG-=release CONFIG-=debug_and_release CONFIG-=debug_and_release_target
+if not exist "%QV_BUILD_DIR%\tests\windowstartup" mkdir "%QV_BUILD_DIR%\tests\windowstartup"
+cd /d "%QV_BUILD_DIR%\tests\windowstartup"
+C:\Qt\6.11.2\msvc2022_64\bin\qmake.exe "%QV_SOURCE_DIR%\tests\windowstartup\windowstartup.pro" CONFIG+=debug CONFIG-=release CONFIG-=debug_and_release CONFIG-=debug_and_release_target
 C:\Qt\Tools\QtCreator\bin\jom\jom.exe -j 8 /f Makefile
 call "%QV_SOURCE_DIR%\scripts\verify-windows.cmd" debug --startup-only
 ```

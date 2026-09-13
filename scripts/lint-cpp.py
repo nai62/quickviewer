@@ -20,14 +20,19 @@ from typing import Iterable
 ROOT = Path(__file__).resolve().parent.parent
 CPP_EXTENSIONS = {".c", ".cc", ".cpp", ".cxx", ".h", ".hh", ".hpp"}
 FIRST_PARTY_PREFIXES = (
-    "QuickViewer/",
-    "qvtest/",
+    "apps/quickviewer/",
+    "components/i18n/",
+    "tests/fileloader/",
+    "tests/prefetchplanner/",
+    "tests/latestresultdispatcher/",
+    "tests/asynccache/",
+    "tests/svgloader/",
+    "tests/viewernavigation/",
+    "tests/windowstartup/",
 )
 EXCLUDED_PREFIXES = (
-    "QuickViewer/src/qactionmanager/",
-    "QuickViewer/src/qfullscreenframe/",
-    "QuickViewer/src/qlanguageselector/",
-    "QuickViewer/src/qnamedpipe/",
+    "apps/quickviewer/src/qactionmanager/",
+    "apps/quickviewer/src/qnamedpipe/",
 )
 VERSION_PATTERN = re.compile(r"version\s+(\d+)", re.IGNORECASE)
 
@@ -143,7 +148,7 @@ def main() -> int:
             out_of_scope = [path for path in files if not is_first_party(path)]
             if out_of_scope:
                 raise RuntimeError(
-                    "files outside the QuickViewer/qvtest lint scope: " + ", ".join(out_of_scope)
+                    "files outside the configured first-party lint scope: " + ", ".join(out_of_scope)
                 )
         else:
             files = changed_files(args.diff_ref)

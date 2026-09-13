@@ -74,13 +74,13 @@ if not exist "%QV_JOM%" (
     echo ERROR: jom not found: %QV_JOM%
     exit /b 2
 )
-if not exist "%QV_BUILD_DIR%\QuickViewer\Makefile" (
+if not exist "%QV_BUILD_DIR%\apps\quickviewer\Makefile" (
     echo ERROR: Configured QuickViewer Debug build not found under: %QV_BUILD_DIR%
     echo Run "scripts\verify-windows.cmd debug" once to initialize it.
     exit /b 2
 )
 echo === Incrementally building QuickViewer with %QV_JOBS% jobs ===
-cd /d "%QV_BUILD_DIR%\QuickViewer"
+cd /d "%QV_BUILD_DIR%\apps\quickviewer"
 if errorlevel 1 exit /b 2
 "%QV_JOM%" -j %QV_JOBS% /f Makefile
 if errorlevel 1 exit /b 2
@@ -185,7 +185,7 @@ for %%D in ("%QV_BUILD_DIR%\bin" "%QV_BUILD_DIR%\lib") do (
 exit /b 0
 
 :stage_translations
-set "QV_TRANSLATION_SOURCE=%QV_SOURCE_DIR%\QuickViewer\translations"
+set "QV_TRANSLATION_SOURCE=%QV_SOURCE_DIR%\apps\quickviewer\translations"
 set "QV_TRANSLATION_DEST=%QV_BUILD_DIR%\bin\translations"
 if not exist "!QV_TRANSLATION_DEST!" mkdir "!QV_TRANSLATION_DEST!"
 if errorlevel 1 exit /b 1

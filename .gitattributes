@@ -6,5 +6,5 @@
 *.cmd text eol=crlf
 
 # Vendored sources.
-Qt7z/* linguist-vendored
+third_party/** linguist-vendored
 doc/* linguist-vendored

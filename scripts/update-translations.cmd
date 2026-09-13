@@ -33,7 +33,7 @@ if errorlevel 1 (
 echo.
 echo === Translation source files updated ===
 echo Review changes under:
-echo   %QV_SOURCE_DIR%\QuickViewer\translations
+echo   %QV_SOURCE_DIR%\apps\quickviewer\translations
 echo.
 echo This command updates .ts files only.
 echo It does not generate .qm files.

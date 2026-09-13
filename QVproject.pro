@@ -2,7 +2,7 @@ include("QVproject.pri")
 
 TEMPLATE = subdirs
 SUBDIRS = \
-    Qt7z/Qt7z \
+    Qt7z \
     ResizeHalf \
     easyexif \
     unrar \
@@ -18,14 +18,23 @@ SUBDIRS = \
     viewernavigationtest \
     windowstartuptest
 
-prefetchplannertest.subdir = qvtest/prefetchplanner
-latestresultdispatchertest.subdir = qvtest/latestresultdispatcher
-asynccachetest.subdir = qvtest/asynccache
-svgloadertest.subdir = qvtest/svgloader
-viewernavigationtest.subdir = qvtest/viewernavigation
-windowstartuptest.subdir = qvtest/windowstartup
+Qt7z.file = components/qt7z/Qt7z.pro
+ResizeHalf.file = qmake/third_party/resizehalf/ResizeHalf.pro
+easyexif.file = qmake/third_party/easyexif/easyexif.pro
+unrar.file = components/rarextractor/unrar.pro
+fileloader.file = components/fileloader/fileloader.pro
+zimg.file = components/qzimg/zimg.pro
+spng.file = qmake/third_party/spng/spng.pro
+QuickViewer.file = apps/quickviewer/QuickViewer.pro
+qvtest.file = tests/fileloader/qvtest.pro
+prefetchplannertest.file = tests/prefetchplanner/prefetchplanner.pro
+latestresultdispatchertest.file = tests/latestresultdispatcher/latestresultdispatcher.pro
+asynccachetest.file = tests/asynccache/asynccache.pro
+svgloadertest.file = tests/svgloader/svgloader.pro
+viewernavigationtest.file = tests/viewernavigation/viewernavigation.pro
+windowstartuptest.file = tests/windowstartup/windowstartup.pro
 
-fileloader.depends = Qt7z/Qt7z unrar
+fileloader.depends = Qt7z unrar
 QuickViewer.depends = ResizeHalf easyexif fileloader zimg spng
 qvtest.depends = fileloader
 viewernavigationtest.depends = ResizeHalf easyexif fileloader zimg spng
@@ -33,30 +42,32 @@ windowstartuptest.depends = ResizeHalf easyexif fileloader zimg spng
 
 contains(DEFINES, QV_WITH_LUMINOR) {
     SUBDIRS += luminor
+    luminor.file = components/qluminor/luminor.pro
     QuickViewer.depends += luminor
     windowstartuptest.depends += luminor
 }
 
 win32 {
     SUBDIRS += AssociateFilesWithQuickViewer
+    AssociateFilesWithQuickViewer.file = apps/associate-files/AssociateFilesWithQuickViewer.pro
 }
 
 unix {
-#    SUBDIRS += Qt7z/lib7z/lib7z.pro
-#    fileloader.depends += Qt7z/lib7z/lib7z.pro
+#    SUBDIRS += qmake/third_party/lib7z/lib7z.pro
+#    fileloader.depends += qmake/third_party/lib7z/lib7z.pro
 }
 
 
 CODECFORSRC = UTF-8
 
 TRANSLATIONS = \
-    QuickViewer/translations/quickviewer_ja.ts \
-    QuickViewer/translations/quickviewer_es.ts \
-    QuickViewer/translations/quickviewer_zh.ts \
-    QuickViewer/translations/quickviewer_el.ts \
-    QuickViewer/translations/quickviewer_fr.ts \
-    QuickViewer/translations/quickviewer_ru.ts \
-    QuickViewer/translations/quickviewer_ar.ts \
+    apps/quickviewer/translations/quickviewer_ja.ts \
+    apps/quickviewer/translations/quickviewer_es.ts \
+    apps/quickviewer/translations/quickviewer_zh.ts \
+    apps/quickviewer/translations/quickviewer_el.ts \
+    apps/quickviewer/translations/quickviewer_fr.ts \
+    apps/quickviewer/translations/quickviewer_ru.ts \
+    apps/quickviewer/translations/quickviewer_ar.ts \
 
 DISTFILES += \
-    QuickViewer/translations/quickviewer_ja.qm \
+    apps/quickviewer/translations/quickviewer_ja.qm \
