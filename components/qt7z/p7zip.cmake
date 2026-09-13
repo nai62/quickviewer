@@ -1,7 +1,7 @@
 include_directories(
-    "p7zip/CPP/myWindows"
-    "p7zip/CPP"
-    "p7zip/CPP/include_windows"
+    "${QT7Z_THIRD_PARTY_ROOT}/p7zip/CPP/myWindows"
+    "${QT7Z_THIRD_PARTY_ROOT}/p7zip/CPP"
+    "${QT7Z_THIRD_PARTY_ROOT}/p7zip/CPP/include_windows"
 )
 
 add_definitions(
