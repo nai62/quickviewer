@@ -285,6 +285,8 @@ void ViewerSession::deferFolderWorkUntilNextPaint()
 
 void ViewerSession::notifyInitialImagePainted()
 {
+    // Paints of the empty/background view can happen while the image is still
+    // decoding. Only release work after the decoded page has been installed.
     quint64 generation = 0;
     if (auto *preview = std::get_if<StandalonePreviewViewerState>(&m_state)) {
         if (preview->folderScanStarted || preview->paintCompletionQueued || !preview->imageReadyForPaint) {
@@ -301,6 +303,8 @@ void ViewerSession::notifyInitialImagePainted()
     } else {
         return;
     }
+    // Return from paintEvent before starting directory I/O or synchronous GUI
+    // updates, so the backing-store paint can be committed first.
     QTimer::singleShot(0, this, [this, generation] {
         finishInitialImageDisplay(generation);
     });
@@ -470,6 +474,7 @@ bool ViewerSession::nextVolume()
         }
         const QString volumePath = parentDirectory.filePath(volumeName);
         if (preloadCount++ == 0) {
+            // Continue searching if the next volume cannot be loaded.
             if (!loadVolume(volumePath, true)) {
                 preloadCount = 0;
             } else {
@@ -478,6 +483,17 @@ bool ViewerSession::nextVolume()
         } else {
             prefetchVolume(volumePath);
         }
+        // preloadCount <- MaxVolumesCache()
+        // 0            <- 1
+        // 0            <- 2
+        // 1            <- 3
+        // 1            <- 4
+        // 2            <- 5
+        // 3            <- 6
+        // 4            <- 7
+        // 4            <- 8
+        // 5            <- 9
+        // 6            <-10
         if (preloadCount >= (qApp->MaxVolumesCache() - 1) * 2 / 3) {
             break;
         }
@@ -515,6 +531,7 @@ bool ViewerSession::prevVolume()
         }
         const QString volumePath = parentDirectory.filePath(volumeName);
         if (matchCount++ == 0) {
+            // Continue searching if the previous volume cannot be loaded.
             if (!loadVolume(volumePath, true)) {
                 matchCount = 0;
             } else {
@@ -523,6 +540,17 @@ bool ViewerSession::prevVolume()
         } else {
             prefetchVolume(volumePath);
         }
+        // preloadCount <- MaxVolumesCache()
+        // 0            <- 1
+        // 0            <- 2
+        // 1            <- 3
+        // 1            <- 4
+        // 2            <- 5
+        // 3            <- 6
+        // 4            <- 7
+        // 4            <- 8
+        // 5            <- 9
+        // 6            <-10
         if (matchCount >= (qApp->MaxVolumesCache() - 1) * 2 / 3) {
             break;
         }

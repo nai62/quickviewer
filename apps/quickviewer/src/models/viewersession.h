@@ -30,12 +30,14 @@ class ViewerSession : public QObject, public PageInfoProvider
 public:
     ViewerSession(QObject *parent);
 
+    // Volumes
     bool loadVolume(QString path, bool coverOnly = false);
     bool loadVolumeWithFile(QString path, bool allowSecondPage = false);
     bool nextVolume();
     bool prevVolume();
     void reloadVolumeAfterImageRemoval();
 
+    // Pages
     bool advanceSpread();
     bool retreatSpread();
     bool fastForwardPage();
@@ -58,7 +60,11 @@ public:
     void updateReadProgress();
     void sortActiveVolumePages(qvEnums::ImageSortBy sortBy);
 
+    // Get String
     int visiblePageCount() const { return m_visiblePages.size(); }
+    /**
+     * Returns the zero-based index of the first currently visible page.
+     */
     int currentPageIndex() const override { return m_pageNavigator.currentPageIndex(); }
     VisiblePages visiblePages() const override { return VisiblePages(m_visiblePages); }
     QString currentPagePath() const override
@@ -81,7 +87,17 @@ public:
     }
     QString currentPageName() const { return m_visiblePages.isEmpty() ? QString() : m_visiblePages[0].path; }
 
+    /**
+     * @brief currentPageNumberText: for the label text on PageBar
+     * @return (10-11/2182)
+     *      or (10/2182)
+     */
     QString currentPageNumberText() const;
+    /**
+     * @brief currentPageStatusText: for statusbar
+     * @return some1.jpg (10-11/2182)[WIDTHxHEIGHT] | some2.jpg [WIDTHxHEIGHT]
+     *      or some1.jpg (10/2182)[WIDTHxHEIGHT]
+     */
     QString currentPageStatusText() const;
     QString pageSignage(int pageIndex) const;
 
@@ -128,9 +144,19 @@ public:
 signals:
     void visiblePagesChanged(VisiblePages pages);
     void readyForPaint();
+    /**
+     * @brief pageChanged pages have been changed
+     */
     void pageChanged();
+    /**
+     * @brief volumeChanged the volume has been changed
+     */
     void volumeChanged(QString path);
     void archiveOpenFailed(QString path, ArchiveOpenError error);
+    /**
+     * Emitted after the directly opened image has had a chance to paint. Heavy
+     * folder-related GUI work can resume after this signal.
+     */
     void initialImageDisplayFinished();
 
 public slots:
