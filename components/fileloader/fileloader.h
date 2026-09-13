@@ -3,6 +3,22 @@
 
 #include <QtCore>
 
+enum class ArchiveOpenError {
+    None,
+    PasswordProtected,
+    Unsupported,
+    Corrupt,
+    IoError,
+};
+Q_DECLARE_METATYPE(ArchiveOpenError)
+
+struct FileLoadResult
+{
+    QByteArray data;
+    ArchiveOpenError error = ArchiveOpenError::None;
+    bool success = false;
+};
+
 /**
  * @brief The FileLoader class
  * Abstract file reading processing.
@@ -48,6 +64,11 @@ public:
     virtual QStringList contents() = 0;
     virtual QStringList subArchives() const = 0;
     virtual QByteArray getFile(QString filename, QMutex &mutex) = 0;
+    virtual FileLoadResult getFileResult(QString filename, QMutex &mutex)
+    {
+        return {getFile(filename, mutex), ArchiveOpenError::None, true};
+    }
+    virtual ArchiveOpenError archiveOpenError() const { return ArchiveOpenError::None; }
     virtual quint64 getFileSize(QString filename) const;
     virtual QDateTime getFileModified(QString filename) const;
     virtual InflateCacheMode getCacheMode() const = 0;

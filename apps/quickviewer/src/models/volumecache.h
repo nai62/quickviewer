@@ -5,8 +5,11 @@
 #include <tuple>
 
 #include <QFuture>
+#include <QMap>
+#include <QObject>
 #include <QString>
 
+#include "fileloader.h"
 #include "lrucache.h"
 #include "volumehandle.h"
 
@@ -27,22 +30,29 @@ struct VolumeCacheKey
     }
 };
 
-using VolumeLoadFuture = QFuture<VolumeHandle>;
+struct CachedVolumeLoadResult
+{
+    VolumeHandle volume;
+    ArchiveOpenError error = ArchiveOpenError::None;
+};
+
+using VolumeLoadFuture = QFuture<CachedVolumeLoadResult>;
 
 struct DeferredVolumeLoadCleanup
 {
     void operator()(VolumeLoadFuture evictedLoad) const;
 };
 
-class VolumeCache
+class VolumeCache : public QObject
 {
 public:
     using LoadStarter = std::function<VolumeLoadFuture()>;
 
-    explicit VolumeCache(int capacity);
+    explicit VolumeCache(int capacity, QObject *parent = nullptr);
 
     VolumeLoadFuture request(const VolumeCacheKey &key, const LoadStarter &startLoad);
-    VolumeHandle findReady(const VolumeCacheKey &key);
+    CachedVolumeLoadResult findReady(const VolumeCacheKey &key);
+    ArchiveOpenError takeFailure(const VolumeCacheKey &key);
     void insertReady(const VolumeCacheKey &key, VolumeHandle volume);
     bool markUsed(const VolumeCacheKey &key);
     void invalidate(const VolumeCacheKey &key);
@@ -52,7 +62,12 @@ public:
     int size() const;
 
 private:
+    void watchFailedLoad(const VolumeCacheKey &key, quint64 generation, const VolumeLoadFuture &load);
+
     LruCache<VolumeCacheKey, VolumeLoadFuture, DeferredVolumeLoadCleanup> m_loads;
+    QMap<VolumeCacheKey, quint64> m_generations;
+    QMap<VolumeCacheKey, ArchiveOpenError> m_recentErrors;
+    quint64 m_nextGeneration = 0;
 };
 
 #endif // VOLUMECACHE_H

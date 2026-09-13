@@ -6,19 +6,34 @@
 #include "qvapplication.h"
 #include "startupprofiler.h"
 
-Volume *VolumeLoader::createVolume(QObject *parent, QString path)
+static VolumeBuildResult volumeFromLoader(QObject *parent, IFileLoader *loader)
+{
+    if (!loader) {
+        return {};
+    }
+    ArchiveOpenError error = loader->archiveOpenError();
+    if (!loader->isValid()) {
+        if (error == ArchiveOpenError::None) {
+            error = ArchiveOpenError::Corrupt;
+        }
+        delete loader;
+        return {nullptr, error};
+    }
+    return {new Volume(parent, loader), ArchiveOpenError::None};
+}
+
+VolumeBuildResult VolumeLoader::createVolumeResult(QObject *parent, QString path)
 {
     QDir dir(path);
-
-    //    if(dir.exists() && dir.entryList(QDir::Files, QDir::Name).size() > 0) {
     if (dir.exists()) {
-        return new Volume(parent, qApp->ShowSubfolders() ? new FileLoaderSubDirectory(parent, path) : new FileLoaderDirectory(parent, path));
+        IFileLoader *loader = qApp->ShowSubfolders()
+                                  ? static_cast<IFileLoader *>(new FileLoaderSubDirectory(parent, path))
+                                  : static_cast<IFileLoader *>(new FileLoaderDirectory(parent, path));
+        return volumeFromLoader(parent, loader);
     }
 
     const QFileInfo pathInfo(path);
     const QString completeSuffix = pathInfo.completeSuffix().toLower();
-
-    // Mapping extension aliases to original names
     QString archiveFormat = pathInfo.suffix().toLower();
     if (completeSuffix.right(3) == "cbz") {
         archiveFormat = "zip";
@@ -39,71 +54,131 @@ Volume *VolumeLoader::createVolume(QObject *parent, QString path)
         archiveFormat = "txz";
     }
 
-    // RAR deploys using unrar directly
     if (archiveFormat == "rar") {
-        return new Volume(parent, new FileLoaderRarArchive(parent, path));
+        return volumeFromLoader(parent, new FileLoaderRarArchive(parent, path));
     }
-    // Automatically recognizes various archive formats that SevenZip can deploy
-    FileLoader7zArchive::initializeLib();
-    if (FileLoader7zArchive::st_supportedArchiveFormats.contains(archiveFormat)) {
-        return new Volume(parent, new FileLoader7zArchive(parent, path, archiveFormat, qApp->ExtractSolidArchiveToTemporaryDir()));
+
+    const bool lib7zipReady = FileLoader7zArchive::initializeLib();
+    if (lib7zipReady && FileLoader7zArchive::st_supportedArchiveFormats.contains(archiveFormat)) {
+        return volumeFromLoader(
+            parent,
+            new FileLoader7zArchive(
+                parent,
+                path,
+                archiveFormat,
+                qApp->ExtractSolidArchiveToTemporaryDir()));
     }
+
     if (IFileLoader::isImageFile(path)) {
         const QFileInfo imageInfo(path);
         const QString directoryPath = imageInfo.absolutePath();
-        Volume *volume = new Volume(parent, qApp->ShowSubfolders() ? new FileLoaderSubDirectory(parent, directoryPath) : new FileLoaderDirectory(parent, directoryPath));
-        volume->setOpenedWithSpecifiedImageFile(true);
-        return volume;
+        IFileLoader *loader = qApp->ShowSubfolders()
+                                  ? static_cast<IFileLoader *>(new FileLoaderSubDirectory(parent, directoryPath))
+                                  : static_cast<IFileLoader *>(new FileLoaderDirectory(parent, directoryPath));
+        VolumeBuildResult result = volumeFromLoader(parent, loader);
+        if (result.volume) {
+            result.volume->setOpenedWithSpecifiedImageFile(true);
+        }
+        return result;
     }
-    return nullptr;
+
+    if (IFileLoader::isArchiveFile(path)) {
+        return {nullptr, ArchiveOpenError::Unsupported};
+    }
+    return {};
+}
+
+Volume *VolumeLoader::createVolume(QObject *parent, QString path)
+{
+    return createVolumeResult(parent, std::move(path)).volume;
 }
 
 VolumeLoader::VolumeLoader(QString path)
     : QObject(nullptr),
-      m_path(path),
+      m_path(std::move(path)),
       m_volume(nullptr)
-{
-}
+{}
 
-Volume *VolumeLoader::buildLoadedVolume()
+VolumeBuildResult VolumeLoader::buildLoadedVolume()
 {
     StartupProfiler::mark("volume-loader.begin");
     QString volumePath = QDir::toNativeSeparators(m_path);
     if (m_path.contains("::")) {
-        const QStringList pathParts = m_path.split("::");
-        volumePath = pathParts[0];
+        volumePath = m_path.split("::").value(0);
     }
-    if (!(m_volume = createVolume(nullptr, volumePath))) {
-        return m_volume;
+
+    VolumeBuildResult result = createVolumeResult(nullptr, volumePath);
+    m_volume = result.volume;
+    if (!m_volume) {
+        return result;
     }
+
     StartupProfiler::mark("volume-loader.created");
     m_volume->moveToThread(QThread::currentThread());
     m_volume->loadPageList();
     StartupProfiler::mark("volume-loader.page-list-loaded");
+
+    const ArchiveOpenError loadError = m_volume->fileLoader()
+                                           ? m_volume->fileLoader()->archiveOpenError()
+                                           : ArchiveOpenError::None;
+    if (loadError != ArchiveOpenError::None) {
+        delete m_volume;
+        m_volume = nullptr;
+        return {nullptr, loadError};
+    }
     if (m_volume->pageCount() == 0) {
         delete m_volume;
-        return m_volume = nullptr;
+        m_volume = nullptr;
+        return {};
     }
-    return m_volume;
+    return {m_volume, ArchiveOpenError::None};
 }
 
-Volume *VolumeLoader::build()
+VolumeBuildResult VolumeLoader::buildResult()
 {
     return buildLoadedVolume();
 }
 
+Volume *VolumeLoader::build()
+{
+    return buildResult().volume;
+}
+
+VolumeBuildResult VolumeLoader::buildForCoverPrefetchResult()
+{
+    VolumeBuildResult result = buildLoadedVolume();
+    if (!result.volume) {
+        return result;
+    }
+
+    result.volume->prefetchCoverImages();
+    const int coverCount = qMin(2, result.volume->pageCount());
+    for (int pageIndex = 0; pageIndex < coverCount; ++pageIndex) {
+        const Volume::ImageLoadFuture load = result.volume->imageLoadAt(pageIndex);
+        if (load.isValid()) {
+            load.result();
+        }
+        const ArchiveOpenError error = result.volume->fileLoader()
+                                           ? result.volume->fileLoader()->archiveOpenError()
+                                           : ArchiveOpenError::None;
+        if (error != ArchiveOpenError::None) {
+            delete result.volume;
+            result.volume = nullptr;
+            result.error = error;
+            return result;
+        }
+    }
+    return result;
+}
+
 Volume *VolumeLoader::buildForCoverPrefetch()
 {
-    Volume *volume = buildLoadedVolume();
-    if (volume) {
-        volume->prefetchCoverImages();
-    }
-    return volume;
+    return buildForCoverPrefetchResult().volume;
 }
 
 Volume *VolumeLoader::buildForCoverPrefetchAsync(QString path)
 {
-    VolumeLoader volumeLoader(path);
+    VolumeLoader volumeLoader(std::move(path));
     return volumeLoader.buildForCoverPrefetch();
 }
 
@@ -112,23 +187,23 @@ Volume *VolumeLoader::buildForContainingImage()
     const QFileInfo imageInfo(QDir::fromNativeSeparators(m_path));
     const QString volumeFolder = imageInfo.absolutePath();
     m_selectedPageName = imageInfo.fileName();
-    if (!(m_volume = createVolume(nullptr, volumeFolder))) {
-        return m_volume;
+    VolumeBuildResult result = createVolumeResult(nullptr, volumeFolder);
+    m_volume = result.volume;
+    if (!m_volume) {
+        return nullptr;
     }
     if (m_volume->isArchive()) {
         delete m_volume;
         return m_volume = nullptr;
     }
 
-    // Load the image.
     m_volume->loadPageList();
     const int selectedPageIndex = m_volume->pageIndexForName(m_selectedPageName);
     if (selectedPageIndex < 0) {
         delete m_volume;
         return m_volume = nullptr;
     }
-    m_volume->updatePrefetchCache(
-        selectedPageIndex, PrefetchMode::Normal, QSize());
+    m_volume->updatePrefetchCache(selectedPageIndex, PrefetchMode::Normal, QSize());
     const Volume::ImageLoadFuture initialImageLoad = m_volume->imageLoadAt(selectedPageIndex);
     m_initialImage = initialImageLoad.isValid() ? initialImageLoad.result() : ImageContent();
 
@@ -137,10 +212,13 @@ Volume *VolumeLoader::buildForContainingImage()
 
 ImageContent VolumeLoader::loadThumbnailSourceImage()
 {
-    if (!(m_volume = createVolume(nullptr, m_path))) {
+    VolumeBuildResult result = createVolumeResult(nullptr, m_path);
+    m_volume = result.volume;
+    if (!m_volume) {
         return ImageContent();
     }
     ImageContent thumbnailContent = m_volume->loadThumbnailSourceImage();
     delete m_volume;
+    m_volume = nullptr;
     return thumbnailContent;
 }

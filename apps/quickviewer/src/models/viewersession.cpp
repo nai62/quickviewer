@@ -37,7 +37,7 @@ ViewerSession::ViewerSession(QObject *parent)
     : QObject(parent),
       m_prefetchMode(PrefetchMode::Normal),
       m_allowSecondVisiblePage(true),
-      m_volumeCache(qApp->MaxVolumesCache()),
+      m_volumeCache(qApp->MaxVolumesCache(), this),
       m_state(EmptyViewerState{}),
       m_viewportSize(),
       m_initialImageLoadDispatcher(),
@@ -87,6 +87,29 @@ void ViewerSession::rememberActivePagePosition()
     }
     m_savedPagePositions.insert(
         volume.get(), {volume, m_pageNavigator.currentPageIndex()});
+}
+
+bool ViewerSession::failActiveArchiveLoad(ArchiveOpenError error, const QString &path)
+{
+    if (error == ArchiveOpenError::None) {
+        return false;
+    }
+
+    const VolumeHandle volume = activeVolumeHandle();
+    if (volume) {
+        m_savedPagePositions.remove(volume.get());
+        m_volumeCache.invalidate(volumeCacheKey(volume->volumePath()));
+    }
+    ++m_initialDisplayGeneration;
+    m_initialImageLoadDispatcher.invalidate();
+    m_volumeLoadDispatcher.invalidate();
+    m_state = FailedViewerState{};
+    clearVisiblePages();
+    emit archiveOpenFailed(path, error);
+    if (error != ArchiveOpenError::PasswordProtected) {
+        emit volumeChanged("");
+    }
+    return false;
 }
 
 int ViewerSession::initialPageIndex(
@@ -149,34 +172,46 @@ bool ViewerSession::loadVolume(QString path, bool coverOnly)
     m_initialImageLoadDispatcher.invalidate();
     m_volumeLoadDispatcher.invalidate();
     clearVisiblePages();
-    VolumeHandle loadedVolume = loadCachedVolume(path, coverOnly);
+
+    const VolumeLocation location = parseVolumeLocation(path);
+    const CachedVolumeLoadResult loadResult = loadCachedVolume(path, coverOnly);
+    VolumeHandle loadedVolume = loadResult.volume;
     StartupProfiler::mark("session.volume-built");
     if (!loadedVolume) {
         m_state = FailedViewerState{};
-        emit volumeChanged("");
+        if (loadResult.error != ArchiveOpenError::None) {
+            emit archiveOpenFailed(location.volumePath, loadResult.error);
+        }
+        if (loadResult.error != ArchiveOpenError::PasswordProtected) {
+            emit volumeChanged("");
+        }
         return false;
     }
+
     setVolumeReady(loadedVolume);
     Volume *volume = loadedVolume.get();
     if (!coverOnly) {
         m_volumeNames = QStringList();
     }
     m_pageNavigator.reset();
-    const VolumeLocation location = parseVolumeLocation(path);
     const int initialPage = initialPageIndex(loadedVolume, location.pageName, coverOnly);
-    emit volumeChanged(volume->volumePath());
-    if (activeVolume() != volume) {
-        return true;
-    }
     if (coverOnly) {
-        m_pageNavigator.selectPage(initialPage, volume->pageCount());
+        if (!m_pageNavigator.selectPage(initialPage, volume->pageCount())) {
+            return false;
+        }
         m_prefetchMode = PrefetchMode::Normal;
-        reloadVisiblePages();
+        if (!reloadVisiblePages()) {
+            return false;
+        }
         updateReadProgress();
         emit pageChanged();
-    } else {
-        selectPage(initialPage);
+    } else if (!selectPage(initialPage)) {
+        return false;
     }
+    if (activeVolume() != volume) {
+        return false;
+    }
+    emit volumeChanged(volume->volumePath());
     return true;
 }
 
@@ -250,8 +285,6 @@ void ViewerSession::deferFolderWorkUntilNextPaint()
 
 void ViewerSession::notifyInitialImagePainted()
 {
-    // Paints of the empty/background view can happen while the image is still
-    // decoding. Only release work after the decoded page has been installed.
     quint64 generation = 0;
     if (auto *preview = std::get_if<StandalonePreviewViewerState>(&m_state)) {
         if (preview->folderScanStarted || preview->paintCompletionQueued || !preview->imageReadyForPaint) {
@@ -268,8 +301,6 @@ void ViewerSession::notifyInitialImagePainted()
     } else {
         return;
     }
-    // Return from paintEvent before starting directory I/O or synchronous GUI
-    // updates, so the backing-store paint can be committed first.
     QTimer::singleShot(0, this, [this, generation] {
         finishInitialImageDisplay(generation);
     });
@@ -334,12 +365,13 @@ void ViewerSession::startContainingVolumeLoad(const QString &normalizedImagePath
             if (volume) {
                 volume->moveToThread(guiThread);
             }
-            return makeVolumeHandle(volume);
+            return CachedVolumeLoadResult{makeVolumeHandle(volume), ArchiveOpenError::None};
         });
     });
     m_volumeLoadDispatcher.submit(
         volumeLoad,
-        [this, basePath, subfileName, cacheKey](VolumeHandle loadedVolume) {
+        [this, basePath, subfileName, cacheKey](CachedVolumeLoadResult result) {
+            VolumeHandle loadedVolume = result.volume;
             if (!loadedVolume) {
                 m_volumeCache.invalidate(cacheKey);
                 loadVolume(QString("%1::%2").arg(basePath).arg(subfileName));
@@ -369,7 +401,7 @@ void ViewerSession::startContainingVolumeLoad(const QString &normalizedImagePath
             }
             emit volumeChanged(volume->volumePath());
         },
-        [](VolumeHandle) {});
+        [](CachedVolumeLoadResult) {});
 }
 
 void ViewerSession::handleVolumePageListLoaded()
@@ -438,7 +470,6 @@ bool ViewerSession::nextVolume()
         }
         const QString volumePath = parentDirectory.filePath(volumeName);
         if (preloadCount++ == 0) {
-            // Continue searching if the next volume cannot be loaded.
             if (!loadVolume(volumePath, true)) {
                 preloadCount = 0;
             } else {
@@ -447,17 +478,6 @@ bool ViewerSession::nextVolume()
         } else {
             prefetchVolume(volumePath);
         }
-        // preloadCount <- MaxVolumesCache()
-        // 0            <- 1
-        // 0            <- 2
-        // 1            <- 3
-        // 1            <- 4
-        // 2            <- 5
-        // 3            <- 6
-        // 4            <- 7
-        // 4            <- 8
-        // 5            <- 9
-        // 6            <-10
         if (preloadCount >= (qApp->MaxVolumesCache() - 1) * 2 / 3) {
             break;
         }
@@ -495,7 +515,6 @@ bool ViewerSession::prevVolume()
         }
         const QString volumePath = parentDirectory.filePath(volumeName);
         if (matchCount++ == 0) {
-            // Continue searching if the previous volume cannot be loaded.
             if (!loadVolume(volumePath, true)) {
                 matchCount = 0;
             } else {
@@ -504,17 +523,6 @@ bool ViewerSession::prevVolume()
         } else {
             prefetchVolume(volumePath);
         }
-        // preloadCount <- MaxVolumesCache()
-        // 0            <- 1
-        // 0            <- 2
-        // 1            <- 3
-        // 1            <- 4
-        // 2            <- 5
-        // 3            <- 6
-        // 4            <- 7
-        // 4            <- 8
-        // 5            <- 9
-        // 6            <-10
         if (matchCount >= (qApp->MaxVolumesCache() - 1) * 2 / 3) {
             break;
         }
@@ -544,34 +552,44 @@ void ViewerSession::reloadVolumeAfterImageRemoval()
     }
 }
 
-VolumeHandle ViewerSession::loadCachedVolume(QString path, bool onlyCover)
+CachedVolumeLoadResult ViewerSession::loadCachedVolume(QString path, bool onlyCover)
 {
     const VolumeLocation location = parseVolumeLocation(path);
     const VolumeCacheKey key = volumeCacheKey(location.volumePath);
-    if (!m_volumeCache.contains(key)) {
-        VolumeLoader volumeLoader(location.volumePath);
-        Volume *loaded = onlyCover
-                             ? volumeLoader.buildForCoverPrefetch()
-                             : volumeLoader.build();
-        VolumeHandle loadedVolume = makeVolumeHandle(loaded);
-        m_volumeCache.insertReady(key, loadedVolume);
-    }
-    const VolumeLoadFuture cachedLoad = m_volumeCache.request(key, {});
-    if (!cachedLoad.isValid()) {
-        return {};
-    }
-    VolumeHandle loadedVolume = cachedLoad.result();
-    if (!loadedVolume) {
-        m_volumeCache.invalidate(key);
-        return {};
-    }
-    configureVolume(loadedVolume.get());
-    m_volumeCache.markUsed(key);
-    if (onlyCover) {
-        loadedVolume->prefetchCoverImages();
+
+    const ArchiveOpenError prefetchedError = m_volumeCache.takeFailure(key);
+    if (prefetchedError != ArchiveOpenError::None) {
+        return {{}, prefetchedError};
     }
 
-    return loadedVolume;
+    if (!m_volumeCache.contains(key)) {
+        VolumeLoader volumeLoader(location.volumePath);
+        const VolumeBuildResult built = onlyCover
+                                            ? volumeLoader.buildForCoverPrefetchResult()
+                                            : volumeLoader.buildResult();
+        if (!built.volume) {
+            return {{}, built.error};
+        }
+        m_volumeCache.insertReady(key, makeVolumeHandle(built.volume));
+    }
+
+    const VolumeLoadFuture cachedLoad = m_volumeCache.request(key, {});
+    if (!cachedLoad.isValid()) {
+        const ArchiveOpenError error = m_volumeCache.takeFailure(key);
+        return {{}, error};
+    }
+    const CachedVolumeLoadResult result = cachedLoad.result();
+    if (!result.volume) {
+        m_volumeCache.invalidate(key);
+        return result;
+    }
+
+    configureVolume(result.volume.get());
+    m_volumeCache.markUsed(key);
+    if (onlyCover) {
+        result.volume->prefetchCoverImages();
+    }
+    return result;
 }
 
 void ViewerSession::prefetchVolume(QString path)
@@ -581,11 +599,12 @@ void ViewerSession::prefetchVolume(QString path)
     QThread *guiThread = thread();
     m_volumeCache.request(key, [location, guiThread] {
         return QtConcurrent::run([location, guiThread] {
-            Volume *volume = VolumeLoader::buildForCoverPrefetchAsync(location.volumePath);
-            if (volume) {
-                volume->moveToThread(guiThread);
+            VolumeLoader loader(location.volumePath);
+            VolumeBuildResult built = loader.buildForCoverPrefetchResult();
+            if (built.volume) {
+                built.volume->moveToThread(guiThread);
             }
-            return makeVolumeHandle(volume);
+            return CachedVolumeLoadResult{makeVolumeHandle(built.volume), built.error};
         });
     });
 }
@@ -667,7 +686,9 @@ bool ViewerSession::selectPage(int pageIndex, PrefetchMode prefetchMode)
     volume->updatePrefetchCache(pageIndex, prefetchMode, m_viewportSize);
     StartupProfiler::mark("session.prefetch-scheduled");
 
-    reloadVisiblePages();
+    if (!reloadVisiblePages()) {
+        return false;
+    }
     updateReadProgress();
     emit pageChanged();
     return true;
@@ -727,6 +748,12 @@ bool ViewerSession::reloadVisiblePages()
     }
     ImageContent firstContent = waitForImageAt(*volume, currentPageIndex);
     StartupProfiler::mark("session.first-image-ready");
+    const ArchiveOpenError firstLoadError = volume->fileLoader()
+                                                ? volume->fileLoader()->archiveOpenError()
+                                                : ArchiveOpenError::None;
+    if (firstLoadError != ArchiveOpenError::None) {
+        return failActiveArchiveLoad(firstLoadError, volume->volumePath());
+    }
     firstContent.initializeAnimation();
     if (activeVolume() != volume) {
         return false;
@@ -744,6 +771,12 @@ bool ViewerSession::reloadVisiblePages()
     ImageContent secondContent;
     if (VisiblePageComposer::shouldLoadSecondPageCandidate(compositionRequest)) {
         secondContent = waitForImageAt(*volume, currentPageIndex + 1);
+        const ArchiveOpenError secondLoadError = volume->fileLoader()
+                                                     ? volume->fileLoader()->archiveOpenError()
+                                                     : ArchiveOpenError::None;
+        if (secondLoadError != ArchiveOpenError::None) {
+            return failActiveArchiveLoad(secondLoadError, volume->volumePath());
+        }
         compositionRequest.secondPageIsLandscape = secondContent.isLandscape();
     }
     const VisiblePageComposition composition =

@@ -5,6 +5,12 @@
 #include <QtConcurrent>
 #include "volume.h"
 
+struct VolumeBuildResult
+{
+    Volume *volume = nullptr;
+    ArchiveOpenError error = ArchiveOpenError::None;
+};
+
 class VolumeLoader : QObject
 {
     Q_OBJECT
@@ -12,38 +18,19 @@ public:
     explicit VolumeLoader(QString path);
 
     Volume *build();
+    VolumeBuildResult buildResult();
     Volume *buildForCoverPrefetch();
+    VolumeBuildResult buildForCoverPrefetchResult();
 
-    /**
-     * @brief build
-     * @param onlyCover specifies to prefetch only the cover page
-     *
-     * Generate Volume asynchronously.
-     */
     static Volume *buildForCoverPrefetchAsync(QString path);
-
-    /**
-     * @brief buildForContainingImage
-     *
-     * Special initialization method to skip the enumeration of image files
-     * in the Volume and read the first image faster.
-     */
     Volume *buildForContainingImage();
-
-    /**
-     * @brief thumbnail
-     *
-     * Read and return the image of the youngest file name in Volume
-     */
     ImageContent loadThumbnailSourceImage();
-    /**
-     * @brief A factory function that returns an instance of IFileVolume from the path of the specified file or directory
-     * @return An object that inherits the IFileVolume interface. It is null if generation failed
-     */
+
     static Volume *createVolume(QObject *parent, QString path);
+    static VolumeBuildResult createVolumeResult(QObject *parent, QString path);
 
 private:
-    Volume *buildLoadedVolume();
+    VolumeBuildResult buildLoadedVolume();
     QString m_path;
     ImageContent m_initialImage;
     Volume *m_volume;
