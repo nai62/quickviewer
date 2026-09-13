@@ -1,8 +1,8 @@
 [submodule "ResizeHalf/ResizeHalf"]
 	path = ResizeHalf/ResizeHalf
 	url = https://github.com/chikuzen/ResizeHalf
-[submodule "zimg/zimg"]
-	path = zimg/zimg
+[submodule "third_party/zimg"]
+	path = third_party/zimg
 	url = https://github.com/sekrit-twc/zimg
 [submodule "easyexif/easyexif"]
 	path = easyexif/easyexif
