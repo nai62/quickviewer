@@ -9,6 +9,6 @@ TEMPLATE = app
 
 SOURCES += tst_latestresultdispatchertest.cpp
 
-INCLUDEPATH += ../../QuickViewer/src/models
+INCLUDEPATH += ../../apps/quickviewer/src/models
 
 DESTDIR = ../../lib

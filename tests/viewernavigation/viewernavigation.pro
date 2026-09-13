@@ -1,6 +1,6 @@
 include(../../QVproject.pri)
-RESVG_SOURCE_ROOT = $$clean_path($$PWD/../../resvg/resvg)
-include(../../resvg/resvg.pri)
+RESVG_SOURCE_ROOT = $$clean_path($$PWD/../../third_party/resvg)
+include(../../qmake/third_party/resvg/resvg.pri)
 
 QT += core gui widgets concurrent sql svgwidgets testlib
 
@@ -16,101 +16,101 @@ DEFINES += \
     APP_NAME=\\\"QuickViewerTest\\\"
 
 INCLUDEPATH += \
-    ../../QuickViewer/src \
-    ../../QuickViewer/src/catalog \
-    ../../QuickViewer/src/widgets \
-    ../../QuickViewer/src/models \
-    ../../QuickViewer/src/folderview \
-    ../../QuickViewer/src/i18n \
-    ../../QuickViewer/src/qnamedpipe \
-    ../../QuickViewer/src/qactionmanager \
-    ../../ResizeHalf/ResizeHalf \
-    ../../easyexif/easyexif \
-    ../../fileloader \
-    ../../zimg \
-    ../../spng/libspng/spng \
-    ../../AssociateFilesWithQuickViewer
+    ../../apps/quickviewer/src \
+    ../../apps/quickviewer/src/catalog \
+    ../../apps/quickviewer/src/widgets \
+    ../../apps/quickviewer/src/models \
+    ../../apps/quickviewer/src/folderview \
+    ../../components/i18n \
+    ../../apps/quickviewer/src/qnamedpipe \
+    ../../apps/quickviewer/src/qactionmanager \
+    ../../third_party/resizehalf \
+    ../../third_party/easyexif \
+    ../../components/fileloader \
+    ../../components/qzimg \
+    ../../third_party/libspng/spng \
+    ../../components/file-association
 
 SOURCES += \
     tst_viewernavigationtest.cpp \
-    ../../QuickViewer/src/imageview.cpp \
-    ../../QuickViewer/src/models/readprogressstore.cpp \
-    ../../QuickViewer/src/models/boundedexecutor.cpp \
-    ../../QuickViewer/src/models/imagestring.cpp \
-    ../../QuickViewer/src/models/loupecontroller.cpp \
-    ../../QuickViewer/src/models/imagecontent.cpp \
-    ../../QuickViewer/src/models/pagedisplayformatter.cpp \
-    ../../QuickViewer/src/models/renderedpage.cpp \
-    ../../QuickViewer/src/models/renderedpages.cpp \
-    ../../QuickViewer/src/models/visiblepagecomposer.cpp \
-    ../../QuickViewer/src/models/viewersession.cpp \
-    ../../QuickViewer/src/models/prefetchplanner.cpp \
-    ../../QuickViewer/src/models/qvapplication.cpp \
-    ../../QuickViewer/src/models/qvimagemetadata.cpp \
-    ../../QuickViewer/src/models/qvmovie.cpp \
-    ../../QuickViewer/src/models/shadermanager.cpp \
-    ../../QuickViewer/src/models/svgloader.cpp \
-    ../../QuickViewer/src/startupprofiler.cpp \
-    ../../QuickViewer/src/models/volumecache.cpp \
-    ../../QuickViewer/src/models/volumehandle.cpp \
-    ../../QuickViewer/src/models/volume.cpp \
-    ../../QuickViewer/src/models/volumeloader.cpp \
-    ../../QuickViewer/src/qactionmanager/keyconfigdialog.cpp \
-    ../../QuickViewer/src/qactionmanager/mouseconfigdialog.cpp \
-    ../../QuickViewer/src/qactionmanager/qactionmanager.cpp \
-    ../../QuickViewer/src/qactionmanager/qmousesequence.cpp \
-    ../../QuickViewer/src/qactionmanager/shortcutbutton.cpp \
-    ../../QuickViewer/src/i18n/languagemanager.cpp \
-    ../../QuickViewer/src/i18n/texttranslator.cpp
+    ../../apps/quickviewer/src/imageview.cpp \
+    ../../apps/quickviewer/src/models/readprogressstore.cpp \
+    ../../apps/quickviewer/src/models/boundedexecutor.cpp \
+    ../../apps/quickviewer/src/models/imagestring.cpp \
+    ../../apps/quickviewer/src/models/loupecontroller.cpp \
+    ../../apps/quickviewer/src/models/imagecontent.cpp \
+    ../../apps/quickviewer/src/models/pagedisplayformatter.cpp \
+    ../../apps/quickviewer/src/models/renderedpage.cpp \
+    ../../apps/quickviewer/src/models/renderedpages.cpp \
+    ../../apps/quickviewer/src/models/visiblepagecomposer.cpp \
+    ../../apps/quickviewer/src/models/viewersession.cpp \
+    ../../apps/quickviewer/src/models/prefetchplanner.cpp \
+    ../../apps/quickviewer/src/models/qvapplication.cpp \
+    ../../apps/quickviewer/src/models/qvimagemetadata.cpp \
+    ../../apps/quickviewer/src/models/qvmovie.cpp \
+    ../../apps/quickviewer/src/models/shadermanager.cpp \
+    ../../apps/quickviewer/src/models/svgloader.cpp \
+    ../../apps/quickviewer/src/startupprofiler.cpp \
+    ../../apps/quickviewer/src/models/volumecache.cpp \
+    ../../apps/quickviewer/src/models/volumehandle.cpp \
+    ../../apps/quickviewer/src/models/volume.cpp \
+    ../../apps/quickviewer/src/models/volumeloader.cpp \
+    ../../apps/quickviewer/src/qactionmanager/keyconfigdialog.cpp \
+    ../../apps/quickviewer/src/qactionmanager/mouseconfigdialog.cpp \
+    ../../apps/quickviewer/src/qactionmanager/qactionmanager.cpp \
+    ../../apps/quickviewer/src/qactionmanager/qmousesequence.cpp \
+    ../../apps/quickviewer/src/qactionmanager/shortcutbutton.cpp \
+    ../../components/i18n/languagemanager.cpp \
+    ../../components/i18n/texttranslator.cpp
 
 HEADERS += \
-    ../../QuickViewer/src/qv_init.h \
-    ../../QuickViewer/src/imageview.h \
-    ../../QuickViewer/src/models/readprogressstore.h \
-    ../../QuickViewer/src/models/boundedexecutor.h \
-    ../../QuickViewer/src/models/imagestring.h \
-    ../../QuickViewer/src/models/latestresultdispatcher.h \
-    ../../QuickViewer/src/models/lrucache.h \
-    ../../QuickViewer/src/models/loupecontroller.h \
-    ../../QuickViewer/src/models/pagenavigator.h \
-    ../../QuickViewer/src/models/imagecontent.h \
-    ../../QuickViewer/src/models/pagedisplayformatter.h \
-    ../../QuickViewer/src/models/renderedpage.h \
-    ../../QuickViewer/src/models/visiblepagecomposer.h \
-    ../../QuickViewer/src/models/viewersession.h \
-    ../../QuickViewer/src/models/prefetchplanner.h \
-    ../../QuickViewer/src/models/qvapplication.h \
-    ../../QuickViewer/src/models/qvimagemetadata.h \
-    ../../QuickViewer/src/models/qvmovie.h \
-    ../../QuickViewer/src/models/renderedpages.h \
-    ../../QuickViewer/src/models/renderedpagemetrics.h \
-    ../../QuickViewer/src/models/shadermanager.h \
-    ../../QuickViewer/src/models/svgloader.h \
-    ../../QuickViewer/src/startupprofiler.h \
-    ../../QuickViewer/src/models/volumecache.h \
-    ../../QuickViewer/src/models/volumehandle.h \
-    ../../QuickViewer/src/models/visiblepages.h \
-    ../../QuickViewer/src/models/viewerstate.h \
-    ../../QuickViewer/src/models/volume.h \
-    ../../QuickViewer/src/models/volumeloader.h \
-    ../../QuickViewer/src/qactionmanager/keyconfigdialog.h \
-    ../../QuickViewer/src/qactionmanager/mouseconfigdialog.h \
-    ../../QuickViewer/src/qactionmanager/qactionmanager.h \
-    ../../QuickViewer/src/qactionmanager/qmousesequence.h \
-    ../../QuickViewer/src/qactionmanager/shortcutbutton.h \
-    ../../QuickViewer/src/i18n/languagemanager.h \
-    ../../QuickViewer/src/i18n/texttranslator.h
+    ../../apps/quickviewer/src/qv_init.h \
+    ../../apps/quickviewer/src/imageview.h \
+    ../../apps/quickviewer/src/models/readprogressstore.h \
+    ../../apps/quickviewer/src/models/boundedexecutor.h \
+    ../../apps/quickviewer/src/models/imagestring.h \
+    ../../apps/quickviewer/src/models/latestresultdispatcher.h \
+    ../../apps/quickviewer/src/models/lrucache.h \
+    ../../apps/quickviewer/src/models/loupecontroller.h \
+    ../../apps/quickviewer/src/models/pagenavigator.h \
+    ../../apps/quickviewer/src/models/imagecontent.h \
+    ../../apps/quickviewer/src/models/pagedisplayformatter.h \
+    ../../apps/quickviewer/src/models/renderedpage.h \
+    ../../apps/quickviewer/src/models/visiblepagecomposer.h \
+    ../../apps/quickviewer/src/models/viewersession.h \
+    ../../apps/quickviewer/src/models/prefetchplanner.h \
+    ../../apps/quickviewer/src/models/qvapplication.h \
+    ../../apps/quickviewer/src/models/qvimagemetadata.h \
+    ../../apps/quickviewer/src/models/qvmovie.h \
+    ../../apps/quickviewer/src/models/renderedpages.h \
+    ../../apps/quickviewer/src/models/renderedpagemetrics.h \
+    ../../apps/quickviewer/src/models/shadermanager.h \
+    ../../apps/quickviewer/src/models/svgloader.h \
+    ../../apps/quickviewer/src/startupprofiler.h \
+    ../../apps/quickviewer/src/models/volumecache.h \
+    ../../apps/quickviewer/src/models/volumehandle.h \
+    ../../apps/quickviewer/src/models/visiblepages.h \
+    ../../apps/quickviewer/src/models/viewerstate.h \
+    ../../apps/quickviewer/src/models/volume.h \
+    ../../apps/quickviewer/src/models/volumeloader.h \
+    ../../apps/quickviewer/src/qactionmanager/keyconfigdialog.h \
+    ../../apps/quickviewer/src/qactionmanager/mouseconfigdialog.h \
+    ../../apps/quickviewer/src/qactionmanager/qactionmanager.h \
+    ../../apps/quickviewer/src/qactionmanager/qmousesequence.h \
+    ../../apps/quickviewer/src/qactionmanager/shortcutbutton.h \
+    ../../components/i18n/languagemanager.h \
+    ../../components/i18n/texttranslator.h
 
 FORMS += \
-    ../../QuickViewer/src/mainwindow.ui \
-    ../../QuickViewer/src/qactionmanager/keyconfigdialog.ui
+    ../../apps/quickviewer/src/mainwindow.ui \
+    ../../apps/quickviewer/src/qactionmanager/keyconfigdialog.ui
 
 DESTDIR = ../../lib
 LIBS += -L../../lib -leasyexif -lresizehalf -lfileloader -lQt7z -lunrar -lzimg -lspng
 
 contains(DEFINES, QV_WITH_LUMINOR) {
-    INCLUDEPATH += ../../luminor
-    win32: LIBS += -L$$PWD/../../luminor/$${LUMINOR_BIN_PATH} -lluminor -lluminor_rgba -lhalide_runtime -lqluminor
+    INCLUDEPATH += ../../components/qluminor
+    win32: LIBS += -L$$PWD/../../third_party/luminor/$${LUMINOR_BIN_PATH} -lluminor -lluminor_rgba -lhalide_runtime -lqluminor
 }
 
 win32: LIBS += -luser32 -ladvapi32 -lshell32 -lShlwapi -loleaut32 -lole32 -luuid

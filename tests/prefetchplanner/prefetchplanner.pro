@@ -7,13 +7,13 @@ CONFIG += console
 CONFIG -= app_bundle
 TEMPLATE = app
 
-INCLUDEPATH += ../../QuickViewer/src/models
+INCLUDEPATH += ../../apps/quickviewer/src/models
 
 SOURCES += \
     tst_prefetchplannertest.cpp \
-    ../../QuickViewer/src/models/prefetchplanner.cpp
+    ../../apps/quickviewer/src/models/prefetchplanner.cpp
 
 HEADERS += \
-    ../../QuickViewer/src/models/prefetchplanner.h
+    ../../apps/quickviewer/src/models/prefetchplanner.h
 
 DESTDIR = ../../lib

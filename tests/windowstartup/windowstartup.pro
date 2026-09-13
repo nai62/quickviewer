@@ -1,5 +1,5 @@
 # Exercise the real MainWindow startup path, including geometry restoration.
-QV_APP_SOURCE = $$clean_path($$PWD/../../QuickViewer)
+QV_APP_SOURCE = $$clean_path($$PWD/../../apps/quickviewer)
 include($$QV_APP_SOURCE/QuickViewer.pro)
 
 # Paths declared by the application project are relative to its directory.
@@ -24,7 +24,7 @@ TARGET = tst_windowstartuptest
 CONFIG += console testcase
 CONFIG -= plugin app_bundle
 DESTDIR = ../../lib
-LIBS -= -L../lib
+LIBS -= -L../../lib
 LIBS += -L../../lib
 win32: LIBS += -lshell32
 QMAKE_POST_LINK =

@@ -9,12 +9,12 @@ TEMPLATE = app
 
 SOURCES += \
     tst_asynccachetest.cpp \
-    ../../QuickViewer/src/models/boundedexecutor.cpp
+    ../../apps/quickviewer/src/models/boundedexecutor.cpp
 
 HEADERS += \
-    ../../QuickViewer/src/models/boundedexecutor.h \
-    ../../QuickViewer/src/models/lrucache.h
+    ../../apps/quickviewer/src/models/boundedexecutor.h \
+    ../../apps/quickviewer/src/models/lrucache.h
 
-INCLUDEPATH += ../../QuickViewer/src/models
+INCLUDEPATH += ../../apps/quickviewer/src/models
 
 DESTDIR = ../../lib

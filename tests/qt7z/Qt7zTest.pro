@@ -12,7 +12,7 @@ CONFIG   -= app_bundle
 
 TEMPLATE = app
 
-include("../Qt7z/Qt7z.pri")
+include("../../components/qt7z/Qt7z.pri")
 
 SOURCES += \
     TestQt7zPackage.cpp \

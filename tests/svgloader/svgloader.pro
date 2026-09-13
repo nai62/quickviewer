@@ -1,7 +1,7 @@
 include(../../QVproject.pri)
 
-RESVG_SOURCE_ROOT = $$clean_path($$PWD/../../resvg/resvg)
-include(../../resvg/resvg.pri)
+RESVG_SOURCE_ROOT = $$clean_path($$PWD/../../third_party/resvg)
+include(../../qmake/third_party/resvg/resvg.pri)
 
 QT += testlib core gui svg
 
@@ -11,15 +11,15 @@ CONFIG += console testcase
 CONFIG -= app_bundle
 
 INCLUDEPATH += \
-    ../../QuickViewer/src \
-    ../../QuickViewer/src/models
+    ../../apps/quickviewer/src \
+    ../../apps/quickviewer/src/models
 
 SOURCES += \
     tst_svgloadertest.cpp \
-    ../../QuickViewer/src/models/svgloader.cpp
+    ../../apps/quickviewer/src/models/svgloader.cpp
 
 HEADERS += \
-    ../../QuickViewer/src/qv_init.h \
-    ../../QuickViewer/src/models/svgloader.h
+    ../../apps/quickviewer/src/qv_init.h \
+    ../../apps/quickviewer/src/models/svgloader.h
 
 DESTDIR = ../../lib

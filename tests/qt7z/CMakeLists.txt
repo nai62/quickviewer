@@ -1,7 +1,7 @@
 # set all include directories for in and out of source builds
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/../Qt7z
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../components/qt7z
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
