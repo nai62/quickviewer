@@ -5,8 +5,8 @@
 #include <QTemporaryDir>
 #include <QTest>
 
-#include "../Qt7z/qt7zfileinfo.h"
-#include "../Qt7z/qt7zpackage.h"
+#include "../../components/qt7z/qt7zfileinfo.h"
+#include "../../components/qt7z/qt7zpackage.h"
 
 class TestQt7zPackage : public QObject
 {

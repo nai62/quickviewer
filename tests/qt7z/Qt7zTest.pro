@@ -14,13 +14,10 @@ TEMPLATE = app
 
 include("../../components/qt7z/Qt7z.pri")
 
-SOURCES += \
-    TestQt7zPackage.cpp \
-    Qt7zTestMain.cpp
+SOURCES += Qt7zPackage_Tests.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
-HEADERS += \
-    TestQt7zPackage.h
+RESOURCES += Qt7zTest.qrc
 
 assets.files = $$PWD/assets/*
 assets.path = $$OUT_PWD/assets

@@ -1,5 +1,5 @@
 import qbs
-import "../src/qlanguageselector/modules/transconf/TransConfProduct.qbs" as TransConfProduct
+import "../../../components/i18n/modules/transconf/TransConfProduct.qbs" as TransConfProduct
 
 
 Project {
@@ -8,7 +8,7 @@ Project {
     property string confExt: ".txt" // file extent of your conf type translation files, usually ".lang", ".lng", ".txt" or ".ini"
 //    property string targetInstallDir: qbsbuildconfig.appInstallDir
 
-    qbsSearchPaths: base.concat(["../src/qlanguageselector"])
+    qbsSearchPaths: base.concat(["../../../components/i18n"])
     Product {
         name: "List up translations"
         Group {
