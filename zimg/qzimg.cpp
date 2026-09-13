@@ -7,9 +7,9 @@
 
 class QZimgPrivate
 {
-
 };
-struct Callback {
+struct Callback
+{
     const zimgxx::zimage_buffer *rgb_buf;
     const zimgxx::zimage_buffer *alpha_buf;
     const QImage *img;
@@ -22,17 +22,18 @@ static std::pair<zimgxx::zimage_buffer, std::shared_ptr<void>> allocate_buffer(c
     unsigned char *ptr;
 
     unsigned mask = zimg_select_buffer_mask(count);
-    size_t channel_size[3] = { 0 };
+    size_t channel_size[3] = {0};
     size_t pixel_size;
 
     count = (mask == ZIMG_BUFFER_MAX) ? format.height : mask + 1;
 
-    if (format.pixel_type == ZIMG_PIXEL_FLOAT)
+    if (format.pixel_type == ZIMG_PIXEL_FLOAT) {
         pixel_size = sizeof(float);
-    else if (format.pixel_type == ZIMG_PIXEL_WORD || format.pixel_type == ZIMG_PIXEL_HALF)
+    } else if (format.pixel_type == ZIMG_PIXEL_WORD || format.pixel_type == ZIMG_PIXEL_HALF) {
         pixel_size = sizeof(uint16_t);
-    else
+    } else {
         pixel_size = sizeof(uint8_t);
+    }
 
     for (unsigned p = 0; p < (format.color_family == ZIMG_COLOR_GREY ? 1U : 3U); ++p) {
         unsigned count_plane = p ? count : count >> format.subsample_h;
@@ -53,15 +54,15 @@ static std::pair<zimgxx::zimage_buffer, std::shared_ptr<void>> allocate_buffer(c
         ptr += channel_size[p];
     }
 
-    return{ buffer, handle };
+    return {buffer, handle};
 }
 
 static std::shared_ptr<void> allocate_buffer(size_t size)
 {
-    return{ aligned_malloc(size, 64), &aligned_free };
+    return {aligned_malloc(size, 64), &aligned_free};
 }
 
-void unpack_bgra_straight(const void *bgra, void * const planar[4], unsigned left, unsigned right)
+void unpack_bgra_straight(const void *bgra, void *const planar[4], unsigned left, unsigned right)
 {
     const uint8_t *packed_bgra = static_cast<const uint8_t *>(bgra);
     uint16_t *planar_r = static_cast<uint16_t *>(planar[0]);
@@ -89,7 +90,7 @@ void unpack_bgra_straight(const void *bgra, void * const planar[4], unsigned lef
     }
 }
 
-void pack_bgra_straight(const void * const planar[4], void *bgra, unsigned left, unsigned right)
+void pack_bgra_straight(const void *const planar[4], void *bgra, unsigned left, unsigned right)
 {
     const uint16_t *planar_r = static_cast<const uint16_t *>(planar[0]);
     const uint16_t *planar_g = static_cast<const uint16_t *>(planar[1]);
@@ -119,7 +120,6 @@ void pack_bgra_straight(const void * const planar[4], void *bgra, unsigned left,
     }
 }
 
-
 static int unpack_bgra(void *user, unsigned i, unsigned left, unsigned right)
 {
     const Callback *cb = static_cast<Callback *>(user);
@@ -136,17 +136,17 @@ static int unpack_bgra(void *user, unsigned i, unsigned left, unsigned right)
 //    if (cb->premultiply)
 //        unpack_bgra_premul(packed_data, planar_data, left, right);
 //    else
-        unpack_bgra_straight(packed_data, planar_data, left, right);
+    unpack_bgra_straight(packed_data, planar_data, left, right);
 
     return 0;
 }
 
 static int pack_bgra(void *user, unsigned i, unsigned left, unsigned right)
 {
-    const Callback * cb = static_cast<Callback *>(user);
+    const Callback *cb = static_cast<Callback *>(user);
     const zimgxx::zimage_buffer &rgb_buf = *cb->rgb_buf;
     const zimgxx::zimage_buffer &alpha_buf = *cb->alpha_buf;
-    void *packed_data = const_cast<uchar*>(cb->img->bits()) + i * cb->img->bytesPerLine();
+    void *packed_data = const_cast<uchar *>(cb->img->bits()) + i * cb->img->bytesPerLine();
     const void *planar_data[4];
 
     for (unsigned p = 0; p < 3; ++p) {
@@ -157,20 +157,20 @@ static int pack_bgra(void *user, unsigned i, unsigned left, unsigned right)
 //    if (cb->premultiply)
 //        pack_bgra_premul(planar_data, packed_data, left, right);
 //    else
-        pack_bgra_straight(planar_data, packed_data, left, right);
+    pack_bgra_straight(planar_data, packed_data, left, right);
 
     return 0;
 }
 
-static void unpack_bgr(const void *bgr, void * const planar[3], unsigned bit_depth, unsigned left, unsigned right)
+static void unpack_bgr(const void *bgr, void *const planar[3], unsigned bit_depth, unsigned left, unsigned right)
 {
     const uint8_t *packed_bgr = static_cast<const uint8_t *>(bgr);
     uint8_t *planar_r = static_cast<uint8_t *>(planar[0]);
     uint8_t *planar_g = static_cast<uint8_t *>(planar[1]);
     uint8_t *planar_b = static_cast<uint8_t *>(planar[2]);
     unsigned step = bit_depth / 8;
-    if(step == 1) {
-        ::memcpy(&planar_r[left], &packed_bgr[left], right-left);
+    if (step == 1) {
+        ::memcpy(&planar_r[left], &packed_bgr[left], right - left);
         return;
     }
 
@@ -187,15 +187,15 @@ static void unpack_bgr(const void *bgr, void * const planar[3], unsigned bit_dep
     }
 }
 
-static void pack_bgr(const void * const planar[3], void *bgr, unsigned bit_depth, unsigned left, unsigned right)
+static void pack_bgr(const void *const planar[3], void *bgr, unsigned bit_depth, unsigned left, unsigned right)
 {
     const uint8_t *planar_r = static_cast<const uint8_t *>(planar[0]);
     const uint8_t *planar_g = static_cast<const uint8_t *>(planar[1]);
     const uint8_t *planar_b = static_cast<const uint8_t *>(planar[2]);
     uint8_t *packed_bgr = static_cast<uint8_t *>(bgr);
     unsigned step = bit_depth / 8;
-    if(step == 1) {
-        ::memcpy(&packed_bgr[left], &planar_r[left], right-left);
+    if (step == 1) {
+        ::memcpy(&packed_bgr[left], &planar_r[left], right - left);
         return;
     }
 
@@ -230,7 +230,7 @@ static int unpack_image(void *user, unsigned i, unsigned left, unsigned right)
 static int pack_image(void *user, unsigned i, unsigned left, unsigned right)
 {
     const Callback *cb = static_cast<Callback *>(user);
-    void *img = const_cast<uchar*>(cb->img->bits()) + i * cb->img->bytesPerLine();
+    void *img = const_cast<uchar *>(cb->img->bits()) + i * cb->img->bytesPerLine();
     const zimgxx::zimage_buffer &buf = *cb->rgb_buf;
     const void *buf_data[3];
 
@@ -243,10 +243,9 @@ static int pack_image(void *user, unsigned i, unsigned left, unsigned right)
 }
 
 QZimg::QZimg(QObject *parent)
-    : QObject(parent)
-    , d(new QZimgPrivate)
+    : QObject(parent),
+      d(new QZimgPrivate)
 {
-
 }
 
 QZimg::~QZimg()
@@ -254,7 +253,7 @@ QZimg::~QZimg()
     delete d;
 }
 
-static void releaseBuff(void* pt)
+static void releaseBuff(void *pt)
 {
     aligned_free(pt);
 }
@@ -268,8 +267,8 @@ QImage QZimg::toPackedImage(const QImage &src, int stridePack)
 {
     QImage converted;
     // QImage processing sometimes fails
-    for(int count = 1; ; count++) {
-        switch(src.format()) {
+    for (int count = 1;; count++) {
+        switch (src.format()) {
 //        case QImage::Format_RGBA8888:
         case QImage::Format_ARGB32:
         case QImage::Format_RGB32:
@@ -302,14 +301,17 @@ QImage QZimg::toPackedImage(const QImage &src, int stridePack)
             converted = src.convertToFormat(QImage::Format_ARGB32);
             break;
         }
-        if(!converted.isNull()) break;
-        if(count >= 100) return QImage();
+        if (!converted.isNull()) {
+            break;
+        }
+        if (count >= 100) {
+            return QImage();
+        }
 #if QT_VERSION_MAJOR >= 5
         QThread::currentThread()->usleep(40000);
 #else
         QThread::currentThread()->wait(40);
 #endif
-
     }
     return converted;
 }
@@ -318,10 +320,14 @@ static QImage scaledRGB(QImage img, zimgxx::zimage_format in_format, zimgxx::zim
 {
     QImage oimg;
     // QImage processing sometimes fails
-    for(int count = 1; ; count++) {
+    for (int count = 1;; count++) {
         oimg = QImage(QSize(out_format.width, out_format.height), img.format());
-        if(!oimg.isNull()) break;
-        if(count >= 100) return QImage();
+        if (!oimg.isNull()) {
+            break;
+        }
+        if (count >= 100) {
+            return QImage();
+        }
 #if QT_VERSION_MAJOR >= 5
         QThread::currentThread()->usleep(40000);
 #else
@@ -332,18 +338,26 @@ static QImage scaledRGB(QImage img, zimgxx::zimage_format in_format, zimgxx::zim
         const unsigned API_2_1 = ZIMG_MAKE_API_VERSION(2, 1);
         zimg_graph_builder_params params;
         zimg_graph_builder_params_default(&params, API_2_1);
-        switch(mode) {
-        case QZimg::ResizeBicubic: params.resample_filter = ZIMG_RESIZE_BICUBIC; break;
-        case QZimg::ResizeSpline16: params.resample_filter = ZIMG_RESIZE_SPLINE16; break;
-        case QZimg::ResizeSpline36: params.resample_filter = ZIMG_RESIZE_SPLINE36; break;
-        case QZimg::ResizeLanczos3: params.resample_filter = ZIMG_RESIZE_LANCZOS; break;
+        switch (mode) {
+        case QZimg::ResizeBicubic:
+            params.resample_filter = ZIMG_RESIZE_BICUBIC;
+            break;
+        case QZimg::ResizeSpline16:
+            params.resample_filter = ZIMG_RESIZE_SPLINE16;
+            break;
+        case QZimg::ResizeSpline36:
+            params.resample_filter = ZIMG_RESIZE_SPLINE36;
+            break;
+        case QZimg::ResizeLanczos3:
+            params.resample_filter = ZIMG_RESIZE_LANCZOS;
+            break;
         case QZimg::ResizeLanczos4:
             params.resample_filter = ZIMG_RESIZE_LANCZOS;
             params.filter_param_a = 4.0;
             break;
         }
 
-        zimgxx::FilterGraph graph{ zimgxx::FilterGraph::build(in_format, out_format, &params) };
+        zimgxx::FilterGraph graph{zimgxx::FilterGraph::build(in_format, out_format, &params)};
         unsigned input_buffering = graph.get_input_buffering();
         unsigned output_buffering = graph.get_output_buffering();
         size_t tmp_size = graph.get_tmp_size();
@@ -353,40 +367,41 @@ static QImage scaledRGB(QImage img, zimgxx::zimage_format in_format, zimgxx::zim
 //        qDebug() << "heap usage: " << tmp_size;
 //        qDebug() << "img: " << img;
 //        qDebug() << "oimg: " << oimg;
-        uchar* obuff = oimg.bits();
+        uchar *obuff = oimg.bits();
 
         auto in_buf = allocate_buffer(in_format, input_buffering);
         auto out_buf = allocate_buffer(out_format, output_buffering);
         auto tmp_buf = allocate_buffer(tmp_size);
 
-
-        Callback unpack_cb_data = { &in_buf.first, nullptr, &img };
-        Callback pack_cb_data = { &out_buf.first, nullptr, &oimg };
+        Callback unpack_cb_data = {&in_buf.first, nullptr, &img};
+        Callback pack_cb_data = {&out_buf.first, nullptr, &oimg};
 
 //        qDebug() << "resize begin: ";
-        QElapsedTimer et_qt;et_qt.start();
-        graph.process(in_buf.first.as_const(), out_buf.first, tmp_buf.get(),
-                      unpack_image, &unpack_cb_data, pack_image, &pack_cb_data);
+        QElapsedTimer et_qt;
+        et_qt.start();
+        graph.process(in_buf.first.as_const(), out_buf.first, tmp_buf.get(), unpack_image, &unpack_cb_data, pack_image, &pack_cb_data);
 
         qint64 t_qt = et_qt.elapsed();
 //        qDebug() << "resize end. time: " << t_qt;
-    } catch(zimgxx::zerror e) {
+    } catch (zimgxx::zerror e) {
         qDebug() << e.code;
         qDebug() << e.msg;
     }
     return oimg;
-
 }
 
-static QImage scaledARGB(QImage img, zimgxx::zimage_format in_format, zimgxx::zimage_format out_format,
-                  zimgxx::zimage_format in_format_alpha, zimgxx::zimage_format out_format_alpha, QZimg::FilterMode mode)
+static QImage scaledARGB(QImage img, zimgxx::zimage_format in_format, zimgxx::zimage_format out_format, zimgxx::zimage_format in_format_alpha, zimgxx::zimage_format out_format_alpha, QZimg::FilterMode mode)
 {
     QImage oimg;
     // QImage processing sometimes fails
-    for(int count = 1; ; count++) {
+    for (int count = 1;; count++) {
         oimg = QImage(QSize(out_format.width, out_format.height), img.format());
-        if(!oimg.isNull()) break;
-        if(count >= 100) return QImage();
+        if (!oimg.isNull()) {
+            break;
+        }
+        if (count >= 100) {
+            return QImage();
+        }
 #if QT_VERSION_MAJOR >= 5
         QThread::currentThread()->usleep(40000);
 #else
@@ -397,19 +412,27 @@ static QImage scaledARGB(QImage img, zimgxx::zimage_format in_format, zimgxx::zi
         const unsigned API_2_1 = ZIMG_MAKE_API_VERSION(2, 1);
         zimg_graph_builder_params params;
         zimg_graph_builder_params_default(&params, API_2_1);
-        switch(mode) {
-        case QZimg::ResizeBicubic: params.resample_filter = ZIMG_RESIZE_BICUBIC; break;
-        case QZimg::ResizeSpline16: params.resample_filter = ZIMG_RESIZE_SPLINE16; break;
-        case QZimg::ResizeSpline36: params.resample_filter = ZIMG_RESIZE_SPLINE36; break;
-        case QZimg::ResizeLanczos3: params.resample_filter = ZIMG_RESIZE_LANCZOS; break;
+        switch (mode) {
+        case QZimg::ResizeBicubic:
+            params.resample_filter = ZIMG_RESIZE_BICUBIC;
+            break;
+        case QZimg::ResizeSpline16:
+            params.resample_filter = ZIMG_RESIZE_SPLINE16;
+            break;
+        case QZimg::ResizeSpline36:
+            params.resample_filter = ZIMG_RESIZE_SPLINE36;
+            break;
+        case QZimg::ResizeLanczos3:
+            params.resample_filter = ZIMG_RESIZE_LANCZOS;
+            break;
         case QZimg::ResizeLanczos4:
             params.resample_filter = ZIMG_RESIZE_LANCZOS;
             params.filter_param_a = 4.0;
             break;
         }
 
-        zimgxx::FilterGraph graph{ zimgxx::FilterGraph::build(in_format, out_format, &params) };
-        zimgxx::FilterGraph graph_alpha{ zimgxx::FilterGraph::build(in_format_alpha, out_format_alpha, &params) };
+        zimgxx::FilterGraph graph{zimgxx::FilterGraph::build(in_format, out_format, &params)};
+        zimgxx::FilterGraph graph_alpha{zimgxx::FilterGraph::build(in_format_alpha, out_format_alpha, &params)};
 
         unsigned input_buffering = std::max(graph.get_input_buffering(), graph_alpha.get_input_buffering());
         unsigned output_buffering = std::max(graph.get_output_buffering(), graph_alpha.get_output_buffering());
@@ -420,7 +443,7 @@ static QImage scaledARGB(QImage img, zimgxx::zimage_format in_format, zimgxx::zi
 //        qDebug() << "heap usage: " << tmp_size;
 //        qDebug() << "img: " << img;
 //        qDebug() << "oimg: " << oimg;
-        uchar* obuff = oimg.bits();
+        uchar *obuff = oimg.bits();
 
         auto in_rgb_buf = allocate_buffer(in_format, input_buffering);
         auto in_alpha_plane_buf = allocate_buffer(in_format_alpha, ZIMG_BUFFER_MAX);
@@ -430,12 +453,12 @@ static QImage scaledARGB(QImage img, zimgxx::zimage_format in_format, zimgxx::zi
 
         auto tmp_buf = allocate_buffer(tmp_size);
 
-
-        Callback unpack_cb_data = { &in_rgb_buf.first, &in_alpha_plane_buf.first, &img };
-        Callback pack_cb_data = { &out_rgb_plane_buf.first, &out_alpha_buf.first, &oimg };
+        Callback unpack_cb_data = {&in_rgb_buf.first, &in_alpha_plane_buf.first, &img};
+        Callback pack_cb_data = {&out_rgb_plane_buf.first, &out_alpha_buf.first, &oimg};
 
 //        qDebug() << "resize begin: ";
-        QElapsedTimer et_qt;et_qt.start();
+        QElapsedTimer et_qt;
+        et_qt.start();
 //        graph.process(in_buf.first.as_const(), out_buf.first, tmp_buf.get(),
 //                      unpack_image, &unpack_cb_data, pack_image, &pack_cb_data);
         graph.process(in_rgb_buf.first.as_const(), out_rgb_plane_buf.first, tmp_buf.get(), unpack_bgra, &unpack_cb_data, nullptr, nullptr);
@@ -443,12 +466,11 @@ static QImage scaledARGB(QImage img, zimgxx::zimage_format in_format, zimgxx::zi
 
         qint64 t_qt = et_qt.elapsed();
 //        qDebug() << "resize end. time: " << t_qt;
-    } catch(zimgxx::zerror e) {
+    } catch (zimgxx::zerror e) {
         qDebug() << e.code;
         qDebug() << e.msg;
     }
     return oimg;
-
 }
 
 QImage QZimg::scaled(const QImage &src, const QSize &newsize, Qt::AspectRatioMode aspectMode, QZimg::FilterMode mode)
@@ -469,12 +491,12 @@ QImage QZimg::scaled(const QImage &src, const QSize &newsize, Qt::AspectRatioMod
     zimgxx::zimage_format out_format = in_format;
     out_format.height = newsize.height();
     out_format.width = aspectMode == Qt::IgnoreAspectRatio
-            ? newsize.width()
-            : in_format.width*out_format.height/in_format.height;
+                           ? newsize.width()
+                           : in_format.width * out_format.height / in_format.height;
     QImage oimg;
-    if(img.format() == QImage::Format_RGB32)
+    if (img.format() == QImage::Format_RGB32) {
         oimg = scaledRGB(img, in_format, out_format, mode);
-    else {
+    } else {
         zimgxx::zimage_format in_format_alpha;
         in_format_alpha.width = img.width();
         in_format_alpha.height = img.height();

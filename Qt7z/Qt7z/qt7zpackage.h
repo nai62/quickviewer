@@ -11,6 +11,7 @@ class Qt7zPackagePrivate;
 class QT7ZSHARED_EXPORT Qt7zPackage
 {
     friend class Qt7zPackagePrivate;
+
 public:
     class Client
     {
