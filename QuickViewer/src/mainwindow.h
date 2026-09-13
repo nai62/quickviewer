@@ -5,7 +5,7 @@
 #include "models/volume.h"
 #include "imageview.h"
 #include "imagestring.h"
-#include "qlanguageselector.h"
+#include "languagemanager.h"
 
 namespace Ui {
 class MainWindow;
