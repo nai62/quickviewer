@@ -325,8 +325,7 @@ public:
     bool changeFolderPath(QString path) override
     {
         const QString volumePath = QDir::fromNativeSeparators(Volume::FullPathToVolumePath(path));
-        if (m_lastArchiveOpenFailure == ArchiveOpenError::PasswordProtected
-            && volumePath == m_lastArchiveOpenFailurePath) {
+        if (m_lastArchiveOpenFailure == ArchiveOpenError::PasswordProtected && volumePath == m_lastArchiveOpenFailurePath) {
             clearArchiveOpenFailure();
             return true;
         }
