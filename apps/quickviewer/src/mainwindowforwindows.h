@@ -3,7 +3,7 @@
 
 #include "mainwindow.h"
 
-class MainWindowForWindows : public MainWindow
+class MainWindowForWindows : public ArchiveAwareMainWindow
 {
     Q_OBJECT
 public:

@@ -111,7 +111,7 @@ public:
     // FolderWindow
     bool isFolderSearching();
     void createFolderWindow(bool docked, QString path = "", bool deferLoad = false);
-    bool changeFolderPath(QString path);
+    virtual bool changeFolderPath(QString path);
 
     // CatalogWindow
     bool isCatalogSearching();
@@ -304,6 +304,45 @@ protected:
     QToolButton *m_fullscreenButton;
     uint m_menubarFontSize;
     uint m_pageSliderHeight;
+};
+
+class ArchiveAwareMainWindow : public MainWindow
+{
+public:
+    explicit ArchiveAwareMainWindow(QWidget *parent = nullptr)
+        : MainWindow(parent)
+    {
+        connect(
+            &m_viewerSession,
+            &ViewerSession::archiveOpenFailed,
+            this,
+            [this](const QString &path, ArchiveOpenError error) {
+                m_lastArchiveOpenFailurePath = QDir::fromNativeSeparators(path);
+                m_lastArchiveOpenFailure = error;
+            });
+    }
+
+    bool changeFolderPath(QString path) override
+    {
+        const QString volumePath = QDir::fromNativeSeparators(Volume::FullPathToVolumePath(path));
+        if (m_lastArchiveOpenFailure == ArchiveOpenError::PasswordProtected
+            && volumePath == m_lastArchiveOpenFailurePath) {
+            clearArchiveOpenFailure();
+            return true;
+        }
+        clearArchiveOpenFailure();
+        return MainWindow::changeFolderPath(path);
+    }
+
+private:
+    void clearArchiveOpenFailure()
+    {
+        m_lastArchiveOpenFailure = ArchiveOpenError::None;
+        m_lastArchiveOpenFailurePath.clear();
+    }
+
+    ArchiveOpenError m_lastArchiveOpenFailure = ArchiveOpenError::None;
+    QString m_lastArchiveOpenFailurePath;
 };
 
 #endif // MAINWINDOW_H

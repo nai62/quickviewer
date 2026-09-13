@@ -10,7 +10,7 @@
 #include <Shellapi.h>
 
 MainWindowForWindows::MainWindowForWindows(QWidget *parent)
-    : MainWindow(parent)
+    : ArchiveAwareMainWindow(parent)
 {}
 
 bool MainWindowForWindows::setStartupWindowCloaked(bool cloaked)

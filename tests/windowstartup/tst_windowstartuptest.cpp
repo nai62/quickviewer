@@ -4,13 +4,16 @@
 #include "mainwindow.h"
 #include "models/qvapplication.h"
 
-class StartupWindow : public MainWindow
+#define FILELOADER_DATAPATH WINDOWSTARTUP_SRCDIR "../fileloader/data/"
+
+class StartupWindow : public ArchiveAwareMainWindow
 {
 public:
     QList<bool> cloakRequests;
 
     FolderWindow *folderWindow() const { return m_folderWindow; }
     QSplitter *panelSplitter() const { return findChild<QSplitter *>(QStringLiteral("catalogSplitter")); }
+    ViewerSession *viewerSession() { return &m_viewerSession; }
 
 protected:
     bool setStartupWindowCloaked(bool cloaked) override
@@ -19,6 +22,21 @@ protected:
         return true;
     }
 };
+
+static void closePasswordArchiveWarning(int &warningCount, QString *warningText = nullptr)
+{
+    for (QWidget *widget : QApplication::topLevelWidgets()) {
+        auto *messageBox = qobject_cast<QMessageBox *>(widget);
+        if (!messageBox || messageBox->windowTitle() != QStringLiteral("Cannot Open Archive")) {
+            continue;
+        }
+        ++warningCount;
+        if (warningText) {
+            *warningText = messageBox->text();
+        }
+        messageBox->accept();
+    }
+}
 
 class WindowStartupTest : public QObject
 {
@@ -32,6 +50,9 @@ private slots:
         qApp->setShowPanelSeparateWindow(false);
         qApp->setSaveFolderViewWidth(false);
         qApp->setFolderViewWidth(200);
+        qApp->setDontSavingHistory(false);
+        qApp->clearHistory();
+        qApp->setMaxVolumesCache(4);
     }
 
     void startupCloaking_data()
@@ -236,6 +257,60 @@ private slots:
         viewer.close();
         QCOMPARE(qApp->FolderViewWidth(), 460);
         viewer.handleFolderWindowClosed();
+    }
+
+    void passwordProtectedArchiveShowsOneWarningWithoutFolderFallback()
+    {
+        StartupWindow viewer;
+        const QString encryptedPath = QString(FILELOADER_DATAPATH "7z/password.7z");
+        int warningCount = 0;
+        QString warningText;
+        QTimer warningCloser;
+        connect(&warningCloser, &QTimer::timeout, this, [&] {
+            closePasswordArchiveWarning(warningCount, &warningText);
+        });
+        warningCloser.start(0);
+
+        viewer.loadVolume(encryptedPath);
+
+        warningCloser.stop();
+        QCOMPARE(warningCount, 1);
+        QCOMPARE(
+            warningText,
+            QStringLiteral("This archive is password-protected. Password-protected archives are not supported."));
+        QVERIFY(viewer.folderWindow() == nullptr);
+        QVERIFY(!qApp->History().contains(encryptedPath));
+    }
+
+    void backgroundPasswordFailureWaitsForForegroundAttempt()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+
+        const QString firstPath = directory.filePath("001.zip");
+        const QString secondPath = directory.filePath("002.zip");
+        const QString encryptedPath = directory.filePath("003.zip");
+        QVERIFY(QFile::copy(QString(FILELOADER_DATAPATH "deflate-utf8.zip"), firstPath));
+        QVERIFY(QFile::copy(QString(FILELOADER_DATAPATH "deflate-utf8.zip"), secondPath));
+        QVERIFY(QFile::copy(QString(FILELOADER_DATAPATH "zip/encrypted.zip"), encryptedPath));
+
+        StartupWindow viewer;
+        int warningCount = 0;
+        QTimer warningCloser;
+        connect(&warningCloser, &QTimer::timeout, this, [&] {
+            closePasswordArchiveWarning(warningCount);
+        });
+        warningCloser.start(0);
+
+        viewer.loadVolume(firstPath);
+        QVERIFY(viewer.viewerSession()->nextVolume());
+        QCOMPARE(warningCount, 0);
+
+        QVERIFY(!viewer.viewerSession()->nextVolume());
+
+        warningCloser.stop();
+        QCOMPARE(warningCount, 1);
+        QVERIFY(!qApp->History().contains(encryptedPath));
     }
 };
 

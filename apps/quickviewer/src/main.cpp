@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 #ifdef Q_OS_WIN
         MainWindowForWindows w;
 #else
-        MainWindow w;
+        ArchiveAwareMainWindow w;
 #endif
         StartupProfiler::mark("mainwindow.constructed");
         w.initializeStartup();
