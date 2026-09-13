@@ -1,37 +1,40 @@
-include(../QVproject.pri)
+include(../../../QVproject.pri)
 
 TEMPLATE = lib
 CONFIG += staticlib
 CONFIG -= app_bundle
 
 TARGET = spng
-DESTDIR = ../lib
+DESTDIR = ../../../lib
 
 DEFINES += SPNG_STATIC
 
+LIBSPNG_ROOT = $$clean_path($$PWD/../../../third_party/libspng)
+ZLIB_ROOT = $$clean_path($$PWD/../../../third_party/zlib)
+
 INCLUDEPATH += \
-    $$PWD/libspng/spng \
-    $$PWD/zlib
+    $$LIBSPNG_ROOT/spng \
+    $$ZLIB_ROOT
 
 SOURCES += \
-    libspng/spng/spng.c \
-    zlib/adler32.c \
-    zlib/compress.c \
-    zlib/crc32.c \
-    zlib/deflate.c \
-    zlib/gzclose.c \
-    zlib/gzlib.c \
-    zlib/gzread.c \
-    zlib/gzwrite.c \
-    zlib/infback.c \
-    zlib/inffast.c \
-    zlib/inflate.c \
-    zlib/inftrees.c \
-    zlib/trees.c \
-    zlib/uncompr.c \
-    zlib/zutil.c
+    $$LIBSPNG_ROOT/spng/spng.c \
+    $$ZLIB_ROOT/adler32.c \
+    $$ZLIB_ROOT/compress.c \
+    $$ZLIB_ROOT/crc32.c \
+    $$ZLIB_ROOT/deflate.c \
+    $$ZLIB_ROOT/gzclose.c \
+    $$ZLIB_ROOT/gzlib.c \
+    $$ZLIB_ROOT/gzread.c \
+    $$ZLIB_ROOT/gzwrite.c \
+    $$ZLIB_ROOT/infback.c \
+    $$ZLIB_ROOT/inffast.c \
+    $$ZLIB_ROOT/inflate.c \
+    $$ZLIB_ROOT/inftrees.c \
+    $$ZLIB_ROOT/trees.c \
+    $$ZLIB_ROOT/uncompr.c \
+    $$ZLIB_ROOT/zutil.c
 
 HEADERS += \
-    libspng/spng/spng.h \
-    zlib/zlib.h \
-    zlib/zconf.h
+    $$LIBSPNG_ROOT/spng/spng.h \
+    $$ZLIB_ROOT/zlib.h \
+    $$ZLIB_ROOT/zconf.h

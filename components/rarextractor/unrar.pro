@@ -9,7 +9,8 @@ QMAKE_MAC_SDK = macosx10.9
 
 DEFINES += _FILE_OFFSET_BITS=64 _LARGEFILE_SOURCE UNRAR RARDLL RAR_BUILD_LIB
 
-include(unrar.pri)
+include(../../qmake/third_party/unrar/unrar.pri)
+INCLUDEPATH += $$PWD/../../third_party
 #unix {
 #    DEFINES += _UNIX
 #}
@@ -18,7 +19,7 @@ include(unrar.pri)
     DEFINES += nullptr=NULL
 }
 
-DESTDIR = ../lib
+DESTDIR = ../../lib
 
 HEADERS += \
     rarextractor.h

@@ -17,7 +17,7 @@ win32-msvc* {
 *clang* || *g++* {
     CONFIG += c++17
     win32: CONFIG += staticlib
-    QMAKE_LFLAGS += -Wl,-rpath,../lib
+    QMAKE_LFLAGS += -Wl,-rpath,../../lib
     DEFINES += NTDDI_VERSION=NTDDI_VISTA
 }
 
@@ -28,9 +28,9 @@ unix {
     DEFINES += _UNIX
 }
 INCLUDEPATH += \
-        ../Qt7z/Qt7z/7zip \
-        ../Qt7z/Qt7z/7zip/CPP \
-        ../Qt7z/Qt7z/lib7zip/src \
+        ../../third_party/7zip/7zip \
+        ../../third_party/7zip/7zip/CPP \
+        ../../third_party/lib7zip/src \
 
 SOURCES += \
     $$PWD/fileloader.cpp \
@@ -46,13 +46,13 @@ HEADERS += \
     $$PWD/fileloadersubdirectory.h \
     $$PWD/fileloaderrararchive.h \
 
-DESTDIR = ../lib
-LIBS += -L../lib
+DESTDIR = ../../lib
+LIBS += -L../../lib
 
 DEFINES += UNRAR RARDLL
-INCLUDEPATH += ../unrar
+INCLUDEPATH += ../rarextractor
 LIBS += -lunrar
 
 #DEFINES += QT7Z_STATIC
-INCLUDEPATH += ../Qt7z/Qt7z
+INCLUDEPATH += ../qt7z
 LIBS += -lQt7z

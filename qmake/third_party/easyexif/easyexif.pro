@@ -14,13 +14,15 @@ CONFIG += staticlib
     QMAKE_CXXFLAGS += -std=c++11
 }
 
+EASYEXIF_ROOT = $$clean_path($$PWD/../../../third_party/easyexif)
+
 SOURCES += \
-    $$PWD/easyexif/exif.cpp
+    $$EASYEXIF_ROOT/exif.cpp
 
 HEADERS += \
-    $$PWD/easyexif/exif.h
+    $$EASYEXIF_ROOT/exif.h
 
 INCLUDEPATH += \
-    $$PWD/easyexif
+    $$EASYEXIF_ROOT
 
-DESTDIR = ../lib
+DESTDIR = ../../../lib

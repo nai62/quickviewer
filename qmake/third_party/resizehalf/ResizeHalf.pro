@@ -18,17 +18,19 @@ win32-msvc* {
     QMAKE_CXXFLAGS += -std=c++11
 }
 
+RESIZEHALF_ROOT = $$clean_path($$PWD/../../../third_party/resizehalf)
+
 SOURCES += \
-    $$PWD/ResizeHalf/ResizeHalf.cpp
+    $$RESIZEHALF_ROOT/ResizeHalf.cpp
 
 HEADERS += \
-    $$PWD/ResizeHalf/ResizeHalf.h \
-    $$PWD/ResizeHalf/rh_common.h \
-    $$PWD/ResizeHalf/reduceby2_functions.h \
-    $$PWD/ResizeHalf/bilinear_functions.h \
+    $$RESIZEHALF_ROOT/ResizeHalf.h \
+    $$RESIZEHALF_ROOT/rh_common.h \
+    $$RESIZEHALF_ROOT/reduceby2_functions.h \
+    $$RESIZEHALF_ROOT/bilinear_functions.h \
 
 INCLUDEPATH += \
-    $$PWD/ResizeHalf
+    $$RESIZEHALF_ROOT
 
-DESTDIR = ../lib
+DESTDIR = ../../../lib
 
