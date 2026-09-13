@@ -7,7 +7,7 @@
 
 #include "qv_init.h"
 #include "readprogressstore.h"
-#include "qlanguageselector.h"
+#include "languagemanager.h"
 #include "qmousesequence.h"
 #include "qactionmanager.h"
 
@@ -146,7 +146,7 @@ public:
     QColor BackgroundColor() { return m_backgroundColor; }
     void setBackgroundColor(QColor backgroundColor) { m_backgroundColor = backgroundColor; }
     QColor BackgroundColor2() { return m_backgroundColor2; }
-    void setBackgroundColor2(QColor backgroundColor) { m_backgroundColor2 = backgroundColor; }
+    void setBackgroundColor2(QColor backgroundColor2) { m_backgroundColor2 = backgroundColor2; }
     bool UseCheckeredPattern() { return m_useCheckeredPattern; }
     void setUseCheckeredPattern(bool useCheckeredPattern) { m_useCheckeredPattern = useCheckeredPattern; }
     bool ShowFullscreenSignage() { return m_showFullscreenSignage; }
@@ -304,7 +304,7 @@ public:
     bool SaveCatalogViewWidth() { return m_saveCatalogViewWidth; }
     void setSaveCatalogViewWidth(bool saveCatalogViewWidth) { m_saveCatalogViewWidth = saveCatalogViewWidth; }
     int CatalogViewWidth() { return m_catalogViewWidth; }
-    void setCatalogViewWidth(int catalogViewWidth) { m_catalogViewWidth = catalogViewWidth; }
+    void setCatalogViewWidth(int folderViewWidth) { m_catalogViewWidth = folderViewWidth; }
 
     // ShaderEffect
     qvEnums::ShaderEffect Effect() { return m_effect; }
@@ -317,7 +317,7 @@ public:
     // Others
     QString UiLanguage() { return m_uiLanguage; }
     void setUiLanguage(QString uiLanguage) { m_uiLanguage = uiLanguage; }
-    QLanguageSelector *languageSelector() { return &m_languageSelector; }
+    LanguageManager *languageSelector() { return &m_languageSelector; }
     bool ConfirmDeletePage() { return m_confirmDeletePage; }
     void setConfirmDeletePage(bool confirmDeletePage) { m_confirmDeletePage = confirmDeletePage; }
 
@@ -481,8 +481,8 @@ private:
     QSettings *m_settings;
     ReadProgressStore *m_readProgressStore;
 
-    QLanguageSelector m_languageSelector;
-    QLanguageSelector m_qtbaseLanguageSelector;
+    LanguageManager m_languageSelector;
+    LanguageManager m_qtbaseLanguageSelector;
 
 #if defined(Q_OS_WIN)
     // System Dependable

@@ -1,12 +1,12 @@
-#ifndef QTEXTTRANSLATOR_H
-#define QTEXTTRANSLATOR_H
+#ifndef TEXTTRANSLATOR_H
+#define TEXTTRANSLATOR_H
 
 #include <QtCore>
 
 /**
- * @brief The QTextTranslator class
+ * @brief The TextTranslator class
  *
- * QTextTranslator enables real-time translation execution
+ * TextTranslator enables real-time translation execution
  * with text format (ini) directly editable by end users
  * without using normal ts format (qm as binary).
  *
@@ -19,12 +19,12 @@
  * Each key (eg. 'text_100003') described in the text file is temporarily set by this library,
  * and it is not related to your application.
  */
-class QTextTranslator : public QTranslator
+class TextTranslator : public QTranslator
 {
     Q_OBJECT
 public:
-    QTextTranslator(QObject *parent, QString path, QTextTranslator *reverse = nullptr);
-    virtual ~QTextTranslator() {}
+    TextTranslator(QObject *parent, QString path, TextTranslator *reverse = nullptr);
+    virtual ~TextTranslator() {}
 
     QString translate(const char *context, const char *sourceText, const char *disambiguation = Q_NULLPTR, int n = -1) const override;
 
@@ -36,7 +36,7 @@ protected:
     typedef QHash<QString, QString> InnerMap;
     typedef QHash<QString, InnerMap> TransMap;
     TransMap m_trans;
-    QTextTranslator *m_reverse;
+    TextTranslator *m_reverse;
 };
 
-#endif // QTEXTTRANSLATOR_H
+#endif // TEXTTRANSLATOR_H

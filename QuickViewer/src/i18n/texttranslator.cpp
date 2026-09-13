@@ -1,6 +1,6 @@
-#include "qtexttranslator.h"
+#include "texttranslator.h"
 
-QTextTranslator::QTextTranslator(QObject *parent, QString path, QTextTranslator *reverse)
+TextTranslator::TextTranslator(QObject *parent, QString path, TextTranslator *reverse)
     : QTranslator(parent)
 {
     m_reverse = reverse;
@@ -28,14 +28,14 @@ QTextTranslator::QTextTranslator(QObject *parent, QString path, QTextTranslator 
     }
 }
 
-QString QTextTranslator::translate(const char *context, const char *sourceText, const char *disambiguation, int n) const
+QString TextTranslator::translate(const char *context, const char *sourceText, const char *disambiguation, int n) const
 {
     QString con(context);
     QString source(sourceText);
     return getString(con, source);
 }
 
-QString QTextTranslator::getString(const QString &group, const QString &key) const
+QString TextTranslator::getString(const QString &group, const QString &key) const
 {
     auto itr = m_trans.find(group);
     if (itr == m_trans.end()) {
@@ -48,7 +48,7 @@ QString QTextTranslator::getString(const QString &group, const QString &key) con
     return itr2.value();
 }
 
-bool QTextTranslator::isEmpty() const
+bool TextTranslator::isEmpty() const
 {
     return false;
 }

@@ -1,6 +1,6 @@
-#include "qlanguageselector.h"
+#include "languagemanager.h"
 
-QLanguageSelector::QLanguageSelector(QString prefix, QString path)
+LanguageManager::LanguageManager(QString prefix, QString path)
     : QObject(nullptr),
       m_translator(nullptr),
       m_reversed(nullptr),
@@ -13,7 +13,7 @@ QLanguageSelector::QLanguageSelector(QString prefix, QString path)
     //initialize();
 }
 
-LanguageInfo QLanguageSelector::getLanguageInfo(QString languageId)
+LanguageInfo LanguageManager::getLanguageInfo(QString languageId)
 {
     if (m_languages.contains(languageId)) {
         return m_languages[languageId];
@@ -21,7 +21,7 @@ LanguageInfo QLanguageSelector::getLanguageInfo(QString languageId)
     return getSystemLanguageInfo();
 }
 
-LanguageInfo QLanguageSelector::getSystemLanguageInfo()
+LanguageInfo LanguageManager::getSystemLanguageInfo()
 {
     auto systemLocale = QLocale::system();
     foreach (const QString &lang, m_languageList) {
@@ -34,7 +34,7 @@ LanguageInfo QLanguageSelector::getSystemLanguageInfo()
     return m_languages[LANGUAGE_DEFUALT];
 }
 
-void QLanguageSelector::resetTranslator(QString languageId)
+void LanguageManager::resetTranslator(QString languageId)
 {
     LanguageInfo info = getLanguageInfo(languageId);
     m_uiLanguage = info.Caption;
@@ -46,10 +46,10 @@ void QLanguageSelector::resetTranslator(QString languageId)
     if (!info.TextFile.isEmpty() && (m_forceUseText || info.OpenTextEditor)) {
         QDir translationDir(m_path);
         if (m_reversed == nullptr && !m_reverseFile.isEmpty()) {
-            m_reversed = new QTextTranslator(this, translationDir.filePath(m_reverseFile));
+            m_reversed = new TextTranslator(this, translationDir.filePath(m_reverseFile));
         }
         if (m_reversed != nullptr) {
-            m_translator = new QTextTranslator(this, translationDir.filePath(info.TextFile), m_reversed);
+            m_translator = new TextTranslator(this, translationDir.filePath(info.TextFile), m_reversed);
             qApp->installTranslator(m_translator);
         }
     } else {
@@ -69,7 +69,7 @@ void QLanguageSelector::resetTranslator(QString languageId)
     emit languageChanged(info.Caption);
 }
 
-void QLanguageSelector::initialize(QString path)
+void LanguageManager::initialize(QString path)
 {
     QString inipath = path.isEmpty() ? QString("%1/%2").arg(m_path).arg(LANGUAGES_INI) : path;
     QSettings settings(inipath, QSettings::IniFormat, this);
@@ -95,14 +95,14 @@ void QLanguageSelector::initialize(QString path)
     }
 }
 
-void QLanguageSelector::clearLanguageMenus()
+void LanguageManager::clearLanguageMenus()
 {
     foreach (QAction *action, m_actions) {
         action->setChecked(false);
     }
 }
 
-void QLanguageSelector::initializeMenu(QMenu *parent)
+void LanguageManager::initializeMenu(QMenu *parent)
 {
     auto self = this;
     bool useText = false;

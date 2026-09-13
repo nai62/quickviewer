@@ -1,12 +1,12 @@
-#ifndef QLANGUAGESELECTOR_H
-#define QLANGUAGESELECTOR_H
+#ifndef LANGUAGEMANAGER_H
+#define LANGUAGEMANAGER_H
 
 #include <QtGui>
 #if QT_VERSION_MAJOR >= 5
 #    include <QtWidgets>
 #endif
 
-#include "qtexttranslator.h"
+#include "texttranslator.h"
 
 #ifndef LANGUAGES_INI
 #    define LANGUAGES_INI "languages.ini"
@@ -37,7 +37,7 @@ struct LanguageInfo
      * @brief TextFile
      * The translation file name which is text(Internally, ini) format.
      * Users can edit the files.
-     * And QLanguageSelector will load and change all 'tr' words every time when the menu is selected.
+     * And LanguageManager will load and change all 'tr' words every time when the menu is selected.
      */
     QString TextFile;
     /**
@@ -48,27 +48,27 @@ struct LanguageInfo
 };
 
 /**
- * @brief The QLanguageSelector class
+ * @brief The LanguageManager class
  *
  * This object provides a mechanism for applications to make language changes by users.
  * Each language is registered as a child QAction menu of QMenu specified.
  * Each language is described in the ini file (usually "translations/languages.ini").
  * Allow users of the application to add new languages without changing the source code.
  * When the application user selects the Language Menu,
- *  the QLanguageSelector automatically sets the new QTranslator
+ *  the LanguageManager automatically sets the new QTranslator
  *  to qApp and replaces the language resources of the application.
  * Eventually the languageChanged signal is emitted and you can handle additional change events.
  */
-class QLanguageSelector : public QObject
+class LanguageManager : public QObject
 {
     Q_OBJECT
 public:
     /**
-     * @brief QLanguageSelector
+     * @brief LanguageManager
      * @param prefix: prefix of *.qm files  e.g. [prefix][langageId].qm
      * @param path: The path of the directory where the qm file is stored
      */
-    QLanguageSelector(QString prefix, QString path = "translations/");
+    LanguageManager(QString prefix, QString path = "translations/");
 
     QString language() { return m_uiLanguage; }
 
@@ -144,7 +144,7 @@ public slots:
 private:
     QString m_uiLanguage;
     QTranslator *m_translator;
-    QTextTranslator *m_reversed;
+    TextTranslator *m_reversed;
     QString m_path;
     QString m_prefix;
     QString m_reverseFile;
@@ -159,4 +159,4 @@ private:
     void clearLanguageMenus();
 };
 
-#endif // QLANGUAGESELECTOR_H
+#endif // LANGUAGEMANAGER_H
