@@ -2,33 +2,26 @@
 #define IMAGELOADCONTEXT_H
 
 #include <QMutex>
+#include <QMutexLocker>
 #include <QString>
-#include <QThread>
+
+#include <memory>
+#include <utility>
 
 #include "fileloader.h"
 
 class ImageLoadContext
 {
 public:
-    explicit ImageLoadContext(IFileLoader *loader)
-        : m_loader(loader)
+    explicit ImageLoadContext(std::unique_ptr<IFileLoader> loader)
+        : m_loader(std::move(loader))
     {
-    }
-
-    ~ImageLoadContext()
-    {
-        if (m_loader) {
-            if (m_loader->thread() == QThread::currentThread()) {
-                delete m_loader;
-            } else {
-                m_loader->deleteLater();
-            }
-        }
     }
 
     FileLoadResult loadResult(const QString &name)
     {
-        return m_loader ? m_loader->getFileResult(name, m_mutex) : FileLoadResult{};
+        QMutexLocker locker(&m_mutex);
+        return m_loader ? m_loader->getFileResult(name) : FileLoadResult{};
     }
 
     QByteArray load(const QString &name)
@@ -36,10 +29,10 @@ public:
         return loadResult(name).data;
     }
 
-    IFileLoader *loader() const { return m_loader; }
+    IFileLoader *loader() const { return m_loader.get(); }
 
 private:
-    IFileLoader *m_loader;
+    std::unique_ptr<IFileLoader> m_loader;
     QMutex m_mutex;
 };
 

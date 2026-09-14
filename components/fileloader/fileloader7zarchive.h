@@ -9,7 +9,7 @@ class FileLoader7zArchivePrivate;
 class FileLoader7zArchive : public IFileLoader
 {
 public:
-    FileLoader7zArchive(QObject *parent, QString sevenzippath, QString extensionOfFile, bool extractSolidArchiveToTemporaryDir = false);
+    FileLoader7zArchive(QString sevenzippath, QString extensionOfFile, bool extractSolidArchiveToTemporaryDir = false);
     ~FileLoader7zArchive();
 
     /**
@@ -42,11 +42,10 @@ public:
     /**
      * @brief getFile get a file specified by filename
      * @param filename
-     * @param mutex if the method needs to lock resource, must be use the mutex
      * @return file binary data
      */
-    QByteArray getFile(QString filename, QMutex &mutex) override;
-    FileLoadResult getFileResult(QString filename, QMutex &mutex) override;
+    QByteArray getFile(QString filename) override;
+    FileLoadResult getFileResult(QString filename) override;
     ArchiveOpenError archiveOpenError() const override { return m_archiveOpenError; }
 
     quint64 getFileSize(QString filename) const override;

@@ -77,7 +77,7 @@ void FileLoaderTest::zipArchives()
 {
     QFETCH(QString, archiveName);
     const QString archivePath = QString(DATAPATH) + archiveName;
-    FileLoader7zArchive archive(nullptr, archivePath, "zip");
+    FileLoader7zArchive archive(archivePath, "zip");
 
     QVERIFY(archive.isValid());
     QVERIFY(archive.archiveOpenError() == ArchiveOpenError::None);
@@ -87,8 +87,7 @@ void FileLoaderTest::zipArchives()
     QCOMPARE(files.size(), 1);
     QCOMPARE(QDir::fromNativeSeparators(files.first()), QString("サンプルフォルダ/test.bmp"));
 
-    QMutex mutex;
-    const FileLoadResult result = archive.getFileResult(files.first(), mutex);
+    const FileLoadResult result = archive.getFileResult(files.first());
     QVERIFY(result.success);
     QVERIFY(result.error == ArchiveOpenError::None);
     QCOMPARE(result.data.size(), 1080054);
@@ -132,7 +131,7 @@ static void verifyRarArchive(const QString &archivePath, const QString &firstNam
     QCOMPARE(cached.data, first.data);
     QCOMPARE(rar.m_curIndex, cursorAfterSecondFile);
 
-    FileLoaderRarArchive loader(nullptr, archivePath);
+    FileLoaderRarArchive loader(archivePath);
     QVERIFY(loader.isValid());
     QVERIFY(loader.archiveOpenError() == ArchiveOpenError::None);
 }
@@ -200,7 +199,7 @@ void FileLoaderTest::directoryLinks()
     QCOMPARE(QDir::cleanPath(imageInfo.absolutePath()), QDir::cleanPath(linkPath));
     QCOMPARE(imageInfo.fileName(), QString("002.png"));
 
-    FileLoaderDirectory loader(nullptr, imageInfo.absolutePath());
+    FileLoaderDirectory loader(imageInfo.absolutePath());
     QCOMPARE(loader.volumePath(), imageInfo.absolutePath());
     QCOMPARE(loader.contents(), QStringList({"001.png", "002.png"}));
 
@@ -264,11 +263,11 @@ void FileLoaderTest::recursiveDirectoryTraversal()
         file.close();
     }
 
-    FileLoaderDirectory flat(nullptr, root.path());
+    FileLoaderDirectory flat(root.path());
     QVERIFY(!flat.hasSubDirectories());
     QCOMPARE(flat.contents(), QStringList({"003.jpe"}));
 
-    FileLoaderDirectory recursive(nullptr, root.path(), FileLoaderDirectory::TraversalMode::Recursive);
+    FileLoaderDirectory recursive(root.path(), FileLoaderDirectory::TraversalMode::Recursive);
     QVERIFY(recursive.hasSubDirectories());
     QStringList normalized;
     for (const QString &path : recursive.contents()) {
@@ -281,18 +280,16 @@ void FileLoaderTest::emptyDirectoryContentsAreStable()
 {
     QTemporaryDir temporaryDir;
     QVERIFY(temporaryDir.isValid());
-    FileLoaderDirectory loader(nullptr, temporaryDir.path());
+    FileLoaderDirectory loader(temporaryDir.path());
     QVERIFY(loader.isValid());
 
-    QSignalSpy loadFinishedSpy(&loader, &IFileLoader::loadFinished);
     QCOMPARE(loader.contents(), QStringList());
     QCOMPARE(loader.contents(), QStringList());
-    QCOMPARE(loadFinishedSpy.count(), 0);
 }
 
 void FileLoaderTest::sevenZipImages()
 {
-    FileLoader7zArchive archive(nullptr, DATAPATH "7z/image.7z", "7z");
+    FileLoader7zArchive archive(DATAPATH "7z/image.7z", "7z");
     QVERIFY(archive.isValid());
     QVERIFY(archive.archiveOpenError() == ArchiveOpenError::None);
 
@@ -303,18 +300,17 @@ void FileLoaderTest::sevenZipImages()
     QVERIFY(files.contains(unicodeName));
     QCOMPARE(archive.getFileSize("yellow.png"), quint64(4323));
 
-    QMutex mutex;
-    const FileLoadResult jpeg = archive.getFileResult("red.jpg", mutex);
+    const FileLoadResult jpeg = archive.getFileResult("red.jpg");
     QVERIFY(jpeg.success);
     const QImage jpegImage = QImage::fromData(jpeg.data);
     QCOMPARE(jpegImage.size(), QSize(225, 225));
 
-    const FileLoadResult png = archive.getFileResult("yellow.png", mutex);
+    const FileLoadResult png = archive.getFileResult("yellow.png");
     QVERIFY(png.success);
     const QImage pngImage = QImage::fromData(png.data);
     QCOMPARE(pngImage.size(), QSize(800, 800));
 
-    const FileLoadResult unicode = archive.getFileResult(unicodeName, mutex);
+    const FileLoadResult unicode = archive.getFileResult(unicodeName);
     QVERIFY(unicode.success);
     QCOMPARE(QImage::fromData(unicode.data).size(), QSize(225, 225));
 }
@@ -329,14 +325,13 @@ void FileLoaderTest::sevenZipSolidModes_data()
 void FileLoaderTest::sevenZipSolidModes()
 {
     QFETCH(bool, extractToTemporaryDirectory);
-    FileLoader7zArchive archive(nullptr, DATAPATH "7z/image.7z", "7z", extractToTemporaryDirectory);
+    FileLoader7zArchive archive(DATAPATH "7z/image.7z", "7z", extractToTemporaryDirectory);
     QVERIFY(archive.isValid());
     if (extractToTemporaryDirectory) {
         QCOMPARE(archive.getCacheMode(), IFileLoader::InflateCached);
     }
 
-    QMutex mutex;
-    const FileLoadResult result = archive.getFileResult("yellow.png", mutex);
+    const FileLoadResult result = archive.getFileResult("yellow.png");
     QVERIFY(result.success);
     QVERIFY(result.error == ArchiveOpenError::None);
     QCOMPARE(QImage::fromData(result.data).size(), QSize(800, 800));
@@ -352,7 +347,7 @@ void FileLoaderTest::passwordProtectedSevenZip_data()
 void FileLoaderTest::passwordProtectedSevenZip()
 {
     QFETCH(QString, archiveName);
-    FileLoader7zArchive archive(nullptr, QString(DATAPATH "7z/") + archiveName, "7z", true);
+    FileLoader7zArchive archive(QString(DATAPATH "7z/") + archiveName, "7z", true);
     QVERIFY(!archive.isValid());
     QVERIFY(archive.archiveOpenError() == ArchiveOpenError::PasswordProtected);
     QVERIFY(archive.contents().isEmpty());
@@ -361,7 +356,7 @@ void FileLoaderTest::passwordProtectedSevenZip()
 
 void FileLoaderTest::passwordProtectedZip()
 {
-    FileLoader7zArchive archive(nullptr, DATAPATH "zip/encrypted.zip", "zip");
+    FileLoader7zArchive archive(DATAPATH "zip/encrypted.zip", "zip");
     QVERIFY(!archive.isValid());
     QVERIFY(archive.archiveOpenError() == ArchiveOpenError::PasswordProtected);
     QVERIFY(archive.contents().isEmpty());
@@ -369,13 +364,12 @@ void FileLoaderTest::passwordProtectedZip()
 
 void FileLoaderTest::zeroByteArchiveEntry()
 {
-    FileLoader7zArchive archive(nullptr, DATAPATH "zip/zero-byte.zip", "zip");
+    FileLoader7zArchive archive(DATAPATH "zip/zero-byte.zip", "zip");
     QVERIFY(archive.isValid());
     QCOMPARE(archive.contents(), QStringList({"empty.png"}));
     QCOMPARE(archive.getFileSize("empty.png"), quint64(0));
 
-    QMutex mutex;
-    const FileLoadResult result = archive.getFileResult("empty.png", mutex);
+    const FileLoadResult result = archive.getFileResult("empty.png");
     QVERIFY(result.success);
     QVERIFY(result.error == ArchiveOpenError::None);
     QVERIFY(result.data.isEmpty());
@@ -383,7 +377,7 @@ void FileLoaderTest::zeroByteArchiveEntry()
 
 void FileLoaderTest::archiveOpenFailures()
 {
-    FileLoader7zArchive missing(nullptr, DATAPATH "does-not-exist.7z", "7z");
+    FileLoader7zArchive missing(DATAPATH "does-not-exist.7z", "7z");
     QVERIFY(!missing.isValid());
     QVERIFY(missing.archiveOpenError() == ArchiveOpenError::IoError);
 
@@ -395,12 +389,12 @@ void FileLoaderTest::archiveOpenFailures()
     QCOMPARE(corrupt.write("not an archive"), qint64(14));
     corrupt.close();
 
-    FileLoader7zArchive corruptArchive(nullptr, corruptPath, "7z");
+    FileLoader7zArchive corruptArchive(corruptPath, "7z");
     QVERIFY(!corruptArchive.isValid());
     QVERIFY(corruptArchive.archiveOpenError() != ArchiveOpenError::None);
     QVERIFY(corruptArchive.archiveOpenError() != ArchiveOpenError::PasswordProtected);
 
-    FileLoader7zArchive unsupported(nullptr, corruptPath, "definitely-unsupported");
+    FileLoader7zArchive unsupported(corruptPath, "definitely-unsupported");
     QVERIFY(!unsupported.isValid());
     QVERIFY(unsupported.archiveOpenError() == ArchiveOpenError::Unsupported);
 }
