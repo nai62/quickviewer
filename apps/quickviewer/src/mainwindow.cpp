@@ -328,7 +328,9 @@ void MainWindow::initializeStartup()
         // back to opaque is not atomic with DWM composition. Cloaking keeps a
         // normal startup window out of composition until it is repainted.
         m_startupWindowCloaked = setStartupWindowCloaked(true);
+        StartupProfiler::mark("startup.show.begin");
         show();
+        StartupProfiler::mark("startup.show.end");
     }
     StartupProfiler::mark("startup.window-shown");
     if (isFullScreen()) {
@@ -352,7 +354,9 @@ void MainWindow::initializeStartup()
     StartupProfiler::mark("startup.panel-ready");
 
     // Settle the initial geometry now, including any reserved panel width.
+    StartupProfiler::mark("startup.process-events.begin");
     QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+    StartupProfiler::mark("startup.process-events.end");
     StartupProfiler::mark("startup.initial-events-processed");
 
     // Start the requested volume once the event loop is running, while the
@@ -378,13 +382,21 @@ void MainWindow::revealStartupWindow()
     if (!m_revealInitialWindow) {
         return;
     }
+    StartupProfiler::mark("startup.reveal.begin");
+    StartupProfiler::mark("startup.opacity-restore.begin");
     setWindowOpacity(1.0);
+    StartupProfiler::mark("startup.opacity-restore.end");
+    StartupProfiler::mark("startup.repaint.begin");
     repaint();
+    StartupProfiler::mark("startup.repaint.end");
     if (m_startupWindowCloaked) {
+        StartupProfiler::mark("startup.uncloak.begin");
         setStartupWindowCloaked(false);
+        StartupProfiler::mark("startup.uncloak.end");
         m_startupWindowCloaked = false;
     }
     m_revealInitialWindow = false;
+    StartupProfiler::mark("startup.reveal.end");
 }
 
 void MainWindow::loadStartupVolume()
@@ -1057,6 +1069,11 @@ bool MainWindow::changeFolderPath(QString path)
 void MainWindow::handleInitialImageDisplayFinished()
 {
     revealStartupWindow();
+    if (StartupProfiler::enabled()) {
+        StartupProfiler::flush();
+        QTimer::singleShot(0, qApp, &QCoreApplication::quit);
+        return;
+    }
     QTimer::singleShot(0, this, &MainWindow::completeDeferredStartupWork);
 }
 

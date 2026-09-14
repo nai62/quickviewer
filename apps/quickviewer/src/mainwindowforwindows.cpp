@@ -3,6 +3,7 @@
 #include <string>
 
 #include "mainwindowforwindows.h"
+#include "startupprofiler.h"
 
 #include <Windows.h>
 #include <dwmapi.h>
@@ -17,20 +18,35 @@ bool MainWindowForWindows::setStartupWindowCloaked(bool cloaked)
 {
     using DwmSetWindowAttributeFunction = HRESULT(WINAPI *)(HWND, DWORD, LPCVOID, DWORD);
     using DwmFlushFunction = HRESULT(WINAPI *)();
+    if (cloaked) {
+        StartupProfiler::mark("startup.cloak.begin");
+    }
     QLibrary dwmapi("dwmapi");
     auto setWindowAttribute = reinterpret_cast<DwmSetWindowAttributeFunction>(dwmapi.resolve("DwmSetWindowAttribute"));
     auto flush = reinterpret_cast<DwmFlushFunction>(dwmapi.resolve("DwmFlush"));
     if (!setWindowAttribute) {
         qWarning() << "DwmSetWindowAttribute is unavailable";
+        if (cloaked) {
+            StartupProfiler::mark("startup.cloak.end");
+        }
         return false;
     }
 
+    if (cloaked) {
+        StartupProfiler::mark("startup.cloak.before-winid");
+    }
     const auto hwnd = reinterpret_cast<HWND>(winId());
+    if (cloaked) {
+        StartupProfiler::mark("startup.cloak.after-winid");
+    }
     const BOOL value = cloaked ? TRUE : FALSE;
     if (!cloaked && flush) {
         flush();
     }
     const HRESULT result = setWindowAttribute(hwnd, DWMWA_CLOAK, &value, sizeof(value));
+    if (cloaked) {
+        StartupProfiler::mark("startup.cloak.end");
+    }
     if (FAILED(result)) {
         qWarning() << "Failed to" << (cloaked ? "cloak" : "uncloak")
                    << "the startup window:" << Qt::hex << result;
