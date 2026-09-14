@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
 #endif
 
     QVApplication app(argc, argv);
+    ImageBenchmarkRunner::applyStartupOverrides();
     if (ImageBenchmarkRunner::isRequested(app.arguments())) {
         return ImageBenchmarkRunner::run(app.arguments());
     }

@@ -1,177 +1,278 @@
-# Image loading benchmarks
+# QuickViewer benchmarks
 
-QuickViewer has a command-line image loading benchmark for comparing decoder
-and source-loading performance without opening the viewer window. Use a Release
-build for performance measurements.
+QuickViewer provides a command-line benchmark interface for measuring distinct
+parts of the image-opening pipeline. Use a Release build for performance
+measurements.
 
-On the default Windows verification layout, build with:
+On the default Windows verification layout:
 
 ```bat
 scripts\verify-windows.cmd release
 ```
 
-The libspng backend is built from pinned submodules: libspng v0.7.4 and
-miniz 2.2.0. Initialize submodules before configuring a fresh checkout:
-
-```bat
-git submodule update --init --recursive
-```
-
-The executable is then normally located at:
+The executable is normally located at:
 
 ```text
 C:\build\quickviewer-msvc2022_64-release\bin\QuickViewer.exe
 ```
 
-## Basic usage
-
-Benchmark an image, directory, or archive:
-
-```bat
-C:\build\quickviewer-msvc2022_64-release\bin\QuickViewer.exe ^
-  --benchmark C:\path\to\images ^
-  --recursive ^
-  --runs 5 ^
-  --warmup 2 ^
-  --output results\image-benchmark.csv
-```
-
-Multiple input paths may be specified. Directories are non-recursive unless
-`--recursive` is present. Archive inputs benchmark supported image entries in
-the archive; nested archives are not opened recursively.
-
-If `--output` is omitted, a timestamped CSV file is written in the current
-working directory. A human-readable summary is written next to the CSV as
-`<csv-path>.summary.txt`. The summary includes the parsed benchmark options,
-aggregate results, and any paired decoder comparison results.
-
-## Benchmark modes
-
-`source-decode` is the default mode. Each measured iteration loads or extracts
-the compressed image data and then decodes it:
-
-```bat
-QuickViewer.exe --benchmark C:\images --benchmark-mode source-decode
-```
-
-`decode-only` loads the compressed bytes once per image before warm-up and
-reuses the same bytes for every decode iteration:
-
-```bat
-QuickViewer.exe --benchmark C:\images --benchmark-mode decode-only
-```
-
-Use `decode-only` when comparing decoder cost without filesystem or archive
-extraction time.
-
-## Paired decoder comparison
-
-`decoder-compare` performs a paired comparison for one image format. Each
-selected image is loaded or extracted once, then the exact same compressed
-bytes are passed to both requested decoders. Decoder order is reversed on
-alternating iterations to reduce ordering bias. Other image formats are
-skipped.
-
-JPEG is the default comparison format. Qt versus TurboJPEG can be measured
-with:
-
-```bat
-QuickViewer.exe ^
-  --benchmark C:\images ^
-  --recursive ^
-  --benchmark-mode decoder-compare ^
-  --compare-format jpeg ^
-  --jpeg-decoders qt,turbojpeg ^
-  --runs 10 ^
-  --warmup 2 ^
-  --output results\jpeg-compare.csv
-```
-
-`--jpeg-decoders` must contain `qt` and `turbojpeg` exactly once each. Their
-order defines the baseline and candidate in the paired summary. With the
-default `qt,turbojpeg`, speedup is calculated for each image as:
+## Command shape
 
 ```text
-median Qt decode time / median TurboJPEG decode time
+QuickViewer.exe --benchmark <suite> [options] <input...>
 ```
 
-PNG can be compared in the same way with Qt versus libspng:
+The suite selects the pipeline region being measured. Decoder choice, page
+selection, sorting, run count, warmups, and output destination are independent
+conditions.
 
-```bat
-QuickViewer.exe ^
-  --benchmark C:\images ^
-  --recursive ^
-  --benchmark-mode decoder-compare ^
-  --compare-format png ^
-  --png-decoders qt,libspng ^
-  --runs 10 ^
-  --warmup 2 ^
-  --output results\png-compare.csv
+Supported suites:
+
+- `decode`: decode and image-pipeline post-processing only. File reads and
+  archive extraction happen before the timer.
+- `entry-load`: file read or archive entry extraction plus decode and
+  post-processing. Archive opening/indexing happens before the per-entry timer.
+- `archive-open`: archive opening/indexing and production page-list creation.
+  Selected-image extraction and decoding are excluded.
+- `first-image`: opening an input through obtaining the selected decoded image.
+  Rendering is excluded.
+- `first-paint`: fresh-process startup through the first actual image paint.
+
+The old `--benchmark-mode`, format-specific decoder flags, and
+`decoder-compare` mode are not part of this interface.
+
+## Common options
+
+```text
+--runs <N>       Measured runs. Default: 5.
+--warmup <N>     Unmeasured warmup runs. Default: 2.
+--output <path>  Raw CSV output.
+--recursive      Recursively scan directory inputs.
+--page <value>   first, resume, or a zero-based page index.
+--sort <mode>    name, name-desc, size, size-desc, mtime, or mtime-desc.
 ```
 
-`--png-decoders` must contain `qt` and `libspng` exactly once each. With
-`qt,libspng`, the reported per-image speedup is the median Qt decode time
-divided by the median libspng decode time.
+If `--output` is omitted, QuickViewer creates a timestamped file such as:
 
-For both formats, the reported median speedup is the median of the per-image
-ratios rather than a ratio of aggregate medians. An image is included in the
-paired result only when every measured run used the requested backend
-successfully for both decoders.
+```text
+quickviewer-benchmark-20260914-091500.csv
+```
 
-Native decoder requests may fall back to the Qt image reader when preserving
-viewer behavior requires features the fast path does not handle. The CSV
-records requested and actual backends separately. Common JPEG exclusions are
-classified as `icc-profile`, `four-component-jpeg`, or `other`. Common libspng
-exclusions are classified as `animated-png`, `icc-profile`, `gamma-chunk`,
-`chromaticities`, `high-bit-depth`, or `other`. These classifications are
-benchmark diagnostics rather than complete format validators.
-
-`--jpeg-decoder` and `--png-decoder` control ordinary `source-decode` and
-`decode-only` runs. In `decoder-compare` mode, the decoder is selected
-separately for each side of the comparison from the format-specific decoder
-pair.
+The console prints a human-readable summary. CSV is the canonical raw output.
 
 ## Decoder selection
 
-For ordinary modes, JPEG can be selected with:
+Decoder choice uses a repeatable option:
 
 ```text
---jpeg-decoder auto|qt|turbojpeg
+--decoder <format>=<backend>[,<backend>...]
 ```
 
-PNG can be selected with:
+Examples:
 
 ```text
---png-decoder auto|qt|libspng
+--decoder jpeg=auto
+--decoder jpeg=turbojpeg
+--decoder jpeg=qt,turbojpeg
+--decoder png=qt,libspng
+--decoder webp=qt,libwebp
 ```
 
-`auto` uses libspng for eligible static PNG images. Animated PNG, color-managed
-PNG variants that require Qt metadata handling, and 16-bit PNG fall back to Qt.
-
-WebP can be selected with:
+Multiple formats may be specified independently:
 
 ```text
---webp-decoder auto|qt|libwebp
+--decoder jpeg=qt,turbojpeg --decoder png=qt,libspng
 ```
 
-The CSV always records the backend that actually decoded the image, so native
-decoder fallbacks remain visible.
+If decoder selection is omitted, the normal automatic decoder choice is used.
 
-## Output
+When multiple backends are requested for the selected image format, QuickViewer
+runs them under equivalent benchmark conditions and prints a relative speed
+ratio. The raw CSV records requested and actual decoders where the suite can
+observe the decoder metrics directly. A native request may fall back to Qt when
+the input requires behavior unsupported by the native fast path.
 
-The CSV is the machine-readable per-run output. It includes source and output
-sizes, source-load time, decode time, post-processing time, total time,
-throughput, requested decoder, actual decoder, and fallback reason.
+## Page selection
 
-The `.summary.txt` file is intended for people. Its tables are aligned with
-spaces rather than tab delimiters. It contains:
+```text
+--page first
+--page resume
+--page 0
+--page 100
+```
 
-- the parsed command-line options;
-- aggregate median and p95 decode timing grouped by format, container, requested
-  backend, actual backend, and size bucket;
-- median total time and decode throughput;
-- for `decoder-compare`, paired-image counts, per-backend decode medians,
-  median/p10/p90 speedup, and excluded/fallback image counts.
+`first` is the default and always selects page 0 after production sorting.
 
-For reproducible comparisons, keep the build, input set, run count, QuickViewer
-settings, and machine load consistent between runs.
+`resume` uses the same saved read-progress rule as normal volume startup. If no
+usable saved position exists, it resolves to page 0. The CSV records both the
+request and the resolved page index/source.
+
+Numeric pages are zero-based. An out-of-range page is an error; the benchmark
+does not silently substitute another page.
+
+## Sorting
+
+`--sort` maps directly to QuickViewer's production page sorting:
+
+```text
+name
+name-desc
+size
+size-desc
+mtime
+mtime-desc
+```
+
+The default is `name`.
+
+## Suite details
+
+### `decode`
+
+```bat
+QuickViewer.exe --benchmark decode ^
+  --decoder jpeg=qt,turbojpeg ^
+  --runs 20 ^
+  benchmark-images\
+```
+
+For normal files, file reads happen before the timed decode. For archive input,
+the archive is opened and encoded entry bytes are extracted before warmup and
+measurement of that image.
+
+### `entry-load`
+
+```bat
+QuickViewer.exe --benchmark entry-load ^
+  --runs 10 ^
+  book.zip
+```
+
+For a normal image, each measured run includes the file read. For an archive
+entry, each measured run includes entry extraction/decompression. Archive
+opening, indexing, and page-list creation remain outside the per-entry timer.
+
+### `archive-open`
+
+```bat
+QuickViewer.exe --benchmark archive-open ^
+  --runs 10 ^
+  huge.zip huge.rar
+```
+
+A fresh `Volume`/archive loader is created for every warmup and measured run.
+Selected-image extraction and image decoding are never performed by this suite.
+
+The current archive loaders perform part of their enumeration/filtering while
+their archive object is being constructed. Consequently, `archive_open_us`
+covers that constructor work, while `page_list_us` covers QuickViewer's
+production `Volume::loadPageList()` step. More granular CSV stage columns remain
+empty when the production layer does not expose a separate boundary.
+
+### `first-image`
+
+```bat
+QuickViewer.exe --benchmark first-image ^
+  --runs 10 ^
+  --page first ^
+  book.zip
+```
+
+Each iteration creates fresh input/Volume state, performs production page-list
+sorting, resolves the requested page, reads/extracts it, and decodes it through
+QuickViewer's normal image pipeline. Rendering-only work is excluded.
+
+To exercise saved reading progress:
+
+```bat
+QuickViewer.exe --benchmark first-image ^
+  --runs 10 ^
+  --page resume ^
+  book.zip
+```
+
+### `first-paint`
+
+```bat
+QuickViewer.exe --benchmark first-paint ^
+  --runs 10 ^
+  --page first ^
+  book.zip
+```
+
+`first-paint` accepts exactly one positional input. Every warmup and measured
+run launches a fresh QuickViewer process. The child process uses the existing
+startup profiler and exits automatically after the first decoded image has
+actually completed its initial paint.
+
+The timer begins at QuickViewer's internal `main.entry` marker. Explorer or
+shell launch latency before process execution is outside the benchmark.
+
+Standard interpretation is process-cold with the operating-system filesystem
+cache potentially warm. The benchmark does not flush the Windows filesystem
+cache.
+
+## CSV output
+
+Each measured row records at least:
+
+```text
+suite
+input
+run
+success
+total_us
+```
+
+Relevant rows also contain:
+
+```text
+container
+archive_size
+archive_entry_count
+image_count
+selected_entry
+selected_uncompressed_size
+image_format
+width
+height
+requested_page
+resolved_page
+page_source
+requested_decoder
+actual_decoder
+decoder_fallback_reason
+sort
+```
+
+Timing columns include:
+
+```text
+library_init_us
+archive_open_us
+enumeration_us
+filter_us
+archive_sort_us
+page_list_us
+page_sort_us
+page_select_us
+source_load_us
+extract_us
+decode_us
+postprocess_us
+decode_pipeline_us
+total_us
+```
+
+A blank timing field means the stage is not applicable or is not separately
+observable in that suite.
+
+## Reproducibility
+
+Run warmups before measured iterations and keep excluded setup work outside the
+timed region. `archive-open` and `first-image` recreate the Volume state on each
+iteration. `first-paint` recreates the entire QuickViewer process.
+
+For comparisons, keep the build, corpus, QuickViewer settings, run count,
+machine load, and command line identical. Do not change production behavior
+merely to make benchmark results faster.
