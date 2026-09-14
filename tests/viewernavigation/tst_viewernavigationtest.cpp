@@ -1,6 +1,8 @@
 #include <QtTest>
 
+#include <memory>
 #include <type_traits>
+#include <utility>
 
 #include "imageview.h"
 #include "models/cursorscrollmapping.h"
@@ -17,10 +19,6 @@
 class EmptyFileLoader final : public IFileLoader
 {
 public:
-    explicit EmptyFileLoader(QObject *parent = nullptr)
-        : IFileLoader(parent)
-    {}
-
     QString volumePath() const override { return "empty"; }
     QString realVolumePath() const override { return "empty"; }
     bool isArchive() const override { return false; }
@@ -28,15 +26,14 @@ public:
     bool hasSubDirectories() const override { return false; }
     QStringList contents() override { return {}; }
     QStringList subArchives() const override { return {}; }
-    QByteArray getFile(QString, QMutex &) override { return {}; }
+    QByteArray getFile(QString) override { return {}; }
     InflateCacheMode getCacheMode() const override { return InflateNoCached; }
 };
 
 class MemoryFileLoader final : public IFileLoader
 {
 public:
-    explicit MemoryFileLoader(int imageCount, QObject *parent = nullptr)
-        : IFileLoader(parent)
+    explicit MemoryFileLoader(int imageCount)
     {
         for (int imageIndex = 0; imageIndex < imageCount; ++imageIndex) {
             const QString name = QString("page-%1.bmp").arg(imageIndex);
@@ -58,9 +55,8 @@ public:
     bool hasSubDirectories() const override { return false; }
     QStringList contents() override { return m_names; }
     QStringList subArchives() const override { return {}; }
-    QByteArray getFile(QString name, QMutex &mutex) override
+    QByteArray getFile(QString name) override
     {
-        QMutexLocker locker(&mutex);
         m_requestedNames.append(name);
         return m_images.value(name);
     }
@@ -449,8 +445,7 @@ private slots:
 
     void emptyVolumeOperationsAreSafe()
     {
-        EmptyFileLoader loader;
-        Volume volume(nullptr, &loader);
+        Volume volume(nullptr, std::make_unique<EmptyFileLoader>());
         QSignalSpy pageListLoadedSpy(&volume, &Volume::pageListLoaded);
 
         QCOMPARE(volume.pageNameAt(0), QString());
@@ -466,8 +461,9 @@ private slots:
 
     void volumeSeparatesCoverAndThumbnailImageLoading()
     {
-        auto *coverLoader = new MemoryFileLoader(3);
-        Volume coverVolume(nullptr, coverLoader);
+        auto coverLoader = std::make_unique<MemoryFileLoader>(3);
+        MemoryFileLoader *coverLoaderPtr = coverLoader.get();
+        Volume coverVolume(nullptr, std::move(coverLoader));
         coverVolume.prefetchCoverImages(0);
 
         const Volume::ImageLoadFuture firstCoverLoad = coverVolume.imageLoadAt(0);
@@ -477,26 +473,26 @@ private slots:
         QVERIFY(!firstCoverLoad.result().loadedImage.isNull());
         QVERIFY(!secondCoverLoad.result().loadedImage.isNull());
         QVERIFY(!coverVolume.imageLoadAt(2).isValid());
-        QStringList coverRequests = coverLoader->requestedNames();
+        QStringList coverRequests = coverLoaderPtr->requestedNames();
         coverRequests.sort();
         QCOMPARE(coverRequests,
                  QStringList({"page-0.bmp", "page-1.bmp"}));
 
-        auto *thumbnailLoader = new MemoryFileLoader(3);
-        Volume thumbnailVolume(nullptr, thumbnailLoader);
+        auto thumbnailLoader = std::make_unique<MemoryFileLoader>(3);
+        MemoryFileLoader *thumbnailLoaderPtr = thumbnailLoader.get();
+        Volume thumbnailVolume(nullptr, std::move(thumbnailLoader));
         const ImageContent thumbnailSource = thumbnailVolume.loadThumbnailSourceImage();
 
         QCOMPARE(thumbnailSource.path, QString("page-0.bmp"));
         QCOMPARE(thumbnailSource.loadedImage.size(), QSize(16, 24));
         QVERIFY(thumbnailSource.resizedImage.isNull());
-        QCOMPARE(thumbnailLoader->requestedNames(),
+        QCOMPARE(thumbnailLoaderPtr->requestedNames(),
                  QStringList({"page-0.bmp"}));
     }
 
     void volumeHandleDestroysOnOwnerThread()
     {
-        auto *loader = new EmptyFileLoader;
-        auto *volume = new Volume(nullptr, loader);
+        auto *volume = new Volume(nullptr, std::make_unique<EmptyFileLoader>());
         QThread *destructionThread = nullptr;
         QObject::connect(volume, &QObject::destroyed, this, [&destructionThread] { destructionThread = QThread::currentThread(); }, Qt::DirectConnection);
 
@@ -513,7 +509,7 @@ private slots:
     void activeVolumeSurvivesCacheEviction()
     {
         auto *volume = new Volume(
-            nullptr, new EmptyFileLoader);
+            nullptr, std::make_unique<EmptyFileLoader>());
         bool destroyed = false;
         QObject::connect(volume, &QObject::destroyed, this, [&destroyed] { destroyed = true; });
 
@@ -550,7 +546,7 @@ private slots:
         QVERIFY(!cache.findReady(key).volume);
 
         VolumeHandle loadedVolume = makeVolumeHandle(
-            new Volume(nullptr, new EmptyFileLoader));
+            new Volume(nullptr, std::make_unique<EmptyFileLoader>()));
         pendingLoad.addResult({loadedVolume, ArchiveOpenError::None});
         pendingLoad.finish();
 

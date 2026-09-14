@@ -1,8 +1,7 @@
 #include "fileloaderdirectory.h"
 
-FileLoaderDirectory::FileLoaderDirectory(QObject *parent, QString path, TraversalMode traversalMode)
-    : IFileLoader(parent),
-      m_volumepath(path),
+FileLoaderDirectory::FileLoaderDirectory(QString path, TraversalMode traversalMode)
+    : m_volumepath(path),
       m_valid(false),
       m_traversalMode(traversalMode)
 {
@@ -30,7 +29,6 @@ void FileLoaderDirectory::initialize()
     }
 
     m_valid = true;
-    emit loadFinished();
 }
 
 void FileLoaderDirectory::initializeCurrentDirectory()
@@ -90,10 +88,8 @@ void FileLoaderDirectory::collectRecursiveFiles(const QString &path, const QStri
     }
 }
 
-QByteArray FileLoaderDirectory::getFile(QString name, QMutex &mutex)
+QByteArray FileLoaderDirectory::getFile(QString name)
 {
-    Q_UNUSED(mutex);
-
     QFile file(m_directory.absoluteFilePath(name));
     if (!file.open(QIODevice::ReadOnly)) {
         return {};

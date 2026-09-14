@@ -18,9 +18,8 @@ static ArchiveOpenError mapRarError(RarArchiveError error)
     return ArchiveOpenError::Corrupt;
 }
 
-FileLoaderRarArchive::FileLoaderRarArchive(QObject *parent, QString rarpath)
-    : IFileLoader(parent),
-      m_volumepath(std::move(rarpath)),
+FileLoaderRarArchive::FileLoaderRarArchive(QString rarpath)
+    : m_volumepath(std::move(rarpath)),
       m_valid(false),
       m_archiveOpenError(ArchiveOpenError::None),
       d(new RarExtractor(m_volumepath))
@@ -74,9 +73,8 @@ void FileLoaderRarArchive::initialize()
     m_valid = true;
 }
 
-FileLoadResult FileLoaderRarArchive::getFileResult(QString name, QMutex &mutex)
+FileLoadResult FileLoaderRarArchive::getFileResult(QString name)
 {
-    QMutexLocker locker(&mutex);
     if (m_archiveOpenError != ArchiveOpenError::None || !m_valid) {
         return {{}, m_archiveOpenError, false};
     }
@@ -93,7 +91,7 @@ FileLoadResult FileLoaderRarArchive::getFileResult(QString name, QMutex &mutex)
     return {result.data, ArchiveOpenError::None, true};
 }
 
-QByteArray FileLoaderRarArchive::getFile(QString name, QMutex &mutex)
+QByteArray FileLoaderRarArchive::getFile(QString name)
 {
-    return getFileResult(std::move(name), mutex).data;
+    return getFileResult(std::move(name)).data;
 }

@@ -24,10 +24,8 @@ struct FileLoadResult
  * Abstract file reading processing.
  * It can be external plugin.
  */
-class IFileLoader : public QObject
+class IFileLoader
 {
-    Q_OBJECT
-
 public:
     enum ScanMode {
         Normal,
@@ -41,11 +39,7 @@ public:
         InflateCached
     };
 
-    explicit IFileLoader(QObject *parent)
-        : QObject(parent)
-    {
-    }
-    virtual ~IFileLoader() {}
+    virtual ~IFileLoader() = default;
 
     static bool isImageFile(QString path);
     static bool supportsImageFormat(const QByteArray &format);
@@ -63,19 +57,15 @@ public:
     virtual bool hasSubDirectories() const = 0;
     virtual QStringList contents() = 0;
     virtual QStringList subArchives() const = 0;
-    virtual QByteArray getFile(QString filename, QMutex &mutex) = 0;
-    virtual FileLoadResult getFileResult(QString filename, QMutex &mutex)
+    virtual QByteArray getFile(QString filename) = 0;
+    virtual FileLoadResult getFileResult(QString filename)
     {
-        return {getFile(filename, mutex), ArchiveOpenError::None, true};
+        return {getFile(filename), ArchiveOpenError::None, true};
     }
     virtual ArchiveOpenError archiveOpenError() const { return ArchiveOpenError::None; }
     virtual quint64 getFileSize(QString filename) const;
     virtual QDateTime getFileModified(QString filename) const;
     virtual InflateCacheMode getCacheMode() const = 0;
-
-signals:
-    void imageLoaded(QString name, QByteArray data);
-    void loadFinished();
 };
 
 class FileLoaderPluginInterface

@@ -431,12 +431,10 @@ void FileLoader7zArchive::uninitializeLib()
     st_supportedArchiveFormats.clear();
 }
 
-FileLoader7zArchive::FileLoader7zArchive(QObject *parent,
-                                         QString sevenzippath,
+FileLoader7zArchive::FileLoader7zArchive(QString sevenzippath,
                                          QString extensionOfFile,
                                          bool extractSolidArchiveToTemporaryDir)
-    : IFileLoader(parent),
-      d(new FileLoader7zArchivePrivate(sevenzippath, extensionOfFile)),
+    : d(new FileLoader7zArchivePrivate(sevenzippath, extensionOfFile)),
       m_volumepath(std::move(sevenzippath)),
       m_extensionOfFile(std::move(extensionOfFile)),
       m_valid(false),
@@ -514,9 +512,8 @@ QStringList FileLoader7zArchive::contents()
     return m_imageFileList;
 }
 
-FileLoadResult FileLoader7zArchive::getFileResult(QString name, QMutex &mutex)
+FileLoadResult FileLoader7zArchive::getFileResult(QString name)
 {
-    QMutexLocker locker(&mutex);
     if (m_archiveOpenError != ArchiveOpenError::None || !m_valid) {
         return {{}, m_archiveOpenError, false};
     }
@@ -539,9 +536,9 @@ FileLoadResult FileLoader7zArchive::getFileResult(QString name, QMutex &mutex)
     return extraction;
 }
 
-QByteArray FileLoader7zArchive::getFile(QString name, QMutex &mutex)
+QByteArray FileLoader7zArchive::getFile(QString name)
 {
-    return getFileResult(std::move(name), mutex).data;
+    return getFileResult(std::move(name)).data;
 }
 
 quint64 FileLoader7zArchive::getFileSize(QString filename) const

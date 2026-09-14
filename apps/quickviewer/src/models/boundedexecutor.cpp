@@ -2,6 +2,20 @@
 
 #include <QRunnable>
 
+namespace {
+QMutex &executorRegistryMutex()
+{
+    static QMutex mutex;
+    return mutex;
+}
+
+QList<BoundedExecutor *> &executorRegistry()
+{
+    static QList<BoundedExecutor *> executors;
+    return executors;
+}
+} // namespace
+
 BoundedExecutor::BoundedExecutor(int maximumConcurrency, int maximumPendingJobs)
     : m_activeJobs(0),
       m_maximumConcurrency(qMax(1, maximumConcurrency)),
@@ -9,15 +23,45 @@ BoundedExecutor::BoundedExecutor(int maximumConcurrency, int maximumPendingJobs)
       m_acceptingJobs(true)
 {
     m_pool.setMaxThreadCount(m_maximumConcurrency);
+    QMutexLocker locker(&executorRegistryMutex());
+    executorRegistry().append(this);
 }
 
 BoundedExecutor::~BoundedExecutor()
 {
+    shutdown();
+
+    QMutexLocker locker(&executorRegistryMutex());
+    executorRegistry().removeOne(this);
+}
+
+void BoundedExecutor::shutdown()
+{
+    QList<Job> cancelled;
     {
         QMutexLocker locker(&m_mutex);
         m_acceptingJobs = false;
+        cancelled.swap(m_pendingJobs);
     }
+
+    for (Job &job : cancelled) {
+        job.cancel();
+    }
+
     m_pool.waitForDone();
+}
+
+void BoundedExecutor::shutdownAll()
+{
+    QList<BoundedExecutor *> executors;
+    {
+        QMutexLocker locker(&executorRegistryMutex());
+        executors = executorRegistry();
+    }
+
+    for (BoundedExecutor *executor : executors) {
+        executor->shutdown();
+    }
 }
 
 bool BoundedExecutor::enqueue(Job job)

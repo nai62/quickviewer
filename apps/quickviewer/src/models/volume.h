@@ -5,6 +5,9 @@
 #include <QtGui>
 #include <QtConcurrent>
 
+#include <memory>
+
+#include "boundedexecutor.h"
 #include "fileloader.h"
 #include "imageloadcontext.h"
 #include "lrucache.h"
@@ -28,14 +31,15 @@ class Volume : public QObject
 public:
     using ImageLoadFuture = QFuture<ImageContent>;
 
-    explicit Volume(QObject *parent, IFileLoader *loader);
+    explicit Volume(QObject *parent, std::unique_ptr<IFileLoader> loader);
     ~Volume();
     void loadPageList();
     bool isPageListLoaded() const { return m_pageListLoaded; }
     ImageContent loadImageBeforePageList(QString subfileName);
-    IFileLoader *fileLoader() { return m_loader; }
-    const IFileLoader *fileLoader() const { return m_loader; }
+    IFileLoader *fileLoader() { return m_loadContext ? m_loadContext->loader() : nullptr; }
+    const IFileLoader *fileLoader() const { return m_loadContext ? m_loadContext->loader() : nullptr; }
 
+    static void shutdownImageLoading() { BoundedExecutor::shutdownAll(); }
     static ImageContent futureLoadImageFromFileVolume(
         QSharedPointer<ImageLoadContext> context, QString path, QSize pageSize, QSize decodeTargetSize = QSize(), bool loadDetailedMetadata = true);
     static ImageContent decodeImageBytes(
@@ -51,8 +55,16 @@ public:
     static QString FullPathToVolumePath(QString path);
     static QString FullPathToSubFilePath(QString path);
 
-    bool isArchive() const { return m_loader && m_loader->isArchive(); }
-    bool hasSubDirectories() const { return m_loader && m_loader->hasSubDirectories(); }
+    bool isArchive() const
+    {
+        const IFileLoader *loader = fileLoader();
+        return loader && loader->isArchive();
+    }
+    bool hasSubDirectories() const
+    {
+        const IFileLoader *loader = fileLoader();
+        return loader && loader->hasSubDirectories();
+    }
 
     void sortPages(qvEnums::ImageSortBy sortBy);
     void applyPageSort(qvEnums::ImageSortBy sortBy);
@@ -61,37 +73,48 @@ public:
 
     QString pagePathForName(const QString &name) const
     {
-        if (!m_loader || name.isEmpty()) {
+        const IFileLoader *loader = fileLoader();
+        if (!loader || name.isEmpty()) {
             return "";
         }
-        if (m_loader->isArchive()) {
+        if (loader->isArchive()) {
             return QString("%1::%2")
-                .arg(QDir::fromNativeSeparators(m_loader->volumePath()))
+                .arg(QDir::fromNativeSeparators(loader->volumePath()))
                 .arg(name);
         } else {
-            return QDir(m_loader->realVolumePath()).absoluteFilePath(name);
+            return QDir(loader->realVolumePath()).absoluteFilePath(name);
         }
     }
     QString pageNameAt(int pageIndex) const;
     int pageIndexForName(const QString &name) const;
     QString pagePathAt(int pageIndex) const
     {
-        if (pageIndex < 0 || pageIndex >= m_pageNames.size()) {
+        const IFileLoader *loader = fileLoader();
+        if (!loader || pageIndex < 0 || pageIndex >= m_pageNames.size()) {
             return "";
         }
-        return QDir(m_loader->volumePath()).absoluteFilePath(m_pageNames[pageIndex]);
+        return QDir(loader->volumePath()).absoluteFilePath(m_pageNames[pageIndex]);
     }
     QString pagePathWithSeparatorAt(int pageIndex) const
     {
-        if (!m_loader || pageIndex < 0 || pageIndex >= m_pageNames.size()) {
+        const IFileLoader *loader = fileLoader();
+        if (!loader || pageIndex < 0 || pageIndex >= m_pageNames.size()) {
             return "";
         }
         return QString("%1::%2")
-            .arg(QDir::fromNativeSeparators(m_loader->volumePath()))
+            .arg(QDir::fromNativeSeparators(loader->volumePath()))
             .arg(m_pageNames[pageIndex]);
     }
-    QString volumePath() const { return m_loader ? m_loader->volumePath() : QString(); }
-    QString realVolumePath() const { return m_loader ? m_loader->realVolumePath() : QString(); }
+    QString volumePath() const
+    {
+        const IFileLoader *loader = fileLoader();
+        return loader ? loader->volumePath() : QString();
+    }
+    QString realVolumePath() const
+    {
+        const IFileLoader *loader = fileLoader();
+        return loader ? loader->realVolumePath() : QString();
+    }
 
     /**
      * @brief loadImageByName Reads and returns the image corresponding to the file name specified in the file list without advancing the internal counter
@@ -139,7 +162,6 @@ private:
     LruCache<int, ImageLoadFuture> m_previewLoadCache;
 
     QSharedPointer<ImageLoadContext> m_loadContext;
-    IFileLoader *m_loader;
     bool m_pageListLoaded;
     bool m_openedWithSpecifiedImageFile;
     QString m_volumePath;

@@ -1,7 +1,6 @@
 #ifndef FILELOADERRARARCHIVE_H
 #define FILELOADERRARARCHIVE_H
 
-#include <QObject>
 #include "fileloader.h"
 
 class RarExtractor;
@@ -9,7 +8,7 @@ class RarExtractor;
 class FileLoaderRarArchive : public IFileLoader
 {
 public:
-    FileLoaderRarArchive(QObject *parent, QString rarpath);
+    explicit FileLoaderRarArchive(QString rarpath);
     ~FileLoaderRarArchive();
 
     /**
@@ -42,11 +41,10 @@ public:
     /**
      * @brief getFile get a file specified by filename
      * @param filename
-     * @param mutex if the method needs to lock resource, must be use the mutex
      * @return file binary data
      */
-    QByteArray getFile(QString filename, QMutex &mutex) override;
-    FileLoadResult getFileResult(QString filename, QMutex &mutex) override;
+    QByteArray getFile(QString filename) override;
+    FileLoadResult getFileResult(QString filename) override;
     ArchiveOpenError archiveOpenError() const override { return m_archiveOpenError; }
 
     /**
