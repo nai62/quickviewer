@@ -5,6 +5,8 @@
 #include <QSemaphore>
 #include <QWeakPointer>
 
+#include <thread>
+
 #include "boundedexecutor.h"
 #include "lrucache.h"
 
@@ -26,6 +28,7 @@ private Q_SLOTS:
     void touchingValueUpdatesRecencyWithoutInserting();
     void boundsActiveAndPendingJobs();
     void keepsTaskContextAliveUntilCompletion();
+    void shutdownCancelsPendingJobsAndWaitsForActiveJobs();
 };
 
 void AsyncCacheTest::evictingUnfinishedFutureDoesNotWait()
@@ -135,6 +138,53 @@ void AsyncCacheTest::keepsTaskContextAliveUntilCompletion()
     gate.release();
     QCOMPARE(submission.future.result(), 42);
     QTRY_VERIFY(weakContext.isNull());
+}
+
+void AsyncCacheTest::shutdownCancelsPendingJobsAndWaitsForActiveJobs()
+{
+    BoundedExecutor executor(1, 1);
+    QSemaphore activeJobStarted;
+    QSemaphore activeJobGate;
+    QSemaphore shutdownStarted;
+    QSemaphore shutdownFinished;
+
+    auto active = executor.submit([&activeJobStarted, &activeJobGate] {
+        activeJobStarted.release();
+        activeJobGate.acquire();
+        return 1;
+    });
+    QVERIFY(active.accepted);
+    QVERIFY(activeJobStarted.tryAcquire(1, 1000));
+
+    auto pending = executor.submit([] { return 2; });
+    QVERIFY(pending.accepted);
+    QCOMPARE(executor.pendingCount(), 1);
+
+    std::thread shutdownThread([&executor, &shutdownStarted, &shutdownFinished] {
+        shutdownStarted.release();
+        executor.shutdown();
+        shutdownFinished.release();
+    });
+    shutdownStarted.acquire();
+
+    QElapsedTimer cancellationTimer;
+    cancellationTimer.start();
+    while (!pending.future.isCanceled() && cancellationTimer.elapsed() < 1000) {
+        QTest::qWait(1);
+    }
+    const bool pendingWasCanceled = pending.future.isCanceled();
+    const bool shutdownReturnedWhileActive = shutdownFinished.tryAcquire(1, 100);
+
+    activeJobGate.release();
+    const bool shutdownReturnedAfterActive = shutdownReturnedWhileActive || shutdownFinished.tryAcquire(1, 1000);
+    shutdownThread.join();
+
+    QVERIFY(pendingWasCanceled);
+    QVERIFY(!shutdownReturnedWhileActive);
+    QVERIFY(shutdownReturnedAfterActive);
+    QCOMPARE(active.future.result(), 1);
+    QCOMPARE(executor.activeCount(), 0);
+    QCOMPARE(executor.pendingCount(), 0);
 }
 
 QTEST_GUILESS_MAIN(AsyncCacheTest)

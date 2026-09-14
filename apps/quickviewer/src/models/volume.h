@@ -5,6 +5,7 @@
 #include <QtGui>
 #include <QtConcurrent>
 
+#include "boundedexecutor.h"
 #include "fileloader.h"
 #include "imageloadcontext.h"
 #include "lrucache.h"
@@ -36,6 +37,7 @@ public:
     IFileLoader *fileLoader() { return m_loader; }
     const IFileLoader *fileLoader() const { return m_loader; }
 
+    static void shutdownImageLoading() { BoundedExecutor::shutdownAll(); }
     static ImageContent futureLoadImageFromFileVolume(
         QSharedPointer<ImageLoadContext> context, QString path, QSize pageSize, QSize decodeTargetSize = QSize(), bool loadDetailedMetadata = true);
     static ImageContent decodeImageBytes(

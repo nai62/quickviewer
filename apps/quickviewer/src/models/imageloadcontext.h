@@ -3,6 +3,7 @@
 
 #include <QMutex>
 #include <QString>
+#include <QThread>
 
 #include "fileloader.h"
 
@@ -17,7 +18,11 @@ public:
     ~ImageLoadContext()
     {
         if (m_loader) {
-            m_loader->deleteLater();
+            if (m_loader->thread() == QThread::currentThread()) {
+                delete m_loader;
+            } else {
+                m_loader->deleteLater();
+            }
         }
     }
 

@@ -69,6 +69,9 @@ public:
         return submission;
     }
 
+    void shutdown();
+    static void shutdownAll();
+
     void cancelPendingOlderThan(quint64 owner, quint64 generation);
     void setMaximumConcurrency(int maximumConcurrency);
 
