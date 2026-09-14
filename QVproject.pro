@@ -8,14 +8,18 @@ SUBDIRS = \
     fileloader \
     zimg \
     spng \
-    QuickViewer \
-    qvtest \
-    prefetchplannertest \
-    latestresultdispatchertest \
-    asynccachetest \
-    svgloadertest \
-    viewernavigationtest \
-    windowstartuptest
+    QuickViewer
+
+CONFIG(debug, debug|release) {
+    SUBDIRS += \
+        qvtest \
+        prefetchplannertest \
+        latestresultdispatchertest \
+        asynccachetest \
+        svgloadertest \
+        viewernavigationtest \
+        windowstartuptest
+}
 
 ResizeHalf.file = qmake/third_party/resizehalf/ResizeHalf.pro
 easyexif.file = qmake/third_party/easyexif/easyexif.pro
