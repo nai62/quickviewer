@@ -58,7 +58,9 @@ int main(int argc, char *argv[])
     }
 #endif
 
+    StartupProfiler::mark("application.construct.begin");
     QVApplication app(argc, argv);
+    StartupProfiler::mark("application.construct.end");
     ImageLoadingShutdownGuard imageLoadingShutdownGuard;
     ImageBenchmarkRunner::applyStartupOverrides();
     if (ImageBenchmarkRunner::isRequested(app.arguments())) {
@@ -82,11 +84,13 @@ int main(int argc, char *argv[])
         }
         pipe.waitAsync();
 
+        StartupProfiler::mark("mainwindow.construct.begin");
 #ifdef Q_OS_WIN
         MainWindowForWindows w;
 #else
         ArchiveAwareMainWindow w;
 #endif
+        StartupProfiler::mark("mainwindow.construct.end");
         StartupProfiler::mark("mainwindow.constructed");
         w.initializeStartup();
         StartupProfiler::mark("startup.initialized");

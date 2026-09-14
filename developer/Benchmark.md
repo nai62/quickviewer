@@ -274,6 +274,13 @@ total_us
 A blank timing field means the stage is not applicable or is not separately
 observable in that suite.
 
+`first-paint` rows also contain milestone columns ending in `_at_us`, from
+`application_constructed_at_us` through `first_image_painted_at_us`. Each value
+is elapsed microseconds from the child process's internal `main.entry` marker,
+not a stage duration. Subtract adjacent milestone values to locate startup,
+volume loading, image preparation, and initial painting costs. A blank milestone
+means that marker was not reached or was not recorded during the run.
+
 ## Reproducibility
 
 Run warmups before measured iterations and keep excluded setup work outside the

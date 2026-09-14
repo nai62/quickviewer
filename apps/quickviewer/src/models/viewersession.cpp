@@ -352,11 +352,6 @@ void ViewerSession::finishInitialImageDisplay(quint64 generation)
     m_pendingContainingPageName.clear();
 
     StartupProfiler::mark("first-image-painted");
-    if (StartupProfiler::enabled()) {
-        StartupProfiler::flush();
-        QTimer::singleShot(0, qApp, &QCoreApplication::quit);
-        return;
-    }
     if (shouldStartContainingVolume && !normalizedPath.isEmpty()) {
         startContainingVolumeLoad(normalizedPath, basePath, subfileName);
     }
