@@ -94,6 +94,8 @@ struct BenchmarkRecord
     QString decoderFallbackReason;
     QString sort;
 
+    QMap<QString, qint64> profileMilestoneNanoseconds;
+
     qint64 libraryInitNanoseconds = -1;
     qint64 archiveOpenNanoseconds = -1;
     qint64 enumerationNanoseconds = -1;
@@ -108,6 +110,40 @@ struct BenchmarkRecord
     qint64 postprocessNanoseconds = -1;
     qint64 decodePipelineNanoseconds = -1;
     qint64 totalNanoseconds = -1;
+};
+
+struct ProfileMilestone
+{
+    const char *label;
+    const char *csvColumn;
+};
+
+const ProfileMilestone FirstPaintMilestones[] = {
+    {"application.constructed", "application_constructed_at_us"},
+    {"mainwindow.constructed", "mainwindow_constructed_at_us"},
+    {"startup.window-state-restored", "window_state_restored_at_us"},
+    {"startup.window-shown", "window_shown_at_us"},
+    {"startup.panel-ready", "panel_ready_at_us"},
+    {"startup.initial-events-processed", "initial_events_processed_at_us"},
+    {"startup.initialized", "startup_initialized_at_us"},
+    {"thumbnail-manager.constructed", "thumbnail_manager_constructed_at_us"},
+    {"thumbnail-manager.attached", "thumbnail_manager_attached_at_us"},
+    {"event-loop.begin", "event_loop_begin_at_us"},
+    {"startup-volume.begin", "startup_volume_begin_at_us"},
+    {"session.load-volume.begin", "session_load_volume_begin_at_us"},
+    {"volume-loader.begin", "volume_loader_begin_at_us"},
+    {"volume-loader.created", "volume_loader_created_at_us"},
+    {"volume.page-list.begin", "page_list_begin_at_us"},
+    {"volume.page-list.end", "page_list_end_at_us"},
+    {"volume-loader.page-list-loaded", "volume_loader_page_list_loaded_at_us"},
+    {"session.volume-built", "session_volume_built_at_us"},
+    {"session.select-page.begin", "session_select_page_begin_at_us"},
+    {"session.prefetch-scheduled", "session_prefetch_scheduled_at_us"},
+    {"image-worker.extract.begin", "extract_begin_at_us"},
+    {"image-worker.extract.end", "extract_end_at_us"},
+    {"image-worker.decode-resize.end", "decode_resize_end_at_us"},
+    {"session.first-image-ready", "session_first_image_ready_at_us"},
+    {"first-image-painted", "first_image_painted_at_us"},
 };
 
 struct PreparedFirstPaintInput
@@ -520,8 +556,11 @@ bool writeCsv(const QString &path, const QVector<BenchmarkRecord> &records)
     QTextStream stream(&output);
     stream << "suite,input,run,success,error,container,archive_size,archive_entry_count,image_count,"
               "selected_entry,selected_uncompressed_size,image_format,width,height,"
-              "requested_page,resolved_page,page_source,requested_decoder,actual_decoder,decoder_fallback_reason,sort,"
-              "library_init_us,archive_open_us,enumeration_us,filter_us,archive_sort_us,page_list_us,page_sort_us,page_select_us,"
+              "requested_page,resolved_page,page_source,requested_decoder,actual_decoder,decoder_fallback_reason,sort";
+    for (const ProfileMilestone &milestone : FirstPaintMilestones) {
+        stream << ',' << milestone.csvColumn;
+    }
+    stream << ",library_init_us,archive_open_us,enumeration_us,filter_us,archive_sort_us,page_list_us,page_sort_us,page_select_us,"
               "source_load_us,extract_us,decode_us,postprocess_us,decode_pipeline_us,total_us\n";
     for (const BenchmarkRecord &record : records) {
         stream << csvValue(record.suite) << ','
@@ -544,8 +583,11 @@ bool writeCsv(const QString &path, const QVector<BenchmarkRecord> &records)
                << csvValue(record.requestedDecoder) << ','
                << csvValue(record.actualDecoder) << ','
                << csvValue(record.decoderFallbackReason) << ','
-               << csvValue(record.sort) << ','
-               << nanosecondsToMicrosecondsCsv(record.libraryInitNanoseconds) << ','
+               << csvValue(record.sort);
+        for (const ProfileMilestone &milestone : FirstPaintMilestones) {
+            stream << ',' << nanosecondsToMicrosecondsCsv(record.profileMilestoneNanoseconds.value(QString::fromLatin1(milestone.label), -1));
+        }
+        stream << ',' << nanosecondsToMicrosecondsCsv(record.libraryInitNanoseconds) << ','
                << nanosecondsToMicrosecondsCsv(record.archiveOpenNanoseconds) << ','
                << nanosecondsToMicrosecondsCsv(record.enumerationNanoseconds) << ','
                << nanosecondsToMicrosecondsCsv(record.filterNanoseconds) << ','
@@ -1426,6 +1468,13 @@ BenchmarkRecord measureFirstPaint(
     if (!markers.contains("first-image-painted")) {
         record.error = QString("First-paint profile is incomplete (exit code %1).").arg(process.exitCode());
         return record;
+    }
+    for (const ProfileMilestone &milestone : FirstPaintMilestones) {
+        const auto marker = markers.constFind(QString::fromLatin1(milestone.label));
+        if (marker != markers.cend()) {
+            record.profileMilestoneNanoseconds.insert(
+                QString::fromLatin1(milestone.label), marker.value() * 1000);
+        }
     }
     record.totalNanoseconds = markers.value("first-image-painted") * 1000;
     if (prepared.container != "file" && prepared.container != "directory") {
