@@ -51,7 +51,9 @@ MainWindow::MainWindow(QWidget *parent)
     if (!qApp->BeginAsFullscreen() && qApp->RestoreWindowState()) {
         restoreGeometry(qApp->WindowGeometry());
     }
+#ifndef Q_OS_WIN
     setWindowOpacity(0.0);
+#endif
 
     connect(ui->catalogSplitter, &QSplitter::splitterMoved, this, [this]() {
         if (!m_folderWindow || m_folderWindow->parentWidget() != ui->catalogSplitter) {
@@ -324,9 +326,8 @@ void MainWindow::initializeStartup()
         // showing it while DWM-cloaked leaves the taskbar above the window.
         showFullScreen();
     } else {
-        // Opacity is only a fallback on Windows: changing a layered window
-        // back to opaque is not atomic with DWM composition. Cloaking keeps a
-        // normal startup window out of composition until it is repainted.
+        // Cloaking keeps a normal startup window out of DWM composition until
+        // it is repainted.
         m_startupWindowCloaked = setStartupWindowCloaked(true);
         StartupProfiler::mark("startup.show.begin");
         show();
@@ -384,7 +385,9 @@ void MainWindow::revealStartupWindow()
     }
     StartupProfiler::mark("startup.reveal.begin");
     StartupProfiler::mark("startup.opacity-restore.begin");
+#ifndef Q_OS_WIN
     setWindowOpacity(1.0);
+#endif
     StartupProfiler::mark("startup.opacity-restore.end");
     StartupProfiler::mark("startup.repaint.begin");
     repaint();
