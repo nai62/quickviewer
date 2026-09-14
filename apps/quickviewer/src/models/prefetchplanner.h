@@ -10,6 +10,7 @@ enum class PrefetchMode {
     NormalBackward,
     FastForward,
     FastBackward,
+    InitialDisplay,
 };
 
 Q_DECLARE_METATYPE(PrefetchMode)

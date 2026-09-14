@@ -6,6 +6,12 @@ QList<int> PrefetchPlanner::offsets(PrefetchMode mode, int cacheCapacity)
 {
     QList<int> result;
     switch (mode) {
+    case PrefetchMode::InitialDisplay:
+        result = {0};
+        while (result.size() > cacheCapacity) {
+            result.removeLast();
+        }
+        break;
     case PrefetchMode::Normal:
         result = {0, 1, 2, 3, -1, -2, 4, 5, -3, -4, 6, 7, -5, -6};
         while (result.size() > cacheCapacity) {

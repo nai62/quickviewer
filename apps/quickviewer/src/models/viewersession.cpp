@@ -190,6 +190,9 @@ bool ViewerSession::loadVolume(QString path, bool coverOnly)
 
     setVolumeReady(loadedVolume);
     Volume *volume = loadedVolume.get();
+    if (!coverOnly && volume->isArchive()) {
+        deferFolderWorkUntilNextPaint();
+    }
     if (!coverOnly) {
         m_volumeNames = QStringList();
     }
@@ -268,19 +271,21 @@ bool ViewerSession::loadVolumeWithFile(QString path, bool allowSecondPage)
 
 void ViewerSession::deferFolderWorkUntilNextPaint()
 {
-    const quint64 displayGeneration = ++m_initialDisplayGeneration;
     auto *ready = std::get_if<VolumeReadyViewerState>(&m_state);
-    if (!ready || !ready->volume) {
+    if (!ready || !ready->volume || ready->initialPaintDeferral) {
         return;
     }
+    const quint64 displayGeneration = ++m_initialDisplayGeneration;
     ready->initialPaintDeferral = InitialPaintDeferral{displayGeneration, false};
     m_pendingContainingImagePath.clear();
     m_pendingContainingVolumePath.clear();
     m_pendingContainingPageName.clear();
 
-    QTimer::singleShot(1000, this, [this, displayGeneration] {
-        finishInitialImageDisplay(displayGeneration);
-    });
+    if (!ready->volume->isArchive()) {
+        QTimer::singleShot(1000, this, [this, displayGeneration] {
+            finishInitialImageDisplay(displayGeneration);
+        });
+    }
 }
 
 void ViewerSession::notifyInitialImagePainted()
@@ -322,6 +327,7 @@ void ViewerSession::finishInitialImageDisplay(quint64 generation)
     }
 
     bool shouldStartContainingVolume = false;
+    Volume *volumeToPrefetch = nullptr;
     if (auto *preview = std::get_if<StandalonePreviewViewerState>(&m_state)) {
         if (preview->generation != generation || preview->folderScanStarted) {
             return;
@@ -334,6 +340,7 @@ void ViewerSession::finishInitialImageDisplay(quint64 generation)
             return;
         }
         ready->initialPaintDeferral.reset();
+        volumeToPrefetch = ready->volume.get();
     } else {
         return;
     }
@@ -352,6 +359,11 @@ void ViewerSession::finishInitialImageDisplay(quint64 generation)
     }
     if (shouldStartContainingVolume && !normalizedPath.isEmpty()) {
         startContainingVolumeLoad(normalizedPath, basePath, subfileName);
+    }
+    if (volumeToPrefetch && activeVolume() == volumeToPrefetch && !m_visiblePages.isEmpty()) {
+        const int prefetchAnchorIndex = m_pageNavigator.currentPageIndex() + m_visiblePages.size() - 1;
+        volumeToPrefetch->updatePrefetchCache(
+            prefetchAnchorIndex, m_prefetchMode, m_viewportSize);
     }
     emit initialImageDisplayFinished();
 }
@@ -711,7 +723,10 @@ bool ViewerSession::selectPage(int pageIndex, PrefetchMode prefetchMode)
         return false;
     }
     m_prefetchMode = prefetchMode;
-    volume->updatePrefetchCache(pageIndex, prefetchMode, m_viewportSize);
+    volume->updatePrefetchCache(
+        pageIndex,
+        initialImagePaintPending() ? PrefetchMode::InitialDisplay : prefetchMode,
+        m_viewportSize);
     StartupProfiler::mark("session.prefetch-scheduled");
 
     if (!reloadVisiblePages()) {
@@ -774,6 +789,7 @@ bool ViewerSession::reloadVisiblePages()
     if (!volume || currentPageIndex < 0 || currentPageIndex >= volume->pageCount()) {
         return false;
     }
+    const bool initialDisplayPending = initialImagePaintPending();
     ImageContent firstContent = waitForImageAt(*volume, currentPageIndex);
     StartupProfiler::mark("session.first-image-ready");
     const ArchiveOpenError firstLoadError = volume->fileLoader()
@@ -798,6 +814,10 @@ bool ViewerSession::reloadVisiblePages()
          m_allowSecondVisiblePage}};
     ImageContent secondContent;
     if (VisiblePageComposer::shouldLoadSecondPageCandidate(compositionRequest)) {
+        if (initialDisplayPending) {
+            volume->updatePrefetchCache(
+                currentPageIndex + 1, PrefetchMode::InitialDisplay, m_viewportSize);
+        }
         secondContent = waitForImageAt(*volume, currentPageIndex + 1);
         const ArchiveOpenError secondLoadError = volume->fileLoader()
                                                      ? volume->fileLoader()->archiveOpenError()
@@ -815,8 +835,10 @@ bool ViewerSession::reloadVisiblePages()
     if (composition.pageIndexes.size() == 2) {
         secondContent.initializeAnimation();
         pages.push_back(std::move(secondContent));
-        volume->updatePrefetchCache(
-            composition.prefetchAnchorIndex, m_prefetchMode, m_viewportSize);
+        if (!initialDisplayPending) {
+            volume->updatePrefetchCache(
+                composition.prefetchAnchorIndex, m_prefetchMode, m_viewportSize);
+        }
         if (activeVolume() != volume) {
             return false;
         }

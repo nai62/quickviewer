@@ -7,6 +7,7 @@ class PrefetchPlannerTest : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
+    void preservesInitialDisplayPlan();
     void preservesNormalPlan();
     void preservesForwardPlan();
     void preservesBackwardPlan();
@@ -17,6 +18,12 @@ private Q_SLOTS:
     void excludesIndexesBeforeFirstPage();
     void excludesIndexesAfterLastPage();
 };
+
+void PrefetchPlannerTest::preservesInitialDisplayPlan()
+{
+    QCOMPARE(PrefetchPlanner::offsets(PrefetchMode::InitialDisplay, 22),
+             QList<int>({0}));
+}
 
 void PrefetchPlannerTest::preservesNormalPlan()
 {
@@ -54,6 +61,8 @@ void PrefetchPlannerTest::respectsCacheCapacity_data()
     QTest::addColumn<int>("capacity");
     QTest::addColumn<QList<int>>("expected");
 
+    QTest::newRow("initial-display-6") << PrefetchMode::InitialDisplay << 6
+                                       << QList<int>({0});
     QTest::newRow("normal-6") << PrefetchMode::Normal << 6
                               << QList<int>({0, 1, 2, 3, -1, -2});
     QTest::newRow("forward-6") << PrefetchMode::NormalForward << 6
