@@ -80,6 +80,14 @@ RenderedPageMetrics ImageView::renderedPageMetrics() const
     return m_renderedPages.metrics();
 }
 
+QString ImageView::displayedMessage() const
+{
+    if (m_messageTitle.isEmpty()) {
+        return {};
+    }
+    return m_messageTitle + QLatin1Char('\n') + m_messageBody;
+}
+
 void ImageView::setRenderer(RendererType type)
 {
 #ifdef QV_WITHOUT_OPENGL
@@ -108,6 +116,7 @@ void ImageView::setViewerSession(ViewerSession *session)
     m_viewerSession = session;
     m_viewerSession->setViewportSize(viewport()->size());
     connect(session, &ViewerSession::visiblePagesChanged, this, &ImageView::handleVisiblePagesChanged);
+    connect(session, &ViewerSession::archiveOpenFailed, this, &ImageView::handleArchiveOpenFailed);
     connect(session, SIGNAL(readyForPaint()), this, SLOT(refreshRenderedPages()));
     connect(session, SIGNAL(volumeChanged(QString)), this, SLOT(handleVolumeChanged(QString)));
     connect(this, SIGNAL(slideShowStarted()), session, SLOT(handleSlideShowStarted()));
@@ -193,6 +202,7 @@ void ImageView::clearRenderedPages()
 
 void ImageView::handleVisiblePagesChanged(VisiblePages pages)
 {
+    clearMessage();
     clearRenderedPages();
     for (int index = 0; index < pages.count(); ++index) {
         const ImageContent *content = pages.at(index);
@@ -200,6 +210,26 @@ void ImageView::handleVisiblePagesChanged(VisiblePages pages)
             addRenderedPage(*content, true);
         }
     }
+}
+
+void ImageView::handleArchiveOpenFailed(QString, ArchiveOpenError error)
+{
+    if (error != ArchiveOpenError::PasswordProtected) {
+        return;
+    }
+    m_messageTitle = tr("Cannot Open Archive");
+    m_messageBody = tr("This archive is password-protected. Password-protected archives are not supported.");
+    viewport()->update();
+}
+
+void ImageView::clearMessage()
+{
+    if (m_messageTitle.isEmpty() && m_messageBody.isEmpty()) {
+        return;
+    }
+    m_messageTitle.clear();
+    m_messageBody.clear();
+    viewport()->update();
 }
 
 void ImageView::refreshRenderedPages()
@@ -390,6 +420,52 @@ void ImageView::setCursor(const QCursor &cursor)
 void ImageView::paintEvent(QPaintEvent *event)
 {
     QGraphicsView::paintEvent(event);
+    if (!m_messageTitle.isEmpty()) {
+        QPainter painter(viewport());
+        painter.setRenderHint(QPainter::Antialiasing);
+
+        QFont titleFont = font();
+        titleFont.setBold(true);
+        titleFont.setPointSizeF(titleFont.pointSizeF() + 2.0);
+        const QFontMetrics titleMetrics(titleFont);
+        const QFontMetrics bodyMetrics(font());
+        const int spacing = bodyMetrics.height() / 2;
+        const int horizontalPadding = bodyMetrics.averageCharWidth() * 3;
+        const int verticalPadding = bodyMetrics.height();
+        const int availableTextWidth = qMax(
+            1,
+            viewport()->width() - 64 - horizontalPadding * 2);
+        const int textWidth = qMin(
+            qMax(titleMetrics.horizontalAdvance(m_messageTitle), bodyMetrics.horizontalAdvance(m_messageBody)),
+            availableTextWidth);
+        const QRect bodyBounds = bodyMetrics.boundingRect(
+            QRect(0, 0, textWidth, viewport()->height()),
+            Qt::AlignHCenter | Qt::TextWordWrap,
+            m_messageBody);
+        const int contentHeight = titleMetrics.height() + spacing + bodyBounds.height();
+        QRect panelRect(
+            0,
+            0,
+            textWidth + horizontalPadding * 2,
+            contentHeight + verticalPadding * 2);
+        panelRect.moveCenter(viewport()->rect().center());
+
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(QColor(0, 0, 0, 170));
+        painter.drawRoundedRect(panelRect, 6, 6);
+        painter.setPen(Qt::white);
+
+        QRect titleRect = panelRect.adjusted(horizontalPadding, verticalPadding, -horizontalPadding, 0);
+        titleRect.setHeight(titleMetrics.height());
+        painter.setFont(titleFont);
+        painter.drawText(titleRect, Qt::AlignCenter, m_messageTitle);
+
+        QRect bodyRect = titleRect;
+        bodyRect.translate(0, titleMetrics.height() + spacing);
+        bodyRect.setHeight(bodyBounds.height());
+        painter.setFont(font());
+        painter.drawText(bodyRect, Qt::AlignHCenter | Qt::TextWordWrap, m_messageBody);
+    }
     if (m_viewerSession) {
         m_viewerSession->notifyInitialImagePainted();
     }
