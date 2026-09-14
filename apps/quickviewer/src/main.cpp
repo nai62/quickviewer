@@ -7,6 +7,7 @@
 #include "thumbnailmanager.h"
 #include "qnamedpipe.h"
 #include "startupprofiler.h"
+#include "volume.h"
 
 #if defined(Q_OS_WIN)
 #    include "mainwindowforwindows.h"
@@ -17,6 +18,17 @@
 #ifdef Q_OS_WIN
 #    include <Windows.h>
 #endif
+
+namespace {
+class ImageLoadingShutdownGuard
+{
+public:
+    ~ImageLoadingShutdownGuard()
+    {
+        Volume::shutdownImageLoading();
+    }
+};
+} // namespace
 
 int main(int argc, char *argv[])
 {
@@ -47,6 +59,7 @@ int main(int argc, char *argv[])
 #endif
 
     QVApplication app(argc, argv);
+    ImageLoadingShutdownGuard imageLoadingShutdownGuard;
     ImageBenchmarkRunner::applyStartupOverrides();
     if (ImageBenchmarkRunner::isRequested(app.arguments())) {
         return ImageBenchmarkRunner::run(app.arguments());
@@ -92,6 +105,7 @@ int main(int argc, char *argv[])
         });
         StartupProfiler::mark("event-loop.begin");
         result = app.exec();
+        Volume::shutdownImageLoading();
     }
     return result;
 }

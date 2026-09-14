@@ -449,8 +449,8 @@ private slots:
 
     void emptyVolumeOperationsAreSafe()
     {
-        EmptyFileLoader loader;
-        Volume volume(nullptr, &loader);
+        auto *loader = new EmptyFileLoader;
+        Volume volume(nullptr, loader);
         QSignalSpy pageListLoadedSpy(&volume, &Volume::pageListLoaded);
 
         QCOMPARE(volume.pageNameAt(0), QString());
