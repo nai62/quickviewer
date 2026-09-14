@@ -14,23 +14,30 @@ These instructions apply to the entire repository.
   QObject thread affinity are understood.
 - Add a regression test before or with a crash fix whenever the affected layer
   can be exercised deterministically.
-- Never hide warnings or test failures. Distinguish pre-existing failures from
-  failures introduced by the current diff.
 
-## Verification contract
+## Verification and handoff contract
 
 Follow the repository `developer/Testing.md` runbook for commands and environment details.
 
-- Logic or file-loading changes require the relevant automated tests.
-- Project/build-system or broadly shared changes require a targeted compile and
-  link appropriate to the change.
-- Run the complete automated test suite or a complete Release compile and link
-  only when the user explicitly requests full verification.
-- Startup painting, fullscreen, OpenGL, input timing, and other GUI behavior
-  require relevant automated tests plus explicit interactive Windows checks.
-  If those checks were not performed, report them as remaining manual work.
-- Do not claim that all tests passed if an expected executable was missing or
-  skipped. Use process exit codes and the current test output, not historical
+- Do not run builds, automated tests, linters, benchmarks, deployment commands,
+  or interactive checks unless the user explicitly requests their execution.
+- This execution policy does not relax test-coverage requirements. Logic or
+  file-loading changes require the relevant automated tests to be added or
+  updated, and crash fixes require the regression test described above whenever
+  the affected layer can be exercised deterministically.
+- At handoff, separately report builds, automated tests, and interactive checks
+  as not run when applicable, and provide the narrowest appropriate commands or
+  manual checks from the runbook.
+- For project/build-system or broadly shared changes, recommend a targeted
+  compile and link appropriate to the change. Recommend complete Debug or
+  Release verification only when the change warrants it or the user requests it.
+- For startup painting, fullscreen, OpenGL, input timing, and other GUI behavior,
+  provide the relevant automated-test command and the required interactive
+  Windows checks.
+- When the user requests verification, never hide warnings or failures and
+  distinguish pre-existing failures from failures introduced by the current
+  diff. Do not claim that all tests passed if an expected executable was missing
+  or skipped. Use process exit codes and the current test output, not historical
   fixed test counts.
 - Report the exact failing QtTest function and data row when available.
 
