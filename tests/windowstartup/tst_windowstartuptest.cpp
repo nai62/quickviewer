@@ -79,10 +79,10 @@ private slots:
         QCOMPARE(viewer.isFullScreen(), expectedFullscreen);
         const QList<bool> expectedRequests = expectedFullscreen ? QList<bool>{} : QList<bool>{true};
         QCOMPARE(viewer.cloakRequests, expectedRequests);
+        const QList<bool> completedRequests = expectedFullscreen ? QList<bool>{} : QList<bool>{true, false};
+        QTRY_COMPARE(viewer.cloakRequests, completedRequests);
         QTRY_COMPARE(viewer.windowOpacity(), qreal(1.0));
         QCOMPARE(viewer.isFullScreen(), expectedFullscreen);
-        const QList<bool> completedRequests = expectedFullscreen ? QList<bool>{} : QList<bool>{true, false};
-        QCOMPARE(viewer.cloakRequests, completedRequests);
     }
 
     void disabledWidthSavingUsesDefaultWithoutChangingSavedWidth()
