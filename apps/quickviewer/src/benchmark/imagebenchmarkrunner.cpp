@@ -584,9 +584,19 @@ qint64 comparisonMetric(const BenchmarkRecord &record)
     return record.totalNanoseconds;
 }
 
-void printSummary(const QVector<BenchmarkRecord> &records)
+bool writeSummary(const QString &path, const QVector<BenchmarkRecord> &records)
 {
-    QTextStream out(stdout);
+    const QFileInfo info(path);
+    if (!info.absoluteDir().exists() && !QDir().mkpath(info.absolutePath())) {
+        qCritical().noquote() << "Cannot create benchmark summary directory:" << info.absolutePath();
+        return false;
+    }
+    QFile output(path);
+    if (!output.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+        qCritical().noquote() << "Cannot write benchmark summary:" << path;
+        return false;
+    }
+    QTextStream out(&output);
     out << "Benchmark summary\n";
     struct SummaryGroup
     {
@@ -680,6 +690,7 @@ void printSummary(const QVector<BenchmarkRecord> &records)
                 << " speed_ratio=" << QString::number(baselineMedian / candidateMedian, 'f', 3) << '\n';
         }
     }
+    return true;
 }
 
 bool initializeArchiveLibraryIfApplicable(const QString &input, qint64 &elapsedNanoseconds)
@@ -1489,7 +1500,10 @@ bool parseOptions(const QStringList &arguments, BenchmarkOptions &options, QStri
         "suite");
     const QCommandLineOption runsOption("runs", "Number of measured runs (default: 5).", "N", "5");
     const QCommandLineOption warmupOption("warmup", "Number of unmeasured warmup runs (default: 2).", "N", "2");
-    const QCommandLineOption outputOption("output", "Write raw benchmark records to CSV.", "path");
+    const QCommandLineOption outputOption(
+        "output",
+        "Write raw benchmark records to CSV (default: results/quickviewer-benchmark-<timestamp>.csv).",
+        "path");
     const QCommandLineOption recursiveOption("recursive", "Recursively include supported images in directory inputs.");
     const QCommandLineOption pageOption("page", "Initial page: first, resume, or a zero-based page index.", "first|resume|N", "first");
     const QCommandLineOption sortOption("sort", "Production page sort: name, name-desc, size, size-desc, mtime, or mtime-desc.", "mode", "name");
@@ -1528,8 +1542,9 @@ bool parseOptions(const QStringList &arguments, BenchmarkOptions &options, QStri
     }
     options.outputPath = parser.value(outputOption);
     if (options.outputPath.isEmpty()) {
-        options.outputPath = QString("quickviewer-benchmark-%1.csv")
-                                 .arg(QDateTime::currentDateTime().toString("yyyyMMdd-HHmmss"));
+        const QString fileName = QString("quickviewer-benchmark-%1.csv")
+                                     .arg(QDateTime::currentDateTime().toString("yyyyMMdd-HHmmss"));
+        options.outputPath = QDir("results").filePath(fileName);
     }
     options.recursive = parser.isSet(recursiveOption);
 
@@ -1673,9 +1688,15 @@ int ImageBenchmarkRunner::run(const QStringList &arguments)
     if (!writeCsv(options.outputPath, records)) {
         return 1;
     }
-    printSummary(records);
+    const QString summaryPath = options.outputPath + ".summary.txt";
+    if (!writeSummary(summaryPath, records)) {
+        return 1;
+    }
     QTextStream(stdout) << "CSV: "
                         << QDir::toNativeSeparators(QFileInfo(options.outputPath).absoluteFilePath())
+                        << '\n'
+                        << "Summary: "
+                        << QDir::toNativeSeparators(QFileInfo(summaryPath).absoluteFilePath())
                         << '\n';
     return inputsSucceeded && !anyFailures(records) ? 0 : 1;
 }
