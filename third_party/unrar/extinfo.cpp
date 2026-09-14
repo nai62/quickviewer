@@ -51,7 +51,7 @@ void SetExtraInfo(CommandData *Cmd,Archive &Arc,const std::wstring &Name)
   if (!Cmd->Test && Cmd->ProcessOwners && Arc.SubHead.CmpName(SUBHEAD_TYPE_ACL))
     ExtractACL(Arc,Name);
   if (Arc.SubHead.CmpName(SUBHEAD_TYPE_STREAM))
-    ExtractStreams(Arc,Name,Cmd->Test);
+    ExtractStreams(Cmd,Arc,Name);
 #endif
 }
 
@@ -75,6 +75,9 @@ static int CalcAllowedDepth(const std::wstring &Name)
   for (size_t I=0;I<Name.size();I++)
     if (IsPathDiv(Name[I]))
     {
+      if (IsPathDiv(Name[I+1]))
+        return 0;
+
       bool Dot=Name[I+1]=='.' && (IsPathDiv(Name[I+2]) || Name[I+2]==0);
       bool Dot2=Name[I+1]=='.' && Name[I+2]=='.' && (IsPathDiv(Name[I+3]) || Name[I+3]==0);
       if (!Dot && !Dot2)
@@ -109,7 +112,8 @@ bool IsRelativeSymlinkSafe(CommandData *Cmd,const std::wstring &SrcName,std::wst
   // Catch root dir based /path/file paths also as stuff like \\?\.
   // Do not check PrepSrcName here, it can be root based if destination path
   // is a root based.
-  if (IsFullRootPath(SrcName) || IsFullRootPath(TargetName))
+  if (IsFullRootPath(SrcName) || IsFullRootPath(TargetName) ||
+      IsDriveLetter(TargetName))
     return false;
 
   // Number of ".." in link target.

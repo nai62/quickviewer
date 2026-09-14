@@ -72,7 +72,7 @@ void CmdExtract::DoExtract()
   {
     if (Cmd->ManualPassword)
       Cmd->Password.Clean(); // Clean user entered password before processing next archive.
-  
+
     ReconstructDone=false; // Must be reset here, not in ExtractArchiveInit().
     UseExactVolName=false; // Must be reset here, not in ExtractArchiveInit().
     while (true)
@@ -119,6 +119,9 @@ void CmdExtract::DoExtract()
 
 void CmdExtract::ExtractArchiveInit(Archive &Arc)
 {
+  // We do not set the test mode it for 'P' command here, because 'P' needs
+  // to perform the actual file write to stdout and test mode prevents
+  // file write.
   if (Cmd->Command[0]=='T' || Cmd->Command[0]=='I')
     Cmd->Test=true;
 
@@ -211,6 +214,10 @@ EXTRACT_ARC_CODE CmdExtract::ExtractArchive()
 
   if (Arc.FailedHeaderDecryption) // Bad archive password.
     return EXTRACT_ARC_NEXT;
+
+#if !defined(SFX_MODULE) && !defined(RARDLL)
+   bool FirstVolume=Arc.FirstVolume; // It can be changed while extracting, so preserve iot here for later checks.
+#endif
 
 #ifndef SFX_MODULE
   if (Arc.Volume && !Arc.FirstVolume && !UseExactVolName)
@@ -318,10 +325,70 @@ EXTRACT_ARC_CODE CmdExtract::ExtractArchive()
 #if !defined(SFX_MODULE) && !defined(RARDLL)
   if (Cmd->Test && Arc.Volume)
     RecVolumesTest(Cmd,&Arc,ArcName);
+
+  // Delete archive if exit code is 0 and it is either a single archive
+  // or extraction started from first volume.
+  if (Cmd->DeleteArchive && !Cmd->Test && Cmd->Command[0]!='P' &&
+      ErrHandler.GetErrorCode()==RARX_SUCCESS && (!Arc.Volume || FirstVolume))
+    DeleteArchive(Arc,ArcName);
 #endif
 
   return EXTRACT_ARC_NEXT;
 }
+
+
+#if !defined(SFX_MODULE) && !defined(RARDLL)
+void CmdExtract::DeleteArchive(Archive &Arc,const std::wstring &ArcName)
+{
+  Arc.Close();
+
+  bool DelSuccess=false;
+
+  std::wstring NextName=ArcName; // Use ArcName, because Arc.FileName can refer to non-first volume.
+  while (true) // First archive must exist, so we do not call FileExist(NextName) here.
+  {
+#ifdef _WIN_ALL
+    if (Cmd->DeleteToRecycleBin)
+      DelSuccess=RecycleFile(NextName);
+    else
+      DelSuccess=DelFile(NextName);
+#else
+    DelSuccess=DelFile(NextName);
+#endif
+    uiMsg(UIEVENT_DELADDEDFILE,NextName,(int)DelSuccess,0);
+    if (!DelSuccess || !Arc.Volume)
+      break;
+    NextVolumeName(NextName,!Arc.NewNumbering);
+    if (!FileExist(NextName))
+      break;
+  }
+  if (DelSuccess && Arc.Volume)
+  {
+    // Delete recovery volumes. RAR5 uses the width of name numeric field
+    // in REV same as in RAR, so it is enough to set .rev extension to get
+    // teh first REV name.
+    NextName=ArcName;
+    SetExt(NextName,L"rev");
+    while (FileExist(NextName)) // It is ok for REV to be missing, check here.
+    {
+#ifdef _WIN_ALL
+      if (Cmd->DeleteToRecycleBin)
+        DelSuccess=RecycleFile(NextName);
+      else
+        DelSuccess=DelFile(NextName);
+#else
+      DelSuccess=DelFile(NextName);
+#endif
+      uiMsg(UIEVENT_DELADDEDFILE,NextName,(int)DelSuccess,0);
+      if (!DelSuccess)
+        break;
+      NextVolumeName(NextName,!Arc.NewNumbering);
+    }
+  }
+  if (!DelSuccess)
+    ErrHandler.SetErrorCode(RARX_DELETE);
+}
+#endif
 
 
 bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
@@ -538,7 +605,8 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
       ExtrPrepareName(Arc,ArcFileName,DestFileName);
 
     // DestFileName can be set empty in case of excessive -ap switch.
-    ExtrFile=!SkipSolid && !DestFileName.empty() && !Arc.FileHead.SplitBefore;
+    // Also exclude empty archived names here.
+    ExtrFile=!SkipSolid && !ArcFileName.empty() && !DestFileName.empty() && !Arc.FileHead.SplitBefore;
 
     if ((Cmd->FreshFiles || Cmd->UpdateFiles) && (Command=='E' || Command=='X'))
     {
@@ -816,7 +884,7 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
 
       uint64 Preallocated=0;
       if (!TestMode && !Arc.BrokenHeader && Arc.FileHead.UnpSize>1000000 &&
-          Arc.FileHead.PackSize*1024>Arc.FileHead.UnpSize && Arc.IsSeekable() &&
+          Arc.FileHead.PackSize>Arc.FileHead.UnpSize/1024 && Arc.IsSeekable() &&
           (Arc.FileHead.UnpSize<100000000 || Arc.FileLength()>Arc.FileHead.PackSize))
       {
         CurFile.Prealloc(Arc.FileHead.UnpSize);
@@ -1034,11 +1102,16 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
         
         if (SetAttr)
         {
+          auto FileAttr=Arc.FileHead.FileAttr;
 #if defined(_WIN_ALL) && !defined(SFX_MODULE)
           if (Cmd->ClearArc)
-            Arc.FileHead.FileAttr&=~FILE_ATTRIBUTE_ARCHIVE;
+            FileAttr&=~FILE_ATTRIBUTE_ARCHIVE;
 #endif
-          if (!Cmd->IgnoreGeneralAttr && !SetFileAttr(DestFileName,Arc.FileHead.FileAttr))
+#ifdef _UNIX
+          if (geteuid()!=0) // Unless root.
+            FileAttr &= ~(S_ISUID|S_ISGID); // Strip SUID and SGID for standard users.
+#endif
+          if (!Cmd->IgnoreGeneralAttr && !SetFileAttr(DestFileName,FileAttr))
           {
             uiMsg(UIERROR_FILEATTR,Arc.FileName,DestFileName);
             // Android cannot set file attributes and while UIERROR_FILEATTR
@@ -1168,6 +1241,15 @@ bool CmdExtract::ExtractFileCopy(File &New,const std::wstring &ArcName,const std
 
 void CmdExtract::ExtrPrepareName(Archive &Arc,const std::wstring &ArcFileName,std::wstring &DestName)
 {
+  if (ArcFileName.empty())
+  {
+    // Return the empty destination for empty source. Extraction code skips
+    // empty archived names without creating the destination path and issuing
+    // "can't create the file" error message.
+    DestName.clear();
+    return;
+  }
+
   if (Cmd->Test)
   {
     // Destination name conversion isn't needed for simple archive test.
@@ -1250,7 +1332,7 @@ void CmdExtract::ExtrPrepareName(Archive &Arc,const std::wstring &ArcFileName,st
     // We do not use a user specified destination path when extracting
     // absolute paths in -ep3 mode.
     wchar DiskLetter=toupperw(CurName[0]);
-    if (CurName[1]=='_' && IsPathDiv(CurName[2]) && DiskLetter>='A' && DiskLetter<='Z')
+    if (DiskLetter>='A' && DiskLetter<='Z' && CurName[1]=='_' && IsPathDiv(CurName[2]))
       DestName=CurName.substr(0,1) + L':' + CurName.substr(2);
     else
       if (CurName[0]=='_' && CurName[1]=='_')
@@ -1375,7 +1457,13 @@ void CmdExtract::ExtrCreateDir(Archive &Arc,const std::wstring &ArcFileName)
     return;
   }
 
-  MKDIR_CODE MDCode=MakeDir(DestFileName,!Cmd->IgnoreGeneralAttr,Arc.FileHead.FileAttr);
+  auto FileAttr=Arc.FileHead.FileAttr;
+#ifdef _UNIX
+  if (geteuid()!=0) // Unless root.
+    FileAttr &= ~S_ISUID; // Strip SUID and keep SGID for standard users.
+#endif
+
+  MKDIR_CODE MDCode=MakeDir(DestFileName,!Cmd->IgnoreGeneralAttr,FileAttr);
   bool DirExist=false;
   if (MDCode!=MKDIR_SUCCESS)
   {
@@ -1385,13 +1473,13 @@ void CmdExtract::ExtrCreateDir(Archive &Arc,const std::wstring &ArcFileName)
       // File with name same as this directory exists. Propose user
       // to overwrite it.
       bool UserReject;
-      FileCreate(Cmd,NULL,DestFileName,&UserReject,Arc.FileHead.UnpSize,&Arc.FileHead.mtime);
+      FileCreate(Cmd,nullptr,DestFileName,&UserReject,Arc.FileHead.UnpSize,&Arc.FileHead.mtime,FILECR_FOLDER);
       DirExist=false;
     }
     if (!DirExist)
     {
       CreatePath(DestFileName,true,Cmd->DisableNames);
-      MDCode=MakeDir(DestFileName,!Cmd->IgnoreGeneralAttr,Arc.FileHead.FileAttr);
+      MDCode=MakeDir(DestFileName,!Cmd->IgnoreGeneralAttr,FileAttr);
       if (MDCode!=MKDIR_SUCCESS && !IsNameUsable(DestFileName))
       {
         uiMsg(UIMSG_CORRECTINGNAME,Arc.FileName);
@@ -1405,7 +1493,7 @@ void CmdExtract::ExtrCreateDir(Archive &Arc,const std::wstring &ArcFileName)
             LinksToDirs(DestFileName,Cmd->ExtrPath,LastCheckedSymlink)))
         {
           CreatePath(DestFileName,true,Cmd->DisableNames);
-          MDCode=MakeDir(DestFileName,!Cmd->IgnoreGeneralAttr,Arc.FileHead.FileAttr);
+          MDCode=MakeDir(DestFileName,!Cmd->IgnoreGeneralAttr,FileAttr);
         }
       }
     }
@@ -1417,13 +1505,21 @@ void CmdExtract::ExtrCreateDir(Archive &Arc,const std::wstring &ArcFileName)
       mprintf(St(MCreatDir),DestFileName.c_str());
       mprintf(L" %s",St(MOk));
     }
+#ifdef _UNIX
+    // We need to set Unix attributes for DirExist as well, because Unix mkdir
+    // strips all attributes not in umask(). Archives created by recent
+    // RAR versions store directories after their contents, so risk of setting
+    // attributes, which prevent us creating files, is minimal.
+    if (!Cmd->IgnoreGeneralAttr)
+      SetFileAttr(DestFileName,FileAttr);
+#endif
     PrevProcessed=true;
   }
   else
     if (DirExist)
     {
       if (!Cmd->IgnoreGeneralAttr)
-        SetFileAttr(DestFileName,Arc.FileHead.FileAttr);
+        SetFileAttr(DestFileName,FileAttr);
       PrevProcessed=true;
     }
     else
@@ -1439,7 +1535,7 @@ void CmdExtract::ExtrCreateDir(Archive &Arc,const std::wstring &ArcFileName)
   {
 #if defined(_WIN_ALL) && !defined(SFX_MODULE)
     if (Cmd->SetCompressedAttr &&
-        (Arc.FileHead.FileAttr & FILE_ATTRIBUTE_COMPRESSED)!=0 && WinNT()!=WNT_NONE)
+        (FileAttr & FILE_ATTRIBUTE_COMPRESSED)!=0 && WinNT()!=WNT_NONE)
       SetFileCompression(DestFileName,true);
 #endif
     SetFileHeaderExtra(Cmd,Arc,DestFileName);
@@ -1461,8 +1557,9 @@ bool CmdExtract::ExtrCreateFile(Archive &Arc,File &CurFile,bool WriteOnly)
 #endif
   if ((Command=='E' || Command=='X') && !Cmd->Test)
   {
+    FILECR_FLAGS Flags=WriteOnly ? FILECR_WRITEONLY:FILECR_DEFAULT;
     bool UserReject;
-    if (!FileCreate(Cmd,&CurFile,DestFileName,&UserReject,Arc.FileHead.UnpSize,&Arc.FileHead.mtime,WriteOnly))
+    if (!FileCreate(Cmd,&CurFile,DestFileName,&UserReject,Arc.FileHead.UnpSize,&Arc.FileHead.mtime,Flags))
     {
       Success=false;
       if (!UserReject)
@@ -1486,7 +1583,7 @@ bool CmdExtract::ExtrCreateFile(Archive &Arc,File &CurFile,bool WriteOnly)
               LinksToDirs(DestFileName,Cmd->ExtrPath,LastCheckedSymlink))
           {
             CreatePath(DestFileName,true,Cmd->DisableNames);
-            if (FileCreate(Cmd,&CurFile,DestFileName,&UserReject,Arc.FileHead.UnpSize,&Arc.FileHead.mtime,true))
+            if (FileCreate(Cmd,&CurFile,DestFileName,&UserReject,Arc.FileHead.UnpSize,&Arc.FileHead.mtime,Flags))
             {
 #ifndef SFX_MODULE
               uiMsg(UIERROR_RENAMING,Arc.FileName,OrigName,DestFileName);
