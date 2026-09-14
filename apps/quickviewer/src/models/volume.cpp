@@ -173,20 +173,6 @@ void Volume::handlePageListLoaded()
     emit pageListLoaded();
 }
 
-static bool fileNameDescendingLessThan(const QString &m1, const QString &m2)
-{
-    QCollator col;
-    col.setNumericMode(true);
-    return col.compare(m1, m2) < 0;
-}
-
-static bool fileNameDescendingGreaterThan(const QString &m1, const QString &m2)
-{
-    QCollator col;
-    col.setNumericMode(true);
-    return col.compare(m1, m2) > 0;
-}
-
 static bool fileSizeLessThan(const QvImageMetadata &m1, const QvImageMetadata &m2)
 {
     return m1.getFileSize() < m2.getFileSize();
@@ -212,16 +198,28 @@ void Volume::sortPages(qvEnums::ImageSortBy sortBy)
 void Volume::applyPageSort(qvEnums::ImageSortBy sortBy)
 {
     m_imageMetadataList.clear();
-    foreach (const QString &fl, m_pageNames) {
-        m_imageMetadataList << QvImageMetadata(this, fl);
+    if (sortBy != qvEnums::SortByFileName && sortBy != qvEnums::SortByFileNameDescending) {
+        foreach (const QString &fl, m_pageNames) {
+            m_imageMetadataList << QvImageMetadata(this, fl);
+        }
     }
     switch (sortBy) {
-    case qvEnums::SortByFileName:
-        std::sort(m_pageNames.begin(), m_pageNames.end(), fileNameDescendingLessThan);
+    case qvEnums::SortByFileName: {
+        QCollator collator;
+        collator.setNumericMode(true);
+        std::sort(m_pageNames.begin(), m_pageNames.end(), [&collator](const QString &a, const QString &b) {
+            return collator.compare(a, b) < 0;
+        });
         break;
-    case qvEnums::SortByFileNameDescending:
-        std::sort(m_pageNames.begin(), m_pageNames.end(), fileNameDescendingGreaterThan);
+    }
+    case qvEnums::SortByFileNameDescending: {
+        QCollator collator;
+        collator.setNumericMode(true);
+        std::sort(m_pageNames.begin(), m_pageNames.end(), [&collator](const QString &a, const QString &b) {
+            return collator.compare(a, b) > 0;
+        });
         break;
+    }
     case qvEnums::SortByFileSize:
         std::stable_sort(m_imageMetadataList.begin(), m_imageMetadataList.end(), fileSizeLessThan);
         break;
