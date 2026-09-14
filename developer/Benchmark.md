@@ -55,10 +55,17 @@ The old `--benchmark-mode`, format-specific decoder flags, and
 If `--output` is omitted, QuickViewer creates a timestamped file such as:
 
 ```text
-quickviewer-benchmark-20260914-091500.csv
+results/quickviewer-benchmark-20260914-091500.csv
 ```
 
-The console prints a human-readable summary. CSV is the canonical raw output.
+A human-readable summary is saved next to the CSV with `.summary.txt` appended
+to its name, for example:
+
+```text
+results/quickviewer-benchmark-20260914-091500.csv.summary.txt
+```
+
+CSV is the canonical raw output.
 
 ## Decoder selection
 
@@ -87,10 +94,10 @@ Multiple formats may be specified independently:
 If decoder selection is omitted, the normal automatic decoder choice is used.
 
 When multiple backends are requested for the selected image format, QuickViewer
-runs them under equivalent benchmark conditions and prints a relative speed
-ratio. The raw CSV records requested and actual decoders where the suite can
-observe the decoder metrics directly. A native request may fall back to Qt when
-the input requires behavior unsupported by the native fast path.
+runs them under equivalent benchmark conditions and writes a relative speed
+ratio to the summary. The raw CSV records requested and actual decoders where
+the suite can observe the decoder metrics directly. A native request may fall
+back to Qt when the input requires behavior unsupported by the native fast path.
 
 ## Page selection
 
