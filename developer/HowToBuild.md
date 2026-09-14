@@ -59,7 +59,7 @@ mkdir ..\..\qt-heic-image-plugin\qtbuild_6.11.2-debug
 cd ..\..\qt-heic-image-plugin\qtbuild_6.11.2-debug
 C:\Qt\6.11.2\msvc2022_64\bin\qmake.exe ^
   ..\..\others\quickviewer\scripts\qt-heic-image-plugin-debug.pro
-nmake
+C:\Qt\Tools\QtCreator\bin\jom\jom.exe
 ```
 
 The Windows verification and deployment scripts stage the appropriate HEIF
@@ -67,26 +67,32 @@ plug-in and libheif runtime DLLs.
 
 ## 2. Supported Windows development workflow
 
-For ordinary Windows development, use the repository scripts instead of
-invoking recursive qmake manually.
+For ordinary Windows development, use `scripts\verify-windows.cmd` as the
+single build/test entry point. Normal builds are incremental and use `jom`.
+Existing Makefiles are reused; qmake is run only when a required Makefile is
+missing or `--qmake` is explicitly requested.
 
-Build Debug and run the automated test suite:
+| Command | Meaning |
+| --- | --- |
+| `scripts\verify-windows.cmd debug` | incremental top-level Debug build, staging, then the normal Debug test suite |
+| `scripts\verify-windows.cmd release` | incremental top-level Release build and staging; no duplicate Debug test suite |
+| `scripts\verify-windows.cmd debug --qmake` | force `qmake -r`, then perform normal Debug verification |
+| `scripts\verify-windows.cmd release --qmake` | force `qmake -r`, then perform the normal Release build |
+| `scripts\verify-windows.cmd debug --build-only` | normal top-level build and staging without running tests |
+| `scripts\verify-windows.cmd debug --build-viewer-only` | fastest narrow build; only `apps\quickviewer`, so changed dependencies may remain stale |
+| `scripts\verify-windows.cmd debug --tests-only` | run the normal Debug test suite from existing artifacts without building |
+| `scripts\verify-windows.cmd debug --test <name> [test-function]` | run one named Debug test, optionally one QtTest function |
 
-```bat
-scripts\verify-windows.cmd debug
-```
+`--build-only` and `--build-viewer-only` also accept `release`. `--qmake` can be
+combined with build modes. Test-only modes do not run qmake or a build.
 
-Build Release:
+Parallelism is controlled only through the environment. Leave `QV_JOBS` unset
+to let `jom` choose its normal parallelism, or set it to a positive integer to
+invoke `jom -j N`. Override the `jom.exe` path with `QV_JOM` when needed.
 
-```bat
-scripts\verify-windows.cmd release
-```
-
-For a fast edit/build cycle after the Debug tree has been initialized:
-
-```bat
-scripts\verify-windows.cmd debug --build-viewer-only
-```
+The script does not provide `--rebuild` or any other mode that deletes a build
+directory. If a clean tree is required, delete or move the Debug/Release build
+directory manually.
 
 A build does not copy Qt runtime DLLs into `bin`. To make the built application
 launch directly from Windows Explorer:
@@ -103,8 +109,9 @@ C:\build\quickviewer-msvc2022_64-debug
 C:\build\quickviewer-msvc2022_64-release
 ```
 
-See [Testing.md](Testing.md) for targeted tests, overrides, WSL invocation, and
-verification policy.
+`QV_BUILD_DIR`, `QV_QT_DIR`, `QV_VCVARS`, `QV_JOM`, `QV_JOBS`, and
+`QV_HEIF_SOURCE` are documented in [Testing.md](Testing.md), together with the
+complete test-name table, WSL invocation, and verification policy.
 
 ## 3. Other and historical build methods
 
