@@ -6,13 +6,15 @@ for %%I in ("%~dp0..") do set "QV_SOURCE_DIR=%%~fI"
 if "%~1"=="" goto usage
 set "QV_CONFIG=%~1"
 shift
-set "QV_MODE=%~1"
-set "QV_TEST_FUNCTION=%~2"
+set "QV_ACTION=verify"
+set "QV_FORCE_QMAKE=0"
+set "QV_TEST_NAME="
+set "QV_TEST_FUNCTION="
 
 if /I "%QV_CONFIG%"=="debug" (
-    set "QV_BUILD_DIR=C:\build\quickviewer-msvc2022_64-debug"
+    if not defined QV_BUILD_DIR set "QV_BUILD_DIR=C:\build\quickviewer-msvc2022_64-debug"
 ) else if /I "%QV_CONFIG%"=="release" (
-    set "QV_BUILD_DIR=C:\build\quickviewer-msvc2022_64-release"
+    if not defined QV_BUILD_DIR set "QV_BUILD_DIR=C:\build\quickviewer-msvc2022_64-release"
 ) else (
     echo ERROR: Configuration must be debug or release.
     goto usage
@@ -20,6 +22,81 @@ if /I "%QV_CONFIG%"=="debug" (
 
 if not defined QV_QT_DIR set "QV_QT_DIR=C:\Qt\6.11.2\msvc2022_64"
 if not defined QV_VCVARS set "QV_VCVARS=C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+if not defined QV_JOM set "QV_JOM=C:\Qt\Tools\QtCreator\bin\jom\jom.exe"
+
+goto parse_args
+
+:parse_args
+if "%~1"=="" goto args_done
+if /I "%~1"=="--qmake" goto parse_qmake
+if /I "%~1"=="--build-only" goto parse_build_only
+if /I "%~1"=="--build-viewer-only" goto parse_build_viewer_only
+if /I "%~1"=="--tests-only" goto parse_tests_only
+if /I "%~1"=="--test" goto parse_test
+echo ERROR: Unknown option: %~1
+goto usage
+
+:parse_qmake
+set "QV_FORCE_QMAKE=1"
+shift
+goto parse_args
+
+:parse_build_only
+call :set_action build
+if errorlevel 1 goto usage
+shift
+goto parse_args
+
+:parse_build_viewer_only
+call :set_action viewer
+if errorlevel 1 goto usage
+shift
+goto parse_args
+
+:parse_tests_only
+call :set_action tests
+if errorlevel 1 goto usage
+shift
+goto parse_args
+
+:parse_test
+call :set_action test
+if errorlevel 1 goto usage
+if "%~2"=="" (
+    echo ERROR: --test requires a test name.
+    goto usage
+)
+set "QV_TEST_NAME=%~2"
+shift
+shift
+if "%~1"=="" goto parse_args
+set "QV_NEXT_ARG=%~1"
+if "!QV_NEXT_ARG:~0,2!"=="--" goto parse_args
+set "QV_TEST_FUNCTION=%~1"
+shift
+goto parse_args
+
+:args_done
+if /I "%QV_CONFIG%"=="release" (
+    if /I "%QV_ACTION%"=="tests" (
+        echo ERROR: --tests-only is supported only for Debug builds.
+        goto usage
+    )
+    if /I "%QV_ACTION%"=="test" (
+        echo ERROR: --test is supported only for Debug builds.
+        goto usage
+    )
+)
+if "%QV_FORCE_QMAKE%"=="1" (
+    if /I "%QV_ACTION%"=="tests" (
+        echo ERROR: --qmake cannot be combined with --tests-only because no build is performed.
+        goto usage
+    )
+    if /I "%QV_ACTION%"=="test" (
+        echo ERROR: --qmake cannot be combined with --test because no build is performed.
+        goto usage
+    )
+)
 
 if not exist "%QV_VCVARS%" (
     echo ERROR: Visual Studio environment script not found: %QV_VCVARS%
@@ -33,90 +110,115 @@ if not exist "%QV_QT_DIR%\bin\qmake.exe" (
 call "%QV_VCVARS%"
 if errorlevel 1 exit /b 2
 
+if /I "%QV_ACTION%"=="tests" goto prepare_existing_build
+if /I "%QV_ACTION%"=="test" goto prepare_existing_build
+
+if not exist "%QV_JOM%" (
+    echo ERROR: jom not found: %QV_JOM%
+    echo Set QV_JOM to the full path of jom.exe.
+    exit /b 2
+)
 if not exist "%QV_BUILD_DIR%" mkdir "%QV_BUILD_DIR%"
 if errorlevel 1 exit /b 2
 cd /d "%QV_BUILD_DIR%"
 if errorlevel 1 exit /b 2
-
-if /I "%QV_CONFIG%"=="release" (
-    if not "%QV_MODE%"=="" (
-        echo ERROR: Release verification currently accepts no secondary mode.
-        goto usage
-    )
-    goto build_release
-)
-
-if "%QV_MODE%"=="" goto build_debug_full
-if /I "%QV_MODE%"=="--tests-only" goto run_tests
-if /I "%QV_MODE%"=="--build-viewer-only" goto build_viewer_incremental
-if /I "%QV_MODE%"=="--viewer-only" goto run_viewer_test
-if /I "%QV_MODE%"=="--startup-only" goto run_startup_test
-
-echo ERROR: Unknown Debug verification mode: %QV_MODE%
-goto usage
-
-:build_debug_full
-echo === Regenerating Debug build ===
-"%QV_QT_DIR%\bin\qmake.exe" -r "%QV_SOURCE_DIR%\QVproject.pro" CONFIG+=debug CONFIG-=release CONFIG-=debug_and_release CONFIG-=debug_and_release_target
+call :ensure_makefiles
 if errorlevel 1 exit /b 2
 
-echo === Building Debug targets ===
-nmake /f Makefile
+if /I "%QV_ACTION%"=="viewer" goto build_viewer_incremental
+goto build_top_level
+
+:prepare_existing_build
+if not exist "%QV_BUILD_DIR%" (
+    echo ERROR: Build directory not found: %QV_BUILD_DIR%
+    echo Run "%~nx0 debug" first to create and build it.
+    exit /b 2
+)
+cd /d "%QV_BUILD_DIR%"
+if errorlevel 1 exit /b 2
+if /I "%QV_ACTION%"=="test" goto run_selected_test
+goto run_tests
+
+:build_top_level
+echo === Incrementally building %QV_CONFIG% targets with jom ===
+call :run_jom "%QV_BUILD_DIR%"
 if errorlevel 1 exit /b 2
 call :stage_translations
 if errorlevel 1 exit /b 2
+
+if /I "%QV_ACTION%"=="build" (
+    call :stage_heif_plugin %QV_CONFIG%
+    if errorlevel 1 exit /b 2
+    exit /b 0
+)
+if /I "%QV_CONFIG%"=="release" (
+    call :stage_heif_plugin release
+    if errorlevel 1 exit /b 2
+    exit /b 0
+)
 goto run_tests
 
 :build_viewer_incremental
-if not defined QV_JOM set "QV_JOM=C:\Qt\Tools\QtCreator\bin\jom\jom.exe"
-if not defined QV_JOBS set "QV_JOBS=8"
-if not exist "%QV_JOM%" (
-    echo ERROR: jom not found: %QV_JOM%
-    exit /b 2
-)
 if not exist "%QV_BUILD_DIR%\apps\quickviewer\Makefile" (
-    echo ERROR: Configured QuickViewer Debug build not found under: %QV_BUILD_DIR%
-    echo Run "scripts\verify-windows.cmd debug" once to initialize it.
+    echo ERROR: QuickViewer Makefile was not generated under: %QV_BUILD_DIR%\apps\quickviewer
     exit /b 2
 )
-echo === Incrementally building QuickViewer with %QV_JOBS% jobs ===
-cd /d "%QV_BUILD_DIR%\apps\quickviewer"
-if errorlevel 1 exit /b 2
-"%QV_JOM%" -j %QV_JOBS% /f Makefile
+echo === Incrementally building QuickViewer only with jom ===
+call :run_jom "%QV_BUILD_DIR%\apps\quickviewer"
 if errorlevel 1 exit /b 2
 call :stage_translations
 if errorlevel 1 exit /b 2
-exit /b 0
-
-:build_release
-echo === Regenerating Release build ===
-"%QV_QT_DIR%\bin\qmake.exe" -r "%QV_SOURCE_DIR%\QVproject.pro" CONFIG+=release CONFIG-=debug CONFIG-=debug_and_release CONFIG-=debug_and_release_target
-if errorlevel 1 exit /b 2
-
-echo === Building Release targets ===
-nmake /f Makefile
-if errorlevel 1 exit /b 2
-call :stage_translations
-if errorlevel 1 exit /b 2
-call :stage_heif_plugin release
+call :stage_heif_plugin %QV_CONFIG%
 if errorlevel 1 exit /b 2
 exit /b 0
 
-:run_viewer_test
+:ensure_makefiles
+set "QV_NEED_QMAKE=%QV_FORCE_QMAKE%"
+if not exist "%QV_BUILD_DIR%\Makefile" set "QV_NEED_QMAKE=1"
+if /I "%QV_ACTION%"=="viewer" if not exist "%QV_BUILD_DIR%\apps\quickviewer\Makefile" set "QV_NEED_QMAKE=1"
+if not "%QV_NEED_QMAKE%"=="1" exit /b 0
+
+echo === Regenerating %QV_CONFIG% build with qmake -r ===
+if /I "%QV_CONFIG%"=="debug" (
+    "%QV_QT_DIR%\bin\qmake.exe" -r "%QV_SOURCE_DIR%\QVproject.pro" CONFIG+=debug CONFIG-=release CONFIG-=debug_and_release CONFIG-=debug_and_release_target
+) else (
+    "%QV_QT_DIR%\bin\qmake.exe" -r "%QV_SOURCE_DIR%\QVproject.pro" CONFIG+=release CONFIG-=debug CONFIG-=debug_and_release CONFIG-=debug_and_release_target
+)
+if errorlevel 1 exit /b 2
+exit /b 0
+
+:run_jom
+pushd "%~1"
+if errorlevel 1 exit /b 2
+if defined QV_JOBS (
+    echo === jom parallel jobs override: %QV_JOBS% ===
+    "%QV_JOM%" -j %QV_JOBS% /f Makefile
+) else (
+    "%QV_JOM%" /f Makefile
+)
+set "QV_JOM_EXIT=!ERRORLEVEL!"
+popd
+exit /b !QV_JOM_EXIT!
+
+:run_selected_test
+set "QV_TEST_EXE_NAME="
+if /I "%QV_TEST_NAME%"=="prefetchplanner" set "QV_TEST_EXE_NAME=tst_prefetchplannertest.exe"
+if /I "%QV_TEST_NAME%"=="asynccache" set "QV_TEST_EXE_NAME=tst_asynccachetest.exe"
+if /I "%QV_TEST_NAME%"=="latestresultdispatcher" set "QV_TEST_EXE_NAME=tst_latestresultdispatchertest.exe"
+if /I "%QV_TEST_NAME%"=="fileloader" set "QV_TEST_EXE_NAME=tst_fileloadertest.exe"
+if /I "%QV_TEST_NAME%"=="svgloader" set "QV_TEST_EXE_NAME=tst_svgloadertest.exe"
+if /I "%QV_TEST_NAME%"=="viewernavigation" set "QV_TEST_EXE_NAME=tst_viewernavigationtest.exe"
+if /I "%QV_TEST_NAME%"=="windowstartup" set "QV_TEST_EXE_NAME=tst_windowstartuptest.exe"
+if not defined QV_TEST_EXE_NAME (
+    echo ERROR: Unknown test name: %QV_TEST_NAME%
+    echo Supported tests: prefetchplanner, asynccache, latestresultdispatcher, fileloader, svgloader, viewernavigation, windowstartup
+    exit /b 2
+)
 set "PATH=%QV_QT_DIR%\bin;%QV_BUILD_DIR%\lib;%PATH%"
 set "QV_TEST_FAILED=0"
 call :stage_heif_plugin debug
 if errorlevel 1 exit /b 2
-call :run_test tst_viewernavigationtest.exe "%QV_TEST_FUNCTION%"
-if not "!QV_TEST_FAILED!"=="0" exit /b 1
-exit /b 0
-
-:run_startup_test
-set "PATH=%QV_QT_DIR%\bin;%QV_BUILD_DIR%\lib;%PATH%"
-set "QV_TEST_FAILED=0"
-call :stage_heif_plugin debug
-if errorlevel 1 exit /b 2
-call :run_test tst_windowstartuptest.exe "%QV_TEST_FUNCTION%"
+call :run_test "%QV_TEST_EXE_NAME%" "%QV_TEST_FUNCTION%"
 if not "!QV_TEST_FAILED!"=="0" exit /b 1
 exit /b 0
 
@@ -200,12 +302,40 @@ if errorlevel 1 exit /b 1
 if not exist "!QV_TRANSLATION_DEST!\quickviewer_ja.qm" exit /b 1
 exit /b 0
 
+:set_action
+if /I not "%QV_ACTION%"=="verify" (
+    echo ERROR: Build/test modes cannot be combined: %QV_ACTION% and %~1.
+    exit /b 1
+)
+set "QV_ACTION=%~1"
+exit /b 0
+
 :usage
 echo Usage:
-echo   %~nx0 debug
+echo   %~nx0 debug [--qmake]
+echo   %~nx0 release [--qmake]
+echo   %~nx0 debug --build-only [--qmake]
+echo   %~nx0 release --build-only [--qmake]
+echo   %~nx0 debug --build-viewer-only [--qmake]
+echo   %~nx0 release --build-viewer-only [--qmake]
 echo   %~nx0 debug --tests-only
-echo   %~nx0 debug --build-viewer-only
-echo   %~nx0 debug --viewer-only [test-function]
-echo   %~nx0 debug --startup-only [test-function]
-echo   %~nx0 release
+echo   %~nx0 debug --test ^<name^> [test-function]
+echo.
+echo Build modifiers:
+echo   --qmake             Rerun qmake -r before building.
+echo   --build-only        Build top-level targets and stage runtime files; do not run tests.
+echo   --build-viewer-only Build only apps\quickviewer; dependencies may remain stale.
+echo   --tests-only        Run the normal Debug test suite without building.
+echo   --test              Run one Debug test by stable name, optionally one QtTest function.
+echo.
+echo Environment overrides:
+echo   QV_BUILD_DIR  Build tree path. Defaults depend on debug/release.
+echo   QV_QT_DIR     Qt MSVC kit root. Default: C:\Qt\6.11.2\msvc2022_64
+echo   QV_VCVARS     vcvars64.bat path.
+echo   QV_JOM        jom.exe path. Default: C:\Qt\Tools\QtCreator\bin\jom\jom.exe
+echo   QV_JOBS       Optional positive integer passed as jom -j N. Unset = jom default.
+echo.
+echo Test names:
+echo   prefetchplanner  asynccache  latestresultdispatcher  fileloader
+echo   svgloader        viewernavigation  windowstartup
 exit /b 2
