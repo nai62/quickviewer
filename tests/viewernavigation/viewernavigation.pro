@@ -106,7 +106,7 @@ FORMS += \
     ../../apps/quickviewer/src/qactionmanager/keyconfigdialog.ui
 
 DESTDIR = ../../lib
-LIBS += -L../../lib -leasyexif -lresizehalf -lfileloader -lQt7z -lunrar -lzimg -lspng
+LIBS += -L../../lib -leasyexif -lresizehalf -lfileloader -lunrar -lzimg -lspng
 
 contains(DEFINES, QV_WITH_LUMINOR) {
     INCLUDEPATH += ../../components/qluminor

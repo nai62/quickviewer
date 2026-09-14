@@ -27,7 +27,7 @@ public:
     void load();
 
     QMovie *data() { return m_movie.data(); }
-    bool isNull() { return m_bytes.isNull(); }
+    bool isNull() const { return m_bytes.isNull(); }
     void reset() { m_buffer.data()->reset(); }
 
 private:

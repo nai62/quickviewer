@@ -140,6 +140,7 @@ public:
         m_volumeCache.clear();
         m_savedPagePositions.clear();
     }
+
 signals:
     void visiblePagesChanged(VisiblePages pages);
     void readyForPaint();
@@ -151,11 +152,13 @@ signals:
      * @brief volumeChanged the volume has been changed
      */
     void volumeChanged(QString path);
+    void archiveOpenFailed(QString path, ArchiveOpenError error);
     /**
      * Emitted after the directly opened image has had a chance to paint. Heavy
      * folder-related GUI work can resume after this signal.
      */
     void initialImageDisplayFinished();
+
 public slots:
     void handleVolumePageListLoaded();
     void handleSlideShowStarted();
@@ -166,16 +169,18 @@ private:
                                    const QString &basePath,
                                    const QString &subfileName);
     void finishInitialImageDisplay(quint64 generation);
-    VolumeHandle loadCachedVolume(QString path, bool onlyCover);
+    CachedVolumeLoadResult loadCachedVolume(QString path, bool onlyCover);
     void prefetchVolume(QString path);
     VolumeHandle activeVolumeHandle() const;
     Volume *activeVolume() const;
     void setVolumeReady(VolumeHandle volume);
     void configureVolume(Volume *volume);
     void rememberActivePagePosition();
+    bool failActiveArchiveLoad(ArchiveOpenError error, const QString &path);
     int initialPageIndex(const VolumeHandle &volume, const QString &pageName, bool coverOnly);
     void replaceVisiblePages(QVector<ImageContent> pages);
     static QStringList siblingVolumeNames(const QDir &directory);
+
     PageNavigator m_pageNavigator;
     struct SavedPagePosition
     {
@@ -194,7 +199,7 @@ private:
     QSize m_viewportSize;
 
     LatestResultDispatcher<ImageContent> m_initialImageLoadDispatcher;
-    LatestResultDispatcher<VolumeHandle> m_volumeLoadDispatcher;
+    LatestResultDispatcher<CachedVolumeLoadResult> m_volumeLoadDispatcher;
     quint64 m_initialDisplayGeneration;
     QString m_pendingContainingImagePath;
     QString m_pendingContainingVolumePath;

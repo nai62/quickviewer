@@ -28,4 +28,5 @@ LIBS -= -L../../lib
 LIBS += -L../../lib
 win32: LIBS += -lshell32
 QMAKE_POST_LINK =
+DEFINES += WINDOWSTARTUP_SRCDIR=\\\"$$PWD/\\\"
 INSTALLS =

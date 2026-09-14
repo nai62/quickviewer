@@ -192,8 +192,8 @@ For Release, replace the command with
 ## Performance benchmarks
 
 Image loading and decoder performance should be measured with a Release build.
-See [Benchmark.md](Benchmark.md) for the benchmark CLI, paired decoder
-comparison mode, and output format.
+See [Benchmark.md](Benchmark.md) for the benchmark suites, decoder comparison
+conditions, and output format.
 
 ## Profiling first-image display
 

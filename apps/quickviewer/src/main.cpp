@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
 #endif
 
     QVApplication app(argc, argv);
+    ImageBenchmarkRunner::applyStartupOverrides();
     if (ImageBenchmarkRunner::isRequested(app.arguments())) {
         return ImageBenchmarkRunner::run(app.arguments());
     }
@@ -71,7 +72,7 @@ int main(int argc, char *argv[])
 #ifdef Q_OS_WIN
         MainWindowForWindows w;
 #else
-        MainWindow w;
+        ArchiveAwareMainWindow w;
 #endif
         StartupProfiler::mark("mainwindow.constructed");
         w.initializeStartup();

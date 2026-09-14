@@ -7,6 +7,7 @@ class ImageBenchmarkRunner
 {
 public:
     static bool isRequested(const QStringList &arguments);
+    static void applyStartupOverrides();
     static int run(const QStringList &arguments);
 };
 

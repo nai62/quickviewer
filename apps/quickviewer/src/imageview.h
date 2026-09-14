@@ -45,6 +45,7 @@ public:
     int renderedPageCount() const;
     VisiblePages renderedPageContents() const;
     RenderedPageMetrics renderedPageMetrics() const;
+    QString displayedMessage() const;
     void updateGestureTransform(qreal scale, qreal rotationDegrees);
     void commitGestureTransform();
     void resetGestureTransform();
@@ -76,6 +77,7 @@ protected:
 public slots:
     void handleVolumeChanged(QString path);
     void handleVisiblePagesChanged(VisiblePages pages);
+    void handleArchiveOpenFailed(QString path, ArchiveOpenError error);
     void refreshRenderedPages();
 
     // Navigation
@@ -133,6 +135,7 @@ private:
     void preserveViewportCenter(qreal newScale, int previousHorizontalScroll, int previousVerticalScroll);
     void updateLoupeScrollFromCursor();
     void updateZoomScrollFromCursor();
+    void clearMessage();
 
     RendererType m_renderer;
     QPointer<QWidget> m_rendererViewport;
@@ -167,6 +170,8 @@ private:
     bool m_scrollMode;
     bool m_openSeparatedPageFromEnd;
     RetouchParameters m_retouchParams;
+    QString m_messageTitle;
+    QString m_messageBody;
 };
 
 #endif // IMAGEVIEW_H

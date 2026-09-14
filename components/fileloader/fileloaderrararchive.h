@@ -2,7 +2,6 @@
 #define FILELOADERRARARCHIVE_H
 
 #include <QObject>
-#include <QMap>
 #include "fileloader.h"
 
 class RarExtractor;
@@ -11,8 +10,8 @@ class FileLoaderRarArchive : public IFileLoader
 {
 public:
     FileLoaderRarArchive(QObject *parent, QString rarpath);
-
     ~FileLoaderRarArchive();
+
     /**
      * @brief isArchive
      * @return return true, if the instance treates an archive file
@@ -34,7 +33,7 @@ public:
      * @brief contents
      * @return all image files without parent path(filename only)
      */
-    QStringList contents();
+    QStringList contents() override;
     /**
      * @brief subArchives
      * @return all archive files with in the instance
@@ -46,7 +45,9 @@ public:
      * @param mutex if the method needs to lock resource, must be use the mutex
      * @return file binary data
      */
-    QByteArray getFile(QString filename, QMutex &mutex);
+    QByteArray getFile(QString filename, QMutex &mutex) override;
+    FileLoadResult getFileResult(QString filename, QMutex &mutex) override;
+    ArchiveOpenError archiveOpenError() const override { return m_archiveOpenError; }
 
     /**
      * @brief getCacheMode
@@ -57,27 +58,14 @@ public:
 
 protected:
     QString m_volumepath;
-//    QMap<QString, Qt7zFileInfo> m_fileinfomap;
     QStringList m_imageFileList;
     QStringList m_subArchiveList;
     bool m_valid;
+    ArchiveOpenError m_archiveOpenError;
     RarExtractor *d;
 
     void initialize();
+    void rejectArchive(ArchiveOpenError error);
 };
 
-//class FileLoaderRarPlugin : public QObject, public FileLoaderPluginInterface
-//{
-//    Q_OBJECT
-////    Q_PLUGIN_METADATA(IID "com.quickviewer.FileLoader7zPlugin" FILE "fileloader7zplugin.json")
-////    Q_INTERFACES(FileLoaderPluginInterface)
-//public:
-//    ~FileLoaderRarPlugin() {}
-//    IFileLoader* getFileLoader(QString path) { return new FileLoaderRarArchive(this, path); }
-//    /**
-//     * @brief isSupported
-//     * @return true, if the file is supported as the archive
-//     */
-//    bool isSupported(QString path) { return path.toLower().endsWith(".rar"); }
-//};
 #endif // FILELOADERRARARCHIVE_H

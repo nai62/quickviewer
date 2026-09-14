@@ -21,9 +21,14 @@ public:
         }
     }
 
+    FileLoadResult loadResult(const QString &name)
+    {
+        return m_loader ? m_loader->getFileResult(name, m_mutex) : FileLoadResult{};
+    }
+
     QByteArray load(const QString &name)
     {
-        return m_loader->getFile(name, m_mutex);
+        return loadResult(name).data;
     }
 
     IFileLoader *loader() const { return m_loader; }
