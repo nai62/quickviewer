@@ -333,8 +333,7 @@ public:
         //QString themeFilePath = getApplicationFilePath(":/themes/"+m_uiTheme+".qss"); //Local files
         QString themeFilePath(":/themes/" + m_uiTheme + ".qss"); // Resource files
         QFile File(themeFilePath);
-        File.open(QFile::ReadOnly);
-        QString styleSheet = QString(File.readAll());
+        const QString styleSheet = File.open(QFile::ReadOnly) ? QString(File.readAll()) : QString();
         QApplication::setStyleSheet(styleSheet);
     }
 
