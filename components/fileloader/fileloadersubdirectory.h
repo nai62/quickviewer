@@ -8,7 +8,7 @@
 class FileLoaderSubDirectory : public FileLoaderDirectory
 {
 public:
-    FileLoaderSubDirectory(QObject *parent, QString path);
+    explicit FileLoaderSubDirectory(QString path);
 };
 
 #endif // FILELOADERSUBDIRECTORY_H

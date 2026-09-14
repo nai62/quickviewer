@@ -6,7 +6,10 @@
 #include "qvapplication.h"
 #include "startupprofiler.h"
 
-static VolumeBuildResult volumeFromLoader(QObject *parent, IFileLoader *loader)
+#include <memory>
+#include <utility>
+
+static VolumeBuildResult volumeFromLoader(QObject *parent, std::unique_ptr<IFileLoader> loader)
 {
     if (!loader) {
         return {};
@@ -16,20 +19,22 @@ static VolumeBuildResult volumeFromLoader(QObject *parent, IFileLoader *loader)
         if (error == ArchiveOpenError::None) {
             error = ArchiveOpenError::Corrupt;
         }
-        delete loader;
         return {nullptr, error};
     }
-    return {new Volume(parent, loader), ArchiveOpenError::None};
+    return {new Volume(parent, std::move(loader)), ArchiveOpenError::None};
 }
 
 VolumeBuildResult VolumeLoader::createVolumeResult(QObject *parent, QString path)
 {
     QDir dir(path);
     if (dir.exists()) {
-        IFileLoader *loader = qApp->ShowSubfolders()
-                                  ? static_cast<IFileLoader *>(new FileLoaderSubDirectory(parent, path))
-                                  : static_cast<IFileLoader *>(new FileLoaderDirectory(parent, path));
-        return volumeFromLoader(parent, loader);
+        std::unique_ptr<IFileLoader> loader;
+        if (qApp->ShowSubfolders()) {
+            loader = std::make_unique<FileLoaderSubDirectory>(path);
+        } else {
+            loader = std::make_unique<FileLoaderDirectory>(path);
+        }
+        return volumeFromLoader(parent, std::move(loader));
     }
 
     const QFileInfo pathInfo(path);
@@ -55,15 +60,14 @@ VolumeBuildResult VolumeLoader::createVolumeResult(QObject *parent, QString path
     }
 
     if (archiveFormat == "rar") {
-        return volumeFromLoader(parent, new FileLoaderRarArchive(parent, path));
+        return volumeFromLoader(parent, std::make_unique<FileLoaderRarArchive>(path));
     }
 
     const bool lib7zipReady = FileLoader7zArchive::initializeLib();
     if (lib7zipReady && FileLoader7zArchive::st_supportedArchiveFormats.contains(archiveFormat)) {
         return volumeFromLoader(
             parent,
-            new FileLoader7zArchive(
-                parent,
+            std::make_unique<FileLoader7zArchive>(
                 path,
                 archiveFormat,
                 qApp->ExtractSolidArchiveToTemporaryDir()));
@@ -72,10 +76,13 @@ VolumeBuildResult VolumeLoader::createVolumeResult(QObject *parent, QString path
     if (IFileLoader::isImageFile(path)) {
         const QFileInfo imageInfo(path);
         const QString directoryPath = imageInfo.absolutePath();
-        IFileLoader *loader = qApp->ShowSubfolders()
-                                  ? static_cast<IFileLoader *>(new FileLoaderSubDirectory(parent, directoryPath))
-                                  : static_cast<IFileLoader *>(new FileLoaderDirectory(parent, directoryPath));
-        VolumeBuildResult result = volumeFromLoader(parent, loader);
+        std::unique_ptr<IFileLoader> loader;
+        if (qApp->ShowSubfolders()) {
+            loader = std::make_unique<FileLoaderSubDirectory>(directoryPath);
+        } else {
+            loader = std::make_unique<FileLoaderDirectory>(directoryPath);
+        }
+        VolumeBuildResult result = volumeFromLoader(parent, std::move(loader));
         if (result.volume) {
             result.volume->setOpenedWithSpecifiedImageFile(true);
         }

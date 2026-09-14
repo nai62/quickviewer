@@ -2,7 +2,6 @@
 #define FILEVOLUMEDIRECTORY_H
 
 #include <QDir>
-#include <QObject>
 
 #include "fileloader.h"
 
@@ -14,8 +13,8 @@ public:
         Recursive,
     };
 
-    FileLoaderDirectory(QObject *parent, QString path, TraversalMode traversalMode = TraversalMode::CurrentDirectory);
-    ~FileLoaderDirectory() override {}
+    FileLoaderDirectory(QString path, TraversalMode traversalMode = TraversalMode::CurrentDirectory);
+    ~FileLoaderDirectory() override = default;
 
     bool isArchive() const override { return false; }
     bool isValid() const override { return m_valid; }
@@ -24,7 +23,7 @@ public:
     QString realVolumePath() const override { return m_directory.path(); }
     QStringList contents() override;
     QStringList subArchives() const override { return m_subArchiveList; }
-    QByteArray getFile(QString filename, QMutex &mutex) override;
+    QByteArray getFile(QString filename) override;
     InflateCacheMode getCacheMode() const override { return InflateNoCached; }
 
 private:
