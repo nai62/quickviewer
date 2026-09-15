@@ -1,5 +1,6 @@
 #include "retouchwindow.h"
 #include "ui_retouchwindow.h"
+#include "models/qvapplication.h"
 
 #include <cmath>
 
@@ -13,6 +14,9 @@ RetouchWindow::RetouchWindow(QWidget *parent)
       m_ignoreTextChange(false)
 {
     ui->setupUi(this);
+    connect(qApp->languageSelector(), &LanguageManager::languageChanged, this, [this](const QString &) {
+        ui->retranslateUi(this);
+    });
     ui->checkBoxForAll->setVisible(false);
 }
 

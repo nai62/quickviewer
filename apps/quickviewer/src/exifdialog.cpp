@@ -3,6 +3,7 @@
 #include "exifdialog.h"
 #include "ui_exifdialog.h"
 #include "qv_init.h"
+#include "models/qvapplication.h"
 
 struct ImageMetaContents
 {
@@ -34,6 +35,9 @@ ExifDialog::ExifDialog(QWidget *parent)
       ui(new Ui::ExifDialog)
 {
     ui->setupUi(this);
+    connect(qApp->languageSelector(), &LanguageManager::languageChanged, this, [this](const QString &) {
+        ui->retranslateUi(this);
+    });
 }
 
 ExifDialog::~ExifDialog()
