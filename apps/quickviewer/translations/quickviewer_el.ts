@@ -2376,13 +2376,13 @@
         <translation>Μενού περιβάλλοντος</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="314"/>
+        <location filename="../src/models/qvapplication.cpp" line="311"/>
         <source>Shader</source>
         <comment>Shader Action Group</comment>
         <translation>Σκίαση</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="329"/>
+        <location filename="../src/models/qvapplication.cpp" line="326"/>
         <source>Help</source>
         <comment>Help Action Group</comment>
         <translation>Βοήθεια</translation>

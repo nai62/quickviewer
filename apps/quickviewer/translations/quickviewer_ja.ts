@@ -2375,13 +2375,13 @@
         <translation>コンテキストメニュー</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="314"/>
+        <location filename="../src/models/qvapplication.cpp" line="311"/>
         <source>Shader</source>
         <comment>Shader Action Group</comment>
         <translation>シェーダー</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="329"/>
+        <location filename="../src/models/qvapplication.cpp" line="326"/>
         <source>Help</source>
         <comment>Help Action Group</comment>
         <translation>ヘルプ</translation>

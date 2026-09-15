@@ -2383,13 +2383,13 @@
         <translation>右键菜单</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="314"/>
+        <location filename="../src/models/qvapplication.cpp" line="311"/>
         <source>Shader</source>
         <comment>Shader Action Group</comment>
         <translation>着色器</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="329"/>
+        <location filename="../src/models/qvapplication.cpp" line="326"/>
         <source>Help</source>
         <comment>Help Action Group</comment>
         <translation>帮助</translation>
