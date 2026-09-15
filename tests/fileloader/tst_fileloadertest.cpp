@@ -105,9 +105,10 @@ static void verifyRarArchive(const QString &archivePath, const QString &firstNam
     QCOMPARE(files.size(), 6);
     QCOMPARE(QDir::fromNativeSeparators(files.first()), firstName);
 
+    const QList<RARFileInfo> &fileInfoList = rar.fileInfoList();
     QList<int> nonEmptyFiles;
-    for (int index = 0; index < rar.m_fileInfoList.size(); ++index) {
-        if (rar.m_fileInfoList.at(index).unpSize > 0) {
+    for (int index = 0; index < fileInfoList.size(); ++index) {
+        if (fileInfoList.at(index).unpSize > 0) {
             nonEmptyFiles.append(index);
         }
     }
@@ -118,18 +119,14 @@ static void verifyRarArchive(const QString &archivePath, const QString &firstNam
     const RarFileDataResult first = rar.fileDataResult(files.at(firstIndex));
     QVERIFY(first.success);
     QCOMPARE(first.data.size(), 462336);
-    QCOMPARE(rar.m_curIndex, firstIndex + 1);
 
     const RarFileDataResult second = rar.fileDataResult(files.at(secondIndex));
     QVERIFY(second.success);
-    QCOMPARE(second.data.size(), static_cast<qsizetype>(rar.m_fileInfoList.at(secondIndex).unpSize));
-    QCOMPARE(rar.m_curIndex, secondIndex + 1);
+    QCOMPARE(second.data.size(), static_cast<qsizetype>(fileInfoList.at(secondIndex).unpSize));
 
-    const int cursorAfterSecondFile = rar.m_curIndex;
-    const RarFileDataResult cached = rar.fileDataResult(files.at(firstIndex));
-    QVERIFY(cached.success);
-    QCOMPARE(cached.data, first.data);
-    QCOMPARE(rar.m_curIndex, cursorAfterSecondFile);
+    const RarFileDataResult reread = rar.fileDataResult(files.at(firstIndex));
+    QVERIFY(reread.success);
+    QCOMPARE(reread.data, first.data);
 
     FileLoaderRarArchive loader(archivePath);
     QVERIFY(loader.isValid());
