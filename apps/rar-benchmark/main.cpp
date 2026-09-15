@@ -33,6 +33,16 @@ static QString errorName(RarArchiveError error)
     return QStringLiteral("unknown");
 }
 
+static void printHelp(QTextStream &out)
+{
+    out << "Usage: rar-benchmark <archive.rar> [archive2.rar ...]" << '\n'
+        << '\n'
+        << "Benchmarks RAR archive access patterns used by QuickViewer." << '\n'
+        << '\n'
+        << "Options:" << '\n'
+        << "  -h, --help, /?    Show this help." << '\n';
+}
+
 static BenchmarkCaseResult runReads(
     const QString &archiveName, const QStringList &warmupFiles, const QStringList &measuredFiles)
 {
@@ -169,6 +179,12 @@ int main(int argc, char *argv[])
     QTextStream err(stderr);
 
     const QStringList arguments = app.arguments();
+    if (arguments.contains(QStringLiteral("--help"))
+        || arguments.contains(QStringLiteral("-h"))
+        || arguments.contains(QStringLiteral("/?"))) {
+        printHelp(out);
+        return 0;
+    }
     if (arguments.size() < 2) {
         err << "Usage: rar-benchmark <archive.rar> [archive2.rar ...]" << '\n';
         return 2;
