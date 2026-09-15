@@ -306,9 +306,6 @@ void QVApplication::registerActions(Ui::MainWindow *ui)
     m_keyActions.registerAction("actionDeletePage", ui->actionDeletePage, groupName);
     m_keyActions.registerAction("actionMailAttachment", ui->actionMailAttachment, groupName);
     m_keyActions.registerAction("actionRenameImageFile", ui->actionRenameImageFile, groupName);
-    m_keyActions.registerAction("actionShowToolBar", ui->actionShowToolBar, groupName);
-    m_keyActions.registerAction("actionShowToolBar", ui->actionShowToolBar, groupName);
-    m_keyActions.registerAction("actionShowToolBar", ui->actionShowToolBar, groupName);
 
     // Shader
     groupName = tr("Shader", "Shader Action Group");
