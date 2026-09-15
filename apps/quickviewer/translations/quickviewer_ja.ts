@@ -457,142 +457,142 @@
 <context>
     <name>FileAssocDialog</name>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="90"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="90"/>
         <source>Truevision Graphics Adapter Format (*.tga)</source>
         <translation>Truevision Graphics Adapterフォーマット (*.tga)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="118"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="118"/>
         <source>Nikon RAW format (*.nef)</source>
         <translation>Nicon Raw形式 (*.nef)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="111"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="111"/>
         <source>Canon RAW format (*.crw, *.cr2)</source>
         <translation>Canon Raw形式 (*.crw, *.cr2)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="27"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="27"/>
         <source>JPEG Image (*.jpg, *.jpeg, *.jpe)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="97"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="97"/>
         <source>HEIF Image (*.heic, *.heif)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="125"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="125"/>
         <source>Sony RAW format (*.arw)</source>
         <translation>Sony Raw形式 (*.arw)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="132"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="132"/>
         <source>Used by Ricoh, Casio, Pentax, Nokia, Leica, and others</source>
         <translation>リコー、カシオ、ペンタックス、ノキア、ライカなど</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="135"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="135"/>
         <source>Adobe Digital Negative Format (*.dng)</source>
         <translation>Adobe Digital Negativeフォーマット (*.dng)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="55"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="55"/>
         <source>Bitmap Format (*.bmp)</source>
         <translation>ビットマップ形式 (*.bmp)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="48"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="48"/>
         <source>Animated PNG Format (*.apng)</source>
         <translation>アニメーションPNG形式 (*a.png)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="76"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="76"/>
         <source>Windows Icon Format (*.ico)</source>
         <translation>Windowsアイコン形式 (*.ico)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="62"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="62"/>
         <source>DirectDraw Surface Format (*.dds)</source>
         <translation>DirectDraw Surface形式 (*.dds)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="55"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="55"/>
         <source>Truevision Graphics Adapter Format Image</source>
         <comment>description of File format on Explorer(.tga)</comment>
         <translation>Truevision Graphics Adapter イメージ</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="79"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="79"/>
         <source>HEIF Image</source>
         <comment>description of File format on Explorer(.heic, .heif)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="82"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="82"/>
         <source>Canon RAW format</source>
         <comment>description of File format on Explorer(.cr2)</comment>
         <translation>Canon Raw形式</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="85"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="85"/>
         <source>Adobe Digital Negative Format</source>
         <comment>description of File format on Explorer(.dng)</comment>
         <translation>Adobe Digital Negative形式</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="88"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="88"/>
         <source>Nikon RAW format</source>
         <comment>description of File format on Explorer(.nef)</comment>
         <translation>Nicon Raw形式</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="91"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="91"/>
         <source>Sony RAW format</source>
         <comment>description of File format on Explorer(.arw)</comment>
         <translation>Sony Raw形式</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="185"/>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="222"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="185"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="222"/>
         <source>&amp;View with QuickViewer</source>
         <comment>Menu displayed when right clicking on file in Explorer</comment>
         <translation>QuickViewerで開く(&amp;V)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="14"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="14"/>
         <source>Associate files with QuickViewer</source>
         <translation>QuickViewerへのファイルの関連付け</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="207"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="207"/>
         <source>Select all</source>
         <extracomment>Button to turn all check boxes on</extracomment>
         <translation>全て有効</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="200"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="200"/>
         <source>Clear all</source>
         <extracomment>Button to turn off all check box</extracomment>
         <translation>全て無効</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="69"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="69"/>
         <source>WebP Image (*.webp)</source>
         <translation>WebP イメージ (*.webp)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="41"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="41"/>
         <source>PNG File (*.png)</source>
         <translation>PNG ファイル (*.png)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="83"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="83"/>
         <source>TIFF Image (*.tif, *.tiff)</source>
         <translation>TIFFイメージ (*.tif, *.tiff)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="34"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="34"/>
         <source>GIF Image (*.gif)</source>
         <translation>GIF イメージ (*.gif)</translation>
     </message>
@@ -601,61 +601,61 @@
         <translation type="vanished">JPEG イメージ (*.jpg, *.jpeg)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="49"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="49"/>
         <source>JPEG Image</source>
         <comment>description of File format on Explorer(.jpeg)</comment>
         <translation>JPEG イメージ</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="52"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="52"/>
         <source>PNG File</source>
         <comment>description of File format on Explorer(.png)</comment>
         <translation>PNG ファイル</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="58"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="58"/>
         <source>Animated PNG File</source>
         <comment>description of File format on Explorer(.apng)</comment>
         <translation>アニメーション PNG ファイル</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="61"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="61"/>
         <source>Bitmap File</source>
         <comment>description of File format on Explorer(.bmp)</comment>
         <translation>ビットマップ形式</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="64"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="64"/>
         <source>DirectDraw Surface Image</source>
         <comment>description of File format on Explorer(.dds)</comment>
         <translation>DirectDraw Surfaceイメージ</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="67"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="67"/>
         <source>GIF Image</source>
         <comment>description of File format on Explorer(.gif)</comment>
         <translation>GIF イメージ</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="70"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="70"/>
         <source>Windows Icon File</source>
         <comment>description of File format on Explorer(.ico)</comment>
         <translation>Windows アイコンファイル</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="73"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="73"/>
         <source>TIFF image</source>
         <comment>description of File format on Explorer(.tiff)</comment>
         <translation>Tiff イメージ</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="76"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="76"/>
         <source>WebP Image</source>
         <comment>description of File format on Explorer(.webp)</comment>
         <translation>WebP イメージ</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="188"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="188"/>
         <source>Click OK to update the Windows registry, or Cancel to leave it unchanged.</source>
         <translation>OKボタンを押すとレジストリが書き込まれます。不要な場合はキャンセルしてください。</translation>
     </message>
@@ -899,6 +899,19 @@
     </message>
 </context>
 <context>
+    <name>ImageView</name>
+    <message>
+        <location filename="../src/imageview.cpp" line="220"/>
+        <source>Cannot Open Archive</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="221"/>
+        <source>This archive is password-protected. Password-protected archives are not supported.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>KeyConfigDialog</name>
     <message>
         <location filename="../src/qactionmanager/keyconfigdialog.ui" line="259"/>
@@ -1050,6 +1063,15 @@
     </message>
 </context>
 <context>
+    <name>LanguageManager</name>
+    <message>
+        <location filename="../../../components/i18n/languagemanager.cpp" line="151"/>
+        <source>Always use text translation</source>
+        <comment>Menu text that uses textual translation rather than regular qm format</comment>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MainWindow</name>
     <message>
         <location filename="../src/mainwindow.ui" line="252"/>
@@ -1079,7 +1101,7 @@
         <translation>フィット表示(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="143"/>
+        <location filename="../src/mainwindow.cpp" line="145"/>
         <source>&amp;Fullscreen</source>
         <translation>フルスクリーン(&amp;F)</translation>
     </message>
@@ -1218,7 +1240,7 @@
         <translation>ブックマークを全て消去</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2165"/>
+        <location filename="../src/mainwindow.cpp" line="2185"/>
         <source>Bookmark saved.</source>
         <translation>ブックマークが保存されました。</translation>
     </message>
@@ -1436,7 +1458,7 @@
         <translation>ファイル名を変更する</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="227"/>
+        <location filename="../src/mainwindow.cpp" line="229"/>
         <source>No folder or archive is loaded.</source>
         <comment>The text of the status bar to be displayed when there is no image to be displayed immediately after the application is activated</comment>
         <translation>フォルダまたはアーカイブが読み込まれていません。</translation>
@@ -1452,7 +1474,7 @@
         <translation type="vanished">開くことができませんでした。画像ファイルが見つかりません。</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1745"/>
+        <location filename="../src/mainwindow.cpp" line="1765"/>
         <source>Select an image or archive</source>
         <comment>Title of the dialog displayed when opening a file with OpenFileFolder</comment>
         <translation>閲覧したい画像またはアーカイブを選択してください</translation>
@@ -1595,43 +1617,43 @@
         <translation>現在のページの画像ファイルを削除する</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1976"/>
+        <location filename="../src/mainwindow.cpp" line="1996"/>
         <source>Are you sure you want to move the image to Recycle Bin?</source>
         <comment>Confirm putting displayed file in Recycle Box Message Box body</comment>
         <translation>本当にこの画像をゴミ箱に入れますか？</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1971"/>
-        <location filename="../src/mainwindow.cpp" line="2012"/>
+        <location filename="../src/mainwindow.cpp" line="1991"/>
+        <location filename="../src/mainwindow.cpp" line="2032"/>
         <source>Confirmation</source>
         <comment>Confirm deleting image file on MessageBox title</comment>
         <translation>確認</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="676"/>
+        <location filename="../src/mainwindow.cpp" line="691"/>
         <source>Image file not found. It cannot be opened.</source>
         <comment>Text to display in the status bar when failed to open the specified Volume</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1420"/>
+        <location filename="../src/mainwindow.cpp" line="1440"/>
         <source>Image file was not found and cannot be opened.</source>
         <comment>Text to display in the status bar when failed to open the specified Volume</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1444"/>
+        <location filename="../src/mainwindow.cpp" line="1464"/>
         <source>LoadBookmark</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1742"/>
+        <location filename="../src/mainwindow.cpp" line="1762"/>
         <source>All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.heic *.heif);;Archives( *.zip *.7z *.rar)</source>
         <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2017"/>
+        <location filename="../src/mainwindow.cpp" line="2037"/>
         <source>Are you sure you want to delete this image?</source>
         <comment>Confirm deleting image file on Message Box body</comment>
         <translation>本当にこの画像を削除しますか？</translation>
@@ -2313,15 +2335,6 @@
         <source>NOT IMAGE FILE</source>
         <comment>Error messages to be displayed on screen when image loading fails</comment>
         <translation type="vanished">画像以外のファイルです</translation>
-    </message>
-</context>
-<context>
-    <name>QLanguageSelector</name>
-    <message>
-        <location filename="../src/qlanguageselector/qlanguageselector.cpp" line="148"/>
-        <source>Always use text translation</source>
-        <comment>Menu text that uses textual translation rather than regular qm format</comment>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
