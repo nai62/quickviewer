@@ -3,3 +3,4 @@ QuickViewer-*
 .svn
 build/*
 /results
+/apps/quickviewer/translations/quickviewer_*.qm

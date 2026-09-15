@@ -293,13 +293,14 @@ if not exist "!QV_TRANSLATION_DEST!" mkdir "!QV_TRANSLATION_DEST!"
 if errorlevel 1 exit /b 1
 copy /Y "!QV_TRANSLATION_SOURCE!\languages.ini" "!QV_TRANSLATION_DEST!\" >nul
 if errorlevel 1 exit /b 1
-for %%F in ("!QV_TRANSLATION_SOURCE!\quickviewer_*.ts") do (
-    "%QV_QT_DIR%\bin\lrelease.exe" "%%~fF" -qm "!QV_TRANSLATION_DEST!\%%~nF.qm" >nul
-    if errorlevel 1 exit /b 1
-)
 copy /Y "!QV_TRANSLATION_SOURCE!\qt_el.qm" "!QV_TRANSLATION_DEST!\" >nul
 if errorlevel 1 exit /b 1
-if not exist "!QV_TRANSLATION_DEST!\quickviewer_ja.qm" exit /b 1
+for %%F in ("!QV_TRANSLATION_SOURCE!\quickviewer_*.ts") do (
+    if not exist "!QV_TRANSLATION_DEST!\%%~nF.qm" (
+        echo ERROR: Expected generated translation catalog is missing: !QV_TRANSLATION_DEST!\%%~nF.qm
+        exit /b 1
+    )
+)
 exit /b 0
 
 :set_action

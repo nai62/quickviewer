@@ -5,11 +5,11 @@ for %%I in ("%~dp0..") do set "QV_SOURCE_DIR=%%~fI"
 
 if not defined QV_QT_DIR set "QV_QT_DIR=C:\Qt\6.11.2\msvc2022_64"
 
-set "QV_LUPDATE=%QV_QT_DIR%\bin\lupdate.exe"
+set "QV_LUPDATE_PRO=%QV_QT_DIR%\bin\lupdate-pro.exe"
 set "QV_PROJECT=%QV_SOURCE_DIR%\QVproject.pro"
 
-if not exist "%QV_LUPDATE%" (
-    echo ERROR: lupdate not found: %QV_LUPDATE%
+if not exist "%QV_LUPDATE_PRO%" (
+    echo ERROR: lupdate-pro not found: %QV_LUPDATE_PRO%
     exit /b 2
 )
 
@@ -20,13 +20,13 @@ if not exist "%QV_PROJECT%" (
 
 echo === Updating Qt translation source files ===
 echo Project: %QV_PROJECT%
-echo lupdate: %QV_LUPDATE%
+echo lupdate-pro: %QV_LUPDATE_PRO%
 echo.
 
-"%QV_LUPDATE%" "%QV_PROJECT%"
+"%QV_LUPDATE_PRO%" "%QV_PROJECT%"
 if errorlevel 1 (
     echo.
-    echo ERROR: lupdate failed.
+    echo ERROR: lupdate-pro failed.
     exit /b 1
 )
 

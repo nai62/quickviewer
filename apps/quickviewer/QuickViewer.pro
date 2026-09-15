@@ -23,7 +23,7 @@ VERSION = 1.2.8
 
 TARGET = QuickViewer
 TEMPLATE = app
-CONFIG += plugin
+CONFIG += plugin lrelease
 
 QMAKE_TARGET_COMPANY = KATO Kanryu(k.kanryu@gmail.com)
 QMAKE_TARGET_PRODUCT = QuickViewer
@@ -37,6 +37,16 @@ DEFINES += \
 CODECFORSRC = UTF-8
 
 DESTDIR = ../../bin
+LRELEASE_DIR = $${DESTDIR}/translations
+
+TRANSLATIONS = \
+    translations/quickviewer_ar.ts \
+    translations/quickviewer_el.ts \
+    translations/quickviewer_es.ts \
+    translations/quickviewer_fr.ts \
+    translations/quickviewer_ja.ts \
+    translations/quickviewer_ru.ts \
+    translations/quickviewer_zh.ts
 
 INCLUDEPATH += ../../third_party/resizehalf
 INCLUDEPATH += ../../third_party/easyexif
@@ -260,15 +270,6 @@ RESOURCES += toolbar.qrc \
 RC_ICONS = icons/appicon.ico
 
 
-DISTFILES += \
-    translations/quickviewer_ja.qm \
-    translations/quickviewer_es.qm \
-    translations/quickviewer_zh.qm \
-    translations/quickviewer_el.qm \
-    translations/quickviewer_fr.qm \
-    translations/quickviewer_ru.qm \
-    translations/quickviewer_ar.qm \
-
 # Shaders will be installed into DIST_DIR/shaders
 SHADERS += \
     shaders/bicubic.frag \
@@ -357,16 +358,10 @@ win32 : !CONFIG(debug, debug|release) {
     install_deploy_files.commands = $$shell_path($$[QT_INSTALL_BINS]/windeployqt) --release --compiler-runtime $$shell_path($${MY_DEFAULT_INSTALL}/QuickViewer.exe)
 
     install_translations.path = $${MY_DEFAULT_INSTALL}/translations
+    QM_FILES_INSTALL_PATH = $${install_translations.path}
     install_translations.commands = $$shell_path($$[QT_INSTALL_BINS]/../../../Tools/QtCreator/bin/qbs) resolve -f $${PWD}/translations/maketransconf.qbs qbs.installRoot:$${MY_DEFAULT_INSTALL}
     install_translations.files = \
         $${PWD}/translations/languages.ini \
-        $${PWD}/translations/quickviewer_ja.qm \
-        $${PWD}/translations/quickviewer_es.qm \
-        $${PWD}/translations/quickviewer_zh.qm \
-        $${PWD}/translations/quickviewer_el.qm \
-        $${PWD}/translations/quickviewer_fr.qm \
-        $${PWD}/translations/quickviewer_ru.qm \
-        $${PWD}/translations/quickviewer_ar.qm \
         $${PWD}/translations/qt_el.qm \
 
     install_translations2.path = $${MY_DEFAULT_INSTALL}/translations
@@ -459,15 +454,9 @@ linux : !CONFIG(debug, debug|release) : contains(DEFINES, QV_PORTABLE) {
 #    install_translations.commands = ldd $${MY_DEFAULT_INSTALL}/usr/bin/QuickViewer | awk \'\$$1==\"libstdc++.so.$${GCC_MAJOR}\" {print \$$3}\' | xargs cp -t $${MY_DEFAULT_INSTALL}/usr/lib
 
     install_translations.path = $${MY_DEFAULT_INSTALL}/translations
+    QM_FILES_INSTALL_PATH = $${install_translations.path}
     install_translations.files = \
         $${PWD}/translations/languages.ini \
-        $${PWD}/translations/quickviewer_ja.qm \
-        $${PWD}/translations/quickviewer_es.qm \
-        $${PWD}/translations/quickviewer_zh.qm \
-        $${PWD}/translations/quickviewer_el.qm \
-        $${PWD}/translations/quickviewer_fr.qm \
-        $${PWD}/translations/quickviewer_ru.qm \
-        $${PWD}/translations/quickviewer_ar.qm \
         $${PWD}/translations/qt_el.qm \
         $$[QT_INSTALL_TRANSLATIONS]/qt_zh_CN.qm \
 
@@ -537,15 +526,9 @@ linux : !CONFIG(debug, debug|release) : !contains(DEFINES, QV_PORTABLE) {
     install_deploy_files.depends = install_install_target install_install_libs
 
     install_translations.path = $$[QT_INSTALL_TRANSLATIONS]
+    QM_FILES_INSTALL_PATH = $${install_translations.path}
     install_translations.files = \
         $${PWD}/translations/languages.ini \
-        $${PWD}/translations/quickviewer_ja.qm \
-        $${PWD}/translations/quickviewer_es.qm \
-        $${PWD}/translations/quickviewer_zh.qm \
-        $${PWD}/translations/quickviewer_el.qm \
-        $${PWD}/translations/quickviewer_fr.qm \
-        $${PWD}/translations/quickviewer_ru.qm \
-        $${PWD}/translations/quickviewer_ar.qm \
         $${PWD}/translations/qt_el.qm
 
     install_assoc_icons.path = $${QV_SHARED_PATH}/QuickViewer/icons
@@ -583,16 +566,10 @@ macos : !CONFIG(debug, debug|release) {
     install_deploy_files.depends = install_install_target install_install_libs
 
     install_translations.path = $${MY_DEFAULT_INSTALL}/Contents/Resources/translations
+    QM_FILES_INSTALL_PATH = $${install_translations.path}
     install_translations.commands = rm -f $${MY_DEFAULT_INSTALL}/Contents/PlugIns/sqldrivers/libqsqlmysql.dylib $${MY_DEFAULT_INSTALL}/Contents/PlugIns/sqldrivers/libqsqlpsql.dylib
     install_translations.files = \
         $${PWD}/translations/languages.ini \
-        $${PWD}/translations/quickviewer_ja.qm \
-        $${PWD}/translations/quickviewer_es.qm \
-        $${PWD}/translations/quickviewer_zh.qm \
-        $${PWD}/translations/quickviewer_el.qm \
-        $${PWD}/translations/quickviewer_fr.qm \
-        $${PWD}/translations/quickviewer_ru.qm \
-        $${PWD}/translations/quickviewer_ar.qm \
         $${PWD}/translations/qt_el.qm \
         $$[QT_INSTALL_TRANSLATIONS]/qt_zh_CN.qm \
 
