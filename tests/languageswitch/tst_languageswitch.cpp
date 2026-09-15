@@ -94,6 +94,16 @@ static bool emitLanguageChanged(const QString &language)
         Q_ARG(QString, language));
 }
 
+static QAction *actionForSubmenu(QMenu *parentMenu, QMenu *submenu)
+{
+    for (QAction *action : parentMenu->actions()) {
+        if (action->menu() == submenu) {
+            return action;
+        }
+    }
+    return nullptr;
+}
+
 static bool containsJapanese(const QString &text)
 {
     for (const QChar ch : text) {
@@ -190,25 +200,30 @@ private slots:
 
     void loadBookmarkRetranslatesAfterLanguageSwitch()
     {
+        DecoratingTranslator startupTranslator(QStringLiteral("{{"), QStringLiteral("}}"));
+        DecoratingTranslator switchedTranslator(QStringLiteral("[["), QStringLiteral("]]"));
+        TranslatorGuard translator;
+        QVERIFY(translator.set(&startupTranslator));
+
         LanguageSwitchWindow viewer;
         auto *loadAction = viewer.findChild<QAction *>(QStringLiteral("actionLoadBookmark"));
         auto *loadMenu = viewer.findChild<QMenu *>(QStringLiteral("menuLoadBookmark"));
+        auto *navigationMenu = viewer.findChild<QMenu *>(QStringLiteral("menuNavigation"));
         QVERIFY(loadAction != nullptr);
         QVERIFY(loadMenu != nullptr);
+        QVERIFY(navigationMenu != nullptr);
 
-        DecoratingTranslator first(QStringLiteral("{{"), QStringLiteral("}}"));
-        DecoratingTranslator second(QStringLiteral("[["), QStringLiteral("]]"));
-        TranslatorGuard translator;
-
-        QVERIFY(translator.set(&first));
-        QVERIFY(emitLanguageChanged(QStringLiteral("First test language")));
+        QAction *navigationLoadAction = actionForSubmenu(navigationMenu, loadMenu);
+        QVERIFY(navigationLoadAction != nullptr);
         QCOMPARE(loadAction->text(), QStringLiteral("{{Load bookmark}}"));
-        QCOMPARE(loadMenu->title(), QStringLiteral("{{Load bookmark}}"));
+        QCOMPARE(navigationLoadAction->text(), QStringLiteral("{{Load bookmark}}"));
 
-        QVERIFY(translator.set(&second));
+        QVERIFY(translator.set(&switchedTranslator));
         QVERIFY(emitLanguageChanged(QStringLiteral("Second test language")));
-        QCOMPARE(loadAction->text(), marker(QStringLiteral("Load bookmark")));
-        // The removed regression translated the stale source "LoadBookmark" here.
+
+        navigationLoadAction = actionForSubmenu(navigationMenu, loadMenu);
+        QCOMPARE(navigationLoadAction, loadAction);
+        QCOMPARE(navigationLoadAction->text(), marker(QStringLiteral("Load bookmark")));
         QCOMPARE(loadMenu->title(), marker(QStringLiteral("Load bookmark")));
 
         translator.clear();

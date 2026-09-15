@@ -3,6 +3,11 @@
 
 #include <QtCore>
 
+#include <QAction>
+#include <QMenu>
+
+#include <type_traits>
+
 /**
  * @brief The QActionManager class
  *
@@ -45,6 +50,9 @@ public:
     }
     void registerAction(QString name, Action &action, QString group)
     {
+        if constexpr (std::is_same_v<Action, QAction *>) {
+            repairOverriddenMenuAction(action);
+        }
         m_actionByName[name] = action;
         m_nameByGroup.insert(group, name);
     }
@@ -176,6 +184,31 @@ public:
     }
 
 private:
+    static void repairOverriddenMenuAction(QAction *action)
+    {
+        // QAction::setMenu() overrides QMenu::menuAction(), but it does not
+        // replace a default menu action that was already inserted elsewhere.
+        if (action == nullptr || action->menu() == nullptr) {
+            return;
+        }
+
+        QMenu *submenu = action->menu();
+        auto *parentMenu = qobject_cast<QMenu *>(submenu->parentWidget());
+        if (parentMenu == nullptr) {
+            return;
+        }
+
+        const QList<QAction *> parentActions = parentMenu->actions();
+        for (QAction *parentAction : parentActions) {
+            if (parentAction == action || parentAction->menu() != submenu) {
+                continue;
+            }
+            parentMenu->insertAction(parentAction, action);
+            parentMenu->removeAction(parentAction);
+            return;
+        }
+    }
+
     QMap<QString, Action> m_actionByName;
     QMultiMap<QString, QString> m_nameByGroup;
     QMap<QString, Key> m_keyByName;
