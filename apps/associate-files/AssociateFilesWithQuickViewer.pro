@@ -72,11 +72,6 @@ contains(TARGET_ARCH, x86_64) {
 
 DESTDIR = ../../bin
 
-DISTFILES += \
-    ../quickviewer/translations/quickviewer_ja.qm \
-    ../quickviewer/translations/quickviewer_es.qm \
-    ../quickviewer/translations/quickviewer_zh.qm \
-
 RESOURCES += \
     resources.qrc
 

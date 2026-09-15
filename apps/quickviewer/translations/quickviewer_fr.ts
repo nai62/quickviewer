@@ -612,62 +612,62 @@
 <context>
     <name>FileAssocDialog</name>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="90"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="90"/>
         <source>Truevision Graphics Adapter Format (*.tga)</source>
         <translation>Format de l&apos;adaptateur graphique Truevision (*.tga)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="118"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="118"/>
         <source>Nikon RAW format (*.nef)</source>
         <translation>Format brut Nicon (*.nef)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="111"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="111"/>
         <source>Canon RAW format (*.crw, *.cr2)</source>
         <translation>Format brut Canon (*.crw, *.cr2)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="27"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="27"/>
         <source>JPEG Image (*.jpg, *.jpeg, *.jpe)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="97"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="97"/>
         <source>HEIF Image (*.heic, *.heif)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="125"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="125"/>
         <source>Sony RAW format (*.arw)</source>
         <translation>Format Sony Raw (*.arw)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="132"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="132"/>
         <source>Used by Ricoh, Casio, Pentax, Nokia, Leica, and others</source>
         <translation>pour Ricoh, Casio, Pentax, Nokia, Leica, etc.</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="135"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="135"/>
         <source>Adobe Digital Negative Format (*.dng)</source>
         <translation>Format négatif numérique Adobe (*.dng)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="55"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="55"/>
         <source>Bitmap Format (*.bmp)</source>
         <translation>Format bitmap (*.bmp)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="48"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="48"/>
         <source>Animated PNG Format (*.apng)</source>
         <translation>Format PNG animé (*.apng)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="76"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="76"/>
         <source>Windows Icon Format (*.ico)</source>
         <translation>Format des icônes Windows (*.ico)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="62"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="62"/>
         <source>DirectDraw Surface Format (*.dds)</source>
         <translation>Format de surface DirectDraw (*.dds)</translation>
     </message>
@@ -702,39 +702,39 @@
         <translation type="vanished">&amp;Voir avec QuickViewer</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="14"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="14"/>
         <source>Associate files with QuickViewer</source>
         <translation>Associer fichiers à QuickViewer</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="207"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="207"/>
         <source>Select all</source>
         <extracomment>Button to turn all check boxes on</extracomment>
         <translation>ToutNonValide</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="200"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="200"/>
         <source>Clear all</source>
         <extracomment>Button to turn off all check box</extracomment>
         <translation>ToutNonInvalid</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="69"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="69"/>
         <source>WebP Image (*.webp)</source>
         <translation>Image WebP (*.webp)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="41"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="41"/>
         <source>PNG File (*.png)</source>
         <translation>Fichier PNG (*.png)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="83"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="83"/>
         <source>TIFF Image (*.tif, *.tiff)</source>
         <translation>Image TIFF (*.tif, *.tiff)</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="34"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="34"/>
         <source>GIF Image (*.gif)</source>
         <translation>Image GIF (*.gif)</translation>
     </message>
@@ -788,103 +788,103 @@
         <translation type="vanished">Image WebP</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.ui" line="188"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="188"/>
         <source>Click OK to update the Windows registry, or Cancel to leave it unchanged.</source>
         <translation>Si vous appuyez sur le bouton OK, vous écrirez dans le registre. Annuler si inutile.</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="49"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="49"/>
         <source>JPEG Image</source>
         <comment>description of File format on Explorer(.jpeg)</comment>
         <translation>Image JPEG</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="52"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="52"/>
         <source>PNG File</source>
         <comment>description of File format on Explorer(.png)</comment>
         <translation>Fichier PNG</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="55"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="55"/>
         <source>Truevision Graphics Adapter Format Image</source>
         <comment>description of File format on Explorer(.tga)</comment>
         <translation>Image du format de l&apos;adaptateur graphique Truevision</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="58"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="58"/>
         <source>Animated PNG File</source>
         <comment>description of File format on Explorer(.apng)</comment>
         <translation>Fichier PNG animé</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="61"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="61"/>
         <source>Bitmap File</source>
         <comment>description of File format on Explorer(.bmp)</comment>
         <translation>Fichier Bitmap</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="64"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="64"/>
         <source>DirectDraw Surface Image</source>
         <comment>description of File format on Explorer(.dds)</comment>
         <translation>Surface d&apos;image DirectDraw</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="67"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="67"/>
         <source>GIF Image</source>
         <comment>description of File format on Explorer(.gif)</comment>
         <translation>Image GIF</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="70"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="70"/>
         <source>Windows Icon File</source>
         <comment>description of File format on Explorer(.ico)</comment>
         <translation>Fichier d&apos;icône Windows</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="73"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="73"/>
         <source>TIFF image</source>
         <comment>description of File format on Explorer(.tiff)</comment>
         <translation>Image Tiff</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="76"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="76"/>
         <source>WebP Image</source>
         <comment>description of File format on Explorer(.webp)</comment>
         <translation>Image WebP</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="79"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="79"/>
         <source>HEIF Image</source>
         <comment>description of File format on Explorer(.heic, .heif)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="82"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="82"/>
         <source>Canon RAW format</source>
         <comment>description of File format on Explorer(.cr2)</comment>
         <translation>Format brut Canon</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="85"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="85"/>
         <source>Adobe Digital Negative Format</source>
         <comment>description of File format on Explorer(.dng)</comment>
         <translation>Format négatif numérique Adobe</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="88"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="88"/>
         <source>Nikon RAW format</source>
         <comment>description of File format on Explorer(.nef)</comment>
         <translation>Format brut Nicon</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="91"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="91"/>
         <source>Sony RAW format</source>
         <comment>description of File format on Explorer(.arw)</comment>
         <translation>Format Sony Raw</translation>
     </message>
     <message>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="185"/>
-        <location filename="../../AssociateFilesWithQuickViewer/fileassocdialog.cpp" line="222"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="185"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="222"/>
         <source>&amp;View with QuickViewer</source>
         <comment>Menu displayed when right clicking on file in Explorer</comment>
         <translation>&amp;Voir avec QuickViewer</translation>
@@ -1199,6 +1199,19 @@
     </message>
 </context>
 <context>
+    <name>ImageView</name>
+    <message>
+        <location filename="../src/imageview.cpp" line="220"/>
+        <source>Cannot Open Archive</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="221"/>
+        <source>This archive is password-protected. Password-protected archives are not supported.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>KeyConfigDialog</name>
     <message>
         <location filename="../src/qactionmanager/keyconfigdialog.ui" line="259"/>
@@ -1375,6 +1388,15 @@
     </message>
 </context>
 <context>
+    <name>LanguageManager</name>
+    <message>
+        <location filename="../../../components/i18n/languagemanager.cpp" line="151"/>
+        <source>Always use text translation</source>
+        <comment>Menu text that uses textual translation rather than regular qm format</comment>
+        <translation type="unfinished">Toujours utiliser la traduction de texte</translation>
+    </message>
+</context>
+<context>
     <name>MainWindow</name>
     <message>
         <location filename="../src/mainwindow.ui" line="252"/>
@@ -1404,7 +1426,7 @@
         <translation>&amp;ajustement</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="143"/>
+        <location filename="../src/mainwindow.cpp" line="145"/>
         <source>&amp;Fullscreen</source>
         <translation>&amp;Plein écran</translation>
     </message>
@@ -1543,7 +1565,7 @@
         <translation>EffacerSignets</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2165"/>
+        <location filename="../src/mainwindow.cpp" line="2185"/>
         <source>Bookmark saved.</source>
         <translation>Signet enregistré..</translation>
     </message>
@@ -2115,7 +2137,7 @@
         <translation>Heure modifiée (décroissante)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="227"/>
+        <location filename="../src/mainwindow.cpp" line="229"/>
         <source>No folder or archive is loaded.</source>
         <comment>The text of the status bar to be displayed when there is no image to be displayed immediately after the application is activated</comment>
         <translation>Aucun dossier ou archive n&apos;est chargé.</translation>
@@ -2131,49 +2153,49 @@
         <translation type="vanished">Le fichier image n&apos;a pas été trouvé. Ne peut être ouvert.</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="676"/>
+        <location filename="../src/mainwindow.cpp" line="691"/>
         <source>Image file not found. It cannot be opened.</source>
         <comment>Text to display in the status bar when failed to open the specified Volume</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1420"/>
+        <location filename="../src/mainwindow.cpp" line="1440"/>
         <source>Image file was not found and cannot be opened.</source>
         <comment>Text to display in the status bar when failed to open the specified Volume</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1444"/>
+        <location filename="../src/mainwindow.cpp" line="1464"/>
         <source>LoadBookmark</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1742"/>
+        <location filename="../src/mainwindow.cpp" line="1762"/>
         <source>All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.heic *.heif);;Archives( *.zip *.7z *.rar)</source>
         <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1745"/>
+        <location filename="../src/mainwindow.cpp" line="1765"/>
         <source>Select an image or archive</source>
         <comment>Title of the dialog displayed when opening a file with OpenFileFolder</comment>
         <translation>Veuillez sélectionner l&apos;image ou l&apos;archive</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1971"/>
-        <location filename="../src/mainwindow.cpp" line="2012"/>
+        <location filename="../src/mainwindow.cpp" line="1991"/>
+        <location filename="../src/mainwindow.cpp" line="2032"/>
         <source>Confirmation</source>
         <comment>Confirm deleting image file on MessageBox title</comment>
         <translation>Confirmation</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1976"/>
+        <location filename="../src/mainwindow.cpp" line="1996"/>
         <source>Are you sure you want to move the image to Recycle Bin?</source>
         <comment>Confirm putting displayed file in Recycle Box Message Box body</comment>
         <translation>Êtes-vous sûr de vouloir déplacer l&apos;image dans la corbeille?</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2017"/>
+        <location filename="../src/mainwindow.cpp" line="2037"/>
         <source>Are you sure you want to delete this image?</source>
         <comment>Confirm deleting image file on Message Box body</comment>
         <translation>Êtes-vous sûr de vouloir supprimer cette image?</translation>
@@ -2798,10 +2820,9 @@
         <translation type="vanished">Toujours utiliser la traduction de texte</translation>
     </message>
     <message>
-        <location filename="../src/qlanguageselector/qlanguageselector.cpp" line="148"/>
         <source>Always use text translation</source>
         <comment>Menu text that uses textual translation rather than regular qm format</comment>
-        <translation>Toujours utiliser la traduction de texte</translation>
+        <translation type="vanished">Toujours utiliser la traduction de texte</translation>
     </message>
 </context>
 <context>

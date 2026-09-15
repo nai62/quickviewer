@@ -56,15 +56,3 @@ win32 {
 
 
 CODECFORSRC = UTF-8
-
-TRANSLATIONS = \
-    apps/quickviewer/translations/quickviewer_ja.ts \
-    apps/quickviewer/translations/quickviewer_es.ts \
-    apps/quickviewer/translations/quickviewer_zh.ts \
-    apps/quickviewer/translations/quickviewer_el.ts \
-    apps/quickviewer/translations/quickviewer_fr.ts \
-    apps/quickviewer/translations/quickviewer_ru.ts \
-    apps/quickviewer/translations/quickviewer_ar.ts \
-
-DISTFILES += \
-    apps/quickviewer/translations/quickviewer_ja.qm \
