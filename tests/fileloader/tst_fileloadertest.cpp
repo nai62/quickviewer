@@ -100,6 +100,7 @@ static void verifyRarArchive(const QString &archivePath, const QString &firstNam
     RarExtractor rar(archivePath);
     QVERIFY2(rar.open(RarExtractor::OpenModeList), qPrintable(archivePath));
     QVERIFY(rar.archiveError() == RarArchiveError::None);
+    QVERIFY(!rar.isSolid());
 
     const QStringList files = rar.fileNameList();
     QCOMPARE(files.size(), 6);
@@ -116,6 +117,7 @@ static void verifyRarArchive(const QString &archivePath, const QString &firstNam
 
     const int firstIndex = nonEmptyFiles.at(0);
     const int secondIndex = nonEmptyFiles.at(1);
+    rar.resetStatistics();
     const RarFileDataResult first = rar.fileDataResult(files.at(firstIndex));
     QVERIFY(first.success);
     QCOMPARE(first.data.size(), 462336);
@@ -123,10 +125,15 @@ static void verifyRarArchive(const QString &archivePath, const QString &firstNam
     const RarFileDataResult second = rar.fileDataResult(files.at(secondIndex));
     QVERIFY(second.success);
     QCOMPARE(second.data.size(), static_cast<qsizetype>(fileInfoList.at(secondIndex).unpSize));
+    QCOMPARE(rar.statistics().reopenCount, quint64(0));
+    QCOMPARE(rar.statistics().extractCount, quint64(2));
 
+    rar.resetStatistics();
     const RarFileDataResult reread = rar.fileDataResult(files.at(firstIndex));
     QVERIFY(reread.success);
     QCOMPARE(reread.data, first.data);
+    QCOMPARE(rar.statistics().reopenCount, quint64(1));
+    QCOMPARE(rar.statistics().extractCount, quint64(1));
 
     FileLoaderRarArchive loader(archivePath);
     QVERIFY(loader.isValid());

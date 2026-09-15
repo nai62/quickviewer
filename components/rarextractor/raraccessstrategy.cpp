@@ -243,15 +243,24 @@ RarFileDataResult RarArchive::extractCurrent()
     return {writer.data(), RarArchiveError::None, true};
 }
 
-NonSolidRarAccessStrategy::NonSolidRarAccessStrategy(QString archiveName, RarAccessStatistics *statistics)
+NonSolidRarAccessStrategy::NonSolidRarAccessStrategy(
+    QString archiveName, QStringList physicalEntries, RarAccessStatistics *statistics)
     : m_archive(new RarArchive(std::move(archiveName), statistics)),
+      m_physicalEntries(std::move(physicalEntries)),
       m_statistics(statistics),
-      m_handleUsed(false)
-{}
+      m_cursor(0)
+{
+    for (int index = 0; index < m_physicalEntries.size(); ++index) {
+        const QString &fileName = m_physicalEntries.at(index);
+        if (!m_physicalEntryIndex.contains(fileName)) {
+            m_physicalEntryIndex.insert(fileName, index);
+        }
+    }
+}
 
 bool NonSolidRarAccessStrategy::open()
 {
-    m_handleUsed = false;
+    m_cursor = 0;
     return m_archive->open(RarArchive::OpenMode::Extract);
 }
 
@@ -260,7 +269,7 @@ bool NonSolidRarAccessStrategy::reopen()
     if (m_statistics) {
         ++m_statistics->reopenCount;
     }
-    m_handleUsed = false;
+    m_cursor = 0;
     return m_archive->open(RarArchive::OpenMode::Extract);
 }
 
@@ -269,27 +278,47 @@ RarFileDataResult NonSolidRarAccessStrategy::read(const QString &fileName)
     if (m_archive->error() != RarArchiveError::None) {
         return {{}, m_archive->error(), false};
     }
-    if (m_handleUsed && !reopen()) {
+
+    const auto target = m_physicalEntryIndex.constFind(fileName);
+    if (target == m_physicalEntryIndex.cend()) {
+        return {{}, RarArchiveError::Unsupported, false};
+    }
+    const int targetIndex = target.value();
+
+    if (targetIndex < m_cursor && !reopen()) {
         return {{}, m_archive->error(), false};
     }
-    m_handleUsed = true;
 
-    for (;;) {
+    while (m_cursor <= targetIndex) {
         RARFileInfo info;
         const RarArchive::HeaderReadResult readResult = m_archive->readHeader(&info);
         if (readResult == RarArchive::HeaderReadResult::End) {
-            return {{}, RarArchiveError::Unsupported, false};
+            return {{}, RarArchiveError::Corrupt, false};
         }
         if (readResult == RarArchive::HeaderReadResult::Error) {
             return {{}, m_archive->error(), false};
         }
-        if (info.fileName == fileName) {
-            return m_archive->extractCurrent();
+        if (m_cursor >= m_physicalEntries.size() || info.fileName != m_physicalEntries.at(m_cursor)) {
+            return {{}, RarArchiveError::Corrupt, false};
         }
-        if (!m_archive->skipCurrent()) {
-            return {{}, m_archive->error(), false};
+
+        if (m_cursor < targetIndex) {
+            if (!m_archive->skipCurrent()) {
+                return {{}, m_archive->error(), false};
+            }
+            ++m_cursor;
+            continue;
         }
+
+        RarFileDataResult result = m_archive->extractCurrent();
+        if (!result.success) {
+            return result;
+        }
+        ++m_cursor;
+        return result;
     }
+
+    return {{}, RarArchiveError::Corrupt, false};
 }
 
 RarArchiveError NonSolidRarAccessStrategy::error() const

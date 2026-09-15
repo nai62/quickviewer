@@ -70,7 +70,8 @@ bool RarExtractor::open(OpenMode mode)
         m_accessStrategy.reset(
             new SolidRarAccessStrategy(m_arcName, std::move(physicalEntries), &m_statistics));
     } else {
-        m_accessStrategy.reset(new NonSolidRarAccessStrategy(m_arcName, &m_statistics));
+        m_accessStrategy.reset(
+            new NonSolidRarAccessStrategy(m_arcName, std::move(physicalEntries), &m_statistics));
     }
 
     ++m_statistics.reopenCount;

@@ -65,7 +65,7 @@ public:
 class NonSolidRarAccessStrategy final : public IRarAccessStrategy
 {
 public:
-    NonSolidRarAccessStrategy(QString archiveName, RarAccessStatistics *statistics);
+    NonSolidRarAccessStrategy(QString archiveName, QStringList physicalEntries, RarAccessStatistics *statistics);
 
     bool open() override;
     bool reopen() override;
@@ -74,8 +74,10 @@ public:
 
 private:
     std::unique_ptr<RarArchive> m_archive;
+    QStringList m_physicalEntries;
+    QHash<QString, int> m_physicalEntryIndex;
     RarAccessStatistics *m_statistics;
-    bool m_handleUsed;
+    int m_cursor;
 };
 
 class SolidRarAccessStrategy final : public IRarAccessStrategy
