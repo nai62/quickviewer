@@ -77,19 +77,21 @@
         <translation>本のタイトルから(かっこ)に書かれたオプションを取り除く</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="51"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="42"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="60"/>
         <source>Enter a search term and press Enter to search by title.</source>
         <comment>Gray text that prompts a keyword search of Volume</comment>
         <translation>タイトルで検索するには、この欄に検索語を入力してEnterキーを押してください。</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="68"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="44"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="77"/>
         <source>Drop an image folder here to create a catalog.</source>
         <comment>Status bar text briefly explaining how to use CatalogWindow</comment>
         <translation>画像フォルダをドロップしてカタログを作成しましょう。</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="189"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="198"/>
         <source>%1 of %2 volumes</source>
         <comment>Text of the status bar showing [the number of hits]/[total number] of Volume</comment>
         <translation>(%1/%2)件 表示中。</translation>
@@ -133,308 +135,308 @@
         <translation>Exif情報</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="184"/>
+        <location filename="../src/exifdialog.cpp" line="188"/>
         <source>Image description</source>
         <translation>画像の説明</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="164"/>
+        <location filename="../src/exifdialog.cpp" line="168"/>
         <source>Make</source>
         <translation>メーカー</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="165"/>
+        <location filename="../src/exifdialog.cpp" line="169"/>
         <source>Model</source>
         <translation>機種</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="175"/>
+        <location filename="../src/exifdialog.cpp" line="179"/>
         <source>F-number</source>
         <translation>F値</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="182"/>
+        <location filename="../src/exifdialog.cpp" line="186"/>
         <source>Flash</source>
         <translation>フラッシュ</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="162"/>
+        <location filename="../src/exifdialog.cpp" line="166"/>
         <source>Image width</source>
         <translation>画像幅</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="163"/>
+        <location filename="../src/exifdialog.cpp" line="167"/>
         <source>Image height</source>
         <translation>画像高さ</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="168"/>
+        <location filename="../src/exifdialog.cpp" line="172"/>
         <source>Bits per sample</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="169"/>
+        <location filename="../src/exifdialog.cpp" line="173"/>
         <source>Software</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="170"/>
+        <location filename="../src/exifdialog.cpp" line="174"/>
         <source>DateTime</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="171"/>
+        <location filename="../src/exifdialog.cpp" line="175"/>
         <source>Date/time original</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="172"/>
+        <location filename="../src/exifdialog.cpp" line="176"/>
         <source>Date/time digitized</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="173"/>
+        <location filename="../src/exifdialog.cpp" line="177"/>
         <source>Subsecond time original</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="185"/>
+        <location filename="../src/exifdialog.cpp" line="189"/>
         <source>Copyright</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="174"/>
+        <location filename="../src/exifdialog.cpp" line="178"/>
         <source>Exposure time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="176"/>
+        <location filename="../src/exifdialog.cpp" line="180"/>
         <source>ISO speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="177"/>
+        <location filename="../src/exifdialog.cpp" line="181"/>
         <source>Shutter speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="178"/>
+        <location filename="../src/exifdialog.cpp" line="182"/>
         <source>Exposure bias</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="179"/>
+        <location filename="../src/exifdialog.cpp" line="183"/>
         <source>Subject distance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="180"/>
+        <location filename="../src/exifdialog.cpp" line="184"/>
         <source>Focal length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="181"/>
+        <location filename="../src/exifdialog.cpp" line="185"/>
         <source>35 mm equivalent focal length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="183"/>
+        <location filename="../src/exifdialog.cpp" line="187"/>
         <source>Metering mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="46"/>
+        <location filename="../src/exifdialog.cpp" line="50"/>
         <source>Flash did not fire</source>
         <comment>JPEG EXIF Flash setting value (0x0)</comment>
         <translation>フラッシュなし</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="55"/>
+        <location filename="../src/exifdialog.cpp" line="59"/>
         <source>Flash fired</source>
         <comment>JPEG EXIF Flash setting value (0x1)</comment>
         <translation>フラッシュあり</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="57"/>
+        <location filename="../src/exifdialog.cpp" line="61"/>
         <source>Strobe return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x5)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="59"/>
+        <location filename="../src/exifdialog.cpp" line="63"/>
         <source>Strobe return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x7)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="61"/>
+        <location filename="../src/exifdialog.cpp" line="65"/>
         <source>Flash fired, compulsory flash mode</source>
         <comment>JPEG EXIF Flash setting value (0x9)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="63"/>
+        <location filename="../src/exifdialog.cpp" line="67"/>
         <source>Flash fired, compulsory flash mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0xD)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="65"/>
+        <location filename="../src/exifdialog.cpp" line="69"/>
         <source>Flash fired, compulsory flash mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0xF)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="67"/>
+        <location filename="../src/exifdialog.cpp" line="71"/>
         <source>Flash did not fire, compulsory flash mode</source>
         <comment>JPEG EXIF Flash setting value (0x10)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="69"/>
+        <location filename="../src/exifdialog.cpp" line="73"/>
         <source>Flash did not fire, auto mode</source>
         <comment>JPEG EXIF Flash setting value (0x18)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="71"/>
+        <location filename="../src/exifdialog.cpp" line="75"/>
         <source>Flash fired, auto mode</source>
         <comment>JPEG EXIF Flash setting value (0x19)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="73"/>
+        <location filename="../src/exifdialog.cpp" line="77"/>
         <source>Flash fired, auto mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x1D)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="75"/>
+        <location filename="../src/exifdialog.cpp" line="79"/>
         <source>Flash fired, auto mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x1F)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="77"/>
+        <location filename="../src/exifdialog.cpp" line="81"/>
         <source>No flash function</source>
         <comment>JPEG EXIF Flash setting value (0x20)</comment>
         <translation type="unfinished">フラッシュ機能なし</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="79"/>
+        <location filename="../src/exifdialog.cpp" line="83"/>
         <source>Flash fired, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x41)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="81"/>
+        <location filename="../src/exifdialog.cpp" line="85"/>
         <source>Flash fired, red-eye reduction mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x45)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="83"/>
+        <location filename="../src/exifdialog.cpp" line="87"/>
         <source>Flash fired, red-eye reduction mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x47)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="85"/>
+        <location filename="../src/exifdialog.cpp" line="89"/>
         <source>Flash fired, compulsory flash mode, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x49)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="87"/>
+        <location filename="../src/exifdialog.cpp" line="91"/>
         <source>Flash fired, compulsory flash mode, red-eye reduction mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x4D)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="89"/>
+        <location filename="../src/exifdialog.cpp" line="93"/>
         <source>Flash fired, compulsory flash mode, red-eye reduction mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x4F)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="91"/>
+        <location filename="../src/exifdialog.cpp" line="95"/>
         <source>Flash fired, auto mode, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x59)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="93"/>
+        <location filename="../src/exifdialog.cpp" line="97"/>
         <source>Flash fired, auto mode, return light not detected, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x5D)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="95"/>
+        <location filename="../src/exifdialog.cpp" line="99"/>
         <source>Flash fired, auto mode, return light detected, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x5F)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="128"/>
+        <location filename="../src/exifdialog.cpp" line="132"/>
         <source>Horizontal (normal)</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(0 or 1)</comment>
         <translation>水平(標準)</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="135"/>
+        <location filename="../src/exifdialog.cpp" line="139"/>
         <source>Mirror horizontal</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(2)</comment>
         <translation>上下反転</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="137"/>
+        <location filename="../src/exifdialog.cpp" line="141"/>
         <source>Rotate 180</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(3)</comment>
         <translation>180°回転</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="139"/>
+        <location filename="../src/exifdialog.cpp" line="143"/>
         <source>Mirror vertical</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(4)</comment>
         <translation>左右反転</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="141"/>
+        <location filename="../src/exifdialog.cpp" line="145"/>
         <source>Mirror horizontal and rotate 270 CW</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(5)</comment>
         <translation>上下反転、時計回りに270°回転</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="143"/>
+        <location filename="../src/exifdialog.cpp" line="147"/>
         <source>Rotate 90 CW</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(6)</comment>
         <translation>時計回りに90°回転</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="145"/>
+        <location filename="../src/exifdialog.cpp" line="149"/>
         <source>Mirror horizontal and rotate 90 CW</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(7)</comment>
         <translation>上下反転、時計回りに90°回転</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="147"/>
+        <location filename="../src/exifdialog.cpp" line="151"/>
         <source>Rotate 270 CW</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(8)</comment>
         <translation>時計回りに270°回転</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="156"/>
+        <location filename="../src/exifdialog.cpp" line="160"/>
         <source>Exif is not included.</source>
         <comment>Text to display if EXIF is not included in JPEG</comment>
         <translation>Exif情報が含まれていません。</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="160"/>
+        <location filename="../src/exifdialog.cpp" line="164"/>
         <source>Filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="166"/>
+        <location filename="../src/exifdialog.cpp" line="170"/>
         <source>Orientation of camera</source>
         <translation>カメラの向き</translation>
     </message>
@@ -449,7 +451,7 @@
         <translation type="vanished">ファイル名</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="161"/>
+        <location filename="../src/exifdialog.cpp" line="165"/>
         <source>Pixels</source>
         <translation>ピクセル数</translation>
     </message>
@@ -779,7 +781,8 @@
         <translation>このフォルダをホームフォルダにする</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="223"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="23"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="231"/>
         <source>No folders or archives found.</source>
         <comment>Display when there is no display item in Folder Window</comment>
         <translation>フォルダやアーカイブが見つかりません</translation>
@@ -1101,7 +1104,8 @@
         <translation>フィット表示(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="145"/>
+        <location filename="../src/mainwindow.cpp" line="146"/>
+        <location filename="../src/mainwindow.cpp" line="1484"/>
         <source>&amp;Fullscreen</source>
         <translation>フルスクリーン(&amp;F)</translation>
     </message>
@@ -1240,7 +1244,7 @@
         <translation>ブックマークを全て消去</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2185"/>
+        <location filename="../src/mainwindow.cpp" line="2219"/>
         <source>Bookmark saved.</source>
         <translation>ブックマークが保存されました。</translation>
     </message>
@@ -1458,7 +1462,7 @@
         <translation>ファイル名を変更する</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="229"/>
+        <location filename="../src/mainwindow.cpp" line="470"/>
         <source>No folder or archive is loaded.</source>
         <comment>The text of the status bar to be displayed when there is no image to be displayed immediately after the application is activated</comment>
         <translation>フォルダまたはアーカイブが読み込まれていません。</translation>
@@ -1474,7 +1478,7 @@
         <translation type="vanished">開くことができませんでした。画像ファイルが見つかりません。</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1765"/>
+        <location filename="../src/mainwindow.cpp" line="1795"/>
         <source>Select an image or archive</source>
         <comment>Title of the dialog displayed when opening a file with OpenFileFolder</comment>
         <translation>閲覧したい画像またはアーカイブを選択してください</translation>
@@ -1617,43 +1621,38 @@
         <translation>現在のページの画像ファイルを削除する</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1996"/>
+        <location filename="../src/mainwindow.cpp" line="2030"/>
         <source>Are you sure you want to move the image to Recycle Bin?</source>
         <comment>Confirm putting displayed file in Recycle Box Message Box body</comment>
         <translation>本当にこの画像をゴミ箱に入れますか？</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1991"/>
-        <location filename="../src/mainwindow.cpp" line="2032"/>
+        <location filename="../src/mainwindow.cpp" line="2025"/>
+        <location filename="../src/mainwindow.cpp" line="2066"/>
         <source>Confirmation</source>
         <comment>Confirm deleting image file on MessageBox title</comment>
         <translation>確認</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="691"/>
+        <location filename="../src/mainwindow.cpp" line="473"/>
         <source>Image file not found. It cannot be opened.</source>
         <comment>Text to display in the status bar when failed to open the specified Volume</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1440"/>
+        <location filename="../src/mainwindow.cpp" line="476"/>
         <source>Image file was not found and cannot be opened.</source>
         <comment>Text to display in the status bar when failed to open the specified Volume</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1464"/>
-        <source>LoadBookmark</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp" line="1762"/>
+        <location filename="../src/mainwindow.cpp" line="1792"/>
         <source>All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.heic *.heif);;Archives( *.zip *.7z *.rar)</source>
         <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2037"/>
+        <location filename="../src/mainwindow.cpp" line="2071"/>
         <source>Are you sure you want to delete this image?</source>
         <comment>Confirm deleting image file on Message Box body</comment>
         <translation>本当にこの画像を削除しますか？</translation>

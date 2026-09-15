@@ -77,19 +77,21 @@
         <translation>Remover (Options) titulo de libro</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="51"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="42"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="60"/>
         <source>Enter a search term and press Enter to search by title.</source>
         <comment>Gray text that prompts a keyword search of Volume</comment>
         <translation>Escribe una Búsqueda de palabra y Aprieta teclado de entrar.</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="68"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="44"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="77"/>
         <source>Drop an image folder here to create a catalog.</source>
         <comment>Status bar text briefly explaining how to use CatalogWindow</comment>
         <translation>Suelta una carpeta para crear un catalogo.</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="189"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="198"/>
         <source>%1 of %2 volumes</source>
         <comment>Text of the status bar showing [the number of hits]/[total number] of Volume</comment>
         <translation>(%1/%2) está en visualización.</translation>
@@ -133,308 +135,308 @@
         <translation>Información Exif</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="184"/>
+        <location filename="../src/exifdialog.cpp" line="188"/>
         <source>Image description</source>
         <translation>Explicación de imagen</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="164"/>
+        <location filename="../src/exifdialog.cpp" line="168"/>
         <source>Make</source>
         <translation>Fabricante</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="165"/>
+        <location filename="../src/exifdialog.cpp" line="169"/>
         <source>Model</source>
         <translation>Modelo</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="175"/>
+        <location filename="../src/exifdialog.cpp" line="179"/>
         <source>F-number</source>
         <translation>FNumero</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="182"/>
+        <location filename="../src/exifdialog.cpp" line="186"/>
         <source>Flash</source>
         <translation>Flash</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="162"/>
+        <location filename="../src/exifdialog.cpp" line="166"/>
         <source>Image width</source>
         <translation>Ancho de imagen</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="163"/>
+        <location filename="../src/exifdialog.cpp" line="167"/>
         <source>Image height</source>
         <translation>Altura de imagen</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="168"/>
+        <location filename="../src/exifdialog.cpp" line="172"/>
         <source>Bits per sample</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="169"/>
+        <location filename="../src/exifdialog.cpp" line="173"/>
         <source>Software</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="170"/>
+        <location filename="../src/exifdialog.cpp" line="174"/>
         <source>DateTime</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="171"/>
+        <location filename="../src/exifdialog.cpp" line="175"/>
         <source>Date/time original</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="172"/>
+        <location filename="../src/exifdialog.cpp" line="176"/>
         <source>Date/time digitized</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="173"/>
+        <location filename="../src/exifdialog.cpp" line="177"/>
         <source>Subsecond time original</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="185"/>
+        <location filename="../src/exifdialog.cpp" line="189"/>
         <source>Copyright</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="174"/>
+        <location filename="../src/exifdialog.cpp" line="178"/>
         <source>Exposure time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="176"/>
+        <location filename="../src/exifdialog.cpp" line="180"/>
         <source>ISO speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="177"/>
+        <location filename="../src/exifdialog.cpp" line="181"/>
         <source>Shutter speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="178"/>
+        <location filename="../src/exifdialog.cpp" line="182"/>
         <source>Exposure bias</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="179"/>
+        <location filename="../src/exifdialog.cpp" line="183"/>
         <source>Subject distance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="180"/>
+        <location filename="../src/exifdialog.cpp" line="184"/>
         <source>Focal length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="181"/>
+        <location filename="../src/exifdialog.cpp" line="185"/>
         <source>35 mm equivalent focal length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="183"/>
+        <location filename="../src/exifdialog.cpp" line="187"/>
         <source>Metering mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="46"/>
+        <location filename="../src/exifdialog.cpp" line="50"/>
         <source>Flash did not fire</source>
         <comment>JPEG EXIF Flash setting value (0x0)</comment>
         <translation>Sin flash</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="55"/>
+        <location filename="../src/exifdialog.cpp" line="59"/>
         <source>Flash fired</source>
         <comment>JPEG EXIF Flash setting value (0x1)</comment>
         <translation>Tiene flash</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="57"/>
+        <location filename="../src/exifdialog.cpp" line="61"/>
         <source>Strobe return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x5)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="59"/>
+        <location filename="../src/exifdialog.cpp" line="63"/>
         <source>Strobe return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x7)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="61"/>
+        <location filename="../src/exifdialog.cpp" line="65"/>
         <source>Flash fired, compulsory flash mode</source>
         <comment>JPEG EXIF Flash setting value (0x9)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="63"/>
+        <location filename="../src/exifdialog.cpp" line="67"/>
         <source>Flash fired, compulsory flash mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0xD)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="65"/>
+        <location filename="../src/exifdialog.cpp" line="69"/>
         <source>Flash fired, compulsory flash mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0xF)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="67"/>
+        <location filename="../src/exifdialog.cpp" line="71"/>
         <source>Flash did not fire, compulsory flash mode</source>
         <comment>JPEG EXIF Flash setting value (0x10)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="69"/>
+        <location filename="../src/exifdialog.cpp" line="73"/>
         <source>Flash did not fire, auto mode</source>
         <comment>JPEG EXIF Flash setting value (0x18)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="71"/>
+        <location filename="../src/exifdialog.cpp" line="75"/>
         <source>Flash fired, auto mode</source>
         <comment>JPEG EXIF Flash setting value (0x19)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="73"/>
+        <location filename="../src/exifdialog.cpp" line="77"/>
         <source>Flash fired, auto mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x1D)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="75"/>
+        <location filename="../src/exifdialog.cpp" line="79"/>
         <source>Flash fired, auto mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x1F)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="77"/>
+        <location filename="../src/exifdialog.cpp" line="81"/>
         <source>No flash function</source>
         <comment>JPEG EXIF Flash setting value (0x20)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="79"/>
+        <location filename="../src/exifdialog.cpp" line="83"/>
         <source>Flash fired, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x41)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="81"/>
+        <location filename="../src/exifdialog.cpp" line="85"/>
         <source>Flash fired, red-eye reduction mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x45)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="83"/>
+        <location filename="../src/exifdialog.cpp" line="87"/>
         <source>Flash fired, red-eye reduction mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x47)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="85"/>
+        <location filename="../src/exifdialog.cpp" line="89"/>
         <source>Flash fired, compulsory flash mode, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x49)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="87"/>
+        <location filename="../src/exifdialog.cpp" line="91"/>
         <source>Flash fired, compulsory flash mode, red-eye reduction mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x4D)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="89"/>
+        <location filename="../src/exifdialog.cpp" line="93"/>
         <source>Flash fired, compulsory flash mode, red-eye reduction mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x4F)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="91"/>
+        <location filename="../src/exifdialog.cpp" line="95"/>
         <source>Flash fired, auto mode, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x59)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="93"/>
+        <location filename="../src/exifdialog.cpp" line="97"/>
         <source>Flash fired, auto mode, return light not detected, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x5D)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="95"/>
+        <location filename="../src/exifdialog.cpp" line="99"/>
         <source>Flash fired, auto mode, return light detected, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x5F)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="128"/>
+        <location filename="../src/exifdialog.cpp" line="132"/>
         <source>Horizontal (normal)</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(0 or 1)</comment>
         <translation type="unfinished">Horizontalidad (norma)</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="135"/>
+        <location filename="../src/exifdialog.cpp" line="139"/>
         <source>Mirror horizontal</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(2)</comment>
         <translation>invertida Horrizontalmente</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="137"/>
+        <location filename="../src/exifdialog.cpp" line="141"/>
         <source>Rotate 180</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(3)</comment>
         <translation>Rotada a 180°</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="139"/>
+        <location filename="../src/exifdialog.cpp" line="143"/>
         <source>Mirror vertical</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(4)</comment>
         <translation>Invertida Verticalmente</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="141"/>
+        <location filename="../src/exifdialog.cpp" line="145"/>
         <source>Mirror horizontal and rotate 270 CW</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(5)</comment>
         <translation>Inventida horizontalmente y rotada 270° CW</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="143"/>
+        <location filename="../src/exifdialog.cpp" line="147"/>
         <source>Rotate 90 CW</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(6)</comment>
         <translation>Rotada a 90° CW</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="145"/>
+        <location filename="../src/exifdialog.cpp" line="149"/>
         <source>Mirror horizontal and rotate 90 CW</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(7)</comment>
         <translation>Invertida Horizontalmente y rotada 90° CW</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="147"/>
+        <location filename="../src/exifdialog.cpp" line="151"/>
         <source>Rotate 270 CW</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(8)</comment>
         <translation>Rotada a 270° CW</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="156"/>
+        <location filename="../src/exifdialog.cpp" line="160"/>
         <source>Exif is not included.</source>
         <comment>Text to display if EXIF is not included in JPEG</comment>
         <translation>Exif no está incluido.</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="160"/>
+        <location filename="../src/exifdialog.cpp" line="164"/>
         <source>Filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="166"/>
+        <location filename="../src/exifdialog.cpp" line="170"/>
         <source>Orientation of camera</source>
         <translation>Orientacion de cámara</translation>
     </message>
@@ -445,7 +447,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="161"/>
+        <location filename="../src/exifdialog.cpp" line="165"/>
         <source>Pixels</source>
         <translation type="unfinished"></translation>
     </message>
@@ -771,7 +773,8 @@
         <translation>Seleccionar esta carpeta para carpeta de Inicio</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="223"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="23"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="231"/>
         <source>No folders or archives found.</source>
         <comment>Display when there is no display item in Folder Window</comment>
         <translation>No se pudo encontrar ninguna Carpeta o Archivo</translation>
@@ -1078,7 +1081,8 @@
         <translation>&amp;Agrandamiento o Reducción de imagen automático</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="145"/>
+        <location filename="../src/mainwindow.cpp" line="146"/>
+        <location filename="../src/mainwindow.cpp" line="1484"/>
         <source>&amp;Fullscreen</source>
         <translation>&amp;Pantalla completa</translation>
     </message>
@@ -1217,7 +1221,7 @@
         <translation>Limpiar Marcadores</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2185"/>
+        <location filename="../src/mainwindow.cpp" line="2219"/>
         <source>Bookmark saved.</source>
         <translation>Marcado salvado.</translation>
     </message>
@@ -1435,7 +1439,7 @@
         <translation>Renombrar</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="229"/>
+        <location filename="../src/mainwindow.cpp" line="470"/>
         <source>No folder or archive is loaded.</source>
         <comment>The text of the status bar to be displayed when there is no image to be displayed immediately after the application is activated</comment>
         <translation>Ninguna carpeta o archivo esta cargado.</translation>
@@ -1451,7 +1455,7 @@
         <translation type="vanished">No se pudo abrir. ¿No hay imagenes?</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1765"/>
+        <location filename="../src/mainwindow.cpp" line="1795"/>
         <source>Select an image or archive</source>
         <comment>Title of the dialog displayed when opening a file with OpenFileFolder</comment>
         <translation>Seleccione un archivo</translation>
@@ -1594,43 +1598,38 @@
         <translation>Eliminar la imagen</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1996"/>
+        <location filename="../src/mainwindow.cpp" line="2030"/>
         <source>Are you sure you want to move the image to Recycle Bin?</source>
         <comment>Confirm putting displayed file in Recycle Box Message Box body</comment>
         <translation>¿Tirar esta imagen a la basura?</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1991"/>
-        <location filename="../src/mainwindow.cpp" line="2032"/>
+        <location filename="../src/mainwindow.cpp" line="2025"/>
+        <location filename="../src/mainwindow.cpp" line="2066"/>
         <source>Confirmation</source>
         <comment>Confirm deleting image file on MessageBox title</comment>
         <translation>Confirmar</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="691"/>
+        <location filename="../src/mainwindow.cpp" line="473"/>
         <source>Image file not found. It cannot be opened.</source>
         <comment>Text to display in the status bar when failed to open the specified Volume</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1440"/>
+        <location filename="../src/mainwindow.cpp" line="476"/>
         <source>Image file was not found and cannot be opened.</source>
         <comment>Text to display in the status bar when failed to open the specified Volume</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1464"/>
-        <source>LoadBookmark</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp" line="1762"/>
+        <location filename="../src/mainwindow.cpp" line="1792"/>
         <source>All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.heic *.heif);;Archives( *.zip *.7z *.rar)</source>
         <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2037"/>
+        <location filename="../src/mainwindow.cpp" line="2071"/>
         <source>Are you sure you want to delete this image?</source>
         <comment>Confirm deleting image file on Message Box body</comment>
         <translation>¿Estás seguro de que quieres eliminar esta imagen?</translation>
