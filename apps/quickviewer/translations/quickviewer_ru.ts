@@ -151,117 +151,117 @@
         <translation>Exif Информация</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="188"/>
+        <location filename="../src/exifdialog.cpp" line="201"/>
         <source>Image description</source>
         <translation>ОписаниеИзображения</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="168"/>
+        <location filename="../src/exifdialog.cpp" line="181"/>
         <source>Make</source>
         <translation>Сделать</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="169"/>
+        <location filename="../src/exifdialog.cpp" line="182"/>
         <source>Model</source>
         <translation>Модель</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="179"/>
+        <location filename="../src/exifdialog.cpp" line="192"/>
         <source>F-number</source>
         <translation>FNumber</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="186"/>
+        <location filename="../src/exifdialog.cpp" line="199"/>
         <source>Flash</source>
         <translation>Вспышка</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="166"/>
+        <location filename="../src/exifdialog.cpp" line="179"/>
         <source>Image width</source>
         <translation>ШиринаИзображения</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="164"/>
+        <location filename="../src/exifdialog.cpp" line="177"/>
         <source>Filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="167"/>
+        <location filename="../src/exifdialog.cpp" line="180"/>
         <source>Image height</source>
         <translation>ВысотаИзображения</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="172"/>
+        <location filename="../src/exifdialog.cpp" line="185"/>
         <source>Bits per sample</source>
         <translation>БитыНаОбразец</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="173"/>
+        <location filename="../src/exifdialog.cpp" line="186"/>
         <source>Software</source>
         <translation>Программа</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="174"/>
+        <location filename="../src/exifdialog.cpp" line="187"/>
         <source>DateTime</source>
         <translation>ДатаВремя</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="175"/>
+        <location filename="../src/exifdialog.cpp" line="188"/>
         <source>Date/time original</source>
         <translation>ДатаВремяОригинал</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="176"/>
+        <location filename="../src/exifdialog.cpp" line="189"/>
         <source>Date/time digitized</source>
         <translation>ДатаВремяЦифровые</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="177"/>
+        <location filename="../src/exifdialog.cpp" line="190"/>
         <source>Subsecond time original</source>
         <translation>SubSecTimeOriginal</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="189"/>
+        <location filename="../src/exifdialog.cpp" line="202"/>
         <source>Copyright</source>
         <translation>АвторскоеПраво</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="178"/>
+        <location filename="../src/exifdialog.cpp" line="191"/>
         <source>Exposure time</source>
         <translation>ВремяВоздействия</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="180"/>
+        <location filename="../src/exifdialog.cpp" line="193"/>
         <source>ISO speed</source>
         <translation>РейтингиСкоростиISO</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="181"/>
+        <location filename="../src/exifdialog.cpp" line="194"/>
         <source>Shutter speed</source>
         <translation>ЗначениеВыдержки</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="182"/>
+        <location filename="../src/exifdialog.cpp" line="195"/>
         <source>Exposure bias</source>
         <translation>ЗначениеСмещенияЭкспозиции</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="183"/>
+        <location filename="../src/exifdialog.cpp" line="196"/>
         <source>Subject distance</source>
         <translation>РасстояниеДоОбъекта</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="184"/>
+        <location filename="../src/exifdialog.cpp" line="197"/>
         <source>Focal length</source>
         <translation>ФокусноеРасстояние</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="185"/>
+        <location filename="../src/exifdialog.cpp" line="198"/>
         <source>35 mm equivalent focal length</source>
         <translation>ФокусноеРасстояниеВ35мм</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="187"/>
+        <location filename="../src/exifdialog.cpp" line="200"/>
         <source>Metering mode</source>
         <translation>РежимЗамера</translation>
     </message>
@@ -390,7 +390,7 @@
         <translation type="vanished">Exif не входит.</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="170"/>
+        <location filename="../src/exifdialog.cpp" line="183"/>
         <source>Orientation of camera</source>
         <translation>Ориентация камеры</translation>
     </message>
@@ -405,192 +405,192 @@
         <translation type="vanished">ИмяФайла</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="165"/>
+        <location filename="../src/exifdialog.cpp" line="178"/>
         <source>Pixels</source>
         <translation>Пиксели</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="50"/>
+        <location filename="../src/exifdialog.cpp" line="54"/>
         <source>Flash did not fire</source>
         <comment>JPEG EXIF Flash setting value (0x0)</comment>
         <translation>Вспышка не сработала</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="59"/>
+        <location filename="../src/exifdialog.cpp" line="63"/>
         <source>Flash fired</source>
         <comment>JPEG EXIF Flash setting value (0x1)</comment>
         <translation>Вспышка сработала</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="61"/>
+        <location filename="../src/exifdialog.cpp" line="65"/>
         <source>Strobe return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x5)</comment>
         <translation>Обратный свет стробоскопа не обнаружен</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="63"/>
+        <location filename="../src/exifdialog.cpp" line="67"/>
         <source>Strobe return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x7)</comment>
         <translation>Обнаружен обратный свет стробоскопа</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="65"/>
+        <location filename="../src/exifdialog.cpp" line="69"/>
         <source>Flash fired, compulsory flash mode</source>
         <comment>JPEG EXIF Flash setting value (0x9)</comment>
         <translation>Сработала вспышка, режим принудительной вспышки</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="67"/>
+        <location filename="../src/exifdialog.cpp" line="71"/>
         <source>Flash fired, compulsory flash mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0xD)</comment>
         <translation>Сработала вспышка, режим принудительной вспышки, обратный свет не обнаружен</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="69"/>
+        <location filename="../src/exifdialog.cpp" line="73"/>
         <source>Flash fired, compulsory flash mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0xF)</comment>
         <translation>Сработала вспышка, режим принудительной вспышки, обнаружен обратный свет</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="71"/>
+        <location filename="../src/exifdialog.cpp" line="75"/>
         <source>Flash did not fire, compulsory flash mode</source>
         <comment>JPEG EXIF Flash setting value (0x10)</comment>
         <translation>Вспышка не сработала, режим принудительной вспышки</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="73"/>
+        <location filename="../src/exifdialog.cpp" line="77"/>
         <source>Flash did not fire, auto mode</source>
         <comment>JPEG EXIF Flash setting value (0x18)</comment>
         <translation>Вспышка не сработала, авто режим</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="75"/>
+        <location filename="../src/exifdialog.cpp" line="79"/>
         <source>Flash fired, auto mode</source>
         <comment>JPEG EXIF Flash setting value (0x19)</comment>
         <translation>Сработала вспышка, автоматический режим</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="77"/>
+        <location filename="../src/exifdialog.cpp" line="81"/>
         <source>Flash fired, auto mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x1D)</comment>
         <translation>Сработала вспышка, автоматический режим, обратный свет не обнаружен</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="79"/>
+        <location filename="../src/exifdialog.cpp" line="83"/>
         <source>Flash fired, auto mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x1F)</comment>
         <translation>Сработала вспышка, автоматический режим, обнаружен обратный свет</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="81"/>
+        <location filename="../src/exifdialog.cpp" line="85"/>
         <source>No flash function</source>
         <comment>JPEG EXIF Flash setting value (0x20)</comment>
         <translation>Нет функции вспышки</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="83"/>
+        <location filename="../src/exifdialog.cpp" line="87"/>
         <source>Flash fired, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x41)</comment>
         <translation>Сработала вспышка, режим устранения эффекта красных глаз</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="85"/>
+        <location filename="../src/exifdialog.cpp" line="89"/>
         <source>Flash fired, red-eye reduction mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x45)</comment>
         <translation>Сработала вспышка, режим устранения эффекта красных глаз, обратный свет не обнаружен</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="87"/>
+        <location filename="../src/exifdialog.cpp" line="91"/>
         <source>Flash fired, red-eye reduction mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x47)</comment>
         <translation>Сработала вспышка, режим устранения эффекта красных глаз, обнаружен обратный свет</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="89"/>
+        <location filename="../src/exifdialog.cpp" line="93"/>
         <source>Flash fired, compulsory flash mode, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x49)</comment>
         <translation>Сработала вспышка, режим принудительной вспышки, режим уменьшения эффекта красных глаз</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="91"/>
+        <location filename="../src/exifdialog.cpp" line="95"/>
         <source>Flash fired, compulsory flash mode, red-eye reduction mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x4D)</comment>
         <translation>Сработала вспышка, режим принудительной вспышки, режим уменьшения эффекта красных глаз, обратный свет не обнаружен</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="93"/>
+        <location filename="../src/exifdialog.cpp" line="97"/>
         <source>Flash fired, compulsory flash mode, red-eye reduction mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x4F)</comment>
         <translation>Сработала вспышка, режим принудительной вспышки, режим уменьшения эффекта красных глаз, обнаружен обратный свет</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="95"/>
+        <location filename="../src/exifdialog.cpp" line="99"/>
         <source>Flash fired, auto mode, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x59)</comment>
         <translation>Сработала вспышка, автоматический режим, режим устранения эффекта красных глаз</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="97"/>
+        <location filename="../src/exifdialog.cpp" line="101"/>
         <source>Flash fired, auto mode, return light not detected, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x5D)</comment>
         <translation>Сработала вспышка, автоматический режим, обратный свет не обнаружен, режим уменьшения эффекта красных глаз</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="99"/>
+        <location filename="../src/exifdialog.cpp" line="103"/>
         <source>Flash fired, auto mode, return light detected, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x5F)</comment>
         <translation>Сработала вспышка, автоматический режим, обнаружен обратный свет, режим уменьшения эффекта красных глаз</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="132"/>
+        <location filename="../src/exifdialog.cpp" line="136"/>
         <source>Horizontal (normal)</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(0 or 1)</comment>
         <translation>Горизонтальный (нормальный)</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="139"/>
+        <location filename="../src/exifdialog.cpp" line="143"/>
         <source>Mirror horizontal</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(2)</comment>
         <translation>Горизонтальное зеркало</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="141"/>
+        <location filename="../src/exifdialog.cpp" line="145"/>
         <source>Rotate 180</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(3)</comment>
         <translation>Поворот 180</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="143"/>
+        <location filename="../src/exifdialog.cpp" line="147"/>
         <source>Mirror vertical</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(4)</comment>
         <translation>Вертикальное зеркало</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="145"/>
+        <location filename="../src/exifdialog.cpp" line="149"/>
         <source>Mirror horizontal and rotate 270 CW</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(5)</comment>
         <translation>Горизонтальное зеркало и повернуть на 270 CW</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="147"/>
+        <location filename="../src/exifdialog.cpp" line="151"/>
         <source>Rotate 90 CW</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(6)</comment>
         <translation>Повернуть на 90 CW</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="149"/>
+        <location filename="../src/exifdialog.cpp" line="153"/>
         <source>Mirror horizontal and rotate 90 CW</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(7)</comment>
         <translation>Горизонтальное зеркало и повернуть на 90 CW</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="151"/>
+        <location filename="../src/exifdialog.cpp" line="155"/>
         <source>Rotate 270 CW</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(8)</comment>
         <translation>Поворот 270 CW</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="160"/>
+        <location filename="../src/exifdialog.cpp" line="173"/>
         <source>Exif is not included.</source>
         <comment>Text to display if EXIF is not included in JPEG</comment>
         <translation>Exif не входит.</translation>
