@@ -22,7 +22,9 @@ INCLUDEPATH += $$PWD/../../third_party
 DESTDIR = ../../lib
 
 HEADERS += \
-    rarextractor.h
+    rarextractor.h \
+    raraccessstrategy.h
 
 SOURCES += \
-    rarextractor.cpp
+    rarextractor.cpp \
+    raraccessstrategy.cpp

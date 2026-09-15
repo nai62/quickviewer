@@ -82,8 +82,12 @@ inline void Copy128(byte *dest,const byte *src)
 
 Rijndael::Rijndael()
 {
-  if (S5[0]==0)
+  static bool TablesInitialized=false;
+  if (!TablesInitialized)
+  {
     GenerateTables();
+    TablesInitialized=true;
+  }
   m_uRounds = 0;
   CBCMode = true; // Always true for RAR.
 #ifdef USE_SSE
@@ -92,6 +96,13 @@ Rijndael::Rijndael()
 #ifdef USE_NEON_AES
   AES_Neon=false;
 #endif
+}
+
+
+Rijndael::~Rijndael()
+{
+  cleandata(m_initVector,sizeof(m_initVector));
+  cleandata(m_expandedKey,sizeof(m_expandedKey));
 }
 
 

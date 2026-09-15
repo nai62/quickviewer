@@ -3,6 +3,8 @@
 
 #include <QtCore>
 
+#include <memory>
+
 struct RARFileInfo
 {
     QString fileName;
@@ -20,6 +22,7 @@ struct RARFileInfo
     QByteArray data;
 
     bool isEncrypted() const { return flags & 0x04; }
+    bool isDirectory() const { return flags & 0x20; }
 };
 
 enum class RarArchiveError {
@@ -36,6 +39,18 @@ struct RarFileDataResult
     RarArchiveError error = RarArchiveError::None;
     bool success = false;
 };
+
+struct RarAccessStatistics
+{
+    quint64 reopenCount = 0;
+    quint64 readHeaderCount = 0;
+    quint64 skipCount = 0;
+    quint64 extractCount = 0;
+    quint64 cacheHitCount = 0;
+};
+
+class IRarAccessStrategy;
+class RarArchive;
 
 class RarExtractor
 {
@@ -58,38 +73,37 @@ public:
     void reset();
     bool reopen();
     bool scanFileInfo();
-    bool isOpen() const { return m_mode != OpenModeNotOpen && m_hArc != nullptr; }
+    bool isOpen() const { return m_accessStrategy != nullptr; }
+    bool isSolid() const { return m_isSolid; }
     QStringList fileNameList() const;
+    const QList<RARFileInfo> &fileInfoList() const { return m_fileInfoList; }
     RARFileInfo &getFileInfo(QString filename);
     bool contains(QString filename) const;
 
     QByteArray fileData(QString filename);
     RarFileDataResult fileDataResult(QString filename);
     RarArchiveError archiveError() const { return m_archiveError; }
-    void markPasswordRequested() { m_passwordRequested = true; }
+    const RarAccessStatistics &statistics() const { return m_statistics; }
+    void resetStatistics();
 
-    Qt::HANDLE m_hArc;
-    int m_error;
+private:
+    bool scanFileInfo(RarArchive &archive);
+    void reject(RarArchiveError error);
+
     QString m_arcName;
     QString m_comment;
     bool m_isHeadersEncrypted;
     bool m_isFilesEncrypted;
     bool m_hasScaned;
-    int m_curIndex;
+    bool m_isSolid;
     QList<RARFileInfo> m_fileInfoList;
     OpenMode m_mode;
 
     QHash<QString, int> m_fileNameToIndexSensitive;
     QHash<QString, int> m_fileNameToIndexInsensitive;
-    QCache<int, QByteArray> m_dataCache;
-
-private:
-    bool openHandle(OpenMode mode);
-    void closeHandle();
-    void reject(RarArchiveError error);
-    static RarArchiveError mapUnrarError(int error, bool passwordRequested);
+    std::unique_ptr<IRarAccessStrategy> m_accessStrategy;
     RarArchiveError m_archiveError;
-    bool m_passwordRequested;
+    RarAccessStatistics m_statistics;
 };
 
 #endif // RAREXTRACTOR_H

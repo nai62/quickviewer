@@ -154,7 +154,11 @@ void uiMsgStore::Msg()
       break;
 #endif
     case UIERROR_FILEATTR:
+#ifdef _UNIX
+      Log(Str[0],St(MErrChangePerm),Str[1]);
+#else
       Log(Str[0],St(MErrChangeAttr),Str[1]);
+#endif
       break;
     case UIERROR_FILECOPY:
       Log(Str[0],St(MCopyError),Str[1],Str[2]);
@@ -505,7 +509,17 @@ const wchar *uiGetMonthName(uint Month)
          MMonthJan,MMonthFeb,MMonthMar,MMonthApr,MMonthMay,MMonthJun,
          MMonthJul,MMonthAug,MMonthSep,MMonthOct,MMonthNov,MMonthDec
   };
-  return St(MonthID[Month]);
+  return Month<ASIZE(MonthID) ? St(MonthID[Month]):L"";
+}
+
+
+const wchar *uiGetWeekDayName(uint Day)
+{
+  static MSGID DayID[7]={
+         MWeekDaySun,MWeekDayMon,MWeekDayTue,MWeekDayWed,MWeekDayThu,
+         MWeekDayFri,MWeekDaySat
+  };
+  return Day<ASIZE(DayID) ? St(DayID[Day]):L"";
 }
 #endif
 

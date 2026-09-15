@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
     }
     Cmd->AddArcName(ModuleName);
     Cmd->ParseDone();
-    Cmd->AbsoluteLinks=true; // If users runs SFX, he trusts an archive source.
+    Cmd->AbsoluteLinks=true; // If users run SFX, they trust an archive source.
 #else // !SFX_MODULE
     Cmd->ParseCommandLine(true,argc,argv);
     if (!Cmd->ConfigDisabled)
@@ -88,6 +88,11 @@ int main(int argc, char *argv[])
     ErrHandler.SetErrorCode(ErrCode);
   }
   catch (std::bad_alloc&)
+  {
+    ErrHandler.MemoryErrorMsg();
+    ErrHandler.SetErrorCode(RARX_MEMORY);
+  }
+  catch (std::length_error&)
   {
     ErrHandler.MemoryErrorMsg();
     ErrHandler.SetErrorCode(RARX_MEMORY);

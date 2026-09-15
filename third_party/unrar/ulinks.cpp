@@ -78,7 +78,7 @@ static bool ExtractUnixLink30(CommandData *Cmd,ComprDataIO &DataIO,Archive &Arc,
     size_t DataSize=(size_t)Arc.FileHead.PackSize;
     if (DataSize>MAXPATHSIZE)
       return false;
-    std::vector<char> TargetBuf(DataSize+1);
+    std::vector<char> TargetBuf(DataSize);
     if ((size_t)DataIO.UnpRead((byte*)TargetBuf.data(),DataSize)!=DataSize)
       return false;
     std::string Target(TargetBuf.data(),TargetBuf.size());
@@ -143,7 +143,7 @@ static bool ExtractUnixLink50(CommandData *Cmd,const wchar *Name,FileHeader *hd)
   // the destination path as a prefix, which can confuse
   // IsRelativeSymlinkSafe algorithm.
   if (!Cmd->AbsoluteLinks && (IsFullPath(TargetW) ||
-      !IsRelativeSymlinkSafe(Cmd,hd->FileName.c_str(),Name,TargetW.c_str())))
+      !IsRelativeSymlinkSafe(Cmd,hd->FileName,Name,TargetW)))
   {
     uiMsg(UIERROR_SKIPUNSAFELINK,hd->FileName,TargetW);
     ErrHandler.SetErrorCode(RARX_WARNING);

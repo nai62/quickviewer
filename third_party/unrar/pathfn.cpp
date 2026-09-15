@@ -1,11 +1,11 @@
 #include "rar.hpp"
 
-wchar* PointToName(const wchar *Path)
+const wchar* PointToName(const wchar *Path)
 {
   for (int I=(int)wcslen(Path)-1;I>=0;I--)
     if (IsPathDiv(Path[I]))
       return (wchar*)&Path[I+1];
-  return (wchar*)((*Path!=0 && IsDriveDiv(Path[1])) ? Path+2:Path);
+  return *Path!=0 && IsDriveDiv(Path[1]) ? Path+2:Path;
 }
 
 
@@ -126,7 +126,7 @@ void SetSFXExt(std::wstring &SFXName)
 
 
 // 'Ext' is an extension with the leading dot, like L".rar".
-wchar *GetExt(const wchar *Name)
+const wchar *GetExt(const wchar *Name)
 {
   return Name==NULL ? NULL:wcsrchr(PointToName(Name),'.');
 }
@@ -281,9 +281,15 @@ bool GetAppDataPath(std::wstring &Path,bool Create)
 #if defined(_WIN_ALL)
 bool SHGetPathStrFromIDList(PCIDLIST_ABSOLUTE pidl,std::wstring &Path)
 {
-  std::vector<wchar> Buf(MAX_PATH);
-  bool Success=SHGetPathFromIDList(pidl,Buf.data())!=FALSE;
-  Path=Buf.data();
+  // Allocate size enough for both SHGetPathFromIDList and its *Ex version.
+  std::vector<wchar> Buf(Max(MAXPATHSIZE,MAX_PATH));
+#if _WIN32_WINNT >= _WIN32_WINNT_VISTA // Vista+.
+  bool Success=SHGetPathFromIDListEx(pidl,Buf.data(),(DWORD)Buf.size(),0)!=FALSE;
+#else
+  bool Success=SHGetPathFromIDList(pidl,Buf.data())!=FALSE; // XP, limited to 260 chars.
+#endif
+  if (Success)
+    Path=Buf.data();
   return Success;
 }
 #endif
@@ -306,8 +312,8 @@ void GetRarDataPath(std::wstring &Path,bool Create)
       std::vector<wchar> PathBuf(DataSize/sizeof(wchar));
       RegQueryValueEx(hKey,L"AppData",0,NULL,(BYTE *)PathBuf.data(),&DataSize);
       Path=PathBuf.data();
-      RegCloseKey(hKey);
     }
+    RegCloseKey(hKey);
   }
 
   if (Path.empty() || !FileExist(Path))
@@ -926,11 +932,7 @@ static void GenArcName(std::wstring &ArcName,const std::wstring &GenerateMask,ui
   swprintf(Field[7],FieldSize,L"%u",(uint)WeekDay+1);
   swprintf(Field[8],FieldSize,L"%03u",rlt.yDay+1);
   swprintf(Field[9],FieldSize,L"%05u",ArcNumber);
-
-  const wchar *WeekDayName[]={L"Sunday",L"Monday",L"Tuesday",L"Wednesday",
-                              L"Thursday",L"Friday",L"Saturday"};
-
-  wcsncpyz(Field[10],WeekDayName[rlt.wDay],FieldSize);
+  wcsncpyz(Field[10],uiGetWeekDayName(rlt.wDay),FieldSize);
   wcsncpyz(Field[11],GetMonthName(rlt.Month-1),FieldSize);
 
   int LField[sizeof(Field)/sizeof(Field[0])]; // Field lengths.
@@ -1180,8 +1182,8 @@ void MakeNameCompatible(std::wstring &Name)
         std::wstring OrigName=Name;
         Name.insert(I,1,'_');
 #ifndef SFX_MODULE
-        uiMsg(UIMSG_CORRECTINGNAME,nullptr);
-        uiMsg(UIERROR_RENAMING,nullptr,OrigName,Name);
+        uiMsg(UIMSG_CORRECTINGNAME,L"");
+        uiMsg(UIERROR_RENAMING,L"",OrigName,Name);
 #endif
       }
     }
@@ -1196,7 +1198,7 @@ std::wstring GetModuleFileStr()
 {
   HMODULE hModule=nullptr;
   
-  std::vector<wchar> Path(256);
+  std::vector<wchar> Path(MAX_PATH);
   while (Path.size()<=MAXPATHSIZE)
   {
     if (GetModuleFileName(hModule,Path.data(),(DWORD)Path.size())<Path.size())
