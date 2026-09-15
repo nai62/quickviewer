@@ -2,6 +2,9 @@
 QV_APP_SOURCE = $$clean_path($$PWD/../../apps/quickviewer)
 include($$QV_APP_SOURCE/QuickViewer.pro)
 
+TRANSLATIONS =
+CONFIG -= lrelease
+
 # Paths declared by the application project are relative to its directory.
 for(source, SOURCES): STARTUP_SOURCES += $$absolute_path($$source, $$QV_APP_SOURCE)
 for(header, HEADERS): STARTUP_HEADERS += $$absolute_path($$header, $$QV_APP_SOURCE)
