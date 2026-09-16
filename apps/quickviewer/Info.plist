@@ -5,7 +5,7 @@
 	<key>CFBundleName</key>
         <string>QuickViewer</string>
 	<key>CFBundleDisplayName</key>
-        <string>QuickViewer-@FULL_VERSION@</string>
+        <string>QuickViewer</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>CFBundleIconFile</key>
