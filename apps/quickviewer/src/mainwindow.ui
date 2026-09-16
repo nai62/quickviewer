@@ -365,7 +365,7 @@
     <addaction name="actionPrevOnePage"/>
     <addaction name="separator"/>
     <addaction name="actionSaveBookmark"/>
-    <addaction name="menuLoadBookmark"/>
+    <addaction name="actionLoadBookmark"/>
     <addaction name="separator"/>
     <addaction name="actionNextVolume"/>
     <addaction name="actionPrevVolume"/>
