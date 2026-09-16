@@ -1502,7 +1502,6 @@
         <translation>&amp;Поворот</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="351"/>
         <location filename="../src/mainwindow.ui" line="878"/>
         <source>Load bookmark</source>
         <extracomment>Button to restore saved image page from registered bookmark</extracomment>
