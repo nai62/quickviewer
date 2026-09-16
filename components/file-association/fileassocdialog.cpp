@@ -196,7 +196,7 @@ void FileAssocDialog::registerEntries(QStringList formats)
         // QuickViewer Capabilities
         QSettings settings(REGKEY_APPLICATION, RegFormat);
         settings.beginGroup("Capabilities");
-        settings.setValue("ApplicationDescription", "QuickViewer for folders/archives");
+        settings.setValue("ApplicationDescription", "Ultra-fast image and comic viewer");
         settings.setValue("ApplicationName", APPLICATION_ID);
         settings.beginGroup("FileAssociations");
         foreach (const QString &fmt, formats) {
@@ -217,6 +217,8 @@ void FileAssocDialog::registerEntries(QStringList formats)
     {
         // assoiation for application
         QSettings settings(REGKEY_APPLICATION_INAPP, RegFormat);
+        settings.setValue("FriendlyAppName", APPLICATION_ID);
+
         settings.beginGroup("shell");
         settings.beginGroup("open");
         settings.setValue(".", tr("&View with QuickViewer", "Menu displayed when right clicking on file in Explorer"));

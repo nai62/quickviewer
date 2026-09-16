@@ -3,7 +3,7 @@
 !define APPNAME "QuickViewer"
 !define AppDir "QuickViewer"
 #!define APPVERSION "1.2.6"
-!define COMPANYNAME "KATO Kanryu"
+!define COMPANYNAME "QuickViewer contributors"
 !define SrcDir "M:\Home\src\qt\QVproject\QuickViewer-portable-${APPVERSION}-x64"
 
 # rtf or txt file - remember if it is txt, it must be in the DOS text format (\r\n)
