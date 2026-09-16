@@ -77,19 +77,21 @@
         <translation>ازالة (خيارات) من عنوان الكتاب</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="51"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="42"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="60"/>
         <source>Enter a search term and press Enter to search by title.</source>
         <comment>Gray text that prompts a keyword search of Volume</comment>
         <translation>حقل مصطلح البحث واضغط على مفتاح الادخال للبحث عن طريق العنوان.</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="68"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="44"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="77"/>
         <source>Drop an image folder here to create a catalog.</source>
         <comment>Status bar text briefly explaining how to use CatalogWindow</comment>
         <translation>اسقاط مجلد الصورة هنا وانشاء كتالوج.</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="189"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="198"/>
         <source>%1 of %2 volumes</source>
         <comment>Text of the status bar showing [the number of hits]/[total number] of Volume</comment>
         <translation>(شاشة تخزين (%1/%2</translation>
@@ -133,122 +135,122 @@
         <translation>معلومات اكسيف</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="184"/>
+        <location filename="../src/exifdialog.cpp" line="201"/>
         <source>Image description</source>
         <translation>وصف الصورة</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="164"/>
+        <location filename="../src/exifdialog.cpp" line="181"/>
         <source>Make</source>
         <translation>جعل</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="165"/>
+        <location filename="../src/exifdialog.cpp" line="182"/>
         <source>Model</source>
         <translation>نموذج</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="175"/>
+        <location filename="../src/exifdialog.cpp" line="192"/>
         <source>F-number</source>
         <translation>واو العدد</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="182"/>
+        <location filename="../src/exifdialog.cpp" line="199"/>
         <source>Flash</source>
         <translation>وميض</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="162"/>
+        <location filename="../src/exifdialog.cpp" line="179"/>
         <source>Image width</source>
         <translation>عرض الصورة</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="160"/>
+        <location filename="../src/exifdialog.cpp" line="177"/>
         <source>Filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="163"/>
+        <location filename="../src/exifdialog.cpp" line="180"/>
         <source>Image height</source>
         <translation>ارتفاع الصورة</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="168"/>
+        <location filename="../src/exifdialog.cpp" line="185"/>
         <source>Bits per sample</source>
         <translation>بت لكل عينة</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="169"/>
+        <location filename="../src/exifdialog.cpp" line="186"/>
         <source>Software</source>
         <translation>البرمجيات</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="170"/>
+        <location filename="../src/exifdialog.cpp" line="187"/>
         <source>DateTime</source>
         <translation>التاريخ الوقت</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="171"/>
+        <location filename="../src/exifdialog.cpp" line="188"/>
         <source>Date/time original</source>
         <translation>التاريخ الوقت الاصلي</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="172"/>
+        <location filename="../src/exifdialog.cpp" line="189"/>
         <source>Date/time digitized</source>
         <translation>تاريخ الوقت رقمية</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="173"/>
+        <location filename="../src/exifdialog.cpp" line="190"/>
         <source>Subsecond time original</source>
         <translation>الوقت الفرعي ثانية الاصلي</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="185"/>
+        <location filename="../src/exifdialog.cpp" line="202"/>
         <source>Copyright</source>
         <translation>حقوق النشر</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="174"/>
+        <location filename="../src/exifdialog.cpp" line="191"/>
         <source>Exposure time</source>
         <translation>وقت التعرض</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="176"/>
+        <location filename="../src/exifdialog.cpp" line="193"/>
         <source>ISO speed</source>
         <translation>ISO تصنيفات سرعة</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="177"/>
+        <location filename="../src/exifdialog.cpp" line="194"/>
         <source>Shutter speed</source>
         <translation>قيمة سرعة الغالق</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="178"/>
+        <location filename="../src/exifdialog.cpp" line="195"/>
         <source>Exposure bias</source>
         <translation>قيمة انحياز التعرض</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="179"/>
+        <location filename="../src/exifdialog.cpp" line="196"/>
         <source>Subject distance</source>
         <translation>مسافة الموضوع</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="180"/>
+        <location filename="../src/exifdialog.cpp" line="197"/>
         <source>Focal length</source>
         <translation>البعد البؤري</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="181"/>
+        <location filename="../src/exifdialog.cpp" line="198"/>
         <source>35 mm equivalent focal length</source>
         <translation>البعد البؤري في 35 مم</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="183"/>
+        <location filename="../src/exifdialog.cpp" line="200"/>
         <source>Metering mode</source>
         <translation>وضع القياس</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="166"/>
+        <location filename="../src/exifdialog.cpp" line="183"/>
         <source>Orientation of camera</source>
         <translation>اتجاه الكاميرا</translation>
     </message>
@@ -263,192 +265,192 @@
         <translation type="vanished">اسم الملف</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="161"/>
+        <location filename="../src/exifdialog.cpp" line="178"/>
         <source>Pixels</source>
         <translation>بكسلات</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="46"/>
+        <location filename="../src/exifdialog.cpp" line="54"/>
         <source>Flash did not fire</source>
         <comment>JPEG EXIF Flash setting value (0x0)</comment>
         <translation>الوميض لم تطلق</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="55"/>
+        <location filename="../src/exifdialog.cpp" line="63"/>
         <source>Flash fired</source>
         <comment>JPEG EXIF Flash setting value (0x1)</comment>
         <translation>اطلاق الوميض</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="57"/>
+        <location filename="../src/exifdialog.cpp" line="65"/>
         <source>Strobe return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x5)</comment>
         <translation>لم يعود ضوء الكشف بقوة</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="59"/>
+        <location filename="../src/exifdialog.cpp" line="67"/>
         <source>Strobe return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x7)</comment>
         <translation>عودة ضوء الكشف بقوة</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="61"/>
+        <location filename="../src/exifdialog.cpp" line="69"/>
         <source>Flash fired, compulsory flash mode</source>
         <comment>JPEG EXIF Flash setting value (0x9)</comment>
         <translation>اطلاق الوميض، وضع فلاش الزامي</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="63"/>
+        <location filename="../src/exifdialog.cpp" line="71"/>
         <source>Flash fired, compulsory flash mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0xD)</comment>
         <translation>اطلاق الوميض، وضع فلاش الزامي، ضوء العودة لم يتم الكشف عنها</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="65"/>
+        <location filename="../src/exifdialog.cpp" line="73"/>
         <source>Flash fired, compulsory flash mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0xF)</comment>
         <translation>اطلاق الوميض وضع الوميض الزامي، ضوء العودة الكشف عن</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="67"/>
+        <location filename="../src/exifdialog.cpp" line="75"/>
         <source>Flash did not fire, compulsory flash mode</source>
         <comment>JPEG EXIF Flash setting value (0x10)</comment>
         <translation>الوميض لم يطلق وضع الوميض الزامي</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="69"/>
+        <location filename="../src/exifdialog.cpp" line="77"/>
         <source>Flash did not fire, auto mode</source>
         <comment>JPEG EXIF Flash setting value (0x18)</comment>
         <translation>الوميض لم يطلق وضع تلقائي</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="71"/>
+        <location filename="../src/exifdialog.cpp" line="79"/>
         <source>Flash fired, auto mode</source>
         <comment>JPEG EXIF Flash setting value (0x19)</comment>
         <translation>اطلاق الوميض، وضع تلقائي</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="73"/>
+        <location filename="../src/exifdialog.cpp" line="81"/>
         <source>Flash fired, auto mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x1D)</comment>
         <translation>اطلاق الوميض، وضع تلقائي ضوء العودة لم يتم الكشف عنها</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="75"/>
+        <location filename="../src/exifdialog.cpp" line="83"/>
         <source>Flash fired, auto mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x1F)</comment>
         <translation>اطلاق الوميض، وضع تلقائي ضوء العودة الكشف عن</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="77"/>
+        <location filename="../src/exifdialog.cpp" line="85"/>
         <source>No flash function</source>
         <comment>JPEG EXIF Flash setting value (0x20)</comment>
         <translation>لا وظيفة وميض</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="79"/>
+        <location filename="../src/exifdialog.cpp" line="87"/>
         <source>Flash fired, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x41)</comment>
         <translation>اطلاق الوميض، وضع الحد من العين الحمراء</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="81"/>
+        <location filename="../src/exifdialog.cpp" line="89"/>
         <source>Flash fired, red-eye reduction mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x45)</comment>
         <translation>اطلاق الوميض وضع الحد من العين الحمراء، ضوء العودة لم يتم الكشف عنها</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="83"/>
+        <location filename="../src/exifdialog.cpp" line="91"/>
         <source>Flash fired, red-eye reduction mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x47)</comment>
         <translation>اطلاق الوميض وضع الحد من العين الحمراء، ضوء العودة الكشف عن</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="85"/>
+        <location filename="../src/exifdialog.cpp" line="93"/>
         <source>Flash fired, compulsory flash mode, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x49)</comment>
         <translation>اطلاق الوميض وضع فلاش الزامي، وضع الحد من العين الحمراء</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="87"/>
+        <location filename="../src/exifdialog.cpp" line="95"/>
         <source>Flash fired, compulsory flash mode, red-eye reduction mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x4D)</comment>
         <translation>اطلاق الوميض وضع فلاش الزامي، وضع الحد من العين الحمراء، ضوء العودة لم يتم الكشف عنها</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="89"/>
+        <location filename="../src/exifdialog.cpp" line="97"/>
         <source>Flash fired, compulsory flash mode, red-eye reduction mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x4F)</comment>
         <translation>اطلاق الوميض وضع فلاش الزامي، وضع الحد من العين الحمراء، ضوء العودة الكشف عن</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="91"/>
+        <location filename="../src/exifdialog.cpp" line="99"/>
         <source>Flash fired, auto mode, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x59)</comment>
         <translation>اطلاق الوميض وضع تلقائي ووضع الحد من العين الحمراء</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="93"/>
+        <location filename="../src/exifdialog.cpp" line="101"/>
         <source>Flash fired, auto mode, return light not detected, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x5D)</comment>
         <translation>اطلاق الوميض وضع تلقائي وضوء العودة لم يتم الكشف عنها، ووضع الحد من العين الحمراء</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="95"/>
+        <location filename="../src/exifdialog.cpp" line="103"/>
         <source>Flash fired, auto mode, return light detected, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x5F)</comment>
         <translation>اطلاق الوميض وضع تلقائي ضوء العودة الكشف عنها، وضع الحد من العين الحمراء</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="128"/>
+        <location filename="../src/exifdialog.cpp" line="136"/>
         <source>Horizontal (normal)</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(0 or 1)</comment>
         <translation>افقي (عادي)</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="135"/>
+        <location filename="../src/exifdialog.cpp" line="143"/>
         <source>Mirror horizontal</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(2)</comment>
         <translation>مراة افقية</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="137"/>
+        <location filename="../src/exifdialog.cpp" line="145"/>
         <source>Rotate 180</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(3)</comment>
         <translation>تدوير 180</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="139"/>
+        <location filename="../src/exifdialog.cpp" line="147"/>
         <source>Mirror vertical</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(4)</comment>
         <translation>مراة عمودية</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="141"/>
+        <location filename="../src/exifdialog.cpp" line="149"/>
         <source>Mirror horizontal and rotate 270 CW</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(5)</comment>
         <translation>مراة افقية وتدوير 270 CW</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="143"/>
+        <location filename="../src/exifdialog.cpp" line="151"/>
         <source>Rotate 90 CW</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(6)</comment>
         <translation>تدوير 90 CW</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="145"/>
+        <location filename="../src/exifdialog.cpp" line="153"/>
         <source>Mirror horizontal and rotate 90 CW</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(7)</comment>
         <translation>مراة افقية وتدوير 90 CW</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="147"/>
+        <location filename="../src/exifdialog.cpp" line="155"/>
         <source>Rotate 270 CW</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(8)</comment>
         <translation>تدوير 270 CW</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="156"/>
+        <location filename="../src/exifdialog.cpp" line="173"/>
         <source>Exif is not included.</source>
         <comment>Text to display if EXIF is not included in JPEG</comment>
         <translation>Exif غير مشمول.</translation>
@@ -779,7 +781,8 @@
         <translation>تعيين هذا المجلد الى المجلد الرئيسي</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="223"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="23"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="231"/>
         <source>No folders or archives found.</source>
         <comment>Display when there is no display item in Folder Window</comment>
         <translation>لم يتم العثور على اي مجلدات او محفوظات</translation>
@@ -1101,7 +1104,8 @@
         <translation>&amp;تركيب</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="145"/>
+        <location filename="../src/mainwindow.cpp" line="146"/>
+        <location filename="../src/mainwindow.cpp" line="1484"/>
         <source>&amp;Fullscreen</source>
         <translation>&amp;ملء الشاشة</translation>
     </message>
@@ -1240,7 +1244,7 @@
         <translation>مسح قوائم العناوين</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2185"/>
+        <location filename="../src/mainwindow.cpp" line="2219"/>
         <source>Bookmark saved.</source>
         <translation>قائمة العناوين حفظت</translation>
     </message>
@@ -1772,7 +1776,7 @@
         <translation>وقت التعديل (تنازلي)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="229"/>
+        <location filename="../src/mainwindow.cpp" line="470"/>
         <source>No folder or archive is loaded.</source>
         <comment>The text of the status bar to be displayed when there is no image to be displayed immediately after the application is activated</comment>
         <translation>لم يتم تحميل اي مجلد او ارشيف.</translation>
@@ -1788,49 +1792,44 @@
         <translation type="vanished">لم يتم العثور على ملف الصورة. لا يمكن فتحه.</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="691"/>
+        <location filename="../src/mainwindow.cpp" line="473"/>
         <source>Image file not found. It cannot be opened.</source>
         <comment>Text to display in the status bar when failed to open the specified Volume</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1440"/>
+        <location filename="../src/mainwindow.cpp" line="476"/>
         <source>Image file was not found and cannot be opened.</source>
         <comment>Text to display in the status bar when failed to open the specified Volume</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1464"/>
-        <source>LoadBookmark</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp" line="1762"/>
+        <location filename="../src/mainwindow.cpp" line="1792"/>
         <source>All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.heic *.heif);;Archives( *.zip *.7z *.rar)</source>
         <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1765"/>
+        <location filename="../src/mainwindow.cpp" line="1795"/>
         <source>Select an image or archive</source>
         <comment>Title of the dialog displayed when opening a file with OpenFileFolder</comment>
         <translation>يرجى اختيار الصورة او الارشيف</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1991"/>
-        <location filename="../src/mainwindow.cpp" line="2032"/>
+        <location filename="../src/mainwindow.cpp" line="2025"/>
+        <location filename="../src/mainwindow.cpp" line="2066"/>
         <source>Confirmation</source>
         <comment>Confirm deleting image file on MessageBox title</comment>
         <translation>التاكيد</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1996"/>
+        <location filename="../src/mainwindow.cpp" line="2030"/>
         <source>Are you sure you want to move the image to Recycle Bin?</source>
         <comment>Confirm putting displayed file in Recycle Box Message Box body</comment>
         <translation>هل تريد بالتاكيد نقل الصورة الى سلة المحذوفات؟</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2037"/>
+        <location filename="../src/mainwindow.cpp" line="2071"/>
         <source>Are you sure you want to delete this image?</source>
         <comment>Confirm deleting image file on Message Box body</comment>
         <translation>هل انت متاكد انك تريد حذف هذه الصورة؟</translation>
@@ -2397,13 +2396,13 @@
         <translation>قائمة السياق</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="314"/>
+        <location filename="../src/models/qvapplication.cpp" line="311"/>
         <source>Shader</source>
         <comment>Shader Action Group</comment>
         <translation>تظليل</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="329"/>
+        <location filename="../src/models/qvapplication.cpp" line="326"/>
         <source>Help</source>
         <comment>Help Action Group</comment>
         <translation>التعليمات</translation>

@@ -43,7 +43,8 @@ MainWindow::MainWindow(QWidget *parent)
       m_catalogWindow(nullptr),
       m_retouchWindow(nullptr),
       m_exifDialog(nullptr),
-      m_fullscreenButton(nullptr)
+      m_fullscreenButton(nullptr),
+      m_statusMessage(StatusMessage::NoVolume)
 {
     ui->setupUi(this);
     // Establish the final window size before further UI initialization can
@@ -226,7 +227,7 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     ui->statusBar->addPermanentWidget(ui->statusLabel);
-    ui->statusLabel->setText(tr("No folder or archive is loaded.", "The text of the status bar to be displayed when there is no image to be displayed immediately after the application is activated"));
+    setStatusMessage(StatusMessage::NoVolume);
 
     // Shader
     ui->actionShaderBilinearBeforeCpuBicubic->setVisible(false);
@@ -459,6 +460,24 @@ void MainWindow::resetShortcutKeys()
     handleScrollModeChanged(ui->graphicsView->isScrollMode());
 }
 
+void MainWindow::setStatusMessage(StatusMessage message)
+{
+    m_statusMessage = message;
+    switch (message) {
+    case StatusMessage::None:
+        return;
+    case StatusMessage::NoVolume:
+        ui->statusLabel->setText(tr("No folder or archive is loaded.", "The text of the status bar to be displayed when there is no image to be displayed immediately after the application is activated"));
+        return;
+    case StatusMessage::LoadFailed:
+        ui->statusLabel->setText(tr("Image file not found. It cannot be opened.", "Text to display in the status bar when failed to open the specified Volume"));
+        return;
+    case StatusMessage::PageMissing:
+        ui->statusLabel->setText(tr("Image file was not found and cannot be opened.", "Text to display in the status bar when failed to open the specified Volume"));
+        return;
+    }
+}
+
 void MainWindow::dragEnterEvent(QDragEnterEvent *e)
 {
     if (e->mimeData()->hasFormat("text/uri-list")) {
@@ -688,7 +707,7 @@ void MainWindow::loadVolume(QString path, bool allowSecondPage)
     }
 
     createFolderWindow(true, path);
-    ui->statusLabel->setText(tr("Image file not found. It cannot be opened.", "Text to display in the status bar when failed to open the specified Volume"));
+    setStatusMessage(StatusMessage::LoadFailed);
 }
 
 void MainWindow::makeHistoryMenu()
@@ -1386,6 +1405,7 @@ void MainWindow::handleViewerSessionPageChanged()
     m_sliderChanging = false;
 
     // StatusBar
+    m_statusMessage = StatusMessage::None;
     m_pageCaption = m_imageString.getStatusBarText();
 
     // Elide text(Otherwise the width of the main window will be forcibly changed)
@@ -1437,7 +1457,7 @@ void MainWindow::handlePageNoLongerNeeded()
 {
     setWindowTitle(QString("%1 v%2").arg(qApp->applicationName()).arg(qApp->applicationVersion()));
     ui->pageFrame->hide();
-    ui->statusLabel->setText(tr("Image file was not found and cannot be opened.", "Text to display in the status bar when failed to open the specified Volume"));
+    setStatusMessage(StatusMessage::PageMissing);
 }
 
 void MainWindow::handleAppVersionActionTriggered()
@@ -1461,7 +1481,17 @@ void MainWindow::handleLanguageSelectorLanguageChanged(QString language)
 {
     qApp->setUiLanguage(language);
     ui->retranslateUi(this);
-    ui->menuLoadBookmark->setTitle(QApplication::translate("MainWindow", "LoadBookmark", Q_NULLPTR));
+    m_fullscreenButton->setToolTip(tr("&Fullscreen"));
+    ui->statusBar->clearMessage();
+
+    qApp->keyActions().clearActionGroups();
+    qApp->registerActions(ui);
+
+    if (m_viewerSession.pageCount() > 0) {
+        handleViewerSessionPageChanged();
+    } else {
+        setStatusMessage(m_statusMessage);
+    }
 }
 
 void MainWindow::handleLanguageSelectorOpenTextEditorForLanguage(LanguageInfo info)
@@ -1802,7 +1832,11 @@ void MainWindow::handleShowStatusBarActionTriggered(bool checked)
     if (checked) {
         setWindowTitle(m_volumeCaption);
         ui->statusBar->show();
-        ui->statusLabel->setText(m_pageCaption);
+        if (m_statusMessage == StatusMessage::None) {
+            ui->statusLabel->setText(m_pageCaption);
+        } else {
+            setStatusMessage(m_statusMessage);
+        }
     } else {
         ui->statusBar->hide();
         setWindowTitle(m_pageCaption);

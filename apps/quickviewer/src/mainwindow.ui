@@ -348,7 +348,7 @@
     </property>
     <widget class="QMenu" name="menuLoadBookmark">
      <property name="title">
-      <string extracomment="Button to restore saved image page from registered bookmark">Load bookmark</string>
+      <string notr="true"/>
      </property>
      <property name="icon">
       <iconset resource="../toolbar.qrc">
@@ -365,7 +365,7 @@
     <addaction name="actionPrevOnePage"/>
     <addaction name="separator"/>
     <addaction name="actionSaveBookmark"/>
-    <addaction name="menuLoadBookmark"/>
+    <addaction name="actionLoadBookmark"/>
     <addaction name="separator"/>
     <addaction name="actionNextVolume"/>
     <addaction name="actionPrevVolume"/>

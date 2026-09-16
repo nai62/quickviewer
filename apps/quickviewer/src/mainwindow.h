@@ -217,6 +217,14 @@ private slots:
     void handleInitialImageDisplayFinished();
 
 private:
+    enum class StatusMessage {
+        None,
+        NoVolume,
+        LoadFailed,
+        PageMissing,
+    };
+
+    void setStatusMessage(StatusMessage message);
     void saveVisibleFolderViewWidth();
     void loadStartupVolume();
     void revealStartupWindow();
@@ -257,6 +265,7 @@ protected:
     RetouchWindow *m_retouchWindow;
     ExifDialog *m_exifDialog;
     QToolButton *m_fullscreenButton;
+    StatusMessage m_statusMessage;
     uint m_menubarFontSize;
     uint m_pageSliderHeight;
 };

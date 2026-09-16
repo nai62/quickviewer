@@ -28,7 +28,12 @@ public slots:
 
 private:
     Ui::ExifDialog *ui;
+    bool m_hasContent;
     QString m_exif;
+    QString m_exifPath;
+    QSize m_originalSize;
+    easyexif::EXIFInfo m_exifInfo;
+    void updateExifText();
     QString generateFlash(char flash);
     //    QString generateFlashMode(unsigned short mode);
     //    QString generateFlashReturnedLight(unsigned short light);
