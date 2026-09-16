@@ -16,6 +16,14 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *)
       m_itemDelegate(parent, this)
 {
     ui->setupUi(this);
+    connect(qApp->languageSelector(), &LanguageManager::languageChanged, this, [this](const QString &) {
+        ui->retranslateUi(this);
+        resetSortMode();
+        if (m_volumes.size() == 1 && m_volumes.first().type == QvFolderItem::NoItems) {
+            m_volumes.first().name = tr("No folders or archives found.", "Display when there is no display item in Folder Window");
+            m_itemModel.setVolumes(&m_volumes);
+        }
+    });
 
 #ifdef Q_OS_MACOS
     ui->menuBar->setNativeMenuBar(false);

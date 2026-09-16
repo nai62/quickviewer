@@ -48,6 +48,10 @@ public:
         m_actionByName[name] = action;
         m_nameByGroup.insert(group, name);
     }
+    void clearActionGroups()
+    {
+        m_nameByGroup.clear();
+    }
     void copyActions(QMap<QString, Action> &rhs)
     {
         m_actionByName = rhs;

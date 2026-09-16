@@ -3,6 +3,7 @@
 #include "exifdialog.h"
 #include "ui_exifdialog.h"
 #include "qv_init.h"
+#include "models/qvapplication.h"
 
 struct ImageMetaContents
 {
@@ -31,9 +32,16 @@ struct ImageMetaContents
 
 ExifDialog::ExifDialog(QWidget *parent)
     : QWidget(parent),
-      ui(new Ui::ExifDialog)
+      ui(new Ui::ExifDialog),
+      m_hasContent(false)
 {
     ui->setupUi(this);
+    connect(qApp->languageSelector(), &LanguageManager::languageChanged, this, [this](const QString &) {
+        ui->retranslateUi(this);
+        if (m_hasContent) {
+            updateExifText();
+        }
+    });
 }
 
 ExifDialog::~ExifDialog()
@@ -151,14 +159,23 @@ QString ExifDialog::generateOrientation(unsigned short orient)
 
 void ExifDialog::setExif(const ImageContent &content)
 {
-    const easyexif::EXIFInfo &info = content.exifInfo;
+    m_hasContent = true;
+    m_exifPath = content.path;
+    m_originalSize = content.originalSize;
+    m_exifInfo = content.exifInfo;
+    updateExifText();
+}
+
+void ExifDialog::updateExifText()
+{
+    const easyexif::EXIFInfo &info = m_exifInfo;
     if (!info.ImageWidth) {
         ui->textEdit->setText(tr("Exif is not included.", "Text to display if EXIF is not included in JPEG"));
         return;
     }
     ImageMetaContents meta;
-    meta.addContent(tr("Filename"), content.path);
-    meta.addContent(tr("Pixels"), QString("%L1").arg(content.originalSize.width() * content.originalSize.height()));
+    meta.addContent(tr("Filename"), m_exifPath);
+    meta.addContent(tr("Pixels"), QString("%L1").arg(m_originalSize.width() * m_originalSize.height()));
     meta.addContent(tr("Image width"), info.ImageWidth);
     meta.addContent(tr("Image height"), info.ImageHeight);
     meta.addContent(tr("Make"), QString::fromStdString(info.Make));

@@ -37,6 +37,15 @@ CatalogWindow::CatalogWindow(QWidget *parent, Ui::MainWindow *uiMain)
       m_itemModel(this)
 {
     ui->setupUi(this);
+    connect(qApp->languageSelector(), &LanguageManager::languageChanged, this, [this](const QString &) {
+        ui->retranslateUi(this);
+        ui->searchCombo->lineEdit()->setPlaceholderText(tr("Enter a search term and press Enter to search by title.", "Gray text that prompts a keyword search of Volume"));
+        if (m_volumes.isEmpty()) {
+            ui->statusLabel->setText(tr("Drop an image folder here to create a catalog.", "Status bar text briefly explaining how to use CatalogWindow"));
+        } else {
+            resetVolumes();
+        }
+    });
 
 #ifdef Q_OS_MACOS
     ui->menuBar->setNativeMenuBar(false);

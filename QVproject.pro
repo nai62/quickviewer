@@ -18,7 +18,8 @@ CONFIG(debug, debug|release) {
         asynccachetest \
         svgloadertest \
         viewernavigationtest \
-        windowstartuptest
+        windowstartuptest \
+        languageswitchtest
 }
 
 ResizeHalf.file = qmake/third_party/resizehalf/ResizeHalf.pro
@@ -35,18 +36,21 @@ asynccachetest.file = tests/asynccache/asynccache.pro
 svgloadertest.file = tests/svgloader/svgloader.pro
 viewernavigationtest.file = tests/viewernavigation/viewernavigation.pro
 windowstartuptest.file = tests/windowstartup/windowstartup.pro
+languageswitchtest.file = tests/languageswitch/languageswitch.pro
 
 fileloader.depends = unrar
 QuickViewer.depends = ResizeHalf easyexif fileloader zimg spng
 qvtest.depends = fileloader
 viewernavigationtest.depends = ResizeHalf easyexif fileloader zimg spng
 windowstartuptest.depends = ResizeHalf easyexif fileloader zimg spng
+languageswitchtest.depends = ResizeHalf easyexif fileloader zimg spng
 
 contains(DEFINES, QV_WITH_LUMINOR) {
     SUBDIRS += luminor
     luminor.file = components/qluminor/luminor.pro
     QuickViewer.depends += luminor
     windowstartuptest.depends += luminor
+    languageswitchtest.depends += luminor
 }
 
 win32 {
