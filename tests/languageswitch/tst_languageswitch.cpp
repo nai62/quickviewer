@@ -224,7 +224,7 @@ private slots:
         navigationLoadAction = actionForSubmenu(navigationMenu, loadMenu);
         QCOMPARE(navigationLoadAction, loadAction);
         QCOMPARE(navigationLoadAction->text(), marker(QStringLiteral("Load bookmark")));
-        QCOMPARE(loadMenu->title(), marker(QStringLiteral("Load bookmark")));
+        QCOMPARE(loadMenu->title(), QString());
 
         translator.clear();
         QVERIFY(emitLanguageChanged(QStringLiteral("English")));

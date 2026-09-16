@@ -348,7 +348,7 @@
     </property>
     <widget class="QMenu" name="menuLoadBookmark">
      <property name="title">
-      <string extracomment="Button to restore saved image page from registered bookmark">Load bookmark</string>
+      <string notr="true"/>
      </property>
      <property name="icon">
       <iconset resource="../toolbar.qrc">
