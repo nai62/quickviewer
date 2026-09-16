@@ -886,7 +886,7 @@
     </message>
     <message>
         <location filename="../../../components/file-association/fileassocdialog.cpp" line="185"/>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="222"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="224"/>
         <source>&amp;View with QuickViewer</source>
         <comment>Menu displayed when right clicking on file in Explorer</comment>
         <translation>&amp;Voir avec QuickViewer</translation>
