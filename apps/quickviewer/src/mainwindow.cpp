@@ -706,8 +706,9 @@ void MainWindow::loadVolume(QString path, bool allowSecondPage)
 {
     QStringList seps = path.split("::");
     const QString requestedPath = QDir::fromNativeSeparators(Volume::FullPathToVolumePath(path));
+    const bool requestedArchive = IFileLoader::isArchiveFile(requestedPath);
     m_folderViewRequestedPath = requestedPath;
-    if (m_folderWindow) {
+    if (m_folderWindow && !requestedArchive) {
         m_folderWindow->handleViewerSessionVolumeChanged(m_folderViewRequestedPath);
     }
     if (!IFileLoader::isArchiveFile(seps[0]) && IFileLoader::isImageFile(path)) {
@@ -716,9 +717,6 @@ void MainWindow::loadVolume(QString path, bool allowSecondPage)
         return;
     }
     if (m_viewerSession.loadVolume(path)) {
-        if (m_viewerSession.isArchive()) {
-            m_viewerSession.deferFolderWorkUntilNextPaint();
-        }
         changeFolderPath(m_viewerSession.volumePath());
         return;
     }
@@ -1144,6 +1142,7 @@ void MainWindow::completeDeferredStartupWork()
             const QString path = m_pendingFolderPath;
             m_pendingFolderPath.clear();
             m_folderWindow->setFolderPath(path, false);
+            updateFolderViewCurrentItem();
         }
         return;
     }
@@ -1426,7 +1425,9 @@ void MainWindow::handleViewerSessionPageChanged()
         syncPageBar();
         return;
     }
-    updateFolderViewCurrentItem();
+    if (!m_viewerSession.initialImagePaintPending()) {
+        updateFolderViewCurrentItem();
+    }
     // PageSlider
     syncPageBar();
 
@@ -1454,7 +1455,9 @@ void MainWindow::handleViewerSessionPageChanged()
 
 void MainWindow::handleViewerSessionVolumeChanged(QString path)
 {
-    updateFolderViewCurrentItem();
+    if (!m_viewerSession.initialImagePaintPending()) {
+        updateFolderViewCurrentItem();
+    }
     if (path.isEmpty()) {
         setWindowTitle(QString("%1 v%2").arg(qApp->applicationName()).arg(qApp->applicationVersion()));
         syncPageBar();

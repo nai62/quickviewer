@@ -497,6 +497,42 @@ private slots:
         QVERIFY(statusLabel->text().isEmpty());
     }
 
+    void archiveDefersFolderViewUpdatesUntilFirstPaint()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const QString archivePath = directory.filePath(QStringLiteral("book.zip"));
+        QVERIFY(QFile::copy(QString(FILELOADER_DATAPATH "deflate-utf8.zip"), archivePath));
+        QVERIFY(QFile::setPermissions(
+            archivePath,
+            QFileDevice::ReadOwner | QFileDevice::WriteOwner));
+
+        StartupWindow viewer;
+        viewer.createFolderWindow(true, directory.path(), false);
+        QTreeView *view = viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        const auto archiveIsCurrent = [view] {
+            for (int row = 0; row < view->model()->rowCount(); ++row) {
+                const QModelIndex index = view->model()->index(row, 0);
+                if (index.data().toString() == QStringLiteral("book.zip")) {
+                    return index.data(FolderItemModel::CurrentVolumeRole).toBool();
+                }
+            }
+            return false;
+        };
+        QVERIFY(!archiveIsCurrent());
+
+        viewer.loadVolume(archivePath);
+
+        QVERIFY(viewer.viewerSession()->initialImagePaintPending());
+        QVERIFY(!archiveIsCurrent());
+
+        viewer.viewerSession()->notifyInitialImagePainted();
+
+        QTRY_VERIFY(!viewer.viewerSession()->initialImagePaintPending());
+        QTRY_VERIFY(archiveIsCurrent());
+    }
+
     void emptyFolderShowsSpecificMessageAndKeepsPageBar()
     {
         QTemporaryDir directory;
