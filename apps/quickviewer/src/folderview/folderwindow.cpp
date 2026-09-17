@@ -42,6 +42,7 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
 
     ui->folderView->setRootIsDecorated(false);
     ui->folderView->setIndentation(0);
+    ui->folderView->setUniformRowHeights(true);
     ui->folderView->setMouseTracking(true);
     ui->folderView->installEventFilter(this);
 
@@ -204,7 +205,6 @@ void FolderWindow::resizeEvent(QResizeEvent *event)
     if (qApp->SaveFolderViewWidth() && isWindow() && isVisible()) {
         qApp->setFolderViewWidth(event->size().width());
     }
-    resetPathLabel(event->size().width());
 }
 
 static bool filenameLessThan(const QvFolderItem &lhs, const QvFolderItem &rhs)
@@ -373,6 +373,7 @@ void FolderWindow::keyPressEvent(QKeyEvent *event)
         handleParentButtonClicked();
         return;
     }
+    QWidget::keyPressEvent(event);
 }
 
 void FolderWindow::handleHomeButtonClicked()

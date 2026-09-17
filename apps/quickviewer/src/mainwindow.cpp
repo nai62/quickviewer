@@ -86,6 +86,17 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->graphicsView->setViewerSession(&m_viewerSession);
     connect(&m_viewerSession, &ViewerSession::initialImageDisplayFinished, this, &MainWindow::handleInitialImageDisplayFinished);
+    connect(
+        &m_viewerSession,
+        &ViewerSession::archiveOpenFailed,
+        this,
+        [this](const QString &path, ArchiveOpenError) {
+            m_folderViewRequestedPath = QDir::fromNativeSeparators(path);
+            if (m_folderWindow) {
+                m_folderWindow->handleViewerSessionVolumeChanged(m_folderViewRequestedPath);
+            }
+            setStatusMessage(StatusMessage::ArchiveFailed);
+        });
     setAcceptDrops(true);
 
     // Mapping to Key-Action Table and Key Config Dialog
@@ -463,17 +474,19 @@ void MainWindow::resetShortcutKeys()
 void MainWindow::setStatusMessage(StatusMessage message)
 {
     m_statusMessage = message;
+    ui->statusLabel->clear();
     switch (message) {
     case StatusMessage::None:
         return;
     case StatusMessage::NoVolume:
-        ui->statusLabel->setText(tr("No folder or archive is loaded.", "The text of the status bar to be displayed when there is no image to be displayed immediately after the application is activated"));
+        ui->graphicsView->showNoVolumeMessage();
         return;
     case StatusMessage::LoadFailed:
-        ui->statusLabel->setText(tr("Image file not found. It cannot be opened.", "Text to display in the status bar when failed to open the specified Volume"));
-        return;
     case StatusMessage::PageMissing:
-        ui->statusLabel->setText(tr("Image file was not found and cannot be opened.", "Text to display in the status bar when failed to open the specified Volume"));
+        ui->graphicsView->showOpenFailureMessage(false);
+        return;
+    case StatusMessage::ArchiveFailed:
+        ui->graphicsView->showOpenFailureMessage(true);
         return;
     }
 }
@@ -538,9 +551,6 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     QKeySequence seq(event->key() | event->modifiers());
     qDebug() << seq.toString() << focusWidget();
 
-    if (this->focusWidget() != ui->graphicsView) {
-        return;
-    }
     if (ui->graphicsView->isScrollMode() && !qApp->ScrollWithCursorWhenZooming()) {
         if (seq.toString() == "Left") {
             ui->graphicsView->horizontalScrollBar()->setValue(ui->graphicsView->horizontalScrollBar()->value() - 300);
@@ -562,10 +572,20 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 
     QAction *action = qApp->keyActions().getActionByKey(seq);
     if (action) {
-        action->trigger();
+        QWidget *focusedWidget = focusWidget();
+        const bool folderViewHasFocus = m_folderWindow && focusedWidget &&
+                                        (focusedWidget == m_folderWindow || m_folderWindow->isAncestorOf(focusedWidget));
+        if (folderViewHasFocus) {
+            // Some global actions delete or replace FolderWindow. Let the key
+            // event unwind before triggering them when it originated there.
+            QMetaObject::invokeMethod(action, &QAction::trigger, Qt::QueuedConnection);
+        } else {
+            action->trigger();
+        }
         event->accept();
         return;
     }
+    QMainWindow::keyPressEvent(event);
 }
 
 void MainWindow::closeEvent(QCloseEvent *)
@@ -689,6 +709,12 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 void MainWindow::loadVolume(QString path, bool allowSecondPage)
 {
     QStringList seps = path.split("::");
+    const QString requestedPath = QDir::fromNativeSeparators(Volume::FullPathToVolumePath(path));
+    const bool requestedArchive = IFileLoader::isArchiveFile(requestedPath);
+    m_folderViewRequestedPath = requestedPath;
+    if (m_folderWindow) {
+        m_folderWindow->handleViewerSessionVolumeChanged(m_folderViewRequestedPath);
+    }
     if (!IFileLoader::isArchiveFile(seps[0]) && IFileLoader::isImageFile(path)) {
         m_viewerSession.loadVolumeWithFile(path, allowSecondPage);
         changeFolderPath(QFileInfo(QDir::fromNativeSeparators(path)).absolutePath());
@@ -702,12 +728,15 @@ void MainWindow::loadVolume(QString path, bool allowSecondPage)
         return;
     }
 
+    setStatusMessage(requestedArchive
+                         ? StatusMessage::ArchiveFailed
+                         : StatusMessage::LoadFailed);
+
     if (changeFolderPath(path)) {
         return;
     }
 
     createFolderWindow(true, path);
-    setStatusMessage(StatusMessage::LoadFailed);
 }
 
 void MainWindow::makeHistoryMenu()
@@ -1030,6 +1059,9 @@ void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
     if (oldpath.isEmpty()) {
         oldpath = m_viewerSession.volumePath();
         if (oldpath.isEmpty()) {
+            oldpath = m_folderViewRequestedPath;
+        }
+        if (oldpath.isEmpty()) {
             oldpath = qApp->HomeFolderPath();
         }
     }
@@ -1079,7 +1111,10 @@ void MainWindow::updateFolderViewCurrentItem()
     const QString path = m_viewerSession.isArchive()
                              ? m_viewerSession.volumePath()
                              : m_viewerSession.currentPagePath();
-    m_folderWindow->handleViewerSessionVolumeChanged(path);
+    if (!path.isEmpty()) {
+        m_folderViewRequestedPath = path;
+    }
+    m_folderWindow->handleViewerSessionVolumeChanged(m_folderViewRequestedPath);
 }
 
 bool MainWindow::changeFolderPath(QString path)
@@ -1441,7 +1476,11 @@ void MainWindow::handleViewerSessionVolumeChanged(QString path)
 {
     updateFolderViewCurrentItem();
     if (path.isEmpty()) {
-        handlePageNoLongerNeeded();
+        setWindowTitle(QString("%1 v%2").arg(qApp->applicationName()).arg(qApp->applicationVersion()));
+        ui->pageFrame->hide();
+        if (m_statusMessage != StatusMessage::ArchiveFailed) {
+            setStatusMessage(StatusMessage::PageMissing);
+        }
         return;
     }
     if (!qApp->DontSavingHistory()) {
@@ -1463,13 +1502,6 @@ void MainWindow::handlePageSliderValueChanged(int value)
     m_sliderChanging = true;
     m_viewerSession.selectPage(value - 1);
     m_sliderChanging = false;
-}
-
-void MainWindow::handlePageNoLongerNeeded()
-{
-    setWindowTitle(QString("%1 v%2").arg(qApp->applicationName()).arg(qApp->applicationVersion()));
-    ui->pageFrame->hide();
-    setStatusMessage(StatusMessage::PageMissing);
 }
 
 void MainWindow::handleAppVersionActionTriggered()

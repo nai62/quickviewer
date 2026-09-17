@@ -294,6 +294,7 @@ private slots:
         FolderWindow folder(nullptr, nullptr);
         QTreeView *view = folder.findChild<QTreeView *>(QStringLiteral("folderView"));
         QVERIFY(view);
+        QVERIFY(view->uniformRowHeights());
 
         QWheelEvent event(
             QPointF(1, 1),
@@ -308,6 +309,33 @@ private slots:
         QApplication::sendEvent(view->viewport(), &event);
 
         QVERIFY(event.isAccepted());
+    }
+
+    void folderWindowLeavesUnhandledFunctionKeysForParent()
+    {
+        FolderWindow folder(nullptr, nullptr);
+        QKeyEvent event(QEvent::KeyPress, Qt::Key_F11, Qt::NoModifier);
+
+        QApplication::sendEvent(&folder, &event);
+
+        QVERIFY(!event.isAccepted());
+    }
+
+    void folderViewFocusStillAllowsGlobalFunctionKeys()
+    {
+        StartupWindow viewer;
+        viewer.resize(800, 600);
+        viewer.show();
+        viewer.createFolderWindow(true, QString(), true);
+        QTreeView *view = viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        view->setFocus();
+        QWidget *focusTarget = QApplication::focusWidget();
+        QVERIFY(focusTarget == view || focusTarget == view->viewport());
+
+        QTest::keyPress(focusTarget, Qt::Key_F4);
+
+        QTRY_VERIFY(viewer.folderWindow() == nullptr);
     }
 
     void historyButtonUsesClockIconAndLabel()
@@ -391,7 +419,7 @@ private slots:
             viewer.imageView()->displayedMessage(),
             QStringLiteral(
                 "Cannot Open Archive\n"
-                "This archive is password-protected. Password-protected archives are not supported."));
+                "No viewable images could be loaded from this archive."));
         for (QWidget *widget : QApplication::topLevelWidgets()) {
             QVERIFY(qobject_cast<QMessageBox *>(widget) == nullptr);
         }
@@ -400,6 +428,36 @@ private slots:
 
         viewer.loadVolume(QString(FILELOADER_DATAPATH "deflate-utf8.zip"));
         QVERIFY(viewer.imageView()->displayedMessage().isEmpty());
+    }
+
+    void archiveWithoutImagesIsActiveAndShowsCentralError()
+    {
+        StartupWindow viewer;
+        const QString archivePath = QString(FILELOADER_DATAPATH "7z/text.7z");
+        viewer.createFolderWindow(true, QFileInfo(archivePath).absolutePath(), false);
+
+        viewer.loadVolume(archivePath);
+
+        QTreeView *view = viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        QModelIndex archiveIndex;
+        for (int row = 0; row < view->model()->rowCount(); ++row) {
+            const QModelIndex candidate = view->model()->index(row, 0);
+            if (candidate.data().toString() == QFileInfo(archivePath).fileName()) {
+                archiveIndex = candidate;
+                break;
+            }
+        }
+        QVERIFY(archiveIndex.isValid());
+        QVERIFY(archiveIndex.data(FolderItemModel::CurrentVolumeRole).toBool());
+        QCOMPARE(
+            viewer.imageView()->displayedMessage(),
+            QStringLiteral(
+                "Cannot Open Archive\n"
+                "No viewable images could be loaded from this archive."));
+        QLabel *statusLabel = viewer.findChild<QLabel *>(QStringLiteral("statusLabel"));
+        QVERIFY(statusLabel);
+        QVERIFY(statusLabel->text().isEmpty());
     }
 
     void backgroundPasswordFailureWaitsForForegroundAttempt()

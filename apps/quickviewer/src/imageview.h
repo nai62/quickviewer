@@ -46,6 +46,8 @@ public:
     VisiblePages renderedPageContents() const;
     RenderedPageMetrics renderedPageMetrics() const;
     QString displayedMessage() const;
+    void showNoVolumeMessage();
+    void showOpenFailureMessage(bool archive);
     void updateGestureTransform(qreal scale, qreal rotationDegrees);
     void commitGestureTransform();
     void resetGestureTransform();
@@ -125,6 +127,7 @@ public slots:
     void handleRetouchParametersChanged(RetouchParameters params);
 
 private:
+    void showMessage(const QString &title, const QString &body);
     PageRenderSettings pageRenderSettings() const;
     qreal manualZoomScale() const;
     void updateSceneForContent(bool allowScrolling, const QRect &contentRect);

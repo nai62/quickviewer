@@ -249,9 +249,11 @@ private slots:
         auto *loadAction = viewer.findChild<QAction *>(QStringLiteral("actionLoadBookmark"));
         auto *fileMenu = viewer.findChild<QMenu *>(QStringLiteral("menuFile"));
         auto *statusLabel = viewer.findChild<QLabel *>(QStringLiteral("statusLabel"));
+        auto *imageView = viewer.findChild<ImageView *>(QStringLiteral("graphicsView"));
         QVERIFY(loadAction != nullptr);
         QVERIFY(fileMenu != nullptr);
         QVERIFY(statusLabel != nullptr);
+        QVERIFY(imageView != nullptr);
         QVERIFY(viewer.fullscreenButton() != nullptr);
 
         auto *folderLabel = folder.findChild<QLabel *>(QStringLiteral("label"));
@@ -281,7 +283,11 @@ private slots:
 
         QCOMPARE(loadAction->text(), marker(QStringLiteral("Load bookmark")));
         QCOMPARE(fileMenu->title(), marker(QStringLiteral("&File")));
-        QCOMPARE(statusLabel->text(), marker(QStringLiteral("No folder or archive is loaded.")));
+        QVERIFY(statusLabel->text().isEmpty());
+        QCOMPARE(
+            imageView->displayedMessage(),
+            marker(QStringLiteral("No Image Open")) + QLatin1Char('\n') +
+                marker(QStringLiteral("Open an image, folder, or archive to begin.")));
         QCOMPARE(viewer.fullscreenButton()->toolTip(), marker(QStringLiteral("&Fullscreen")));
 
         const QList<QString> keyGroups = qApp->keyActions().nameByGroups().uniqueKeys();

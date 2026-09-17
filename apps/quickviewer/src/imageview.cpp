@@ -88,6 +88,33 @@ QString ImageView::displayedMessage() const
     return m_messageTitle + QLatin1Char('\n') + m_messageBody;
 }
 
+void ImageView::showNoVolumeMessage()
+{
+    showMessage(
+        tr("No Image Open"),
+        tr("Open an image, folder, or archive to begin."));
+}
+
+void ImageView::showOpenFailureMessage(bool archive)
+{
+    if (archive) {
+        showMessage(
+            tr("Cannot Open Archive"),
+            tr("No viewable images could be loaded from this archive."));
+        return;
+    }
+    showMessage(
+        tr("Cannot Open"),
+        tr("The selected file or folder could not be opened."));
+}
+
+void ImageView::showMessage(const QString &title, const QString &body)
+{
+    m_messageTitle = title;
+    m_messageBody = body;
+    viewport()->update();
+}
+
 void ImageView::setRenderer(RendererType type)
 {
 #ifdef QV_WITHOUT_OPENGL
@@ -214,12 +241,8 @@ void ImageView::handleVisiblePagesChanged(VisiblePages pages)
 
 void ImageView::handleArchiveOpenFailed(QString, ArchiveOpenError error)
 {
-    if (error != ArchiveOpenError::PasswordProtected) {
-        return;
-    }
-    m_messageTitle = tr("Cannot Open Archive");
-    m_messageBody = tr("This archive is password-protected. Password-protected archives are not supported.");
-    viewport()->update();
+    Q_UNUSED(error);
+    showOpenFailureMessage(true);
 }
 
 void ImageView::clearMessage()

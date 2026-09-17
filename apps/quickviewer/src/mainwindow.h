@@ -87,7 +87,6 @@ protected:
     //    void mousePressEvent(QMouseEvent *e) override;
     void closeEvent(QCloseEvent *e) override;
     void resizeEvent(QResizeEvent *e) override;
-    void handlePageNoLongerNeeded();
     void touchEvent(QTouchEvent *e);
 
 signals:
@@ -222,6 +221,7 @@ private:
         NoVolume,
         LoadFailed,
         PageMissing,
+        ArchiveFailed,
     };
 
     void setStatusMessage(StatusMessage message);
@@ -252,6 +252,7 @@ protected:
 
     QString m_volumeCaption;
     QString m_pageCaption;
+    QString m_folderViewRequestedPath;
 
     ViewerSession m_viewerSession;
     ImageString m_imageString;
