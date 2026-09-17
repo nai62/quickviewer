@@ -152,58 +152,6 @@ QPushButton:hover {
        </widget>
       </item>
       <item>
-       <widget class="QToolButton" name="prevButton">
-        <property name="maximumSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>Previous</string>
-        </property>
-        <property name="text">
-         <string extracomment="Button for returning to the previous folder from the currently displayed folder">Previous</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../../toolbar.qrc">
-          <normaloff>:/icons/24/arrow_left_icon_24</normaloff>:/icons/24/arrow_left_icon_24</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="nextButton">
-        <property name="maximumSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>Next</string>
-        </property>
-        <property name="text">
-         <string extracomment="Button for returning to the folder after the current displayed folder">Next</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../../toolbar.qrc">
-          <normaloff>:/icons/24/arrow_right_icon_24</normaloff>:/icons/24/arrow_right_icon_24</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QToolButton" name="toParentButton">
         <property name="maximumSize">
          <size>
@@ -317,24 +265,6 @@ QPushButton:hover {
     </widget>
    </item>
   </layout>
-  <action name="actionPrev">
-   <property name="icon">
-    <iconset resource="../../toolbar.qrc">
-     <normaloff>:/icons/24/arrow_left_icon_24</normaloff>:/icons/24/arrow_left_icon_24</iconset>
-   </property>
-   <property name="text">
-    <string>Previous</string>
-   </property>
-  </action>
-  <action name="actionNext">
-   <property name="icon">
-    <iconset resource="../../toolbar.qrc">
-     <normaloff>:/icons/24/arrow_right_icon_24</normaloff>:/icons/24/arrow_right_icon_24</iconset>
-   </property>
-   <property name="text">
-    <string>Next</string>
-   </property>
-  </action>
   <action name="actionHome">
    <property name="icon">
     <iconset resource="../../toolbar.qrc">
@@ -413,8 +343,6 @@ QPushButton:hover {
  </customwidgets>
  <tabstops>
   <tabstop>homeButton</tabstop>
-  <tabstop>prevButton</tabstop>
-  <tabstop>nextButton</tabstop>
   <tabstop>toParentButton</tabstop>
   <tabstop>reloadButton</tabstop>
   <tabstop>sortModeButton</tabstop>
@@ -448,38 +376,6 @@ QPushButton:hover {
     <hint type="sourcelabel">
      <x>359</x>
      <y>345</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>359</x>
-     <y>299</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>nextButton</sender>
-   <signal>clicked()</signal>
-   <receiver>FolderWindow</receiver>
-   <slot>handleNextButtonClicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>81</x>
-     <y>68</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>359</x>
-     <y>299</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>prevButton</sender>
-   <signal>clicked()</signal>
-   <receiver>FolderWindow</receiver>
-   <slot>handlePreviousButtonClicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>51</x>
-     <y>68</y>
     </hint>
     <hint type="destinationlabel">
      <x>359</x>
@@ -603,8 +499,6 @@ QPushButton:hover {
  <slots>
   <slot>handleFolderViewItemSelected(QModelIndex)</slot>
   <slot>handleFolderViewItemDoubleClicked(QModelIndex)</slot>
-  <slot>handlePreviousButtonClicked()</slot>
-  <slot>handleNextButtonClicked()</slot>
   <slot>handleParentButtonClicked()</slot>
   <slot>handleReloadButtonClicked()</slot>
   <slot>handleHomeButtonClicked()</slot>
