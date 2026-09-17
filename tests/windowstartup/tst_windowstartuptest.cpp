@@ -36,6 +36,7 @@ private slots:
         qApp->setShowPanelSeparateWindow(false);
         qApp->setSaveFolderViewWidth(false);
         qApp->setFolderViewWidth(200);
+        qApp->setShowSliderBar(true);
         qApp->setDontSavingHistory(false);
         qApp->clearHistory();
         qApp->setMaxVolumesCache(4);
@@ -416,22 +417,38 @@ private slots:
     {
         StartupWindow viewer;
         const QString encryptedPath = QString(FILELOADER_DATAPATH "7z/password.7z");
+        const QString validArchivePath = QString(FILELOADER_DATAPATH "deflate-utf8.zip");
+        QSlider *pageSlider = viewer.findChild<QSlider *>(QStringLiteral("pageSlider"));
+        QVERIFY(pageSlider);
+
+        viewer.loadVolume(validArchivePath);
+        QVERIFY(pageSlider->isEnabled());
 
         viewer.loadVolume(encryptedPath);
 
         QCOMPARE(
             viewer.imageView()->displayedMessage(),
-            QStringLiteral(
-                "Cannot Open Archive\n"
-                "No viewable images could be loaded from this archive."));
+            QStringLiteral("Cannot Open Archive\n"
+                           "This archive is password-protected.\n\n"
+                           "Path: %1")
+                .arg(QDir::toNativeSeparators(encryptedPath)));
+        QFrame *pageFrame = viewer.findChild<QFrame *>(QStringLiteral("pageFrame"));
+        QLabel *pageLabel = viewer.findChild<QLabel *>(QStringLiteral("pageLabel"));
+        QVERIFY(pageFrame);
+        QVERIFY(pageSlider);
+        QVERIFY(pageLabel);
+        QVERIFY(!pageFrame->isHidden());
+        QVERIFY(!pageSlider->isEnabled());
+        QCOMPARE(pageLabel->text(), QStringLiteral("Unavailable"));
         for (QWidget *widget : QApplication::topLevelWidgets()) {
             QVERIFY(qobject_cast<QMessageBox *>(widget) == nullptr);
         }
         QVERIFY(viewer.folderWindow() == nullptr);
         QVERIFY(!qApp->History().contains(encryptedPath));
 
-        viewer.loadVolume(QString(FILELOADER_DATAPATH "deflate-utf8.zip"));
+        viewer.loadVolume(validArchivePath);
         QVERIFY(viewer.imageView()->displayedMessage().isEmpty());
+        QVERIFY(pageSlider->isEnabled());
     }
 
     void archiveWithoutImagesIsActiveAndShowsCentralError()
@@ -456,12 +473,95 @@ private slots:
         QVERIFY(archiveIndex.data(FolderItemModel::CurrentVolumeRole).toBool());
         QCOMPARE(
             viewer.imageView()->displayedMessage(),
-            QStringLiteral(
-                "Cannot Open Archive\n"
-                "No viewable images could be loaded from this archive."));
+            QStringLiteral("No Viewable Images\n"
+                           "No supported images were found in this archive.\n\n"
+                           "Path: %1")
+                .arg(QDir::toNativeSeparators(archivePath)));
+        QSlider *pageSlider = viewer.findChild<QSlider *>(QStringLiteral("pageSlider"));
+        QLabel *pageLabel = viewer.findChild<QLabel *>(QStringLiteral("pageLabel"));
+        QVERIFY(pageSlider);
+        QVERIFY(pageLabel);
+        QVERIFY(!pageSlider->isEnabled());
+        QCOMPARE(pageLabel->text(), QStringLiteral("No images"));
         QLabel *statusLabel = viewer.findChild<QLabel *>(QStringLiteral("statusLabel"));
         QVERIFY(statusLabel);
         QVERIFY(statusLabel->text().isEmpty());
+    }
+
+    void emptyFolderShowsSpecificMessageAndKeepsPageBar()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        StartupWindow viewer;
+
+        viewer.loadVolume(directory.path());
+
+        QCOMPARE(
+            viewer.imageView()->displayedMessage(),
+            QStringLiteral("No Viewable Images\n"
+                           "No supported images were found in this folder.\n\n"
+                           "Path: %1")
+                .arg(QDir::toNativeSeparators(directory.path())));
+        QFrame *pageFrame = viewer.findChild<QFrame *>(QStringLiteral("pageFrame"));
+        QSlider *pageSlider = viewer.findChild<QSlider *>(QStringLiteral("pageSlider"));
+        QLabel *pageLabel = viewer.findChild<QLabel *>(QStringLiteral("pageLabel"));
+        QVERIFY(pageFrame);
+        QVERIFY(pageSlider);
+        QVERIFY(pageLabel);
+        QVERIFY(!pageFrame->isHidden());
+        QVERIFY(!pageSlider->isEnabled());
+        QCOMPARE(pageLabel->text(), QStringLiteral("No images"));
+    }
+
+    void brokenImageShowsPathButKeepsVolumeNavigation()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const QString imagePath = directory.filePath(QStringLiteral("broken.png"));
+        QFile image(imagePath);
+        QVERIFY(image.open(QIODevice::WriteOnly));
+        QCOMPARE(image.write("not an image"), qint64(12));
+        image.close();
+        StartupWindow viewer;
+
+        viewer.loadVolume(imagePath);
+
+        const QString expected = QStringLiteral("Cannot Display Image\n"
+                                                "The image could not be decoded.\n\n"
+                                                "Path: %1")
+                                     .arg(QDir::toNativeSeparators(imagePath));
+        QTRY_COMPARE(viewer.imageView()->displayedMessage(), expected);
+        QSlider *pageSlider = viewer.findChild<QSlider *>(QStringLiteral("pageSlider"));
+        QLabel *pageLabel = viewer.findChild<QLabel *>(QStringLiteral("pageLabel"));
+        QVERIFY(pageSlider);
+        QVERIFY(pageLabel);
+        QTRY_VERIFY(pageSlider->isEnabled());
+        QCOMPARE(pageLabel->text(), QStringLiteral("(1/1)"));
+    }
+
+    void corruptArchiveShowsPathAndDisablesPageBar()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const QString archivePath = directory.filePath(QStringLiteral("broken.zip"));
+        QFile archive(archivePath);
+        QVERIFY(archive.open(QIODevice::WriteOnly));
+        QCOMPARE(archive.write("not an archive"), qint64(14));
+        archive.close();
+        StartupWindow viewer;
+
+        viewer.loadVolume(archivePath);
+
+        const QString message = viewer.imageView()->displayedMessage();
+        QVERIFY(message.startsWith(QStringLiteral("Cannot Open Archive\n")));
+        QVERIFY(message.contains(
+            QStringLiteral("Path: %1").arg(QDir::toNativeSeparators(archivePath))));
+        QSlider *pageSlider = viewer.findChild<QSlider *>(QStringLiteral("pageSlider"));
+        QLabel *pageLabel = viewer.findChild<QLabel *>(QStringLiteral("pageLabel"));
+        QVERIFY(pageSlider);
+        QVERIFY(pageLabel);
+        QVERIFY(!pageSlider->isEnabled());
+        QCOMPARE(pageLabel->text(), QStringLiteral("Unavailable"));
     }
 
     void backgroundPasswordFailureWaitsForForegroundAttempt()

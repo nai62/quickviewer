@@ -840,6 +840,10 @@ private slots:
 
         QVERIFY(!session.loadVolume(directory.path()));
         QCOMPARE(session.stateKind(), ViewerStateKind::Failed);
+        QCOMPARE(session.loadStatus().phase, ViewerLoadPhase::Failed);
+        QCOMPARE(session.loadStatus().targetKind, LoadTargetKind::Folder);
+        QCOMPARE(session.loadStatus().failureReason, LoadFailureReason::NoViewableImages);
+        QCOMPARE(session.loadStatus().failurePath, QDir::toNativeSeparators(directory.path()));
         QCOMPARE(session.pageCount(), 0);
         QVERIFY(!session.firstPage());
         QVERIFY(!session.lastPage());
@@ -848,6 +852,7 @@ private slots:
 
         session.reset();
         QCOMPARE(session.stateKind(), ViewerStateKind::Empty);
+        QCOMPARE(session.loadStatus().phase, ViewerLoadPhase::Empty);
     }
 
     void emptyArchiveNavigationIsSafe()
@@ -870,6 +875,10 @@ private slots:
 
         QVERIFY(!session.loadVolume(archivePath));
         QCOMPARE(session.stateKind(), ViewerStateKind::Failed);
+        QCOMPARE(session.loadStatus().phase, ViewerLoadPhase::Failed);
+        QCOMPARE(session.loadStatus().targetKind, LoadTargetKind::Archive);
+        QCOMPARE(session.loadStatus().failureReason, LoadFailureReason::NoViewableImages);
+        QCOMPARE(session.loadStatus().failurePath, QDir::toNativeSeparators(archivePath));
         QCOMPARE(session.pageCount(), 0);
         QVERIFY(!session.isArchive());
         QVERIFY(!session.firstPage());
