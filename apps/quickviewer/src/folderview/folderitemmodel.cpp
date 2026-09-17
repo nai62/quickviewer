@@ -1,4 +1,5 @@
 #include "folderitemmodel.h"
+#include "startupprofiler.h"
 
 FolderItemModel::FolderItemModel(QObject *parent)
     : QAbstractItemModel(parent),
@@ -6,6 +7,7 @@ FolderItemModel::FolderItemModel(QObject *parent)
       m_columns(1),
       m_currentVolumeRow(-1)
 {
+    StartupProfiler::mark("folder-item-icons.begin");
     QFileIconProvider iconProvider;
     m_folderIcon = iconProvider.icon(QFileIconProvider::Folder);
     m_archiveIcon = iconProvider.icon(QFileInfo(QStringLiteral("archive.zip")));
@@ -21,6 +23,7 @@ FolderItemModel::FolderItemModel(QObject *parent)
     if (m_imageIcon.isNull()) {
         m_imageIcon = fileIcon;
     }
+    StartupProfiler::mark("folder-item-icons.end");
 }
 
 QVariant FolderItemModel::headerData(int section, Qt::Orientation, int role) const

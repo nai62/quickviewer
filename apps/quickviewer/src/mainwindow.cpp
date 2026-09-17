@@ -238,8 +238,12 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     ui->statusBar->addPermanentWidget(ui->statusLabel);
+    StartupProfiler::mark("mainwindow.initial-message.begin");
     setStatusMessage(StatusMessage::NoVolume);
+    StartupProfiler::mark("mainwindow.initial-message.end");
+    StartupProfiler::mark("mainwindow.page-bar-sync.begin");
     syncPageBar();
+    StartupProfiler::mark("mainwindow.page-bar-sync.end");
 
     // Shader
     ui->actionShaderBilinearBeforeCpuBicubic->setVisible(false);
@@ -364,7 +368,9 @@ void MainWindow::initializeStartup()
 
     // Reserve a deferred docked panel's final width before the first image is
     // laid out. The lightweight placeholder is replaced after the first paint.
+    StartupProfiler::mark("startup.panel-reserve.begin");
     reserveConfiguredStartupPanelSpace();
+    StartupProfiler::mark("startup.panel-reserve.end");
     StartupProfiler::mark("startup.panel-ready");
 
     // Settle the initial geometry now, including any reserved panel width.
@@ -811,9 +817,8 @@ void MainWindow::reserveConfiguredStartupPanelSpace()
     case qvEnums::NoViewStartup:
         return;
     case qvEnums::FolderStartup:
-        m_startupPanelInitialized = true;
-        createFolderWindow(true, QString(), true);
-        return;
+        panelWidth = qApp->SaveFolderViewWidth() ? qApp->FolderViewWidth() : 200;
+        break;
     case qvEnums::CatalogStartup:
         panelWidth = qApp->SaveCatalogViewWidth() ? qApp->CatalogViewWidth() : 200;
         break;
@@ -1057,7 +1062,9 @@ void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
     qApp->setShowOptionViewOnStartup(qvEnums::FolderStartup);
     if (docked) {
         closeAllDockedWindow();
+        StartupProfiler::mark("folder-window.construct.begin");
         m_folderWindow = new FolderWindow(nullptr, ui);
+        StartupProfiler::mark("folder-window.construct.end");
         if (!deferFolderLoad) {
             m_folderWindow->setFolderPath(oldpath, false);
         }
@@ -1077,7 +1084,9 @@ void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
         m_folderWindow->setAsInnerWidget();
     } else {
         // close child widget, and recreate as independent window
+        StartupProfiler::mark("folder-window.construct.begin");
         m_folderWindow = new FolderWindow(nullptr, ui);
+        StartupProfiler::mark("folder-window.construct.end");
         QRect self = geometry();
         m_folderWindow->setGeometry(self.left() - 100, self.top() + 100, self.width(), self.height());
         m_folderWindow->setAsToplevelWindow();

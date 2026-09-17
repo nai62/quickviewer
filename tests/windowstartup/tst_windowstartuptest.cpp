@@ -95,6 +95,26 @@ private slots:
         QCOMPARE(viewer.isFullScreen(), expectedFullscreen);
     }
 
+    void folderStartupUsesLightweightPlaceholderBeforeFirstPaint()
+    {
+        qApp->setAutoLoaded(true);
+        qApp->setLastViewPath(QStringLiteral("deferred-startup.zip"));
+        qApp->setShowOptionViewOnStartup(qvEnums::FolderStartup);
+        qApp->setShowPanelSeparateWindow(false);
+        qApp->setSaveFolderViewWidth(true);
+        qApp->setFolderViewWidth(275);
+
+        StartupWindow viewer;
+        viewer.resize(800, 600);
+        viewer.initializeStartup();
+
+        QVERIFY(viewer.folderWindow() == nullptr);
+        QWidget *placeholder = viewer.findChild<QWidget *>(QStringLiteral("startupPanelPlaceholder"));
+        QVERIFY(placeholder);
+        QCOMPARE(viewer.panelSplitter()->indexOf(placeholder), 0);
+        QCOMPARE(viewer.panelSplitter()->sizes().at(0), 275);
+    }
+
     void disabledWidthSavingUsesDefaultWithoutChangingSavedWidth()
     {
         qApp->setSaveFolderViewWidth(false);

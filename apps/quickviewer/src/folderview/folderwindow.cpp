@@ -6,6 +6,7 @@
 #include "folderwindow.h"
 #include "models/volume.h"
 #include "models/qvapplication.h"
+#include "startupprofiler.h"
 
 namespace {
 QIcon clockIcon(const QPalette &palette)
@@ -56,7 +57,9 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
     ui->menuBar->removeAction(ui->menuItemContext->menuAction());
     m_itemContextMenu = ui->menuItemContext;
 
+    StartupProfiler::mark("folder-window.history-button.begin");
     setupHistoryButton(uiMain);
+    StartupProfiler::mark("folder-window.history-button.end");
 
     QFont sortFont = ui->sortModeButton->font();
     sortFont.setBold(false);
