@@ -1484,8 +1484,7 @@ void MainWindow::handlePageSliderValueChanged(int value)
 
 void MainWindow::handleViewerLoadStatusChanged()
 {
-    if (m_viewerSession.loadStatus().phase == ViewerLoadPhase::Loading
-        || m_viewerSession.loadStatus().phase == ViewerLoadPhase::Failed) {
+    if (m_viewerSession.loadStatus().phase == ViewerLoadPhase::Loading || m_viewerSession.loadStatus().phase == ViewerLoadPhase::Failed) {
         m_statusMessage = StatusMessage::None;
         m_pageCaption.clear();
         ui->statusLabel->clear();
@@ -1506,8 +1505,7 @@ void MainWindow::syncPageBar()
         ui->pageSlider->setValue(0);
         if (status.phase == ViewerLoadPhase::Loading) {
             ui->pageLabel->setText(tr("Loading..."));
-        } else if (status.failureReason == LoadFailureReason::NoViewableImages
-                   || status.phase == ViewerLoadPhase::Empty) {
+        } else if (status.failureReason == LoadFailureReason::NoViewableImages || status.phase == ViewerLoadPhase::Empty) {
             ui->pageLabel->setText(tr("No images"));
         } else {
             ui->pageLabel->setText(tr("Unavailable"));
