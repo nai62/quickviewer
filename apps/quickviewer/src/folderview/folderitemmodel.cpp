@@ -1,5 +1,23 @@
 #include "folderitemmodel.h"
 
+namespace {
+QIcon folderItemIcon(QvFolderItem::FileType type)
+{
+    QStyle *style = QApplication::style();
+    switch (type) {
+    case QvFolderItem::Dir:
+        return QIcon::fromTheme(QStringLiteral("folder"), style->standardIcon(QStyle::SP_DirIcon));
+    case QvFolderItem::Archive:
+        return QIcon::fromTheme(QStringLiteral("package-x-generic"), style->standardIcon(QStyle::SP_DriveHDIcon));
+    case QvFolderItem::Image:
+        return QIcon::fromTheme(QStringLiteral("image-x-generic"), style->standardIcon(QStyle::SP_FileIcon));
+    case QvFolderItem::NoItems:
+        break;
+    }
+    return QIcon();
+}
+}
+
 FolderItemModel::FolderItemModel(QObject *parent)
     : QAbstractItemModel(parent),
       m_searchedVolumes(nullptr),
@@ -38,12 +56,12 @@ QVariant FolderItemModel::data(const QModelIndex &index, int role) const
         case 1:
             return fi.updated_at;
         }
+        break;
     case Qt::DecorationRole:
-        if (column == 0 && fi.type == QvFolderItem::Dir) {
-            QIcon icon(":/icons/24/checkbox_off_icon_24");
-            return icon;
+        if (column == 0) {
+            return folderItemIcon(fi.type);
         }
-        return QVariant();
+        break;
     }
     return QVariant();
 }
