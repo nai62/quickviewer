@@ -14,3 +14,12 @@ void FolderTreeView::selectionChanged(const QItemSelection &selection, const QIt
         emit selected(list.first());
     }
 }
+
+void FolderTreeView::wheelEvent(QWheelEvent *event)
+{
+    QTreeView::wheelEvent(event);
+    // QAbstractItemView may ignore a wheel event at the scroll boundary,
+    // which lets it reach MainWindow and turn an image page. FolderView owns
+    // wheel input whenever the pointer is over it, even when it cannot scroll.
+    event->accept();
+}

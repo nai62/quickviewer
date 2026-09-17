@@ -1042,7 +1042,6 @@ void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
         }
         connect(m_folderWindow, SIGNAL(closed()), this, SLOT(handleFolderWindowClosed()));
         connect(m_folderWindow, SIGNAL(openVolume(QString)), this, SLOT(handleFolderWindowOpenVolume(QString)));
-        connect(&m_viewerSession, SIGNAL(volumeChanged(QString)), m_folderWindow, SLOT(handleViewerSessionVolumeChanged(QString)));
         if (!replaceStartupPanelPlaceholder(m_folderWindow)) {
             ui->catalogSplitter->insertWidget(0, m_folderWindow);
         }
@@ -1066,11 +1065,21 @@ void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
         }
         connect(m_folderWindow, SIGNAL(closed()), this, SLOT(handleFolderWindowClosed()));
         connect(m_folderWindow, SIGNAL(openVolume(QString)), this, SLOT(handleFolderWindowOpenVolume(QString)));
-        connect(&m_viewerSession, SIGNAL(volumeChanged(QString)), m_folderWindow, SLOT(handleViewerSessionVolumeChanged(QString)));
         m_folderWindow->show();
     }
-    m_folderWindow->handleViewerSessionVolumeChanged(m_viewerSession.volumePath());
+    updateFolderViewCurrentItem();
     ui->actionShowFolder->setChecked(true);
+}
+
+void MainWindow::updateFolderViewCurrentItem()
+{
+    if (!m_folderWindow) {
+        return;
+    }
+    const QString path = m_viewerSession.isArchive()
+                             ? m_viewerSession.volumePath()
+                             : m_viewerSession.currentPagePath();
+    m_folderWindow->handleViewerSessionVolumeChanged(path);
 }
 
 bool MainWindow::changeFolderPath(QString path)
@@ -1390,6 +1399,7 @@ void MainWindow::handleViewerSessionPageChanged()
     if (maxVolume <= 0) {
         return;
     }
+    updateFolderViewCurrentItem();
     // PageSlider
     ui->pageLabel->setText(m_viewerSession.currentPageNumberText());
     m_sliderChanging = true;
@@ -1429,6 +1439,7 @@ void MainWindow::handleViewerSessionPageChanged()
 
 void MainWindow::handleViewerSessionVolumeChanged(QString path)
 {
+    updateFolderViewCurrentItem();
     if (path.isEmpty()) {
         handlePageNoLongerNeeded();
         return;

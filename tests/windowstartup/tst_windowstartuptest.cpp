@@ -266,15 +266,93 @@ private slots:
         QCOMPARE(openVolumeSpy.size(), 0);
     }
 
-    void historyButtonUsesToolbarIconWithoutLabel()
+    void folderViewHighlightsCurrentImageFile()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const QString imagePath = directory.filePath(QStringLiteral("current.png"));
+        QImage image(2, 2, QImage::Format_RGB32);
+        image.fill(Qt::white);
+        QVERIFY(image.save(imagePath));
+
+        StartupWindow viewer;
+        viewer.loadVolume(directory.path());
+        QCOMPARE(
+            QDir::cleanPath(QDir::fromNativeSeparators(viewer.viewerSession()->currentPagePath())),
+            QDir::cleanPath(QDir::fromNativeSeparators(imagePath)));
+        viewer.createFolderWindow(true, directory.path(), false);
+
+        QTreeView *view = viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        const QModelIndex currentFile = view->model()->index(0, 0);
+        QCOMPARE(currentFile.data().toString(), QStringLiteral("current.png"));
+        QVERIFY(currentFile.data(FolderItemModel::CurrentVolumeRole).toBool());
+    }
+
+    void folderViewConsumesWheelEventsAtScrollBoundary()
+    {
+        FolderWindow folder(nullptr, nullptr);
+        QTreeView *view = folder.findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+
+        QWheelEvent event(
+            QPointF(1, 1),
+            QPointF(1, 1),
+            QPoint(),
+            QPoint(0, -120),
+            Qt::NoButton,
+            Qt::NoModifier,
+            Qt::NoScrollPhase,
+            false);
+        event.ignore();
+        QApplication::sendEvent(view->viewport(), &event);
+
+        QVERIFY(event.isAccepted());
+    }
+
+    void historyButtonUsesClockIconAndLabel()
     {
         FolderWindow folder(nullptr, nullptr);
         QToolButton *historyButton = folder.findChild<QToolButton *>(QStringLiteral("historyButton"));
         QVERIFY(historyButton);
-        QVERIFY(historyButton->text().isEmpty());
+        QCOMPARE(historyButton->text(), QStringLiteral("History"));
         QVERIFY(!historyButton->icon().isNull());
-        QCOMPARE(historyButton->toolButtonStyle(), Qt::ToolButtonIconOnly);
-        QCOMPARE(historyButton->iconSize(), QSize(24, 24));
+        QCOMPARE(historyButton->toolButtonStyle(), Qt::ToolButtonTextBesideIcon);
+    }
+
+    void folderButtonLayoutUsesCompactMargins()
+    {
+        FolderWindow folder(nullptr, nullptr);
+        QFrame *buttonFrame = folder.findChild<QFrame *>(QStringLiteral("frame"));
+        QVERIFY(buttonFrame);
+        const QMargins margins = buttonFrame->layout()->contentsMargins();
+        QCOMPARE(margins, QMargins(4, 4, 4, 4));
+        QCOMPARE(buttonFrame->layout()->spacing(), 2);
+    }
+
+    void nameSortKeepsArchivesAndImagesInOneFileGroup()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QVERIFY(QDir(directory.path()).mkdir(QStringLiteral("middle-folder")));
+
+        QFile archive(directory.filePath(QStringLiteral("z-last.zip")));
+        QVERIFY(archive.open(QIODevice::WriteOnly));
+        archive.close();
+        QFile image(directory.filePath(QStringLiteral("a-first.png")));
+        QVERIFY(image.open(QIODevice::WriteOnly));
+        image.close();
+
+        qApp->setFolderSortMode(qvEnums::OrderByName);
+        FolderWindow folder(nullptr, nullptr);
+        folder.setFolderPath(directory.path(), false);
+        QTreeView *view = folder.findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+
+        QCOMPARE(view->model()->rowCount(), 3);
+        QCOMPARE(view->model()->index(0, 0).data().toString(), QStringLiteral("middle-folder"));
+        QCOMPARE(view->model()->index(1, 0).data().toString(), QStringLiteral("a-first.png"));
+        QCOMPARE(view->model()->index(2, 0).data().toString(), QStringLiteral("z-last.zip"));
     }
 
     void separateWindowUsesSharedSavedWidthOnEnableAndExit()

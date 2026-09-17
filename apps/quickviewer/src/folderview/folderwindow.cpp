@@ -7,6 +7,24 @@
 #include "models/volume.h"
 #include "models/qvapplication.h"
 
+namespace {
+QIcon clockIcon(const QPalette &palette)
+{
+    QPixmap pixmap(24, 24);
+    pixmap.fill(Qt::transparent);
+
+    QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
+    QPen pen(palette.color(QPalette::ButtonText));
+    pen.setWidthF(1.8);
+    painter.setPen(pen);
+    painter.drawEllipse(QRectF(3.5, 3.5, 17.0, 17.0));
+    painter.drawLine(QPointF(12.0, 12.0), QPointF(12.0, 7.0));
+    painter.drawLine(QPointF(12.0, 12.0), QPointF(16.0, 14.0));
+    return QIcon(pixmap);
+}
+}
+
 FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
     : QWidget(parent),
       ui(new Ui::FolderWindow),
@@ -51,6 +69,7 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
 
     connect(qApp->languageSelector(), &LanguageManager::languageChanged, this, [this](const QString &) {
         ui->retranslateUi(this);
+        m_historyButton->setText(tr("History"));
         m_historyButton->setToolTip(tr("Open history"));
         resetSortMode();
         if (m_volumes.size() == 1 && m_volumes.first().type == QvFolderItem::NoItems) {
@@ -80,13 +99,23 @@ void FolderWindow::setupHistoryButton(Ui::MainWindow *uiMain)
 {
     m_historyButton = new QToolButton(ui->frame);
     m_historyButton->setObjectName(QStringLiteral("historyButton"));
+    m_historyButton->setText(tr("History"));
     m_historyButton->setToolTip(tr("Open history"));
-    m_historyButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+    m_historyButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     m_historyButton->setPopupMode(QToolButton::InstantPopup);
     m_historyButton->setAutoRaise(true);
-    m_historyButton->setMaximumSize(24, 24);
-    m_historyButton->setIconSize(QSize(24, 24));
-    m_historyButton->setIcon(QIcon(QStringLiteral(":/icons/24/3dot_icon_24")));
+
+    QIcon historyIcon = QIcon::fromTheme(QStringLiteral("view-history"));
+    if (historyIcon.isNull()) {
+        historyIcon = QIcon::fromTheme(QStringLiteral("document-open-recent"));
+    }
+    if (historyIcon.isNull()) {
+        historyIcon = QIcon::fromTheme(QStringLiteral("preferences-system-time"));
+    }
+    if (historyIcon.isNull()) {
+        historyIcon = clockIcon(palette());
+    }
+    m_historyButton->setIcon(historyIcon);
 
     if (uiMain) {
         m_historyButton->setMenu(uiMain->menuHistory);
@@ -180,8 +209,10 @@ void FolderWindow::resizeEvent(QResizeEvent *event)
 
 static bool filenameLessThan(const QvFolderItem &lhs, const QvFolderItem &rhs)
 {
-    if (lhs.type != rhs.type) {
-        return lhs.type < rhs.type;
+    const bool lhsIsDirectory = lhs.type == QvFolderItem::Dir;
+    const bool rhsIsDirectory = rhs.type == QvFolderItem::Dir;
+    if (lhsIsDirectory != rhsIsDirectory) {
+        return lhsIsDirectory;
     }
     return IFileLoader::caseInsensitiveLessThan(lhs.name, rhs.name);
 }

@@ -233,6 +233,7 @@ private:
     void initializeConfiguredStartupPanel(const QString &folderPath = QString());
     void reserveConfiguredStartupPanelSpace();
     bool replaceStartupPanelPlaceholder(QWidget *panel);
+    void updateFolderViewCurrentItem();
 
 protected:
     Ui::MainWindow *ui;
