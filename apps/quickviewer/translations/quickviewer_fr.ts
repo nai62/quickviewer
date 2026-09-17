@@ -905,13 +905,13 @@
         <translation type="vanished">mettre à jour</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderitemmodel.cpp" line="16"/>
+        <location filename="../src/folderview/folderitemmodel.cpp" line="35"/>
         <source>Name</source>
         <comment>Title of the column in the folder list when displaying as an independent Window in Folder Window</comment>
         <translation>Nom</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderitemmodel.cpp" line="18"/>
+        <location filename="../src/folderview/folderitemmodel.cpp" line="37"/>
         <source>Modified</source>
         <comment>Title of the column in the folder list when displaying as an independent Window in Folder Window</comment>
         <translation></translation>
@@ -920,54 +920,49 @@
 <context>
     <name>FolderWindow</name>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="140"/>
-        <location filename="../src/folderview/folderwindow.ui" line="344"/>
+        <location filename="../src/folderview/folderwindow.ui" line="125"/>
+        <location filename="../src/folderview/folderwindow.ui" line="259"/>
         <source>Home</source>
         <extracomment>Button for returning to QuickViewer&apos;s home folder</extracomment>
         <translation>Aller vers home</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="163"/>
-        <location filename="../src/folderview/folderwindow.ui" line="166"/>
-        <location filename="../src/folderview/folderwindow.ui" line="326"/>
         <source>Previous</source>
         <extracomment>Button for returning to the previous folder from the currently displayed folder</extracomment>
-        <translation>Précédent</translation>
+        <translation type="vanished">Précédent</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="189"/>
-        <location filename="../src/folderview/folderwindow.ui" line="192"/>
-        <location filename="../src/folderview/folderwindow.ui" line="335"/>
         <source>Next</source>
         <extracomment>Button for returning to the folder after the current displayed folder</extracomment>
-        <translation>suivant</translation>
+        <translation type="vanished">suivant</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="241"/>
-        <location filename="../src/folderview/folderwindow.ui" line="362"/>
+        <location filename="../src/folderview/folderwindow.ui" line="174"/>
+        <location filename="../src/folderview/folderwindow.ui" line="277"/>
         <source>Reload</source>
         <translation>Recharger</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="244"/>
+        <location filename="../src/folderview/folderwindow.ui" line="177"/>
         <source>Refresh</source>
         <extracomment>Button for updating the currently displayed folder information</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="283"/>
-        <location filename="../src/folderview/folderwindow.ui" line="367"/>
+        <location filename="../src/folderview/folderwindow.ui" line="216"/>
+        <location filename="../src/folderview/folderwindow.ui" line="282"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="317"/>
         <source>Name</source>
         <extracomment>Change the order of file names Pull down button</extracomment>
         <translation>Nom</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="353"/>
+        <location filename="../src/folderview/folderwindow.ui" line="268"/>
         <source>Parent</source>
         <translation>VersParent</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="379"/>
+        <location filename="../src/folderview/folderwindow.ui" line="294"/>
         <source>Other</source>
         <translation>Autres</translation>
     </message>
@@ -977,46 +972,57 @@
         <translation>Liste dossiers</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="79"/>
         <source>Current folder</source>
         <extracomment>Label indicating that the current folder PATH is being displayed</extracomment>
-        <translation>Dossier courant</translation>
+        <translation type="vanished">Dossier courant</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="137"/>
+        <location filename="../src/folderview/folderwindow.ui" line="122"/>
         <source>Go to home folder</source>
         <translation>Déplacer vers dossiers personnel</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="215"/>
-        <location filename="../src/folderview/folderwindow.ui" line="218"/>
+        <location filename="../src/folderview/folderwindow.ui" line="148"/>
+        <location filename="../src/folderview/folderwindow.ui" line="151"/>
         <source>Parent folder</source>
         <extracomment>Button for moving from the currently displayed folder to the next higher folder</extracomment>
         <translation>DossierSupérieur</translation>
     </message>
     <message>
-        <source>Modified</source>
-        <extracomment>Button for updating the currently displayed folder information</extracomment>
-        <translation type="vanished">Mise à jour</translation>
+        <location filename="../src/folderview/folderwindow.cpp" line="76"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="106"/>
+        <source>History</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="280"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="77"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="107"/>
+        <source>Open history</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/folderview/folderwindow.cpp" line="318"/>
+        <source>Modified</source>
+        <translation>Mise à jour</translation>
+    </message>
+    <message>
+        <location filename="../src/folderview/folderwindow.ui" line="213"/>
         <source>Change sort order</source>
         <extracomment>Tooltip for pulldown to change folder sorting method</extracomment>
         <translation>Changer la méthode de tri</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="387"/>
+        <location filename="../src/folderview/folderwindow.ui" line="302"/>
         <source>Sort by name</source>
         <translation>Trier par nom</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="395"/>
+        <location filename="../src/folderview/folderwindow.ui" line="310"/>
         <source>Sort by modified time</source>
         <translation>Trié par UpDate</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="400"/>
+        <location filename="../src/folderview/folderwindow.ui" line="315"/>
         <source>Set as home folder</source>
         <translation>Définissez ce dossier comme dossier d&apos;accueil</translation>
     </message>
@@ -1026,8 +1032,8 @@
         <translation type="vanished">Aucun dossier ou archive trouvé</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="23"/>
-        <location filename="../src/folderview/folderwindow.cpp" line="231"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="80"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="300"/>
         <source>No folders or archives found.</source>
         <comment>Display when there is no display item in Folder Window</comment>
         <translation>Aucun dossier ou archive trouvé</translation>
@@ -1204,13 +1210,91 @@
 <context>
     <name>ImageView</name>
     <message>
-        <location filename="../src/imageview.cpp" line="220"/>
+        <location filename="../src/imageview.cpp" line="94"/>
+        <source>No Image Open</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="95"/>
+        <source>Open an image, folder, or archive to begin.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="107"/>
+        <source>No Viewable Images</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="109"/>
+        <source>No supported images were found in this folder.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="110"/>
+        <source>No supported images were found in this archive.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="113"/>
+        <source>Cannot Find Item</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="114"/>
+        <source>The selected file or folder does not exist.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="117"/>
+        <source>Permission Denied</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="118"/>
+        <source>The selected item cannot be read because access was denied.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="121"/>
+        <source>Cannot Display Image</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="122"/>
+        <source>The image could not be decoded.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="125"/>
+        <location filename="../src/imageview.cpp" line="129"/>
+        <location filename="../src/imageview.cpp" line="133"/>
+        <location filename="../src/imageview.cpp" line="138"/>
         <source>Cannot Open Archive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="221"/>
-        <source>This archive is password-protected. Password-protected archives are not supported.</source>
+        <location filename="../src/imageview.cpp" line="126"/>
+        <source>This archive is password-protected.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="130"/>
+        <source>This archive format is not supported.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="134"/>
+        <source>This archive is damaged or invalid.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="139"/>
+        <source>Cannot Open</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="140"/>
+        <source>The selected item could not be read.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1429,8 +1513,8 @@
         <translation>&amp;ajustement</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="146"/>
-        <location filename="../src/mainwindow.cpp" line="1484"/>
+        <location filename="../src/mainwindow.cpp" line="157"/>
+        <location filename="../src/mainwindow.cpp" line="1562"/>
         <source>&amp;Fullscreen</source>
         <translation>&amp;Plein écran</translation>
     </message>
@@ -1568,7 +1652,7 @@
         <translation>EffacerSignets</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2219"/>
+        <location filename="../src/mainwindow.cpp" line="2297"/>
         <source>Bookmark saved.</source>
         <translation>Signet enregistré..</translation>
     </message>
@@ -2140,10 +2224,9 @@
         <translation>Heure modifiée (décroissante)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="470"/>
         <source>No folder or archive is loaded.</source>
         <comment>The text of the status bar to be displayed when there is no image to be displayed immediately after the application is activated</comment>
-        <translation>Aucun dossier ou archive n&apos;est chargé.</translation>
+        <translation type="vanished">Aucun dossier ou archive n&apos;est chargé.</translation>
     </message>
     <message>
         <source>Image file not found. Can&apos;t be opened</source>
@@ -2156,44 +2239,47 @@
         <translation type="vanished">Le fichier image n&apos;a pas été trouvé. Ne peut être ouvert.</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="473"/>
-        <source>Image file not found. It cannot be opened.</source>
-        <comment>Text to display in the status bar when failed to open the specified Volume</comment>
+        <location filename="../src/mainwindow.cpp" line="1521"/>
+        <source>Loading...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="476"/>
-        <source>Image file was not found and cannot be opened.</source>
-        <comment>Text to display in the status bar when failed to open the specified Volume</comment>
+        <location filename="../src/mainwindow.cpp" line="1523"/>
+        <source>No images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1792"/>
+        <location filename="../src/mainwindow.cpp" line="1525"/>
+        <source>Unavailable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp" line="1870"/>
         <source>All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.heic *.heif);;Archives( *.zip *.7z *.rar)</source>
         <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1795"/>
+        <location filename="../src/mainwindow.cpp" line="1873"/>
         <source>Select an image or archive</source>
         <comment>Title of the dialog displayed when opening a file with OpenFileFolder</comment>
         <translation>Veuillez sélectionner l&apos;image ou l&apos;archive</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2025"/>
-        <location filename="../src/mainwindow.cpp" line="2066"/>
+        <location filename="../src/mainwindow.cpp" line="2103"/>
+        <location filename="../src/mainwindow.cpp" line="2144"/>
         <source>Confirmation</source>
         <comment>Confirm deleting image file on MessageBox title</comment>
         <translation>Confirmation</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2030"/>
+        <location filename="../src/mainwindow.cpp" line="2108"/>
         <source>Are you sure you want to move the image to Recycle Bin?</source>
         <comment>Confirm putting displayed file in Recycle Box Message Box body</comment>
         <translation>Êtes-vous sûr de vouloir déplacer l&apos;image dans la corbeille?</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2071"/>
+        <location filename="../src/mainwindow.cpp" line="2149"/>
         <source>Are you sure you want to delete this image?</source>
         <comment>Confirm deleting image file on Message Box body</comment>
         <translation>Êtes-vous sûr de vouloir supprimer cette image?</translation>
