@@ -130,7 +130,8 @@ static bool benchmarkArchive(const QString &archiveName, QTextStream &out)
     printCase(out, QStringLiteral("list"), listResult);
 
     if (files.isEmpty()) {
-        out << "No file entries to benchmark." << '\n' << '\n';
+        out << "No file entries to benchmark." << '\n'
+            << '\n';
         return true;
     }
 
@@ -179,9 +180,7 @@ int main(int argc, char *argv[])
     QTextStream err(stderr);
 
     const QStringList arguments = app.arguments();
-    if (arguments.contains(QStringLiteral("--help"))
-        || arguments.contains(QStringLiteral("-h"))
-        || arguments.contains(QStringLiteral("/?"))) {
+    if (arguments.contains(QStringLiteral("--help")) || arguments.contains(QStringLiteral("-h")) || arguments.contains(QStringLiteral("/?"))) {
         printHelp(out);
         return 0;
     }
