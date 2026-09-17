@@ -15,11 +15,19 @@ void FolderItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
 
+    if (m_folderWindow->isCurrentVolume(index)) {
+        opt.font.setBold(true);
+        QColor activeBackground = opt.palette.color(QPalette::Highlight);
+        activeBackground.setAlpha(32);
+        opt.backgroundBrush = activeBackground;
+        opt.state &= ~QStyle::State_Selected;
+    }
+
     const QWidget *widget = option.widget;
     QStyle *style = widget ? widget->style() : QApplication::style();
 
     style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, widget);
-    // Draw the read progress bar.
+    // Draw the read progress bar above the active-volume background.
     do {
         if (!qApp->ShowReadProgress() || index.column() != 0) {
             break;
@@ -35,10 +43,12 @@ void FolderItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
 
         int progressWidth = progress.completed ? PROGRESS_WIDTH : progress.resumePageIndex * PROGRESS_WIDTH / progress.totalPageCount;
         QBrush brRead(QColor::fromRgb(0x0, 0xff, 0x0, 0x40)), brUnread(QColor::fromRgb(0xff, 0x0, 0x0, 0x40));
+        painter->save();
         painter->setPen(Qt::PenStyle::NoPen);
         painter->setBrush(brRead);
         painter->drawRect(begin.x(), begin.y(), progressWidth, rect.height() - PROGRESS_HEIGHT - 1);
         painter->setBrush(brUnread);
         painter->drawRect(begin.x() + progressWidth, begin.y(), PROGRESS_WIDTH - progressWidth, rect.height() - PROGRESS_HEIGHT - 1);
+        painter->restore();
     } while (0);
 }

@@ -338,6 +338,20 @@ QString FolderWindow::itemPath(const QModelIndex &index) const
     return dir.absoluteFilePath(filename);
 }
 
+bool FolderWindow::isCurrentVolume(const QModelIndex &index) const
+{
+    if (!index.isValid() || m_currentVolumePath.isEmpty()) {
+        return false;
+    }
+
+    const QString item = QDir::cleanPath(QDir::fromNativeSeparators(itemPath(index)));
+#ifdef Q_OS_WIN
+    return item.compare(m_currentVolumePath, Qt::CaseInsensitive) == 0;
+#else
+    return item == m_currentVolumePath;
+#endif
+}
+
 const static QKeySequence seqReturn("Return");
 const static QKeySequence seqEnter("Num+Enter");
 const static QKeySequence seqBackspace("Backspace");
@@ -389,6 +403,11 @@ void FolderWindow::handleReloadButtonClicked()
 
 void FolderWindow::handleViewerSessionVolumeChanged(QString path)
 {
+    m_currentVolumePath = path.isEmpty()
+                              ? QString()
+                              : QDir::cleanPath(QDir::fromNativeSeparators(path));
+    ui->folderView->viewport()->update();
+
     QFileInfo info(QDir::toNativeSeparators(path));
     if (!info.exists() || m_currentPath != info.absolutePath()) {
         return;
