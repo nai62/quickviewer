@@ -9,30 +9,19 @@ from __future__ import annotations
 
 import argparse
 import os
-from pathlib import Path
 import re
 import shutil
 import subprocess
 import sys
-from typing import Iterable
-
+from collections.abc import Iterable
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 CPP_EXTENSIONS = {".c", ".cc", ".cpp", ".cxx", ".h", ".hh", ".hpp"}
 FIRST_PARTY_PREFIXES = (
-    "apps/quickviewer/",
-    "components/i18n/",
-    "tests/fileloader/",
-    "tests/prefetchplanner/",
-    "tests/latestresultdispatcher/",
-    "tests/asynccache/",
-    "tests/svgloader/",
-    "tests/viewernavigation/",
-    "tests/windowstartup/",
-)
-EXCLUDED_PREFIXES = (
-    "apps/quickviewer/src/qactionmanager/",
-    "apps/quickviewer/src/qnamedpipe/",
+    "apps/",
+    "components/",
+    "tests/",
 )
 VERSION_PATTERN = re.compile(r"version\s+(\d+)", re.IGNORECASE)
 
@@ -50,12 +39,18 @@ def is_cpp(path: str) -> bool:
 
 def is_first_party(path: str) -> bool:
     normalized = path.replace("\\", "/")
-    return normalized.startswith(FIRST_PARTY_PREFIXES) and not normalized.startswith(EXCLUDED_PREFIXES)
+    return normalized.startswith(FIRST_PARTY_PREFIXES)
 
 
 def changed_files(diff_ref: str) -> list[str]:
     changed = run_git(
-        "diff", "--name-only", "-z", "--no-ext-diff", "--diff-filter=ACMR", diff_ref, "--"
+        "diff",
+        "--name-only",
+        "-z",
+        "--no-ext-diff",
+        "--diff-filter=ACMR",
+        diff_ref,
+        "--",
     ).split("\0")
     untracked = run_git("ls-files", "--others", "--exclude-standard", "-z").split("\0")
     return sorted(
@@ -69,10 +64,14 @@ def changed_files(diff_ref: str) -> list[str]:
 
 def tracked_first_party_files() -> list[str]:
     paths = run_git("ls-files", "-z").split("\0")
-    return sorted(path for path in paths if path and is_cpp(path) and is_first_party(path))
+    return sorted(
+        path for path in paths if path and is_cpp(path) and is_first_party(path)
+    )
 
 
-def find_tool(requested: str | None, environment_name: str, candidates: Iterable[str]) -> str:
+def find_tool(
+    requested: str | None, environment_name: str, candidates: Iterable[str]
+) -> str:
     preferred = requested or os.environ.get(environment_name)
     names = [preferred] if preferred else list(candidates)
     for name in names:
@@ -84,7 +83,11 @@ def find_tool(requested: str | None, environment_name: str, candidates: Iterable
 
 def require_clang_format_18(executable: str) -> None:
     result = subprocess.run(
-        [executable, "--version"], text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=True
+        [executable, "--version"],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=True,
     )
     match = VERSION_PATTERN.search(result.stdout)
     if not match or int(match.group(1)) != 18:
@@ -123,15 +126,21 @@ def check_format(
 
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("files", nargs="*", help="check complete contents of these files")
-    parser.add_argument("--all", action="store_true", help="check all tracked first-party C++ files")
+    parser.add_argument(
+        "files", nargs="*", help="check complete contents of these files"
+    )
+    parser.add_argument(
+        "--all", action="store_true", help="check all tracked first-party C++ files"
+    )
     parser.add_argument(
         "--diff-ref",
         default="HEAD",
         help="git revision/range used when no files are given (default: HEAD)",
     )
     parser.add_argument("--fix", action="store_true", help="apply clang-format fixes")
-    parser.add_argument("--clang-format", dest="clang_format", help="clang-format executable")
+    parser.add_argument(
+        "--clang-format", dest="clang_format", help="clang-format executable"
+    )
     return parser.parse_args()
 
 
@@ -144,11 +153,14 @@ def main() -> int:
         if args.all:
             files = tracked_first_party_files()
         elif args.files:
-            files = sorted({str(Path(path).as_posix()) for path in args.files if is_cpp(path)})
+            files = sorted(
+                {str(Path(path).as_posix()) for path in args.files if is_cpp(path)}
+            )
             out_of_scope = [path for path in files if not is_first_party(path)]
             if out_of_scope:
                 raise RuntimeError(
-                    "files outside the configured first-party lint scope: " + ", ".join(out_of_scope)
+                    "files outside the configured first-party lint scope: "
+                    + ", ".join(out_of_scope)
                 )
         else:
             files = changed_files(args.diff_ref)
@@ -169,7 +181,10 @@ def main() -> int:
         return 2
 
     if not succeeded:
-        print("C++ lint failed. Run python3 scripts/lint-cpp.py --fix with the same files.", file=sys.stderr)
+        print(
+            "C++ lint failed. Run python3 scripts/lint-cpp.py --fix with the same files.",
+            file=sys.stderr,
+        )
         return 1
     print(f"C++ lint passed ({len(files)} file(s)).")
     return 0
