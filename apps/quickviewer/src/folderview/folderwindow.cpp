@@ -281,64 +281,14 @@ void FolderWindow::keyPressEvent(QKeyEvent *event)
         return;
     }
     if (seq == seqBackspace) {
-        if (m_historyPrev.empty()) {
-            handleParentButtonClicked();
-        } else {
-            handlePreviousButtonClicked();
-        }
-        return;
-    }
-}
-
-void FolderWindow::mousePressEvent(QMouseEvent *event)
-{
-    // 5 buttons mouse forward for browsers
-    if (event->button() == Qt::ForwardButton) {
-        handleNextButtonClicked();
-        return;
-    }
-    // 5 buttons mouse back for browsers
-    if (event->button() == Qt::BackButton) {
-        handlePreviousButtonClicked();
+        handleParentButtonClicked();
         return;
     }
 }
 
 void FolderWindow::handleHomeButtonClicked()
 {
-    if (m_historyPrev.contains(m_currentPath)) {
-        m_historyPrev.removeOne(m_currentPath);
-    }
-    m_historyPrev << m_currentPath;
-    setFolderPath(qApp->HomeFolderPath());
-    emit openVolume(qApp->HomeFolderPath());
-}
-
-void FolderWindow::handlePreviousButtonClicked()
-{
-    if (m_historyPrev.empty()) {
-        return;
-    }
-    if (m_historyNext.contains(m_currentPath)) {
-        m_historyNext.removeOne(m_currentPath);
-    }
-    m_historyNext << m_currentPath;
-    QString path = m_historyPrev.takeLast();
-
-    setFolderPath(path, false);
-    emit openVolume(path);
-}
-
-void FolderWindow::handleNextButtonClicked()
-{
-    if (m_historyNext.empty()) {
-        return;
-    }
-    if (m_historyPrev.contains(m_currentPath)) {
-        m_historyPrev.removeOne(m_currentPath);
-    }
-    m_historyPrev << m_currentPath;
-    QString path = m_historyNext.takeLast();
+    const QString path = qApp->HomeFolderPath();
     setFolderPath(path, false);
     emit openVolume(path);
 }
@@ -416,11 +366,9 @@ void FolderWindow::handleFolderViewItemDoubleClicked(const QModelIndex &index)
     QString subpath = dir.absoluteFilePath(item.name);
     emit openVolume(subpath);
 
-    if (m_historyPrev.contains(m_currentPath)) {
-        m_historyPrev.removeOne(m_currentPath);
+    if (item.type == QvFolderItem::Dir) {
+        setFolderPath(subpath, false);
     }
-    m_historyPrev << m_currentPath;
-    setFolderPath(subpath, false);
 }
 
 void FolderWindow::handleCurrentFolderItemTriggered()

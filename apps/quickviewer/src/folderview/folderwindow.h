@@ -31,13 +31,10 @@ public:
     QString currentPath() { return m_currentPath; }
     QString itemPath(const QModelIndex &index);
     void keyPressEvent(QKeyEvent *event);
-    void mousePressEvent(QMouseEvent *event);
     void handleCurrentFolderItemTriggered();
 
 public slots:
     void handleHomeButtonClicked();
-    void handlePreviousButtonClicked();
-    void handleNextButtonClicked();
     void handleParentButtonClicked();
     void handleReloadButtonClicked();
     void handleViewerSessionVolumeChanged(QString);
@@ -61,8 +58,6 @@ private:
     QMenu *m_itemContextMenu;
     QString m_currentPath;
     QList<QvFolderItem> m_volumes;
-    QStringList m_historyPrev;
-    QStringList m_historyNext;
     FolderItemModel m_itemModel;
     FolderItemDelegate m_itemDelegate;
 };
