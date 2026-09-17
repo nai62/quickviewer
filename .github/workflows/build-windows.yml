@@ -28,7 +28,8 @@ jobs:
           host: windows
           target: desktop
           arch: ${{ env.QT_ARCH }}
-          modules: "qtimageformats qttools"
+          modules: "qtimageformats"
+          archives: "qtbase qtsvg qttools"
           dir: 'C:\Qt'
           cache: true
 
