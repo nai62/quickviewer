@@ -220,6 +220,50 @@ private slots:
         QCOMPARE(viewer.folderWindow()->minimumWidth(), uiMinimumWidth);
     }
 
+    void selectingFolderOnlyEmitsOpenRequest()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QVERIFY(QDir(directory.path()).mkdir(QStringLiteral("child")));
+
+        FolderWindow folder(nullptr, nullptr);
+        folder.setFolderPath(directory.path(), false);
+        const QString originalPath = folder.currentPath();
+        const QString childPath = QDir(originalPath).absoluteFilePath(QStringLiteral("child"));
+        QTreeView *view = folder.findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        const QModelIndex child = view->model()->index(0, 0);
+        QVERIFY(child.isValid());
+        QCOMPARE(child.data(Qt::DisplayRole).toString(), QStringLiteral("child"));
+
+        QSignalSpy openVolumeSpy(&folder, &FolderWindow::openVolume);
+        folder.handleFolderViewItemSelected(child);
+
+        QCOMPARE(openVolumeSpy.size(), 1);
+        QCOMPARE(openVolumeSpy.first().first().toString(), childPath);
+        QCOMPARE(folder.currentPath(), originalPath);
+    }
+
+    void activeFolderVolumeIsExposedByModelRole()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QVERIFY(QDir(directory.path()).mkdir(QStringLiteral("child")));
+
+        FolderWindow folder(nullptr, nullptr);
+        folder.setFolderPath(directory.path(), false);
+        QTreeView *view = folder.findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        const QModelIndex child = view->model()->index(0, 0);
+        QVERIFY(child.isValid());
+        QVERIFY(!child.data(FolderItemModel::CurrentVolumeRole).toBool());
+
+        folder.handleViewerSessionVolumeChanged(
+            QDir(directory.path()).absoluteFilePath(QStringLiteral("child")));
+
+        QVERIFY(child.data(FolderItemModel::CurrentVolumeRole).toBool());
+    }
+
     void separateWindowUsesSharedSavedWidthOnEnableAndExit()
     {
         qApp->setSaveFolderViewWidth(false);

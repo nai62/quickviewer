@@ -293,6 +293,7 @@ void FolderWindow::setFolderPath(QString path, bool showParent)
         m_volumes << QvFolderItem(tr("No folders or archives found.", "Display when there is no display item in Folder Window"), QvFolderItem::NoItems, QDateTime());
     }
     m_itemModel.setVolumes(&m_volumes);
+    updateCurrentVolumeRow();
 
     if (showParent) {
         handleViewerSessionVolumeChanged(path);
@@ -334,18 +335,22 @@ QString FolderWindow::itemPath(const QModelIndex &index) const
     return dir.absoluteFilePath(filename);
 }
 
-bool FolderWindow::isCurrentVolume(const QModelIndex &index) const
+void FolderWindow::updateCurrentVolumeRow()
 {
-    if (!index.isValid() || m_currentVolumePath.isEmpty()) {
-        return false;
-    }
-
-    const QString item = QDir::cleanPath(QDir::fromNativeSeparators(itemPath(index)));
+    int currentVolumeRow = -1;
+    for (int row = 0; row < m_volumes.size() && !m_currentVolumePath.isEmpty(); ++row) {
+        const QString item = QDir::cleanPath(QDir::fromNativeSeparators(itemPath(m_itemModel.index(row, 0))));
 #ifdef Q_OS_WIN
-    return item.compare(m_currentVolumePath, Qt::CaseInsensitive) == 0;
+        const bool isCurrentVolume = item.compare(m_currentVolumePath, Qt::CaseInsensitive) == 0;
 #else
-    return item == m_currentVolumePath;
+        const bool isCurrentVolume = item == m_currentVolumePath;
 #endif
+        if (isCurrentVolume) {
+            currentVolumeRow = row;
+            break;
+        }
+    }
+    m_itemModel.setCurrentVolumeRow(currentVolumeRow);
 }
 
 const static QKeySequence seqReturn("Return");
@@ -402,7 +407,7 @@ void FolderWindow::handleViewerSessionVolumeChanged(QString path)
     m_currentVolumePath = path.isEmpty()
                               ? QString()
                               : QDir::cleanPath(QDir::fromNativeSeparators(path));
-    ui->folderView->viewport()->update();
+    updateCurrentVolumeRow();
 
     QFileInfo info(QDir::toNativeSeparators(path));
     if (!info.exists() || m_currentPath != info.absolutePath()) {
@@ -429,17 +434,12 @@ void FolderWindow::openFolderItem(const QModelIndex &index)
         return;
     }
 
-    const QvFolderItem &item = m_volumes[row];
-    if (item.type == QvFolderItem::NoItems) {
+    if (m_volumes[row].type == QvFolderItem::NoItems) {
         return;
     }
 
     const QString subpath = itemPath(index);
     emit openVolume(subpath);
-
-    if (item.type == QvFolderItem::Dir) {
-        setFolderPath(subpath, false);
-    }
 }
 
 void FolderWindow::handleFolderViewItemSelected(const QModelIndex &index)

@@ -15,7 +15,7 @@ void FolderItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
 
-    if (m_folderWindow->isCurrentVolume(index)) {
+    if (index.data(FolderItemModel::CurrentVolumeRole).toBool()) {
         opt.font.setBold(true);
         QColor activeBackground = opt.palette.color(QPalette::Highlight);
         activeBackground.setAlpha(32);

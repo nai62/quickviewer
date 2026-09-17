@@ -30,7 +30,6 @@ public:
     void resetPathLabel(int maxWidth);
     QString currentPath() { return m_currentPath; }
     QString itemPath(const QModelIndex &index) const;
-    bool isCurrentVolume(const QModelIndex &index) const;
     void keyPressEvent(QKeyEvent *event);
     void handleCurrentFolderItemTriggered();
 
@@ -55,6 +54,7 @@ protected:
 private:
     void openFolderItem(const QModelIndex &index);
     void setupHistoryButton(Ui::MainWindow *uiMain);
+    void updateCurrentVolumeRow();
 
     Ui::FolderWindow *ui;
     QMenu *m_sortModeMenu;
