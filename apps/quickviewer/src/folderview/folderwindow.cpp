@@ -313,9 +313,9 @@ void FolderWindow::resetSortMode()
     ui->actionOrderByName->setChecked(sortMode == qvEnums::OrderByName);
     ui->actionOrderByUpdatedAt->setChecked(sortMode == qvEnums::OrderByUpdatedAt);
     ui->sortModeButton->setText((sortMode == qvEnums::OrderByName
-                                    ? ui->actionOrderByName->text()
-                                    : ui->actionOrderByUpdatedAt->text())
-                                + QStringLiteral(" ▾"));
+                                     ? ui->actionOrderByName->text()
+                                     : ui->actionOrderByUpdatedAt->text()) +
+                                QStringLiteral(" ▾"));
 }
 
 void FolderWindow::resetPathLabel(int)
