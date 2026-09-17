@@ -172,77 +172,77 @@
     <message>
         <location filename="../src/exifdialog.cpp" line="185"/>
         <source>Bits per sample</source>
-        <translation type="unfinished"></translation>
+        <translation>サンプルあたりのビット数</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="186"/>
         <source>Software</source>
-        <translation type="unfinished"></translation>
+        <translation>ソフトウェア</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="187"/>
         <source>DateTime</source>
-        <translation type="unfinished"></translation>
+        <translation>日時</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="188"/>
         <source>Date/time original</source>
-        <translation type="unfinished"></translation>
+        <translation>撮影日時</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="189"/>
         <source>Date/time digitized</source>
-        <translation type="unfinished"></translation>
+        <translation>デジタル化日時</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="190"/>
         <source>Subsecond time original</source>
-        <translation type="unfinished"></translation>
+        <translation>撮影日時のサブ秒</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="202"/>
         <source>Copyright</source>
-        <translation type="unfinished"></translation>
+        <translation>著作権</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="191"/>
         <source>Exposure time</source>
-        <translation type="unfinished"></translation>
+        <translation>露出時間</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="193"/>
         <source>ISO speed</source>
-        <translation type="unfinished"></translation>
+        <translation>ISO感度</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="194"/>
         <source>Shutter speed</source>
-        <translation type="unfinished"></translation>
+        <translation>シャッター速度</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="195"/>
         <source>Exposure bias</source>
-        <translation type="unfinished"></translation>
+        <translation>露出補正</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="196"/>
         <source>Subject distance</source>
-        <translation type="unfinished"></translation>
+        <translation>被写体距離</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="197"/>
         <source>Focal length</source>
-        <translation type="unfinished"></translation>
+        <translation>焦点距離</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="198"/>
         <source>35 mm equivalent focal length</source>
-        <translation type="unfinished"></translation>
+        <translation>35mm判換算焦点距離</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="200"/>
         <source>Metering mode</source>
-        <translation type="unfinished"></translation>
+        <translation>測光方式</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="54"/>
@@ -260,121 +260,121 @@
         <location filename="../src/exifdialog.cpp" line="65"/>
         <source>Strobe return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x5)</comment>
-        <translation type="unfinished"></translation>
+        <translation>ストロボの戻り光を検出せず</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="67"/>
         <source>Strobe return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x7)</comment>
-        <translation type="unfinished"></translation>
+        <translation>ストロボの戻り光を検出</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="69"/>
         <source>Flash fired, compulsory flash mode</source>
         <comment>JPEG EXIF Flash setting value (0x9)</comment>
-        <translation type="unfinished"></translation>
+        <translation>フラッシュ発光、強制発光モード</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="71"/>
         <source>Flash fired, compulsory flash mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0xD)</comment>
-        <translation type="unfinished"></translation>
+        <translation>フラッシュ発光、強制発光モード、戻り光を検出せず</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="73"/>
         <source>Flash fired, compulsory flash mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0xF)</comment>
-        <translation type="unfinished"></translation>
+        <translation>フラッシュ発光、強制発光モード、戻り光を検出</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="75"/>
         <source>Flash did not fire, compulsory flash mode</source>
         <comment>JPEG EXIF Flash setting value (0x10)</comment>
-        <translation type="unfinished"></translation>
+        <translation>フラッシュ非発光、強制発光モード</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="77"/>
         <source>Flash did not fire, auto mode</source>
         <comment>JPEG EXIF Flash setting value (0x18)</comment>
-        <translation type="unfinished"></translation>
+        <translation>フラッシュ非発光、自動モード</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="79"/>
         <source>Flash fired, auto mode</source>
         <comment>JPEG EXIF Flash setting value (0x19)</comment>
-        <translation type="unfinished"></translation>
+        <translation>フラッシュ発光、自動モード</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="81"/>
         <source>Flash fired, auto mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x1D)</comment>
-        <translation type="unfinished"></translation>
+        <translation>フラッシュ発光、自動モード、戻り光を検出せず</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="83"/>
         <source>Flash fired, auto mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x1F)</comment>
-        <translation type="unfinished"></translation>
+        <translation>フラッシュ発光、自動モード、戻り光を検出</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="85"/>
         <source>No flash function</source>
         <comment>JPEG EXIF Flash setting value (0x20)</comment>
-        <translation type="unfinished">フラッシュ機能なし</translation>
+        <translation>フラッシュ機能なし</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="87"/>
         <source>Flash fired, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x41)</comment>
-        <translation type="unfinished"></translation>
+        <translation>フラッシュ発光、赤目軽減モード</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="89"/>
         <source>Flash fired, red-eye reduction mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x45)</comment>
-        <translation type="unfinished"></translation>
+        <translation>フラッシュ発光、赤目軽減モード、戻り光を検出せず</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="91"/>
         <source>Flash fired, red-eye reduction mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x47)</comment>
-        <translation type="unfinished"></translation>
+        <translation>フラッシュ発光、赤目軽減モード、戻り光を検出</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="93"/>
         <source>Flash fired, compulsory flash mode, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x49)</comment>
-        <translation type="unfinished"></translation>
+        <translation>フラッシュ発光、強制発光モード、赤目軽減モード</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="95"/>
         <source>Flash fired, compulsory flash mode, red-eye reduction mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x4D)</comment>
-        <translation type="unfinished"></translation>
+        <translation>フラッシュ発光、強制発光モード、赤目軽減モード、戻り光を検出せず</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="97"/>
         <source>Flash fired, compulsory flash mode, red-eye reduction mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x4F)</comment>
-        <translation type="unfinished"></translation>
+        <translation>フラッシュ発光、強制発光モード、赤目軽減モード、戻り光を検出</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="99"/>
         <source>Flash fired, auto mode, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x59)</comment>
-        <translation type="unfinished"></translation>
+        <translation>フラッシュ発光、自動モード、赤目軽減モード</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="101"/>
         <source>Flash fired, auto mode, return light not detected, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x5D)</comment>
-        <translation type="unfinished"></translation>
+        <translation>フラッシュ発光、自動モード、戻り光を検出せず、赤目軽減モード</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="103"/>
         <source>Flash fired, auto mode, return light detected, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x5F)</comment>
-        <translation type="unfinished"></translation>
+        <translation>フラッシュ発光、自動モード、戻り光を検出、赤目軽減モード</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="136"/>
@@ -433,7 +433,7 @@
     <message>
         <location filename="../src/exifdialog.cpp" line="177"/>
         <source>Filename</source>
-        <translation type="unfinished"></translation>
+        <translation>ファイル名</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="183"/>
@@ -476,12 +476,12 @@
     <message>
         <location filename="../../../components/file-association/fileassocdialog.ui" line="27"/>
         <source>JPEG Image (*.jpg, *.jpeg, *.jpe)</source>
-        <translation type="unfinished"></translation>
+        <translation>JPEG イメージ (*.jpg, *.jpeg, *.jpe)</translation>
     </message>
     <message>
         <location filename="../../../components/file-association/fileassocdialog.ui" line="97"/>
         <source>HEIF Image (*.heic, *.heif)</source>
-        <translation type="unfinished"></translation>
+        <translation>HEIF イメージ (*.heic, *.heif)</translation>
     </message>
     <message>
         <location filename="../../../components/file-association/fileassocdialog.ui" line="125"/>
@@ -528,7 +528,7 @@
         <location filename="../../../components/file-association/fileassocdialog.cpp" line="79"/>
         <source>HEIF Image</source>
         <comment>description of File format on Explorer(.heic, .heif)</comment>
-        <translation type="unfinished"></translation>
+        <translation>HEIF イメージ</translation>
     </message>
     <message>
         <location filename="../../../components/file-association/fileassocdialog.cpp" line="82"/>
@@ -668,7 +668,7 @@
         <location filename="../src/folderview/folderitemmodel.cpp" line="16"/>
         <source>Name</source>
         <comment>Title of the column in the folder list when displaying as an independent Window in Folder Window</comment>
-        <translation></translation>
+        <translation>名前</translation>
     </message>
     <message>
         <location filename="../src/folderview/folderitemmodel.cpp" line="18"/>
@@ -712,7 +712,7 @@
         <location filename="../src/folderview/folderwindow.ui" line="244"/>
         <source>Refresh</source>
         <extracomment>Button for updating the currently displayed folder information</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>更新</translation>
     </message>
     <message>
         <location filename="../src/folderview/folderwindow.ui" line="283"/>
@@ -818,7 +818,7 @@
         <location filename="../src/models/imagestring.cpp" line="48"/>
         <source>Image file full path in volume, e.g. &apos;C:/Users/qv/Desktop/Sample Book/subpath/page01.jpg&apos;</source>
         <comment>Format tag of text displayed in title bar and status bar</comment>
-        <translation type="unfinished"></translation>
+        <translation>画像ファイルのフルパス、例: &apos;C:/Users/qv/デスクトップ/サンプル本/サブフォルダ/page01.jpg&apos;</translation>
     </message>
     <message>
         <location filename="../src/models/imagestring.cpp" line="49"/>
@@ -842,19 +842,19 @@
         <location filename="../src/models/imagestring.cpp" line="52"/>
         <source>Exact image file size in bytes, e.g. &apos;1,154,340 bytes&apos;</source>
         <comment>Format tag of text displayed in title bar and status bar</comment>
-        <translation type="unfinished"></translation>
+        <translation>画像のファイルサイズをバイト単位で、例: &apos;1,154,340 バイト&apos;</translation>
     </message>
     <message>
         <location filename="../src/models/imagestring.cpp" line="53"/>
         <source>Decoded image size in a human-readable format, e.g. &apos;1.59 MB&apos;</source>
         <comment>Format tag of text displayed in title bar and status bar</comment>
-        <translation type="unfinished"></translation>
+        <translation>画像のビットマップとしての大きさ、例: &apos;1.59MB&apos;</translation>
     </message>
     <message>
         <location filename="../src/models/imagestring.cpp" line="54"/>
         <source>Current page number in the volume, e.g. &apos;33/100&apos; or &apos;33-34/100&apos;</source>
         <comment>Format tag of text displayed in title bar and status bar</comment>
-        <translation type="unfinished"></translation>
+        <translation>ボリューム内の現在のページ番号、例: &apos;33/100&apos; または &apos;33-34/100&apos;</translation>
     </message>
     <message>
         <source>Image file size as correct number of bytes, e.g. &apos;1,154,340 Bytes&apos;</source>
@@ -887,13 +887,13 @@
         <location filename="../src/models/imagestring.cpp" line="135"/>
         <location filename="../src/models/imagestring.cpp" line="151"/>
         <source>%1 KB</source>
-        <translation></translation>
+        <translation>%1 KB</translation>
     </message>
     <message>
         <location filename="../src/models/imagestring.cpp" line="137"/>
         <location filename="../src/models/imagestring.cpp" line="153"/>
         <source>%1 MB</source>
-        <translation></translation>
+        <translation>%1 MB</translation>
     </message>
     <message>
         <location filename="../src/models/imagestring.cpp" line="143"/>
@@ -906,12 +906,12 @@
     <message>
         <location filename="../src/imageview.cpp" line="220"/>
         <source>Cannot Open Archive</source>
-        <translation type="unfinished"></translation>
+        <translation>アーカイブを開けません</translation>
     </message>
     <message>
         <location filename="../src/imageview.cpp" line="221"/>
         <source>This archive is password-protected. Password-protected archives are not supported.</source>
-        <translation type="unfinished"></translation>
+        <translation>このアーカイブはパスワードで保護されています。パスワードで保護されたアーカイブには対応していません。</translation>
     </message>
 </context>
 <context>
@@ -999,18 +999,18 @@
     <message>
         <location filename="../src/qactionmanager/keyconfigdialog.ui" line="222"/>
         <source>Ctrl</source>
-        <translation></translation>
+        <translation>Ctrl</translation>
     </message>
     <message>
         <location filename="../src/qactionmanager/keyconfigdialog.ui" line="229"/>
         <source>Shift</source>
-        <translation></translation>
+        <translation>Shift</translation>
     </message>
     <message>
         <location filename="../src/qactionmanager/keyconfigdialog.ui" line="236"/>
         <source>Alt</source>
         <extracomment>maybe &apos;Option&apos; in OSX</extracomment>
-        <translation></translation>
+        <translation>Alt</translation>
     </message>
     <message>
         <location filename="../src/qactionmanager/keyconfigdialog.ui" line="253"/>
@@ -1071,7 +1071,7 @@
         <location filename="../../../components/i18n/languagemanager.cpp" line="151"/>
         <source>Always use text translation</source>
         <comment>Menu text that uses textual translation rather than regular qm format</comment>
-        <translation type="unfinished"></translation>
+        <translation>常にテキスト翻訳を使用</translation>
     </message>
 </context>
 <context>
@@ -1589,7 +1589,7 @@
         <location filename="../src/mainwindow.ui" line="1058"/>
         <source>Don&apos;t upscale small images</source>
         <extracomment>Ability to display an image smaller than the window as it is when fit is displayed</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>フィット表示時、画面より小さな画像は拡大しない</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="1071"/>
@@ -1636,19 +1636,19 @@
         <location filename="../src/mainwindow.cpp" line="473"/>
         <source>Image file not found. It cannot be opened.</source>
         <comment>Text to display in the status bar when failed to open the specified Volume</comment>
-        <translation type="unfinished"></translation>
+        <translation>開くことができませんでした。画像ファイルが見つかりません。</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="476"/>
         <source>Image file was not found and cannot be opened.</source>
         <comment>Text to display in the status bar when failed to open the specified Volume</comment>
-        <translation type="unfinished"></translation>
+        <translation>開くことができませんでした。画像ファイルが見つかりません。</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="1792"/>
         <source>All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.heic *.heif);;Archives( *.zip *.7z *.rar)</source>
         <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
-        <translation type="unfinished"></translation>
+        <translation>全てのファイル( *.* );;画像 ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.heic *.heif);;アーカイブ( *.zip *.7z *.rar)</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="2071"/>
@@ -2015,19 +2015,19 @@
         <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="16"/>
         <source>Select a mouse button and modifiers, then click &apos;Add shortcut&apos;.</source>
         <comment>Placeholder text urging the mouse input setting procedure</comment>
-        <translation type="unfinished"></translation>
+        <translation>マウスボタンと修飾キーを選択し、「設定追加」をクリックしてください。</translation>
     </message>
     <message>
         <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="22"/>
         <source>Command</source>
         <comment>caption of Command key</comment>
-        <translation></translation>
+        <translation>Command</translation>
     </message>
     <message>
         <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="23"/>
         <source>Option</source>
         <comment>caption of Option key</comment>
-        <translation></translation>
+        <translation>Option</translation>
     </message>
     <message>
         <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="49"/>
@@ -2319,12 +2319,12 @@
     <message>
         <location filename="../src/optionsdialog.ui" line="317"/>
         <source>Theme</source>
-        <translation type="unfinished"></translation>
+        <translation>テーマ</translation>
     </message>
     <message>
         <location filename="../src/optionsdialog.ui" line="336"/>
         <source>Dark</source>
-        <translation type="unfinished"></translation>
+        <translation>ダーク</translation>
     </message>
 </context>
 <context>
@@ -2395,13 +2395,13 @@
         <location filename="../src/models/qvapplication.cpp" line="228"/>
         <source>Navigation</source>
         <comment>Navigation Action Group</comment>
-        <translation type="unfinished"></translation>
+        <translation>ページ移動</translation>
     </message>
     <message>
         <location filename="../src/models/qvapplication.cpp" line="269"/>
         <source>Dual View</source>
         <comment>Dual View Action Group</comment>
-        <translation type="unfinished"></translation>
+        <translation>見開き表示</translation>
     </message>
 </context>
 <context>
@@ -2436,7 +2436,7 @@
         <location filename="../src/models/renderedpage.cpp" line="75"/>
         <source>NOT IMAGE FILE</source>
         <comment>Error messages to be displayed on screen when image loading fails</comment>
-        <translation type="unfinished">画像以外のファイルです</translation>
+        <translation>画像以外のファイルです</translation>
     </message>
 </context>
 <context>
@@ -2462,7 +2462,7 @@
     <message>
         <location filename="../src/retouchwindow.ui" line="179"/>
         <source>Apply to all images in this volume</source>
-        <translation type="unfinished"></translation>
+        <translation>このボリュームのすべての画像に適用</translation>
     </message>
     <message>
         <location filename="../src/retouchwindow.ui" line="186"/>
