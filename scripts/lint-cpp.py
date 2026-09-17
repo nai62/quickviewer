@@ -119,7 +119,7 @@ def check_format(
         else:
             command.extend(("--dry-run", "--Werror"))
         command.append(path)
-        result = subprocess.run(command, cwd=ROOT)
+        result = subprocess.run(command, cwd=ROOT, check=False)
         succeeded = result.returncode == 0 and succeeded
     return succeeded
 
