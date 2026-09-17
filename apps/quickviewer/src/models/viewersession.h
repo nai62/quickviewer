@@ -8,6 +8,7 @@
 #include "visiblepagecomposer.h"
 #include "visiblepages.h"
 #include "viewerstate.h"
+#include "viewerloadstatus.h"
 #include "volume.h"
 #include "volumecache.h"
 
@@ -54,6 +55,7 @@ public:
     void setViewportSize(QSize size);
     bool initialImagePaintPending() const;
     ViewerStateKind stateKind() const { return viewerStateKind(m_state); }
+    const ViewerLoadStatus &loadStatus() const { return m_loadStatus; }
     void deferFolderWorkUntilNextPaint();
     void notifyInitialImagePainted();
     void notifyPagePresentationChanged();
@@ -139,6 +141,8 @@ public:
         clearVisiblePages();
         m_volumeCache.clear();
         m_savedPagePositions.clear();
+        m_loadStatus = ViewerLoadStatus{};
+        emit loadStatusChanged();
     }
 
 signals:
@@ -153,6 +157,7 @@ signals:
      */
     void volumeChanged(QString path);
     void archiveOpenFailed(QString path, ArchiveOpenError error);
+    void loadStatusChanged();
     /**
      * Emitted after the directly opened image has had a chance to paint. Heavy
      * folder-related GUI work can resume after this signal.
@@ -177,6 +182,12 @@ private:
     void configureVolume(Volume *volume);
     void rememberActivePagePosition();
     bool failActiveArchiveLoad(ArchiveOpenError error, const QString &path);
+    void beginLoad(const QString &path, LoadTargetKind targetKind);
+    void setLoadFailure(const QString &path,
+                        LoadTargetKind targetKind,
+                        LoadFailureReason reason,
+                        bool terminal);
+    void setLoadReady(const QString &path, LoadTargetKind targetKind);
     int initialPageIndex(const VolumeHandle &volume, const QString &pageName, bool coverOnly);
     void replaceVisiblePages(QVector<ImageContent> pages);
     static QStringList siblingVolumeNames(const QDir &directory);
@@ -196,6 +207,7 @@ private:
     QStringList m_volumeNames;
 
     ViewerState m_state;
+    ViewerLoadStatus m_loadStatus;
     QSize m_viewportSize;
 
     LatestResultDispatcher<ImageContent> m_initialImageLoadDispatcher;

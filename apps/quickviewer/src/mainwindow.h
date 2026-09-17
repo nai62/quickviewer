@@ -214,17 +214,16 @@ public slots:
 private slots:
     void handleGraphicsViewFittingChanged(qvEnums::FitMode mode);
     void handleInitialImageDisplayFinished();
+    void handleViewerLoadStatusChanged();
 
 private:
     enum class StatusMessage {
         None,
         NoVolume,
-        LoadFailed,
-        PageMissing,
-        ArchiveFailed,
     };
 
     void setStatusMessage(StatusMessage message);
+    void syncPageBar();
     void saveVisibleFolderViewWidth();
     void loadStartupVolume();
     void revealStartupWindow();

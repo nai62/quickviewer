@@ -33,6 +33,40 @@ static ImageContent waitForImageAt(const Volume &volume, int pageIndex)
     return imageLoad.isValid() ? imageLoad.result() : ImageContent();
 }
 
+static LoadTargetKind targetKindForLocation(const VolumeLocation &location)
+{
+    if (!location.pageName.isEmpty()) {
+        return LoadTargetKind::ImageFile;
+    }
+    if (QFileInfo(location.volumePath).isDir()) {
+        return LoadTargetKind::Folder;
+    }
+    if (IFileLoader::isArchiveFile(location.volumePath)) {
+        return LoadTargetKind::Archive;
+    }
+    if (IFileLoader::isImageFile(location.volumePath)) {
+        return LoadTargetKind::ImageFile;
+    }
+    return LoadTargetKind::Unknown;
+}
+
+static LoadFailureReason failureReasonForArchiveError(ArchiveOpenError error)
+{
+    switch (error) {
+    case ArchiveOpenError::None:
+        return LoadFailureReason::None;
+    case ArchiveOpenError::PasswordProtected:
+        return LoadFailureReason::PasswordProtected;
+    case ArchiveOpenError::Unsupported:
+        return LoadFailureReason::UnsupportedFormat;
+    case ArchiveOpenError::Corrupt:
+        return LoadFailureReason::CorruptData;
+    case ArchiveOpenError::IoError:
+        return LoadFailureReason::IoError;
+    }
+    return LoadFailureReason::IoError;
+}
+
 ViewerSession::ViewerSession(QObject *parent)
     : QObject(parent),
       m_prefetchMode(PrefetchMode::Normal),
@@ -44,6 +78,44 @@ ViewerSession::ViewerSession(QObject *parent)
       m_volumeLoadDispatcher(),
       m_initialDisplayGeneration(0)
 {}
+
+void ViewerSession::beginLoad(const QString &path, LoadTargetKind targetKind)
+{
+    m_loadStatus = {
+        ViewerLoadPhase::Loading,
+        targetKind,
+        LoadFailureReason::None,
+        QDir::toNativeSeparators(path),
+        {}};
+    emit loadStatusChanged();
+}
+
+void ViewerSession::setLoadFailure(const QString &path,
+                                   LoadTargetKind targetKind,
+                                   LoadFailureReason reason,
+                                   bool terminal)
+{
+    m_loadStatus.phase = terminal ? ViewerLoadPhase::Failed
+                                  : (activeVolume() ? ViewerLoadPhase::Ready : ViewerLoadPhase::Loading);
+    m_loadStatus.targetKind = targetKind;
+    m_loadStatus.failureReason = reason;
+    if (m_loadStatus.requestedPath.isEmpty()) {
+        m_loadStatus.requestedPath = QDir::toNativeSeparators(path);
+    }
+    m_loadStatus.failurePath = QDir::toNativeSeparators(path);
+    emit loadStatusChanged();
+}
+
+void ViewerSession::setLoadReady(const QString &path, LoadTargetKind targetKind)
+{
+    m_loadStatus = {
+        ViewerLoadPhase::Ready,
+        targetKind,
+        LoadFailureReason::None,
+        QDir::toNativeSeparators(path),
+        {}};
+    emit loadStatusChanged();
+}
 
 VolumeHandle ViewerSession::activeVolumeHandle() const
 {
@@ -106,9 +178,11 @@ bool ViewerSession::failActiveArchiveLoad(ArchiveOpenError error, const QString 
     m_state = FailedViewerState{};
     clearVisiblePages();
     emit archiveOpenFailed(path, error);
-    if (error != ArchiveOpenError::PasswordProtected) {
-        emit volumeChanged("");
-    }
+    setLoadFailure(path,
+                   LoadTargetKind::Archive,
+                   failureReasonForArchiveError(error),
+                   true);
+    emit volumeChanged("");
     return false;
 }
 
@@ -165,6 +239,9 @@ bool ViewerSession::loadVolume(QString path, bool coverOnly)
     StartupProfiler::mark("session.load-volume.begin");
     rememberActivePagePosition();
     const quint64 generation = ++m_initialDisplayGeneration;
+    const VolumeLocation location = parseVolumeLocation(path);
+    const LoadTargetKind targetKind = targetKindForLocation(location);
+    beginLoad(location.pageName.isEmpty() ? location.volumePath : path, targetKind);
     m_state = LoadingViewerState{generation};
     m_pendingContainingImagePath.clear();
     m_pendingContainingVolumePath.clear();
@@ -173,7 +250,6 @@ bool ViewerSession::loadVolume(QString path, bool coverOnly)
     m_volumeLoadDispatcher.invalidate();
     clearVisiblePages();
 
-    const VolumeLocation location = parseVolumeLocation(path);
     const CachedVolumeLoadResult loadResult = loadCachedVolume(path, coverOnly);
     VolumeHandle loadedVolume = loadResult.volume;
     StartupProfiler::mark("session.volume-built");
@@ -182,14 +258,33 @@ bool ViewerSession::loadVolume(QString path, bool coverOnly)
         if (loadResult.error != ArchiveOpenError::None) {
             emit archiveOpenFailed(location.volumePath, loadResult.error);
         }
-        if (loadResult.error != ArchiveOpenError::PasswordProtected) {
-            emit volumeChanged("");
+        LoadFailureReason reason = failureReasonForArchiveError(loadResult.error);
+        if (reason == LoadFailureReason::None) {
+            if (targetKind == LoadTargetKind::Folder || targetKind == LoadTargetKind::Archive) {
+                reason = LoadFailureReason::NoViewableImages;
+            } else if (!QFileInfo(location.volumePath).exists()) {
+                reason = LoadFailureReason::NotFound;
+            } else {
+                reason = LoadFailureReason::DecodeFailed;
+            }
         }
+        setLoadFailure(location.volumePath, targetKind, reason, true);
+        emit volumeChanged("");
         return false;
     }
 
     setVolumeReady(loadedVolume);
     Volume *volume = loadedVolume.get();
+    setLoadReady(volume->volumePath(), volume->isArchive() ? LoadTargetKind::Archive : targetKind);
+    if (!location.pageName.isEmpty() && volume->pageIndexForName(location.pageName) < 0) {
+        m_state = FailedViewerState{};
+        setLoadFailure(path,
+                       LoadTargetKind::ImageFile,
+                       LoadFailureReason::NotFound,
+                       true);
+        emit volumeChanged("");
+        return false;
+    }
     if (!coverOnly && volume->isArchive()) {
         deferFolderWorkUntilNextPaint();
     }
@@ -221,6 +316,7 @@ bool ViewerSession::loadVolume(QString path, bool coverOnly)
 bool ViewerSession::loadVolumeWithFile(QString path, bool allowSecondPage)
 {
     QString normalizedPath = QDir::fromNativeSeparators(path);
+    beginLoad(normalizedPath, LoadTargetKind::ImageFile);
     const QFileInfo imageInfo(normalizedPath);
     QString basePath = imageInfo.absolutePath();
     const QString subfileName = imageInfo.fileName();
@@ -249,7 +345,7 @@ bool ViewerSession::loadVolumeWithFile(QString path, bool allowSecondPage)
             m_pendingContainingImagePath = normalizedPath;
             m_pendingContainingVolumePath = basePath;
             m_pendingContainingPageName = subfileName;
-            const bool imageReady = !content.loadedImage.isNull() || !content.resizedImage.isNull() || !content.movie.isNull();
+            const bool imageReady = content.isRenderable();
             m_state = StandalonePreviewViewerState{
                 displayGeneration, imageReady, false, false};
             if (imageReady) {
@@ -262,6 +358,12 @@ bool ViewerSession::loadVolumeWithFile(QString path, bool allowSecondPage)
                     finishInitialImageDisplay(displayGeneration);
                 });
             } else {
+                setLoadFailure(normalizedPath,
+                               LoadTargetKind::ImageFile,
+                               QFileInfo(normalizedPath).exists()
+                                   ? LoadFailureReason::DecodeFailed
+                                   : LoadFailureReason::NotFound,
+                               false);
                 finishInitialImageDisplay(displayGeneration);
             }
         },
@@ -393,6 +495,7 @@ void ViewerSession::startContainingVolumeLoad(const QString &normalizedImagePath
             m_volumeCache.markUsed(cacheKey);
             setVolumeReady(loadedVolume);
             Volume *volume = loadedVolume.get();
+            setLoadReady(volume->volumePath(), LoadTargetKind::Folder);
             clearVisiblePages();
             if (activeVolume() != volume) {
                 return;
@@ -793,6 +896,10 @@ bool ViewerSession::reloadVisiblePages()
     if (firstLoadError != ArchiveOpenError::None) {
         return failActiveArchiveLoad(firstLoadError, volume->volumePath());
     }
+    QString failedImagePath;
+    if (!firstContent.isRenderable()) {
+        failedImagePath = volume->pagePathForName(volume->pageNameAt(currentPageIndex));
+    }
     firstContent.initializeAnimation();
     if (activeVolume() != volume) {
         return false;
@@ -820,6 +927,9 @@ bool ViewerSession::reloadVisiblePages()
         if (secondLoadError != ArchiveOpenError::None) {
             return failActiveArchiveLoad(secondLoadError, volume->volumePath());
         }
+        if (failedImagePath.isEmpty() && !secondContent.isRenderable()) {
+            failedImagePath = volume->pagePathForName(volume->pageNameAt(currentPageIndex + 1));
+        }
         compositionRequest.secondPageIsLandscape = secondContent.isLandscape();
     }
     const VisiblePageComposition composition =
@@ -839,6 +949,15 @@ bool ViewerSession::reloadVisiblePages()
         }
     }
     replaceVisiblePages(std::move(pages));
+    if (failedImagePath.isEmpty()) {
+        setLoadReady(volume->volumePath(),
+                     volume->isArchive() ? LoadTargetKind::Archive : LoadTargetKind::Folder);
+    } else {
+        setLoadFailure(failedImagePath,
+                       LoadTargetKind::ImageFile,
+                       LoadFailureReason::DecodeFailed,
+                       false);
+    }
     emit readyForPaint();
     return true;
 }

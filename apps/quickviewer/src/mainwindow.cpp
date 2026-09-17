@@ -86,6 +86,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->graphicsView->setViewerSession(&m_viewerSession);
     connect(&m_viewerSession, &ViewerSession::initialImageDisplayFinished, this, &MainWindow::handleInitialImageDisplayFinished);
+    connect(&m_viewerSession, &ViewerSession::loadStatusChanged, this, &MainWindow::handleViewerLoadStatusChanged);
     connect(
         &m_viewerSession,
         &ViewerSession::archiveOpenFailed,
@@ -95,7 +96,6 @@ MainWindow::MainWindow(QWidget *parent)
             if (m_folderWindow) {
                 m_folderWindow->handleViewerSessionVolumeChanged(m_folderViewRequestedPath);
             }
-            setStatusMessage(StatusMessage::ArchiveFailed);
         });
     setAcceptDrops(true);
 
@@ -239,6 +239,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->statusBar->addPermanentWidget(ui->statusLabel);
     setStatusMessage(StatusMessage::NoVolume);
+    syncPageBar();
 
     // Shader
     ui->actionShaderBilinearBeforeCpuBicubic->setVisible(false);
@@ -481,13 +482,6 @@ void MainWindow::setStatusMessage(StatusMessage message)
     case StatusMessage::NoVolume:
         ui->graphicsView->showNoVolumeMessage();
         return;
-    case StatusMessage::LoadFailed:
-    case StatusMessage::PageMissing:
-        ui->graphicsView->showOpenFailureMessage(false);
-        return;
-    case StatusMessage::ArchiveFailed:
-        ui->graphicsView->showOpenFailureMessage(true);
-        return;
     }
 }
 
@@ -710,7 +704,6 @@ void MainWindow::loadVolume(QString path, bool allowSecondPage)
 {
     QStringList seps = path.split("::");
     const QString requestedPath = QDir::fromNativeSeparators(Volume::FullPathToVolumePath(path));
-    const bool requestedArchive = IFileLoader::isArchiveFile(requestedPath);
     m_folderViewRequestedPath = requestedPath;
     if (m_folderWindow) {
         m_folderWindow->handleViewerSessionVolumeChanged(m_folderViewRequestedPath);
@@ -727,10 +720,6 @@ void MainWindow::loadVolume(QString path, bool allowSecondPage)
         changeFolderPath(m_viewerSession.volumePath());
         return;
     }
-
-    setStatusMessage(requestedArchive
-                         ? StatusMessage::ArchiveFailed
-                         : StatusMessage::LoadFailed);
 
     if (changeFolderPath(path)) {
         return;
@@ -1432,23 +1421,12 @@ void MainWindow::handleViewerSessionPageChanged()
 {
     int maxVolume = m_viewerSession.pageCount();
     if (maxVolume <= 0) {
+        syncPageBar();
         return;
     }
     updateFolderViewCurrentItem();
     // PageSlider
-    ui->pageLabel->setText(m_viewerSession.currentPageNumberText());
-    m_sliderChanging = true;
-
-    // at DualView Mode, last 2 page should be [volume.size()-2, volume.size()-1]
-    // so the last page should not changed by the slider
-    // the logical last page is [volume.size()-2]
-    if (qApp->DualView() && ((m_viewerSession.pageCount() - m_viewerSession.currentPageIndex()) & 0x1) == 0) {
-        maxVolume--;
-    }
-
-    ui->pageSlider->setMaximum(maxVolume);
-    ui->pageSlider->setValue(m_viewerSession.currentPageIndex() + 1);
-    m_sliderChanging = false;
+    syncPageBar();
 
     // StatusBar
     m_statusMessage = StatusMessage::None;
@@ -1477,10 +1455,7 @@ void MainWindow::handleViewerSessionVolumeChanged(QString path)
     updateFolderViewCurrentItem();
     if (path.isEmpty()) {
         setWindowTitle(QString("%1 v%2").arg(qApp->applicationName()).arg(qApp->applicationVersion()));
-        ui->pageFrame->hide();
-        if (m_statusMessage != StatusMessage::ArchiveFailed) {
-            setStatusMessage(StatusMessage::PageMissing);
-        }
+        syncPageBar();
         return;
     }
     if (!qApp->DontSavingHistory()) {
@@ -1500,7 +1475,54 @@ void MainWindow::handlePageSliderValueChanged(int value)
         return;
     }
     m_sliderChanging = true;
-    m_viewerSession.selectPage(value - 1);
+    const bool selected = m_viewerSession.selectPage(value - 1);
+    m_sliderChanging = false;
+    if (!selected) {
+        syncPageBar();
+    }
+}
+
+void MainWindow::handleViewerLoadStatusChanged()
+{
+    if (m_viewerSession.loadStatus().phase == ViewerLoadPhase::Loading
+        || m_viewerSession.loadStatus().phase == ViewerLoadPhase::Failed) {
+        m_statusMessage = StatusMessage::None;
+        m_pageCaption.clear();
+        ui->statusLabel->clear();
+    }
+    syncPageBar();
+}
+
+void MainWindow::syncPageBar()
+{
+    const ViewerLoadStatus &status = m_viewerSession.loadStatus();
+    const int pageCount = m_viewerSession.pageCount();
+    const bool ready = status.phase == ViewerLoadPhase::Ready && pageCount > 0;
+
+    m_sliderChanging = true;
+    ui->pageSlider->setEnabled(ready);
+    if (!ready) {
+        ui->pageSlider->setRange(0, 0);
+        ui->pageSlider->setValue(0);
+        if (status.phase == ViewerLoadPhase::Loading) {
+            ui->pageLabel->setText(tr("Loading..."));
+        } else if (status.failureReason == LoadFailureReason::NoViewableImages
+                   || status.phase == ViewerLoadPhase::Empty) {
+            ui->pageLabel->setText(tr("No images"));
+        } else {
+            ui->pageLabel->setText(tr("Unavailable"));
+        }
+        m_sliderChanging = false;
+        return;
+    }
+
+    int maximum = pageCount;
+    if (qApp->DualView() && ((pageCount - m_viewerSession.currentPageIndex()) & 0x1) == 0) {
+        --maximum;
+    }
+    ui->pageLabel->setText(m_viewerSession.currentPageNumberText());
+    ui->pageSlider->setRange(1, qMax(1, maximum));
+    ui->pageSlider->setValue(m_viewerSession.currentPageIndex() + 1);
     m_sliderChanging = false;
 }
 

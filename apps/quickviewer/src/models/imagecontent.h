@@ -62,6 +62,7 @@ struct ImageContent
           exifInfo(std::move(metadata)),
           fileSize(size)
     {}
+    bool isRenderable() const { return !loadedImage.isNull() || !resizedImage.isNull() || !movie.isNull(); }
     bool isLandscape() const { return originalSize.width() > originalSize.height(); }
     void initializeAnimation();
 };

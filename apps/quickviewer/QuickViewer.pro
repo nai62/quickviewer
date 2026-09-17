@@ -198,6 +198,7 @@ HEADERS  += \
     src/models/volumecache.h \
     src/models/volumehandle.h \
     src/models/viewerstate.h \
+    src/models/viewerloadstatus.h \
     src/models/visiblepages.h \
     src/models/renderedpages.h \
     src/models/renderedpagemetrics.h \
@@ -597,4 +598,3 @@ macos : !CONFIG(debug, debug|release) {
 }
 
 OTHER_FILES += SHADERS
-

@@ -47,7 +47,7 @@ public:
     RenderedPageMetrics renderedPageMetrics() const;
     QString displayedMessage() const;
     void showNoVolumeMessage();
-    void showOpenFailureMessage(bool archive);
+    void showLoadFailureMessage(const ViewerLoadStatus &status);
     void updateGestureTransform(qreal scale, qreal rotationDegrees);
     void commitGestureTransform();
     void resetGestureTransform();
@@ -79,7 +79,7 @@ protected:
 public slots:
     void handleVolumeChanged(QString path);
     void handleVisiblePagesChanged(VisiblePages pages);
-    void handleArchiveOpenFailed(QString path, ArchiveOpenError error);
+    void handleLoadStatusChanged();
     void refreshRenderedPages();
 
     // Navigation

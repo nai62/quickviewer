@@ -95,17 +95,59 @@ void ImageView::showNoVolumeMessage()
         tr("Open an image, folder, or archive to begin."));
 }
 
-void ImageView::showOpenFailureMessage(bool archive)
+void ImageView::showLoadFailureMessage(const ViewerLoadStatus &status)
 {
-    if (archive) {
-        showMessage(
-            tr("Cannot Open Archive"),
-            tr("No viewable images could be loaded from this archive."));
+    QString title;
+    QString body;
+    switch (status.failureReason) {
+    case LoadFailureReason::None:
+        clearMessage();
         return;
+    case LoadFailureReason::NoViewableImages:
+        title = tr("No Viewable Images");
+        body = status.targetKind == LoadTargetKind::Folder
+                   ? tr("No supported images were found in this folder.")
+                   : tr("No supported images were found in this archive.");
+        break;
+    case LoadFailureReason::NotFound:
+        title = tr("Cannot Find Item");
+        body = tr("The selected file or folder does not exist.");
+        break;
+    case LoadFailureReason::PermissionDenied:
+        title = tr("Permission Denied");
+        body = tr("The selected item cannot be read because access was denied.");
+        break;
+    case LoadFailureReason::DecodeFailed:
+        title = tr("Cannot Display Image");
+        body = tr("The image could not be decoded.");
+        break;
+    case LoadFailureReason::PasswordProtected:
+        title = tr("Cannot Open Archive");
+        body = tr("This archive is password-protected.");
+        break;
+    case LoadFailureReason::UnsupportedFormat:
+        title = tr("Cannot Open Archive");
+        body = tr("This archive format is not supported.");
+        break;
+    case LoadFailureReason::CorruptData:
+        title = tr("Cannot Open Archive");
+        body = tr("This archive is damaged or invalid.");
+        break;
+    case LoadFailureReason::IoError:
+        title = status.targetKind == LoadTargetKind::Archive
+                    ? tr("Cannot Open Archive")
+                    : tr("Cannot Open");
+        body = tr("The selected item could not be read.");
+        break;
     }
-    showMessage(
-        tr("Cannot Open"),
-        tr("The selected file or folder could not be opened."));
+
+    const QString path = status.failurePath.isEmpty()
+                             ? status.requestedPath
+                             : status.failurePath;
+    if (!path.isEmpty()) {
+        body += QStringLiteral("\n\n") + tr("Path: %1").arg(QDir::toNativeSeparators(path));
+    }
+    showMessage(title, body);
 }
 
 void ImageView::showMessage(const QString &title, const QString &body)
@@ -143,7 +185,7 @@ void ImageView::setViewerSession(ViewerSession *session)
     m_viewerSession = session;
     m_viewerSession->setViewportSize(viewport()->size());
     connect(session, &ViewerSession::visiblePagesChanged, this, &ImageView::handleVisiblePagesChanged);
-    connect(session, &ViewerSession::archiveOpenFailed, this, &ImageView::handleArchiveOpenFailed);
+    connect(session, &ViewerSession::loadStatusChanged, this, &ImageView::handleLoadStatusChanged);
     connect(session, SIGNAL(readyForPaint()), this, SLOT(refreshRenderedPages()));
     connect(session, SIGNAL(volumeChanged(QString)), this, SLOT(handleVolumeChanged(QString)));
     connect(this, SIGNAL(slideShowStarted()), session, SLOT(handleSlideShowStarted()));
@@ -239,10 +281,19 @@ void ImageView::handleVisiblePagesChanged(VisiblePages pages)
     }
 }
 
-void ImageView::handleArchiveOpenFailed(QString, ArchiveOpenError error)
+void ImageView::handleLoadStatusChanged()
 {
-    Q_UNUSED(error);
-    showOpenFailureMessage(true);
+    if (!m_viewerSession) {
+        return;
+    }
+    const ViewerLoadStatus &status = m_viewerSession->loadStatus();
+    if (status.failureReason != LoadFailureReason::None) {
+        showLoadFailureMessage(status);
+    } else if (status.phase == ViewerLoadPhase::Empty) {
+        showNoVolumeMessage();
+    } else {
+        clearMessage();
+    }
 }
 
 void ImageView::clearMessage()
