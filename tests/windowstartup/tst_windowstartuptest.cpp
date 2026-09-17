@@ -56,6 +56,15 @@ private slots:
         QTest::newRow("restoration-disabled") << false << false << int(Qt::WindowFullScreen) << false;
     }
 
+    void destroyingWindowKeepsUiAliveWhileSessionResets()
+    {
+        QPointer<StartupWindow> viewer = new StartupWindow;
+
+        delete viewer.data();
+
+        QVERIFY(viewer.isNull());
+    }
+
     void startupCloaking()
     {
         QFETCH(bool, beginAsFullscreen);

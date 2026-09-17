@@ -438,8 +438,10 @@ MainWindow::~MainWindow()
         QString path = QDir::fromNativeSeparators(m_viewerSession.currentPagePath());
         qApp->setLastViewPath(path);
     }
-    delete ui;
+    // reset() emits loadStatusChanged() and visiblePagesChanged(). Keep the UI
+    // alive until those synchronous slots have finished.
     m_viewerSession.reset();
+    delete ui;
     qApp->saveSettings();
 }
 
