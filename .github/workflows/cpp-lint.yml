@@ -2,20 +2,6 @@ name: C++ lint
 
 on:
   pull_request:
-    paths:
-      - "apps/quickviewer/**"
-      - "components/i18n/**"
-      - "tests/fileloader/**"
-      - "tests/prefetchplanner/**"
-      - "tests/latestresultdispatcher/**"
-      - "tests/asynccache/**"
-      - "tests/svgloader/**"
-      - "tests/viewernavigation/**"
-      - "tests/windowstartup/**"
-      - ".clang-format"
-      - ".clang-format-ignore"
-      - ".gitattributes"
-      - "scripts/lint-cpp.py"
 
 permissions:
   contents: read

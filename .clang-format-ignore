@@ -1,11 +1,1 @@
-third_party/7zip/**
-third_party/p7zip/**
-third_party/lib7zip/**
-third_party/resizehalf/**
-third_party/easyexif/**
-third_party/luminor/luminor/**
-third_party/unrar/**
-third_party/zimg/**
-third_party/libspng/**
-third_party/zlib/**
-third_party/resvg/**
+third_party/**

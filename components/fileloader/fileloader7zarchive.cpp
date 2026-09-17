@@ -102,6 +102,7 @@ public:
         *size = static_cast<unsigned __int64>(m_stream->size());
         return 0;
     }
+
 private:
     QIODevice *m_stream;
     wstring m_extension;
