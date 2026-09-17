@@ -329,8 +329,12 @@ private slots:
         viewer.createFolderWindow(true, QString(), true);
         QTreeView *view = viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
         QVERIFY(view);
-        view->setFocus();
+        viewer.activateWindow();
+        QCoreApplication::processEvents();
+        view->setFocus(Qt::OtherFocusReason);
+        QTRY_VERIFY(view->hasFocus() || view->viewport()->hasFocus());
         QWidget *focusTarget = QApplication::focusWidget();
+        QVERIFY(focusTarget);
         QVERIFY(focusTarget == view || focusTarget == view->viewport());
 
         QTest::keyPress(focusTarget, Qt::Key_F4);
