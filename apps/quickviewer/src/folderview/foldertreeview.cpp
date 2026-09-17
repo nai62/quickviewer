@@ -5,10 +5,12 @@ FolderTreeView::FolderTreeView(QWidget *parent)
 {
 }
 
-void FolderTreeView::selectionChanged(const QItemSelection &selection, const QItemSelection &)
+void FolderTreeView::selectionChanged(const QItemSelection &selection, const QItemSelection &deselected)
 {
-    auto list = selection.indexes();
-    if (list.size() > 0) {
+    QTreeView::selectionChanged(selection, deselected);
+
+    const auto list = selection.indexes();
+    if (!list.isEmpty()) {
         emit selected(list.first());
     }
 }
