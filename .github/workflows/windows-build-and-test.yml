@@ -81,6 +81,15 @@ jobs:
         with:
           submodules: recursive
 
+      # The legacy MBCS ZIP fixtures contain CP932 file names without a
+      # Unicode path field. Match the Japanese Windows environment in which
+      # those archives are expected to be decoded.
+      - name: Set Japanese system locale
+        shell: powershell
+        run: |
+          Set-WinSystemLocale -SystemLocale ja-JP
+          Set-Culture -CultureInfo ja-JP
+
       - name: Check out HEIF image plug-in
         uses: actions/checkout@v7
         with:
