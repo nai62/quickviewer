@@ -145,7 +145,7 @@ void ImageView::showLoadFailureMessage(const ViewerLoadStatus &status)
                              ? status.requestedPath
                              : status.failurePath;
     if (!path.isEmpty()) {
-        body += QStringLiteral("\n\n") + tr("Path: %1").arg(QDir::toNativeSeparators(path));
+        body += QStringLiteral("\n\n") + QDir::toNativeSeparators(path);
     }
     showMessage(title, body);
 }

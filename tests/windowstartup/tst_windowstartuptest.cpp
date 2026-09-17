@@ -439,7 +439,7 @@ private slots:
             viewer.imageView()->displayedMessage(),
             QStringLiteral("Cannot Open Archive\n"
                            "This archive is password-protected.\n\n"
-                           "Path: %1")
+                           "%1")
                 .arg(QDir::toNativeSeparators(encryptedPath)));
         QFrame *pageFrame = viewer.findChild<QFrame *>(QStringLiteral("pageFrame"));
         QLabel *pageLabel = viewer.findChild<QLabel *>(QStringLiteral("pageLabel"));
@@ -484,7 +484,7 @@ private slots:
             viewer.imageView()->displayedMessage(),
             QStringLiteral("No Viewable Images\n"
                            "No supported images were found in this archive.\n\n"
-                           "Path: %1")
+                           "%1")
                 .arg(QDir::toNativeSeparators(archivePath)));
         QSlider *pageSlider = viewer.findChild<QSlider *>(QStringLiteral("pageSlider"));
         QLabel *pageLabel = viewer.findChild<QLabel *>(QStringLiteral("pageLabel"));
@@ -509,7 +509,7 @@ private slots:
             viewer.imageView()->displayedMessage(),
             QStringLiteral("No Viewable Images\n"
                            "No supported images were found in this folder.\n\n"
-                           "Path: %1")
+                           "%1")
                 .arg(QDir::toNativeSeparators(directory.path())));
         QFrame *pageFrame = viewer.findChild<QFrame *>(QStringLiteral("pageFrame"));
         QSlider *pageSlider = viewer.findChild<QSlider *>(QStringLiteral("pageSlider"));
@@ -537,7 +537,7 @@ private slots:
 
         const QString expected = QStringLiteral("Cannot Display Image\n"
                                                 "The image could not be decoded.\n\n"
-                                                "Path: %1")
+                                                "%1")
                                      .arg(QDir::toNativeSeparators(imagePath));
         QTRY_COMPARE(viewer.imageView()->displayedMessage(), expected);
         QSlider *pageSlider = viewer.findChild<QSlider *>(QStringLiteral("pageSlider"));
@@ -563,8 +563,7 @@ private slots:
 
         const QString message = viewer.imageView()->displayedMessage();
         QVERIFY(message.startsWith(QStringLiteral("Cannot Open Archive\n")));
-        QVERIFY(message.contains(
-            QStringLiteral("Path: %1").arg(QDir::toNativeSeparators(archivePath))));
+        QVERIFY(message.contains(QDir::toNativeSeparators(archivePath)));
         QSlider *pageSlider = viewer.findChild<QSlider *>(QStringLiteral("pageSlider"));
         QLabel *pageLabel = viewer.findChild<QLabel *>(QStringLiteral("pageLabel"));
         QVERIFY(pageSlider);
