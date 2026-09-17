@@ -40,8 +40,6 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
     ui->menuBar->setNativeMenuBar(false);
 #endif
 
-    ui->label->hide();
-    ui->frame->setStyleSheet(QString());
     ui->folderView->setRootIsDecorated(false);
     ui->folderView->setIndentation(0);
     ui->folderView->setMouseTracking(true);
@@ -50,7 +48,6 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
     // folderView
     ui->folderView->setModel(&m_itemModel);
     ui->folderView->setItemDelegate(&m_itemDelegate);
-    QObject::disconnect(ui->folderView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(handleFolderViewItemDoubleClicked(QModelIndex)));
 
     // menus
     ui->menuBar->removeAction(ui->menuSort->menuAction());
@@ -72,7 +69,6 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
 
     connect(qApp->languageSelector(), &LanguageManager::languageChanged, this, [this](const QString &) {
         ui->retranslateUi(this);
-        ui->label->hide();
         m_historyButton->setText(tr("History"));
         resetSortMode();
         if (m_volumes.size() == 1 && m_volumes.first().type == QvFolderItem::NoItems) {
@@ -319,7 +315,7 @@ void FolderWindow::resetSortMode()
     ui->sortModeButton->setText((sortMode == qvEnums::OrderByName
                                     ? ui->actionOrderByName->text()
                                     : ui->actionOrderByUpdatedAt->text())
-                                + QStringLiteral(" \u25BE"));
+                                + QStringLiteral(" ▾"));
 }
 
 void FolderWindow::resetPathLabel(int)
@@ -447,11 +443,6 @@ void FolderWindow::openFolderItem(const QModelIndex &index)
 }
 
 void FolderWindow::handleFolderViewItemSelected(const QModelIndex &index)
-{
-    openFolderItem(index);
-}
-
-void FolderWindow::handleFolderViewItemDoubleClicked(const QModelIndex &index)
 {
     openFolderItem(index);
 }

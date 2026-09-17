@@ -71,16 +71,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="label">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="text">
-      <string extracomment="Label indicating that the current folder PATH is being displayed">Current folder</string>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QLabel" name="pathLabel">
      <property name="text">
       <string notr="true">My Pictures</string>
@@ -98,26 +88,6 @@
    </item>
    <item>
     <widget class="QFrame" name="frame">
-     <property name="styleSheet">
-      <string notr="true">
-QToolButton {
-    height: 24px;
-    border: none;
-}
-QToolButton:hover {
-    height: 24px;
-    border: none;
-    background-color: yellow;
-}
-QPushButton {
-    border: none;
-}
-QPushButton:hover {
-    border: none;
-    background-color: yellow;
-}
-</string>
-     </property>
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>
@@ -368,22 +338,6 @@ QPushButton:hover {
    </hints>
   </connection>
   <connection>
-   <sender>folderView</sender>
-   <signal>doubleClicked(QModelIndex)</signal>
-   <receiver>FolderWindow</receiver>
-   <slot>handleFolderViewItemDoubleClicked(QModelIndex)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>359</x>
-     <y>345</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>359</x>
-     <y>299</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>toParentButton</sender>
    <signal>clicked()</signal>
    <receiver>FolderWindow</receiver>
@@ -498,7 +452,6 @@ QPushButton:hover {
  </connections>
  <slots>
   <slot>handleFolderViewItemSelected(QModelIndex)</slot>
-  <slot>handleFolderViewItemDoubleClicked(QModelIndex)</slot>
   <slot>handleParentButtonClicked()</slot>
   <slot>handleReloadButtonClicked()</slot>
   <slot>handleHomeButtonClicked()</slot>

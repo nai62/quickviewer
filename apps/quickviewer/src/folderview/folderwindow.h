@@ -40,7 +40,6 @@ public slots:
     void handleReloadButtonClicked();
     void handleViewerSessionVolumeChanged(QString);
     void handleFolderViewItemSelected(const QModelIndex &index);
-    void handleFolderViewItemDoubleClicked(const QModelIndex &index);
     void handleSetAsHomeFolderActionTriggered();
     void handleSortModeButtonClicked();
     void handleOrderByNameActionTriggered();
