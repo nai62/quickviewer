@@ -1069,6 +1069,7 @@ void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
         connect(&m_viewerSession, SIGNAL(volumeChanged(QString)), m_folderWindow, SLOT(handleViewerSessionVolumeChanged(QString)));
         m_folderWindow->show();
     }
+    m_folderWindow->handleViewerSessionVolumeChanged(m_viewerSession.volumePath());
     ui->actionShowFolder->setChecked(true);
 }
 

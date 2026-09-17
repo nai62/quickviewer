@@ -257,11 +257,24 @@ private slots:
         const QModelIndex child = view->model()->index(0, 0);
         QVERIFY(child.isValid());
         QVERIFY(!child.data(FolderItemModel::CurrentVolumeRole).toBool());
+        QSignalSpy openVolumeSpy(&folder, &FolderWindow::openVolume);
 
         folder.handleViewerSessionVolumeChanged(
             QDir(directory.path()).absoluteFilePath(QStringLiteral("child")));
 
         QVERIFY(child.data(FolderItemModel::CurrentVolumeRole).toBool());
+        QCOMPARE(openVolumeSpy.size(), 0);
+    }
+
+    void historyButtonUsesToolbarIconWithoutLabel()
+    {
+        FolderWindow folder(nullptr, nullptr);
+        QToolButton *historyButton = folder.findChild<QToolButton *>(QStringLiteral("historyButton"));
+        QVERIFY(historyButton);
+        QVERIFY(historyButton->text().isEmpty());
+        QVERIFY(!historyButton->icon().isNull());
+        QCOMPARE(historyButton->toolButtonStyle(), Qt::ToolButtonIconOnly);
+        QCOMPARE(historyButton->iconSize(), QSize(24, 24));
     }
 
     void separateWindowUsesSharedSavedWidthOnEnableAndExit()

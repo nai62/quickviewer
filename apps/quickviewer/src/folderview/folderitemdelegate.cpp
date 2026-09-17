@@ -15,19 +15,26 @@ void FolderItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
 
-    if (index.data(FolderItemModel::CurrentVolumeRole).toBool()) {
+    const bool isCurrentVolume = index.data(FolderItemModel::CurrentVolumeRole).toBool();
+    if (isCurrentVolume) {
         opt.font.setBold(true);
         QColor activeBackground = opt.palette.color(QPalette::Highlight);
         activeBackground.setAlpha(32);
-        opt.backgroundBrush = activeBackground;
+
+        painter->save();
+        painter->fillRect(option.rect, activeBackground);
+        painter->restore();
+
+        opt.backgroundBrush = Qt::NoBrush;
         opt.state &= ~QStyle::State_Selected;
     }
 
     const QWidget *widget = option.widget;
     QStyle *style = widget ? widget->style() : QApplication::style();
 
+    // Keep the platform hover rendering above the active-volume background.
     style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, widget);
-    // Draw the read progress bar above the active-volume background.
+    // Draw the read progress bar above both the active background and item.
     do {
         if (!qApp->ShowReadProgress() || index.column() != 0) {
             break;

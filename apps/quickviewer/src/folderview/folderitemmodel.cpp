@@ -1,25 +1,26 @@
 #include "folderitemmodel.h"
 
-namespace {
-QIcon themedIcon(const QString &name, QStyle::StandardPixmap fallback)
-{
-    QIcon icon = QIcon::fromTheme(name);
-    if (icon.isNull()) {
-        icon = QApplication::style()->standardIcon(fallback);
-    }
-    return icon;
-}
-}
-
 FolderItemModel::FolderItemModel(QObject *parent)
     : QAbstractItemModel(parent),
       m_searchedVolumes(nullptr),
       m_columns(1),
-      m_currentVolumeRow(-1),
-      m_folderIcon(themedIcon(QStringLiteral("folder"), QStyle::SP_DirIcon)),
-      m_archiveIcon(themedIcon(QStringLiteral("package-x-generic"), QStyle::SP_DriveHDIcon)),
-      m_imageIcon(themedIcon(QStringLiteral("image-x-generic"), QStyle::SP_FileIcon))
+      m_currentVolumeRow(-1)
 {
+    QFileIconProvider iconProvider;
+    m_folderIcon = iconProvider.icon(QFileIconProvider::Folder);
+    m_archiveIcon = iconProvider.icon(QFileInfo(QStringLiteral("archive.zip")));
+    m_imageIcon = iconProvider.icon(QFileInfo(QStringLiteral("image.png")));
+
+    const QIcon fileIcon = iconProvider.icon(QFileIconProvider::File);
+    if (m_folderIcon.isNull()) {
+        m_folderIcon = QApplication::style()->standardIcon(QStyle::SP_DirIcon);
+    }
+    if (m_archiveIcon.isNull()) {
+        m_archiveIcon = fileIcon;
+    }
+    if (m_imageIcon.isNull()) {
+        m_imageIcon = fileIcon;
+    }
 }
 
 QVariant FolderItemModel::headerData(int section, Qt::Orientation, int role) const
