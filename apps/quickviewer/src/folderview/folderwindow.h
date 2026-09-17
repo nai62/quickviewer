@@ -29,7 +29,7 @@ public:
     void resetSortMode();
     void resetPathLabel(int maxWidth);
     QString currentPath() { return m_currentPath; }
-    QString itemPath(const QModelIndex &index);
+    QString itemPath(const QModelIndex &index) const;
     void keyPressEvent(QKeyEvent *event);
     void handleCurrentFolderItemTriggered();
 
@@ -53,9 +53,13 @@ protected:
     void closeEvent(QCloseEvent *e);
 
 private:
+    void openFolderItem(const QModelIndex &index);
+    void setupHistoryButton(Ui::MainWindow *uiMain);
+
     Ui::FolderWindow *ui;
     QMenu *m_sortModeMenu;
     QMenu *m_itemContextMenu;
+    QToolButton *m_historyButton;
     QString m_currentPath;
     QList<QvFolderItem> m_volumes;
     FolderItemModel m_itemModel;

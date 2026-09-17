@@ -7,41 +7,79 @@
 #include "models/volume.h"
 #include "models/qvapplication.h"
 
-FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *)
+namespace {
+QIcon clockIcon(const QPalette &palette)
+{
+    QPixmap pixmap(24, 24);
+    pixmap.fill(Qt::transparent);
+
+    QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
+    QPen pen(palette.color(QPalette::ButtonText));
+    pen.setWidthF(1.8);
+    painter.setPen(pen);
+    painter.drawEllipse(QRectF(3.5, 3.5, 17.0, 17.0));
+    painter.drawLine(QPointF(12.0, 12.0), QPointF(12.0, 7.0));
+    painter.drawLine(QPointF(12.0, 12.0), QPointF(16.0, 14.0));
+    return QIcon(pixmap);
+}
+}
+
+FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
     : QWidget(parent),
       ui(new Ui::FolderWindow),
       m_sortModeMenu(nullptr),
       m_itemContextMenu(nullptr),
+      m_historyButton(nullptr),
       m_itemModel(this),
       m_itemDelegate(parent, this)
 {
     ui->setupUi(this);
-    connect(qApp->languageSelector(), &LanguageManager::languageChanged, this, [this](const QString &) {
-        ui->retranslateUi(this);
-        resetSortMode();
-        if (m_volumes.size() == 1 && m_volumes.first().type == QvFolderItem::NoItems) {
-            m_volumes.first().name = tr("No folders or archives found.", "Display when there is no display item in Folder Window");
-            m_itemModel.setVolumes(&m_volumes);
-        }
-    });
 
 #ifdef Q_OS_MACOS
     ui->menuBar->setNativeMenuBar(false);
 #endif
 
+    ui->label->hide();
+    ui->frame->setStyleSheet(QString());
+    ui->folderView->setRootIsDecorated(false);
+    ui->folderView->setIndentation(0);
+    ui->folderView->setMouseTracking(true);
     ui->folderView->installEventFilter(this);
 
     // folderView
     ui->folderView->setModel(&m_itemModel);
     ui->folderView->setItemDelegate(&m_itemDelegate);
-
-    resetSortMode();
+    QObject::disconnect(ui->folderView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(handleFolderViewItemDoubleClicked(QModelIndex)));
 
     // menus
     ui->menuBar->removeAction(ui->menuSort->menuAction());
     m_sortModeMenu = ui->menuSort;
     ui->menuBar->removeAction(ui->menuItemContext->menuAction());
     m_itemContextMenu = ui->menuItemContext;
+
+    setupHistoryButton(uiMain);
+
+    QFont sortFont = ui->sortModeButton->font();
+    sortFont.setBold(false);
+    sortFont.setUnderline(false);
+    ui->sortModeButton->setFont(sortFont);
+    ui->horizontalLayout->removeWidget(ui->sortModeButton);
+    ui->horizontalLayout->addWidget(m_historyButton);
+    ui->horizontalLayout->addWidget(ui->sortModeButton);
+
+    resetSortMode();
+
+    connect(qApp->languageSelector(), &LanguageManager::languageChanged, this, [this](const QString &) {
+        ui->retranslateUi(this);
+        ui->label->hide();
+        m_historyButton->setText(tr("History"));
+        resetSortMode();
+        if (m_volumes.size() == 1 && m_volumes.first().type == QvFolderItem::NoItems) {
+            m_volumes.first().name = tr("No folders or archives found.", "Display when there is no display item in Folder Window");
+            m_itemModel.setVolumes(&m_volumes);
+        }
+    });
 
     // Freeze the panel's effective minimum before a path or folder entries
     // are loaded. The constraint represents the controls needed by the UI,
@@ -58,6 +96,34 @@ FolderWindow::~FolderWindow()
         delete m_itemContextMenu;
     }
     delete ui;
+}
+
+void FolderWindow::setupHistoryButton(Ui::MainWindow *uiMain)
+{
+    m_historyButton = new QToolButton(ui->frame);
+    m_historyButton->setText(tr("History"));
+    m_historyButton->setToolTip(tr("Open history"));
+    m_historyButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    m_historyButton->setPopupMode(QToolButton::InstantPopup);
+    m_historyButton->setAutoRaise(true);
+
+    QIcon historyIcon = QIcon::fromTheme(QStringLiteral("view-history"));
+    if (historyIcon.isNull()) {
+        historyIcon = QIcon::fromTheme(QStringLiteral("document-open-recent"));
+    }
+    if (historyIcon.isNull()) {
+        historyIcon = QIcon::fromTheme(QStringLiteral("preferences-system-time"));
+    }
+    if (historyIcon.isNull()) {
+        historyIcon = clockIcon(palette());
+    }
+    m_historyButton->setIcon(historyIcon);
+
+    if (uiMain) {
+        m_historyButton->setMenu(uiMain->menuHistory);
+    } else {
+        m_historyButton->setEnabled(false);
+    }
 }
 
 void FolderWindow::setAsToplevelWindow()
@@ -151,12 +217,15 @@ static bool filenameLessThan(const QvFolderItem &lhs, const QvFolderItem &rhs)
     return IFileLoader::caseInsensitiveLessThan(lhs.name, rhs.name);
 }
 
-static bool updatedAtLessThan(const QvFolderItem &lhs, const QvFolderItem &rhs)
+static bool updatedAtGreaterThan(const QvFolderItem &lhs, const QvFolderItem &rhs)
 {
+    if (lhs.updated_at != rhs.updated_at) {
+        return lhs.updated_at > rhs.updated_at;
+    }
     if (lhs.type != rhs.type) {
         return lhs.type < rhs.type;
     }
-    return lhs.updated_at < rhs.updated_at;
+    return IFileLoader::caseInsensitiveLessThan(lhs.name, rhs.name);
 }
 
 //IFileLoader::caseInsensitiveLessThan
@@ -205,25 +274,22 @@ void FolderWindow::setFolderPath(QString path, bool showParent)
         }
 
         {
-            QStringList archives;
             foreach (const QString name, dir.entryList(QDir::NoDotAndDotDot | QDir::Files, QDir::Unsorted)) {
-                if (!IFileLoader::isArchiveFile(name) && !IFileLoader::isImageFile(name)) {
+                const bool isArchive = IFileLoader::isArchiveFile(name);
+                const bool isImage = IFileLoader::isImageFile(name);
+                if (!isArchive && !isImage) {
                     continue;
                 }
-                archives << name;
-            }
-            foreach (const QString &ar, archives) {
-                QFileInfo fi(dir.absoluteFilePath(ar));
-                m_volumes << QvFolderItem(ar, QvFolderItem::Archive, fi.lastModified());
+                QFileInfo fi(dir.absoluteFilePath(name));
+                const QvFolderItem::FileType type = isArchive ? QvFolderItem::Archive : QvFolderItem::Image;
+                m_volumes << QvFolderItem(name, type, fi.lastModified());
             }
         }
         qvEnums::FolderViewSort sortmode = qApp->FolderSortMode();
         if (sortmode == qvEnums::OrderByName) {
             std::sort(m_volumes.begin(), m_volumes.end(), filenameLessThan);
         } else {
-            typedef std::reverse_iterator<QList<QvFolderItem>::iterator> reverse_iterator;
-            //            qSort(m_volumes.rbegin(), m_volumes.rend(), updatedAtLessThan);
-            std::sort(reverse_iterator(m_volumes.end()), reverse_iterator(m_volumes.begin()), updatedAtLessThan);
+            std::sort(m_volumes.begin(), m_volumes.end(), updatedAtGreaterThan);
         }
     }
 
@@ -244,12 +310,16 @@ void FolderWindow::reset()
 
 void FolderWindow::resetSortMode()
 {
+    ui->actionOrderByName->setText(tr("Name"));
+    ui->actionOrderByUpdatedAt->setText(tr("Modified"));
+
     qvEnums::FolderViewSort sortMode = qApp->FolderSortMode();
     ui->actionOrderByName->setChecked(sortMode == qvEnums::OrderByName);
     ui->actionOrderByUpdatedAt->setChecked(sortMode == qvEnums::OrderByUpdatedAt);
-    ui->sortModeButton->setText(sortMode == qvEnums::OrderByName
+    ui->sortModeButton->setText((sortMode == qvEnums::OrderByName
                                     ? ui->actionOrderByName->text()
-                                    : ui->actionOrderByUpdatedAt->text());
+                                    : ui->actionOrderByUpdatedAt->text())
+                                + QStringLiteral(" \u25BE"));
 }
 
 void FolderWindow::resetPathLabel(int)
@@ -261,7 +331,7 @@ void FolderWindow::resetPathLabel(int)
     ui->pathLabel->setText(m_currentPath);
 }
 
-QString FolderWindow::itemPath(const QModelIndex &index)
+QString FolderWindow::itemPath(const QModelIndex &index) const
 {
     QDir dir(m_currentPath);
     QString filename = m_volumes[index.row()].name;
@@ -337,33 +407,19 @@ void FolderWindow::handleViewerSessionVolumeChanged(QString path)
     }
 }
 
-void FolderWindow::handleFolderViewItemSelected(const QModelIndex &index)
+void FolderWindow::openFolderItem(const QModelIndex &index)
 {
-    int row = index.row();
-    if (row >= m_volumes.size()) {
+    const int row = index.row();
+    if (!index.isValid() || row < 0 || row >= m_volumes.size()) {
         return;
     }
-    QvFolderItem &item = m_volumes[row];
-    if (item.type == QvFolderItem::NoItems) {
-        return;
-    }
-    QDir dir(m_currentPath);
-    QString subpath = dir.absoluteFilePath(item.name);
-    emit openVolume(subpath);
-}
 
-void FolderWindow::handleFolderViewItemDoubleClicked(const QModelIndex &index)
-{
-    int row = index.row();
-    if (row >= m_volumes.size()) {
-        return;
-    }
-    QvFolderItem &item = m_volumes[row];
+    const QvFolderItem &item = m_volumes[row];
     if (item.type == QvFolderItem::NoItems) {
         return;
     }
-    QDir dir(m_currentPath);
-    QString subpath = dir.absoluteFilePath(item.name);
+
+    const QString subpath = itemPath(index);
     emit openVolume(subpath);
 
     if (item.type == QvFolderItem::Dir) {
@@ -371,9 +427,19 @@ void FolderWindow::handleFolderViewItemDoubleClicked(const QModelIndex &index)
     }
 }
 
+void FolderWindow::handleFolderViewItemSelected(const QModelIndex &index)
+{
+    openFolderItem(index);
+}
+
+void FolderWindow::handleFolderViewItemDoubleClicked(const QModelIndex &index)
+{
+    openFolderItem(index);
+}
+
 void FolderWindow::handleCurrentFolderItemTriggered()
 {
-    handleFolderViewItemDoubleClicked(ui->folderView->currentIndex());
+    openFolderItem(ui->folderView->currentIndex());
 }
 
 void FolderWindow::handleSortModeButtonClicked()
