@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 env:
-  QT_VERSION: "6.10.3"
+  QT_VERSION: "6.11.2"
   QT_ARCH: "win64_msvc2022_64"
 
 jobs:
@@ -30,6 +30,7 @@ jobs:
           arch: ${{ env.QT_ARCH }}
           modules: "qtimageformats"
           archives: "qtbase qtsvg qttools"
+          aqtsource: "git+https://github.com/miurahr/aqtinstall.git@8c3695d4a4e1ceabf6a74dc6c79681656dc6b74b"
           dir: 'C:\Qt'
           cache: true
 
