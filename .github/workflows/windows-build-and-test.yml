@@ -1,0 +1,248 @@
+name: Windows build and tests
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  QT_VERSION: "6.11.2"
+  QT_ARCH: "win64_msvc2022_64"
+
+jobs:
+  release-build:
+    name: Release build (MSVC 2022)
+    runs-on: windows-2022
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: windows
+          target: desktop
+          arch: ${{ env.QT_ARCH }}
+          modules: "qtimageformats"
+          archives: "qtbase qtsvg qttools"
+          aqtsource: "git+https://github.com/miurahr/aqtinstall.git@8c3695d4a4e1ceabf6a74dc6c79681656dc6b74b"
+          dir: 'C:\Qt'
+          cache: true
+
+      - name: Set up MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Set up Rust
+        shell: pwsh
+        run: |
+          rustup toolchain install 1.87.0 --profile minimal
+          rustup default 1.87.0
+          rustc --version
+
+      - name: Install jom
+        shell: pwsh
+        run: choco install jom -y --no-progress
+
+      - name: Configure release build
+        shell: cmd
+        run: |
+          mkdir build-release
+          cd build-release
+          qmake -r ..\QVproject.pro CONFIG+=release CONFIG-=debug CONFIG-=debug_and_release CONFIG-=debug_and_release_target
+
+      - name: Build release
+        shell: cmd
+        working-directory: build-release
+        run: jom /f Makefile
+
+      # Guard against accidentally linking the file-association entry point into
+      # QuickViewer.exe. The real application imports CreateNamedPipeW.
+      - name: Verify QuickViewer.exe entry point
+        shell: cmd
+        working-directory: build-release
+        run: dumpbin /nologo /imports bin\QuickViewer.exe | findstr /C:"CreateNamedPipeW"
+
+  debug-build-and-tests:
+    name: Debug build and tests (MSVC 2022)
+    runs-on: windows-2022
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      # The legacy MBCS ZIP fixtures contain CP932 file names without a
+      # Unicode path field. Match the Japanese Windows environment in which
+      # those archives are expected to be decoded.
+      - name: Set Japanese system locale
+        shell: powershell
+        run: |
+          Set-WinSystemLocale -SystemLocale ja-JP
+          Set-Culture -CultureInfo ja-JP
+
+      - name: Check out HEIF image plug-in
+        uses: actions/checkout@v7
+        with:
+          repository: novomesk/qt-heic-image-plugin
+          ref: 16e740ae05dd59f8f63330225c53ef657a854e1d
+          path: qt-heic-image-plugin
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: windows
+          target: desktop
+          arch: ${{ env.QT_ARCH }}
+          modules: "qtimageformats"
+          archives: "qtbase qtsvg qttools"
+          aqtsource: "git+https://github.com/miurahr/aqtinstall.git@8c3695d4a4e1ceabf6a74dc6c79681656dc6b74b"
+          dir: 'C:\Qt'
+          cache: true
+
+      - name: Set up MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Set up Rust
+        shell: pwsh
+        run: |
+          rustup toolchain install 1.87.0 --profile minimal
+          rustup default 1.87.0
+          rustc --version
+
+      - name: Install jom
+        shell: pwsh
+        run: choco install jom -y --no-progress
+
+      - name: Install HEIF build dependencies
+        shell: pwsh
+        run: |
+          $vcpkg = Join-Path $env:VCPKG_INSTALLATION_ROOT "vcpkg.exe"
+          if (-not (Test-Path $vcpkg)) {
+            throw "vcpkg.exe was not found at $vcpkg"
+          }
+          & $vcpkg install "libheif[core]:x64-windows"
+          if ($LASTEXITCODE -ne 0) {
+            throw "vcpkg failed with exit code $LASTEXITCODE"
+          }
+
+      - name: Build HEIF image plug-in
+        shell: pwsh
+        run: |
+          $vcpkgRoot = (Join-Path $env:VCPKG_INSTALLATION_ROOT "installed\x64-windows") -replace '\\', '/'
+          @"
+          TARGET = kimg_heif6
+          INCLUDEPATH += $vcpkgRoot/include
+          HEADERS += src/heif_p.h src/util_p.h
+          SOURCES += src/heif.cpp
+          OTHER_FILES += src/heif.json
+          LIBS += $vcpkgRoot/lib/heif.lib
+          TEMPLATE = lib
+          CONFIG += debug skip_target_version_ext c++17 warn_on plugin
+          CONFIG -= release separate_debug_info debug_and_release force_debug_info
+          "@ | Set-Content -Encoding ascii "qt-heic-image-plugin\qt-heic-image-plugin-ci.pro"
+
+          Push-Location qt-heic-image-plugin
+          try {
+            qmake qt-heic-image-plugin-ci.pro
+            if ($LASTEXITCODE -ne 0) {
+              throw "qmake failed with exit code $LASTEXITCODE"
+            }
+            jom
+            if ($LASTEXITCODE -ne 0) {
+              throw "jom failed with exit code $LASTEXITCODE"
+            }
+          } finally {
+            Pop-Location
+          }
+
+      - name: Configure debug build
+        shell: cmd
+        run: |
+          mkdir build-debug
+          cd build-debug
+          qmake -r ..\QVproject.pro CONFIG+=debug CONFIG-=release CONFIG-=debug_and_release CONFIG-=debug_and_release_target
+
+      - name: Build debug
+        shell: cmd
+        working-directory: build-debug
+        run: jom /f Makefile
+
+      - name: Stage HEIF image plug-in
+        shell: pwsh
+        run: |
+          $libDir = (Resolve-Path ".\build-debug\lib").Path
+          $pluginDir = Join-Path $libDir "imageformats"
+          New-Item -ItemType Directory -Force $pluginDir | Out-Null
+
+          $plugin = Get-ChildItem ".\qt-heic-image-plugin" -Filter "kimg_heif6.dll" -Recurse |
+            Select-Object -First 1
+          if (-not $plugin) {
+            throw "kimg_heif6.dll was not produced"
+          }
+
+          Copy-Item $plugin.FullName $pluginDir -Force
+
+          $runtimeDir = Join-Path $env:VCPKG_INSTALLATION_ROOT "installed\x64-windows\bin"
+          $runtimeDlls = Get-ChildItem $runtimeDir -Filter "*.dll"
+          if (-not $runtimeDlls) {
+            throw "No libheif runtime DLLs were found in $runtimeDir"
+          }
+          Copy-Item $runtimeDlls.FullName $libDir -Force
+
+      - name: Run debug tests
+        shell: pwsh
+        run: |
+          $libDir = (Resolve-Path ".\build-debug\lib").Path
+          $resultDir = Join-Path (Resolve-Path ".\build-debug").Path "test-results"
+          New-Item -ItemType Directory -Force $resultDir | Out-Null
+          $env:PATH = "$libDir;$env:PATH"
+          $tests = @(
+            "tst_prefetchplannertest.exe",
+            "tst_asynccachetest.exe",
+            "tst_latestresultdispatchertest.exe",
+            "tst_fileloadertest.exe",
+            "tst_svgloadertest.exe",
+            "tst_viewernavigationtest.exe",
+            "tst_windowstartuptest.exe"
+          )
+          $failed = @()
+
+          foreach ($test in $tests) {
+            $exe = Join-Path $libDir $test
+            $resultFile = Join-Path $resultDir "$([IO.Path]::GetFileNameWithoutExtension($test)).txt"
+            Write-Host "::group::$test"
+            if (-not (Test-Path $exe)) {
+              Write-Host "::error::Missing test executable: $exe"
+              $failed += "$test (missing)"
+              Write-Host "::endgroup::"
+              continue
+            }
+
+            & $exe -v1 -o "$resultFile,txt"
+            $exitCode = $LASTEXITCODE
+            if (Test-Path $resultFile) {
+              Get-Content $resultFile
+            }
+            Write-Host "::endgroup::"
+            if ($exitCode -ne 0) {
+              $failed += "$test (exit $exitCode)"
+            }
+          }
+
+          if ($failed.Count -ne 0) {
+            Write-Host "::error::Failed tests: $($failed -join ', ')"
+            exit 1
+          }
