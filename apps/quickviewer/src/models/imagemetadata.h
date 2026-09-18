@@ -1,26 +1,26 @@
-#ifndef QVIMAGEMETADATA_H
-#define QVIMAGEMETADATA_H
+#ifndef IMAGEMETADATA_H
+#define IMAGEMETADATA_H
 
 #include <QtCore>
 
 class Volume;
 
 /**
- * @brief The QvImageMetadata class
+ * @brief The ImageMetadata class
  *
  * This class holds various attributes of image files, such as file names and file sizes,
  * and provides a function to retrieve them when necessary.
  */
-class QvImageMetadata : QObject
+class ImageMetadata : QObject
 {
     Q_OBJECT
 public:
-    QvImageMetadata(Volume *volume, QString filename);
-    QvImageMetadata(const QvImageMetadata &rhs)
+    ImageMetadata(Volume *volume, QString filename);
+    ImageMetadata(const ImageMetadata &rhs)
     {
         *this = rhs;
     }
-    QvImageMetadata &operator=(const QvImageMetadata &rhs)
+    ImageMetadata &operator=(const ImageMetadata &rhs)
     {
         m_volume = rhs.m_volume;
         m_filename = rhs.m_filename;
@@ -42,4 +42,4 @@ private:
     mutable QSize m_dimension;
 };
 
-#endif // QVIMAGEMETADATA_H
+#endif // IMAGEMETADATA_H

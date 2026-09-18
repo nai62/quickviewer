@@ -146,7 +146,7 @@ SOURCES += \
     ../../components/i18n/languagemanager.cpp \
     src/qnamedpipe/qnamedpipe.cpp \
     src/widgets/innerframe.cpp \
-    src/models/qvmovie.cpp \
+    src/models/movie.cpp \
     src/models/volume.cpp \
     src/models/volumeloader.cpp \
     src/models/volumelocation.cpp \
@@ -161,7 +161,7 @@ SOURCES += \
     src/retouchwindow.cpp \
     src/models/fileoperator.cpp \
     ../../components/i18n/texttranslator.cpp \
-    src/models/qvimagemetadata.cpp
+    src/models/imagemetadata.cpp
 
 
 HEADERS  += \
@@ -214,7 +214,7 @@ HEADERS  += \
     ../../components/i18n/languagemanager.h \
     src/qnamedpipe/qnamedpipe.h \
     src/widgets/innerframe.h \
-    src/models/qvmovie.h \
+    src/models/movie.h \
     src/models/volume.h \
     src/models/volumeloader.h \
     src/models/volumelocation.h \
@@ -229,7 +229,7 @@ HEADERS  += \
     src/startupprofiler.h \
     src/models/fileoperator.h \
     ../../components/i18n/texttranslator.h \
-    src/models/qvimagemetadata.h
+    src/models/imagemetadata.h
 
 win32 {
     INCLUDEPATH += ../../components/file-association

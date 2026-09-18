@@ -13,7 +13,7 @@
 #include "lrucache.h"
 #include "imagecontent.h"
 #include "imageloadmetrics.h"
-#include "qvimagemetadata.h"
+#include "imagemetadata.h"
 #include "prefetchplanner.h"
 
 class VolumeLoader;
@@ -142,7 +142,7 @@ private:
 
     QList<QString> m_pageNames;
     QList<QString> m_shuffledPageNames;
-    QList<QvImageMetadata> m_imageMetadataList;
+    QList<ImageMetadata> m_imageMetadataList;
     ImageContent m_initialImage;
     mutable LruCache<int, ImageLoadFuture> m_imageLoadCache;
     LruCache<int, ImageLoadFuture> m_previewLoadCache;

@@ -7,7 +7,7 @@
 #include <QtGui>
 
 #include "exif.h"
-#include "qvmovie.h"
+#include "movie.h"
 #include "qv_init.h"
 
 struct RetouchParameters
@@ -38,7 +38,7 @@ struct ImageContent
     QImage loadedImage;
     QImage retouchedImage;
     QImage resizedImage;
-    QvMovie movie;
+    Movie movie;
     QSize originalSize;
     QSize loadedImageSize;
     QString path;

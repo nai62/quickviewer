@@ -174,19 +174,19 @@ void Volume::handlePageListLoaded()
     emit pageListLoaded();
 }
 
-static bool fileSizeLessThan(const QvImageMetadata &m1, const QvImageMetadata &m2)
+static bool fileSizeLessThan(const ImageMetadata &m1, const ImageMetadata &m2)
 {
     return m1.getFileSize() < m2.getFileSize();
 }
-static bool fileSizeDescendingLessThan(const QvImageMetadata &m1, const QvImageMetadata &m2)
+static bool fileSizeDescendingLessThan(const ImageMetadata &m1, const ImageMetadata &m2)
 {
     return m1.getFileSize() > m2.getFileSize();
 }
-static bool modifiedTimeLessThan(const QvImageMetadata &m1, const QvImageMetadata &m2)
+static bool modifiedTimeLessThan(const ImageMetadata &m1, const ImageMetadata &m2)
 {
     return m1.getMTime() < m2.getMTime();
 }
-static bool modifiedTimeDescendingLessThan(const QvImageMetadata &m1, const QvImageMetadata &m2)
+static bool modifiedTimeDescendingLessThan(const ImageMetadata &m1, const ImageMetadata &m2)
 {
     return m1.getMTime() > m2.getMTime();
 }
@@ -201,7 +201,7 @@ void Volume::applyPageSort(qvEnums::ImageSortBy sortBy)
     m_imageMetadataList.clear();
     if (sortBy != qvEnums::SortByFileName && sortBy != qvEnums::SortByFileNameDescending) {
         foreach (const QString &fl, m_pageNames) {
-            m_imageMetadataList << QvImageMetadata(this, fl);
+            m_imageMetadataList << ImageMetadata(this, fl);
         }
     }
     switch (sortBy) {
@@ -1138,7 +1138,7 @@ static ImageContent loadWithSpecifiedFormat(
                 if (metrics) {
                     decodeTimer.start();
                 }
-                QvMovie movie = QvMovie(bytes, aformat.toUtf8());
+                Movie movie = Movie(bytes, aformat.toUtf8());
                 if (metrics) {
                     metrics->decoderBackend = QString("qmovie:%1").arg(QString::fromLatin1(reader.format()));
                     metrics->decodeNanoseconds += decodeTimer.nsecsElapsed();

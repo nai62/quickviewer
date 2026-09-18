@@ -46,8 +46,8 @@ SOURCES += \
     ../../apps/quickviewer/src/models/viewersession.cpp \
     ../../apps/quickviewer/src/models/prefetchplanner.cpp \
     ../../apps/quickviewer/src/models/qvapplication.cpp \
-    ../../apps/quickviewer/src/models/qvimagemetadata.cpp \
-    ../../apps/quickviewer/src/models/qvmovie.cpp \
+    ../../apps/quickviewer/src/models/imagemetadata.cpp \
+    ../../apps/quickviewer/src/models/movie.cpp \
     ../../apps/quickviewer/src/models/shadermanager.cpp \
     ../../apps/quickviewer/src/models/svgloader.cpp \
     ../../apps/quickviewer/src/startupprofiler.cpp \
@@ -82,8 +82,8 @@ HEADERS += \
     ../../apps/quickviewer/src/models/viewersession.h \
     ../../apps/quickviewer/src/models/prefetchplanner.h \
     ../../apps/quickviewer/src/models/qvapplication.h \
-    ../../apps/quickviewer/src/models/qvimagemetadata.h \
-    ../../apps/quickviewer/src/models/qvmovie.h \
+    ../../apps/quickviewer/src/models/imagemetadata.h \
+    ../../apps/quickviewer/src/models/movie.h \
     ../../apps/quickviewer/src/models/renderedpages.h \
     ../../apps/quickviewer/src/models/renderedpagemetrics.h \
     ../../apps/quickviewer/src/models/shadermanager.h \
