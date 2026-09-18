@@ -686,12 +686,17 @@ void ViewerSession::reloadVolumeAfterImageRemoval()
                                                         : currentPageIndex + 1;
         nextLocation = {volumePath, volume->pageNameAt(nextPageIndex)};
     }
-    m_volumeCache.invalidate(volumeCacheKey(volumePath));
+    invalidateVolumeCache(volumePath);
     m_savedPagePositions.remove(volume);
     m_state = EmptyViewerState{};
     if (!nextLocation.isContainer()) {
         openEntry(nextLocation);
     }
+}
+
+void ViewerSession::invalidateVolumeCache(const QString &containerPath)
+{
+    m_volumeCache.invalidate(volumeCacheKey(QDir::fromNativeSeparators(containerPath)));
 }
 
 CachedVolumeLoadResult ViewerSession::loadCachedVolume(const VolumeLocation &location, bool onlyCover)

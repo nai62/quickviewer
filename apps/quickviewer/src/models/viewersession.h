@@ -49,6 +49,10 @@ public:
     bool nextVolume();
     bool prevVolume();
     void reloadVolumeAfterImageRemoval();
+    /**
+     * Drops the cached listing of a container whose contents changed on disk.
+     */
+    void invalidateVolumeCache(const QString &containerPath);
 
     // Pages
     bool advanceSpread();

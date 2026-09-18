@@ -398,6 +398,40 @@ private slots:
         QVERIFY(loadStoredVolumeLocation(storedImage).isContainer());
     }
 
+    void invalidatingFolderCacheOpensRenamedFile()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 3; ++page) {
+            QImage image(16, 24, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 40, 255, 255));
+            QVERIFY(image.save(directory.filePath(QString("page-%1.bmp").arg(page))));
+        }
+
+        qApp->setOpenVolumeWithProgress(false);
+        qApp->setDualView(false);
+        ViewerSession session(nullptr);
+        ImageView view;
+        view.resize(320, 240);
+        view.setViewerSession(&session);
+        QVERIFY(session.openContainer(directory.path()));
+        QVERIFY(session.selectPage(1));
+        QCOMPARE(session.currentPageName(), QString("page-1.bmp"));
+
+        // Renaming can move the file to another position in the page order.
+        const QString renamedName = QStringLiteral("page-9.bmp");
+        const QString renamedPath = directory.filePath(renamedName);
+        QVERIFY(QFile::rename(directory.filePath(QString("page-1.bmp")), renamedPath));
+        session.invalidateVolumeCache(directory.path());
+        QVERIFY(session.openFileInContainer(renamedPath));
+
+        QTRY_COMPARE(session.stateKind(), ViewerStateKind::StandalonePreview);
+        session.notifyInitialImagePainted();
+        QTRY_COMPARE(session.stateKind(), ViewerStateKind::VolumeReady);
+        QCOMPARE(session.pageCount(), 3);
+        QCOMPARE(session.currentPageName(), renamedName);
+    }
+
     void removingDisplayedPageOpensItsNeighbour()
     {
         QTemporaryDir directory;

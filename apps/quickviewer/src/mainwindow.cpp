@@ -2106,11 +2106,12 @@ void MainWindow::handleRenameImageFileActionTriggered()
     }
     RenameDialog dialog(this, m_viewerSession.realVolumePath(), m_viewerSession.currentPageName());
     if (dialog.exec() == QDialog::Accepted) {
-        // The dialog hands over a file path; opening it as a container keeps the
-        // historical behavior. The stale cached listing of the containing
-        // folder is a known separate issue.
-        m_viewerSession.openContainer(
-            QDir(m_viewerSession.realVolumePath()).absoluteFilePath(dialog.newName()));
+        const QString folderPath = m_viewerSession.realVolumePath();
+        const QString renamedPath = QDir(folderPath).absoluteFilePath(dialog.newName());
+        // The dialog renamed the file on disk, so the cached listing of its
+        // folder is stale. Drop it and open the renamed file by name.
+        m_viewerSession.invalidateVolumeCache(folderPath);
+        openTarget(OpenTarget::fileInContainer(renamedPath));
     }
 }
 
