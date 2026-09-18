@@ -1371,7 +1371,6 @@
     <slot>handleFastBackwardActionTriggered()</slot>
     <slot>handleCopyFileActionTriggered()</slot>
     <slot>handleRotateActionTriggered()</slot>
-    <slot>handleShowSubfoldersActionTriggered(bool)</slot>
     <slot>handleDontEnlargeSmallImagesOnFittingActionTriggered(bool)</slot>
     <slot>handleSeparatePagesWhenWideImageActionTriggered(bool)</slot>
     <slot>handleLoupeToolActionTriggered(bool)</slot>
@@ -3078,6 +3077,7 @@
   <slot>handleMailAttachmentActionTriggered()</slot>
   <slot>handleCatalogIconLongTextActionTriggered(bool)</slot>
   <slot>handleShowFolderActionTriggered()</slot>
+  <slot>handleShowSubfoldersActionTriggered(bool)</slot>
   <slot>handleShaderCpuBicubicActionTriggered()</slot>
   <slot>handleOpenVolumeWithProgressActionTriggered(bool)</slot>
   <slot>handleShowReadProgressActionTriggered(bool)</slot>
