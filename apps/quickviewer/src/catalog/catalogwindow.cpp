@@ -361,7 +361,7 @@ void CatalogWindow::handleVolumeListItemDoubleClicked(const QModelIndex &index)
     if (row >= m_volumeSearch.size()) {
         return;
     }
-    emit openVolume(m_volumeSearch[row]->path);
+    emit openVolume(OpenTarget::container(m_volumeSearch[row]->path));
 
     // reset tag buttons as current book
     QList<TagRecord> tags = m_thumbManager->getTagsFromVolumeId(m_volumeSearch[row]->id);

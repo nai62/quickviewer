@@ -52,8 +52,6 @@ public:
         ImageDecodeMetrics *metrics = nullptr);
     static ImageContent loadImageFromFile(QString path, QSize pageSize, QSize decodeTargetSize = QSize(), bool loadDetailedMetadata = true);
     static ImageContent resizeImageForViewport(ImageContent content, QSize pageSize);
-    static QString FullPathToVolumePath(QString path);
-    static QString FullPathToSubFilePath(QString path);
 
     bool isArchive() const
     {
@@ -94,16 +92,6 @@ public:
             return "";
         }
         return QDir(loader->volumePath()).absoluteFilePath(m_pageNames[pageIndex]);
-    }
-    QString pagePathWithSeparatorAt(int pageIndex) const
-    {
-        const IFileLoader *loader = fileLoader();
-        if (!loader || pageIndex < 0 || pageIndex >= m_pageNames.size()) {
-            return "";
-        }
-        return QString("%1::%2")
-            .arg(QDir::fromNativeSeparators(loader->volumePath()))
-            .arg(m_pageNames[pageIndex]);
     }
     QString volumePath() const
     {

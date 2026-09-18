@@ -6,6 +6,7 @@
 #include "qv_init.h"
 #include "folderitemmodel.h"
 #include "folderitemdelegate.h"
+#include "models/volumelocation.h"
 
 namespace Ui {
 class FolderWindow;
@@ -45,7 +46,7 @@ public slots:
     void handleOrderByUpdatedAtActionTriggered();
 
 signals:
-    void openVolume(QString path);
+    void openVolume(const OpenTarget &target);
     void closed();
 
 protected:

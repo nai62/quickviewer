@@ -383,7 +383,7 @@ void FolderWindow::handleHomeButtonClicked()
 {
     const QString path = qApp->HomeFolderPath();
     setFolderPath(path, false);
-    emit openVolume(path);
+    emit openVolume(OpenTarget::container(path));
 }
 
 void FolderWindow::handleParentButtonClicked()
@@ -394,12 +394,12 @@ void FolderWindow::handleParentButtonClicked()
     QDir dir(m_currentPath);
     if (!dir.cdUp()) {
         setFolderPath("", false);
-        emit openVolume("");
+        emit openVolume(OpenTarget::container(QString()));
         return;
     }
     const QString parentPath = dir.absolutePath();
     setFolderPath(parentPath, false);
-    emit openVolume(parentPath);
+    emit openVolume(OpenTarget::container(parentPath));
 }
 
 void FolderWindow::handleReloadButtonClicked()
@@ -443,12 +443,14 @@ void FolderWindow::openFolderItem(const QModelIndex &index)
         return;
     }
 
-    if (m_volumes[row].type == QvFolderItem::NoItems) {
+    const QvFolderItem &item = m_volumes[row];
+    if (item.type == QvFolderItem::NoItems) {
         return;
     }
 
     const QString subpath = itemPath(index);
-    emit openVolume(subpath);
+    emit openVolume(item.type == QvFolderItem::Image ? OpenTarget::fileInContainer(subpath)
+                                                     : OpenTarget::container(subpath));
 }
 
 void FolderWindow::handleFolderViewItemSelected(const QModelIndex &index)

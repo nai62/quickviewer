@@ -3,6 +3,7 @@
 
 #include <QtWidgets>
 #include "models/volume.h"
+#include "models/volumelocation.h"
 #include "imageview.h"
 #include "imagestring.h"
 #include "languagemanager.h"
@@ -30,10 +31,17 @@ public:
     bool eventFilter(QObject *obj, QEvent *event) override;
 
     /**
-     * @brief loadVolume
+     * Opens a path supplied by the user or the operating system: the command
+     * line, drag & drop, the history menu, bookmarks and file dialogs. The
+     * intent is derived from the path itself.
+     *
      * @param allowSecondPage whether an adjacent page may be shown in dual view
      */
-    void loadVolume(QString path, bool allowSecondPage = false);
+    void openPath(QString path, bool allowSecondPage = false);
+    /**
+     * Opens the location described by target and keeps the folder view in sync.
+     */
+    void openTarget(const OpenTarget &target);
     void loadVolumeWithAssoc(QString path);
 
     void resetShortcutKeys();
@@ -103,7 +111,7 @@ public slots:
     // Folder
     void handleShowFolderActionTriggered();
     void handleFolderWindowClosed();
-    void handleFolderWindowOpenVolume(QString path);
+    void handleFolderWindowOpenVolume(const OpenTarget &target);
     void handleOpenVolumeWithProgressActionTriggered(bool checked);
     void handleShowReadProgressActionTriggered(bool checked);
     void handleSaveReadProgressActionTriggered(bool checked);
@@ -112,7 +120,7 @@ public slots:
     // Catalog
     void handleShowCatalogActionTriggered();
     void handleCatalogWindowClosed();
-    void handleCatalogWindowOpenVolume(QString path);
+    void handleCatalogWindowOpenVolume(const OpenTarget &target);
     void handleSearchTitleWithOptionsActionTriggered(bool checked);
     void handleCatalogTitleWithoutOptionsActionTriggered(bool checked);
     void handleCatalogViewListActionTriggered();
@@ -224,6 +232,7 @@ private:
 
     void setStatusMessage(StatusMessage message);
     void syncPageBar();
+    void openResolvedTarget(const OpenTarget &target, bool allowSecondPage);
     void saveVisibleFolderViewWidth();
     void loadStartupVolume();
     void revealStartupWindow();
@@ -289,7 +298,7 @@ public:
 
     bool changeFolderPath(QString path) override
     {
-        const QString volumePath = QDir::fromNativeSeparators(Volume::FullPathToVolumePath(path));
+        const QString volumePath = volumeLocationFromString(path).containerPath;
         if (m_lastArchiveOpenFailure == ArchiveOpenError::PasswordProtected && volumePath == m_lastArchiveOpenFailurePath) {
             clearArchiveOpenFailure();
             return true;

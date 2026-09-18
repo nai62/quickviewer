@@ -270,7 +270,9 @@ private slots:
         folder.handleFolderViewItemSelected(child);
 
         QCOMPARE(openVolumeSpy.size(), 1);
-        QCOMPARE(openVolumeSpy.first().first().toString(), childPath);
+        const OpenTarget target = openVolumeSpy.first().first().value<OpenTarget>();
+        QCOMPARE(target.intent, OpenIntent::Container);
+        QCOMPARE(target.location.containerPath, childPath);
         QCOMPARE(folder.currentPath(), originalPath);
     }
 
@@ -306,7 +308,7 @@ private slots:
         QVERIFY(image.save(imagePath));
 
         StartupWindow viewer;
-        viewer.loadVolume(directory.path());
+        viewer.openPath(directory.path());
         QCOMPARE(
             QDir::cleanPath(QDir::fromNativeSeparators(viewer.viewerSession()->currentPagePath())),
             QDir::cleanPath(QDir::fromNativeSeparators(imagePath)));
@@ -450,10 +452,10 @@ private slots:
         QSlider *pageSlider = viewer.findChild<QSlider *>(QStringLiteral("pageSlider"));
         QVERIFY(pageSlider);
 
-        viewer.loadVolume(validArchivePath);
+        viewer.openPath(validArchivePath);
         QVERIFY(pageSlider->isEnabled());
 
-        viewer.loadVolume(encryptedPath);
+        viewer.openPath(encryptedPath);
 
         QCOMPARE(
             viewer.imageView()->displayedMessage(),
@@ -475,7 +477,7 @@ private slots:
         QVERIFY(viewer.folderWindow() == nullptr);
         QVERIFY(!qApp->History().contains(encryptedPath));
 
-        viewer.loadVolume(validArchivePath);
+        viewer.openPath(validArchivePath);
         QVERIFY(viewer.imageView()->displayedMessage().isEmpty());
         QVERIFY(pageSlider->isEnabled());
     }
@@ -486,7 +488,7 @@ private slots:
         const QString archivePath = QString(FILELOADER_DATAPATH "7z/text.7z");
         viewer.createFolderWindow(true, QFileInfo(archivePath).absolutePath(), false);
 
-        viewer.loadVolume(archivePath);
+        viewer.openPath(archivePath);
 
         QTreeView *view = viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
         QVERIFY(view);
@@ -542,7 +544,7 @@ private slots:
         };
         QVERIFY(!archiveIsCurrent());
 
-        viewer.loadVolume(archivePath);
+        viewer.openPath(archivePath);
 
         QVERIFY(viewer.viewerSession()->initialImagePaintPending());
         QVERIFY(!archiveIsCurrent());
@@ -559,7 +561,7 @@ private slots:
         QVERIFY(directory.isValid());
         StartupWindow viewer;
 
-        viewer.loadVolume(directory.path());
+        viewer.openPath(directory.path());
 
         QCOMPARE(
             viewer.imageView()->displayedMessage(),
@@ -589,7 +591,7 @@ private slots:
         image.close();
         StartupWindow viewer;
 
-        viewer.loadVolume(imagePath);
+        viewer.openPath(imagePath);
 
         const QString expected = QStringLiteral("Cannot Display Image\n"
                                                 "The image could not be decoded.\n\n"
@@ -615,7 +617,7 @@ private slots:
         archive.close();
         StartupWindow viewer;
 
-        viewer.loadVolume(archivePath);
+        viewer.openPath(archivePath);
 
         const QString message = viewer.imageView()->displayedMessage();
         QVERIFY(message.startsWith(QStringLiteral("Cannot Open Archive\n")));
@@ -642,7 +644,7 @@ private slots:
 
         StartupWindow viewer;
 
-        viewer.loadVolume(firstPath);
+        viewer.openPath(firstPath);
         QVERIFY(viewer.viewerSession()->nextVolume());
         QVERIFY(viewer.imageView()->displayedMessage().isEmpty());
 
@@ -660,6 +662,7 @@ int main(int argc, char **argv)
     int applicationArgc = 1;
     char *applicationArgv[] = {argv[0], nullptr};
     QVApplication application(applicationArgc, applicationArgv);
+    qRegisterMetaType<OpenTarget>("OpenTarget");
     WindowStartupTest test;
     return QTest::qExec(&test, argc, argv);
 }

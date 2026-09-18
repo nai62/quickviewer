@@ -11,6 +11,7 @@
 #include "viewerloadstatus.h"
 #include "volume.h"
 #include "volumecache.h"
+#include "volumelocation.h"
 
 class Volume;
 
@@ -32,8 +33,19 @@ public:
     ViewerSession(QObject *parent);
 
     // Volumes
-    bool loadVolume(QString path, bool coverOnly = false);
-    bool loadVolumeWithFile(QString path, bool allowSecondPage = false);
+    /**
+     * Opens a folder or an archive as a volume.
+     */
+    bool openContainer(const QString &containerPath, bool coverOnly = false);
+    /**
+     * Opens an entry the caller knows is inside the container.
+     */
+    bool openEntry(const VolumeLocation &location, bool coverOnly = false);
+    /**
+     * Opens a plain image file and, once it has been painted, the volume that
+     * contains it.
+     */
+    bool openFileInContainer(const QString &filePath, bool allowSecondPage = false);
     bool nextVolume();
     bool prevVolume();
     void reloadVolumeAfterImageRemoval();
@@ -76,16 +88,6 @@ public:
             return "";
         }
         return QDir::toNativeSeparators(volume->pagePathForName(m_visiblePages[0].path));
-    }
-    QString nextPagePathAfterDeleted() const
-    {
-        Volume *volume = activeVolume();
-        if (!volume || volume->isArchive() || volume->pageCount() <= 1) {
-            return "";
-        }
-        const int currentPageIndex = m_pageNavigator.currentPageIndex();
-        const int index = volume->pageCount() - 1 == currentPageIndex ? currentPageIndex - 1 : currentPageIndex + 1;
-        return QDir::toNativeSeparators(volume->pagePathAt(index));
     }
     QString currentPageName() const { return m_visiblePages.isEmpty() ? QString() : m_visiblePages[0].path; }
 
@@ -170,12 +172,13 @@ public slots:
     void handleSlideShowStopped();
 
 private:
+    bool openLocation(const VolumeLocation &location, bool coverOnly);
     void startContainingVolumeLoad(const QString &normalizedImagePath,
                                    const QString &basePath,
                                    const QString &subfileName);
     void finishInitialImageDisplay(quint64 generation);
-    CachedVolumeLoadResult loadCachedVolume(QString path, bool onlyCover);
-    void prefetchVolume(QString path);
+    CachedVolumeLoadResult loadCachedVolume(const VolumeLocation &location, bool onlyCover);
+    void prefetchVolume(const QString &containerPath);
     VolumeHandle activeVolumeHandle() const;
     Volume *activeVolume() const;
     void setVolumeReady(VolumeHandle volume);

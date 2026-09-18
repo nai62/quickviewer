@@ -426,14 +426,14 @@ void MainWindow::loadStartupVolume()
     StartupProfiler::mark("startup-volume.begin");
     // when drop a folder/archive icon to this app
     if (qApp->arguments().length() >= 2) {
-        loadVolume(qApp->arguments().last());
+        openPath(qApp->arguments().last());
         setWindowTop(!qApp->TopWindowWhenRunWithAssoc());
         return;
     }
     // auto restore
     if (qApp->AutoLoaded() && !qApp->LastViewPath().isEmpty()) {
         QString bookmark = qApp->LastViewPath();
-        loadVolume(bookmark, true);
+        openPath(bookmark, true);
         makeBookmarkMenu();
     }
 }
@@ -506,7 +506,7 @@ void MainWindow::dropEvent(QDropEvent *e)
         QList<QUrl> urlList = e->mimeData()->urls();
         for (int i = 0; i < 1; i++) {
             QUrl url = urlList[i];
-            loadVolume(QDir::toNativeSeparators(url.toLocalFile()));
+            openPath(QDir::toNativeSeparators(url.toLocalFile()));
             if (qApp->TopWindowWhenDropped()) {
                 setWindowTop(false);
             }
@@ -708,30 +708,47 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     return QObject::eventFilter(obj, event);
 }
 
-void MainWindow::loadVolume(QString path, bool allowSecondPage)
+void MainWindow::openPath(QString path, bool allowSecondPage)
 {
-    QStringList seps = path.split("::");
-    const QString requestedPath = QDir::fromNativeSeparators(Volume::FullPathToVolumePath(path));
+    openResolvedTarget(OpenTarget::forPath(path), allowSecondPage);
+}
+
+void MainWindow::openTarget(const OpenTarget &target)
+{
+    openResolvedTarget(target, false);
+}
+
+void MainWindow::openResolvedTarget(const OpenTarget &target, bool allowSecondPage)
+{
+    const VolumeLocation &location = target.location;
+    const bool isFileTarget = target.intent == OpenIntent::FileInContainer;
+    const QString filePath =
+        isFileTarget ? QDir(location.containerPath).absoluteFilePath(location.entryName) : QString();
+    const QString requestedPath =
+        QDir::fromNativeSeparators(isFileTarget ? filePath : location.containerPath);
     const bool requestedArchive = IFileLoader::isArchiveFile(requestedPath);
     m_folderViewRequestedPath = requestedPath;
     if (m_folderWindow && !requestedArchive) {
         m_folderWindow->handleViewerSessionVolumeChanged(m_folderViewRequestedPath);
     }
-    if (!IFileLoader::isArchiveFile(seps[0]) && IFileLoader::isImageFile(path)) {
-        m_viewerSession.loadVolumeWithFile(path, allowSecondPage);
-        changeFolderPath(QFileInfo(QDir::fromNativeSeparators(path)).absolutePath());
+    if (isFileTarget) {
+        m_viewerSession.openFileInContainer(filePath, allowSecondPage);
+        changeFolderPath(QFileInfo(requestedPath).absolutePath());
         return;
     }
-    if (m_viewerSession.loadVolume(path)) {
+    const bool opened = target.intent == OpenIntent::Entry
+                            ? m_viewerSession.openEntry(location)
+                            : m_viewerSession.openContainer(location.containerPath);
+    if (opened) {
         changeFolderPath(m_viewerSession.volumePath());
         return;
     }
 
-    if (changeFolderPath(path)) {
+    if (changeFolderPath(requestedPath)) {
         return;
     }
 
-    createFolderWindow(true, path);
+    createFolderWindow(true, requestedPath);
 }
 
 void MainWindow::makeHistoryMenu()
@@ -1028,9 +1045,9 @@ bool MainWindow::isFolderSearching()
     return true;
 }
 
-void MainWindow::handleFolderWindowOpenVolume(QString path)
+void MainWindow::handleFolderWindowOpenVolume(const OpenTarget &target)
 {
-    loadVolume(path);
+    openTarget(target);
 }
 
 void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
@@ -1069,7 +1086,7 @@ void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
             m_folderWindow->setFolderPath(oldpath, false);
         }
         connect(m_folderWindow, SIGNAL(closed()), this, SLOT(handleFolderWindowClosed()));
-        connect(m_folderWindow, SIGNAL(openVolume(QString)), this, SLOT(handleFolderWindowOpenVolume(QString)));
+        connect(m_folderWindow, &FolderWindow::openVolume, this, &MainWindow::handleFolderWindowOpenVolume);
         if (!replaceStartupPanelPlaceholder(m_folderWindow)) {
             ui->catalogSplitter->insertWidget(0, m_folderWindow);
         }
@@ -1094,7 +1111,7 @@ void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
             m_folderWindow->setFolderPath(oldpath, false);
         }
         connect(m_folderWindow, SIGNAL(closed()), this, SLOT(handleFolderWindowClosed()));
-        connect(m_folderWindow, SIGNAL(openVolume(QString)), this, SLOT(handleFolderWindowOpenVolume(QString)));
+        connect(m_folderWindow, &FolderWindow::openVolume, this, &MainWindow::handleFolderWindowOpenVolume);
         m_folderWindow->show();
     }
     updateFolderViewCurrentItem();
@@ -1217,7 +1234,7 @@ void MainWindow::createCatalogWindow(bool docked)
         m_catalogWindow = new CatalogWindow(nullptr, ui);
         m_catalogWindow->setThumbnailManager(m_thumbManager);
         connect(m_catalogWindow, SIGNAL(closed()), this, SLOT(handleCatalogWindowClosed()));
-        connect(m_catalogWindow, SIGNAL(openVolume(QString)), this, SLOT(handleCatalogWindowOpenVolume(QString)));
+        connect(m_catalogWindow, &CatalogWindow::openVolume, this, &MainWindow::handleCatalogWindowOpenVolume);
         if (!replaceStartupPanelPlaceholder(m_catalogWindow)) {
             ui->catalogSplitter->insertWidget(0, m_catalogWindow);
         }
@@ -1231,7 +1248,7 @@ void MainWindow::createCatalogWindow(bool docked)
         m_catalogWindow = new CatalogWindow(nullptr, ui);
         m_catalogWindow->setThumbnailManager(m_thumbManager);
         connect(m_catalogWindow, SIGNAL(closed()), this, SLOT(handleCatalogWindowClosed()));
-        connect(m_catalogWindow, SIGNAL(openVolume(QString)), this, SLOT(handleCatalogWindowOpenVolume(QString)));
+        connect(m_catalogWindow, &CatalogWindow::openVolume, this, &MainWindow::handleCatalogWindowOpenVolume);
         m_catalogWindow->setAsToplevelWindow();
         QRect self = geometry();
         m_catalogWindow->setGeometry(self.left() - 100, self.top() + 100, self.width(), self.height());
@@ -1615,7 +1632,7 @@ void MainWindow::handleAutoLoadedActionTriggered(bool checked)
 void MainWindow::handleHistoryMenuTriggered(QAction *action)
 {
     //qDebug() << action;
-    loadVolume(action->text().mid(4));
+    openPath(action->text().mid(4));
 }
 
 void MainWindow::resizeEvent(QResizeEvent *e)
@@ -1765,15 +1782,15 @@ void MainWindow::resetVolumeCaption()
     setWindowTitle(m_volumeCaption);
 }
 
-void MainWindow::handleCatalogWindowOpenVolume(QString path)
+void MainWindow::handleCatalogWindowOpenVolume(const OpenTarget &target)
 {
-    loadVolume(path);
+    openTarget(target);
     setWindowTop(false);
 }
 
 void MainWindow::loadVolumeWithAssoc(QString path)
 {
-    loadVolume(path);
+    openPath(path);
     setWindowTop(!qApp->TopWindowWhenRunWithAssoc());
 }
 
@@ -1880,7 +1897,7 @@ void MainWindow::handleOpenFolderActionTriggered()
         //        QDir dir(folder);
         //        if(dir.exists())
         //            loadVolume(folder);
-        loadVolume(folder);
+        openPath(folder);
         qApp->setLastOpenedFolderPath(folder);
     }
 }
@@ -2078,7 +2095,11 @@ void MainWindow::handleRenameImageFileActionTriggered()
     }
     RenameDialog dialog(this, m_viewerSession.realVolumePath(), m_viewerSession.currentPageName());
     if (dialog.exec() == QDialog::Accepted) {
-        m_viewerSession.loadVolume(QDir(m_viewerSession.realVolumePath()).absoluteFilePath(dialog.newName()));
+        // The dialog hands over a file path; opening it as a container keeps the
+        // historical behavior. The stale cached listing of the containing
+        // folder is a known separate issue.
+        m_viewerSession.openContainer(
+            QDir(m_viewerSession.realVolumePath()).absoluteFilePath(dialog.newName()));
     }
 }
 
@@ -2316,8 +2337,14 @@ void MainWindow::handleLoadBookmarkMenuTriggered(QAction *action)
     if (action == ui->actionClearBookmarks) {
         return;
     }
-    QString path = action->data().toString();
-    m_viewerSession.loadVolume(QDir::toNativeSeparators(path));
+    // Bookmarks store the page path, which still uses the legacy
+    // "containerPath::entryName" form for archive pages.
+    const VolumeLocation location = volumeLocationFromString(action->data().toString());
+    if (location.isContainer()) {
+        m_viewerSession.openContainer(location.containerPath);
+    } else {
+        m_viewerSession.openEntry(location);
+    }
 }
 
 void MainWindow::handleSortByFileNameActionTriggered()

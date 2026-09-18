@@ -445,22 +445,6 @@ void Volume::moveToThread(QThread *targetThread)
     m_watcher.moveToThread(targetThread);
 }
 
-QString Volume::FullPathToVolumePath(QString path)
-{
-    if (!path.contains("::")) {
-        return path;
-    }
-    return path.left(path.indexOf("::"));
-}
-
-QString Volume::FullPathToSubFilePath(QString path)
-{
-    if (!path.contains("::")) {
-        return "";
-    }
-    return path.mid(path.indexOf("::") + 2);
-}
-
 static int parseJpegOrientation(const QByteArray &bytes)
 {
     const auto *data = reinterpret_cast<const unsigned char *>(bytes.constData());
