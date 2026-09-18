@@ -4,7 +4,6 @@
 FolderItemModel::FolderItemModel(QObject *parent)
     : QAbstractItemModel(parent),
       m_searchedVolumes(nullptr),
-      m_columns(1),
       m_currentVolumeRow(-1)
 {
     StartupProfiler::mark("folder-item-icons.begin");
@@ -26,50 +25,26 @@ FolderItemModel::FolderItemModel(QObject *parent)
     StartupProfiler::mark("folder-item-icons.end");
 }
 
-QVariant FolderItemModel::headerData(int section, Qt::Orientation, int role) const
-{
-    switch (role) {
-    case Qt::DisplayRole:
-        switch (section) {
-        case 0:
-            return tr("Name", "Title of the column in the folder list when displaying as an independent Window in Folder Window");
-        case 1:
-            return tr("Modified", "Title of the column in the folder list when displaying as an independent Window in Folder Window");
-        }
-        break;
-    }
-    return QVariant();
-}
-
 QVariant FolderItemModel::data(const QModelIndex &index, int role) const
 {
-    int row = index.row();
-    int column = index.column();
     if (!m_searchedVolumes) {
         return QVariant();
     }
+    const int row = index.row();
     const FolderItem &fi = m_searchedVolumes->at(row);
     switch (role) {
     case Qt::DisplayRole:
-        switch (column) {
-        case 0:
-            return fi.name;
-        case 1:
-            return fi.updated_at;
-        }
-        break;
+        return fi.name;
     case Qt::DecorationRole:
-        if (column == 0) {
-            switch (fi.type) {
-            case FolderItem::Dir:
-                return m_folderIcon;
-            case FolderItem::Archive:
-                return m_archiveIcon;
-            case FolderItem::Image:
-                return m_imageIcon;
-            case FolderItem::NoItems:
-                break;
-            }
+        switch (fi.type) {
+        case FolderItem::Dir:
+            return m_folderIcon;
+        case FolderItem::Archive:
+            return m_archiveIcon;
+        case FolderItem::Image:
+            return m_imageIcon;
+        case FolderItem::NoItems:
+            break;
         }
         break;
     case CurrentVolumeRole:
@@ -88,7 +63,7 @@ int FolderItemModel::rowCount(const QModelIndex &parent) const
 
 int FolderItemModel::columnCount(const QModelIndex &) const
 {
-    return m_columns;
+    return 1;
 }
 
 QModelIndex FolderItemModel::index(int row, int column, const QModelIndex &) const
@@ -126,15 +101,9 @@ void FolderItemModel::setCurrentVolumeRow(int row)
     const int previousRow = m_currentVolumeRow;
     m_currentVolumeRow = row;
     if (previousRow >= 0) {
-        emit dataChanged(
-            index(previousRow, 0),
-            index(previousRow, m_columns - 1),
-            {CurrentVolumeRole});
+        emit dataChanged(index(previousRow, 0), index(previousRow, 0), {CurrentVolumeRole});
     }
     if (m_currentVolumeRow >= 0) {
-        emit dataChanged(
-            index(m_currentVolumeRow, 0),
-            index(m_currentVolumeRow, m_columns - 1),
-            {CurrentVolumeRole});
+        emit dataChanged(index(m_currentVolumeRow, 0), index(m_currentVolumeRow, 0), {CurrentVolumeRole});
     }
 }

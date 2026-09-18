@@ -1139,7 +1139,6 @@ void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
         sizes[0] = qBound(0, requestedWidth, sum);
         sizes[1] = sum - sizes[0];
         ui->catalogSplitter->setSizes(sizes);
-        m_folderWindow->setAsInnerWidget();
     } else {
         // close child widget, and recreate as independent window
         StartupProfiler::mark("folder-window.construct.begin");
@@ -1147,7 +1146,6 @@ void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
         StartupProfiler::mark("folder-window.construct.end");
         QRect self = geometry();
         m_folderWindow->setGeometry(self.left() - 100, self.top() + 100, self.width(), self.height());
-        m_folderWindow->setAsToplevelWindow();
         if (!deferFolderLoad) {
             m_folderWindow->setFolderPath(oldpath, false);
         }

@@ -15,7 +15,6 @@ public:
     };
 
     FolderItemModel(QObject *parent);
-    QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
     QVariant data(const QModelIndex &index, int role) const override;
     int rowCount(const QModelIndex &parent) const override;
     int columnCount(const QModelIndex &) const override;
@@ -24,11 +23,9 @@ public:
 
     void setVolumes(QList<FolderItem> *volumes);
     void setCurrentVolumeRow(int row);
-    void setColumns(int c) { m_columns = c; }
 
 private:
     QList<FolderItem> *m_searchedVolumes;
-    int m_columns;
     int m_currentVolumeRow;
     QIcon m_folderIcon;
     QIcon m_archiveIcon;

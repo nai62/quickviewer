@@ -110,21 +110,6 @@ void FolderWindow::setupHistoryButton(Ui::MainWindow *uiMain)
     }
 }
 
-void FolderWindow::setAsToplevelWindow()
-{
-    ui->folderView->header()->setVisible(true);
-    QRect rect = geometry();
-    ui->folderView->setColumnWidth(0, rect.width() - 150);
-    ui->folderView->setColumnWidth(1, 150);
-    m_itemModel.setColumns(2);
-}
-
-void FolderWindow::setAsInnerWidget()
-{
-    ui->folderView->header()->setVisible(false);
-    m_itemModel.setColumns(1);
-}
-
 static QModelIndex selectedIdx;
 
 bool FolderWindow::eventFilter(QObject *obj, QEvent *event)

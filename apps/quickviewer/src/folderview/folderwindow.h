@@ -19,8 +19,6 @@ class FolderWindow : public QWidget
 public:
     explicit FolderWindow(QWidget *parent, Ui::MainWindow *uiMain);
     ~FolderWindow();
-    void setAsToplevelWindow();
-    void setAsInnerWidget();
     bool eventFilter(QObject *obj, QEvent *event);
     void dragEnterEvent(QDragEnterEvent *e);
     void dropEvent(QDropEvent *e);
