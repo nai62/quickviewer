@@ -13,8 +13,10 @@
 
 namespace {
 
+#if defined(Q_OS_MAC) || defined(Q_OS_LINUX)
 // Directory the non-Windows builds keep their data files in.
 constexpr QLatin1String DataDirectory(".quickviewer");
+#endif
 
 } // namespace
 
