@@ -25,14 +25,16 @@ OpenTarget OpenTarget::fileInContainer(QString filePath)
 
 OpenTarget OpenTarget::forPath(QString path)
 {
-    const QFileInfo info(QDir::fromNativeSeparators(path));
-    if (IFileLoader::isArchiveFile(info.fileName())) {
-        return container(info.absoluteFilePath());
+    // Keep the path as the caller spelled it: containers are addressed by the
+    // path that was opened, which is what messages and caches have always used.
+    const QString normalizedPath = QDir::fromNativeSeparators(path);
+    if (IFileLoader::isArchiveFile(normalizedPath)) {
+        return container(normalizedPath);
     }
-    if (IFileLoader::isImageFile(info.fileName())) {
-        return fileInContainer(info.absoluteFilePath());
+    if (IFileLoader::isImageFile(normalizedPath)) {
+        return fileInContainer(normalizedPath);
     }
-    return container(info.absoluteFilePath());
+    return container(normalizedPath);
 }
 
 QString volumeLocationDisplayText(const VolumeLocation &location)
