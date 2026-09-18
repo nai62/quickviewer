@@ -1044,6 +1044,26 @@ void MainWindow::handleShowFolderActionTriggered()
     createFolderWindow(!qApp->ShowPanelSeparateWindow());
 }
 
+void MainWindow::handleShowSubfoldersActionTriggered(bool checked)
+{
+    const bool wasShowingSubfolders = qApp->ShowSubfolders();
+    qApp->setShowSubfolders(checked);
+    if (checked == wasShowingSubfolders) {
+        return;
+    }
+    // Turning the option off is applied the next time a volume is opened, so
+    // that the image on screen stays part of the displayed volume. Turning it
+    // on scans the folder again straight away and keeps the current page.
+    if (!checked || !m_viewerSession.isFolder()) {
+        return;
+    }
+    const QString containerPath = m_viewerSession.volumePath();
+    if (containerPath.isEmpty()) {
+        return;
+    }
+    m_viewerSession.reloadContainer(containerPath);
+}
+
 void MainWindow::handleFolderWindowClosed()
 {
     if (m_folderWindow) {

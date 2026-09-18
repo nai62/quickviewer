@@ -395,6 +395,57 @@ private slots:
         QCOMPARE(buttonFrame->layout()->spacing(), 2);
     }
 
+    void showingSubfoldersScansImmediatelyAndKeepsThePage()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QVERIFY(QDir(directory.path()).mkdir(QStringLiteral("sub")));
+        const QString rootPath = directory.filePath(QStringLiteral("page-0.bmp"));
+        QImage image(16, 24, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        QVERIFY(image.save(rootPath));
+        image.fill(Qt::blue);
+        QVERIFY(image.save(QDir(directory.path()).filePath(QStringLiteral("sub/page-1.bmp"))));
+
+        qApp->setShowSubfolders(false);
+        StartupWindow viewer;
+        viewer.openPath(directory.path());
+        QCOMPARE(viewer.viewerSession()->pageCount(), 1);
+
+        viewer.handleShowSubfoldersActionTriggered(true);
+
+        QVERIFY(qApp->ShowSubfolders());
+        QCOMPARE(viewer.viewerSession()->pageCount(), 2);
+        QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("page-0.bmp"));
+
+        // Turning the option off leaves the displayed volume alone.
+        viewer.handleShowSubfoldersActionTriggered(false);
+        QVERIFY(!qApp->ShowSubfolders());
+        QCOMPARE(viewer.viewerSession()->pageCount(), 2);
+        QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("page-0.bmp"));
+    }
+
+    void folderViewHighlightsTheFolderOfASubfolderPage()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QVERIFY(QDir(directory.path()).mkdir(QStringLiteral("sub")));
+        QImage image(16, 24, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        QVERIFY(image.save(QDir(directory.path()).filePath(QStringLiteral("sub/page-0.bmp"))));
+
+        FolderWindow folder(nullptr, nullptr);
+        folder.setFolderPath(directory.path(), false);
+        QTreeView *view = folder.findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        QCOMPARE(view->model()->rowCount(), 1);
+
+        folder.handleViewerSessionVolumeChanged(
+            QDir(directory.path()).filePath(QStringLiteral("sub/page-0.bmp")));
+
+        QCOMPARE(view->currentIndex().data().toString(), QStringLiteral("sub"));
+    }
+
     void openingFileInShownFolderDoesNotRereadIt()
     {
         QTemporaryDir directory;

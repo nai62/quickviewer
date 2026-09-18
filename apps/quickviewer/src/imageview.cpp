@@ -701,17 +701,6 @@ void ImageView::handleRotateActionTriggered()
     refreshRenderedPages();
 }
 
-void ImageView::handleShowSubfoldersActionTriggered(bool checked)
-{
-    qApp->setShowSubfolders(checked);
-    if (!m_viewerSession) {
-        return;
-    }
-    if (m_viewerSession->isFolder()) {
-        m_viewerSession->reloadVolumeAfterImageRemoval();
-    }
-}
-
 void ImageView::handleSlideShowTimerTimeout()
 {
     if (!m_viewerSession) {

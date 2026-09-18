@@ -2363,7 +2363,7 @@
   <connection>
    <sender>actionShowSubfolders</sender>
    <signal>triggered(bool)</signal>
-   <receiver>graphicsView</receiver>
+   <receiver>MainWindow</receiver>
    <slot>handleShowSubfoldersActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">

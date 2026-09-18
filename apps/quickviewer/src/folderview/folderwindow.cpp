@@ -493,10 +493,18 @@ void FolderWindow::handleViewerSessionVolumeChanged(QString path)
     updateCurrentVolumeRow();
 
     QFileInfo info(QDir::toNativeSeparators(path));
-    if (!info.exists() || m_currentPath != info.absolutePath()) {
+    if (!info.exists() || m_currentPath.isEmpty()) {
         return;
     }
-    QString name = info.fileName();
+    // The current page can be below the displayed folder when the viewer shows
+    // subfolders too. The panel keeps its one-level list, so it marks the entry
+    // that leads to the page: the file itself, or the folder that contains it.
+    const QString relative =
+        QDir(m_currentPath).relativeFilePath(QDir::fromNativeSeparators(path));
+    if (relative.isEmpty() || QDir::isAbsolutePath(relative) || relative.startsWith(QStringLiteral(".."))) {
+        return;
+    }
+    const QString name = relative.section(QLatin1Char('/'), 0, 0);
     int row = -1;
     foreach (const FolderItem &item, m_volumes) {
         row++;

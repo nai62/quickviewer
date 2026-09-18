@@ -94,7 +94,6 @@ public slots:
     void handleNextOnePageActionTriggered();
     void handlePrevOnePageActionTriggered();
     void handleRotateActionTriggered();
-    void handleShowSubfoldersActionTriggered(bool checked);
 
     // SlideShow
     void handleSlideShowTimerTimeout();

@@ -110,6 +110,7 @@ public slots:
 
     // Folder
     void handleShowFolderActionTriggered();
+    void handleShowSubfoldersActionTriggered(bool checked);
     void handleFolderWindowClosed();
     void handleFolderWindowOpenVolume(const OpenTarget &target);
     void handleFolderWindowReloadRequested(const QString &containerPath);
