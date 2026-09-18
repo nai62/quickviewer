@@ -224,14 +224,9 @@ set "QV_PROFILE_FIRST_IMAGE="
 
 ## C++ lint
 
-Install Python 3 and clang-format 18.
-
-```bash
-python3 scripts/lint-cpp.py
-```
-
-Apply fixes with `--fix`; use `--all` for the tracked C++ lint scope. On
-Windows, `py -3` can be used in place of `python3`.
+C++ formatting is enforced by the tracked pre-commit hook and by CI. See
+[CppLint.md](CppLint.md) for the hook mechanics, the lint scope, the commands
+to check or apply formatting manually, and the environment requirements.
 
 ## Interactive checks
 

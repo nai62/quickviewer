@@ -75,9 +75,9 @@ public:
     QSize sizeHint() const Q_DECL_OVERRIDE;
     QLayoutItem *takeAt(int index) Q_DECL_OVERRIDE;
 
-//    QSize maximumSize() const Q_DECL_OVERRIDE;
-//    int minimumHeightForWidth(int) const Q_DECL_OVERRIDE;
-//    void invalidate() Q_DECL_OVERRIDE;
+    //    QSize maximumSize() const Q_DECL_OVERRIDE;
+    //    int minimumHeightForWidth(int) const Q_DECL_OVERRIDE;
+    //    void invalidate() Q_DECL_OVERRIDE;
 
 private:
     int doLayout(const QRect &rect, bool testOnly) const;

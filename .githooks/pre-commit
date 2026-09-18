@@ -1,0 +1,21 @@
+#!/bin/sh
+# Format staged first-party C++ files before the commit is recorded.
+# Keep the pathspecs and extensions in sync with FIRST_PARTY_PREFIXES and
+# CPP_EXTENSIONS in scripts/lint-cpp.py.
+set -eu
+
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root"
+
+if ! git diff --cached --name-only --diff-filter=ACMR -- apps components tests \
+    | grep -Eiq '\.(c|cc|cpp|cxx|h|hh|hpp)$'; then
+    exit 0
+fi
+
+if ! command -v uv >/dev/null 2>&1; then
+    echo "error: uv is required for the C++ pre-commit hook." >&2
+    echo "Install uv, then retry the commit." >&2
+    exit 2
+fi
+
+exec uv run --script scripts/lint-cpp.py --staged --fix

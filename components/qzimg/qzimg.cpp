@@ -133,9 +133,9 @@ static int unpack_bgra(void *user, unsigned i, unsigned left, unsigned right)
     }
     planar_data[3] = static_cast<char *>(alpha_buf.line_at(i));
 
-//    if (cb->premultiply)
-//        unpack_bgra_premul(packed_data, planar_data, left, right);
-//    else
+    //    if (cb->premultiply)
+    //        unpack_bgra_premul(packed_data, planar_data, left, right);
+    //    else
     unpack_bgra_straight(packed_data, planar_data, left, right);
 
     return 0;
@@ -154,9 +154,9 @@ static int pack_bgra(void *user, unsigned i, unsigned left, unsigned right)
     }
     planar_data[3] = static_cast<const char *>(alpha_buf.line_at(i));
 
-//    if (cb->premultiply)
-//        pack_bgra_premul(planar_data, packed_data, left, right);
-//    else
+    //    if (cb->premultiply)
+    //        pack_bgra_premul(planar_data, packed_data, left, right);
+    //    else
     pack_bgra_straight(planar_data, packed_data, left, right);
 
     return 0;
@@ -269,7 +269,7 @@ QImage QZimg::toPackedImage(const QImage &src, int stridePack)
     // QImage processing sometimes fails
     for (int count = 1;; count++) {
         switch (src.format()) {
-//        case QImage::Format_RGBA8888:
+            //        case QImage::Format_RGBA8888:
         case QImage::Format_ARGB32:
         case QImage::Format_RGB32:
             return src;
@@ -285,18 +285,18 @@ QImage QZimg::toPackedImage(const QImage &src, int stridePack)
 #endif
             converted = src.convertToFormat(QImage::Format_RGB32);
             break;
-//        case QImage::Format_Indexed8:
-//            converted = src.convertToFormat(QImage::Format_ARGB32);
-//            break;
-//        case QImage::Format_ARGB32_Premultiplied:
-//        case QImage::Format_ARGB8565_Premultiplied:
-//        case QImage::Format_ARGB6666_Premultiplied:
-//        case QImage::Format_ARGB8555_Premultiplied:
-//        case QImage::Format_ARGB4444_Premultiplied:
-//        case QImage::Format_RGBA8888:
-//        case QImage::Format_RGBA8888_Premultiplied:
-//        case QImage::Format_A2BGR30_Premultiplied:
-//        case QImage::Format_A2RGB30_Premultiplied:
+            //        case QImage::Format_Indexed8:
+            //            converted = src.convertToFormat(QImage::Format_ARGB32);
+            //            break;
+            //        case QImage::Format_ARGB32_Premultiplied:
+            //        case QImage::Format_ARGB8565_Premultiplied:
+            //        case QImage::Format_ARGB6666_Premultiplied:
+            //        case QImage::Format_ARGB8555_Premultiplied:
+            //        case QImage::Format_ARGB4444_Premultiplied:
+            //        case QImage::Format_RGBA8888:
+            //        case QImage::Format_RGBA8888_Premultiplied:
+            //        case QImage::Format_A2BGR30_Premultiplied:
+            //        case QImage::Format_A2RGB30_Premultiplied:
         default:
             converted = src.convertToFormat(QImage::Format_ARGB32);
             break;
@@ -362,11 +362,11 @@ static QImage scaledRGB(QImage img, zimgxx::zimage_format in_format, zimgxx::zim
         unsigned output_buffering = graph.get_output_buffering();
         size_t tmp_size = graph.get_tmp_size();
 
-//        qDebug() << "input buffering:  " << input_buffering;
-//        qDebug() << "output buffering: " << output_buffering;
-//        qDebug() << "heap usage: " << tmp_size;
-//        qDebug() << "img: " << img;
-//        qDebug() << "oimg: " << oimg;
+        //        qDebug() << "input buffering:  " << input_buffering;
+        //        qDebug() << "output buffering: " << output_buffering;
+        //        qDebug() << "heap usage: " << tmp_size;
+        //        qDebug() << "img: " << img;
+        //        qDebug() << "oimg: " << oimg;
         uchar *obuff = oimg.bits();
 
         auto in_buf = allocate_buffer(in_format, input_buffering);
@@ -376,13 +376,13 @@ static QImage scaledRGB(QImage img, zimgxx::zimage_format in_format, zimgxx::zim
         Callback unpack_cb_data = {&in_buf.first, nullptr, &img};
         Callback pack_cb_data = {&out_buf.first, nullptr, &oimg};
 
-//        qDebug() << "resize begin: ";
+        //        qDebug() << "resize begin: ";
         QElapsedTimer et_qt;
         et_qt.start();
         graph.process(in_buf.first.as_const(), out_buf.first, tmp_buf.get(), unpack_image, &unpack_cb_data, pack_image, &pack_cb_data);
 
         qint64 t_qt = et_qt.elapsed();
-//        qDebug() << "resize end. time: " << t_qt;
+        //        qDebug() << "resize end. time: " << t_qt;
     } catch (zimgxx::zerror e) {
         qDebug() << e.code;
         qDebug() << e.msg;
@@ -438,11 +438,11 @@ static QImage scaledARGB(QImage img, zimgxx::zimage_format in_format, zimgxx::zi
         unsigned output_buffering = std::max(graph.get_output_buffering(), graph_alpha.get_output_buffering());
         size_t tmp_size = std::max(graph.get_tmp_size(), graph_alpha.get_tmp_size());
 
-//        qDebug() << "input buffering:  " << input_buffering;
-//        qDebug() << "output buffering: " << output_buffering;
-//        qDebug() << "heap usage: " << tmp_size;
-//        qDebug() << "img: " << img;
-//        qDebug() << "oimg: " << oimg;
+        //        qDebug() << "input buffering:  " << input_buffering;
+        //        qDebug() << "output buffering: " << output_buffering;
+        //        qDebug() << "heap usage: " << tmp_size;
+        //        qDebug() << "img: " << img;
+        //        qDebug() << "oimg: " << oimg;
         uchar *obuff = oimg.bits();
 
         auto in_rgb_buf = allocate_buffer(in_format, input_buffering);
@@ -456,16 +456,16 @@ static QImage scaledARGB(QImage img, zimgxx::zimage_format in_format, zimgxx::zi
         Callback unpack_cb_data = {&in_rgb_buf.first, &in_alpha_plane_buf.first, &img};
         Callback pack_cb_data = {&out_rgb_plane_buf.first, &out_alpha_buf.first, &oimg};
 
-//        qDebug() << "resize begin: ";
+        //        qDebug() << "resize begin: ";
         QElapsedTimer et_qt;
         et_qt.start();
-//        graph.process(in_buf.first.as_const(), out_buf.first, tmp_buf.get(),
-//                      unpack_image, &unpack_cb_data, pack_image, &pack_cb_data);
+        //        graph.process(in_buf.first.as_const(), out_buf.first, tmp_buf.get(),
+        //                      unpack_image, &unpack_cb_data, pack_image, &pack_cb_data);
         graph.process(in_rgb_buf.first.as_const(), out_rgb_plane_buf.first, tmp_buf.get(), unpack_bgra, &unpack_cb_data, nullptr, nullptr);
         graph_alpha.process(in_alpha_plane_buf.first.as_const(), out_alpha_buf.first, tmp_buf.get(), nullptr, nullptr, pack_bgra, &pack_cb_data);
 
         qint64 t_qt = et_qt.elapsed();
-//        qDebug() << "resize end. time: " << t_qt;
+        //        qDebug() << "resize end. time: " << t_qt;
     } catch (zimgxx::zerror e) {
         qDebug() << e.code;
         qDebug() << e.msg;
@@ -485,7 +485,7 @@ QImage QZimg::scaled(const QImage &src, const QSize &newsize, Qt::AspectRatioMod
 
     in_format.pixel_type = img.format() == QImage::Format_RGB32 ? ZIMG_PIXEL_BYTE : ZIMG_PIXEL_WORD;
     in_format.color_family = ZIMG_COLOR_RGB;
-//    in_format.matrix_coefficients = ZIMG_MATRIX_RGB;
+    //    in_format.matrix_coefficients = ZIMG_MATRIX_RGB;
     in_format.pixel_range = ZIMG_RANGE_FULL;
 
     zimgxx::zimage_format out_format = in_format;
@@ -501,7 +501,7 @@ QImage QZimg::scaled(const QImage &src, const QSize &newsize, Qt::AspectRatioMod
         in_format_alpha.width = img.width();
         in_format_alpha.height = img.height();
         in_format_alpha.pixel_type = ZIMG_PIXEL_BYTE;
-//        in_format.matrix_coefficients = ZIMG_MATRIX_UNSPECIFIED;
+        //        in_format.matrix_coefficients = ZIMG_MATRIX_UNSPECIFIED;
 
         in_format_alpha.color_family = ZIMG_COLOR_GREY;
         in_format_alpha.pixel_range = ZIMG_RANGE_FULL;

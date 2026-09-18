@@ -15,8 +15,8 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.1.0
+
       - name: Check all C++ files
-        run: >-
-          python3 scripts/lint-cpp.py
-          --all
-          --clang-format clang-format-18
+        run: uv run --script scripts/lint-cpp.py --all
