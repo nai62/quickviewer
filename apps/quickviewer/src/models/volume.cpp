@@ -199,6 +199,7 @@ void Volume::sortPages(qvEnums::ImageSortBy sortBy)
 
 void Volume::applyPageSort(qvEnums::ImageSortBy sortBy)
 {
+    m_sortBy = sortBy;
     m_imageMetadataList.clear();
     if (sortBy != qvEnums::SortByFileName && sortBy != qvEnums::SortByFileNameDescending) {
         foreach (const QString &fl, m_pageNames) {
@@ -271,7 +272,7 @@ QString Volume::pageNameAt(int pageIndex) const
     if (!m_shuffledPageNames.isEmpty()) {
         return m_shuffledPageNames[pageIndex];
     }
-    if (qApp->ImageSortBy() == qvEnums::SortByFileName || qApp->ImageSortBy() == qvEnums::SortByFileNameDescending) {
+    if (m_sortBy == qvEnums::SortByFileName || m_sortBy == qvEnums::SortByFileNameDescending) {
         return m_pageNames[pageIndex];
     } else if (pageIndex < m_imageMetadataList.size()) {
         return m_imageMetadataList[pageIndex].filename();

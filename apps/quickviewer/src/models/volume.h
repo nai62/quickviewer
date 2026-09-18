@@ -143,6 +143,12 @@ private:
     QList<QString> m_pageNames;
     QList<QString> m_shuffledPageNames;
     QList<ImageMetadata> m_imageMetadataList;
+    /**
+     * Sort the page list was built with. The metadata list only exists for the
+     * metadata sorts, so pageNameAt() has to use this instead of the current
+     * application setting.
+     */
+    qvEnums::ImageSortBy m_sortBy = qvEnums::SortByFileName;
     ImageContent m_initialImage;
     mutable LruCache<int, ImageLoadFuture> m_imageLoadCache;
     LruCache<int, ImageLoadFuture> m_previewLoadCache;

@@ -320,6 +320,33 @@ private slots:
         QCOMPARE(spreadSession.visiblePageCount(), 2);
     }
 
+    void volumeKeepsItsOwnSortForPageNames()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 3; ++page) {
+            QImage image(16, 24, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 40, 255, 255));
+            QVERIFY(image.save(directory.filePath(QString("page-%1.bmp").arg(page))));
+        }
+
+        qApp->setImageSortBy(qvEnums::SortByFileName);
+        qApp->setDualView(false);
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(directory.path()));
+
+        // Changing the setting does not re-sort this volume, so it must keep
+        // reporting its own page names.
+        qApp->setImageSortBy(qvEnums::SortByModifiedTime);
+        session.updateReadProgress();
+        qApp->setImageSortBy(qvEnums::SortByFileName);
+
+        const QString volumePath = QDir::fromNativeSeparators(directory.path());
+        QVERIFY(qApp->readProgressStore()->contains(volumePath));
+        QCOMPARE(qApp->readProgressStore()->at(volumePath).currentPageName,
+                 QString("page-0.bmp"));
+    }
+
     void cachedVolumesKeepIndependentPagePositions()
     {
         QTemporaryDir rootDirectory;
