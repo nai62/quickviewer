@@ -1127,7 +1127,6 @@ void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
         }
         connect(m_folderWindow, SIGNAL(closed()), this, SLOT(handleFolderWindowClosed()));
         connect(m_folderWindow, &FolderWindow::openVolume, this, &MainWindow::handleFolderWindowOpenVolume);
-        connect(m_folderWindow, &FolderWindow::sortModeRequested, this, &MainWindow::applyImageSortBy);
         connect(m_folderWindow, &FolderWindow::reloadRequested, this, &MainWindow::handleFolderWindowReloadRequested);
         if (!replaceStartupPanelPlaceholder(m_folderWindow)) {
             ui->catalogSplitter->insertWidget(0, m_folderWindow);
@@ -1154,7 +1153,6 @@ void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
         }
         connect(m_folderWindow, SIGNAL(closed()), this, SLOT(handleFolderWindowClosed()));
         connect(m_folderWindow, &FolderWindow::openVolume, this, &MainWindow::handleFolderWindowOpenVolume);
-        connect(m_folderWindow, &FolderWindow::sortModeRequested, this, &MainWindow::applyImageSortBy);
         connect(m_folderWindow, &FolderWindow::reloadRequested, this, &MainWindow::handleFolderWindowReloadRequested);
         m_folderWindow->show();
     }
@@ -2437,7 +2435,6 @@ void MainWindow::applyImageSortBy(qvEnums::ImageSortBy sortBy)
     qApp->setImageSortBy(sortBy);
     m_viewerSession.sortActiveVolumePages(sortBy);
     if (m_folderWindow) {
-        m_folderWindow->resetSortMode();
         m_folderWindow->resortVolumes();
     }
 }

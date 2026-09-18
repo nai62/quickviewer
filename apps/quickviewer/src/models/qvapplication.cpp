@@ -541,11 +541,6 @@ void QVApplication::loadSettings()
     m_settings->beginGroup("Folder");
     QString defaultPath = getDefaultPictureFolderPath();
     m_homeFolderPath = m_settings->value("HomeFolderPath", defaultPath).toString();
-    {
-        QString folderSortModestring = m_settings->value("FolderSortMode", "OrderByName").toString();
-        int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("FolderViewSort");
-        m_folderSortMode = (qvEnums::FolderViewSort)qvEnums::staticMetaObject.enumerator(enumIdx).keysToValue(folderSortModestring.toLatin1().data());
-    }
     m_openVolumeWithProgress = m_settings->value("OpenVolumeWithProgress", true).toBool();
     m_showReadProgress = m_settings->value("ShowReadProgress", true).toBool();
     m_saveReadProgress = m_settings->value("SaveReadProgress", true).toBool();
@@ -718,11 +713,6 @@ void QVApplication::saveSettings()
 
     m_settings->beginGroup("Folder");
     m_settings->setValue("HomeFolderPath", m_homeFolderPath);
-    {
-        int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("FolderViewSort");
-        QString folderSortModestring = QString(qvEnums::staticMetaObject.enumerator(enumIdx).valueToKey(static_cast<int>(m_folderSortMode)));
-        m_settings->setValue("FolderSortMode", folderSortModestring);
-    }
     m_settings->setValue("OpenVolumeWithProgress", m_openVolumeWithProgress);
     m_settings->setValue("ShowReadProgress", m_showReadProgress);
     m_settings->setValue("SaveReadProgress", m_saveReadProgress);

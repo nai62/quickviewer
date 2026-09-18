@@ -30,17 +30,12 @@ QIcon clockIcon(const QPalette &palette)
 FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
     : QWidget(parent),
       ui(new Ui::FolderWindow),
-      m_sortModeMenu(nullptr),
       m_itemContextMenu(nullptr),
       m_historyButton(nullptr),
       m_itemModel(this),
       m_itemDelegate(parent, this)
 {
     ui->setupUi(this);
-
-#ifdef Q_OS_MACOS
-    ui->menuBar->setNativeMenuBar(false);
-#endif
 
     ui->folderView->setRootIsDecorated(false);
     ui->folderView->setIndentation(0);
@@ -52,32 +47,20 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
     ui->folderView->setModel(&m_itemModel);
     ui->folderView->setItemDelegate(&m_itemDelegate);
 
-    // menus
-    ui->menuBar->removeAction(ui->menuSort->menuAction());
-    m_sortModeMenu = ui->menuSort;
-    ui->menuBar->removeAction(ui->menuItemContext->menuAction());
-    m_itemContextMenu = ui->menuItemContext;
-    m_uiMain = uiMain;
+    // The item context menu is a plain menu; its action lives in the form.
+    m_itemContextMenu = new QMenu(this);
+    m_itemContextMenu->addAction(ui->actionSetAsHomeFolder);
 
     StartupProfiler::mark("folder-window.history-button.begin");
     setupHistoryButton(uiMain);
     StartupProfiler::mark("folder-window.history-button.end");
 
-    QFont sortFont = ui->sortModeButton->font();
-    sortFont.setBold(false);
-    sortFont.setUnderline(false);
-    ui->sortModeButton->setFont(sortFont);
-    ui->horizontalLayout->removeWidget(ui->sortModeButton);
     ui->horizontalLayout->addWidget(m_historyButton);
-    ui->horizontalLayout->addWidget(ui->sortModeButton);
-
-    resetSortMode();
 
     connect(qApp->languageSelector(), &LanguageManager::languageChanged, this, [this](const QString &) {
         ui->retranslateUi(this);
         m_historyButton->setText(tr("History"));
         m_historyButton->setToolTip(tr("Open history"));
-        resetSortMode();
         if (m_volumes.size() == 1 && m_volumes.first().type == FolderItem::NoItems) {
             m_volumes.first().name = tr("No folders or archives found.", "Display when there is no display item in Folder Window");
             m_itemModel.setVolumes(&m_volumes);
@@ -92,9 +75,6 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
 
 FolderWindow::~FolderWindow()
 {
-    if (m_sortModeMenu) {
-        delete m_sortModeMenu;
-    }
     if (m_itemContextMenu) {
         delete m_itemContextMenu;
     }
@@ -132,7 +112,6 @@ void FolderWindow::setupHistoryButton(Ui::MainWindow *uiMain)
 
 void FolderWindow::setAsToplevelWindow()
 {
-    ui->menuBar->setVisible(true);
     ui->folderView->header()->setVisible(true);
     QRect rect = geometry();
     ui->folderView->setColumnWidth(0, rect.width() - 150);
@@ -142,7 +121,6 @@ void FolderWindow::setAsToplevelWindow()
 
 void FolderWindow::setAsInnerWidget()
 {
-    ui->menuBar->setVisible(false);
     ui->folderView->header()->setVisible(false);
     m_itemModel.setColumns(1);
 }
@@ -363,43 +341,6 @@ void FolderWindow::sortVolumes()
     });
 }
 
-void FolderWindow::resetSortMode()
-{
-    ui->actionOrderByName->setText(tr("Name"));
-    ui->actionOrderByUpdatedAt->setText(tr("Modified"));
-
-    // The panel follows the viewer, so the sort mode is the image sort mode.
-    const qvEnums::ImageSortBy sortBy = qApp->ImageSortBy();
-    ui->actionOrderByName->setChecked(sortBy == qvEnums::SortByFileName || sortBy == qvEnums::SortByFileNameDescending);
-    ui->actionOrderByUpdatedAt->setChecked(sortBy == qvEnums::SortByModifiedTime || sortBy == qvEnums::SortByModifiedTimeDescending);
-    ui->sortModeButton->setText(sortModeText() + QStringLiteral(" ▾"));
-}
-
-QString FolderWindow::sortModeText() const
-{
-    if (m_uiMain) {
-        switch (qApp->ImageSortBy()) {
-        case qvEnums::SortByFileName:
-            return m_uiMain->actionSortByFileName->text();
-        case qvEnums::SortByFileNameDescending:
-            return m_uiMain->actionSortByFileNameDescending->text();
-        case qvEnums::SortByFileSize:
-            return m_uiMain->actionSortByFileSize->text();
-        case qvEnums::SortByFileSizeDescending:
-            return m_uiMain->actionSortByFileSizeDescending->text();
-        case qvEnums::SortByModifiedTime:
-            return m_uiMain->actionSortByModifiedTime->text();
-        case qvEnums::SortByModifiedTimeDescending:
-            return m_uiMain->actionSortByModifiedTimeDescending->text();
-        }
-    }
-    // The panel is also built without a main window (tests), where only the two
-    // shortcut labels are available.
-    return qApp->ImageSortBy() == qvEnums::SortByModifiedTime || qApp->ImageSortBy() == qvEnums::SortByModifiedTimeDescending
-               ? ui->actionOrderByUpdatedAt->text()
-               : ui->actionOrderByName->text();
-}
-
 void FolderWindow::resetPathLabel(int)
 {
     //    QFontMetrics fontMetrics(ui->pathLabel->font());
@@ -544,25 +485,6 @@ void FolderWindow::handleFolderViewItemSelected(const QModelIndex &index)
 void FolderWindow::handleCurrentFolderItemTriggered()
 {
     openFolderItem(ui->folderView->currentIndex());
-}
-
-void FolderWindow::handleSortModeButtonClicked()
-{
-    QWidget *widget = ui->sortModeButton;
-
-    QPoint p = widget->mapToGlobal(QPoint(0, widget->height()));
-    m_sortModeMenu->exec(p);
-}
-
-void FolderWindow::handleOrderByNameActionTriggered()
-{
-    emit sortModeRequested(qvEnums::SortByFileName);
-}
-
-void FolderWindow::handleOrderByUpdatedAtActionTriggered()
-{
-    // The panel has always shown the newest entries first for this mode.
-    emit sortModeRequested(qvEnums::SortByModifiedTimeDescending);
 }
 
 void FolderWindow::closeEvent(QCloseEvent *e)

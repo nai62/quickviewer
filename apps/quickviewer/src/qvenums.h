@@ -33,12 +33,6 @@ enum class CatalogViewMode {
 };
 Q_ENUM_NS(CatalogViewMode)
 
-enum class FolderViewSort {
-    OrderByName,
-    OrderByUpdatedAt,
-};
-Q_ENUM_NS(FolderViewSort)
-
 enum class ToolbarIconSize {
     NormalIcon = 24,
     LargeIcon = 32,

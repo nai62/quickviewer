@@ -52,25 +52,6 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QMenuBar" name="menuBar">
-     <widget class="QMenu" name="menuSort">
-      <property name="title">
-       <string notr="true">&amp;Sort</string>
-      </property>
-      <addaction name="actionOrderByName"/>
-      <addaction name="actionOrderByUpdatedAt"/>
-     </widget>
-     <widget class="QMenu" name="menuItemContext">
-      <property name="title">
-       <string notr="true">ItemContext</string>
-      </property>
-      <addaction name="actionSetAsHomeFolder"/>
-     </widget>
-     <addaction name="menuSort"/>
-     <addaction name="menuItemContext"/>
-    </widget>
-   </item>
-   <item>
     <widget class="QLabel" name="pathLabel">
      <property name="text">
       <string notr="true">My Pictures</string>
@@ -189,35 +170,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="sortModeButton">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>24</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <weight>75</weight>
-          <bold>true</bold>
-          <underline>true</underline>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string extracomment="Tooltip for pulldown to change folder sorting method">Change sort order</string>
-        </property>
-        <property name="text">
-         <string extracomment="Change the order of file names Pull down button">Name</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -294,22 +246,6 @@
     <string>Other</string>
    </property>
   </action>
-  <action name="actionOrderByName">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Sort by name</string>
-   </property>
-  </action>
-  <action name="actionOrderByUpdatedAt">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Sort by modified time</string>
-   </property>
-  </action>
   <action name="actionSetAsHomeFolder">
    <property name="text">
     <string>Set as home folder</string>
@@ -330,7 +266,6 @@
   <tabstop>homeButton</tabstop>
   <tabstop>toParentButton</tabstop>
   <tabstop>reloadButton</tabstop>
-  <tabstop>sortModeButton</tabstop>
  </tabstops>
  <resources>
   <include location="../../toolbar.qrc"/>
@@ -401,54 +336,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>sortModeButton</sender>
-   <signal>clicked()</signal>
-   <receiver>FolderWindow</receiver>
-   <slot>handleSortModeButtonClicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>176</x>
-     <y>68</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>359</x>
-     <y>299</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionOrderByName</sender>
-   <signal>triggered()</signal>
-   <receiver>FolderWindow</receiver>
-   <slot>handleOrderByNameActionTriggered()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>359</x>
-     <y>299</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionOrderByUpdatedAt</sender>
-   <signal>triggered()</signal>
-   <receiver>FolderWindow</receiver>
-   <slot>handleOrderByUpdatedAtActionTriggered()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>359</x>
-     <y>299</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>actionSetAsHomeFolder</sender>
    <signal>triggered()</signal>
    <receiver>FolderWindow</receiver>
@@ -470,9 +357,6 @@
   <slot>handleParentButtonClicked()</slot>
   <slot>handleReloadButtonClicked()</slot>
   <slot>handleHomeButtonClicked()</slot>
-  <slot>handleSortModeButtonClicked()</slot>
-  <slot>handleOrderByNameActionTriggered()</slot>
-  <slot>handleOrderByUpdatedAtActionTriggered()</slot>
   <slot>handleSetAsHomeFolderActionTriggered()</slot>
   <slot>handleCurrentFolderItemTriggered()</slot>
  </slots>

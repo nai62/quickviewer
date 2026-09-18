@@ -27,7 +27,6 @@ public:
     void resizeEvent(QResizeEvent *event);
     void setFolderPath(QString path, bool showParent = true);
     void reset();
-    void resetSortMode();
     void resortVolumes();
     void resetPathLabel(int maxWidth);
     QString currentPath() { return m_currentPath; }
@@ -42,13 +41,9 @@ public slots:
     void handleViewerSessionVolumeChanged(QString);
     void handleFolderViewItemSelected(const QModelIndex &index);
     void handleSetAsHomeFolderActionTriggered();
-    void handleSortModeButtonClicked();
-    void handleOrderByNameActionTriggered();
-    void handleOrderByUpdatedAtActionTriggered();
 
 signals:
     void openVolume(const OpenTarget &target);
-    void sortModeRequested(qvEnums::ImageSortBy sortBy);
     void reloadRequested(const QString &containerPath);
     void closed();
 
@@ -57,14 +52,11 @@ protected:
 
 private:
     void openFolderItem(const QModelIndex &index);
-    QString sortModeText() const;
     void sortVolumes();
     void setupHistoryButton(Ui::MainWindow *uiMain);
     void updateCurrentVolumeRow();
 
     Ui::FolderWindow *ui;
-    Ui::MainWindow *m_uiMain = nullptr;
-    QMenu *m_sortModeMenu;
     QMenu *m_itemContextMenu;
     QToolButton *m_historyButton;
     QString m_currentPath;
