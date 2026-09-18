@@ -282,7 +282,22 @@ QString Volume::pageNameAt(int pageIndex) const
 
 int Volume::pageIndexForName(const QString &name) const
 {
-    return m_pageNames.indexOf(QDir::toNativeSeparators(name));
+    const QString nativeName = QDir::toNativeSeparators(name);
+    if (!m_shuffledPageNames.isEmpty()) {
+        return m_shuffledPageNames.indexOf(nativeName);
+    }
+    // The metadata sorts reorder the metadata list and leave the name list in
+    // the order the loader reported, so the lookup has to use the list that
+    // pageNameAt() reads from.
+    if (m_sortBy == qvEnums::ImageSortBy::SortByFileName || m_sortBy == qvEnums::ImageSortBy::SortByFileNameDescending) {
+        return m_pageNames.indexOf(nativeName);
+    }
+    for (int pageIndex = 0; pageIndex < m_imageMetadataList.size(); ++pageIndex) {
+        if (m_imageMetadataList[pageIndex].filename() == nativeName) {
+            return pageIndex;
+        }
+    }
+    return -1;
 }
 
 static int recommendedPrefetchConcurrency(const IFileLoader *loader)

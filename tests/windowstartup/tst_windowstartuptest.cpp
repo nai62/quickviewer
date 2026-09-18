@@ -456,6 +456,53 @@ private slots:
         QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("page-0.bmp"));
     }
 
+    void subfolderToggleKeepsTheRequestedPage()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QVERIFY(QDir(directory.path()).mkdir(QStringLiteral("sub")));
+        QImage large(32, 48, QImage::Format_RGB32);
+        large.fill(Qt::red);
+        QVERIFY(large.save(directory.filePath(QStringLiteral("a-large.bmp"))));
+        QImage small(16, 24, QImage::Format_RGB32);
+        small.fill(Qt::blue);
+        QVERIFY(small.save(QDir(directory.path()).filePath(QStringLiteral("sub/b-small.bmp"))));
+
+        qApp->setShowSubfolders(false);
+        qApp->setOpenVolumeWithProgress(false);
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileSize);
+        StartupWindow viewer;
+        viewer.createFolderWindow(true, directory.path(), false);
+        FolderWindow *folder = viewer.folderWindow();
+        QVERIFY(folder);
+        QTreeView *view = folder->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        viewer.openPath(directory.path());
+        QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("a-large.bmp"));
+
+        // Opening the subfolder from the panel shows the image in it.
+        QCOMPARE(view->model()->index(0, 0).data().toString(), QStringLiteral("sub"));
+        folder->handleFolderViewItemSelected(view->model()->index(0, 0));
+        QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("b-small.bmp"));
+
+        // Turning the option on and going back to the root makes the volume
+        // span both folders, so the file names and the page order differ.
+        viewer.handleShowSubfoldersActionTriggered(true);
+        folder->handleParentButtonClicked();
+
+        int imageRow = -1;
+        for (int row = 0; row < view->model()->rowCount(); ++row) {
+            if (view->model()->index(row, 0).data().toString() == QStringLiteral("a-large.bmp")) {
+                imageRow = row;
+                break;
+            }
+        }
+        QVERIFY(imageRow >= 0);
+        folder->handleFolderViewItemSelected(view->model()->index(imageRow, 0));
+
+        QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("a-large.bmp"));
+    }
+
     void folderViewHighlightsTheFolderOfASubfolderPage()
     {
         QTemporaryDir directory;

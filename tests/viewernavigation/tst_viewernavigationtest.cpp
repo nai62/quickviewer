@@ -344,6 +344,33 @@ private slots:
         QCOMPARE(session.currentPageIndex(), 1);
     }
 
+    void openingAPageByNameFollowsTheVolumeSort()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QImage large(32, 48, QImage::Format_RGB32);
+        large.fill(Qt::red);
+        QVERIFY(large.save(directory.filePath(QStringLiteral("a-large.bmp"))));
+        QImage small(16, 24, QImage::Format_RGB32);
+        small.fill(Qt::blue);
+        QVERIFY(small.save(directory.filePath(QStringLiteral("b-small.bmp"))));
+
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileSize);
+        qApp->setDualView(false);
+        qApp->setOpenVolumeWithProgress(false);
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(directory.path()));
+        QCOMPARE(session.currentPageName(), QStringLiteral("b-small.bmp"));
+
+        // The size sort orders the pages differently from their file names, so
+        // a lookup by name has to follow the order the volume displays.
+        QVERIFY(session.openEntry(
+            VolumeLocation{directory.path(), QStringLiteral("a-large.bmp")}));
+
+        QCOMPARE(session.currentPageName(), QStringLiteral("a-large.bmp"));
+        QCOMPARE(session.currentPageIndex(), 1);
+    }
+
     void reloadingAContainerRereadsItsPages()
     {
         QTemporaryDir directory;
