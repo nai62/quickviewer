@@ -746,7 +746,14 @@ void MainWindow::openResolvedTarget(const OpenTarget &target, bool allowSecondPa
     }
     if (isFileTarget) {
         m_viewerSession.openFileInContainer(filePath, allowSecondPage);
-        changeFolderPath(QFileInfo(requestedPath).absolutePath());
+        // The folder view follows the viewer, but a folder it already shows
+        // must not be read again: its list stays as it is until the user
+        // reloads it.
+        const QString folderPath = QFileInfo(requestedPath).absolutePath();
+        const bool folderViewShowsIt = m_folderWindow && QDir::cleanPath(QDir::fromNativeSeparators(m_folderWindow->currentPath())) == QDir::cleanPath(QDir::fromNativeSeparators(folderPath));
+        if (!folderViewShowsIt) {
+            changeFolderPath(folderPath);
+        }
         return;
     }
     const bool opened = target.intent == OpenIntent::Entry

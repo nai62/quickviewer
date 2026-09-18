@@ -395,6 +395,34 @@ private slots:
         QCOMPARE(buttonFrame->layout()->spacing(), 2);
     }
 
+    void openingFileInShownFolderDoesNotRereadIt()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const QString firstPath = directory.filePath(QStringLiteral("page-0.bmp"));
+        QImage image(16, 24, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        QVERIFY(image.save(firstPath));
+
+        StartupWindow viewer;
+        viewer.createFolderWindow(true, directory.path(), false);
+        FolderWindow *folder = viewer.folderWindow();
+        QVERIFY(folder);
+        QTreeView *view = folder->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        QCOMPARE(view->model()->rowCount(), 1);
+
+        // A file is added and another file of the same folder is opened.
+        image.fill(Qt::blue);
+        QVERIFY(image.save(directory.filePath(QStringLiteral("page-1.bmp"))));
+        viewer.openPath(firstPath);
+
+        // The panel keeps its list until it is reloaded.
+        QCOMPARE(view->model()->rowCount(), 1);
+        folder->handleReloadButtonClicked();
+        QCOMPARE(view->model()->rowCount(), 2);
+    }
+
     void reloadButtonRequestsAContainerReload()
     {
         QTemporaryDir directory;
