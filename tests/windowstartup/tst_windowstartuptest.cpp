@@ -469,14 +469,19 @@ private slots:
         QVERIFY(view);
         QVERIFY(view->isHeaderHidden());
         QCOMPARE(view->model()->columnCount(), 1);
-        QVERIFY(!view->model()->headerData(0, Qt::Horizontal, Qt::DisplayRole).isValid());
+        // The single column has no title. Qt fills the section number in for a
+        // model that does not name its header, so that is all the view can
+        // show even if it ever displayed one.
+        QCOMPARE(view->model()->headerData(0, Qt::Horizontal, Qt::DisplayRole).toString(),
+                 QStringLiteral("1"));
 
         viewer.createFolderWindow(false, directory.path(), false);
         view = viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         QVERIFY(view->isHeaderHidden());
         QCOMPARE(view->model()->columnCount(), 1);
-        QVERIFY(!view->model()->headerData(0, Qt::Horizontal, Qt::DisplayRole).isValid());
+        QCOMPARE(view->model()->headerData(0, Qt::Horizontal, Qt::DisplayRole).toString(),
+                 QStringLiteral("1"));
     }
 
     void folderButtonLayoutUsesCompactMargins()
