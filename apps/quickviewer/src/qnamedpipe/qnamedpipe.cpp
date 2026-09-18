@@ -75,7 +75,7 @@ public:
             ::ConnectNamedPipe(handlePipe, &ov);
             dwResult = ::WaitForSingleObject(m_event, 100);
             if (dwResult == 0xFFFFFFFF) {
-//                qDebug() << "waitAsync" << dwResult;
+                //                qDebug() << "waitAsync" << dwResult;
                 ::CloseHandle(handlePipe);
                 return;
             }

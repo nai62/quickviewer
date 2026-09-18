@@ -32,7 +32,7 @@ InnerFrame::InnerFrame(QWidget *parent, Qt::AnchorPoint anchor, int autoCloseSpa
 
 bool InnerFrame::eventFilter(QObject *watched, QEvent *event)
 {
-//    qDebug() << watched << event;
+    //    qDebug() << watched << event;
     if (m_mainWindow == dynamic_cast<QWidget *>(watched)) {
         switch (event->type()) {
         case QEvent::Resize:

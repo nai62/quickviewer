@@ -95,7 +95,7 @@ public:
         FolderStartup,
         CatalogStartup,
         RetouchStartup,
-//        ExifStartup,
+        //        ExifStartup,
     };
     Q_ENUM(OptionViewOnStartup)
 
