@@ -15,14 +15,14 @@ Install the Qt SDK:
 
 https://www.qt.io/download-open-source/
 
-The currently supported Windows verification environment uses Qt 6.11.2 for
-MSVC 2022 x64. See [Testing.md](Testing.md) for exact development settings.
+Use the Qt version and MSVC kit listed in [Testing.md](Testing.md); the paths in
+the steps below assume that installation.
 
 ### Set up Rust
 
 QuickViewer builds the pinned `resvg` C API from source. Install a Rust MSVC
-toolchain with Cargo before running qmake. `resvg` 0.47.0 requires Rust 1.87.0
-or newer. On Windows, the build also checks
+toolchain with Cargo before running qmake; see [Testing.md](Testing.md) for the
+required version. On Windows, the build also checks
 `%USERPROFILE%\.cargo\bin\cargo.exe`.
 
 https://rustup.rs/
@@ -67,51 +67,13 @@ plug-in and libheif runtime DLLs.
 
 ## 2. Supported Windows development workflow
 
-For ordinary Windows development, use `scripts\verify-windows.cmd` as the
-single build/test entry point. Normal builds are incremental and use `jom`.
-Existing Makefiles are reused; qmake is run only when a required Makefile is
-missing or `--qmake` is explicitly requested.
+Use `scripts\verify-windows.cmd` for building and testing and
+`scripts\deploy-windows.cmd` when the built application must launch from Windows
+Explorer.
 
-| Command | Meaning |
-| --- | --- |
-| `scripts\verify-windows.cmd debug` | incremental top-level Debug build, staging, then the normal Debug test suite |
-| `scripts\verify-windows.cmd release` | incremental top-level Release build and staging; no duplicate Debug test suite |
-| `scripts\verify-windows.cmd debug --qmake` | force `qmake -r`, then perform normal Debug verification |
-| `scripts\verify-windows.cmd release --qmake` | force `qmake -r`, then perform the normal Release build |
-| `scripts\verify-windows.cmd debug --build-only` | normal top-level build and staging without running tests |
-| `scripts\verify-windows.cmd debug --build-viewer-only` | fastest narrow build; only `apps\quickviewer`, so changed dependencies may remain stale |
-| `scripts\verify-windows.cmd debug --tests-only` | run the normal Debug test suite from existing artifacts without building |
-| `scripts\verify-windows.cmd debug --test <name> [test-function]` | run one named Debug test, optionally one QtTest function |
-
-`--build-only` and `--build-viewer-only` also accept `release`. `--qmake` can be
-combined with build modes. Test-only modes do not run qmake or a build.
-
-Parallelism is controlled only through the environment. Leave `QV_JOBS` unset
-to let `jom` choose its normal parallelism, or set it to a positive integer to
-invoke `jom -j N`. Override the `jom.exe` path with `QV_JOM` when needed.
-
-The script does not provide `--rebuild` or any other mode that deletes a build
-directory. If a clean tree is required, delete or move the Debug/Release build
-directory manually.
-
-A build does not copy Qt runtime DLLs into `bin`. To make the built application
-launch directly from Windows Explorer:
-
-```bat
-scripts\deploy-windows.cmd debug
-scripts\deploy-windows.cmd release
-```
-
-Default build trees:
-
-```text
-C:\build\quickviewer-msvc2022_64-debug
-C:\build\quickviewer-msvc2022_64-release
-```
-
-`QV_BUILD_DIR`, `QV_QT_DIR`, `QV_VCVARS`, `QV_JOM`, `QV_JOBS`, and
-`QV_HEIF_SOURCE` are documented in [Testing.md](Testing.md), together with the
-complete test-name table, WSL invocation, and verification policy.
+[Testing.md](Testing.md) is the runbook for that workflow: supported
+environment, environment variables, the complete command set, test selection,
+the Debug/Release verification policy, and WSL invocation.
 
 ## 3. Other and historical build methods
 
@@ -129,8 +91,8 @@ QuickViewer has historically been developed with Qt Creator. Load
 `QVproject.pro` as the top-level project.
 
 Older versions generated a distribution package by adding a Make build step
-with `install` as its argument. Current Windows development should use
-`verify-windows.cmd` and `deploy-windows.cmd` so Debug and Release remain
+with `install` as its argument. Current Windows development should use the
+scripts documented in [Testing.md](Testing.md) so Debug and Release remain
 explicitly separated.
 
 ### Command-line builders
@@ -183,17 +145,8 @@ cd build
 ```
 
 If a Windows executable works from a developer prompt but fails from Explorer
-because Qt DLLs or platform plug-ins are missing, use:
-
-```bat
-scripts\deploy-windows.cmd debug
-```
-
-or:
-
-```bat
-scripts\deploy-windows.cmd release
-```
+because Qt DLLs or platform plug-ins are missing, stage the Qt runtime with
+`scripts\deploy-windows.cmd` as described in [Testing.md](Testing.md).
 
 ## 4. Directory structure at build time
 
