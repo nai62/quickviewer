@@ -31,7 +31,7 @@ LanguageInfo LanguageManager::getSystemLanguageInfo()
             return info;
         }
     }
-    return m_languages[LANGUAGE_DEFUALT];
+    return m_languages[LanguageDefault];
 }
 
 void LanguageManager::resetTranslator(QString languageId)
@@ -71,7 +71,7 @@ void LanguageManager::resetTranslator(QString languageId)
 
 void LanguageManager::initialize(QString path)
 {
-    QString inipath = path.isEmpty() ? QString("%1/%2").arg(m_path).arg(LANGUAGES_INI) : path;
+    QString inipath = path.isEmpty() ? QString("%1/%2").arg(m_path).arg(LanguagesIni) : path;
     QSettings settings(inipath, QSettings::IniFormat, this);
 
     QStringList groups = settings.childGroups();

@@ -3,7 +3,7 @@
 
 #include <QtGui>
 
-#define Q_MOUSE_DELTA 120
+constexpr int MouseDelta = 120;
 
 /**
  * @brief The QMouseValue class

@@ -7,8 +7,8 @@ FolderItemDelegate::FolderItemDelegate(QWidget *parent, FolderWindow *folderWind
       m_folderWindow(folderWindow)
 {
 }
-#define PROGRESS_WIDTH 100
-#define PROGRESS_HEIGHT 10
+constexpr int ProgressWidth = 100;
+constexpr int ProgressHeight = 10;
 
 void FolderItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
@@ -45,17 +45,17 @@ void FolderItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
         }
         const ReadProgress progress = qApp->readProgressStore()->at(path);
         QRect rect(option.rect);
-        QPoint begin(rect.left() + 30, rect.top() + PROGRESS_HEIGHT);
+        QPoint begin(rect.left() + 30, rect.top() + ProgressHeight);
         //        painter->drawLine(begin, QPoint(begin.x()+100, begin.y()));
 
-        int progressWidth = progress.completed ? PROGRESS_WIDTH : progress.resumePageIndex * PROGRESS_WIDTH / progress.totalPageCount;
+        int progressWidth = progress.completed ? ProgressWidth : progress.resumePageIndex * ProgressWidth / progress.totalPageCount;
         QBrush brRead(QColor::fromRgb(0x0, 0xff, 0x0, 0x40)), brUnread(QColor::fromRgb(0xff, 0x0, 0x0, 0x40));
         painter->save();
         painter->setPen(Qt::PenStyle::NoPen);
         painter->setBrush(brRead);
-        painter->drawRect(begin.x(), begin.y(), progressWidth, rect.height() - PROGRESS_HEIGHT - 1);
+        painter->drawRect(begin.x(), begin.y(), progressWidth, rect.height() - ProgressHeight - 1);
         painter->setBrush(brUnread);
-        painter->drawRect(begin.x() + progressWidth, begin.y(), PROGRESS_WIDTH - progressWidth, rect.height() - PROGRESS_HEIGHT - 1);
+        painter->drawRect(begin.x() + progressWidth, begin.y(), ProgressWidth - progressWidth, rect.height() - ProgressHeight - 1);
         painter->restore();
     } while (0);
 }

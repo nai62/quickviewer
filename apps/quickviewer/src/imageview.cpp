@@ -738,14 +738,14 @@ void ImageView::handleHideMouseCursorInFullscreenActionTriggered(bool checked)
     qApp->setHideMouseCursorInFullscreen(checked);
 }
 
-#define HOVER_BORDER 20
+constexpr int HoverBorder = 20;
 //#define NOT_HOVER_AREA 100
 
 void ImageView::mouseMoveEvent(QMouseEvent *e)
 {
     QGraphicsView::mouseMoveEvent(e);
     int NOT_HOVER_AREA = width() / 3;
-    int hover_border = qApp->LargeToolbarIcons() ? 3 * HOVER_BORDER : HOVER_BORDER;
+    int hover_border = qApp->LargeToolbarIcons() ? 3 * HoverBorder : HoverBorder;
     if (e->pos().x() < hover_border && e->pos().y() < height() - hover_border) {
         if (m_hoverState != Qt::AnchorLeft) {
             emit anchorHovered(Qt::AnchorLeft);
@@ -809,9 +809,9 @@ void ImageView::wheelEvent(QWheelEvent *event)
     int delta_y = event->angleDelta().y();
     int delta = 0;
     if (delta_y < 0) {
-        delta = -Q_MOUSE_DELTA;
+        delta = -MouseDelta;
     } else if (delta_y > 0) {
-        delta = Q_MOUSE_DELTA;
+        delta = MouseDelta;
     }
     QMouseValue mv(QKeySequence(qApp->keyboardModifiers()), event->buttons(), delta);
     QAction *action = qApp->mouseActions().getActionByValue(mv);

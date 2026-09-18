@@ -1361,7 +1361,7 @@ void MainWindow::createRetouchWindow(bool docked)
 ////////////////////////////
 //// ExifDialog
 ////////////////////////////
-#define EXIF_DIALOG_WIDTH 280
+constexpr int ExifDialogWidth = 280;
 
 void MainWindow::handleOpenExifActionTriggered()
 {
@@ -1388,7 +1388,7 @@ void MainWindow::handleOpenExifActionTriggered()
     ui->catalogSplitter->insertWidget(1, m_exifDialog);
     auto sizes = ui->catalogSplitter->sizes();
     int sum = sizes[0] + sizes[1];
-    sizes[1] = EXIF_DIALOG_WIDTH;
+    sizes[1] = ExifDialogWidth;
     sizes[0] = sum - sizes[1];
     ui->catalogSplitter->setSizes(sizes);
 }
@@ -1684,7 +1684,7 @@ void MainWindow::resizeEvent(QResizeEvent *e)
     if (m_exifDialog && m_exifDialog->parent()) {
         auto sizes = ui->catalogSplitter->sizes();
         int sum = sizes[0] + sizes[1];
-        sizes[1] = EXIF_DIALOG_WIDTH;
+        sizes[1] = ExifDialogWidth;
         sizes[0] = sum - sizes[1];
         ui->catalogSplitter->setSizes(sizes);
     }

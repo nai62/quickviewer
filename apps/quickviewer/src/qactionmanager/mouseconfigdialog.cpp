@@ -168,9 +168,9 @@ void MouseConfigDialog::handleAddSequenceButtonClicked()
     keyseq = QKeySequence();
     int wheelDelta = 0;
     if (ui->radioButtonUp->isChecked()) {
-        wheelDelta = Q_MOUSE_DELTA;
+        wheelDelta = MouseDelta;
     } else if (ui->radioButtonDown->isChecked()) {
-        wheelDelta = -Q_MOUSE_DELTA;
+        wheelDelta = -MouseDelta;
     }
     QMouseValue newval(QKeySequence(keys), buttons, wheelDelta);
     QString seqtext = ui->shortcutEdit->text();

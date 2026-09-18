@@ -32,9 +32,9 @@ QMouseValue::QMouseValue(const QString key)
         } else if (mkey == "ExtraButton4") {
             Buttons |= Qt::ExtraButton4;
         } else if (mkey == "WheelUp") {
-            Delta = Q_MOUSE_DELTA;
+            Delta = MouseDelta;
         } else if (mkey == "WheelDown") {
-            Delta = -Q_MOUSE_DELTA;
+            Delta = -MouseDelta;
         }
     }
 }

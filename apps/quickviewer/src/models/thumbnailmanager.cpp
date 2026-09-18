@@ -117,7 +117,7 @@ ThumbnailManager::ThumbnailManager(QObject *parent, QString dbpath)
     }
 }
 
-#define DEFAULT_FILES_COUNT 30
+constexpr int DefaultFilesCount = 30;
 
 int ThumbnailManager::createSubVolumes(QString dirpath, int catalog_id, int parent_id)
 {
@@ -136,7 +136,7 @@ int ThumbnailManager::createSubVolumes(QString dirpath, int catalog_id, int pare
     QStringList subdirs = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Unsorted);
     sortFiles(subdirs);
     if (m_catalogWatcher.isStarted() && subdirs.size() > 0) {
-        m_catalogWorkMax += subdirs.size() * DEFAULT_FILES_COUNT;
+        m_catalogWorkMax += subdirs.size() * DefaultFilesCount;
         emit m_catalogWatcher.progressRangeChanged(0, m_catalogWorkMax);
     }
     int volumeame_asc = 0;
@@ -161,7 +161,7 @@ int ThumbnailManager::createSubVolumes(QString dirpath, int catalog_id, int pare
     if (files.size() > 0) {
         filecount = createVolumeContent(dirpath, volume_id);
     }
-    m_catalogWorkMax = m_catalogWorkMax + filecount - DEFAULT_FILES_COUNT;
+    m_catalogWorkMax = m_catalogWorkMax + filecount - DefaultFilesCount;
     emit m_catalogWatcher.progressRangeChanged(0, m_catalogWorkMax);
 
     return volume_id;

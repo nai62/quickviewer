@@ -807,7 +807,7 @@ bool ViewerSession::retreatSpread()
     return true;
 }
 
-#define PAGE_INTERVAL 10
+constexpr int PageInterval = 10;
 
 bool ViewerSession::fastForwardPage()
 {
@@ -819,7 +819,7 @@ bool ViewerSession::fastForwardPage()
         return false;
     }
     const int targetPageIndex = qMin(
-        m_pageNavigator.currentPageIndex() + PAGE_INTERVAL,
+        m_pageNavigator.currentPageIndex() + PageInterval,
         volume->pageCount() - 1);
     return selectPage(targetPageIndex, PrefetchMode::FastForward);
 }
@@ -835,7 +835,7 @@ bool ViewerSession::fastBackwardPage()
     }
 
     const int targetPageIndex = qMax(
-        0, m_pageNavigator.currentPageIndex() - PAGE_INTERVAL);
+        0, m_pageNavigator.currentPageIndex() - PageInterval);
     return selectPage(targetPageIndex, PrefetchMode::FastBackward);
 }
 
