@@ -27,7 +27,7 @@ CONFIG += plugin lrelease
 
 QMAKE_TARGET_COMPANY = QuickViewer contributors
 QMAKE_TARGET_PRODUCT = QuickViewer
-QMAKE_TARGET_DESCRIPTION = Ultra-fast image and comic viewer
+QMAKE_TARGET_DESCRIPTION = QuickViewer
 QMAKE_TARGET_COPYRIGHT = Copyright (C) 2017 KATO Kanryu and contributors
 
 DEFINES += \
