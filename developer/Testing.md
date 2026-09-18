@@ -224,38 +224,9 @@ set "QV_PROFILE_FIRST_IMAGE="
 
 ## C++ lint
 
-Install [uv](https://docs.astral.sh/uv/). The lint script pins its own
-`clang-format` version through inline script metadata, so no separate
-`clang-format` installation is required.
-
-Check changed first-party C++ files:
-
-```bash
-uv run --script scripts/lint-cpp.py
-```
-
-Apply fixes:
-
-```bash
-uv run --script scripts/lint-cpp.py --fix
-```
-
-Check the complete tracked first-party C++ scope:
-
-```bash
-uv run --script scripts/lint-cpp.py --all
-```
-
-The tracked pre-commit hook formats staged first-party C++ files and re-stages
-the formatter changes before the commit completes. Enable it once per clone:
-
-```bash
-git config core.hooksPath .githooks
-```
-
-If a staged C++ file also has unstaged changes, the hook aborts instead of
-staging those unrelated changes. Stage or stash the remaining edits and retry
-the commit.
+C++ formatting is enforced by the tracked pre-commit hook and by CI. See
+[CppLint.md](CppLint.md) for the hook mechanics, the lint scope, the commands
+to check or apply formatting manually, and the environment requirements.
 
 ## Interactive checks
 

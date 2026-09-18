@@ -15,6 +15,7 @@ use --all for all tracked first-party C++ files.
 from __future__ import annotations
 
 import argparse
+import re
 import shutil
 import subprocess
 import sys
@@ -111,6 +112,32 @@ def find_clang_format() -> str:
     return executable
 
 
+def pinned_clang_format_version() -> str | None:
+    text = Path(__file__).read_text(encoding="utf-8")
+    match = re.search(r'"clang-format==([^"]+)"', text)
+    return match.group(1) if match else None
+
+
+def warn_on_version_mismatch(executable: str) -> None:
+    pinned = pinned_clang_format_version()
+    if pinned is None:
+        return
+    result = subprocess.run(
+        [executable, "--version"],
+        text=True,
+        stdout=subprocess.PIPE,
+        check=False,
+    )
+    match = re.search(r"(\d+\.\d+\.\d+)", result.stdout)
+    if match is None or match.group(1) == pinned:
+        return
+    print(
+        f"warning: clang-format {match.group(1)} is not the pinned version {pinned}; "
+        "run this script with `uv run --script scripts/lint-cpp.py`.",
+        file=sys.stderr,
+    )
+
+
 def validate_clang_format_config(executable: str) -> None:
     subprocess.run(
         [executable, "--style=file", "--dump-config"],
@@ -120,8 +147,15 @@ def validate_clang_format_config(executable: str) -> None:
     )
 
 
-def check_format(executable: str, files: list[str], fix: bool) -> bool:
+def check_format(
+    executable: str, files: list[str], fix: bool
+) -> tuple[bool, list[str]]:
+    """Check every file and report whether every check succeeded.
+
+    With `fix`, the returned list holds the files whose contents changed.
+    """
     succeeded = True
+    reformatted: list[str] = []
     for path in files:
         command = [executable, "--style=file"]
         if fix:
@@ -129,9 +163,13 @@ def check_format(executable: str, files: list[str], fix: bool) -> bool:
         else:
             command.extend(("--dry-run", "--Werror"))
         command.append(path)
+        before = (ROOT / path).read_bytes() if fix else b""
         result = subprocess.run(command, cwd=ROOT, check=False)
-        succeeded = result.returncode == 0 and succeeded
-    return succeeded
+        if result.returncode != 0:
+            succeeded = False
+        elif fix and (ROOT / path).read_bytes() != before:
+            reformatted.append(path)
+    return succeeded, reformatted
 
 
 def stage_files(files: list[str]) -> None:
@@ -204,8 +242,9 @@ def main() -> int:
                 )
 
         clang_format = find_clang_format()
+        warn_on_version_mismatch(clang_format)
         validate_clang_format_config(clang_format)
-        succeeded = check_format(clang_format, files, args.fix)
+        succeeded, reformatted = check_format(clang_format, files, args.fix)
         if not succeeded:
             print(
                 "C++ lint failed. Run "
@@ -216,6 +255,10 @@ def main() -> int:
 
         if args.staged and args.fix:
             stage_files(files)
+
+        if reformatted:
+            destination = "re-staged" if args.staged else "updated"
+            print(f"Formatted and {destination}: {', '.join(reformatted)}")
     except (OSError, RuntimeError, subprocess.CalledProcessError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 2

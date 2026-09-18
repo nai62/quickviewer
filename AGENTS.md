@@ -25,6 +25,9 @@ Follow the repository `developer/Testing.md` runbook for commands and environmen
   automatically as part of a user-requested commit operation.
 - Do not bypass repository-configured commit hooks with `--no-verify` unless the
   user explicitly requests it.
+- The tracked pre-commit hook formats staged first-party C++ files and stages
+  those edits, so a commit can contain content that was not in the staged diff.
+  Confirm with `git show` when the exact committed content matters.
 - This execution policy does not relax test-coverage requirements. Logic or
   file-loading changes require the relevant automated tests to be added or
   updated, and crash fixes require the regression test described above whenever
