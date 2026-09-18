@@ -1,11 +1,11 @@
 ### [日本語](README_jp.md#日本語--english) / English
 
-## TERMINATED
+## Upstream status
 
 The original project was discontinued by its author due to a fatal illness; see
 the [upstream announcement](https://github.com/kanryu/quickviewer/discussions/206).
-If you wish to continue this project, please create a new repository and form a
-new team.
+
+This repo is a community-maintained fork of the original project.
 
 QuickViewer
 ===========
@@ -19,13 +19,10 @@ An image/comic viewer for Windows, Mac, and Linux. It can show images very fast!
 ![opencollective yearly](https://badgen.net/opencollective/yearly/quickviewer)
 [![Join the chat at https://gitter.im/kanryu/quickviewer](https://badges.gitter.im/kanryu/quickviewer.svg)](https://gitter.im/kanryu/quickviewer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-## Project Website (in English/Japanese)
+## Upstream project
 
-- GitHub (Official, source code repository)
-    - https://kanryu.github.io/quickviewer/
-- OSDN (Second official, in Japanese)
-    - https://ja.osdn.net/projects/quickviewer/
-
+- Project website (English/Japanese): https://kanryu.github.io/quickviewer/
+- OSDN (Japanese): https://ja.osdn.net/projects/quickviewer/
 
 ## Summary
 
