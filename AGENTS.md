@@ -17,7 +17,8 @@ These instructions apply to the entire repository.
 
 ## Verification and handoff contract
 
-Follow the repository `developer/Testing.md` runbook for commands and environment details.
+Follow the repository `developer/README.md` documentation index; the Windows
+build and test commands are in `developer/Testing.md`.
 
 - Do not proactively run builds, automated tests, linters, benchmarks,
   deployment commands, or interactive checks unless the user explicitly

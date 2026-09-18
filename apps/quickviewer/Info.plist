@@ -21,6 +21,6 @@
 	<key>CFBundleIdentifier</key>
         <string>com.kanryu.QuickViewer</string>
 	<key>NOTE</key>
-        <string>An image viewer developed at https://github.com/kanryu/quickviewer/</string>
+        <string>An image viewer originally developed at https://github.com/kanryu/quickviewer/</string>
 </dict>
 </plist>
