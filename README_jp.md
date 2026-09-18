@@ -1,4 +1,4 @@
-### 日本語 / [English](https://github.com/kanryu/quickviewer#readme)
+### 日本語 / [English](README.md)
 
 QuickViewer
 ===========
@@ -10,9 +10,6 @@ QuickViewer
 
 **QuickViewer** は GPLv3 のフリーソフトウェアです。
 
-![github tag](https://badgen.net/github/tag/kanryu/quickviewer)
-![github downloads](https://badgen.net/github/assets-dl/kanryu/quickviewer)
-![github last commit](https://badgen.net/github/last-commit/kanryu/quickviewer)
 ![opencollective backers](https://badgen.net/opencollective/backers/quickviewer)
 ![opencollective contributors](https://badgen.net/opencollective/contributors/quickviewer)
 ![opencollective balance](https://badgen.net/opencollective/balance/quickviewer)
@@ -54,9 +51,9 @@ QuickViewer
 ## ダウンロード
 
 - 最新版は **release_version** です。
-- [ビルド済みリリース版](https://github.com/kanryu/quickviewer/releases) からダウンロードしてください。(Windows x86/x64, Mac dmg x64, Linux AppImage x64)
+- ビルド済みリリース版は、このリポジトリの Releases からダウンロードしてください。(Windows x86/x64, Mac dmg x64, Linux AppImage x64)
     - **Lhaplus** などのdeflate64に対応していない古いアーカイバは使用しないでください。[**7z**](https://sevenzip.osdn.jp/)などをご利用ください。
-- ソースコードについては [リポジトリ](https://github.com/kanryu/quickviewer) から最新のソースコードをcloneして入手してください。
+- ソースコードは、このリポジトリから clone して入手してください。
 
 
 ## 機能紹介
@@ -98,7 +95,7 @@ QuickViewer
     - フルスクリーン表示
     - 常に手前に表示
     - ウィンドウの表示を次回起動時に復元する
-- [シェーダープログラム](shader-ja) による表示品質の切り替え
+- [シェーダープログラム](docs/shader-ja.md) による表示品質の切り替え
     - バイリニア補間(標準)
     - 最近傍補間
     - ~~バイキュービック補間~~ (v0.9.3で廃止)
@@ -144,9 +141,9 @@ QuickViewer
 
 ### シェーダーによる描画品質の変更
 
-画像の描画品質が向上します。詳しくは [シェーダー](shader-ja) にて。
+画像の描画品質が向上します。詳しくは [シェーダー](docs/shader-ja.md) にて。
 
-![1 of compared](compared1.png)
+![1 of compared](docs/compared1.png)
 
 
 ### 画像の場所をExplorerで確認
@@ -219,3 +216,8 @@ v0.6.0以降、QuickViewerはあなたのデジタルブックやマンガから
 | 画面回転 | タッチパッド | ２つ指でコンパスの動き | 画面中央 |
 | 拡大／縮小／回転のキャンセル | タッチパッド | ２つ指でダブルタップ | 画面中央 |
 | 画面のスクロール(拡大時のみ) | タッチパッド | 上下左右スワイプ | 画面中央 |
+
+
+## 開発
+
+セットアップ、ビルド、テスト、ツールのドキュメントは [developer/README.md](developer/README.md) を参照してください。

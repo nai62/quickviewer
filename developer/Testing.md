@@ -1,7 +1,7 @@
 # QuickViewer verification runbook
 
-The repository-wide verification requirements are defined in `../AGENTS.md`.
-This file describes how to run them on Windows.
+This runbook covers the supported Windows build, test, and verification
+workflow for QuickViewer.
 
 ## Prerequisites
 
