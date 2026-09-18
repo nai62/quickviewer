@@ -581,18 +581,6 @@ FileWorker ThumbnailManager::createFileRecord(QString filename, QString filepath
     result.thumbbytes = thumbdat.data();
     result.created_at = QDateTime::currentDateTime();
 
-    //    QBuffer alternated;
-    //    if(ThumbnailManager::isHeavyImageFile(filename) || img.width() > MAX_WIDTH || img.height() > MAX_HEIGHT) {
-    //        QDesktopWidget* desktop = QApplication::desktop();
-    //        QRect rect = desktop->screenGeometry();
-    ////            qDebug() << rect;
-    //        QImage alter = img.scaled(rect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    //        alternated.open(QBuffer::ReadWrite);
-    //        if(!alter.save(&alternated, "JPEG", 90)) {
-    //            return result;
-    //        }
-    //        result.alternated = alternated.data();
-    //    }
     return result;
 }
 
@@ -848,7 +836,7 @@ QList<VolumeThumbRecord> ThumbnailManager::volumes()
 
 static VolumeThumbRecord thumbnail2Icon(VolumeThumbRecord vtr)
 {
-    QString aformat = IFileLoader::supportsImageFormat(TURBO_JPEG_FMT) ? TURBO_JPEG_FMT : "jpg";
+    QString aformat = IFileLoader::supportsImageFormat(IFileLoader::turboJpegFormatName()) ? IFileLoader::turboJpegFormatName() : "jpg";
     QPixmap pixmap = QPixmap::fromImage(QImage::fromData(vtr.thumbnail, aformat.toUtf8()));
     //    QPixmap pixmap = QPixmap::fromImage(QImage::fromData(vtr.thumbnail));
     vtr.icon = QIcon(pixmap);

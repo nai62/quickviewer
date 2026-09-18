@@ -3,9 +3,7 @@
 
 #include <QtCore>
 
-#define APP_ORGANIZATION "KATO Kanryu(k.kanryu@gmail.com)"
 #define APP_COPYRIGHT "Copyright 2017 KATO Kanryu"
-#define QV_APPNAME "QuickViewer"
 #define QV_THUMBNAILS "thumbnail.sqlite3.db"
 
 #ifdef Q_OS_WIN
