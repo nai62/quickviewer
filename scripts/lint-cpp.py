@@ -1,19 +1,23 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#     "clang-format==23.1.1",
+# ]
+# ///
 """Check C++ formatting.
 
 With no file arguments, C++ files changed from HEAD are checked in full. Pass
-files explicitly to check them, or use --all for all first-party C++ files.
+files explicitly to check them, use --staged for the staged C++ lint scope, or
+use --all for all tracked first-party C++ files.
 """
 
 from __future__ import annotations
 
 import argparse
-import os
-import re
 import shutil
 import subprocess
 import sys
-from collections.abc import Iterable
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -23,7 +27,6 @@ FIRST_PARTY_PREFIXES = (
     "components/",
     "tests/",
 )
-VERSION_PATTERN = re.compile(r"version\s+(\d+)", re.IGNORECASE)
 
 
 def run_git(*args: str) -> str:
@@ -42,6 +45,16 @@ def is_first_party(path: str) -> bool:
     return normalized.startswith(FIRST_PARTY_PREFIXES)
 
 
+def filter_cpp_files(paths: list[str]) -> list[str]:
+    return sorted(
+        {
+            path
+            for path in paths
+            if path and is_cpp(path) and is_first_party(path)
+        }
+    )
+
+
 def changed_files(diff_ref: str) -> list[str]:
     changed = run_git(
         "diff",
@@ -53,48 +66,49 @@ def changed_files(diff_ref: str) -> list[str]:
         "--",
     ).split("\0")
     untracked = run_git("ls-files", "--others", "--exclude-standard", "-z").split("\0")
-    return sorted(
-        {
-            path
-            for path in (*changed, *untracked)
-            if path and is_cpp(path) and is_first_party(path)
-        }
-    )
+    return filter_cpp_files([*changed, *untracked])
+
+
+def staged_files() -> list[str]:
+    paths = run_git(
+        "diff",
+        "--cached",
+        "--name-only",
+        "-z",
+        "--no-ext-diff",
+        "--diff-filter=ACMR",
+        "--",
+    ).split("\0")
+    return filter_cpp_files(paths)
 
 
 def tracked_first_party_files() -> list[str]:
     paths = run_git("ls-files", "-z").split("\0")
-    return sorted(
-        path for path in paths if path and is_cpp(path) and is_first_party(path)
-    )
+    return filter_cpp_files(paths)
 
 
-def find_tool(
-    requested: str | None, environment_name: str, candidates: Iterable[str]
-) -> str:
-    preferred = requested or os.environ.get(environment_name)
-    names = [preferred] if preferred else list(candidates)
-    for name in names:
-        if name and shutil.which(name):
-            return name
-    searched = ", ".join(name for name in names if name)
-    raise RuntimeError(f"required tool not found (tried: {searched})")
+def unstaged_files(paths: list[str]) -> list[str]:
+    if not paths:
+        return []
+    changed = run_git(
+        "diff",
+        "--name-only",
+        "-z",
+        "--no-ext-diff",
+        "--",
+        *paths,
+    ).split("\0")
+    return sorted(path for path in changed if path)
 
 
-def require_clang_format_18(executable: str) -> None:
-    result = subprocess.run(
-        [executable, "--version"],
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        check=True,
-    )
-    match = VERSION_PATTERN.search(result.stdout)
-    if not match or int(match.group(1)) != 18:
+def find_clang_format() -> str:
+    executable = shutil.which("clang-format")
+    if executable is None:
         raise RuntimeError(
-            "clang-format 18 is required for reproducible repository-wide formatting; "
-            f"found: {result.stdout.strip()}"
+            "clang-format not found; run this script with "
+            "`uv run --script scripts/lint-cpp.py`"
         )
+    return executable
 
 
 def validate_clang_format_config(executable: str) -> None:
@@ -106,11 +120,7 @@ def validate_clang_format_config(executable: str) -> None:
     )
 
 
-def check_format(
-    executable: str,
-    files: list[str],
-    fix: bool,
-) -> bool:
+def check_format(executable: str, files: list[str], fix: bool) -> bool:
     succeeded = True
     for path in files:
         command = [executable, "--style=file"]
@@ -124,6 +134,11 @@ def check_format(
     return succeeded
 
 
+def stage_files(files: list[str]) -> None:
+    if files:
+        subprocess.run(["git", "add", "--", *files], cwd=ROOT, check=True)
+
+
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -133,59 +148,78 @@ def parse_arguments() -> argparse.Namespace:
         "--all", action="store_true", help="check all tracked first-party C++ files"
     )
     parser.add_argument(
+        "--staged",
+        action="store_true",
+        help="check staged first-party C++ files; --fix also re-stages fixes",
+    )
+    parser.add_argument(
         "--diff-ref",
         default="HEAD",
         help="git revision/range used when no files are given (default: HEAD)",
     )
     parser.add_argument("--fix", action="store_true", help="apply clang-format fixes")
-    parser.add_argument(
-        "--clang-format", dest="clang_format", help="clang-format executable"
-    )
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_arguments()
-    if args.all and args.files:
-        print("error: --all cannot be combined with file arguments", file=sys.stderr)
+    selection_count = int(args.all) + int(args.staged) + int(bool(args.files))
+    if selection_count > 1:
+        print(
+            "error: --all, --staged, and explicit files are mutually exclusive",
+            file=sys.stderr,
+        )
         return 2
+
     try:
         if args.all:
             files = tracked_first_party_files()
+        elif args.staged:
+            files = staged_files()
         elif args.files:
-            files = sorted(
+            normalized = sorted(
                 {str(Path(path).as_posix()) for path in args.files if is_cpp(path)}
             )
-            out_of_scope = [path for path in files if not is_first_party(path)]
+            out_of_scope = [path for path in normalized if not is_first_party(path)]
             if out_of_scope:
                 raise RuntimeError(
                     "files outside the configured first-party lint scope: "
                     + ", ".join(out_of_scope)
                 )
+            files = normalized
         else:
             files = changed_files(args.diff_ref)
 
-        clang_format = find_tool(
-            args.clang_format,
-            "CLANG_FORMAT",
-            ("clang-format-18", "clang-format"),
-        )
-        require_clang_format_18(clang_format)
-        validate_clang_format_config(clang_format)
         if not files:
             print("No C++ changes to check.")
             return 0
+
+        if args.staged and args.fix:
+            partial = unstaged_files(files)
+            if partial:
+                raise RuntimeError(
+                    "cannot auto-fix staged C++ files that also have unstaged changes: "
+                    + ", ".join(partial)
+                    + ". Stage or stash those changes before committing."
+                )
+
+        clang_format = find_clang_format()
+        validate_clang_format_config(clang_format)
         succeeded = check_format(clang_format, files, args.fix)
+        if not succeeded:
+            print(
+                "C++ lint failed. Run "
+                "`uv run --script scripts/lint-cpp.py --fix` with the same files.",
+                file=sys.stderr,
+            )
+            return 1
+
+        if args.staged and args.fix:
+            stage_files(files)
     except (OSError, RuntimeError, subprocess.CalledProcessError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 2
 
-    if not succeeded:
-        print(
-            "C++ lint failed. Run python3 scripts/lint-cpp.py --fix with the same files.",
-            file=sys.stderr,
-        )
-        return 1
     print(f"C++ lint passed ({len(files)} file(s)).")
     return 0
 
