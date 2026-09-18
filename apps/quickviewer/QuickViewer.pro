@@ -134,6 +134,7 @@ SOURCES += \
     src/models/prefetchplanner.cpp \
     src/models/qvapplication.cpp \
     src/models/shadermanager.cpp \
+    src/models/shadereffect.cpp \
     src/models/svgloader.cpp \
     src/startupprofiler.cpp \
     src/models/thumbnailmanager.cpp \
@@ -195,6 +196,7 @@ HEADERS  += \
     src/models/prefetchplanner.h \
     src/models/qvapplication.h \
     src/models/shadermanager.h \
+    src/models/shadereffect.h \
     src/models/svgloader.h \
     src/models/thumbnailmanager.h \
     src/models/volumecache.h \

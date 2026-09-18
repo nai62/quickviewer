@@ -14,6 +14,7 @@
 #include "ResizeHalf.h"
 #include "qvapplication.h"
 #include "qzimg.h"
+#include "shadereffect.h"
 #include "fileloader.h"
 #include "boundedexecutor.h"
 #include "svgloader.h"
@@ -358,7 +359,7 @@ void Volume::updatePrefetchCache(
                 }
             }
         }
-        if (fullResolution && qApp->Effect() < qvEnums::UsingFixedShader && cachedImageLoad && cachedImageLoad->isFinished()) {
+        if (fullResolution && resizesOnCpu(qApp->Effect()) && cachedImageLoad && cachedImageLoad->isFinished()) {
             ImageContent cachedImage = cachedImageLoad->result();
             if (cachedImage.loadedImageSize.isValid()) {
                 const QSize pageSize = viewportSize;
@@ -376,7 +377,7 @@ void Volume::updatePrefetchCache(
             }
         }
         if (!cache.touch(cnt)) {
-            const QSize pageSize = fullResolution && qApp->Effect() < qvEnums::UsingFixedShader
+            const QSize pageSize = fullResolution && resizesOnCpu(qApp->Effect())
                                        ? viewportSize
                                        : QSize();
             const QSize decodeTargetSize = fullResolution ? QSize() : previewDecodeSize(viewportSize);
@@ -545,29 +546,6 @@ static void parseExifTextExtents(QImage &img, easyexif::EXIFInfo &info)
     info.ImageHeight = img.text("ImageHeight").toInt();
 }
 
-static QZimg::FilterMode filterModeForShaderEffect(qvEnums::ShaderEffect effect)
-{
-    switch (effect) {
-    case qvEnums::CpuBicubic:
-        return QZimg::ResizeBicubic;
-    case qvEnums::CpuSpline16:
-        return QZimg::ResizeSpline16;
-    case qvEnums::CpuSpline36:
-        return QZimg::ResizeSpline36;
-    case qvEnums::CpuLanczos3:
-        return QZimg::ResizeLanczos3;
-    case qvEnums::BilinearAndCpuBicubic:
-        return QZimg::ResizeBicubic;
-    case qvEnums::BilinearAndCpuSpline16:
-        return QZimg::ResizeSpline16;
-    case qvEnums::BilinearAndCpuSpline36:
-        return QZimg::ResizeSpline36;
-    case qvEnums::BilinearAndCpuLanczos:
-        return QZimg::ResizeLanczos3;
-    default:
-        return QZimg::ResizeBicubic;
-    }
-}
 static QSize constrainedDecodeSize(const QSize &sourceSize, const QSize &requestedSize, int maxTextureSize)
 {
     if (!sourceSize.isValid()) {
@@ -1289,7 +1267,7 @@ static ImageContent loadWithSpecifiedFormat(
         if (!pageSize.isEmpty() && !ic.loadedImage.isNull()) {
             QSize newsize = ic.exifInfo.Orientation == 6 || ic.exifInfo.Orientation == 8 ? QSize(pageSize.height(), pageSize.width()) : pageSize;
             ic.appliedResizeMode = qApp->Effect();
-            ic.resizedImage = QZimg::scaled(ic.loadedImage, newsize, Qt::KeepAspectRatio, filterModeForShaderEffect(qApp->Effect()));
+            ic.resizedImage = QZimg::scaled(ic.loadedImage, newsize, Qt::KeepAspectRatio, cpuFilterMode(qApp->Effect()));
         }
         return ic;
     }
@@ -1403,6 +1381,6 @@ ImageContent Volume::resizeImageForViewport(ImageContent content, QSize pageSize
                                  : pageSize;
     content.appliedResizeMode = qApp->Effect();
     content.resizedImage = QZimg::scaled(
-        content.loadedImage, targetSize, Qt::KeepAspectRatio, filterModeForShaderEffect(qApp->Effect()));
+        content.loadedImage, targetSize, Qt::KeepAspectRatio, cpuFilterMode(qApp->Effect()));
     return content;
 }

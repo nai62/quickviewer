@@ -3,6 +3,7 @@
 #include "renderedpage.h"
 #include "qvapplication.h"
 #include "qzimg.h"
+#include "shadereffect.h"
 
 #ifdef QV_WITH_LUMINOR
 #    include "qluminor.h"
@@ -278,32 +279,6 @@ void RenderedPage::setRenderSettings(PageRenderSettings renderSettings)
     m_renderSettings = std::move(renderSettings);
 }
 
-static QZimg::FilterMode filterModeForShaderEffect(qvEnums::ShaderEffect effect)
-{
-    switch (effect) {
-    case qvEnums::CpuBicubic:
-        return QZimg::ResizeBicubic;
-    case qvEnums::CpuSpline16:
-        return QZimg::ResizeSpline16;
-    case qvEnums::CpuSpline36:
-        return QZimg::ResizeSpline36;
-    case qvEnums::CpuLanczos3:
-        return QZimg::ResizeLanczos3;
-    case qvEnums::CpuLanczos4:
-        return QZimg::ResizeLanczos4;
-    case qvEnums::BilinearAndCpuBicubic:
-        return QZimg::ResizeBicubic;
-    case qvEnums::BilinearAndCpuSpline16:
-        return QZimg::ResizeSpline16;
-    case qvEnums::BilinearAndCpuSpline36:
-        return QZimg::ResizeSpline36;
-    case qvEnums::BilinearAndCpuLanczos:
-        return QZimg::ResizeLanczos3;
-    default:
-        return QZimg::ResizeBicubic;
-    }
-}
-
 void RenderedPage::applyResize(qreal scale, int rotationOffset, QPoint position, QSize targetSize, bool loupe)
 {
     ensureInitialized();
@@ -317,7 +292,7 @@ void RenderedPage::applyResize(qreal scale, int rotationOffset, QPoint position,
                                      ? scale
                                      : scale * m_content.loadedImageSize.width() / sourceImage.width();
     // only CPU resizing
-    if (effect < qvEnums::UsingFixedShader) {
+    if (resizesOnCpu(effect)) {
         if (loupe && !m_content.resizedImage.isNull()) {
             m_content.resizedImage = QImage();
             initializePage(true);
@@ -328,7 +303,7 @@ void RenderedPage::applyResize(qreal scale, int rotationOffset, QPoint position,
             if (m_content.resizedImage.isNull() || m_content.resizedImage.size() != resizeTargetSize) {
                 m_content.appliedResizeMode = qApp->Effect();
                 m_content.resizedImage = QZimg::scaled(
-                    sourceImage, resizeTargetSize, Qt::IgnoreAspectRatio, filterModeForShaderEffect(qApp->Effect()));
+                    sourceImage, resizeTargetSize, Qt::IgnoreAspectRatio, cpuFilterMode(qApp->Effect()));
                 m_scene->removeItem(m_graphicsItem);
                 delete m_graphicsItem;
                 m_graphicsItem = m_scene->addPixmap(QPixmap::fromImage(m_content.resizedImage));
@@ -338,14 +313,14 @@ void RenderedPage::applyResize(qreal scale, int rotationOffset, QPoint position,
         m_graphicsItem->setScale(m_content.resizedImage.isNull() ? retouchedScale : 1.0);
     }
     // CPU resizing after GPU preview
-    if (effect > qvEnums::UsingCpuResizer && qApp->Effect() < qvEnums::UsingSomeShader) {
+    if (shaderEffectKind(effect) == ShaderEffectKind::CpuResizeAfterPreview && shaderEffectKind(qApp->Effect()) != ShaderEffectKind::GlShader) {
         if (!m_content.resizedImage.isNull() && m_content.resizedImage.size() != resizeTargetSize) {
             initializePage(true);
         }
         if (m_content.resizedImage.isNull() && m_resizeGeneratingState == 0) {
             m_resizeGeneratingState = 1;
             QFuture<QImage> future = QtConcurrent::run(
-                QZimg::scaled, sourceImage, resizeTargetSize, Qt::IgnoreAspectRatio, filterModeForShaderEffect(qApp->Effect()));
+                QZimg::scaled, sourceImage, resizeTargetSize, Qt::IgnoreAspectRatio, cpuFilterMode(qApp->Effect()));
             connect(&m_resizeWatcher, SIGNAL(finished()), this, SLOT(handleResizeFinished()));
             m_resizeWatcher.setFuture(future);
         }
@@ -358,7 +333,7 @@ void RenderedPage::applyResize(qreal scale, int rotationOffset, QPoint position,
         m_graphicsItem->setScale(m_content.resizedImage.isNull() ? retouchedScale : 1.0);
     }
     // only GPU resizing
-    if ((effect > qvEnums::UsingFixedShader && effect < qvEnums::UsingCpuResizer) || effect > qvEnums::UsingSomeShader) {
+    if (usesGpuRendering(effect)) {
         initializePage(true);
         m_graphicsItem->setScale(retouchedScale);
     }
@@ -393,7 +368,7 @@ void RenderedPage::initializePage(bool resetResizedImage)
         delete m_graphicsItem;
     }
     if (m_scene) {
-        m_graphicsItem = m_scene->addPixmap(QPixmap::fromImage(qApp->Effect() > qvEnums::UsingFixedShader || m_content.resizedImage.isNull() ? imageWithRetouch() : m_content.resizedImage));
+        m_graphicsItem = m_scene->addPixmap(QPixmap::fromImage(usesGpuRendering(qApp->Effect()) || m_content.resizedImage.isNull() ? imageWithRetouch() : m_content.resizedImage));
         m_graphicsItem->setRotation(m_rotationDegrees);
     }
 

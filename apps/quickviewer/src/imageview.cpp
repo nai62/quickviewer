@@ -5,6 +5,7 @@
 
 #include "imageview.h"
 #include "models/cursorscrollmapping.h"
+#include "models/shadereffect.h"
 #include "qvapplication.h"
 
 ImageView::ImageView(QWidget *parent)
@@ -55,7 +56,7 @@ ImageView::ImageView(QWidget *parent)
 #ifdef QV_WITHOUT_OPENGL
     setRenderer(Native);
 #else
-    if (qApp->Effect() > qvEnums::UsingFixedShader) {
+    if (usesGpuRendering(qApp->Effect())) {
         setRenderer(OpenGL);
     }
 #endif
@@ -308,7 +309,7 @@ void ImageView::clearMessage()
 
 void ImageView::refreshRenderedPages()
 {
-    if (qApp->Effect() > qvEnums::UsingFixedShader) {
+    if (usesGpuRendering(qApp->Effect())) {
         setRenderer(OpenGL);
     }
     const int renderedCount = renderedPageCount();

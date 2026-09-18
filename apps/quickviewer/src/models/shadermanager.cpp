@@ -1,6 +1,7 @@
 #include <QGraphicsPixmapItem>
 #include "shadermanager.h"
 #include "qvapplication.h"
+#include "shadereffect.h"
 
 #ifndef QV_WITHOUT_OPENGL
 #    include <QtOpenGL>
@@ -140,7 +141,7 @@ void ShaderManager::prepare(QGraphicsPixmapItem *item, const ImageContent &, QSi
     case qvEnums::BilinearAndCpuSpline36:
     case qvEnums::BilinearAndCpuLanczos:
         item->setTransformationMode(Qt::SmoothTransformation);
-        if (m_oldEffect > qvEnums::UsingSomeShader) {
+        if (shaderEffectKind(m_oldEffect) == ShaderEffectKind::GlShader) {
             item->setGraphicsEffect(nullptr);
         }
         break;
@@ -148,7 +149,7 @@ void ShaderManager::prepare(QGraphicsPixmapItem *item, const ImageContent &, QSi
         if (m_oldEffect != qvEnums::NearestNeighbor) {
             item->setTransformationMode(Qt::FastTransformation);
         }
-        if (m_oldEffect > qvEnums::UsingSomeShader) {
+        if (shaderEffectKind(m_oldEffect) == ShaderEffectKind::GlShader) {
             item->setGraphicsEffect(nullptr);
         }
         break;

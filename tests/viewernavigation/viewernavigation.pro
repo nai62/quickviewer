@@ -49,6 +49,7 @@ SOURCES += \
     ../../apps/quickviewer/src/models/imagemetadata.cpp \
     ../../apps/quickviewer/src/models/movie.cpp \
     ../../apps/quickviewer/src/models/shadermanager.cpp \
+    ../../apps/quickviewer/src/models/shadereffect.cpp \
     ../../apps/quickviewer/src/models/svgloader.cpp \
     ../../apps/quickviewer/src/startupprofiler.cpp \
     ../../apps/quickviewer/src/models/volumecache.cpp \
@@ -87,6 +88,7 @@ HEADERS += \
     ../../apps/quickviewer/src/models/renderedpages.h \
     ../../apps/quickviewer/src/models/renderedpagemetrics.h \
     ../../apps/quickviewer/src/models/shadermanager.h \
+    ../../apps/quickviewer/src/models/shadereffect.h \
     ../../apps/quickviewer/src/models/svgloader.h \
     ../../apps/quickviewer/src/startupprofiler.h \
     ../../apps/quickviewer/src/models/volumecache.h \
