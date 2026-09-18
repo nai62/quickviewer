@@ -547,6 +547,13 @@ private slots:
             QDir(directory.path()).filePath(QStringLiteral("sub/page-0.bmp")));
 
         QCOMPARE(view->currentIndex().data().toString(), QStringLiteral("sub"));
+        // The folder that leads to the page is marked like a displayed file.
+        QVERIFY(view->currentIndex().data(FolderItemModel::CurrentVolumeRole).toBool());
+
+        // Rebuilding the list keeps the mark.
+        folder.setFolderPath(directory.path(), false);
+        QCOMPARE(view->currentIndex().data().toString(), QStringLiteral("sub"));
+        QVERIFY(view->currentIndex().data(FolderItemModel::CurrentVolumeRole).toBool());
     }
 
     void openingFileInShownFolderDoesNotRereadIt()

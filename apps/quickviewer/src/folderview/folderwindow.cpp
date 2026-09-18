@@ -348,22 +348,53 @@ QString FolderWindow::itemPath(const QModelIndex &index) const
     return dir.absoluteFilePath(filename);
 }
 
-void FolderWindow::updateCurrentVolumeRow()
+namespace {
+
+bool sameEntryName(const QString &lhs, const QString &rhs)
 {
-    int currentVolumeRow = -1;
-    for (int row = 0; row < m_volumes.size() && !m_currentVolumePath.isEmpty(); ++row) {
-        const QString item = QDir::cleanPath(QDir::fromNativeSeparators(itemPath(m_itemModel.index(row, 0))));
 #ifdef Q_OS_WIN
-        const bool isCurrentVolume = item.compare(m_currentVolumePath, Qt::CaseInsensitive) == 0;
+    return lhs.compare(rhs, Qt::CaseInsensitive) == 0;
 #else
-        const bool isCurrentVolume = item == m_currentVolumePath;
+    return lhs == rhs;
 #endif
-        if (isCurrentVolume) {
-            currentVolumeRow = row;
-            break;
+}
+
+} // namespace
+
+int FolderWindow::currentVolumeRow() const
+{
+    if (m_currentVolumePath.isEmpty() || m_currentPath.isEmpty()) {
+        return -1;
+    }
+    // The viewer can display pages below the displayed folder when "show
+    // subfolders" is on. The panel keeps its one-level list, so the entry that
+    // represents the page is the file itself, or the folder containing it.
+    const QString relative =
+        QDir(m_currentPath).relativeFilePath(QDir::fromNativeSeparators(m_currentVolumePath));
+    if (relative.isEmpty() || QDir::isAbsolutePath(relative) || relative.startsWith(QStringLiteral(".."))) {
+        return -1;
+    }
+    const QString name = relative.section(QLatin1Char('/'), 0, 0);
+    for (int row = 0; row < m_volumes.size(); ++row) {
+        if (sameEntryName(m_volumes[row].name, name)) {
+            return row;
         }
     }
-    m_itemModel.setCurrentVolumeRow(currentVolumeRow);
+    return -1;
+}
+
+void FolderWindow::updateCurrentVolumeRow()
+{
+    const int row = currentVolumeRow();
+    m_itemModel.setCurrentVolumeRow(row);
+    if (row < 0) {
+        return;
+    }
+    // Mark the entry the way a file page is marked: the delegate paints the
+    // model role and the current index keeps keyboard navigation on the entry.
+    // The signals are blocked because selecting an entry must not open it.
+    const QSignalBlocker blocker(ui->folderView);
+    ui->folderView->setCurrentIndex(m_itemModel.index(row, 0));
 }
 
 const static QKeySequence seqReturn("Return");
@@ -423,32 +454,6 @@ void FolderWindow::handleViewerSessionVolumeChanged(QString path)
                               ? QString()
                               : QDir::cleanPath(QDir::fromNativeSeparators(path));
     updateCurrentVolumeRow();
-
-    QFileInfo info(QDir::toNativeSeparators(path));
-    if (!info.exists() || m_currentPath.isEmpty()) {
-        return;
-    }
-    // The current page can be below the displayed folder when the viewer shows
-    // subfolders too. The panel keeps its one-level list, so it marks the entry
-    // that leads to the page: the file itself, or the folder that contains it.
-    const QString relative =
-        QDir(m_currentPath).relativeFilePath(QDir::fromNativeSeparators(path));
-    if (relative.isEmpty() || QDir::isAbsolutePath(relative) || relative.startsWith(QStringLiteral(".."))) {
-        return;
-    }
-    const QString name = relative.section(QLatin1Char('/'), 0, 0);
-    int row = -1;
-    foreach (const FolderItem &item, m_volumes) {
-        row++;
-        if (name != item.name) {
-            continue;
-        }
-        QModelIndex midx = m_itemModel.index(row, 0, QModelIndex());
-        const QSignalBlocker blocker(ui->folderView);
-        ui->folderView->setCurrentIndex(midx);
-
-        break;
-    }
 }
 
 void FolderWindow::openFolderItem(const QModelIndex &index)
