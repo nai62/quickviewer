@@ -1,4 +1,4 @@
-### 日本語 / [English](https://github.com/kanryu/quickviewer#readme)
+### 日本語 / [English](README.md)
 
 QuickViewer
 ===========
@@ -10,9 +10,6 @@ QuickViewer
 
 **QuickViewer** は GPLv3 のフリーソフトウェアです。
 
-![github tag](https://badgen.net/github/tag/kanryu/quickviewer)
-![github downloads](https://badgen.net/github/assets-dl/kanryu/quickviewer)
-![github last commit](https://badgen.net/github/last-commit/kanryu/quickviewer)
 ![opencollective backers](https://badgen.net/opencollective/backers/quickviewer)
 ![opencollective contributors](https://badgen.net/opencollective/contributors/quickviewer)
 ![opencollective balance](https://badgen.net/opencollective/balance/quickviewer)
@@ -54,9 +51,9 @@ QuickViewer
 ## ダウンロード
 
 - 最新版は **release_version** です。
-- [ビルド済みリリース版](https://github.com/kanryu/quickviewer/releases) からダウンロードしてください。(Windows x86/x64, Mac dmg x64, Linux AppImage x64)
+- ビルド済みリリース版は、このリポジトリの Releases からダウンロードしてください。(Windows x86/x64, Mac dmg x64, Linux AppImage x64)
     - **Lhaplus** などのdeflate64に対応していない古いアーカイバは使用しないでください。[**7z**](https://sevenzip.osdn.jp/)などをご利用ください。
-- ソースコードについては [リポジトリ](https://github.com/kanryu/quickviewer) から最新のソースコードをcloneして入手してください。
+- ソースコードは、このリポジトリから clone して入手してください。
 
 
 ## 機能紹介
@@ -222,7 +219,5 @@ v0.6.0以降、QuickViewerはあなたのデジタルブックやマンガから
 
 
 ## 開発
-
-プロジェクトのソースコード: https://github.com/kanryu/quickviewer
 
 セットアップ、ビルド、テスト、ツールのドキュメントは [developer/README.md](developer/README.md) を参照してください。

@@ -31,8 +31,8 @@ https://rustup.rs/
 Clone the repository and submodules:
 
 ```shell
-git clone --recurse-submodules https://github.com/kanryu/quickviewer
-cd quickviewer
+git clone --recurse-submodules <this repository URL>
+cd <the cloned directory>
 ```
 
 For an existing clone:

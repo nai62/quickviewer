@@ -20,5 +20,5 @@ hooks and the verification contract - are in [AGENTS.md](AGENTS.md).
 
 ## Reporting issues
 
-Report issues at https://github.com/kanryu/quickviewer/issues, including the
-configuration of the QuickViewer installation.
+Report issues in the issue tracker of the repository you are working from,
+including the configuration of the QuickViewer installation.

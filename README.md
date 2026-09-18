@@ -2,7 +2,10 @@
 
 ## TERMINATED
 
-[This project has been discontinued due to my fatal illness.](https://github.com/kanryu/quickviewer/discussions/206) If you wish to continue this project, please create a new repository and form a new team.
+The original project was discontinued by its author due to a fatal illness; see
+the [upstream announcement](https://github.com/kanryu/quickviewer/discussions/206).
+If you wish to continue this project, please create a new repository and form a
+new team.
 
 QuickViewer
 ===========
@@ -10,9 +13,6 @@ QuickViewer
 
 An image/comic viewer for Windows, Mac, and Linux. It can show images very fast!
 
-![github tag](https://badgen.net/github/tag/kanryu/quickviewer)
-![github downloads](https://badgen.net/github/assets-dl/kanryu/quickviewer)
-![github last commit](https://badgen.net/github/last-commit/kanryu/quickviewer)
 ![opencollective backers](https://badgen.net/opencollective/backers/quickviewer)
 ![opencollective contributors](https://badgen.net/opencollective/contributors/quickviewer)
 ![opencollective balance](https://badgen.net/opencollective/balance/quickviewer)
@@ -50,7 +50,7 @@ An image/comic viewer for Windows, Mac, and Linux. It can show images very fast!
 
 ## Download
 
-[Binary Distributions](https://github.com/kanryu/quickviewer/releases)
+Binary distributions: see the Releases page of this repository.
 
  - Windows `.zip` (x86/x64)
  - Mac `.dmg` (x64) (until v1.1.1)
@@ -186,8 +186,7 @@ You can perform screen operations with the main menu, toolbar, mouse button, whe
 
 ## Report issues
 
-Public Project Issues:
-https://github.com/kanryu/quickviewer/issues
+Report issues in the issue tracker of the repository you are working from.
 
 Please report issues along with configuration details of your QuickViewer's
 working installation at <k.kanryu@gmail.com>.
@@ -197,8 +196,6 @@ Your feedback is always welcome at KATO Kanryu <<k.kanryu@gmail.com>>.
 
 ## Development
 
-Source code: https://github.com/kanryu/quickviewer
-
 Setup, build, test, and tooling documentation: [developer/README.md](developer/README.md).
 
 
@@ -206,4 +203,4 @@ Setup, build, test, and tooling documentation: [developer/README.md](developer/R
 
 This program is distributed in hopes to be useful and to be used, but WITHOUT ANY WARRANTY—without even implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See GNU General Public License for more details.
 
-https://github.com/kanryu/quickviewer/blob/master/LICENSE
+Full text: [LICENSE](LICENSE)
