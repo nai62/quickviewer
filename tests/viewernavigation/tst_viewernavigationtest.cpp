@@ -14,8 +14,12 @@
 #include "models/visiblepagecomposer.h"
 #include "models/viewersession.h"
 #include "models/qvapplication.h"
+#include "models/shadereffect.h"
+#include "models/shadermanager.h"
 #include "models/volumecache.h"
 #include "models/volumehandle.h"
+
+#define FILELOADER_DATAPATH VIEWERNAVIGATION_SRCDIR "../fileloader/data/"
 
 class EmptyFileLoader final : public IFileLoader
 {
@@ -173,6 +177,73 @@ private slots:
         QCOMPARE(PageDisplayFormatter::signageText({}, 4, 12), QString());
     }
 
+    void shaderEffectVocabularyIsBuildIndependent()
+    {
+        struct EffectCase
+        {
+            qvEnums::ShaderEffect effect;
+            ShaderEffectKind kind;
+        };
+        const QList<EffectCase> cases{
+            {qvEnums::ShaderEffect::UnPrepared, ShaderEffectKind::Unprepared},
+            {qvEnums::ShaderEffect::CpuBicubic, ShaderEffectKind::CpuOnly},
+            {qvEnums::ShaderEffect::CpuSpline16, ShaderEffectKind::CpuOnly},
+            {qvEnums::ShaderEffect::CpuSpline36, ShaderEffectKind::CpuOnly},
+            {qvEnums::ShaderEffect::CpuLanczos3, ShaderEffectKind::CpuOnly},
+            {qvEnums::ShaderEffect::CpuLanczos4, ShaderEffectKind::CpuOnly},
+            {qvEnums::ShaderEffect::NearestNeighbor, ShaderEffectKind::FixedShader},
+            {qvEnums::ShaderEffect::Bilinear, ShaderEffectKind::FixedShader},
+            {qvEnums::ShaderEffect::Bicubic, ShaderEffectKind::GlShader},
+            {qvEnums::ShaderEffect::Lanczos, ShaderEffectKind::GlShader},
+        };
+        for (const EffectCase &testCase : cases) {
+            QCOMPARE(shaderEffectKind(testCase.effect), testCase.kind);
+            QCOMPARE(usesGpuRendering(testCase.effect),
+                     testCase.kind == ShaderEffectKind::FixedShader || testCase.kind == ShaderEffectKind::GlShader);
+            QCOMPARE(resizesOnCpu(testCase.effect),
+                     testCase.kind == ShaderEffectKind::Unprepared || testCase.kind == ShaderEffectKind::CpuOnly);
+            // Only the fragment shader effects depend on the build.
+            QCOMPARE(shaderEffectAvailable(testCase.effect),
+                     testCase.kind != ShaderEffectKind::GlShader || gpuShadersAvailable());
+        }
+
+        QCOMPARE(cpuFilterMode(qvEnums::ShaderEffect::CpuBicubic), QZimg::ResizeBicubic);
+        QCOMPARE(cpuFilterMode(qvEnums::ShaderEffect::CpuSpline16), QZimg::ResizeSpline16);
+        QCOMPARE(cpuFilterMode(qvEnums::ShaderEffect::CpuSpline36), QZimg::ResizeSpline36);
+        QCOMPARE(cpuFilterMode(qvEnums::ShaderEffect::CpuLanczos3), QZimg::ResizeLanczos3);
+        QCOMPARE(cpuFilterMode(qvEnums::ShaderEffect::CpuLanczos4), QZimg::ResizeLanczos4);
+        // Effects that do not resize on the CPU keep the default filter.
+        QCOMPARE(cpuFilterMode(qvEnums::ShaderEffect::UnPrepared), QZimg::ResizeBicubic);
+        QCOMPARE(cpuFilterMode(qvEnums::ShaderEffect::Bilinear), QZimg::ResizeBicubic);
+        QCOMPARE(cpuFilterMode(qvEnums::ShaderEffect::Lanczos), QZimg::ResizeBicubic);
+    }
+
+    void shaderEffectStringsRoundTripThroughTheVocabulary()
+    {
+        const QList<qvEnums::ShaderEffect> effects{
+            qvEnums::ShaderEffect::UnPrepared,
+            qvEnums::ShaderEffect::CpuBicubic,
+            qvEnums::ShaderEffect::CpuSpline16,
+            qvEnums::ShaderEffect::CpuSpline36,
+            qvEnums::ShaderEffect::CpuLanczos3,
+            qvEnums::ShaderEffect::CpuLanczos4,
+            qvEnums::ShaderEffect::NearestNeighbor,
+            qvEnums::ShaderEffect::Bilinear,
+            qvEnums::ShaderEffect::Bicubic,
+            qvEnums::ShaderEffect::Lanczos,
+        };
+        for (const qvEnums::ShaderEffect effect : effects) {
+            const QString name = ShaderManager::shaderEffectToString(effect);
+            QVERIFY(!name.isEmpty());
+            // An effect this build cannot render falls back to Bilinear.
+            const qvEnums::ShaderEffect expected =
+                shaderEffectAvailable(effect) ? effect : qvEnums::ShaderEffect::Bilinear;
+            QCOMPARE(ShaderManager::stringToShaderEffect(name), expected);
+        }
+        QCOMPARE(ShaderManager::stringToShaderEffect(QStringLiteral("NoSuchEffect")),
+                 qvEnums::ShaderEffect::Bilinear);
+    }
+
     void directImageTransitionsThroughStandalonePreview()
     {
         QTemporaryDir directory;
@@ -328,6 +399,32 @@ private slots:
 
         QCOMPARE(session.currentPageName(), QStringLiteral("page-0.bmp"));
         QCOMPARE(session.currentPageIndex(), 0);
+    }
+
+    void readProgressResumesAnArchiveEntry()
+    {
+        const QString archivePath = QString(FILELOADER_DATAPATH "7z/image.7z");
+        QVERIFY(QFileInfo::exists(archivePath));
+
+        const QString volumePath = QDir::fromNativeSeparators(archivePath);
+        qApp->readProgressStore()->insert(
+            volumePath,
+            ReadProgress{QFileInfo(archivePath).fileName(),
+                         volumePath,
+                         QStringLiteral("yellow.png"),
+                         3,
+                         0,
+                         false});
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
+        qApp->setOpenVolumeWithProgress(true);
+        qApp->setDualView(false);
+
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(archivePath));
+
+        // Entry names are restored too, even though the stored index points at
+        // another entry.
+        QCOMPARE(session.currentPageName(), QStringLiteral("yellow.png"));
     }
 
     void readProgressKeepsLegacyIniKeys()
@@ -617,6 +714,36 @@ private slots:
         const QString storedImage = storeVolumeLocation(OpenTarget::forPath(imagePath).location);
         QCOMPARE(storedImage, QDir::fromNativeSeparators(imagePath));
         QVERIFY(loadStoredVolumeLocation(storedImage).isContainer());
+    }
+
+    void storedVolumeLocationHandlesNamesWithTheSeparator()
+    {
+        const QString folder = QDir::tempPath();
+        const QString archivePath = QDir(folder).filePath(QStringLiteral("book.zip"));
+        const QString entryName = QStringLiteral("pages/chapter::one.jpg");
+
+        // The split happens at the first separator, so an archive entry may
+        // contain the separator itself.
+        const VolumeLocation entry{archivePath, entryName};
+        const QString storedEntry = storeVolumeLocation(entry);
+        QCOMPARE(storedEntry, archivePath + QStringLiteral("::") + entryName);
+        const VolumeLocation loadedEntry = loadStoredVolumeLocation(storedEntry);
+        QCOMPARE(loadedEntry.containerPath, QDir::fromNativeSeparators(archivePath));
+        QCOMPARE(loadedEntry.entryName, entryName);
+
+        // A path is classified by what it is, not by the separator inside its
+        // name.
+        const QString imagePath = QDir(folder).filePath(QStringLiteral("a::b.jpg"));
+        const VolumeLocation imageLocation = OpenTarget::forPath(imagePath).location;
+        QCOMPARE(imageLocation.containerPath, QDir::fromNativeSeparators(folder));
+        QCOMPARE(imageLocation.entryName, QStringLiteral("a::b.jpg"));
+
+        // Known limitation: a folder page is stored as a plain path, so the
+        // legacy parser cannot tell a name containing the separator from an
+        // archive entry. The stored form is the plain path either way.
+        const QString storedImage = storeVolumeLocation(imageLocation);
+        QCOMPARE(storedImage, QDir::fromNativeSeparators(imagePath));
+        QVERIFY(!loadStoredVolumeLocation(storedImage).isContainer());
     }
 
     void invalidatingFolderCacheOpensRenamedFile()

@@ -13,7 +13,8 @@ VERSION = 1.2.8
 DEFINES += \
     NOMINMAX \
     APP_VERSION=\\\"$$VERSION\\\" \
-    APP_NAME=\\\"QuickViewerTest\\\"
+    APP_NAME=\\\"QuickViewerTest\\\" \
+    VIEWERNAVIGATION_SRCDIR=\\\"$$PWD/\\\"
 
 INCLUDEPATH += \
     ../../apps/quickviewer/src \
@@ -120,3 +121,8 @@ contains(DEFINES, QV_WITH_LUMINOR) {
 }
 
 win32: LIBS += -luser32 -ladvapi32 -lshell32 -lShlwapi -loleaut32 -lole32 -luuid
+
+win32 {
+    # The archive fixtures need the official 7z.dll next to the test binary.
+    QMAKE_POST_LINK += $$QMAKE_COPY /B $$shell_quote($$shell_path($$PWD/../../third_party/7zip/windll/$${TARGET_ARCH}/7z.dll)) $$shell_path($${DESTDIR}) $$escape_expand(\n\t)
+}
