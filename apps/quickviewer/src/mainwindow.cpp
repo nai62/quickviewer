@@ -19,6 +19,7 @@
 #include "innerframe.h"
 #include "retouchwindow.h"
 #include "startupprofiler.h"
+#include "storedvolumelocation.h"
 
 #ifdef Q_OS_WIN
 #    include "fileassocdialog.h"
@@ -432,8 +433,7 @@ void MainWindow::loadStartupVolume()
     }
     // auto restore
     if (qApp->AutoLoaded() && !qApp->LastViewPath().isEmpty()) {
-        QString bookmark = qApp->LastViewPath();
-        openPath(bookmark, true);
+        openStoredPath(qApp->LastViewPath(), true);
         makeBookmarkMenu();
     }
 }
@@ -441,8 +441,7 @@ void MainWindow::loadStartupVolume()
 MainWindow::~MainWindow()
 {
     if (qApp->AutoLoaded() && m_viewerSession.visiblePageCount() > 0) {
-        QString path = QDir::fromNativeSeparators(m_viewerSession.currentPagePath());
-        qApp->setLastViewPath(path);
+        qApp->setLastViewPath(storeVolumeLocation(m_viewerSession.currentLocation()));
     }
     // reset() emits loadStatusChanged() and visiblePagesChanged(). Keep the UI
     // alive until those synchronous slots have finished.
@@ -716,6 +715,18 @@ void MainWindow::openPath(QString path, bool allowSecondPage)
 void MainWindow::openTarget(const OpenTarget &target)
 {
     openResolvedTarget(target, false);
+}
+
+void MainWindow::openStoredPath(const QString &storedPath, bool allowSecondPage)
+{
+    const VolumeLocation location = loadStoredVolumeLocation(storedPath);
+    if (location.isContainer()) {
+        // Without a stored entry the path may name a folder, an archive or an
+        // image file, so it is classified like any other user supplied path.
+        openPath(storedPath, allowSecondPage);
+        return;
+    }
+    openResolvedTarget(OpenTarget::entry(location), allowSecondPage);
 }
 
 void MainWindow::openResolvedTarget(const OpenTarget &target, bool allowSecondPage)
@@ -2312,8 +2323,7 @@ void MainWindow::handleSaveBookmarkActionTriggered()
     if (!m_viewerSession.visiblePageCount()) {
         return;
     }
-    QString path = QDir::fromNativeSeparators(m_viewerSession.currentPagePath());
-    qApp->addBookMark(path);
+    qApp->addBookMark(storeVolumeLocation(m_viewerSession.currentLocation()));
     makeBookmarkMenu();
     ui->statusBar->showMessage(tr("Bookmark saved."));
 }
@@ -2337,9 +2347,8 @@ void MainWindow::handleLoadBookmarkMenuTriggered(QAction *action)
     if (action == ui->actionClearBookmarks) {
         return;
     }
-    // Bookmarks store the page path, which still uses the legacy
-    // "containerPath::entryName" form for archive pages.
-    const VolumeLocation location = volumeLocationFromString(action->data().toString());
+    // Bookmarks store the page location in the application settings format.
+    const VolumeLocation location = loadStoredVolumeLocation(action->data().toString());
     if (location.isContainer()) {
         m_viewerSession.openContainer(location.containerPath);
     } else {

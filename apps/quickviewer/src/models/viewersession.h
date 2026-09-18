@@ -87,9 +87,21 @@ public:
         if (!volume || m_visiblePages.isEmpty()) {
             return "";
         }
-        return QDir::toNativeSeparators(volume->pagePathForName(m_visiblePages[0].path));
+        return volumeLocationDisplayText({volume->volumePath(), m_visiblePages[0].path});
     }
     QString currentPageName() const { return m_visiblePages.isEmpty() ? QString() : m_visiblePages[0].path; }
+    /**
+     * Address of the currently displayed page, if any. Used by the code that
+     * persists the current position.
+     */
+    VolumeLocation currentLocation() const
+    {
+        Volume *volume = activeVolume();
+        if (!volume || m_visiblePages.isEmpty()) {
+            return {};
+        }
+        return {volume->volumePath(), m_visiblePages[0].path};
+    }
 
     /**
      * @brief currentPageNumberText: for the label text on PageBar

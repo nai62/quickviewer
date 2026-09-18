@@ -10,6 +10,7 @@
 #include "models/loupecontroller.h"
 #include "models/pagedisplayformatter.h"
 #include "models/pagenavigator.h"
+#include "models/storedvolumelocation.h"
 #include "models/visiblepagecomposer.h"
 #include "models/viewersession.h"
 #include "models/qvapplication.h"
@@ -351,7 +352,7 @@ private slots:
         QCOMPARE(session.currentPageName(), QString("page-1.bmp"));
     }
 
-    void openTargetClassifiesPathsAndKeepsLegacyForm()
+    void openTargetClassifiesPaths()
     {
         const QString folder = QDir::tempPath();
         const QString archivePath = QDir(folder).filePath(QStringLiteral("book.zip"));
@@ -367,21 +368,34 @@ private slots:
         QCOMPARE(image.location.containerPath, QDir::fromNativeSeparators(folder));
         QCOMPARE(image.location.entryName, QStringLiteral("page.jpg"));
 
-        const OpenTarget entry =
-            OpenTarget::forPath(archivePath + QStringLiteral("::page.jpg"));
-        QCOMPARE(entry.intent, OpenIntent::Entry);
-        QCOMPARE(entry.location.containerPath, QDir::fromNativeSeparators(archivePath));
-        QCOMPARE(entry.location.entryName, QStringLiteral("page.jpg"));
-
-        QVERIFY(volumeLocationFromString(archivePath).isContainer());
-        QCOMPARE(volumeLocationFromString(archivePath).containerPath,
-                 QDir::fromNativeSeparators(archivePath));
-
         QCOMPARE(volumeLocationDisplayText({archivePath, QStringLiteral("page.jpg")}),
                  QDir::toNativeSeparators(archivePath) + QStringLiteral(" (page.jpg)"));
         QCOMPARE(volumeLocationDisplayText({folder, QStringLiteral("page.jpg")}),
                  QDir::toNativeSeparators(
                      QDir(folder).absoluteFilePath(QStringLiteral("page.jpg"))));
+    }
+
+    void storedVolumeLocationKeepsLegacyArchiveForm()
+    {
+        const QString folder = QDir::tempPath();
+        const QString archivePath = QDir(folder).filePath(QStringLiteral("book.zip"));
+
+        const QString storedContainer = storeVolumeLocation(VolumeLocation{folder, QString()});
+        QCOMPARE(storedContainer, QDir::fromNativeSeparators(folder));
+        QVERIFY(loadStoredVolumeLocation(storedContainer).isContainer());
+
+        // Releases before the typed location API wrote archive pages this way.
+        const QString storedEntry = archivePath + QStringLiteral("::page.jpg");
+        const VolumeLocation entry = loadStoredVolumeLocation(storedEntry);
+        QCOMPARE(entry.containerPath, QDir::fromNativeSeparators(archivePath));
+        QCOMPARE(entry.entryName, QStringLiteral("page.jpg"));
+        QCOMPARE(storeVolumeLocation(entry), storedEntry);
+
+        // Folder pages are stored as plain file paths.
+        const QString imagePath = QDir(folder).filePath(QStringLiteral("page.jpg"));
+        const QString storedImage = storeVolumeLocation(OpenTarget::forPath(imagePath).location);
+        QCOMPARE(storedImage, QDir::fromNativeSeparators(imagePath));
+        QVERIFY(loadStoredVolumeLocation(storedImage).isContainer());
     }
 
     void removingDisplayedPageOpensItsNeighbour()

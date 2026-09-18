@@ -69,19 +69,17 @@ public:
     void startSlideShow();
     void stopSlideShow();
 
+    /**
+     * Real filesystem path of a page inside a folder volume. Archive entries do
+     * not have one, so this returns an empty string for archives.
+     */
     QString pagePathForName(const QString &name) const
     {
         const IFileLoader *loader = fileLoader();
-        if (!loader || name.isEmpty()) {
+        if (!loader || loader->isArchive() || name.isEmpty()) {
             return "";
         }
-        if (loader->isArchive()) {
-            return QString("%1::%2")
-                .arg(QDir::fromNativeSeparators(loader->volumePath()))
-                .arg(name);
-        } else {
-            return QDir(loader->realVolumePath()).absoluteFilePath(name);
-        }
+        return QDir(loader->realVolumePath()).absoluteFilePath(name);
     }
     QString pageNameAt(int pageIndex) const;
     int pageIndexForName(const QString &name) const;

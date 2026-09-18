@@ -233,6 +233,7 @@ private:
     void setStatusMessage(StatusMessage message);
     void syncPageBar();
     void openResolvedTarget(const OpenTarget &target, bool allowSecondPage);
+    void openStoredPath(const QString &storedPath, bool allowSecondPage = false);
     void saveVisibleFolderViewWidth();
     void loadStartupVolume();
     void revealStartupWindow();
@@ -298,7 +299,7 @@ public:
 
     bool changeFolderPath(QString path) override
     {
-        const QString volumePath = volumeLocationFromString(path).containerPath;
+        const QString volumePath = QDir::fromNativeSeparators(path);
         if (m_lastArchiveOpenFailure == ArchiveOpenError::PasswordProtected && volumePath == m_lastArchiveOpenFailurePath) {
             clearArchiveOpenFailure();
             return true;

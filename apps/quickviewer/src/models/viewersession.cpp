@@ -900,7 +900,8 @@ bool ViewerSession::reloadVisiblePages()
     }
     QString failedImagePath;
     if (!firstContent.isRenderable()) {
-        failedImagePath = volume->pagePathForName(volume->pageNameAt(currentPageIndex));
+        failedImagePath =
+            volumeLocationDisplayText({volume->volumePath(), volume->pageNameAt(currentPageIndex)});
     }
     firstContent.initializeAnimation();
     if (activeVolume() != volume) {
@@ -930,7 +931,8 @@ bool ViewerSession::reloadVisiblePages()
             return failActiveArchiveLoad(secondLoadError, volume->volumePath());
         }
         if (failedImagePath.isEmpty() && !secondContent.isRenderable()) {
-            failedImagePath = volume->pagePathForName(volume->pageNameAt(currentPageIndex + 1));
+            failedImagePath = volumeLocationDisplayText(
+                {volume->volumePath(), volume->pageNameAt(currentPageIndex + 1)});
         }
         compositionRequest.secondPageIsLandscape = secondContent.isLandscape();
     }
@@ -1054,7 +1056,7 @@ QString ViewerSession::pageSignage(int pageIndex) const
         return "";
     }
     return PageDisplayFormatter::signageText(
-        QDir::toNativeSeparators(volume->pagePathForName(m_visiblePages[pageIndex].path)),
+        volumeLocationDisplayText({volume->volumePath(), m_visiblePages[pageIndex].path}),
         m_pageNavigator.currentPageIndex() + pageIndex,
         volume->pageCount());
 }

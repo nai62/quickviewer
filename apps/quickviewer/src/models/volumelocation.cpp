@@ -25,9 +25,6 @@ OpenTarget OpenTarget::fileInContainer(QString filePath)
 
 OpenTarget OpenTarget::forPath(QString path)
 {
-    if (path.contains(QStringLiteral("::"))) {
-        return entry(volumeLocationFromString(path));
-    }
     const QFileInfo info(QDir::fromNativeSeparators(path));
     if (IFileLoader::isArchiveFile(info.fileName())) {
         return container(info.absoluteFilePath());
@@ -36,15 +33,6 @@ OpenTarget OpenTarget::forPath(QString path)
         return fileInContainer(info.absoluteFilePath());
     }
     return container(info.absoluteFilePath());
-}
-
-VolumeLocation volumeLocationFromString(const QString &path)
-{
-    const int separator = path.indexOf(QStringLiteral("::"));
-    if (separator < 0) {
-        return {QDir::fromNativeSeparators(path), QString()};
-    }
-    return {QDir::fromNativeSeparators(path.left(separator)), path.mid(separator + 2)};
 }
 
 QString volumeLocationDisplayText(const VolumeLocation &location)

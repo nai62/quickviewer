@@ -109,8 +109,8 @@ VolumeLoader::VolumeLoader(QString path)
 VolumeBuildResult VolumeLoader::buildLoadedVolume()
 {
     StartupProfiler::mark("volume-loader.begin");
-    // Callers address a container with a real filesystem path; the legacy
-    // "container::entry" form is resolved before a loader is created.
+    // Callers address a container with a real filesystem path; entries inside a
+    // container are resolved before a loader is created.
     const QString volumePath = QDir::toNativeSeparators(m_path);
     VolumeBuildResult result = createVolumeResult(nullptr, volumePath);
     m_volume = result.volume;

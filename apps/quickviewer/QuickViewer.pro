@@ -150,6 +150,7 @@ SOURCES += \
     src/models/volume.cpp \
     src/models/volumeloader.cpp \
     src/models/volumelocation.cpp \
+    src/models/storedvolumelocation.cpp \
     src/qactionmanager/keyconfigdialog.cpp \
     src/qactionmanager/mouseconfigdialog.cpp \
     src/qactionmanager/qactionmanager.cpp \
@@ -216,6 +217,7 @@ HEADERS  += \
     src/models/volume.h \
     src/models/volumeloader.h \
     src/models/volumelocation.h \
+    src/models/storedvolumelocation.h \
     src/qactionmanager/keyconfigdialog.h \
     src/qactionmanager/mouseconfigdialog.h \
     src/qactionmanager/qactionmanager.h \
