@@ -5,6 +5,7 @@
 #include "qvapplication.h"
 #include "svgloader.h"
 #include "qvenums.h"
+#include "shadereffect.h"
 #include "ui_mainwindow.h"
 
 #ifdef Q_OS_WIN
@@ -346,10 +347,10 @@ void QVApplication::registerActions(Ui::MainWindow *ui)
     // Shader
     groupName = tr("Shader", "Shader Action Group");
     m_keyActions.registerAction("actionShaderBilinear", ui->actionShaderBilinear, groupName);
-#ifndef QV_WITHOUT_OPENGL
-    m_keyActions.registerAction("actionShaderBicubic", ui->actionShaderBicubic, groupName);
-    m_keyActions.registerAction("actionShaderLanczos", ui->actionShaderLanczos, groupName);
-#endif
+    if (gpuShadersAvailable()) {
+        m_keyActions.registerAction("actionShaderBicubic", ui->actionShaderBicubic, groupName);
+        m_keyActions.registerAction("actionShaderLanczos", ui->actionShaderLanczos, groupName);
+    }
     m_keyActions.registerAction("actionShaderCpuBicubic", ui->actionShaderCpuBicubic, groupName);
     m_keyActions.registerAction("actionShaderCpuSpline16", ui->actionShaderCpuSpline16, groupName);
     m_keyActions.registerAction("actionShaderCpuSpline36", ui->actionShaderCpuSpline36, groupName);

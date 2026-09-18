@@ -3,6 +3,7 @@
 
 #include <QtWidgets>
 #include "qvenums.h"
+#include "shadereffect.h"
 
 struct ImageContent;
 
@@ -41,7 +42,11 @@ public:
         QMetaEnum metaEnum = QMetaEnum::fromType<qvEnums::ShaderEffect>();
         bool ok = false;
         const int value = metaEnum.keysToValue(effect.toLatin1(), &ok);
-        return ok ? static_cast<qvEnums::ShaderEffect>(value) : qvEnums::Bilinear;
+        if (!ok) {
+            return qvEnums::Bilinear;
+        }
+        const qvEnums::ShaderEffect parsed = static_cast<qvEnums::ShaderEffect>(value);
+        return shaderEffectAvailable(parsed) ? parsed : qvEnums::Bilinear;
     }
 
 private:

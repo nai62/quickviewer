@@ -21,6 +21,17 @@ enum class ShaderEffectKind {
 ShaderEffectKind shaderEffectKind(qvEnums::ShaderEffect effect);
 
 /**
+ * True when this build can render the fragment shader effects. The fixed
+ * function effects work in every build.
+ */
+bool gpuShadersAvailable();
+
+/**
+ * True when effect can be used with this build.
+ */
+bool shaderEffectAvailable(qvEnums::ShaderEffect effect);
+
+/**
  * True when the scaling happens on the GPU, so the OpenGL renderer is needed.
  */
 bool usesGpuRendering(qvEnums::ShaderEffect effect);

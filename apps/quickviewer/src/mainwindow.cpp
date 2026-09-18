@@ -2,6 +2,7 @@
 
 #include "mainwindow.h"
 #include "imageview.h"
+#include "models/shadereffect.h"
 #include "ui_mainwindow.h"
 #include "fileloaderdirectory.h"
 #include "qvenums.h"
@@ -254,17 +255,13 @@ MainWindow::MainWindow(QWidget *parent)
     StartupProfiler::mark("mainwindow.page-bar-sync.end");
 
     // Shader
-#ifdef QV_WITHOUT_OPENGL
-    ui->actionShaderBicubic->setVisible(false);
-    ui->actionShaderLanczos->setVisible(false);
-#endif
+    ui->actionShaderBicubic->setVisible(gpuShadersAvailable());
+    ui->actionShaderLanczos->setVisible(gpuShadersAvailable());
     m_shaderMenuGroup
         << ui->actionShaderNearestNeighbor
         << ui->actionShaderBilinear
-#ifndef QV_WITHOUT_OPENGL
         << ui->actionShaderBicubic
         << ui->actionShaderLanczos
-#endif
         << ui->actionShaderCpuBicubic
         << ui->actionShaderCpuSpline16
         << ui->actionShaderCpuSpline36
@@ -277,14 +274,12 @@ MainWindow::MainWindow(QWidget *parent)
     case qvEnums::Bilinear:
         ui->actionShaderBilinear->setChecked(true);
         break;
-#ifndef QV_WITHOUT_OPENGL
     case qvEnums::Bicubic:
         ui->actionShaderBicubic->setChecked(true);
         break;
     case qvEnums::Lanczos:
         ui->actionShaderLanczos->setChecked(true);
         break;
-#endif
     case qvEnums::CpuBicubic:
         ui->actionShaderCpuBicubic->setChecked(true);
         break;
@@ -521,9 +516,9 @@ void MainWindow::wheelEvent(QWheelEvent *e)
     int delta_y = e->angleDelta().y();
     int delta = 0;
     if (delta_y < 0) {
-        delta = -Q_MOUSE_DELTA;
+        delta = -MouseDelta;
     } else if (delta_y > 0) {
-        delta = Q_MOUSE_DELTA;
+        delta = MouseDelta;
     }
     QMouseValue mv(QKeySequence(qApp->keyboardModifiers()), e->buttons(), delta);
     QAction *action = qApp->mouseActions().getActionByValue(mv);
@@ -2291,22 +2286,18 @@ void MainWindow::handleShaderBilinearActionTriggered()
 
 void MainWindow::handleShaderBicubicActionTriggered()
 {
-#ifndef QV_WITHOUT_OPENGL
     uncheckAllShaderMenus();
     qApp->setEffect(qvEnums::Bicubic);
     ui->actionShaderBicubic->setChecked(true);
     ui->graphicsView->refreshRenderedPages();
-#endif
 }
 
 void MainWindow::handleShaderLanczosActionTriggered()
 {
-#ifndef QV_WITHOUT_OPENGL
     uncheckAllShaderMenus();
     qApp->setEffect(qvEnums::Lanczos);
     ui->actionShaderLanczos->setChecked(true);
     ui->graphicsView->refreshRenderedPages();
-#endif
 }
 
 void MainWindow::handleShaderCpuBicubicActionTriggered()

@@ -21,11 +21,8 @@ enum class ShaderEffect {
 
     NearestNeighbor,
     Bilinear,
-
-#ifndef QV_WITHOUT_OPENGL
     Bicubic,
     Lanczos
-#endif
 };
 Q_ENUM_NS(ShaderEffect)
 

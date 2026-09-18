@@ -14,13 +14,25 @@ ShaderEffectKind shaderEffectKind(qvEnums::ShaderEffect effect)
     case qvEnums::NearestNeighbor:
     case qvEnums::Bilinear:
         return ShaderEffectKind::FixedShader;
-#ifndef QV_WITHOUT_OPENGL
     case qvEnums::Bicubic:
     case qvEnums::Lanczos:
         return ShaderEffectKind::GlShader;
-#endif
     }
     return ShaderEffectKind::Unprepared;
+}
+
+bool gpuShadersAvailable()
+{
+#ifdef QV_WITHOUT_OPENGL
+    return false;
+#else
+    return true;
+#endif
+}
+
+bool shaderEffectAvailable(qvEnums::ShaderEffect effect)
+{
+    return shaderEffectKind(effect) != ShaderEffectKind::GlShader || gpuShadersAvailable();
 }
 
 bool usesGpuRendering(qvEnums::ShaderEffect effect)
