@@ -320,6 +320,30 @@ private slots:
         QCOMPARE(spreadSession.visiblePageCount(), 2);
     }
 
+    void sortingPagesKeepsTheDisplayedPage()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QImage large(32, 48, QImage::Format_RGB32);
+        large.fill(Qt::red);
+        QVERIFY(large.save(directory.filePath(QStringLiteral("a.bmp"))));
+        QImage small(16, 24, QImage::Format_RGB32);
+        small.fill(Qt::blue);
+        QVERIFY(small.save(directory.filePath(QStringLiteral("b.bmp"))));
+
+        qApp->setImageSortBy(qvEnums::SortByFileName);
+        qApp->setDualView(false);
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(directory.path()));
+        QCOMPARE(session.currentPageName(), QStringLiteral("a.bmp"));
+
+        session.sortActiveVolumePages(qvEnums::SortByFileSize);
+
+        QCOMPARE(session.pageCount(), 2);
+        QCOMPARE(session.currentPageName(), QStringLiteral("a.bmp"));
+        QCOMPARE(session.currentPageIndex(), 1);
+    }
+
     void reloadingAContainerRereadsItsPages()
     {
         QTemporaryDir directory;

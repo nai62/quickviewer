@@ -395,6 +395,37 @@ private slots:
         QCOMPARE(buttonFrame->layout()->spacing(), 2);
     }
 
+    void menuBarSortMovesTheFolderViewAndKeepsThePage()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QImage large(32, 48, QImage::Format_RGB32);
+        large.fill(Qt::red);
+        QVERIFY(large.save(directory.filePath(QStringLiteral("a.bmp"))));
+        QImage small(16, 24, QImage::Format_RGB32);
+        small.fill(Qt::blue);
+        QVERIFY(small.save(directory.filePath(QStringLiteral("b.bmp"))));
+
+        qApp->setImageSortBy(qvEnums::SortByFileName);
+        StartupWindow viewer;
+        viewer.createFolderWindow(true, directory.path(), false);
+        FolderWindow *folder = viewer.folderWindow();
+        QVERIFY(folder);
+        QTreeView *view = folder->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        viewer.openPath(directory.path());
+        QCOMPARE(view->model()->index(0, 0).data().toString(), QStringLiteral("a.bmp"));
+        QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("a.bmp"));
+
+        // The menu bar sort drives both the panel and the viewer.
+        viewer.handleSortByFileSizeActionTriggered();
+
+        QCOMPARE(view->model()->index(0, 0).data().toString(), QStringLiteral("b.bmp"));
+        QCOMPARE(view->model()->index(1, 0).data().toString(), QStringLiteral("a.bmp"));
+        QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("a.bmp"));
+        QCOMPARE(viewer.viewerSession()->currentPageIndex(), 1);
+    }
+
     void showingSubfoldersScansImmediatelyAndKeepsThePage()
     {
         QTemporaryDir directory;

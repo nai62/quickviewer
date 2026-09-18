@@ -1045,8 +1045,19 @@ void ViewerSession::updateReadProgress()
 
 void ViewerSession::sortActiveVolumePages(qvEnums::ImageSortBy sortBy)
 {
-    if (Volume *volume = activeVolume()) {
-        volume->sortPages(sortBy);
+    Volume *volume = activeVolume();
+    if (!volume) {
+        return;
+    }
+    // Sorting only changes the order of the pages, so keep the page that is
+    // displayed, and load it again because the decoded caches are keyed by the
+    // page index.
+    const QString pageName = currentPageName();
+    volume->sortPages(sortBy);
+    const int pageIndex = pageName.isEmpty() ? -1 : volume->pageIndexForName(pageName);
+    if (pageIndex >= 0) {
+        selectPage(pageIndex);
+    } else {
         firstPage();
     }
 }
