@@ -9,16 +9,14 @@
  * behaviour instead of by their position in the enumeration.
  */
 enum class ShaderEffectKind {
-    Unprepared,            // no effect chosen yet
-    CpuOnly,               // resized by the CPU
-    FixedShader,           // scaled by the fixed function GPU pipeline
-    CpuResizeAfterPreview, // GPU preview, replaced by a CPU resize
-    GlShader,              // scaled by a fragment shader
+    Unprepared,  // no effect chosen yet
+    CpuOnly,     // resized by the CPU
+    FixedShader, // scaled by the fixed function GPU pipeline
+    GlShader,    // scaled by a fragment shader
 };
 
 /**
- * Classifies effect. The marker values of the enumeration are not effects;
- * they are reported as Unprepared.
+ * Classifies effect.
  */
 ShaderEffectKind shaderEffectKind(qvEnums::ShaderEffect effect);
 

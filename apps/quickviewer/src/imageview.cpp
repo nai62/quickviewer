@@ -245,7 +245,7 @@ ImageView::AddRenderedPageResult ImageView::addRenderedPage(ImageContent content
     }
     const bool landscape = content.loadedImage.width() > content.loadedImage.height();
     if (!m_renderedPages.add(
-            std::move(content), append, this, scene(), pageRenderSettings(), m_openSeparatedPageFromEnd, this, [this] { refreshRenderedPages(); })) {
+            std::move(content), append, this, scene(), pageRenderSettings(), m_openSeparatedPageFromEnd)) {
         return AddRenderedPageResult::Rejected;
     }
 

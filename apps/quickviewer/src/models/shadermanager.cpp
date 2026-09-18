@@ -136,10 +136,6 @@ void ShaderManager::prepare(QGraphicsPixmapItem *item, const ImageContent &, QSi
     case qvEnums::CpuLanczos3:
     case qvEnums::CpuLanczos4:
     case qvEnums::Bilinear:
-    case qvEnums::BilinearAndCpuBicubic:
-    case qvEnums::BilinearAndCpuSpline16:
-    case qvEnums::BilinearAndCpuSpline36:
-    case qvEnums::BilinearAndCpuLanczos:
         item->setTransformationMode(Qt::SmoothTransformation);
         if (shaderEffectKind(m_oldEffect) == ShaderEffectKind::GlShader) {
             item->setGraphicsEffect(nullptr);

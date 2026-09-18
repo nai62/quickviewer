@@ -1,5 +1,3 @@
-#include <QtConcurrent>
-
 #include "renderedpage.h"
 #include "qvapplication.h"
 #include "qzimg.h"
@@ -50,7 +48,6 @@ RenderedPage::RenderedPage(QObject *parent, PageRenderSettings renderSettings)
       m_drawScale(1.0),
       m_displayScale(1.0),
       m_separationState(NotSeparated),
-      m_resizeGeneratingState(0),
       m_initialized(false),
       m_renderSettings(std::move(renderSettings))
 {
@@ -68,7 +65,6 @@ RenderedPage::RenderedPage(QObject *parent, QGraphicsScene *graphicsScene, Image
       m_drawScale(1.0),
       m_displayScale(1.0),
       m_separationState(m_content.isLandscape() && qApp->SeparatePagesWhenWideImage() ? FirstHalf : NotSeparated),
-      m_resizeGeneratingState(0),
       m_initialized(false),
       m_renderSettings(std::move(renderSettings))
 {
@@ -312,26 +308,6 @@ void RenderedPage::applyResize(qreal scale, int rotationOffset, QPoint position,
         }
         m_graphicsItem->setScale(m_content.resizedImage.isNull() ? retouchedScale : 1.0);
     }
-    // CPU resizing after GPU preview
-    if (shaderEffectKind(effect) == ShaderEffectKind::CpuResizeAfterPreview && shaderEffectKind(qApp->Effect()) != ShaderEffectKind::GlShader) {
-        if (!m_content.resizedImage.isNull() && m_content.resizedImage.size() != resizeTargetSize) {
-            initializePage(true);
-        }
-        if (m_content.resizedImage.isNull() && m_resizeGeneratingState == 0) {
-            m_resizeGeneratingState = 1;
-            QFuture<QImage> future = QtConcurrent::run(
-                QZimg::scaled, sourceImage, resizeTargetSize, Qt::IgnoreAspectRatio, cpuFilterMode(qApp->Effect()));
-            connect(&m_resizeWatcher, SIGNAL(finished()), this, SLOT(handleResizeFinished()));
-            m_resizeWatcher.setFuture(future);
-        }
-        if (!m_content.resizedImage.isNull() && m_resizeGeneratingState == 2) {
-            m_scene->removeItem(m_graphicsItem);
-            delete m_graphicsItem;
-            m_graphicsItem = m_scene->addPixmap(QPixmap::fromImage(m_content.resizedImage));
-            m_graphicsItem->setRotation(m_rotationDegrees);
-        }
-        m_graphicsItem->setScale(m_content.resizedImage.isNull() ? retouchedScale : 1.0);
-    }
     // only GPU resizing
     if (usesGpuRendering(effect)) {
         initializePage(true);
@@ -375,7 +351,6 @@ void RenderedPage::initializePage(bool resetResizedImage)
     if (resetResizedImage) {
         m_content.resizedImage = QImage();
     }
-    m_resizeGeneratingState = 0;
 }
 
 void RenderedPage::resetSignage(QRect viewport, RenderedPage::PageAlign alignment)
@@ -418,15 +393,6 @@ void RenderedPage::dispose()
         delete m_signageBackgroundItem;
         m_signageBackgroundItem = nullptr;
     }
-}
-
-void RenderedPage::handleResizeFinished()
-{
-    m_content.resizedImage = m_resizeWatcher.result();
-
-    m_resizeGeneratingState = 2;
-    disconnect(&m_resizeWatcher, SIGNAL(finished()), this, SLOT(handleResizeFinished()));
-    emit resizeFinished();
 }
 
 void RenderedPage::ensureInitialized()

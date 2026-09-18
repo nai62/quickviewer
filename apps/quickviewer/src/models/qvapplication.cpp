@@ -350,7 +350,6 @@ void QVApplication::registerActions(Ui::MainWindow *ui)
     m_keyActions.registerAction("actionShaderBicubic", ui->actionShaderBicubic, groupName);
     m_keyActions.registerAction("actionShaderLanczos", ui->actionShaderLanczos, groupName);
 #endif
-    //    m_keyActions.registerAction("actionShaderBilinearBeforeCpuBicubic", ui->actionShaderBilinearBeforeCpuBicubic, groupName);
     m_keyActions.registerAction("actionShaderCpuBicubic", ui->actionShaderCpuBicubic, groupName);
     m_keyActions.registerAction("actionShaderCpuSpline16", ui->actionShaderCpuSpline16, groupName);
     m_keyActions.registerAction("actionShaderCpuSpline36", ui->actionShaderCpuSpline36, groupName);

@@ -194,7 +194,6 @@ public slots:
     void handleShaderBilinearActionTriggered();
     void handleShaderBicubicActionTriggered();
     void handleShaderLanczosActionTriggered();
-    void handleShaderBilinearBeforeCpuBicubicActionTriggered();
     void handleShaderCpuBicubicActionTriggered();
     void handleShaderCpuSpline16ActionTriggered();
     void handleShaderCpuSpline36ActionTriggered();

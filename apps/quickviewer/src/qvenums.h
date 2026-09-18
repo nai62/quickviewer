@@ -19,17 +19,9 @@ enum ShaderEffect {
     CpuLanczos3,
     CpuLanczos4,
 
-    UsingFixedShader,
     NearestNeighbor,
     Bilinear,
 
-    UsingCpuResizer,
-    BilinearAndCpuBicubic,
-    BilinearAndCpuSpline16,
-    BilinearAndCpuSpline36,
-    BilinearAndCpuLanczos,
-
-    UsingSomeShader,
 #ifndef QV_WITHOUT_OPENGL
     Bicubic,
     Lanczos
