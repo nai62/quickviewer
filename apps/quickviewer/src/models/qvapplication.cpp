@@ -11,6 +11,13 @@
 #    include <shlobj.h>
 #endif
 
+namespace {
+
+// Directory the non-Windows builds keep their data files in.
+constexpr QLatin1String DataDirectory(".quickviewer");
+
+} // namespace
+
 QVApplication::QVApplication(int &argc, char **argv)
     : QApplication(argc, argv),
       m_mainThread(QThread::currentThread()),
@@ -50,13 +57,13 @@ QVApplication::QVApplication(int &argc, char **argv)
         // In a non-portable environment, QuickViewer creates a directory for the application
         // in a fixed PATH inside the user directory, and stores data files in it.
 #if defined(Q_OS_MAC) || defined(Q_OS_LINUX)
-        QString datapath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)).filePath(QV_DATADIR);
+        QString datapath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)).filePath(DataDirectory);
 #elif defined(Q_OS_WIN)
         QString datapath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
 //        qDebug() << datapath;
 #endif
         QDir dir(datapath);
-        QFile filedatabase(dir.filePath(QV_THUMBNAILS));
+        QFile filedatabase(dir.filePath(QStringLiteral("thumbnail.sqlite3.db")));
         if (!filedatabase.exists()) {
             if (!dir.exists()) {
                 dir.mkpath(".");
@@ -74,7 +81,7 @@ QVApplication::QVApplication(int &argc, char **argv)
         }
     }
     //#endif
-    m_settings = new QSettings(getFilePathOfApplicationSetting(APP_INI), QSettings::IniFormat, this);
+    m_settings = new QSettings(getFilePathOfApplicationSetting(settingsSubPath()), QSettings::IniFormat, this);
 
     m_languageSelector.initialize();
     m_qtbaseLanguageSelector.copyLanguages(m_languageSelector.Languages());
@@ -115,6 +122,34 @@ QString QVApplication::getFilePathOfApplicationSetting(QString subFilePath)
 QString QVApplication::getUserHomeFilePath(QString subFilePath)
 {
     return QDir::toNativeSeparators(QString("%1/%2").arg(QString(qgetenv("HOME"))).arg(subFilePath));
+}
+
+QString QVApplication::settingsSubPath()
+{
+#ifdef Q_OS_WIN
+    return QStringLiteral("quickviewer.ini");
+#else
+    return QStringLiteral(".quickviewer/quickviewer.ini");
+#endif
+}
+
+QString QVApplication::readProgressSubPath()
+{
+#ifdef Q_OS_WIN
+    return QStringLiteral("progress.ini");
+#else
+    return QStringLiteral(".quickviewer/progress.ini");
+#endif
+}
+
+QString QVApplication::defaultTitleTextFormat()
+{
+    return QStringLiteral("%v");
+}
+
+QString QVApplication::defaultStatusTextFormat()
+{
+    return QStringLiteral("%p (%n)[%s(%m)] %f %2| %p [%s(%m)] %f");
 }
 
 QString QVApplication::getTranslationPath()
@@ -462,8 +497,8 @@ void QVApplication::loadSettings()
     m_hideScrollBarInFullscreen = m_settings->value("HideScrollBarInFullscreen", true).toBool();
     m_hideMouseCursorInFullscreen = m_settings->value("HideMouseCursorInFullscreen", false).toBool();
 
-    m_titleTextFormat = m_settings->value("TitleTextFormat", QV_WINDOWTITLE_FORMAT).toString();
-    m_statusTextFormat = m_settings->value("StatusTextFormat", QV_STATUSBAR_FORMAT).toString();
+    m_titleTextFormat = m_settings->value("TitleTextFormat", defaultTitleTextFormat()).toString();
+    m_statusTextFormat = m_settings->value("StatusTextFormat", defaultStatusTextFormat()).toString();
     m_topWindowWhenRunWithAssoc = m_settings->value("TopWindowWhenRunWithAssoc", true).toBool();
     m_topWindowWhenDropped = m_settings->value("TopWindowWhenDropped", true).toBool();
     m_loupeTool = m_settings->value("LoupeTool", false).toBool();

@@ -111,6 +111,17 @@ public:
     QString getFilePathOfApplicationSetting(QString subFilePath);
     QString getUserHomeFilePath(QString subFilePath);
     QString getTranslationPath();
+    /**
+     * @brief Sub-paths of the application's own data files, relative to the
+     * directory getFilePathOfApplicationSetting() resolves.
+     */
+    static QString settingsSubPath();
+    static QString readProgressSubPath();
+    /**
+     * @brief Default text formats offered by the options dialog.
+     */
+    static QString defaultTitleTextFormat();
+    static QString defaultStatusTextFormat();
 
     void myInstallTranslator();
 

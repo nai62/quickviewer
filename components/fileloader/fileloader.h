@@ -43,6 +43,10 @@ public:
 
     static bool isImageFile(QString path);
     static bool supportsImageFormat(const QByteArray &format);
+    /**
+     * Name QImageReader reports for the TurboJPEG JPEG decoder plugin.
+     */
+    static constexpr const char *turboJpegFormatName() { return "turbojpeg"; }
     static bool isArchiveFile(QString path);
     static bool isExifJpegImageFile(QString path);
     static bool isExifRawImageFile(QString path);

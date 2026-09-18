@@ -3,6 +3,14 @@
 #include "qvapplication.h"
 #include "viewersession.h"
 
+namespace {
+
+// Text formats offered besides the application defaults.
+const QString IrfanViewTitleTextFormat = QStringLiteral("%p %2| %p");
+const QString IrfanViewStatusTextFormat = QStringLiteral("%s %n %m %f / %b %2| %s %m %f / %b");
+
+} // namespace
+
 class SamplePageContent : public PageInfoProvider
 {
 public:
@@ -111,9 +119,9 @@ OptionsDialog::OptionsDialog(QWidget *parent)
 
     ui->lineEditWindowTitleUserStyle->setText(qApp->TitleTextFormat());
     ui->labelWindowTitleSample->setText(m_imageString.formatString(qApp->TitleTextFormat()));
-    if (qApp->TitleTextFormat() == QV_WINDOWTITLE_FORMAT) {
+    if (qApp->TitleTextFormat() == QVApplication::defaultTitleTextFormat()) {
         ui->radioButtonWindowTitleNormalStyle->setChecked(true);
-    } else if (qApp->TitleTextFormat() == IRFANVIEW_WINDOWTITLE_FORMAT) {
+    } else if (qApp->TitleTextFormat() == IrfanViewTitleTextFormat) {
         ui->radioButtonWindowTitleIrfanViewStyle->setChecked(true);
     } else {
         ui->radioButtonWindowTitleUserDefined->setChecked(true);
@@ -124,9 +132,9 @@ OptionsDialog::OptionsDialog(QWidget *parent)
 
     ui->lineEditStatusBarUserStyle->setText(qApp->StatusTextFormat());
     ui->labelStatusBarSample->setText(m_imageString.formatString(qApp->StatusTextFormat()));
-    if (qApp->StatusTextFormat() == QV_STATUSBAR_FORMAT) {
+    if (qApp->StatusTextFormat() == QVApplication::defaultStatusTextFormat()) {
         ui->radioButtonStatusBarNormalStyle->setChecked(true);
-    } else if (qApp->StatusTextFormat() == IRFANVIEW_STATUSBAR_FORMAT) {
+    } else if (qApp->StatusTextFormat() == IrfanViewStatusTextFormat) {
         ui->radioButtonStatusBarIrfanViewStyle->setChecked(true);
     } else {
         ui->radioButtonStatusBarUserDefined->setChecked(true);
@@ -178,17 +186,17 @@ void OptionsDialog::reflectResults()
     qApp->setTopWindowWhenDropped(ui->checkBoxTopWindowWhenDropped->isChecked());
 
     if (ui->radioButtonWindowTitleNormalStyle->isChecked()) {
-        qApp->setTitleTextFormat(QV_WINDOWTITLE_FORMAT);
+        qApp->setTitleTextFormat(QVApplication::defaultTitleTextFormat());
     } else if (ui->radioButtonWindowTitleIrfanViewStyle->isChecked()) {
-        qApp->setTitleTextFormat(IRFANVIEW_WINDOWTITLE_FORMAT);
+        qApp->setTitleTextFormat(IrfanViewTitleTextFormat);
     } else {
         qApp->setTitleTextFormat(ui->lineEditWindowTitleUserStyle->text());
     }
 
     if (ui->radioButtonStatusBarNormalStyle->isChecked()) {
-        qApp->setStatusTextFormat(QV_STATUSBAR_FORMAT);
+        qApp->setStatusTextFormat(QVApplication::defaultStatusTextFormat());
     } else if (ui->radioButtonStatusBarIrfanViewStyle->isChecked()) {
-        qApp->setStatusTextFormat(IRFANVIEW_STATUSBAR_FORMAT);
+        qApp->setStatusTextFormat(IrfanViewStatusTextFormat);
     } else {
         qApp->setStatusTextFormat(ui->lineEditStatusBarUserStyle->text());
     }
@@ -238,9 +246,9 @@ void OptionsDialog::resetWindowTitleSample()
 {
     QString format;
     if (ui->radioButtonWindowTitleNormalStyle->isChecked()) {
-        format = QV_WINDOWTITLE_FORMAT;
+        format = QVApplication::defaultTitleTextFormat();
     } else if (ui->radioButtonWindowTitleIrfanViewStyle->isChecked()) {
-        format = IRFANVIEW_WINDOWTITLE_FORMAT;
+        format = IrfanViewTitleTextFormat;
     } else {
         format = ui->lineEditWindowTitleUserStyle->text();
     }
@@ -251,9 +259,9 @@ void OptionsDialog::resetStatusbarSample()
 {
     QString format;
     if (ui->radioButtonStatusBarNormalStyle->isChecked()) {
-        format = QV_STATUSBAR_FORMAT;
+        format = QVApplication::defaultStatusTextFormat();
     } else if (ui->radioButtonStatusBarIrfanViewStyle->isChecked()) {
-        format = IRFANVIEW_STATUSBAR_FORMAT;
+        format = IrfanViewStatusTextFormat;
     } else {
         format = ui->lineEditStatusBarUserStyle->text();
     }

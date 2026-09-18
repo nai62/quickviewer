@@ -588,7 +588,7 @@ static QSize constrainedDecodeSize(const QSize &sourceSize, const QSize &request
 static bool shouldUseDecoderScaling(const QString &format, const QImageReader &reader)
 {
     const QString normalized = format.toLower();
-    const bool hotRaster = normalized == "jpg" || normalized == "jpeg" || normalized == TURBO_JPEG_FMT || normalized == "webp";
+    const bool hotRaster = normalized == "jpg" || normalized == "jpeg" || normalized == IFileLoader::turboJpegFormatName() || normalized == "webp";
     return hotRaster && reader.supportsOption(QImageIOHandler::ScaledSize);
 }
 
@@ -1076,7 +1076,7 @@ static ImageContent loadWithSpecifiedFormat(
         QSize baseSize;
         const QString normalizedFormat = aformat.toLower();
         if (metrics) {
-            if (normalizedFormat == TURBO_JPEG_FMT || normalizedFormat == "jpeg") {
+            if (normalizedFormat == IFileLoader::turboJpegFormatName() || normalizedFormat == "jpeg") {
                 metrics->format = "jpg";
             } else if (normalizedFormat == "apng" || normalizedFormat == "lodepng") {
                 metrics->format = "png";
@@ -1085,7 +1085,7 @@ static ImageContent loadWithSpecifiedFormat(
             }
         }
         bool nativeDecoded = false;
-        if ((normalizedFormat == "jpg" || normalizedFormat == "jpeg" || normalizedFormat == TURBO_JPEG_FMT) && decodePolicy.jpeg != JpegDecoderPreference::Qt) {
+        if ((normalizedFormat == "jpg" || normalizedFormat == "jpeg" || normalizedFormat == IFileLoader::turboJpegFormatName()) && decodePolicy.jpeg != JpegDecoderPreference::Qt) {
             QElapsedTimer decodeTimer;
             if (metrics) {
                 decodeTimer.start();
@@ -1155,7 +1155,7 @@ static ImageContent loadWithSpecifiedFormat(
             }
             baseSize = reader.size();
             QSize loadingSize = baseSize;
-            if (reader.format() == TURBO_JPEG_FMT && !qApp->UseFastDCTForJPEG()) {
+            if (reader.format() == IFileLoader::turboJpegFormatName() && !qApp->UseFastDCTForJPEG()) {
                 reader.setQuality(0);
             }
             if (shouldUseDecoderScaling(aformat, reader)) {
@@ -1322,8 +1322,8 @@ ImageContent Volume::decodeImageBytes(
 
     QString aformat;
     if (IFileLoader::isExifJpegImageFile(path)) {
-        if (decodePolicy.jpeg == JpegDecoderPreference::Auto && IFileLoader::supportsImageFormat(TURBO_JPEG_FMT)) {
-            aformat = TURBO_JPEG_FMT;
+        if (decodePolicy.jpeg == JpegDecoderPreference::Auto && IFileLoader::supportsImageFormat(IFileLoader::turboJpegFormatName())) {
+            aformat = IFileLoader::turboJpegFormatName();
         } else {
             aformat = "jpg";
         }

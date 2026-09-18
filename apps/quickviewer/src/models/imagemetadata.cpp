@@ -37,8 +37,8 @@ QSize ImageMetadata::getDimension() const
     }
     QString aformat;
     if (IFileLoader::isExifJpegImageFile(m_filename)) {
-        if (IFileLoader::supportsImageFormat(TURBO_JPEG_FMT)) {
-            aformat = TURBO_JPEG_FMT;
+        if (IFileLoader::supportsImageFormat(IFileLoader::turboJpegFormatName())) {
+            aformat = IFileLoader::turboJpegFormatName();
         } else {
             aformat = "jpg";
         }

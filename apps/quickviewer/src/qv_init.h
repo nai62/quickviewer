@@ -3,24 +3,6 @@
 
 #include <QtCore>
 
-#define APP_COPYRIGHT "Copyright 2017 KATO Kanryu"
-#define QV_THUMBNAILS "thumbnail.sqlite3.db"
-
-#ifdef Q_OS_WIN
-#    define APP_INI "quickviewer.ini"
-#    define PROGRESS_INI "progress.ini"
-#    define LINEFEED "\r\n"
-#else
-#    define QV_DATADIR ".quickviewer"
-#    define APP_INI QV_DATADIR "/quickviewer.ini"
-#    define PROGRESS_INI ".quickviewer/progress.ini"
-#    define LINEFEED "\n"
-#endif
-#define TURBO_JPEG_FMT "turbojpeg"
-
-#define QV_STATUSBAR_FORMAT "%p (%n)[%s(%m)] %f %2| %p [%s(%m)] %f"
-#define QV_WINDOWTITLE_FORMAT "%v"
-
 class qvEnums : public QObject
 {
     Q_OBJECT

@@ -1452,9 +1452,9 @@ BenchmarkRecord measureFirstPaint(
     record.requestedDecoder = requestedDecoderName(prepared.format, backend);
 
     const FileSnapshot settingsSnapshot = captureFileSnapshot(
-        qApp->getFilePathOfApplicationSetting(APP_INI));
+        qApp->getFilePathOfApplicationSetting(QVApplication::settingsSubPath()));
     const FileSnapshot progressSnapshot = captureFileSnapshot(
-        qApp->getFilePathOfApplicationSetting(PROGRESS_INI));
+        qApp->getFilePathOfApplicationSetting(QVApplication::readProgressSubPath()));
     if (!settingsSnapshot.valid || !progressSnapshot.valid) {
         record.error = "Failed to snapshot QuickViewer settings before the first-paint run.";
         return record;

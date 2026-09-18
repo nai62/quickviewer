@@ -25,6 +25,13 @@
 #    include "fileassocdialog.h"
 #endif
 
+namespace {
+
+// Shown in the About dialog.
+const QString AppCopyright = QStringLiteral("Copyright 2017 KATO Kanryu");
+
+} // namespace
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
@@ -1580,7 +1587,7 @@ void MainWindow::handleAppVersionActionTriggered()
                               "<p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</p>")
                           .arg(QApplication::applicationName())
                           .arg(QApplication::applicationVersion())
-                          .arg(APP_COPYRIGHT);
+                          .arg(AppCopyright);
     msgBox.setText(message);
     msgBox.exec();
 }

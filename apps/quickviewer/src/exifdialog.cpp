@@ -5,6 +5,17 @@
 #include "qv_init.h"
 #include "models/qvapplication.h"
 
+namespace {
+
+// EXIF text copied to the clipboard uses the line ending of the platform.
+#ifdef Q_OS_WIN
+const QString LineFeed = QStringLiteral("\r\n");
+#else
+const QString LineFeed = QStringLiteral("\n");
+#endif
+
+} // namespace
+
 struct ImageMetaContents
 {
     QStringList stringsRichText;
@@ -25,7 +36,7 @@ struct ImageMetaContents
     }
     QString getClipBoard()
     {
-        QString clip = stringsClipBoard.join(LINEFEED);
+        QString clip = stringsClipBoard.join(LineFeed);
         return clip;
     }
 };

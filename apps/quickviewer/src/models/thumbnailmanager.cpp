@@ -12,6 +12,13 @@
 #    include <Shlwapi.h>
 #endif
 
+namespace {
+
+// Width of the thumbnails stored in the thumbnail database.
+constexpr int ThumbnailWidth = 96;
+
+} // namespace
+
 QList<QByteArray> ThumbnailManager::st_supportedImageFormats;
 QStringList ThumbnailManager::st_jpegpegImageFormats;
 QStringList ThumbnailManager::st_heavyImageFormats;
@@ -62,7 +69,7 @@ void ThumbnailManager::sortFiles(QStringList &filenames)
 
 QString ThumbnailManager::DateTimeToIsoString(QDateTime datetime)
 {
-    return datetime.toString(ISO_DATETIMEFMT);
+    return datetime.toString(QStringLiteral("yyyy/MM/dd hh:mm:ss"));
 }
 QString ThumbnailManager::currentDateTimeAsString()
 {
@@ -569,8 +576,8 @@ FileWorker ThumbnailManager::createFileRecord(QString filename, QString filepath
     }
     result.imagesize = img.size();
 
-    QImage thumb = img.scaledToWidth(2 * THUMB_WIDTH, Qt::FastTransformation);
-    thumb = thumb.scaledToWidth(THUMB_WIDTH, Qt::SmoothTransformation);
+    QImage thumb = img.scaledToWidth(2 * ThumbnailWidth, Qt::FastTransformation);
+    thumb = thumb.scaledToWidth(ThumbnailWidth, Qt::SmoothTransformation);
     QBuffer thumbdat;
     thumbdat.open(QBuffer::ReadWrite);
     if (!thumb.save(&thumbdat, "JPEG", 90)) {
@@ -598,8 +605,8 @@ FileWorker ThumbnailManager::createFileRecordFromArchive(QString archivePath, Im
     }
     result.imagesize = img.size();
 
-    QImage thumb = img.scaledToWidth(2 * THUMB_WIDTH, Qt::FastTransformation);
-    thumb = thumb.scaledToWidth(THUMB_WIDTH, Qt::SmoothTransformation);
+    QImage thumb = img.scaledToWidth(2 * ThumbnailWidth, Qt::FastTransformation);
+    thumb = thumb.scaledToWidth(ThumbnailWidth, Qt::SmoothTransformation);
     QBuffer thumbdat;
     thumbdat.open(QBuffer::ReadWrite);
     if (!thumb.save(&thumbdat, "JPEG", 85)) {
