@@ -3,7 +3,7 @@
 
 #include <QtGui>
 #include <QtWidgets>
-#include "qv_init.h"
+#include "qvenums.h"
 #include "folderitemmodel.h"
 #include "folderitemdelegate.h"
 #include "models/volumelocation.h"

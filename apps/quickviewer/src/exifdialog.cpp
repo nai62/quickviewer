@@ -2,7 +2,7 @@
 
 #include "exifdialog.h"
 #include "ui_exifdialog.h"
-#include "qv_init.h"
+#include "qvenums.h"
 #include "models/qvapplication.h"
 
 namespace {

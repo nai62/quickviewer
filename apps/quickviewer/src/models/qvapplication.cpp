@@ -4,7 +4,7 @@
 
 #include "qvapplication.h"
 #include "svgloader.h"
-#include "qv_init.h"
+#include "qvenums.h"
 #include "ui_mainwindow.h"
 
 #ifdef Q_OS_WIN

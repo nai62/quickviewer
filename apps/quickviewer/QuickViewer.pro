@@ -169,7 +169,6 @@ HEADERS  += \
     src/catalog/catalogwindow.h \
     src/catalog/databasesettingdialog.h \
     src/catalog/managedatabasedialog.h \
-    src/catalog/qc_init.h \
     src/catalog/volumeitemmodel.h \
     src/exifdialog.h \
     src/folderview/folderitemdelegate.h \
@@ -206,7 +205,7 @@ HEADERS  += \
     src/models/renderedpages.h \
     src/models/renderedpagemetrics.h \
     src/optionsdialog.h \
-    src/qv_init.h \
+    src/qvenums.h \
     src/renamedialog.h \
     src/pch.h \
     src/widgets/flowlayout.h \

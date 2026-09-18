@@ -4,7 +4,7 @@
 #include "imageview.h"
 #include "ui_mainwindow.h"
 #include "fileloaderdirectory.h"
-#include "qv_init.h"
+#include "qvenums.h"
 #include "qvapplication.h"
 #include "keyconfigdialog.h"
 #include "mouseconfigdialog.h"

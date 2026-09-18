@@ -4,7 +4,6 @@
 #include <QApplication>
 
 #include "thumbnailmanager.h"
-#include "qc_init.h"
 #include "volume.h"
 #include "volumeloader.h"
 

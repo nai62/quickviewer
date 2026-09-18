@@ -2,7 +2,6 @@
 #include "ui_catalogwindow.h"
 #include "ui_mainwindow.h"
 
-#include "qc_init.h"
 #include "catalogwindow.h"
 #include "managedatabasedialog.h"
 #include "qvapplication.h"

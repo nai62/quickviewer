@@ -2,7 +2,7 @@
 #define IMAGESHADEREFFECT_H
 
 #include <QtWidgets>
-#include "qv_init.h"
+#include "qvenums.h"
 
 struct ImageContent;
 

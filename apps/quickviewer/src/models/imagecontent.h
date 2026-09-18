@@ -8,7 +8,7 @@
 
 #include "exif.h"
 #include "movie.h"
-#include "qv_init.h"
+#include "qvenums.h"
 
 struct RetouchParameters
 {

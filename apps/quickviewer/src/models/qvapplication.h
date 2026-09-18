@@ -5,7 +5,7 @@
 #include <QtCore>
 #include <QtWidgets>
 
-#include "qv_init.h"
+#include "qvenums.h"
 #include "readprogressstore.h"
 #include "languagemanager.h"
 #include "qmousesequence.h"

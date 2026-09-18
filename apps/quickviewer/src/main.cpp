@@ -2,7 +2,6 @@
 
 #include "benchmark/imagebenchmarkrunner.h"
 
-#include "qv_init.h"
 #include "qvapplication.h"
 #include "thumbnailmanager.h"
 #include "qnamedpipe.h"

@@ -3,7 +3,7 @@
 
 #include <QtWidgets>
 #include "models/thumbnailmanager.h"
-#include "qv_init.h"
+#include "qvenums.h"
 
 class VolumeItemModel : public QAbstractItemModel
 {

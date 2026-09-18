@@ -66,7 +66,7 @@ SOURCES += \
     ../../components/i18n/texttranslator.cpp
 
 HEADERS += \
-    ../../apps/quickviewer/src/qv_init.h \
+    ../../apps/quickviewer/src/qvenums.h \
     ../../apps/quickviewer/src/imageview.h \
     ../../apps/quickviewer/src/models/readprogressstore.h \
     ../../apps/quickviewer/src/models/boundedexecutor.h \

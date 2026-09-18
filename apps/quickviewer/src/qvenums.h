@@ -1,5 +1,5 @@
-#ifndef QV_INIT_H
-#define QV_INIT_H
+#ifndef QVENUMS_H
+#define QVENUMS_H
 
 #include <QtCore>
 
@@ -90,4 +90,4 @@ public:
     Q_ENUM(ImageSortBy)
 };
 
-#endif // QV_INIT_H
+#endif // QVENUMS_H

@@ -4,7 +4,7 @@
 #include <QtCore>
 #include <QtGui>
 
-#include "qv_init.h"
+#include "qvenums.h"
 
 namespace SvgLoader {
 
