@@ -400,6 +400,38 @@ private slots:
         QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("page-0.bmp"));
     }
 
+    void folderViewIsDestroyedBeforeItsDelegate()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QImage image(16, 16, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        QVERIFY(image.save(directory.filePath(QStringLiteral("page.bmp"))));
+
+        auto *folder = new FolderWindow(nullptr, nullptr);
+        folder->setFolderPath(directory.path(), false);
+        QTreeView *view = folder->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        QAbstractItemDelegate *delegate = view->itemDelegate();
+        QVERIFY(delegate);
+
+        // The view keeps a raw pointer to the delegate. Qt clears the model
+        // pointer when the model dies, but nothing clears the delegate, so the
+        // view has to be destroyed while the delegate is still alive.
+        bool delegateDestroyed = false;
+        bool viewDiedWithLiveDelegate = false;
+        QObject::connect(delegate, &QObject::destroyed, qApp, [&delegateDestroyed] {
+            delegateDestroyed = true;
+        });
+        QObject::connect(view, &QObject::destroyed, qApp, [&] {
+            viewDiedWithLiveDelegate = !delegateDestroyed;
+        });
+
+        delete folder;
+
+        QVERIFY2(viewDiedWithLiveDelegate, "the folder view outlived its delegate");
+    }
+
     void historyButtonUsesClockIconAndLabel()
     {
         FolderWindow folder(nullptr, nullptr);
@@ -408,6 +440,43 @@ private slots:
         QCOMPARE(historyButton->text(), QStringLiteral("History"));
         QVERIFY(!historyButton->icon().isNull());
         QCOMPARE(historyButton->toolButtonStyle(), Qt::ToolButtonTextBesideIcon);
+    }
+
+    void historyButtonIsTheLastControlInTheButtonRow()
+    {
+        FolderWindow folder(nullptr, nullptr);
+        QToolButton *historyButton = folder.findChild<QToolButton *>(QStringLiteral("historyButton"));
+        QVERIFY(historyButton);
+        QFrame *frame = folder.findChild<QFrame *>(QStringLiteral("frame"));
+        QVERIFY(frame);
+        QLayout *layout = frame->layout();
+        QVERIFY(layout);
+        QVERIFY(layout->count() >= 2);
+
+        // The spacer before it keeps History at the right edge of the row.
+        QVERIFY(layout->itemAt(layout->count() - 1)->widget() == historyButton);
+        QVERIFY(layout->itemAt(layout->count() - 2)->spacerItem() != nullptr);
+    }
+
+    void folderViewHidesItsHeaderInBothModes()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+
+        StartupWindow viewer;
+        viewer.createFolderWindow(true, directory.path(), false);
+        QTreeView *view = viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        QVERIFY(view->isHeaderHidden());
+        QCOMPARE(view->model()->columnCount(), 1);
+        QVERIFY(!view->model()->headerData(0, Qt::Horizontal, Qt::DisplayRole).isValid());
+
+        viewer.createFolderWindow(false, directory.path(), false);
+        view = viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        QVERIFY(view->isHeaderHidden());
+        QCOMPARE(view->model()->columnCount(), 1);
+        QVERIFY(!view->model()->headerData(0, Qt::Horizontal, Qt::DisplayRole).isValid());
     }
 
     void folderButtonLayoutUsesCompactMargins()
@@ -451,6 +520,32 @@ private slots:
         QCOMPARE(viewer.viewerSession()->currentPageIndex(), 1);
     }
 
+    void separateWindowFollowsTheMenuBarSort()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QImage large(32, 48, QImage::Format_RGB32);
+        large.fill(Qt::red);
+        QVERIFY(large.save(directory.filePath(QStringLiteral("a.bmp"))));
+        QImage small(16, 24, QImage::Format_RGB32);
+        small.fill(Qt::blue);
+        QVERIFY(small.save(directory.filePath(QStringLiteral("b.bmp"))));
+
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
+        StartupWindow viewer;
+        viewer.createFolderWindow(false, directory.path(), false);
+        QVERIFY(viewer.folderWindow());
+        QTreeView *view = viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        QCOMPARE(view->model()->index(0, 0).data().toString(), QStringLiteral("a.bmp"));
+
+        // The independent window follows the menu bar sort as well.
+        viewer.handleSortByFileSizeActionTriggered();
+
+        QCOMPARE(view->model()->index(0, 0).data().toString(), QStringLiteral("b.bmp"));
+        QCOMPARE(view->model()->index(1, 0).data().toString(), QStringLiteral("a.bmp"));
+    }
+
     void showingSubfoldersScansImmediatelyAndKeepsThePage()
     {
         QTemporaryDir directory;
@@ -479,6 +574,33 @@ private slots:
         QVERIFY(!qApp->ShowSubfolders());
         QCOMPARE(viewer.viewerSession()->pageCount(), 2);
         QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("page-0.bmp"));
+    }
+
+    void turningSubfoldersOffAppliesToTheNextOpen()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QVERIFY(QDir(directory.path()).mkdir(QStringLiteral("sub")));
+        QImage image(16, 24, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        QVERIFY(image.save(directory.filePath(QStringLiteral("page-0.bmp"))));
+        image.fill(Qt::blue);
+        QVERIFY(image.save(QDir(directory.path()).filePath(QStringLiteral("sub/page-1.bmp"))));
+
+        qApp->setShowSubfolders(false);
+        StartupWindow viewer;
+        viewer.openPath(directory.path());
+        QCOMPARE(viewer.viewerSession()->pageCount(), 1);
+
+        viewer.handleShowSubfoldersActionTriggered(true);
+        viewer.handleShowSubfoldersActionTriggered(false);
+        QVERIFY(!qApp->ShowSubfolders());
+        QCOMPARE(viewer.viewerSession()->pageCount(), 2);
+
+        // Turning it off is postponed, not cancelled: the folder is read
+        // without its subfolders the next time it is opened.
+        viewer.openPath(directory.path());
+        QCOMPARE(viewer.viewerSession()->pageCount(), 1);
     }
 
     void subfolderToggleKeepsTheRequestedPage()
