@@ -375,6 +375,31 @@ private slots:
         QTRY_VERIFY(viewer.folderWindow() == nullptr);
     }
 
+    void closingTheFolderPanelWithAnOpenImageKeepsTheViewerAlive()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QImage image(16, 24, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        QVERIFY(image.save(directory.filePath(QStringLiteral("page-0.bmp"))));
+
+        StartupWindow viewer;
+        viewer.openPath(directory.path());
+        viewer.createFolderWindow(true, directory.path(), false);
+        FolderWindow *folder = viewer.folderWindow();
+        QVERIFY(folder);
+        QTreeView *view = folder->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        QVERIFY(view->model()->rowCount() > 0);
+
+        // F4 and the "Show folder" action close the panel while it is listing
+        // entries and while the viewer displays a volume.
+        viewer.handleShowFolderActionTriggered();
+
+        QVERIFY(viewer.folderWindow() == nullptr);
+        QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("page-0.bmp"));
+    }
+
     void historyButtonUsesClockIconAndLabel()
     {
         FolderWindow folder(nullptr, nullptr);

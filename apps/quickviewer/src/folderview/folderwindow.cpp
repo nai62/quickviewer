@@ -75,6 +75,12 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
 
 FolderWindow::~FolderWindow()
 {
+    // The view holds raw pointers to the model and the delegate. Qt resets the
+    // model pointer when the model dies, but it never clears the delegate, and
+    // the child widgets are destroyed after the members of this object: destroy
+    // the view while the model and the delegate are still alive, otherwise it
+    // reads released memory while it is being destroyed.
+    delete ui->folderView;
     if (m_itemContextMenu) {
         delete m_itemContextMenu;
     }

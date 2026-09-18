@@ -1061,14 +1061,18 @@ void MainWindow::handleShowSubfoldersActionTriggered(bool checked)
 
 void MainWindow::handleFolderWindowClosed()
 {
-    if (m_folderWindow) {
-        delete m_folderWindow;
-        m_folderWindow = nullptr;
-        ui->actionShowFolder->setChecked(false);
+    FolderWindow *folderWindow = m_folderWindow;
+    if (!folderWindow) {
+        return;
+    }
+    // Detach the panel before it is destroyed: callbacks that arrive while it
+    // is being torn down must not find it any more.
+    m_folderWindow = nullptr;
+    delete folderWindow;
+    ui->actionShowFolder->setChecked(false);
 
-        if (!m_onWindowClosing) {
-            qApp->setShowOptionViewOnStartup(qvEnums::OptionViewOnStartup::NoViewStartup);
-        }
+    if (!m_onWindowClosing) {
+        qApp->setShowOptionViewOnStartup(qvEnums::OptionViewOnStartup::NoViewStartup);
     }
 }
 
@@ -1125,7 +1129,9 @@ void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
         if (!deferFolderLoad) {
             m_folderWindow->setFolderPath(oldpath, false);
         }
-        connect(m_folderWindow, SIGNAL(closed()), this, SLOT(handleFolderWindowClosed()));
+        // Queued: the independent window emits this from its own closeEvent,
+        // and deleting the widget there would use it after close() returns.
+        connect(m_folderWindow, SIGNAL(closed()), this, SLOT(handleFolderWindowClosed()), Qt::QueuedConnection);
         connect(m_folderWindow, &FolderWindow::openVolume, this, &MainWindow::handleFolderWindowOpenVolume);
         connect(m_folderWindow, &FolderWindow::reloadRequested, this, &MainWindow::handleFolderWindowReloadRequested);
         if (!replaceStartupPanelPlaceholder(m_folderWindow)) {
@@ -1149,7 +1155,9 @@ void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
         if (!deferFolderLoad) {
             m_folderWindow->setFolderPath(oldpath, false);
         }
-        connect(m_folderWindow, SIGNAL(closed()), this, SLOT(handleFolderWindowClosed()));
+        // Queued: the independent window emits this from its own closeEvent,
+        // and deleting the widget there would use it after close() returns.
+        connect(m_folderWindow, SIGNAL(closed()), this, SLOT(handleFolderWindowClosed()), Qt::QueuedConnection);
         connect(m_folderWindow, &FolderWindow::openVolume, this, &MainWindow::handleFolderWindowOpenVolume);
         connect(m_folderWindow, &FolderWindow::reloadRequested, this, &MainWindow::handleFolderWindowReloadRequested);
         m_folderWindow->show();
