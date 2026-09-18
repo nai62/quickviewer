@@ -241,6 +241,95 @@ private slots:
         QCOMPARE(restoredSession.currentPageName(), QString("page-2.bmp"));
     }
 
+    void readProgressResumesTheStoredPageName()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 3; ++page) {
+            QImage image(16, 16, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 60, 255, 255));
+            QVERIFY(image.save(directory.filePath(QString("page-%1.bmp").arg(page))));
+        }
+
+        // The position was recorded against a listing that no longer exists, so
+        // only the stored name still points at the page the reader stopped on.
+        const QString volumePath = QDir::fromNativeSeparators(directory.path());
+        qApp->readProgressStore()->insert(
+            volumePath,
+            ReadProgress{QFileInfo(directory.path()).fileName(),
+                         volumePath,
+                         QStringLiteral("page-2.bmp"),
+                         3,
+                         0,
+                         false});
+        qApp->setOpenVolumeWithProgress(true);
+        qApp->setDualView(false);
+
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(directory.path()));
+
+        QCOMPARE(session.currentPageName(), QStringLiteral("page-2.bmp"));
+        QCOMPARE(session.currentPageIndex(), 2);
+    }
+
+    void readProgressFallsBackToTheIndexWhenThePageIsGone()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 3; ++page) {
+            QImage image(16, 16, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 60, 255, 255));
+            QVERIFY(image.save(directory.filePath(QString("page-%1.bmp").arg(page))));
+        }
+
+        const QString volumePath = QDir::fromNativeSeparators(directory.path());
+        qApp->readProgressStore()->insert(
+            volumePath,
+            ReadProgress{QFileInfo(directory.path()).fileName(),
+                         volumePath,
+                         QStringLiteral("renamed.bmp"),
+                         3,
+                         1,
+                         false});
+        qApp->setOpenVolumeWithProgress(true);
+        qApp->setDualView(false);
+
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(directory.path()));
+
+        QCOMPARE(session.currentPageName(), QStringLiteral("page-1.bmp"));
+        QCOMPARE(session.currentPageIndex(), 1);
+    }
+
+    void finishedVolumeStartsOverInsteadOfResumingItsLastPage()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 3; ++page) {
+            QImage image(16, 16, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 60, 255, 255));
+            QVERIFY(image.save(directory.filePath(QString("page-%1.bmp").arg(page))));
+        }
+
+        const QString volumePath = QDir::fromNativeSeparators(directory.path());
+        qApp->readProgressStore()->insert(
+            volumePath,
+            ReadProgress{QFileInfo(directory.path()).fileName(),
+                         volumePath,
+                         QStringLiteral("page-2.bmp"),
+                         3,
+                         0,
+                         true});
+        qApp->setOpenVolumeWithProgress(true);
+        qApp->setDualView(false);
+
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(directory.path()));
+
+        QCOMPARE(session.currentPageName(), QStringLiteral("page-0.bmp"));
+        QCOMPARE(session.currentPageIndex(), 0);
+    }
+
     void readProgressKeepsLegacyIniKeys()
     {
         const QString volumePath = "read-progress-key-compatibility";

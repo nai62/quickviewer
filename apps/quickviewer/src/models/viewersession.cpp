@@ -199,7 +199,20 @@ int ViewerSession::initialPageIndex(
 
     const QString path = QDir::fromNativeSeparators(volume->volumePath());
     if (qApp->OpenVolumeWithProgress() && !volume->openedWithSpecifiedImageFile() && qApp->readProgressStore()->contains(path)) {
-        const int resumePageIndex = qApp->readProgressStore()->at(path).resumePageIndex;
+        const ReadProgress progress = qApp->readProgressStore()->at(path);
+        // A finished volume starts over, even though the stored name is its
+        // last page.
+        if (!progress.completed && !progress.currentPageName.isEmpty()) {
+            // The stored name follows the page itself, while the stored index
+            // only means something for the listing it was recorded with: the
+            // panel changes the listing with its sort and its subfolder option,
+            // and files come and go.
+            const int namedPageIndex = volume->pageIndexForName(progress.currentPageName);
+            if (namedPageIndex >= 0) {
+                return namedPageIndex;
+            }
+        }
+        const int resumePageIndex = progress.resumePageIndex;
         return resumePageIndex >= 0 && resumePageIndex < volume->pageCount()
                    ? resumePageIndex
                    : 0;

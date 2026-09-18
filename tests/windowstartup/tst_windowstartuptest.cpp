@@ -528,6 +528,57 @@ private slots:
         QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("a-large.bmp"));
     }
 
+    void subfolderToggleKeepsTheRememberedPage()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QVERIFY(QDir(directory.path()).mkdir(QStringLiteral("b")));
+        QImage image(16, 24, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        QVERIFY(image.save(directory.filePath(QStringLiteral("a.bmp"))));
+        image.fill(Qt::green);
+        QVERIFY(image.save(directory.filePath(QStringLiteral("c.bmp"))));
+        image.fill(Qt::blue);
+        QVERIFY(image.save(directory.filePath(QStringLiteral("d.bmp"))));
+        image.fill(Qt::yellow);
+        QVERIFY(image.save(QDir(directory.path()).filePath(QStringLiteral("b/page.bmp"))));
+
+        qApp->setShowSubfolders(false);
+        qApp->setOpenVolumeWithProgress(true);
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
+        StartupWindow viewer;
+        viewer.createFolderWindow(true, directory.path(), false);
+        FolderWindow *folder = viewer.folderWindow();
+        QVERIFY(folder);
+        QTreeView *view = folder->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        viewer.openPath(directory.path());
+        QCOMPARE(viewer.viewerSession()->pageCount(), 3);
+
+        // The reader stops on a page that sits at another index once the
+        // subfolder is listed: "a.bmp", "c.bmp", "d.bmp" becomes "a.bmp",
+        // "b/page.bmp", "c.bmp", "d.bmp".
+        QVERIFY(viewer.viewerSession()->selectPage(1));
+        QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("c.bmp"));
+
+        int folderRow = -1;
+        for (int row = 0; row < view->model()->rowCount(); ++row) {
+            if (view->model()->index(row, 0).data().toString() == QStringLiteral("b")) {
+                folderRow = row;
+                break;
+            }
+        }
+        QVERIFY(folderRow >= 0);
+        folder->handleFolderViewItemSelected(view->model()->index(folderRow, 0));
+        QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("page.bmp"));
+
+        viewer.handleShowSubfoldersActionTriggered(true);
+        folder->handleParentButtonClicked();
+
+        QCOMPARE(viewer.viewerSession()->pageCount(), 4);
+        QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("c.bmp"));
+    }
+
     void folderViewHighlightsTheFolderOfASubfolderPage()
     {
         QTemporaryDir directory;
