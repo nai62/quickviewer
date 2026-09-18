@@ -10,11 +10,16 @@
 #include "models/loupecontroller.h"
 #include "models/pagedisplayformatter.h"
 #include "models/pagenavigator.h"
+#include "models/storedvolumelocation.h"
 #include "models/visiblepagecomposer.h"
 #include "models/viewersession.h"
 #include "models/qvapplication.h"
+#include "models/shadereffect.h"
+#include "models/shadermanager.h"
 #include "models/volumecache.h"
 #include "models/volumehandle.h"
+
+#define FILELOADER_DATAPATH VIEWERNAVIGATION_SRCDIR "../fileloader/data/"
 
 class EmptyFileLoader final : public IFileLoader
 {
@@ -172,6 +177,73 @@ private slots:
         QCOMPARE(PageDisplayFormatter::signageText({}, 4, 12), QString());
     }
 
+    void shaderEffectVocabularyIsBuildIndependent()
+    {
+        struct EffectCase
+        {
+            qvEnums::ShaderEffect effect;
+            ShaderEffectKind kind;
+        };
+        const QList<EffectCase> cases{
+            {qvEnums::ShaderEffect::UnPrepared, ShaderEffectKind::Unprepared},
+            {qvEnums::ShaderEffect::CpuBicubic, ShaderEffectKind::CpuOnly},
+            {qvEnums::ShaderEffect::CpuSpline16, ShaderEffectKind::CpuOnly},
+            {qvEnums::ShaderEffect::CpuSpline36, ShaderEffectKind::CpuOnly},
+            {qvEnums::ShaderEffect::CpuLanczos3, ShaderEffectKind::CpuOnly},
+            {qvEnums::ShaderEffect::CpuLanczos4, ShaderEffectKind::CpuOnly},
+            {qvEnums::ShaderEffect::NearestNeighbor, ShaderEffectKind::FixedShader},
+            {qvEnums::ShaderEffect::Bilinear, ShaderEffectKind::FixedShader},
+            {qvEnums::ShaderEffect::Bicubic, ShaderEffectKind::GlShader},
+            {qvEnums::ShaderEffect::Lanczos, ShaderEffectKind::GlShader},
+        };
+        for (const EffectCase &testCase : cases) {
+            QCOMPARE(shaderEffectKind(testCase.effect), testCase.kind);
+            QCOMPARE(usesGpuRendering(testCase.effect),
+                     testCase.kind == ShaderEffectKind::FixedShader || testCase.kind == ShaderEffectKind::GlShader);
+            QCOMPARE(resizesOnCpu(testCase.effect),
+                     testCase.kind == ShaderEffectKind::Unprepared || testCase.kind == ShaderEffectKind::CpuOnly);
+            // Only the fragment shader effects depend on the build.
+            QCOMPARE(shaderEffectAvailable(testCase.effect),
+                     testCase.kind != ShaderEffectKind::GlShader || gpuShadersAvailable());
+        }
+
+        QCOMPARE(cpuFilterMode(qvEnums::ShaderEffect::CpuBicubic), QZimg::ResizeBicubic);
+        QCOMPARE(cpuFilterMode(qvEnums::ShaderEffect::CpuSpline16), QZimg::ResizeSpline16);
+        QCOMPARE(cpuFilterMode(qvEnums::ShaderEffect::CpuSpline36), QZimg::ResizeSpline36);
+        QCOMPARE(cpuFilterMode(qvEnums::ShaderEffect::CpuLanczos3), QZimg::ResizeLanczos3);
+        QCOMPARE(cpuFilterMode(qvEnums::ShaderEffect::CpuLanczos4), QZimg::ResizeLanczos4);
+        // Effects that do not resize on the CPU keep the default filter.
+        QCOMPARE(cpuFilterMode(qvEnums::ShaderEffect::UnPrepared), QZimg::ResizeBicubic);
+        QCOMPARE(cpuFilterMode(qvEnums::ShaderEffect::Bilinear), QZimg::ResizeBicubic);
+        QCOMPARE(cpuFilterMode(qvEnums::ShaderEffect::Lanczos), QZimg::ResizeBicubic);
+    }
+
+    void shaderEffectStringsRoundTripThroughTheVocabulary()
+    {
+        const QList<qvEnums::ShaderEffect> effects{
+            qvEnums::ShaderEffect::UnPrepared,
+            qvEnums::ShaderEffect::CpuBicubic,
+            qvEnums::ShaderEffect::CpuSpline16,
+            qvEnums::ShaderEffect::CpuSpline36,
+            qvEnums::ShaderEffect::CpuLanczos3,
+            qvEnums::ShaderEffect::CpuLanczos4,
+            qvEnums::ShaderEffect::NearestNeighbor,
+            qvEnums::ShaderEffect::Bilinear,
+            qvEnums::ShaderEffect::Bicubic,
+            qvEnums::ShaderEffect::Lanczos,
+        };
+        for (const qvEnums::ShaderEffect effect : effects) {
+            const QString name = ShaderManager::shaderEffectToString(effect);
+            QVERIFY(!name.isEmpty());
+            // An effect this build cannot render falls back to Bilinear.
+            const qvEnums::ShaderEffect expected =
+                shaderEffectAvailable(effect) ? effect : qvEnums::ShaderEffect::Bilinear;
+            QCOMPARE(ShaderManager::stringToShaderEffect(name), expected);
+        }
+        QCOMPARE(ShaderManager::stringToShaderEffect(QStringLiteral("NoSuchEffect")),
+                 qvEnums::ShaderEffect::Bilinear);
+    }
+
     void directImageTransitionsThroughStandalonePreview()
     {
         QTemporaryDir directory;
@@ -186,7 +258,7 @@ private slots:
         view.resize(320, 240);
         view.setViewerSession(&session);
 
-        QVERIFY(session.loadVolumeWithFile(imagePath));
+        QVERIFY(session.openFileInContainer(imagePath));
         QCOMPARE(session.stateKind(), ViewerStateKind::Loading);
         QVERIFY(session.initialImagePaintPending());
 
@@ -222,7 +294,7 @@ private slots:
         qApp->setOpenVolumeWithProgress(false);
         {
             ViewerSession session(nullptr);
-            QVERIFY(session.loadVolume(directory.path()));
+            QVERIFY(session.openContainer(directory.path()));
             QVERIFY(session.selectPage(2));
             QCOMPARE(session.currentPageIndex(), 2);
         }
@@ -235,9 +307,124 @@ private slots:
 
         qApp->setOpenVolumeWithProgress(true);
         ViewerSession restoredSession(nullptr);
-        QVERIFY(restoredSession.loadVolume(directory.path()));
+        QVERIFY(restoredSession.openContainer(directory.path()));
         QCOMPARE(restoredSession.currentPageIndex(), 2);
         QCOMPARE(restoredSession.currentPageName(), QString("page-2.bmp"));
+    }
+
+    void readProgressResumesTheStoredPageName()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 3; ++page) {
+            QImage image(16, 16, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 60, 255, 255));
+            QVERIFY(image.save(directory.filePath(QString("page-%1.bmp").arg(page))));
+        }
+
+        // The position was recorded against a listing that no longer exists, so
+        // only the stored name still points at the page the reader stopped on.
+        const QString volumePath = QDir::fromNativeSeparators(directory.path());
+        qApp->readProgressStore()->insert(
+            volumePath,
+            ReadProgress{QFileInfo(directory.path()).fileName(),
+                         volumePath,
+                         QStringLiteral("page-2.bmp"),
+                         3,
+                         0,
+                         false});
+        qApp->setOpenVolumeWithProgress(true);
+        qApp->setDualView(false);
+
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(directory.path()));
+
+        QCOMPARE(session.currentPageName(), QStringLiteral("page-2.bmp"));
+        QCOMPARE(session.currentPageIndex(), 2);
+    }
+
+    void readProgressFallsBackToTheIndexWhenThePageIsGone()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 3; ++page) {
+            QImage image(16, 16, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 60, 255, 255));
+            QVERIFY(image.save(directory.filePath(QString("page-%1.bmp").arg(page))));
+        }
+
+        const QString volumePath = QDir::fromNativeSeparators(directory.path());
+        qApp->readProgressStore()->insert(
+            volumePath,
+            ReadProgress{QFileInfo(directory.path()).fileName(),
+                         volumePath,
+                         QStringLiteral("renamed.bmp"),
+                         3,
+                         1,
+                         false});
+        qApp->setOpenVolumeWithProgress(true);
+        qApp->setDualView(false);
+
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(directory.path()));
+
+        QCOMPARE(session.currentPageName(), QStringLiteral("page-1.bmp"));
+        QCOMPARE(session.currentPageIndex(), 1);
+    }
+
+    void finishedVolumeStartsOverInsteadOfResumingItsLastPage()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 3; ++page) {
+            QImage image(16, 16, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 60, 255, 255));
+            QVERIFY(image.save(directory.filePath(QString("page-%1.bmp").arg(page))));
+        }
+
+        const QString volumePath = QDir::fromNativeSeparators(directory.path());
+        qApp->readProgressStore()->insert(
+            volumePath,
+            ReadProgress{QFileInfo(directory.path()).fileName(),
+                         volumePath,
+                         QStringLiteral("page-2.bmp"),
+                         3,
+                         0,
+                         true});
+        qApp->setOpenVolumeWithProgress(true);
+        qApp->setDualView(false);
+
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(directory.path()));
+
+        QCOMPARE(session.currentPageName(), QStringLiteral("page-0.bmp"));
+        QCOMPARE(session.currentPageIndex(), 0);
+    }
+
+    void readProgressResumesAnArchiveEntry()
+    {
+        const QString archivePath = QString(FILELOADER_DATAPATH "7z/image.7z");
+        QVERIFY(QFileInfo::exists(archivePath));
+
+        const QString volumePath = QDir::fromNativeSeparators(archivePath);
+        qApp->readProgressStore()->insert(
+            volumePath,
+            ReadProgress{QFileInfo(archivePath).fileName(),
+                         volumePath,
+                         QStringLiteral("yellow.png"),
+                         3,
+                         0,
+                         false});
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
+        qApp->setOpenVolumeWithProgress(true);
+        qApp->setDualView(false);
+
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(archivePath));
+
+        // Entry names are restored too, even though the stored index points at
+        // another entry.
+        QCOMPARE(session.currentPageName(), QStringLiteral("yellow.png"));
     }
 
     void readProgressKeepsLegacyIniKeys()
@@ -254,7 +441,7 @@ private slots:
         qApp->readProgressStore()->save();
 
         QSettings settings(
-            qApp->getFilePathOfApplicationSetting(PROGRESS_INI),
+            qApp->getFilePathOfApplicationSetting(QVApplication::readProgressSubPath()),
             QSettings::IniFormat);
         bool found = false;
         for (const QString &group : settings.childGroups()) {
@@ -287,7 +474,7 @@ private slots:
         qApp->setOpenVolumeWithProgress(false);
         qApp->setDualView(false);
         ViewerSession singlePageSession(nullptr);
-        QVERIFY(singlePageSession.loadVolume(directory.path()));
+        QVERIFY(singlePageSession.openContainer(directory.path()));
         QCOMPARE(singlePageSession.currentPageIndex(), 0);
         QCOMPARE(singlePageSession.visiblePageCount(), 1);
         QVERIFY(singlePageSession.advanceSpread());
@@ -305,7 +492,7 @@ private slots:
         qApp->setFirstImageAsOnePageInDualView(false);
         qApp->setWideImageAsOnePageInDualView(true);
         ViewerSession spreadSession(nullptr);
-        QVERIFY(spreadSession.loadVolume(directory.path()));
+        QVERIFY(spreadSession.openContainer(directory.path()));
         QCOMPARE(spreadSession.currentPageIndex(), 0);
         QCOMPARE(spreadSession.visiblePageCount(), 2);
         QVERIFY(spreadSession.advanceSpread());
@@ -317,6 +504,138 @@ private slots:
         QVERIFY(spreadSession.retreatSpread());
         QCOMPARE(spreadSession.currentPageIndex(), 1);
         QCOMPARE(spreadSession.visiblePageCount(), 2);
+    }
+
+    void sortingPagesKeepsTheDisplayedPage()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QImage large(32, 48, QImage::Format_RGB32);
+        large.fill(Qt::red);
+        QVERIFY(large.save(directory.filePath(QStringLiteral("a.bmp"))));
+        QImage small(16, 24, QImage::Format_RGB32);
+        small.fill(Qt::blue);
+        QVERIFY(small.save(directory.filePath(QStringLiteral("b.bmp"))));
+
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
+        qApp->setDualView(false);
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(directory.path()));
+        QCOMPARE(session.currentPageName(), QStringLiteral("a.bmp"));
+
+        session.sortActiveVolumePages(qvEnums::ImageSortBy::SortByFileSize);
+
+        QCOMPARE(session.pageCount(), 2);
+        QCOMPARE(session.currentPageName(), QStringLiteral("a.bmp"));
+        QCOMPARE(session.currentPageIndex(), 1);
+    }
+
+    void openingAPageByNameFollowsTheVolumeSort()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QImage large(32, 48, QImage::Format_RGB32);
+        large.fill(Qt::red);
+        QVERIFY(large.save(directory.filePath(QStringLiteral("a-large.bmp"))));
+        QImage small(16, 24, QImage::Format_RGB32);
+        small.fill(Qt::blue);
+        QVERIFY(small.save(directory.filePath(QStringLiteral("b-small.bmp"))));
+
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileSize);
+        qApp->setDualView(false);
+        qApp->setOpenVolumeWithProgress(false);
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(directory.path()));
+        QCOMPARE(session.currentPageName(), QStringLiteral("b-small.bmp"));
+
+        // The size sort orders the pages differently from their file names, so
+        // a lookup by name has to follow the order the volume displays.
+        QVERIFY(session.openEntry(
+            VolumeLocation{directory.path(), QStringLiteral("a-large.bmp")}));
+
+        QCOMPARE(session.currentPageName(), QStringLiteral("a-large.bmp"));
+        QCOMPARE(session.currentPageIndex(), 1);
+    }
+
+    void reloadingAContainerRereadsItsPages()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 2; ++page) {
+            QImage image(16, 24, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 40, 255, 255));
+            QVERIFY(image.save(directory.filePath(QString("page-%1.bmp").arg(page))));
+        }
+
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
+        qApp->setDualView(false);
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(directory.path()));
+        QCOMPARE(session.pageCount(), 2);
+        QVERIFY(session.selectPage(1));
+
+        // A file appears while the volume is open.
+        QImage added(16, 24, QImage::Format_RGB32);
+        added.fill(Qt::green);
+        QVERIFY(added.save(directory.filePath(QStringLiteral("page-2.bmp"))));
+
+        session.reloadContainer(directory.path());
+
+        QCOMPARE(session.pageCount(), 3);
+        QCOMPARE(session.currentPageName(), QStringLiteral("page-1.bmp"));
+    }
+
+    void openingFileAddedAfterTheListingScansAgain()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const QString firstPath = directory.filePath(QStringLiteral("page-0.bmp"));
+        QImage image(16, 24, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        QVERIFY(image.save(firstPath));
+
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
+        qApp->setDualView(false);
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(directory.path()));
+        QCOMPARE(session.pageCount(), 1);
+
+        // Add a file behind the volume's back and open it directly.
+        const QString addedPath = directory.filePath(QStringLiteral("page-1.bmp"));
+        image.fill(Qt::blue);
+        QVERIFY(image.save(addedPath));
+        QVERIFY(session.openFileInContainer(addedPath));
+
+        QCOMPARE(session.stateKind(), ViewerStateKind::VolumeReady);
+        QCOMPARE(session.pageCount(), 2);
+        QCOMPARE(session.currentPageName(), QStringLiteral("page-1.bmp"));
+    }
+
+    void volumeKeepsItsOwnSortForPageNames()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 3; ++page) {
+            QImage image(16, 24, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 40, 255, 255));
+            QVERIFY(image.save(directory.filePath(QString("page-%1.bmp").arg(page))));
+        }
+
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
+        qApp->setDualView(false);
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(directory.path()));
+
+        // Changing the setting does not re-sort this volume, so it must keep
+        // reporting its own page names.
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByModifiedTime);
+        session.updateReadProgress();
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
+
+        const QString volumePath = QDir::fromNativeSeparators(directory.path());
+        QVERIFY(qApp->readProgressStore()->contains(volumePath));
+        QCOMPARE(qApp->readProgressStore()->at(volumePath).currentPageName,
+                 QString("page-0.bmp"));
     }
 
     void cachedVolumesKeepIndependentPagePositions()
@@ -338,17 +657,206 @@ private slots:
         qApp->setOpenVolumeWithProgress(false);
         qApp->setDualView(false);
         ViewerSession session(nullptr);
-        QVERIFY(session.loadVolume(firstVolumePath));
+        QVERIFY(session.openContainer(firstVolumePath));
         QVERIFY(session.selectPage(2));
-        QVERIFY(session.loadVolume(secondVolumePath));
+        QVERIFY(session.openContainer(secondVolumePath));
         QVERIFY(session.selectPage(1));
 
-        QVERIFY(session.loadVolume(firstVolumePath));
+        QVERIFY(session.openContainer(firstVolumePath));
         QCOMPARE(session.currentPageIndex(), 2);
         QCOMPARE(session.currentPageName(), QString("page-2.bmp"));
-        QVERIFY(session.loadVolume(secondVolumePath));
+        QVERIFY(session.openContainer(secondVolumePath));
         QCOMPARE(session.currentPageIndex(), 1);
         QCOMPARE(session.currentPageName(), QString("page-1.bmp"));
+    }
+
+    void openTargetClassifiesPaths()
+    {
+        const QString folder = QDir::tempPath();
+        const QString archivePath = QDir(folder).filePath(QStringLiteral("book.zip"));
+        const QString imagePath = QDir(folder).filePath(QStringLiteral("page.jpg"));
+
+        const OpenTarget archive = OpenTarget::forPath(archivePath);
+        QCOMPARE(archive.intent, OpenIntent::Container);
+        QCOMPARE(archive.location.containerPath, QDir::fromNativeSeparators(archivePath));
+        QVERIFY(archive.location.isContainer());
+
+        const OpenTarget image = OpenTarget::forPath(imagePath);
+        QCOMPARE(image.intent, OpenIntent::FileInContainer);
+        QCOMPARE(image.location.containerPath, QDir::fromNativeSeparators(folder));
+        QCOMPARE(image.location.entryName, QStringLiteral("page.jpg"));
+
+        QCOMPARE(volumeLocationDisplayText({archivePath, QStringLiteral("page.jpg")}),
+                 QDir::toNativeSeparators(archivePath) + QStringLiteral(" (page.jpg)"));
+        QCOMPARE(volumeLocationDisplayText({folder, QStringLiteral("page.jpg")}),
+                 QDir::toNativeSeparators(
+                     QDir(folder).absoluteFilePath(QStringLiteral("page.jpg"))));
+    }
+
+    void storedVolumeLocationKeepsLegacyArchiveForm()
+    {
+        const QString folder = QDir::tempPath();
+        const QString archivePath = QDir(folder).filePath(QStringLiteral("book.zip"));
+
+        const QString storedContainer = storeVolumeLocation(VolumeLocation{folder, QString()});
+        QCOMPARE(storedContainer, QDir::fromNativeSeparators(folder));
+        QVERIFY(loadStoredVolumeLocation(storedContainer).isContainer());
+
+        // Releases before the typed location API wrote archive pages this way.
+        const QString storedEntry = archivePath + QStringLiteral("::page.jpg");
+        const VolumeLocation entry = loadStoredVolumeLocation(storedEntry);
+        QCOMPARE(entry.containerPath, QDir::fromNativeSeparators(archivePath));
+        QCOMPARE(entry.entryName, QStringLiteral("page.jpg"));
+        QCOMPARE(storeVolumeLocation(entry), storedEntry);
+
+        // Folder pages are stored as plain file paths.
+        const QString imagePath = QDir(folder).filePath(QStringLiteral("page.jpg"));
+        const QString storedImage = storeVolumeLocation(OpenTarget::forPath(imagePath).location);
+        QCOMPARE(storedImage, QDir::fromNativeSeparators(imagePath));
+        QVERIFY(loadStoredVolumeLocation(storedImage).isContainer());
+    }
+
+    void storedVolumeLocationHandlesNamesWithTheSeparator()
+    {
+        const QString folder = QDir::fromNativeSeparators(QDir::tempPath());
+        const QString archivePath = QDir(folder).filePath(QStringLiteral("book.zip"));
+        const QString entryName = QStringLiteral("pages/chapter::one.jpg");
+
+        // The split happens at the first separator, so an archive entry may
+        // contain the separator itself.
+        const VolumeLocation entry{archivePath, entryName};
+        const QString storedEntry = storeVolumeLocation(entry);
+        QCOMPARE(storedEntry, archivePath + QStringLiteral("::") + entryName);
+        const VolumeLocation loadedEntry = loadStoredVolumeLocation(storedEntry);
+        QCOMPARE(loadedEntry.containerPath, archivePath);
+        QCOMPARE(loadedEntry.entryName, entryName);
+
+        // Known limitation: a folder page is stored as a plain path, so the
+        // legacy parser cannot tell a name containing the separator from an
+        // archive entry, and reads the one page back as two parts. The path is
+        // spelled out instead of being built with QDir, because Windows reads
+        // a colon inside a name as a drive letter.
+        const QString plainPagePath = folder + QStringLiteral("/a::b.jpg");
+        const VolumeLocation plainPage = loadStoredVolumeLocation(plainPagePath);
+        QVERIFY(!plainPage.isContainer());
+        QCOMPARE(plainPage.containerPath, folder + QStringLiteral("/a"));
+        QCOMPARE(plainPage.entryName, QStringLiteral("b.jpg"));
+
+#ifndef Q_OS_WIN
+        // The path is classified by what it is, not by the separator inside
+        // its name. Only the other platforms can name a file with a colon.
+        const VolumeLocation imageLocation = OpenTarget::forPath(plainPagePath).location;
+        QCOMPARE(imageLocation.containerPath, folder);
+        QCOMPARE(imageLocation.entryName, QStringLiteral("a::b.jpg"));
+        QCOMPARE(storeVolumeLocation(imageLocation), plainPagePath);
+#endif
+    }
+
+    void invalidatingFolderCacheOpensRenamedFile()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 3; ++page) {
+            QImage image(16, 24, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 40, 255, 255));
+            QVERIFY(image.save(directory.filePath(QString("page-%1.bmp").arg(page))));
+        }
+
+        qApp->setOpenVolumeWithProgress(false);
+        qApp->setDualView(false);
+        ViewerSession session(nullptr);
+        ImageView view;
+        view.resize(320, 240);
+        view.setViewerSession(&session);
+        QVERIFY(session.openContainer(directory.path()));
+        QVERIFY(session.selectPage(1));
+        QCOMPARE(session.currentPageName(), QString("page-1.bmp"));
+
+        // Renaming can move the file to another position in the page order.
+        const QString renamedName = QStringLiteral("page-9.bmp");
+        const QString renamedPath = directory.filePath(renamedName);
+        QVERIFY(QFile::rename(directory.filePath(QString("page-1.bmp")), renamedPath));
+        session.invalidateVolumeCache(directory.path());
+        QVERIFY(session.openFileInContainer(renamedPath));
+
+        QTRY_COMPARE(session.stateKind(), ViewerStateKind::StandalonePreview);
+        session.notifyInitialImagePainted();
+        QTRY_COMPARE(session.stateKind(), ViewerStateKind::VolumeReady);
+        QCOMPARE(session.pageCount(), 3);
+        QCOMPARE(session.currentPageName(), renamedName);
+    }
+
+    void removingDisplayedPageOpensItsNeighbour()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 3; ++page) {
+            QImage image(16, 24, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 40, 255, 255));
+            QVERIFY(image.save(directory.filePath(QString("page-%1.bmp").arg(page))));
+        }
+
+        qApp->setOpenVolumeWithProgress(false);
+        qApp->setDualView(false);
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(directory.path()));
+        QVERIFY(session.selectPage(1));
+        QCOMPARE(session.currentPageName(), QString("page-1.bmp"));
+
+        QVERIFY(QFile::remove(directory.filePath(QString("page-1.bmp"))));
+        session.reloadVolumeAfterImageRemoval();
+
+        QCOMPARE(session.pageCount(), 2);
+        QCOMPARE(session.stateKind(), ViewerStateKind::VolumeReady);
+        QCOMPARE(session.currentPageName(), QString("page-2.bmp"));
+    }
+
+    void removingLastDisplayedPageOpensPreviousOne()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 3; ++page) {
+            QImage image(16, 24, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 40, 255, 255));
+            QVERIFY(image.save(directory.filePath(QString("page-%1.bmp").arg(page))));
+        }
+
+        qApp->setOpenVolumeWithProgress(false);
+        qApp->setDualView(false);
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(directory.path()));
+        QVERIFY(session.lastPage());
+        QCOMPARE(session.currentPageName(), QString("page-2.bmp"));
+
+        QVERIFY(QFile::remove(directory.filePath(QString("page-2.bmp"))));
+        session.reloadVolumeAfterImageRemoval();
+
+        QCOMPARE(session.pageCount(), 2);
+        QCOMPARE(session.stateKind(), ViewerStateKind::VolumeReady);
+        QCOMPARE(session.currentPageName(), QString("page-1.bmp"));
+    }
+
+    void removingOnlyPageLeavesEmptyViewer()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const QString imagePath = directory.filePath(QStringLiteral("only.bmp"));
+        QImage image(16, 24, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        QVERIFY(image.save(imagePath));
+
+        qApp->setOpenVolumeWithProgress(false);
+        qApp->setDualView(false);
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(directory.path()));
+        QCOMPARE(session.pageCount(), 1);
+
+        QVERIFY(QFile::remove(imagePath));
+        session.reloadVolumeAfterImageRemoval();
+
+        QCOMPARE(session.stateKind(), ViewerStateKind::Empty);
+        QCOMPARE(session.pageCount(), 0);
+        QCOMPARE(session.currentPagePath(), QString());
     }
 
     void visiblePagesAreReadOnlySnapshots()
@@ -424,21 +932,21 @@ private slots:
 
         page.setPageLayoutFitting(QRect(0, 0, 100, 100),
                                   RenderedPage::PageCenter,
-                                  qvEnums::FitToRect,
+                                  qvEnums::FitMode::FitToRect,
                                   1.0);
         QCOMPARE(page.displayScale(), 0.5);
 
         page.setRenderSettings(settings);
         page.setPageLayoutFitting(QRect(0, 0, 100, 100),
                                   RenderedPage::PageCenter,
-                                  qvEnums::FitToRect,
+                                  qvEnums::FitMode::FitToRect,
                                   1.0);
         QCOMPARE(page.displayScale(), 0.75);
 
         RenderedPage pageWithDefaults(nullptr, &scene, ImageContent(image, "preview.bmp", image.size(), {}, 0));
         pageWithDefaults.setPageLayoutFitting(QRect(0, 0, 100, 100),
                                               RenderedPage::PageCenter,
-                                              qvEnums::FitToRect,
+                                              qvEnums::FitMode::FitToRect,
                                               1.0);
         QCOMPARE(pageWithDefaults.displayScale(), 0.25);
     }
@@ -450,7 +958,7 @@ private slots:
 
         QCOMPARE(volume.pageNameAt(0), QString());
         QCOMPARE(volume.pageIndexForName("missing.png"), -1);
-        QCOMPARE(volume.pagePathWithSeparatorAt(0), QString());
+        QCOMPARE(volume.pagePathAt(0), QString());
         QVERIFY(!volume.imageLoadAt(0).isValid());
         volume.updatePrefetchCache(
             0, PrefetchMode::Normal, QSize(100, 100));
@@ -838,8 +1346,12 @@ private slots:
         ImageView view;
         view.setViewerSession(&session);
 
-        QVERIFY(!session.loadVolume(directory.path()));
+        QVERIFY(!session.openContainer(directory.path()));
         QCOMPARE(session.stateKind(), ViewerStateKind::Failed);
+        QCOMPARE(session.loadStatus().phase, ViewerLoadPhase::Failed);
+        QCOMPARE(session.loadStatus().targetKind, LoadTargetKind::Folder);
+        QCOMPARE(session.loadStatus().failureReason, LoadFailureReason::NoViewableImages);
+        QCOMPARE(session.loadStatus().failurePath, QDir::toNativeSeparators(directory.path()));
         QCOMPARE(session.pageCount(), 0);
         QVERIFY(!session.firstPage());
         QVERIFY(!session.lastPage());
@@ -848,6 +1360,7 @@ private slots:
 
         session.reset();
         QCOMPARE(session.stateKind(), ViewerStateKind::Empty);
+        QCOMPARE(session.loadStatus().phase, ViewerLoadPhase::Empty);
     }
 
     void emptyArchiveNavigationIsSafe()
@@ -868,8 +1381,12 @@ private slots:
         ImageView view;
         view.setViewerSession(&session);
 
-        QVERIFY(!session.loadVolume(archivePath));
+        QVERIFY(!session.openContainer(archivePath));
         QCOMPARE(session.stateKind(), ViewerStateKind::Failed);
+        QCOMPARE(session.loadStatus().phase, ViewerLoadPhase::Failed);
+        QCOMPARE(session.loadStatus().targetKind, LoadTargetKind::Archive);
+        QCOMPARE(session.loadStatus().failureReason, LoadFailureReason::NoViewableImages);
+        QCOMPARE(session.loadStatus().failurePath, QDir::toNativeSeparators(archivePath));
         QCOMPARE(session.pageCount(), 0);
         QVERIFY(!session.isArchive());
         QVERIFY(!session.firstPage());

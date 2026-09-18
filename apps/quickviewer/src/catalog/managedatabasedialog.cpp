@@ -3,7 +3,6 @@
 #include "managedatabasedialog.h"
 #include "databasesettingdialog.h"
 #include "ui_cataloglist.h"
-#include "qc_init.h"
 
 ManageDatabaseDialog::ManageDatabaseDialog(QWidget *parent)
     : QDialog(parent),

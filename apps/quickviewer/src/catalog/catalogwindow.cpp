@@ -2,7 +2,6 @@
 #include "ui_catalogwindow.h"
 #include "ui_mainwindow.h"
 
-#include "qc_init.h"
 #include "catalogwindow.h"
 #include "managedatabasedialog.h"
 #include "qvapplication.h"
@@ -104,13 +103,13 @@ void CatalogWindow::setThumbnailManager(ThumbnailManager *manager)
 void CatalogWindow::resetViewMode()
 {
     switch (qApp->CatalogViewModeSetting()) {
-    case qvEnums::List:
+    case qvEnums::CatalogViewMode::List:
         handleFolderViewListActionTriggered();
         break;
-    case qvEnums::Icon:
+    case qvEnums::CatalogViewMode::Icon:
         handleFolderViewIconActionTriggered();
         break;
-    case qvEnums::IconNoText:
+    case qvEnums::CatalogViewMode::IconNoText:
         handleFolderViewIconNoTextActionTriggered();
         break;
     }
@@ -269,11 +268,11 @@ void CatalogWindow::handleFolderViewButtonClicked()
 
 void CatalogWindow::handleFolderViewListActionTriggered()
 {
-    qApp->setCatalogViewModeSetting(qvEnums::List);
+    qApp->setCatalogViewModeSetting(qvEnums::CatalogViewMode::List);
     ui->actionFolderViewList->setChecked(true);
     ui->actionFolderViewIcon->setChecked(false);
     ui->actionFolderViewIconNoText->setChecked(false);
-    m_itemModel.setViewMode(qvEnums::List);
+    m_itemModel.setViewMode(qvEnums::CatalogViewMode::List);
     ui->volumeList->setResizeMode(QListView::Adjust);
     if (qApp->IconLongText()) {
         ui->volumeList->setGridSize(QSize(300, 100));
@@ -290,11 +289,11 @@ void CatalogWindow::handleFolderViewListActionTriggered()
 
 void CatalogWindow::handleFolderViewIconActionTriggered()
 {
-    qApp->setCatalogViewModeSetting(qvEnums::Icon);
+    qApp->setCatalogViewModeSetting(qvEnums::CatalogViewMode::Icon);
     ui->actionFolderViewList->setChecked(false);
     ui->actionFolderViewIcon->setChecked(true);
     ui->actionFolderViewIconNoText->setChecked(false);
-    m_itemModel.setViewMode(qvEnums::Icon);
+    m_itemModel.setViewMode(qvEnums::CatalogViewMode::Icon);
     ui->volumeList->setResizeMode(QListView::Adjust);
     if (qApp->IconLongText()) {
         ui->volumeList->setGridSize(QSize(150, 170));
@@ -311,11 +310,11 @@ void CatalogWindow::handleFolderViewIconActionTriggered()
 
 void CatalogWindow::handleFolderViewIconNoTextActionTriggered()
 {
-    qApp->setCatalogViewModeSetting(qvEnums::IconNoText);
+    qApp->setCatalogViewModeSetting(qvEnums::CatalogViewMode::IconNoText);
     ui->actionFolderViewList->setChecked(false);
     ui->actionFolderViewIcon->setChecked(false);
     ui->actionFolderViewIconNoText->setChecked(true);
-    m_itemModel.setViewMode(qvEnums::IconNoText);
+    m_itemModel.setViewMode(qvEnums::CatalogViewMode::IconNoText);
     ui->volumeList->setResizeMode(QListView::Adjust);
     ui->volumeList->setViewMode(QListView::IconMode);
     ui->volumeList->setGridSize(QSize(100, 100));
@@ -361,7 +360,7 @@ void CatalogWindow::handleVolumeListItemDoubleClicked(const QModelIndex &index)
     if (row >= m_volumeSearch.size()) {
         return;
     }
-    emit openVolume(m_volumeSearch[row]->path);
+    emit openVolume(OpenTarget::container(m_volumeSearch[row]->path));
 
     // reset tag buttons as current book
     QList<TagRecord> tags = m_thumbManager->getTagsFromVolumeId(m_volumeSearch[row]->id);

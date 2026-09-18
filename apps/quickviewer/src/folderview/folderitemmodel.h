@@ -4,48 +4,32 @@
 #include <QtWidgets>
 #include <QtCore>
 
-class QvFolderItem
-{
-public:
-    enum FileType {
-        Dir,
-        Archive,
-        Image,
-        NoItems
-    };
-
-    QString name;
-    FileType type; // 0:folder, 1:archive
-    QDateTime updated_at;
-
-    QvFolderItem()
-        : type(Dir)
-    {}
-    QvFolderItem(QString n, FileType t, QDateTime u)
-        : name(n),
-          type(t),
-          updated_at(u)
-    {}
-};
+#include "folderitem.h"
 
 class FolderItemModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
+    enum ItemRole {
+        CurrentVolumeRole = Qt::UserRole
+    };
+
     FolderItemModel(QObject *parent);
-    QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
     QVariant data(const QModelIndex &index, int role) const override;
     int rowCount(const QModelIndex &parent) const override;
     int columnCount(const QModelIndex &) const override;
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex &) const override;
 
-    void setVolumes(QList<QvFolderItem> *volumes);
-    void setColumns(int c) { m_columns = c; }
+    void setVolumes(QList<FolderItem> *volumes);
+    void setCurrentVolumeRow(int row);
 
 private:
-    QList<QvFolderItem> *m_searchedVolumes;
-    int m_columns;
+    QList<FolderItem> *m_searchedVolumes;
+    int m_currentVolumeRow;
+    QIcon m_folderIcon;
+    QIcon m_archiveIcon;
+    QIcon m_imageIcon;
 };
 
 #endif // FOLDERITEMMODEL_H

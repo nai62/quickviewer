@@ -1,49 +1,54 @@
 #include "folderitemmodel.h"
+#include "startupprofiler.h"
 
 FolderItemModel::FolderItemModel(QObject *parent)
     : QAbstractItemModel(parent),
       m_searchedVolumes(nullptr),
-      m_columns(1)
+      m_currentVolumeRow(-1)
 {
-}
+    StartupProfiler::mark("folder-item-icons.begin");
+    QFileIconProvider iconProvider;
+    m_folderIcon = iconProvider.icon(QFileIconProvider::Folder);
+    m_archiveIcon = iconProvider.icon(QFileInfo(QStringLiteral("archive.zip")));
+    m_imageIcon = iconProvider.icon(QFileInfo(QStringLiteral("image.png")));
 
-QVariant FolderItemModel::headerData(int section, Qt::Orientation, int role) const
-{
-    switch (role) {
-    case Qt::DisplayRole:
-        switch (section) {
-        case 0:
-            return tr("Name", "Title of the column in the folder list when displaying as an independent Window in Folder Window");
-        case 1:
-            return tr("Modified", "Title of the column in the folder list when displaying as an independent Window in Folder Window");
-        }
-        break;
+    const QIcon fileIcon = iconProvider.icon(QFileIconProvider::File);
+    if (m_folderIcon.isNull()) {
+        m_folderIcon = QApplication::style()->standardIcon(QStyle::SP_DirIcon);
     }
-    return QVariant();
+    if (m_archiveIcon.isNull()) {
+        m_archiveIcon = fileIcon;
+    }
+    if (m_imageIcon.isNull()) {
+        m_imageIcon = fileIcon;
+    }
+    StartupProfiler::mark("folder-item-icons.end");
 }
 
 QVariant FolderItemModel::data(const QModelIndex &index, int role) const
 {
-    int row = index.row();
-    int column = index.column();
     if (!m_searchedVolumes) {
         return QVariant();
     }
-    const QvFolderItem &fi = m_searchedVolumes->at(row);
+    const int row = index.row();
+    const FolderItem &fi = m_searchedVolumes->at(row);
     switch (role) {
     case Qt::DisplayRole:
-        switch (column) {
-        case 0:
-            return fi.name;
-        case 1:
-            return fi.updated_at;
-        }
+        return fi.name;
     case Qt::DecorationRole:
-        if (column == 0 && fi.type == QvFolderItem::Dir) {
-            QIcon icon(":/icons/24/checkbox_off_icon_24");
-            return icon;
+        switch (fi.type) {
+        case FolderItem::Dir:
+            return m_folderIcon;
+        case FolderItem::Archive:
+            return m_archiveIcon;
+        case FolderItem::Image:
+            return m_imageIcon;
+        case FolderItem::NoItems:
+            break;
         }
-        return QVariant();
+        break;
+    case CurrentVolumeRole:
+        return row == m_currentVolumeRow;
     }
     return QVariant();
 }
@@ -58,7 +63,7 @@ int FolderItemModel::rowCount(const QModelIndex &parent) const
 
 int FolderItemModel::columnCount(const QModelIndex &) const
 {
-    return m_columns;
+    return 1;
 }
 
 QModelIndex FolderItemModel::index(int row, int column, const QModelIndex &) const
@@ -74,7 +79,7 @@ QModelIndex FolderItemModel::parent(const QModelIndex &) const
     return QModelIndex();
 }
 
-void FolderItemModel::setVolumes(QList<QvFolderItem> *volumes)
+void FolderItemModel::setVolumes(QList<FolderItem> *volumes)
 {
     if (!volumes) {
         return;
@@ -82,4 +87,23 @@ void FolderItemModel::setVolumes(QList<QvFolderItem> *volumes)
     emit beginResetModel();
     m_searchedVolumes = volumes;
     emit endResetModel();
+}
+
+void FolderItemModel::setCurrentVolumeRow(int row)
+{
+    if (!m_searchedVolumes || row < 0 || row >= m_searchedVolumes->size()) {
+        row = -1;
+    }
+    if (row == m_currentVolumeRow) {
+        return;
+    }
+
+    const int previousRow = m_currentVolumeRow;
+    m_currentVolumeRow = row;
+    if (previousRow >= 0) {
+        emit dataChanged(index(previousRow, 0), index(previousRow, 0), {CurrentVolumeRole});
+    }
+    if (m_currentVolumeRow >= 0) {
+        emit dataChanged(index(m_currentVolumeRow, 0), index(m_currentVolumeRow, 0), {CurrentVolumeRole});
+    }
 }

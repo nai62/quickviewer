@@ -9,23 +9,6 @@
   border-radius: 3px;
 }
 
-#FolderWindow #frame QToolButton {
-    height: 24px;
-    border: none;
-}
-#FolderWindow #frame QToolButton:hover {
-    height: 24px;
-    border: none;
-    background-color: yellow;
-}
-#FolderWindow #frame QPushButton {
-    border: none;
-}
-#FolderWindow #frame QPushButton:hover {
-    border: none;
-    background-color: yellow;
-}
-
 #CatalogWindow QToolButton {
     border-style: none;
     padding 0px;

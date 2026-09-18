@@ -4,13 +4,19 @@
 #include <QApplication>
 
 #include "thumbnailmanager.h"
-#include "qc_init.h"
 #include "volume.h"
 #include "volumeloader.h"
 
 #ifdef Q_OS_WIN
 #    include <Shlwapi.h>
 #endif
+
+namespace {
+
+// Width of the thumbnails stored in the thumbnail database.
+constexpr int ThumbnailWidth = 96;
+
+} // namespace
 
 QList<QByteArray> ThumbnailManager::st_supportedImageFormats;
 QStringList ThumbnailManager::st_jpegpegImageFormats;
@@ -62,7 +68,7 @@ void ThumbnailManager::sortFiles(QStringList &filenames)
 
 QString ThumbnailManager::DateTimeToIsoString(QDateTime datetime)
 {
-    return datetime.toString(ISO_DATETIMEFMT);
+    return datetime.toString(QStringLiteral("yyyy/MM/dd hh:mm:ss"));
 }
 QString ThumbnailManager::currentDateTimeAsString()
 {
@@ -111,7 +117,7 @@ ThumbnailManager::ThumbnailManager(QObject *parent, QString dbpath)
     }
 }
 
-#define DEFAULT_FILES_COUNT 30
+constexpr int DefaultFilesCount = 30;
 
 int ThumbnailManager::createSubVolumes(QString dirpath, int catalog_id, int parent_id)
 {
@@ -130,7 +136,7 @@ int ThumbnailManager::createSubVolumes(QString dirpath, int catalog_id, int pare
     QStringList subdirs = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Unsorted);
     sortFiles(subdirs);
     if (m_catalogWatcher.isStarted() && subdirs.size() > 0) {
-        m_catalogWorkMax += subdirs.size() * DEFAULT_FILES_COUNT;
+        m_catalogWorkMax += subdirs.size() * DefaultFilesCount;
         emit m_catalogWatcher.progressRangeChanged(0, m_catalogWorkMax);
     }
     int volumeame_asc = 0;
@@ -155,7 +161,7 @@ int ThumbnailManager::createSubVolumes(QString dirpath, int catalog_id, int pare
     if (files.size() > 0) {
         filecount = createVolumeContent(dirpath, volume_id);
     }
-    m_catalogWorkMax = m_catalogWorkMax + filecount - DEFAULT_FILES_COUNT;
+    m_catalogWorkMax = m_catalogWorkMax + filecount - DefaultFilesCount;
     emit m_catalogWatcher.progressRangeChanged(0, m_catalogWorkMax);
 
     return volume_id;
@@ -569,8 +575,8 @@ FileWorker ThumbnailManager::createFileRecord(QString filename, QString filepath
     }
     result.imagesize = img.size();
 
-    QImage thumb = img.scaledToWidth(2 * THUMB_WIDTH, Qt::FastTransformation);
-    thumb = thumb.scaledToWidth(THUMB_WIDTH, Qt::SmoothTransformation);
+    QImage thumb = img.scaledToWidth(2 * ThumbnailWidth, Qt::FastTransformation);
+    thumb = thumb.scaledToWidth(ThumbnailWidth, Qt::SmoothTransformation);
     QBuffer thumbdat;
     thumbdat.open(QBuffer::ReadWrite);
     if (!thumb.save(&thumbdat, "JPEG", 90)) {
@@ -581,18 +587,6 @@ FileWorker ThumbnailManager::createFileRecord(QString filename, QString filepath
     result.thumbbytes = thumbdat.data();
     result.created_at = QDateTime::currentDateTime();
 
-    //    QBuffer alternated;
-    //    if(ThumbnailManager::isHeavyImageFile(filename) || img.width() > MAX_WIDTH || img.height() > MAX_HEIGHT) {
-    //        QDesktopWidget* desktop = QApplication::desktop();
-    //        QRect rect = desktop->screenGeometry();
-    ////            qDebug() << rect;
-    //        QImage alter = img.scaled(rect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    //        alternated.open(QBuffer::ReadWrite);
-    //        if(!alter.save(&alternated, "JPEG", 90)) {
-    //            return result;
-    //        }
-    //        result.alternated = alternated.data();
-    //    }
     return result;
 }
 
@@ -610,8 +604,8 @@ FileWorker ThumbnailManager::createFileRecordFromArchive(QString archivePath, Im
     }
     result.imagesize = img.size();
 
-    QImage thumb = img.scaledToWidth(2 * THUMB_WIDTH, Qt::FastTransformation);
-    thumb = thumb.scaledToWidth(THUMB_WIDTH, Qt::SmoothTransformation);
+    QImage thumb = img.scaledToWidth(2 * ThumbnailWidth, Qt::FastTransformation);
+    thumb = thumb.scaledToWidth(ThumbnailWidth, Qt::SmoothTransformation);
     QBuffer thumbdat;
     thumbdat.open(QBuffer::ReadWrite);
     if (!thumb.save(&thumbdat, "JPEG", 85)) {
@@ -848,7 +842,7 @@ QList<VolumeThumbRecord> ThumbnailManager::volumes()
 
 static VolumeThumbRecord thumbnail2Icon(VolumeThumbRecord vtr)
 {
-    QString aformat = IFileLoader::supportsImageFormat(TURBO_JPEG_FMT) ? TURBO_JPEG_FMT : "jpg";
+    QString aformat = IFileLoader::supportsImageFormat(IFileLoader::turboJpegFormatName()) ? IFileLoader::turboJpegFormatName() : "jpg";
     QPixmap pixmap = QPixmap::fromImage(QImage::fromData(vtr.thumbnail, aformat.toUtf8()));
     //    QPixmap pixmap = QPixmap::fromImage(QImage::fromData(vtr.thumbnail));
     vtr.icon = QIcon(pixmap);

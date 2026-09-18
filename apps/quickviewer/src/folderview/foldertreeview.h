@@ -14,6 +14,7 @@ signals:
 
 protected:
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected) override;
+    void wheelEvent(QWheelEvent *event) override;
 };
 
 #endif // FOLDERTREEVIEW_H

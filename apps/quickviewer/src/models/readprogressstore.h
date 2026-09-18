@@ -5,7 +5,7 @@
 #include <QtCore>
 #include <QtConcurrent>
 
-#include "qv_init.h"
+#include "qvenums.h"
 
 /**
  * Reading position and completion state for one volume.

@@ -46,6 +46,8 @@ public:
     VisiblePages renderedPageContents() const;
     RenderedPageMetrics renderedPageMetrics() const;
     QString displayedMessage() const;
+    void showNoVolumeMessage();
+    void showLoadFailureMessage(const ViewerLoadStatus &status);
     void updateGestureTransform(qreal scale, qreal rotationDegrees);
     void commitGestureTransform();
     void resetGestureTransform();
@@ -77,7 +79,7 @@ protected:
 public slots:
     void handleVolumeChanged(QString path);
     void handleVisiblePagesChanged(VisiblePages pages);
-    void handleArchiveOpenFailed(QString path, ArchiveOpenError error);
+    void handleLoadStatusChanged();
     void refreshRenderedPages();
 
     // Navigation
@@ -92,7 +94,6 @@ public slots:
     void handleNextOnePageActionTriggered();
     void handlePrevOnePageActionTriggered();
     void handleRotateActionTriggered();
-    void handleShowSubfoldersActionTriggered(bool checked);
 
     // SlideShow
     void handleSlideShowTimerTimeout();
@@ -125,6 +126,7 @@ public slots:
     void handleRetouchParametersChanged(RetouchParameters params);
 
 private:
+    void showMessage(const QString &title, const QString &body);
     PageRenderSettings pageRenderSettings() const;
     qreal manualZoomScale() const;
     void updateSceneForContent(bool allowScrolling, const QRect &contentRect);

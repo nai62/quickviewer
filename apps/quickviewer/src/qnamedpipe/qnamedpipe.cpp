@@ -1,9 +1,7 @@
 #include "qnamedpipe.h"
 #include <QtConcurrent>
 
-#ifndef PIPE_BUFFER_LENGTH
-#    define PIPE_BUFFER_LENGTH 2048
-#endif
+constexpr int PipeBufferLength = 2048;
 
 #ifdef Q_OS_WIN
 #    include <Windows.h>
@@ -24,8 +22,8 @@ public:
             PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
             PIPE_TYPE_BYTE,
             1,
-            PIPE_BUFFER_LENGTH,
-            PIPE_BUFFER_LENGTH,
+            PipeBufferLength,
+            PipeBufferLength,
             1000,
             NULL);
         if (m_handlepipe != INVALID_HANDLE_VALUE) {
@@ -81,8 +79,8 @@ public:
             }
             DWORD dwLength = 0;
             if (dwResult == WAIT_OBJECT_0) {
-                QByteArray bytes(PIPE_BUFFER_LENGTH, 0);
-                ::ReadFile(m_handlepipe, bytes.data(), PIPE_BUFFER_LENGTH, &dwLength, NULL);
+                QByteArray bytes(PipeBufferLength, 0);
+                ::ReadFile(m_handlepipe, bytes.data(), PipeBufferLength, &dwLength, NULL);
                 if (dwLength > 0) {
                     bytes.resize(dwLength);
                     emit m_parent->received(bytes);
@@ -154,7 +152,7 @@ public:
     void waitAsync()
     {
         for (;;) {
-            QByteArray bytes(PIPE_BUFFER_LENGTH, 0);
+            QByteArray bytes(PipeBufferLength, 0);
             int fd = ::open(m_pipepath.data(), O_RDONLY); // will be locked
             m_mutex.lock();
             size_t length = ::read(fd, bytes.data(), bytes.size());

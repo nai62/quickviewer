@@ -1,14 +1,14 @@
-#include "qvimagemetadata.h"
+#include "imagemetadata.h"
 #include "volume.h"
 
-QvImageMetadata::QvImageMetadata(Volume *volume, QString filename)
-    : QObject(volume)
-{
-    m_volume = volume;
-    m_filename = filename;
-}
+#include <utility>
 
-QDateTime QvImageMetadata::getMTime() const
+ImageMetadata::ImageMetadata(Volume *volume, QString filename)
+    : m_volume(volume),
+      m_filename(std::move(filename))
+{}
+
+QDateTime ImageMetadata::getMTime() const
 {
     if (m_volume->isArchive()) {
         return m_volume->fileLoader()->getFileModified(m_filename);
@@ -19,7 +19,7 @@ QDateTime QvImageMetadata::getMTime() const
     return m_info.lastModified();
 }
 
-qint64 QvImageMetadata::getFileSize() const
+qint64 ImageMetadata::getFileSize() const
 {
     if (m_volume->isArchive()) {
         return m_volume->fileLoader()->getFileSize(m_filename);
@@ -30,15 +30,15 @@ qint64 QvImageMetadata::getFileSize() const
     return m_info.size();
 }
 
-QSize QvImageMetadata::getDimension() const
+QSize ImageMetadata::getDimension() const
 {
     if (!m_dimension.isEmpty()) {
         return m_dimension;
     }
     QString aformat;
     if (IFileLoader::isExifJpegImageFile(m_filename)) {
-        if (IFileLoader::supportsImageFormat(TURBO_JPEG_FMT)) {
-            aformat = TURBO_JPEG_FMT;
+        if (IFileLoader::supportsImageFormat(IFileLoader::turboJpegFormatName())) {
+            aformat = IFileLoader::turboJpegFormatName();
         } else {
             aformat = "jpg";
         }
@@ -51,7 +51,7 @@ QSize QvImageMetadata::getDimension() const
     return m_dimension = reader.size();
 }
 
-void QvImageMetadata::initFileInfo() const
+void ImageMetadata::initFileInfo() const
 {
     if (!m_volume->isArchive()) {
         m_info = QFileInfo(m_volume->pagePathForName(m_filename));

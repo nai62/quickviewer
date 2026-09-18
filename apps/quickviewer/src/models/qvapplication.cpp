@@ -4,23 +4,33 @@
 
 #include "qvapplication.h"
 #include "svgloader.h"
-#include "qv_init.h"
+#include "qvenums.h"
+#include "shadereffect.h"
 #include "ui_mainwindow.h"
 
 #ifdef Q_OS_WIN
 #    include <shlobj.h>
 #endif
 
+namespace {
+
+#if defined(Q_OS_MAC) || defined(Q_OS_LINUX)
+// Directory the non-Windows builds keep their data files in.
+constexpr QLatin1String DataDirectory(".quickviewer");
+#endif
+
+} // namespace
+
 QVApplication::QVApplication(int &argc, char **argv)
     : QApplication(argc, argv),
       m_mainThread(QThread::currentThread()),
       m_maxTextureSize(4096),
-      m_imageSortBy(qvEnums::SortByFileName),
-      m_svgLoaderBackend(qvEnums::Resvg),
+      m_imageSortBy(qvEnums::ImageSortBy::SortByFileName),
+      m_svgLoaderBackend(qvEnums::SvgLoaderBackend::Resvg),
       m_svgRasterMaximumWidth(SvgLoader::DefaultMaximumWidth),
       m_svgRasterMaximumHeight(SvgLoader::DefaultMaximumHeight),
       m_innerFrameShowing(false),
-      m_effect(qvEnums::Bilinear),
+      m_effect(qvEnums::ShaderEffect::Bilinear),
       m_translator(nullptr),
       m_settings(nullptr),
       m_readProgressStore(nullptr),
@@ -33,7 +43,6 @@ QVApplication::QVApplication(int &argc, char **argv)
 {
     setApplicationVersion(APP_VERSION);
     setApplicationName(APP_NAME);
-    //setOrganizationName(APP_ORGANIZATION);
     //    qDebug() << "TranslationsPath" << QLibraryInfo::location(QLibraryInfo::TranslationsPath);
 
 #if defined(Q_OS_WIN)
@@ -51,13 +60,13 @@ QVApplication::QVApplication(int &argc, char **argv)
         // In a non-portable environment, QuickViewer creates a directory for the application
         // in a fixed PATH inside the user directory, and stores data files in it.
 #if defined(Q_OS_MAC) || defined(Q_OS_LINUX)
-        QString datapath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)).filePath(QV_DATADIR);
+        QString datapath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)).filePath(DataDirectory);
 #elif defined(Q_OS_WIN)
         QString datapath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
 //        qDebug() << datapath;
 #endif
         QDir dir(datapath);
-        QFile filedatabase(dir.filePath(QV_THUMBNAILS));
+        QFile filedatabase(dir.filePath(QStringLiteral("thumbnail.sqlite3.db")));
         if (!filedatabase.exists()) {
             if (!dir.exists()) {
                 dir.mkpath(".");
@@ -75,7 +84,7 @@ QVApplication::QVApplication(int &argc, char **argv)
         }
     }
     //#endif
-    m_settings = new QSettings(getFilePathOfApplicationSetting(APP_INI), QSettings::IniFormat, this);
+    m_settings = new QSettings(getFilePathOfApplicationSetting(settingsSubPath()), QSettings::IniFormat, this);
 
     m_languageSelector.initialize();
     m_qtbaseLanguageSelector.copyLanguages(m_languageSelector.Languages());
@@ -116,6 +125,34 @@ QString QVApplication::getFilePathOfApplicationSetting(QString subFilePath)
 QString QVApplication::getUserHomeFilePath(QString subFilePath)
 {
     return QDir::toNativeSeparators(QString("%1/%2").arg(QString(qgetenv("HOME"))).arg(subFilePath));
+}
+
+QString QVApplication::settingsSubPath()
+{
+#ifdef Q_OS_WIN
+    return QStringLiteral("quickviewer.ini");
+#else
+    return QStringLiteral(".quickviewer/quickviewer.ini");
+#endif
+}
+
+QString QVApplication::readProgressSubPath()
+{
+#ifdef Q_OS_WIN
+    return QStringLiteral("progress.ini");
+#else
+    return QStringLiteral(".quickviewer/progress.ini");
+#endif
+}
+
+QString QVApplication::defaultTitleTextFormat()
+{
+    return QStringLiteral("%v");
+}
+
+QString QVApplication::defaultStatusTextFormat()
+{
+    return QStringLiteral("%p (%n)[%s(%m)] %f %2| %p [%s(%m)] %f");
 }
 
 QString QVApplication::getTranslationPath()
@@ -310,11 +347,10 @@ void QVApplication::registerActions(Ui::MainWindow *ui)
     // Shader
     groupName = tr("Shader", "Shader Action Group");
     m_keyActions.registerAction("actionShaderBilinear", ui->actionShaderBilinear, groupName);
-#ifndef QV_WITHOUT_OPENGL
-    m_keyActions.registerAction("actionShaderBicubic", ui->actionShaderBicubic, groupName);
-    m_keyActions.registerAction("actionShaderLanczos", ui->actionShaderLanczos, groupName);
-#endif
-    //    m_keyActions.registerAction("actionShaderBilinearBeforeCpuBicubic", ui->actionShaderBilinearBeforeCpuBicubic, groupName);
+    if (gpuShadersAvailable()) {
+        m_keyActions.registerAction("actionShaderBicubic", ui->actionShaderBicubic, groupName);
+        m_keyActions.registerAction("actionShaderLanczos", ui->actionShaderLanczos, groupName);
+    }
     m_keyActions.registerAction("actionShaderCpuBicubic", ui->actionShaderCpuBicubic, groupName);
     m_keyActions.registerAction("actionShaderCpuSpline16", ui->actionShaderCpuSpline16, groupName);
     m_keyActions.registerAction("actionShaderCpuSpline36", ui->actionShaderCpuSpline36, groupName);
@@ -463,8 +499,8 @@ void QVApplication::loadSettings()
     m_hideScrollBarInFullscreen = m_settings->value("HideScrollBarInFullscreen", true).toBool();
     m_hideMouseCursorInFullscreen = m_settings->value("HideMouseCursorInFullscreen", false).toBool();
 
-    m_titleTextFormat = m_settings->value("TitleTextFormat", QV_WINDOWTITLE_FORMAT).toString();
-    m_statusTextFormat = m_settings->value("StatusTextFormat", QV_STATUSBAR_FORMAT).toString();
+    m_titleTextFormat = m_settings->value("TitleTextFormat", defaultTitleTextFormat()).toString();
+    m_statusTextFormat = m_settings->value("StatusTextFormat", defaultStatusTextFormat()).toString();
     m_topWindowWhenRunWithAssoc = m_settings->value("TopWindowWhenRunWithAssoc", true).toBool();
     m_topWindowWhenDropped = m_settings->value("TopWindowWhenDropped", true).toBool();
     m_loupeTool = m_settings->value("LoupeTool", false).toBool();
@@ -505,11 +541,6 @@ void QVApplication::loadSettings()
     m_settings->beginGroup("Folder");
     QString defaultPath = getDefaultPictureFolderPath();
     m_homeFolderPath = m_settings->value("HomeFolderPath", defaultPath).toString();
-    {
-        QString folderSortModestring = m_settings->value("FolderSortMode", "OrderByName").toString();
-        int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("FolderViewSort");
-        m_folderSortMode = (qvEnums::FolderViewSort)qvEnums::staticMetaObject.enumerator(enumIdx).keysToValue(folderSortModestring.toLatin1().data());
-    }
     m_openVolumeWithProgress = m_settings->value("OpenVolumeWithProgress", true).toBool();
     m_showReadProgress = m_settings->value("ShowReadProgress", true).toBool();
     m_saveReadProgress = m_settings->value("SaveReadProgress", true).toBool();
@@ -590,13 +621,13 @@ void QVApplication::saveSettings()
     m_settings->beginGroup("View");
     {
         int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("ImageSortBy");
-        QString sortByString = QString(qvEnums::staticMetaObject.enumerator(enumIdx).valueToKey(m_imageSortBy));
+        QString sortByString = QString(qvEnums::staticMetaObject.enumerator(enumIdx).valueToKey(static_cast<int>(m_imageSortBy)));
         m_settings->setValue("ImageSortBy", sortByString);
     }
     m_settings->setValue("Fitting", m_fitting);
     {
         int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("FitMode");
-        QString fitModestring = QString(qvEnums::staticMetaObject.enumerator(enumIdx).valueToKey(m_fitMode));
+        QString fitModestring = QString(qvEnums::staticMetaObject.enumerator(enumIdx).valueToKey(static_cast<int>(m_fitMode)));
         m_settings->setValue("ImageFitMode", fitModestring);
     }
     m_settings->setValue("DualView", m_dualView);
@@ -653,7 +684,7 @@ void QVApplication::saveSettings()
     {
         int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("OptionViewOnStartup");
         QString optionViewstring = QString(qvEnums::staticMetaObject.enumerator(enumIdx)
-                                               .valueToKey(m_showOptionViewOnStartup));
+                                               .valueToKey(static_cast<int>(m_showOptionViewOnStartup)));
         m_settings->setValue("ShowOptionViewOnStartup", optionViewstring);
     }
     m_settings->setValue("SlideShowOnNormalWindow", m_slideShowOnNormalWindow);
@@ -682,11 +713,6 @@ void QVApplication::saveSettings()
 
     m_settings->beginGroup("Folder");
     m_settings->setValue("HomeFolderPath", m_homeFolderPath);
-    {
-        int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("FolderViewSort");
-        QString folderSortModestring = QString(qvEnums::staticMetaObject.enumerator(enumIdx).valueToKey(m_folderSortMode));
-        m_settings->setValue("FolderSortMode", folderSortModestring);
-    }
     m_settings->setValue("OpenVolumeWithProgress", m_openVolumeWithProgress);
     m_settings->setValue("ShowReadProgress", m_showReadProgress);
     m_settings->setValue("SaveReadProgress", m_saveReadProgress);
@@ -697,7 +723,7 @@ void QVApplication::saveSettings()
     m_settings->beginGroup("Catalog");
     {
         int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("CatalogViewMode");
-        QString viewModestring = QString(qvEnums::staticMetaObject.enumerator(enumIdx).valueToKey(m_catalogViewModeSetting));
+        QString viewModestring = QString(qvEnums::staticMetaObject.enumerator(enumIdx).valueToKey(static_cast<int>(m_catalogViewModeSetting)));
         m_settings->setValue("CatalogViewModeSetting", viewModestring);
     }
     m_settings->setValue("MaxSearchByCharChanged", m_maxSearchByCharChanged);

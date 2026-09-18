@@ -2,7 +2,6 @@
 
 #include "benchmark/imagebenchmarkrunner.h"
 
-#include "qv_init.h"
 #include "qvapplication.h"
 #include "thumbnailmanager.h"
 #include "qnamedpipe.h"
@@ -40,9 +39,9 @@ int main(int argc, char *argv[])
         // it must be set to the QT_QPA_PLATFORM environment variable before that.
 #    ifdef QV_PORTABLE
         QString inipath = QDir::toNativeSeparators(QFileInfo(argv[0]).path());
-        inipath += "\\" APP_INI;
+        inipath += QStringLiteral("\\") + QVApplication::settingsSubPath();
 #    else
-        QString inipath = QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).filePath(APP_INI);
+        QString inipath = QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).filePath(QVApplication::settingsSubPath());
 #    endif
         std::wstring winipath = inipath.toStdWString();
         WCHAR value[128];

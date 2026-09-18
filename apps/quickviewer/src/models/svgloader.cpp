@@ -73,7 +73,7 @@ SvgLoader::RenderResult renderWithResvg(
     const QByteArray &data, const QString &sourcePath, const QSize &maximumSize)
 {
     SvgLoader::RenderResult result;
-    result.backend = qvEnums::Resvg;
+    result.backend = qvEnums::SvgLoaderBackend::Resvg;
 
     QMutexLocker locker(&resvgMutex());
     ResvgState &state = resvgState();
@@ -131,7 +131,7 @@ SvgLoader::RenderResult renderWithQtSvg(
     const QByteArray &data, const QSize &maximumSize, const QString &resvgError = QString())
 {
     SvgLoader::RenderResult result;
-    result.backend = qvEnums::QtSvg;
+    result.backend = qvEnums::SvgLoaderBackend::QtSvg;
     result.resvgError = resvgError;
 
     QBuffer buffer;
@@ -167,9 +167,9 @@ int validatedRasterDimension(int value, int defaultValue)
 QString storageValue(qvEnums::SvgLoaderBackend backend)
 {
     switch (backend) {
-    case qvEnums::QtSvg:
+    case qvEnums::SvgLoaderBackend::QtSvg:
         return QStringLiteral("qtsvg");
-    case qvEnums::Resvg:
+    case qvEnums::SvgLoaderBackend::Resvg:
     default:
         return QStringLiteral("resvg");
     }
@@ -178,9 +178,9 @@ QString storageValue(qvEnums::SvgLoaderBackend backend)
 qvEnums::SvgLoaderBackend backendFromStorageValue(const QString &value)
 {
     if (value == QLatin1String("qtsvg") || value == QLatin1String("qsvg")) {
-        return qvEnums::QtSvg;
+        return qvEnums::SvgLoaderBackend::QtSvg;
     }
-    return qvEnums::Resvg;
+    return qvEnums::SvgLoaderBackend::Resvg;
 }
 
 QSize fittedRasterSize(const QSizeF &sourceSize, const QSize &maximumSize)
@@ -203,7 +203,7 @@ RenderResult render(
     const QSize &maximumSize,
     qvEnums::SvgLoaderBackend preferredBackend)
 {
-    if (preferredBackend == qvEnums::QtSvg) {
+    if (preferredBackend == qvEnums::SvgLoaderBackend::QtSvg) {
         return renderWithQtSvg(data, maximumSize);
     }
 

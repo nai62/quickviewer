@@ -13,7 +13,8 @@ VERSION = 1.2.8
 DEFINES += \
     NOMINMAX \
     APP_VERSION=\\\"$$VERSION\\\" \
-    APP_NAME=\\\"QuickViewerTest\\\"
+    APP_NAME=\\\"QuickViewerTest\\\" \
+    VIEWERNAVIGATION_SRCDIR=\\\"$$PWD/\\\"
 
 INCLUDEPATH += \
     ../../apps/quickviewer/src \
@@ -46,15 +47,18 @@ SOURCES += \
     ../../apps/quickviewer/src/models/viewersession.cpp \
     ../../apps/quickviewer/src/models/prefetchplanner.cpp \
     ../../apps/quickviewer/src/models/qvapplication.cpp \
-    ../../apps/quickviewer/src/models/qvimagemetadata.cpp \
-    ../../apps/quickviewer/src/models/qvmovie.cpp \
+    ../../apps/quickviewer/src/models/imagemetadata.cpp \
+    ../../apps/quickviewer/src/models/movie.cpp \
     ../../apps/quickviewer/src/models/shadermanager.cpp \
+    ../../apps/quickviewer/src/models/shadereffect.cpp \
     ../../apps/quickviewer/src/models/svgloader.cpp \
     ../../apps/quickviewer/src/startupprofiler.cpp \
     ../../apps/quickviewer/src/models/volumecache.cpp \
     ../../apps/quickviewer/src/models/volumehandle.cpp \
     ../../apps/quickviewer/src/models/volume.cpp \
     ../../apps/quickviewer/src/models/volumeloader.cpp \
+    ../../apps/quickviewer/src/models/volumelocation.cpp \
+    ../../apps/quickviewer/src/models/storedvolumelocation.cpp \
     ../../apps/quickviewer/src/qactionmanager/keyconfigdialog.cpp \
     ../../apps/quickviewer/src/qactionmanager/mouseconfigdialog.cpp \
     ../../apps/quickviewer/src/qactionmanager/qactionmanager.cpp \
@@ -64,7 +68,7 @@ SOURCES += \
     ../../components/i18n/texttranslator.cpp
 
 HEADERS += \
-    ../../apps/quickviewer/src/qv_init.h \
+    ../../apps/quickviewer/src/qvenums.h \
     ../../apps/quickviewer/src/imageview.h \
     ../../apps/quickviewer/src/models/readprogressstore.h \
     ../../apps/quickviewer/src/models/boundedexecutor.h \
@@ -80,11 +84,12 @@ HEADERS += \
     ../../apps/quickviewer/src/models/viewersession.h \
     ../../apps/quickviewer/src/models/prefetchplanner.h \
     ../../apps/quickviewer/src/models/qvapplication.h \
-    ../../apps/quickviewer/src/models/qvimagemetadata.h \
-    ../../apps/quickviewer/src/models/qvmovie.h \
+    ../../apps/quickviewer/src/models/imagemetadata.h \
+    ../../apps/quickviewer/src/models/movie.h \
     ../../apps/quickviewer/src/models/renderedpages.h \
     ../../apps/quickviewer/src/models/renderedpagemetrics.h \
     ../../apps/quickviewer/src/models/shadermanager.h \
+    ../../apps/quickviewer/src/models/shadereffect.h \
     ../../apps/quickviewer/src/models/svgloader.h \
     ../../apps/quickviewer/src/startupprofiler.h \
     ../../apps/quickviewer/src/models/volumecache.h \
@@ -93,6 +98,8 @@ HEADERS += \
     ../../apps/quickviewer/src/models/viewerstate.h \
     ../../apps/quickviewer/src/models/volume.h \
     ../../apps/quickviewer/src/models/volumeloader.h \
+    ../../apps/quickviewer/src/models/volumelocation.h \
+    ../../apps/quickviewer/src/models/storedvolumelocation.h \
     ../../apps/quickviewer/src/qactionmanager/keyconfigdialog.h \
     ../../apps/quickviewer/src/qactionmanager/mouseconfigdialog.h \
     ../../apps/quickviewer/src/qactionmanager/qactionmanager.h \
@@ -114,3 +121,8 @@ contains(DEFINES, QV_WITH_LUMINOR) {
 }
 
 win32: LIBS += -luser32 -ladvapi32 -lshell32 -lShlwapi -loleaut32 -lole32 -luuid
+
+win32 {
+    # The archive fixtures need the official 7z.dll next to the test binary.
+    QMAKE_POST_LINK += $$QMAKE_COPY /B $$shell_quote($$shell_path($$PWD/../../third_party/7zip/windll/$${TARGET_ARCH}/7z.dll)) $$shell_path($${DESTDIR}) $$escape_expand(\n\t)
+}

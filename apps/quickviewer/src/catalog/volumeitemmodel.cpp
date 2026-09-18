@@ -4,7 +4,7 @@
 VolumeItemModel::VolumeItemModel(QObject *parent)
     : QAbstractItemModel(parent),
       m_volumeSearch(nullptr),
-      m_catalogViewMode(qvEnums::Icon)
+      m_catalogViewMode(qvEnums::CatalogViewMode::Icon)
 {
 }
 
@@ -17,7 +17,7 @@ QVariant VolumeItemModel::data(const QModelIndex &index, int role) const
     const VolumeThumbRecord *vtr = m_volumeSearch->at(row);
     switch (role) {
     case Qt::DisplayRole:
-        if (m_catalogViewMode == qvEnums::IconNoText) {
+        if (m_catalogViewMode == qvEnums::CatalogViewMode::IconNoText) {
             return QVariant();
         }
         return qApp->TitleWithoutOptions() ? vtr->name : vtr->realname;
@@ -25,10 +25,10 @@ QVariant VolumeItemModel::data(const QModelIndex &index, int role) const
         return QIcon(QPixmap::fromImage(QImage::fromData(vtr->thumbnail)));
     case Qt::SizeHintRole: {
         const bool iconLongText = qApp->IconLongText();
-        if (m_catalogViewMode == qvEnums::List) {
+        if (m_catalogViewMode == qvEnums::CatalogViewMode::List) {
             return iconLongText ? QSize(300, 100) : QSize(200, 100);
         }
-        if (m_catalogViewMode == qvEnums::Icon) {
+        if (m_catalogViewMode == qvEnums::CatalogViewMode::Icon) {
             return iconLongText ? QSize(150, 170) : QSize(150, 120);
         }
         return QSize(100, 100);

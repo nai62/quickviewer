@@ -295,7 +295,6 @@
      <addaction name="actionShaderNearestNeighbor"/>
      <addaction name="actionShaderBicubic"/>
      <addaction name="actionShaderLanczos"/>
-     <addaction name="actionShaderBilinearBeforeCpuBicubic"/>
     </widget>
     <addaction name="menu_Sort_by"/>
      <addaction name="separator"/>
@@ -391,7 +390,6 @@
      <addaction name="actionShaderCpuLanczos3"/>
      <addaction name="actionShaderNearestNeighbor"/>
      <addaction name="actionShaderLanczos"/>
-     <addaction name="actionShaderBilinearBeforeCpuBicubic"/>
      <addaction name="actionShaderBicubic"/>
     </widget>
     <widget class="QMenu" name="menuEdit_the_image">
@@ -996,14 +994,6 @@
     <string extracomment="Button to display FolderWindow. Switch between internal display, independent display, and erase">Show &amp;Folder</string>
    </property>
   </action>
-  <action name="actionShaderBilinearBeforeCpuBicubic">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string extracomment="Preview by bilinear with GPU, then replace with bicubic resized image by CPU">CPU Bicubic after GPU Bilinear (standard)</string>
-   </property>
-  </action>
   <action name="actionShaderCpuBicubic">
    <property name="checkable">
     <bool>true</bool>
@@ -1381,7 +1371,6 @@
     <slot>handleFastBackwardActionTriggered()</slot>
     <slot>handleCopyFileActionTriggered()</slot>
     <slot>handleRotateActionTriggered()</slot>
-    <slot>handleShowSubfoldersActionTriggered(bool)</slot>
     <slot>handleDontEnlargeSmallImagesOnFittingActionTriggered(bool)</slot>
     <slot>handleSeparatePagesWhenWideImageActionTriggered(bool)</slot>
     <slot>handleLoupeToolActionTriggered(bool)</slot>
@@ -2355,22 +2344,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionShaderBilinearBeforeCpuBicubic</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>handleShaderBilinearBeforeCpuBicubicActionTriggered()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>350</x>
-     <y>294</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>actionShaderCpuBicubic</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
@@ -2389,7 +2362,7 @@
   <connection>
    <sender>actionShowSubfolders</sender>
    <signal>triggered(bool)</signal>
-   <receiver>graphicsView</receiver>
+   <receiver>MainWindow</receiver>
    <slot>handleShowSubfoldersActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -3104,7 +3077,7 @@
   <slot>handleMailAttachmentActionTriggered()</slot>
   <slot>handleCatalogIconLongTextActionTriggered(bool)</slot>
   <slot>handleShowFolderActionTriggered()</slot>
-  <slot>handleShaderBilinearBeforeCpuBicubicActionTriggered()</slot>
+  <slot>handleShowSubfoldersActionTriggered(bool)</slot>
   <slot>handleShaderCpuBicubicActionTriggered()</slot>
   <slot>handleOpenVolumeWithProgressActionTriggered(bool)</slot>
   <slot>handleShowReadProgressActionTriggered(bool)</slot>

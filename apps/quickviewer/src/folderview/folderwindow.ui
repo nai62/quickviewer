@@ -52,35 +52,6 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QMenuBar" name="menuBar">
-     <widget class="QMenu" name="menuSort">
-      <property name="title">
-       <string notr="true">&amp;Sort</string>
-      </property>
-      <addaction name="actionOrderByName"/>
-      <addaction name="actionOrderByUpdatedAt"/>
-     </widget>
-     <widget class="QMenu" name="menuItemContext">
-      <property name="title">
-       <string notr="true">ItemContext</string>
-      </property>
-      <addaction name="actionSetAsHomeFolder"/>
-     </widget>
-     <addaction name="menuSort"/>
-     <addaction name="menuItemContext"/>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="label">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="text">
-      <string extracomment="Label indicating that the current folder PATH is being displayed">Current folder</string>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QLabel" name="pathLabel">
      <property name="text">
       <string notr="true">My Pictures</string>
@@ -98,26 +69,6 @@
    </item>
    <item>
     <widget class="QFrame" name="frame">
-     <property name="styleSheet">
-      <string notr="true">
-QToolButton {
-    height: 24px;
-    border: none;
-}
-QToolButton:hover {
-    height: 24px;
-    border: none;
-    background-color: yellow;
-}
-QPushButton {
-    border: none;
-}
-QPushButton:hover {
-    border: none;
-    background-color: yellow;
-}
-</string>
-     </property>
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>
@@ -125,6 +76,21 @@ QPushButton:hover {
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="spacing">
+       <number>2</number>
+      </property>
+      <property name="leftMargin">
+       <number>4</number>
+      </property>
+      <property name="topMargin">
+       <number>4</number>
+      </property>
+      <property name="rightMargin">
+       <number>4</number>
+      </property>
+      <property name="bottomMargin">
+       <number>4</number>
+      </property>
       <item>
        <widget class="QToolButton" name="homeButton">
         <property name="maximumSize">
@@ -142,58 +108,6 @@ QPushButton:hover {
         <property name="icon">
          <iconset resource="../../toolbar.qrc">
           <normaloff>:/icons/24/home_icon_24</normaloff>:/icons/24/home_icon_24</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="prevButton">
-        <property name="maximumSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>Previous</string>
-        </property>
-        <property name="text">
-         <string extracomment="Button for returning to the previous folder from the currently displayed folder">Previous</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../../toolbar.qrc">
-          <normaloff>:/icons/24/arrow_left_icon_24</normaloff>:/icons/24/arrow_left_icon_24</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="nextButton">
-        <property name="maximumSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>Next</string>
-        </property>
-        <property name="text">
-         <string extracomment="Button for returning to the folder after the current displayed folder">Next</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../../toolbar.qrc">
-          <normaloff>:/icons/24/arrow_right_icon_24</normaloff>:/icons/24/arrow_right_icon_24</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -256,35 +170,6 @@ QPushButton:hover {
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="sortModeButton">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>24</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <weight>75</weight>
-          <bold>true</bold>
-          <underline>true</underline>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string extracomment="Tooltip for pulldown to change folder sorting method">Change sort order</string>
-        </property>
-        <property name="text">
-         <string extracomment="Change the order of file names Pull down button">Name</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -314,27 +199,12 @@ QPushButton:hover {
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
      </property>
+     <property name="headerHidden">
+      <bool>true</bool>
+     </property>
     </widget>
    </item>
   </layout>
-  <action name="actionPrev">
-   <property name="icon">
-    <iconset resource="../../toolbar.qrc">
-     <normaloff>:/icons/24/arrow_left_icon_24</normaloff>:/icons/24/arrow_left_icon_24</iconset>
-   </property>
-   <property name="text">
-    <string>Previous</string>
-   </property>
-  </action>
-  <action name="actionNext">
-   <property name="icon">
-    <iconset resource="../../toolbar.qrc">
-     <normaloff>:/icons/24/arrow_right_icon_24</normaloff>:/icons/24/arrow_right_icon_24</iconset>
-   </property>
-   <property name="text">
-    <string>Next</string>
-   </property>
-  </action>
   <action name="actionHome">
    <property name="icon">
     <iconset resource="../../toolbar.qrc">
@@ -379,22 +249,6 @@ QPushButton:hover {
     <string>Other</string>
    </property>
   </action>
-  <action name="actionOrderByName">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Sort by name</string>
-   </property>
-  </action>
-  <action name="actionOrderByUpdatedAt">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Sort by modified time</string>
-   </property>
-  </action>
   <action name="actionSetAsHomeFolder">
    <property name="text">
     <string>Set as home folder</string>
@@ -413,11 +267,8 @@ QPushButton:hover {
  </customwidgets>
  <tabstops>
   <tabstop>homeButton</tabstop>
-  <tabstop>prevButton</tabstop>
-  <tabstop>nextButton</tabstop>
   <tabstop>toParentButton</tabstop>
   <tabstop>reloadButton</tabstop>
-  <tabstop>sortModeButton</tabstop>
  </tabstops>
  <resources>
   <include location="../../toolbar.qrc"/>
@@ -432,54 +283,6 @@ QPushButton:hover {
     <hint type="sourcelabel">
      <x>359</x>
      <y>345</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>359</x>
-     <y>299</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>folderView</sender>
-   <signal>doubleClicked(QModelIndex)</signal>
-   <receiver>FolderWindow</receiver>
-   <slot>handleFolderViewItemDoubleClicked(QModelIndex)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>359</x>
-     <y>345</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>359</x>
-     <y>299</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>nextButton</sender>
-   <signal>clicked()</signal>
-   <receiver>FolderWindow</receiver>
-   <slot>handleNextButtonClicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>81</x>
-     <y>68</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>359</x>
-     <y>299</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>prevButton</sender>
-   <signal>clicked()</signal>
-   <receiver>FolderWindow</receiver>
-   <slot>handlePreviousButtonClicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>51</x>
-     <y>68</y>
     </hint>
     <hint type="destinationlabel">
      <x>359</x>
@@ -536,54 +339,6 @@ QPushButton:hover {
    </hints>
   </connection>
   <connection>
-   <sender>sortModeButton</sender>
-   <signal>clicked()</signal>
-   <receiver>FolderWindow</receiver>
-   <slot>handleSortModeButtonClicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>176</x>
-     <y>68</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>359</x>
-     <y>299</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionOrderByName</sender>
-   <signal>triggered()</signal>
-   <receiver>FolderWindow</receiver>
-   <slot>handleOrderByNameActionTriggered()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>359</x>
-     <y>299</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionOrderByUpdatedAt</sender>
-   <signal>triggered()</signal>
-   <receiver>FolderWindow</receiver>
-   <slot>handleOrderByUpdatedAtActionTriggered()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>359</x>
-     <y>299</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>actionSetAsHomeFolder</sender>
    <signal>triggered()</signal>
    <receiver>FolderWindow</receiver>
@@ -602,15 +357,9 @@ QPushButton:hover {
  </connections>
  <slots>
   <slot>handleFolderViewItemSelected(QModelIndex)</slot>
-  <slot>handleFolderViewItemDoubleClicked(QModelIndex)</slot>
-  <slot>handlePreviousButtonClicked()</slot>
-  <slot>handleNextButtonClicked()</slot>
   <slot>handleParentButtonClicked()</slot>
   <slot>handleReloadButtonClicked()</slot>
   <slot>handleHomeButtonClicked()</slot>
-  <slot>handleSortModeButtonClicked()</slot>
-  <slot>handleOrderByNameActionTriggered()</slot>
-  <slot>handleOrderByUpdatedAtActionTriggered()</slot>
   <slot>handleSetAsHomeFolderActionTriggered()</slot>
   <slot>handleCurrentFolderItemTriggered()</slot>
  </slots>

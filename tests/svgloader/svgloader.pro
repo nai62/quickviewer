@@ -19,7 +19,7 @@ SOURCES += \
     ../../apps/quickviewer/src/models/svgloader.cpp
 
 HEADERS += \
-    ../../apps/quickviewer/src/qv_init.h \
+    ../../apps/quickviewer/src/qvenums.h \
     ../../apps/quickviewer/src/models/svgloader.h
 
 DESTDIR = ../../lib

@@ -27,7 +27,7 @@ CONFIG += plugin lrelease
 
 QMAKE_TARGET_COMPANY = QuickViewer contributors
 QMAKE_TARGET_PRODUCT = QuickViewer
-QMAKE_TARGET_DESCRIPTION = Ultra-fast image and comic viewer
+QMAKE_TARGET_DESCRIPTION = QuickViewer
 QMAKE_TARGET_COPYRIGHT = Copyright (C) 2017 KATO Kanryu and contributors
 
 DEFINES += \
@@ -134,6 +134,7 @@ SOURCES += \
     src/models/prefetchplanner.cpp \
     src/models/qvapplication.cpp \
     src/models/shadermanager.cpp \
+    src/models/shadereffect.cpp \
     src/models/svgloader.cpp \
     src/startupprofiler.cpp \
     src/models/thumbnailmanager.cpp \
@@ -146,9 +147,11 @@ SOURCES += \
     ../../components/i18n/languagemanager.cpp \
     src/qnamedpipe/qnamedpipe.cpp \
     src/widgets/innerframe.cpp \
-    src/models/qvmovie.cpp \
+    src/models/movie.cpp \
     src/models/volume.cpp \
     src/models/volumeloader.cpp \
+    src/models/volumelocation.cpp \
+    src/models/storedvolumelocation.cpp \
     src/qactionmanager/keyconfigdialog.cpp \
     src/qactionmanager/mouseconfigdialog.cpp \
     src/qactionmanager/qactionmanager.cpp \
@@ -159,7 +162,7 @@ SOURCES += \
     src/retouchwindow.cpp \
     src/models/fileoperator.cpp \
     ../../components/i18n/texttranslator.cpp \
-    src/models/qvimagemetadata.cpp
+    src/models/imagemetadata.cpp
 
 
 HEADERS  += \
@@ -167,10 +170,10 @@ HEADERS  += \
     src/catalog/catalogwindow.h \
     src/catalog/databasesettingdialog.h \
     src/catalog/managedatabasedialog.h \
-    src/catalog/qc_init.h \
     src/catalog/volumeitemmodel.h \
     src/exifdialog.h \
     src/folderview/folderitemdelegate.h \
+    src/folderview/folderitem.h \
     src/folderview/folderitemmodel.h \
     src/folderview/foldertreeview.h \
     src/folderview/folderwindow.h \
@@ -193,16 +196,18 @@ HEADERS  += \
     src/models/prefetchplanner.h \
     src/models/qvapplication.h \
     src/models/shadermanager.h \
+    src/models/shadereffect.h \
     src/models/svgloader.h \
     src/models/thumbnailmanager.h \
     src/models/volumecache.h \
     src/models/volumehandle.h \
     src/models/viewerstate.h \
+    src/models/viewerloadstatus.h \
     src/models/visiblepages.h \
     src/models/renderedpages.h \
     src/models/renderedpagemetrics.h \
     src/optionsdialog.h \
-    src/qv_init.h \
+    src/qvenums.h \
     src/renamedialog.h \
     src/pch.h \
     src/widgets/flowlayout.h \
@@ -210,9 +215,11 @@ HEADERS  += \
     ../../components/i18n/languagemanager.h \
     src/qnamedpipe/qnamedpipe.h \
     src/widgets/innerframe.h \
-    src/models/qvmovie.h \
+    src/models/movie.h \
     src/models/volume.h \
     src/models/volumeloader.h \
+    src/models/volumelocation.h \
+    src/models/storedvolumelocation.h \
     src/qactionmanager/keyconfigdialog.h \
     src/qactionmanager/mouseconfigdialog.h \
     src/qactionmanager/qactionmanager.h \
@@ -223,7 +230,7 @@ HEADERS  += \
     src/startupprofiler.h \
     src/models/fileoperator.h \
     ../../components/i18n/texttranslator.h \
-    src/models/qvimagemetadata.h
+    src/models/imagemetadata.h
 
 win32 {
     INCLUDEPATH += ../../components/file-association
@@ -597,4 +604,3 @@ macos : !CONFIG(debug, debug|release) {
 }
 
 OTHER_FILES += SHADERS
-

@@ -3,6 +3,7 @@
 
 #include <QtWidgets>
 #include "models/volume.h"
+#include "models/volumelocation.h"
 #include "imageview.h"
 #include "imagestring.h"
 #include "languagemanager.h"
@@ -30,10 +31,17 @@ public:
     bool eventFilter(QObject *obj, QEvent *event) override;
 
     /**
-     * @brief loadVolume
+     * Opens a path supplied by the user or the operating system: the command
+     * line, drag & drop, the history menu, bookmarks and file dialogs. The
+     * intent is derived from the path itself.
+     *
      * @param allowSecondPage whether an adjacent page may be shown in dual view
      */
-    void loadVolume(QString path, bool allowSecondPage = false);
+    void openPath(QString path, bool allowSecondPage = false);
+    /**
+     * Opens the location described by target and keeps the folder view in sync.
+     */
+    void openTarget(const OpenTarget &target);
     void loadVolumeWithAssoc(QString path);
 
     void resetShortcutKeys();
@@ -87,7 +95,6 @@ protected:
     //    void mousePressEvent(QMouseEvent *e) override;
     void closeEvent(QCloseEvent *e) override;
     void resizeEvent(QResizeEvent *e) override;
-    void handlePageNoLongerNeeded();
     void touchEvent(QTouchEvent *e);
 
 signals:
@@ -103,8 +110,10 @@ public slots:
 
     // Folder
     void handleShowFolderActionTriggered();
+    void handleShowSubfoldersActionTriggered(bool checked);
     void handleFolderWindowClosed();
-    void handleFolderWindowOpenVolume(QString path);
+    void handleFolderWindowOpenVolume(const OpenTarget &target);
+    void handleFolderWindowReloadRequested(const QString &containerPath);
     void handleOpenVolumeWithProgressActionTriggered(bool checked);
     void handleShowReadProgressActionTriggered(bool checked);
     void handleSaveReadProgressActionTriggered(bool checked);
@@ -113,7 +122,7 @@ public slots:
     // Catalog
     void handleShowCatalogActionTriggered();
     void handleCatalogWindowClosed();
-    void handleCatalogWindowOpenVolume(QString path);
+    void handleCatalogWindowOpenVolume(const OpenTarget &target);
     void handleSearchTitleWithOptionsActionTriggered(bool checked);
     void handleCatalogTitleWithoutOptionsActionTriggered(bool checked);
     void handleCatalogViewListActionTriggered();
@@ -187,7 +196,6 @@ public slots:
     void handleShaderBilinearActionTriggered();
     void handleShaderBicubicActionTriggered();
     void handleShaderLanczosActionTriggered();
-    void handleShaderBilinearBeforeCpuBicubicActionTriggered();
     void handleShaderCpuBicubicActionTriggered();
     void handleShaderCpuSpline16ActionTriggered();
     void handleShaderCpuSpline36ActionTriggered();
@@ -215,16 +223,19 @@ public slots:
 private slots:
     void handleGraphicsViewFittingChanged(qvEnums::FitMode mode);
     void handleInitialImageDisplayFinished();
+    void handleViewerLoadStatusChanged();
 
 private:
     enum class StatusMessage {
         None,
         NoVolume,
-        LoadFailed,
-        PageMissing,
     };
 
     void setStatusMessage(StatusMessage message);
+    void syncPageBar();
+    void applyImageSortBy(qvEnums::ImageSortBy sortBy);
+    void openResolvedTarget(const OpenTarget &target, bool allowSecondPage);
+    void openStoredPath(const QString &storedPath, bool allowSecondPage = false);
     void saveVisibleFolderViewWidth();
     void loadStartupVolume();
     void revealStartupWindow();
@@ -233,6 +244,7 @@ private:
     void initializeConfiguredStartupPanel(const QString &folderPath = QString());
     void reserveConfiguredStartupPanelSpace();
     bool replaceStartupPanelPlaceholder(QWidget *panel);
+    void updateFolderViewCurrentItem();
 
 protected:
     Ui::MainWindow *ui;
@@ -251,6 +263,7 @@ protected:
 
     QString m_volumeCaption;
     QString m_pageCaption;
+    QString m_folderViewRequestedPath;
 
     ViewerSession m_viewerSession;
     ImageString m_imageString;
@@ -288,7 +301,7 @@ public:
 
     bool changeFolderPath(QString path) override
     {
-        const QString volumePath = QDir::fromNativeSeparators(Volume::FullPathToVolumePath(path));
+        const QString volumePath = QDir::fromNativeSeparators(path);
         if (m_lastArchiveOpenFailure == ArchiveOpenError::PasswordProtected && volumePath == m_lastArchiveOpenFailurePath) {
             clearArchiveOpenFailure();
             return true;

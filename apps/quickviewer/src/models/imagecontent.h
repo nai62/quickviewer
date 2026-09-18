@@ -7,8 +7,8 @@
 #include <QtGui>
 
 #include "exif.h"
-#include "qvmovie.h"
-#include "qv_init.h"
+#include "movie.h"
+#include "qvenums.h"
 
 struct RetouchParameters
 {
@@ -38,7 +38,7 @@ struct ImageContent
     QImage loadedImage;
     QImage retouchedImage;
     QImage resizedImage;
-    QvMovie movie;
+    Movie movie;
     QSize originalSize;
     QSize loadedImageSize;
     QString path;
@@ -47,7 +47,7 @@ struct ImageContent
     bool isPreview = false;
     bool hasDetailedMetadata = false;
     RetouchParameters appliedRetouchParameters;
-    qvEnums::ShaderEffect appliedResizeMode = qvEnums::Bilinear;
+    qvEnums::ShaderEffect appliedResizeMode = qvEnums::ShaderEffect::Bilinear;
 
     ImageContent() = default;
     ImageContent(QString imagePath, size_t size)
@@ -62,6 +62,7 @@ struct ImageContent
           exifInfo(std::move(metadata)),
           fileSize(size)
     {}
+    bool isRenderable() const { return !loadedImage.isNull() || !resizedImage.isNull() || !movie.isNull(); }
     bool isLandscape() const { return originalSize.width() > originalSize.height(); }
     void initializeAnimation();
 };

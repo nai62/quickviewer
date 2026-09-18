@@ -3,9 +3,10 @@
 
 #include <QtGui>
 #include <QtWidgets>
-#include "qv_init.h"
+#include "qvenums.h"
 #include "folderitemmodel.h"
 #include "folderitemdelegate.h"
+#include "models/volumelocation.h"
 
 namespace Ui {
 class FolderWindow;
@@ -18,51 +19,48 @@ class FolderWindow : public QWidget
 public:
     explicit FolderWindow(QWidget *parent, Ui::MainWindow *uiMain);
     ~FolderWindow();
-    void setAsToplevelWindow();
-    void setAsInnerWidget();
     bool eventFilter(QObject *obj, QEvent *event);
     void dragEnterEvent(QDragEnterEvent *e);
     void dropEvent(QDropEvent *e);
     void resizeEvent(QResizeEvent *event);
     void setFolderPath(QString path, bool showParent = true);
     void reset();
-    void resetSortMode();
+    void resortVolumes();
     void resetPathLabel(int maxWidth);
     QString currentPath() { return m_currentPath; }
-    QString itemPath(const QModelIndex &index);
+    QString itemPath(const QModelIndex &index) const;
     void keyPressEvent(QKeyEvent *event);
-    void mousePressEvent(QMouseEvent *event);
     void handleCurrentFolderItemTriggered();
 
 public slots:
     void handleHomeButtonClicked();
-    void handlePreviousButtonClicked();
-    void handleNextButtonClicked();
     void handleParentButtonClicked();
     void handleReloadButtonClicked();
     void handleViewerSessionVolumeChanged(QString);
     void handleFolderViewItemSelected(const QModelIndex &index);
-    void handleFolderViewItemDoubleClicked(const QModelIndex &index);
     void handleSetAsHomeFolderActionTriggered();
-    void handleSortModeButtonClicked();
-    void handleOrderByNameActionTriggered();
-    void handleOrderByUpdatedAtActionTriggered();
 
 signals:
-    void openVolume(QString path);
+    void openVolume(const OpenTarget &target);
+    void reloadRequested(const QString &containerPath);
     void closed();
 
 protected:
     void closeEvent(QCloseEvent *e);
 
 private:
+    void openFolderItem(const QModelIndex &index);
+    void sortVolumes();
+    void setupHistoryButton(Ui::MainWindow *uiMain);
+    int currentVolumeRow() const;
+    void updateCurrentVolumeRow();
+
     Ui::FolderWindow *ui;
-    QMenu *m_sortModeMenu;
     QMenu *m_itemContextMenu;
+    QToolButton *m_historyButton;
     QString m_currentPath;
-    QList<QvFolderItem> m_volumes;
-    QStringList m_historyPrev;
-    QStringList m_historyNext;
+    QString m_currentVolumePath;
+    QList<FolderItem> m_volumes;
     FolderItemModel m_itemModel;
     FolderItemDelegate m_itemDelegate;
 };

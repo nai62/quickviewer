@@ -2,7 +2,8 @@
 #define IMAGESHADEREFFECT_H
 
 #include <QtWidgets>
-#include "qv_init.h"
+#include "qvenums.h"
+#include "shadereffect.h"
 
 struct ImageContent;
 
@@ -27,19 +28,25 @@ public:
     void prepareFinished();
     void prepareInitialize()
     {
-        m_oldEffect = qvEnums::UnPrepared;
+        m_oldEffect = qvEnums::ShaderEffect::UnPrepared;
         pageCnt = 0;
     }
 
     static QString shaderEffectToString(qvEnums::ShaderEffect effect)
     {
         QMetaEnum metaEnum = QMetaEnum::fromType<qvEnums::ShaderEffect>();
-        return metaEnum.valueToKey(effect);
+        return metaEnum.valueToKey(static_cast<int>(effect));
     }
     static qvEnums::ShaderEffect stringToShaderEffect(QString effect)
     {
         QMetaEnum metaEnum = QMetaEnum::fromType<qvEnums::ShaderEffect>();
-        return (qvEnums::ShaderEffect)metaEnum.keysToValue(effect.toLatin1());
+        bool ok = false;
+        const int value = metaEnum.keysToValue(effect.toLatin1(), &ok);
+        if (!ok) {
+            return qvEnums::ShaderEffect::Bilinear;
+        }
+        const qvEnums::ShaderEffect parsed = static_cast<qvEnums::ShaderEffect>(value);
+        return shaderEffectAvailable(parsed) ? parsed : qvEnums::ShaderEffect::Bilinear;
     }
 
 private:

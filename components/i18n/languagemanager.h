@@ -8,12 +8,10 @@
 
 #include "texttranslator.h"
 
-#ifndef LANGUAGES_INI
-#    define LANGUAGES_INI "languages.ini"
-#endif
-#ifndef LANGUAGE_DEFUALT
-#    define LANGUAGE_DEFUALT "English"
-#endif
+/// Name of the file listing the available translations.
+constexpr const char *LanguagesIni = "languages.ini";
+/// Language used when the selected one is not available.
+constexpr const char *LanguageDefault = "English";
 
 struct LanguageInfo
 {
@@ -105,7 +103,7 @@ public:
      *
      * Returns language information that matches the language resource
      *  of the environment in which the application is executed.
-     * If it does not match, it returns the language information specified by LANGUAGE_DEFUALT.
+     * If it does not match, it returns the language information specified by LanguageDefault.
      */
     LanguageInfo getSystemLanguageInfo();
 

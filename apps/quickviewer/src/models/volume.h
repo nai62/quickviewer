@@ -13,7 +13,7 @@
 #include "lrucache.h"
 #include "imagecontent.h"
 #include "imageloadmetrics.h"
-#include "qvimagemetadata.h"
+#include "imagemetadata.h"
 #include "prefetchplanner.h"
 
 class VolumeLoader;
@@ -52,8 +52,6 @@ public:
         ImageDecodeMetrics *metrics = nullptr);
     static ImageContent loadImageFromFile(QString path, QSize pageSize, QSize decodeTargetSize = QSize(), bool loadDetailedMetadata = true);
     static ImageContent resizeImageForViewport(ImageContent content, QSize pageSize);
-    static QString FullPathToVolumePath(QString path);
-    static QString FullPathToSubFilePath(QString path);
 
     bool isArchive() const
     {
@@ -71,19 +69,17 @@ public:
     void startSlideShow();
     void stopSlideShow();
 
+    /**
+     * Real filesystem path of a page inside a folder volume. Archive entries do
+     * not have one, so this returns an empty string for archives.
+     */
     QString pagePathForName(const QString &name) const
     {
         const IFileLoader *loader = fileLoader();
-        if (!loader || name.isEmpty()) {
+        if (!loader || loader->isArchive() || name.isEmpty()) {
             return "";
         }
-        if (loader->isArchive()) {
-            return QString("%1::%2")
-                .arg(QDir::fromNativeSeparators(loader->volumePath()))
-                .arg(name);
-        } else {
-            return QDir(loader->realVolumePath()).absoluteFilePath(name);
-        }
+        return QDir(loader->realVolumePath()).absoluteFilePath(name);
     }
     QString pageNameAt(int pageIndex) const;
     int pageIndexForName(const QString &name) const;
@@ -94,16 +90,6 @@ public:
             return "";
         }
         return QDir(loader->volumePath()).absoluteFilePath(m_pageNames[pageIndex]);
-    }
-    QString pagePathWithSeparatorAt(int pageIndex) const
-    {
-        const IFileLoader *loader = fileLoader();
-        if (!loader || pageIndex < 0 || pageIndex >= m_pageNames.size()) {
-            return "";
-        }
-        return QString("%1::%2")
-            .arg(QDir::fromNativeSeparators(loader->volumePath()))
-            .arg(m_pageNames[pageIndex]);
     }
     QString volumePath() const
     {
@@ -156,7 +142,13 @@ private:
 
     QList<QString> m_pageNames;
     QList<QString> m_shuffledPageNames;
-    QList<QvImageMetadata> m_imageMetadataList;
+    QList<ImageMetadata> m_imageMetadataList;
+    /**
+     * Sort the page list was built with. The metadata list only exists for the
+     * metadata sorts, so pageNameAt() has to use this instead of the current
+     * application setting.
+     */
+    qvEnums::ImageSortBy m_sortBy = qvEnums::ImageSortBy::SortByFileName;
     ImageContent m_initialImage;
     mutable LruCache<int, ImageLoadFuture> m_imageLoadCache;
     LruCache<int, ImageLoadFuture> m_previewLoadCache;

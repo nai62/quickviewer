@@ -54,7 +54,7 @@ struct BenchmarkOptions
     int runs = 5;
     int warmup = 2;
     PageSelection page;
-    qvEnums::ImageSortBy sort = qvEnums::SortByFileName;
+    qvEnums::ImageSortBy sort = qvEnums::ImageSortBy::SortByFileName;
     QString sortName = "name";
     QMap<QString, QStringList> decoderBackends;
     bool showHelp = false;
@@ -123,6 +123,10 @@ const ProfileMilestone FirstPaintMilestones[] = {
     {"application.construct.end", "application_construct_end_at_us"},
     {"application.constructed", "application_constructed_at_us"},
     {"mainwindow.construct.begin", "mainwindow_construct_begin_at_us"},
+    {"mainwindow.initial-message.begin", "mainwindow_initial_message_begin_at_us"},
+    {"mainwindow.initial-message.end", "mainwindow_initial_message_end_at_us"},
+    {"mainwindow.page-bar-sync.begin", "mainwindow_page_bar_sync_begin_at_us"},
+    {"mainwindow.page-bar-sync.end", "mainwindow_page_bar_sync_end_at_us"},
     {"mainwindow.construct.end", "mainwindow_construct_end_at_us"},
     {"mainwindow.constructed", "mainwindow_constructed_at_us"},
     {"startup.window-state-restored", "window_state_restored_at_us"},
@@ -133,6 +137,14 @@ const ProfileMilestone FirstPaintMilestones[] = {
     {"startup.show.begin", "show_begin_at_us"},
     {"startup.show.end", "show_end_at_us"},
     {"startup.window-shown", "window_shown_at_us"},
+    {"startup.panel-reserve.begin", "panel_reserve_begin_at_us"},
+    {"folder-window.construct.begin", "folder_window_construct_begin_at_us"},
+    {"folder-item-icons.begin", "folder_item_icons_begin_at_us"},
+    {"folder-item-icons.end", "folder_item_icons_end_at_us"},
+    {"folder-window.history-button.begin", "folder_window_history_button_begin_at_us"},
+    {"folder-window.history-button.end", "folder_window_history_button_end_at_us"},
+    {"folder-window.construct.end", "folder_window_construct_end_at_us"},
+    {"startup.panel-reserve.end", "panel_reserve_end_at_us"},
     {"startup.panel-ready", "panel_ready_at_us"},
     {"startup.process-events.begin", "process_events_begin_at_us"},
     {"startup.process-events.end", "process_events_end_at_us"},
@@ -237,27 +249,27 @@ bool parseSuite(const QString &text, BenchmarkSuite &suite)
 bool parseSortMode(const QString &text, qvEnums::ImageSortBy &sort)
 {
     if (text == "name") {
-        sort = qvEnums::SortByFileName;
+        sort = qvEnums::ImageSortBy::SortByFileName;
         return true;
     }
     if (text == "name-desc") {
-        sort = qvEnums::SortByFileNameDescending;
+        sort = qvEnums::ImageSortBy::SortByFileNameDescending;
         return true;
     }
     if (text == "size") {
-        sort = qvEnums::SortByFileSize;
+        sort = qvEnums::ImageSortBy::SortByFileSize;
         return true;
     }
     if (text == "size-desc") {
-        sort = qvEnums::SortByFileSizeDescending;
+        sort = qvEnums::ImageSortBy::SortByFileSizeDescending;
         return true;
     }
     if (text == "mtime") {
-        sort = qvEnums::SortByModifiedTime;
+        sort = qvEnums::ImageSortBy::SortByModifiedTime;
         return true;
     }
     if (text == "mtime-desc") {
-        sort = qvEnums::SortByModifiedTimeDescending;
+        sort = qvEnums::ImageSortBy::SortByModifiedTimeDescending;
         return true;
     }
     return false;
@@ -1440,9 +1452,9 @@ BenchmarkRecord measureFirstPaint(
     record.requestedDecoder = requestedDecoderName(prepared.format, backend);
 
     const FileSnapshot settingsSnapshot = captureFileSnapshot(
-        qApp->getFilePathOfApplicationSetting(APP_INI));
+        qApp->getFilePathOfApplicationSetting(QVApplication::settingsSubPath()));
     const FileSnapshot progressSnapshot = captureFileSnapshot(
-        qApp->getFilePathOfApplicationSetting(PROGRESS_INI));
+        qApp->getFilePathOfApplicationSetting(QVApplication::readProgressSubPath()));
     if (!settingsSnapshot.valid || !progressSnapshot.valid) {
         record.error = "Failed to snapshot QuickViewer settings before the first-paint run.";
         return record;
@@ -1703,7 +1715,7 @@ void ImageBenchmarkRunner::applyStartupOverrides()
     });
     qApp->setProhibitMultipleRunning(false);
     qApp->setShowSubfolders(qgetenv(RecursiveEnv) == "1");
-    qvEnums::ImageSortBy sort = qvEnums::SortByFileName;
+    qvEnums::ImageSortBy sort = qvEnums::ImageSortBy::SortByFileName;
     if (parseSortMode(QString::fromLocal8Bit(qgetenv(SortEnv)).toLower(), sort)) {
         qApp->setImageSortBy(sort);
     }

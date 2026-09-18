@@ -61,9 +61,7 @@ public:
     bool advanceSeparatedHalf();
     bool rewindSeparatedHalf();
 signals:
-    void resizeFinished();
 public slots:
-    void handleResizeFinished();
     void handleAnimationFrameChanged(int frameNumber);
     void handleAnimationFinished();
 
@@ -82,8 +80,6 @@ private:
     qreal m_drawScale;
     qreal m_displayScale;
     SeparationState m_separationState;
-    QFutureWatcher<QImage> m_resizeWatcher;
-    int m_resizeGeneratingState;
     bool m_initialized;
     PageRenderSettings m_renderSettings;
 };

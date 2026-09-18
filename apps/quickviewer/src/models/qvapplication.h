@@ -5,7 +5,7 @@
 #include <QtCore>
 #include <QtWidgets>
 
-#include "qv_init.h"
+#include "qvenums.h"
 #include "readprogressstore.h"
 #include "languagemanager.h"
 #include "qmousesequence.h"
@@ -69,7 +69,6 @@ class QVApplication : public QApplication
 
     // Folder
     Q_PROPERTY(QString HomeFolderPath READ HomeFolderPath WRITE setHomeFolderPath)
-    Q_PROPERTY(qvEnums::FolderViewSort FolderSortMode READ FolderSortMode WRITE setFolderSortMode)
     Q_PROPERTY(bool OpenVolumeWithProgress READ OpenVolumeWithProgress WRITE setOpenVolumeWithProgress)
     Q_PROPERTY(bool ShowReadProgress READ ShowReadProgress WRITE setShowReadProgress)
 
@@ -111,6 +110,17 @@ public:
     QString getFilePathOfApplicationSetting(QString subFilePath);
     QString getUserHomeFilePath(QString subFilePath);
     QString getTranslationPath();
+    /**
+     * @brief Sub-paths of the application's own data files, relative to the
+     * directory getFilePathOfApplicationSetting() resolves.
+     */
+    static QString settingsSubPath();
+    static QString readProgressSubPath();
+    /**
+     * @brief Default text formats offered by the options dialog.
+     */
+    static QString defaultTitleTextFormat();
+    static QString defaultStatusTextFormat();
 
     void myInstallTranslator();
 
@@ -268,8 +278,6 @@ public:
     QString getDefaultPictureFolderPath();
     QString HomeFolderPath() { return m_homeFolderPath; }
     void setHomeFolderPath(QString path) { m_homeFolderPath = path; }
-    qvEnums::FolderViewSort FolderSortMode() { return m_folderSortMode; }
-    void setFolderSortMode(qvEnums::FolderViewSort mode) { m_folderSortMode = mode; }
     ReadProgressStore *readProgressStore() { return m_readProgressStore; }
     bool OpenVolumeWithProgress() { return m_openVolumeWithProgress; }
     void setOpenVolumeWithProgress(bool openVolumeWithProgress) { m_openVolumeWithProgress = openVolumeWithProgress; }
@@ -440,7 +448,6 @@ private:
 
     // Folder
     QString m_homeFolderPath;
-    qvEnums::FolderViewSort m_folderSortMode;
     bool m_openVolumeWithProgress;
     bool m_showReadProgress;
     bool m_saveReadProgress;

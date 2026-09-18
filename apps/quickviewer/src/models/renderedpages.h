@@ -14,7 +14,7 @@
 struct RenderedPageLayout
 {
     QRect viewport;
-    qvEnums::FitMode fitMode = qvEnums::NoFitting;
+    qvEnums::FitMode fitMode = qvEnums::FitMode::NoFitting;
     qreal manualScale = 1.0;
     qreal scaleFactor = 1.0;
     bool loupe = false;
@@ -42,7 +42,7 @@ public:
     Q_DISABLE_COPY_MOVE(RenderedPages)
 
     int count() const;
-    bool add(ImageContent content, bool append, QObject *owner, QGraphicsScene *scene, const PageRenderSettings &renderSettings, bool openSeparatedPageFromEnd, QObject *resizeReceiver, std::function<void()> resizeCallback);
+    bool add(ImageContent content, bool append, QObject *owner, QGraphicsScene *scene, const PageRenderSettings &renderSettings, bool openSeparatedPageFromEnd);
     void clear();
 
     QRect layout(const PageRenderRequest &request,

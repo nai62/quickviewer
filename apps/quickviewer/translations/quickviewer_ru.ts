@@ -89,21 +89,21 @@
         <translation type="vanished">(%1/%2) индикатор громкости.</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="42"/>
-        <location filename="../src/catalog/catalogwindow.cpp" line="60"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="41"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="59"/>
         <source>Enter a search term and press Enter to search by title.</source>
         <comment>Gray text that prompts a keyword search of Volume</comment>
         <translation>Введите в поле поиска слово и нажмите клавишу ввода для поиска по названию.</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="44"/>
-        <location filename="../src/catalog/catalogwindow.cpp" line="77"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="43"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="76"/>
         <source>Drop an image folder here to create a catalog.</source>
         <comment>Status bar text briefly explaining how to use CatalogWindow</comment>
         <translation>Перетащите сюда папку с картинками и создайте каталог.</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="198"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="197"/>
         <source>%1 of %2 volumes</source>
         <comment>Text of the status bar showing [the number of hits]/[total number] of Volume</comment>
         <translation>(%1/%2) индикатор громкости.</translation>
@@ -151,117 +151,117 @@
         <translation>Exif Информация</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="201"/>
+        <location filename="../src/exifdialog.cpp" line="212"/>
         <source>Image description</source>
         <translation>ОписаниеИзображения</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="181"/>
+        <location filename="../src/exifdialog.cpp" line="192"/>
         <source>Make</source>
         <translation>Сделать</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="182"/>
+        <location filename="../src/exifdialog.cpp" line="193"/>
         <source>Model</source>
         <translation>Модель</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="192"/>
+        <location filename="../src/exifdialog.cpp" line="203"/>
         <source>F-number</source>
         <translation>FNumber</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="199"/>
+        <location filename="../src/exifdialog.cpp" line="210"/>
         <source>Flash</source>
         <translation>Вспышка</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="179"/>
+        <location filename="../src/exifdialog.cpp" line="190"/>
         <source>Image width</source>
         <translation>ШиринаИзображения</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="177"/>
+        <location filename="../src/exifdialog.cpp" line="188"/>
         <source>Filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="180"/>
+        <location filename="../src/exifdialog.cpp" line="191"/>
         <source>Image height</source>
         <translation>ВысотаИзображения</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="185"/>
+        <location filename="../src/exifdialog.cpp" line="196"/>
         <source>Bits per sample</source>
         <translation>БитыНаОбразец</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="186"/>
+        <location filename="../src/exifdialog.cpp" line="197"/>
         <source>Software</source>
         <translation>Программа</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="187"/>
+        <location filename="../src/exifdialog.cpp" line="198"/>
         <source>DateTime</source>
         <translation>ДатаВремя</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="188"/>
+        <location filename="../src/exifdialog.cpp" line="199"/>
         <source>Date/time original</source>
         <translation>ДатаВремяОригинал</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="189"/>
+        <location filename="../src/exifdialog.cpp" line="200"/>
         <source>Date/time digitized</source>
         <translation>ДатаВремяЦифровые</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="190"/>
+        <location filename="../src/exifdialog.cpp" line="201"/>
         <source>Subsecond time original</source>
         <translation>SubSecTimeOriginal</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="202"/>
+        <location filename="../src/exifdialog.cpp" line="213"/>
         <source>Copyright</source>
         <translation>АвторскоеПраво</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="191"/>
+        <location filename="../src/exifdialog.cpp" line="202"/>
         <source>Exposure time</source>
         <translation>ВремяВоздействия</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="193"/>
+        <location filename="../src/exifdialog.cpp" line="204"/>
         <source>ISO speed</source>
         <translation>РейтингиСкоростиISO</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="194"/>
+        <location filename="../src/exifdialog.cpp" line="205"/>
         <source>Shutter speed</source>
         <translation>ЗначениеВыдержки</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="195"/>
+        <location filename="../src/exifdialog.cpp" line="206"/>
         <source>Exposure bias</source>
         <translation>ЗначениеСмещенияЭкспозиции</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="196"/>
+        <location filename="../src/exifdialog.cpp" line="207"/>
         <source>Subject distance</source>
         <translation>РасстояниеДоОбъекта</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="197"/>
+        <location filename="../src/exifdialog.cpp" line="208"/>
         <source>Focal length</source>
         <translation>ФокусноеРасстояние</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="198"/>
+        <location filename="../src/exifdialog.cpp" line="209"/>
         <source>35 mm equivalent focal length</source>
         <translation>ФокусноеРасстояниеВ35мм</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="200"/>
+        <location filename="../src/exifdialog.cpp" line="211"/>
         <source>Metering mode</source>
         <translation>РежимЗамера</translation>
     </message>
@@ -390,7 +390,7 @@
         <translation type="vanished">Exif не входит.</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="183"/>
+        <location filename="../src/exifdialog.cpp" line="194"/>
         <source>Orientation of camera</source>
         <translation>Ориентация камеры</translation>
     </message>
@@ -405,192 +405,192 @@
         <translation type="vanished">ИмяФайла</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="178"/>
+        <location filename="../src/exifdialog.cpp" line="189"/>
         <source>Pixels</source>
         <translation>Пиксели</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="54"/>
+        <location filename="../src/exifdialog.cpp" line="65"/>
         <source>Flash did not fire</source>
         <comment>JPEG EXIF Flash setting value (0x0)</comment>
         <translation>Вспышка не сработала</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="63"/>
+        <location filename="../src/exifdialog.cpp" line="74"/>
         <source>Flash fired</source>
         <comment>JPEG EXIF Flash setting value (0x1)</comment>
         <translation>Вспышка сработала</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="65"/>
+        <location filename="../src/exifdialog.cpp" line="76"/>
         <source>Strobe return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x5)</comment>
         <translation>Обратный свет стробоскопа не обнаружен</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="67"/>
+        <location filename="../src/exifdialog.cpp" line="78"/>
         <source>Strobe return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x7)</comment>
         <translation>Обнаружен обратный свет стробоскопа</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="69"/>
+        <location filename="../src/exifdialog.cpp" line="80"/>
         <source>Flash fired, compulsory flash mode</source>
         <comment>JPEG EXIF Flash setting value (0x9)</comment>
         <translation>Сработала вспышка, режим принудительной вспышки</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="71"/>
+        <location filename="../src/exifdialog.cpp" line="82"/>
         <source>Flash fired, compulsory flash mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0xD)</comment>
         <translation>Сработала вспышка, режим принудительной вспышки, обратный свет не обнаружен</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="73"/>
+        <location filename="../src/exifdialog.cpp" line="84"/>
         <source>Flash fired, compulsory flash mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0xF)</comment>
         <translation>Сработала вспышка, режим принудительной вспышки, обнаружен обратный свет</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="75"/>
+        <location filename="../src/exifdialog.cpp" line="86"/>
         <source>Flash did not fire, compulsory flash mode</source>
         <comment>JPEG EXIF Flash setting value (0x10)</comment>
         <translation>Вспышка не сработала, режим принудительной вспышки</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="77"/>
+        <location filename="../src/exifdialog.cpp" line="88"/>
         <source>Flash did not fire, auto mode</source>
         <comment>JPEG EXIF Flash setting value (0x18)</comment>
         <translation>Вспышка не сработала, авто режим</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="79"/>
+        <location filename="../src/exifdialog.cpp" line="90"/>
         <source>Flash fired, auto mode</source>
         <comment>JPEG EXIF Flash setting value (0x19)</comment>
         <translation>Сработала вспышка, автоматический режим</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="81"/>
+        <location filename="../src/exifdialog.cpp" line="92"/>
         <source>Flash fired, auto mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x1D)</comment>
         <translation>Сработала вспышка, автоматический режим, обратный свет не обнаружен</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="83"/>
+        <location filename="../src/exifdialog.cpp" line="94"/>
         <source>Flash fired, auto mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x1F)</comment>
         <translation>Сработала вспышка, автоматический режим, обнаружен обратный свет</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="85"/>
+        <location filename="../src/exifdialog.cpp" line="96"/>
         <source>No flash function</source>
         <comment>JPEG EXIF Flash setting value (0x20)</comment>
         <translation>Нет функции вспышки</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="87"/>
+        <location filename="../src/exifdialog.cpp" line="98"/>
         <source>Flash fired, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x41)</comment>
         <translation>Сработала вспышка, режим устранения эффекта красных глаз</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="89"/>
+        <location filename="../src/exifdialog.cpp" line="100"/>
         <source>Flash fired, red-eye reduction mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x45)</comment>
         <translation>Сработала вспышка, режим устранения эффекта красных глаз, обратный свет не обнаружен</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="91"/>
+        <location filename="../src/exifdialog.cpp" line="102"/>
         <source>Flash fired, red-eye reduction mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x47)</comment>
         <translation>Сработала вспышка, режим устранения эффекта красных глаз, обнаружен обратный свет</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="93"/>
+        <location filename="../src/exifdialog.cpp" line="104"/>
         <source>Flash fired, compulsory flash mode, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x49)</comment>
         <translation>Сработала вспышка, режим принудительной вспышки, режим уменьшения эффекта красных глаз</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="95"/>
+        <location filename="../src/exifdialog.cpp" line="106"/>
         <source>Flash fired, compulsory flash mode, red-eye reduction mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x4D)</comment>
         <translation>Сработала вспышка, режим принудительной вспышки, режим уменьшения эффекта красных глаз, обратный свет не обнаружен</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="97"/>
+        <location filename="../src/exifdialog.cpp" line="108"/>
         <source>Flash fired, compulsory flash mode, red-eye reduction mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x4F)</comment>
         <translation>Сработала вспышка, режим принудительной вспышки, режим уменьшения эффекта красных глаз, обнаружен обратный свет</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="99"/>
+        <location filename="../src/exifdialog.cpp" line="110"/>
         <source>Flash fired, auto mode, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x59)</comment>
         <translation>Сработала вспышка, автоматический режим, режим устранения эффекта красных глаз</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="101"/>
+        <location filename="../src/exifdialog.cpp" line="112"/>
         <source>Flash fired, auto mode, return light not detected, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x5D)</comment>
         <translation>Сработала вспышка, автоматический режим, обратный свет не обнаружен, режим уменьшения эффекта красных глаз</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="103"/>
+        <location filename="../src/exifdialog.cpp" line="114"/>
         <source>Flash fired, auto mode, return light detected, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x5F)</comment>
         <translation>Сработала вспышка, автоматический режим, обнаружен обратный свет, режим уменьшения эффекта красных глаз</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="136"/>
+        <location filename="../src/exifdialog.cpp" line="147"/>
         <source>Horizontal (normal)</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(0 or 1)</comment>
         <translation>Горизонтальный (нормальный)</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="143"/>
+        <location filename="../src/exifdialog.cpp" line="154"/>
         <source>Mirror horizontal</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(2)</comment>
         <translation>Горизонтальное зеркало</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="145"/>
+        <location filename="../src/exifdialog.cpp" line="156"/>
         <source>Rotate 180</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(3)</comment>
         <translation>Поворот 180</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="147"/>
+        <location filename="../src/exifdialog.cpp" line="158"/>
         <source>Mirror vertical</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(4)</comment>
         <translation>Вертикальное зеркало</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="149"/>
+        <location filename="../src/exifdialog.cpp" line="160"/>
         <source>Mirror horizontal and rotate 270 CW</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(5)</comment>
         <translation>Горизонтальное зеркало и повернуть на 270 CW</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="151"/>
+        <location filename="../src/exifdialog.cpp" line="162"/>
         <source>Rotate 90 CW</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(6)</comment>
         <translation>Повернуть на 90 CW</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="153"/>
+        <location filename="../src/exifdialog.cpp" line="164"/>
         <source>Mirror horizontal and rotate 90 CW</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(7)</comment>
         <translation>Горизонтальное зеркало и повернуть на 90 CW</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="155"/>
+        <location filename="../src/exifdialog.cpp" line="166"/>
         <source>Rotate 270 CW</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(8)</comment>
         <translation>Поворот 270 CW</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="173"/>
+        <location filename="../src/exifdialog.cpp" line="184"/>
         <source>Exif is not included.</source>
         <comment>Text to display if EXIF is not included in JPEG</comment>
         <translation>Exif не входит.</translation>
@@ -873,69 +873,59 @@
         <translation type="vanished">Обновить</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderitemmodel.cpp" line="16"/>
         <source>Name</source>
         <comment>Title of the column in the folder list when displaying as an independent Window in Folder Window</comment>
-        <translation>Имя</translation>
+        <translation type="vanished">Имя</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderitemmodel.cpp" line="18"/>
         <source>Modified</source>
         <comment>Title of the column in the folder list when displaying as an independent Window in Folder Window</comment>
-        <translation>Обновить</translation>
+        <translation type="vanished">Обновить</translation>
     </message>
 </context>
 <context>
     <name>FolderWindow</name>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="140"/>
-        <location filename="../src/folderview/folderwindow.ui" line="344"/>
+        <location filename="../src/folderview/folderwindow.ui" line="106"/>
+        <location filename="../src/folderview/folderwindow.ui" line="214"/>
         <source>Home</source>
         <extracomment>Button for returning to QuickViewer&apos;s home folder</extracomment>
         <translation>Переместить в Домашнюю</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="163"/>
-        <location filename="../src/folderview/folderwindow.ui" line="166"/>
-        <location filename="../src/folderview/folderwindow.ui" line="326"/>
         <source>Previous</source>
         <extracomment>Button for returning to the previous folder from the currently displayed folder</extracomment>
-        <translation>Назад</translation>
+        <translation type="vanished">Назад</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="189"/>
-        <location filename="../src/folderview/folderwindow.ui" line="192"/>
-        <location filename="../src/folderview/folderwindow.ui" line="335"/>
         <source>Next</source>
         <extracomment>Button for returning to the folder after the current displayed folder</extracomment>
-        <translation>Вперед</translation>
+        <translation type="vanished">Вперед</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="241"/>
-        <location filename="../src/folderview/folderwindow.ui" line="362"/>
+        <location filename="../src/folderview/folderwindow.ui" line="155"/>
+        <location filename="../src/folderview/folderwindow.ui" line="232"/>
         <source>Reload</source>
         <translation>Обновить</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="244"/>
+        <location filename="../src/folderview/folderwindow.ui" line="158"/>
         <source>Refresh</source>
         <extracomment>Button for updating the currently displayed folder information</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="283"/>
-        <location filename="../src/folderview/folderwindow.ui" line="367"/>
+        <location filename="../src/folderview/folderwindow.ui" line="237"/>
         <source>Name</source>
-        <extracomment>Change the order of file names Pull down button</extracomment>
         <translation>Имя</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="353"/>
+        <location filename="../src/folderview/folderwindow.ui" line="223"/>
         <source>Parent</source>
         <translation>КРодителю</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="379"/>
+        <location filename="../src/folderview/folderwindow.ui" line="249"/>
         <source>Other</source>
         <translation>Другие</translation>
     </message>
@@ -945,46 +935,53 @@
         <translation>СписокПапок</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="79"/>
         <source>Current folder</source>
         <extracomment>Label indicating that the current folder PATH is being displayed</extracomment>
-        <translation>ТекущаяПапка</translation>
+        <translation type="vanished">ТекущаяПапка</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="137"/>
+        <location filename="../src/folderview/folderwindow.ui" line="103"/>
         <source>Go to home folder</source>
         <translation>ПереместитьсяВДомашнююПапку</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="215"/>
-        <location filename="../src/folderview/folderwindow.ui" line="218"/>
+        <location filename="../src/folderview/folderwindow.ui" line="129"/>
+        <location filename="../src/folderview/folderwindow.ui" line="132"/>
         <source>Parent folder</source>
         <extracomment>Button for moving from the currently displayed folder to the next higher folder</extracomment>
         <translation>ВерхняяПапка</translation>
     </message>
     <message>
+        <location filename="../src/folderview/folderwindow.cpp" line="62"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="94"/>
+        <source>History</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/folderview/folderwindow.cpp" line="63"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="95"/>
+        <source>Open history</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Modified</source>
-        <extracomment>Button for updating the currently displayed folder information</extracomment>
         <translation type="vanished">Обновить</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="280"/>
         <source>Change sort order</source>
         <extracomment>Tooltip for pulldown to change folder sorting method</extracomment>
-        <translation>Изменить метод сортировки</translation>
+        <translation type="vanished">Изменить метод сортировки</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="387"/>
         <source>Sort by name</source>
-        <translation>Сортировать по имени</translation>
+        <translation type="vanished">Сортировать по имени</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="395"/>
         <source>Sort by modified time</source>
-        <translation>Отсортировано по дате обновления</translation>
+        <translation type="vanished">Отсортировано по дате обновления</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="400"/>
+        <location filename="../src/folderview/folderwindow.ui" line="254"/>
         <source>Set as home folder</source>
         <translation>Установите эту папку в Домашнюю папку</translation>
     </message>
@@ -993,8 +990,8 @@
         <translation type="vanished">Не найдено ни одной папки или архива</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="23"/>
-        <location filename="../src/folderview/folderwindow.cpp" line="231"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="65"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="301"/>
         <source>No folders or archives found.</source>
         <comment>Display when there is no display item in Folder Window</comment>
         <translation>Не найдено ни одной папки или архива</translation>
@@ -1160,13 +1157,91 @@
 <context>
     <name>ImageView</name>
     <message>
-        <location filename="../src/imageview.cpp" line="220"/>
+        <location filename="../src/imageview.cpp" line="95"/>
+        <source>No Image Open</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="96"/>
+        <source>Open an image, folder, or archive to begin.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="108"/>
+        <source>No Viewable Images</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="110"/>
+        <source>No supported images were found in this folder.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="111"/>
+        <source>No supported images were found in this archive.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="114"/>
+        <source>Cannot Find Item</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="115"/>
+        <source>The selected file or folder does not exist.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="118"/>
+        <source>Permission Denied</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="119"/>
+        <source>The selected item cannot be read because access was denied.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="122"/>
+        <source>Cannot Display Image</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="123"/>
+        <source>The image could not be decoded.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="126"/>
+        <location filename="../src/imageview.cpp" line="130"/>
+        <location filename="../src/imageview.cpp" line="134"/>
+        <location filename="../src/imageview.cpp" line="139"/>
         <source>Cannot Open Archive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="221"/>
-        <source>This archive is password-protected. Password-protected archives are not supported.</source>
+        <location filename="../src/imageview.cpp" line="127"/>
+        <source>This archive is password-protected.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="131"/>
+        <source>This archive format is not supported.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="135"/>
+        <source>This archive is damaged or invalid.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="140"/>
+        <source>Cannot Open</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/imageview.cpp" line="141"/>
+        <source>The selected item could not be read.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1363,25 +1438,25 @@
         <translation>&amp;Вид</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="338"/>
+        <location filename="../src/mainwindow.ui" line="337"/>
         <source>&amp;Help</source>
         <translation>&amp;Помощь</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="503"/>
+        <location filename="../src/mainwindow.ui" line="501"/>
         <source>E&amp;xit</source>
         <extracomment>End application</extracomment>
         <translation>&amp;Выход</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="557"/>
+        <location filename="../src/mainwindow.ui" line="555"/>
         <source>&amp;Fit mode</source>
         <extracomment>Automatically resize the image according to the size of the window</extracomment>
         <translation>&amp;Примерка</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="146"/>
-        <location filename="../src/mainwindow.cpp" line="1484"/>
+        <location filename="../src/mainwindow.cpp" line="166"/>
+        <location filename="../src/mainwindow.cpp" line="1627"/>
         <source>&amp;Fullscreen</source>
         <translation>&amp;Полноэкранный</translation>
     </message>
@@ -1391,7 +1466,7 @@
         <translation>QuickViewer</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="611"/>
+        <location filename="../src/mainwindow.ui" line="609"/>
         <source>&amp;Open...</source>
         <extracomment>Open an image or archive for viewing</extracomment>
         <translation>Открыть(&amp;O)...</translation>
@@ -1402,218 +1477,218 @@
         <translation>&amp;История</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="598"/>
+        <location filename="../src/mainwindow.ui" line="596"/>
         <source>&amp;Reopen last viewed item</source>
         <extracomment>Opening the image automatically when opening the application the last time it was started</extracomment>
         <translation>&amp;Автоматическая загрузка последней использованной</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="628"/>
+        <location filename="../src/mainwindow.ui" line="626"/>
         <source>&amp;Last page</source>
         <extracomment>Switch to the last image of Volume currently displayed button</extracomment>
         <translation>&amp;ПоследняяСтраница</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="637"/>
+        <location filename="../src/mainwindow.ui" line="635"/>
         <source>&amp;First page</source>
         <extracomment>Switch to the first image of the currently displayed Volume button</extracomment>
         <translation>&amp;ПерваяСтраница</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="673"/>
+        <location filename="../src/mainwindow.ui" line="671"/>
         <source>EXIF &amp;information</source>
         <extracomment>Button to display JPEG EXIF information (if any)</extracomment>
         <translation>&amp;Exif Информация</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1088"/>
+        <location filename="../src/mainwindow.ui" line="1078"/>
         <source>&amp;Keyboard Shortcuts...</source>
         <extracomment>Menu that displays a dialog for changing keyboard shortcuts</extracomment>
         <translation>&amp;КонфигурацияКлавиш</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="590"/>
+        <location filename="../src/mainwindow.ui" line="588"/>
         <source>&amp;About QuickViewer</source>
         <extracomment>A menu for displaying a message box for displaying application information</extracomment>
         <translation>&amp;О QuickViewer</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="687"/>
+        <location filename="../src/mainwindow.ui" line="685"/>
         <source>N&amp;ext volume</source>
         <extracomment>Switch to the next Volume in the same folder as the currently displayed Volume button</extracomment>
         <translation>&amp;СледующийТом</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="347"/>
+        <location filename="../src/mainwindow.ui" line="346"/>
         <source>&amp;Navigation</source>
         <translation>&amp;Навигация</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="711"/>
+        <location filename="../src/mainwindow.ui" line="709"/>
         <source>Exit application or full screen</source>
         <extracomment>Function that cancels it while full screen is displayed and terminates the application otherwise</extracomment>
         <translation>Выход из приложения или полноэкранный режим</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="740"/>
+        <location filename="../src/mainwindow.ui" line="738"/>
         <source>&amp;Clear history</source>
         <extracomment>Menu for clearing the history of opening images</extracomment>
         <translation>&amp;Очистить историю</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="752"/>
+        <location filename="../src/mainwindow.ui" line="750"/>
         <source>Stay on &amp;top</source>
         <extracomment>When on it keeps the window always on top</extracomment>
         <translation>&amp;Остаться на вершине</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="971"/>
+        <location filename="../src/mainwindow.ui" line="969"/>
         <source>Sh&amp;ow/hide menu bar</source>
         <translation>&amp;Показать / скрыть строку главного меню</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="287"/>
-        <location filename="../src/mainwindow.ui" line="384"/>
+        <location filename="../src/mainwindow.ui" line="383"/>
         <source>&amp;Rendering</source>
         <translation>Рендеринг(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="799"/>
+        <location filename="../src/mainwindow.ui" line="797"/>
         <source>&amp;Maximize or Normal</source>
         <extracomment>Function to switch windows to maximize or normal display</extracomment>
         <translation>&amp;Максимизировать или Нормальный</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="816"/>
+        <location filename="../src/mainwindow.ui" line="814"/>
         <source>Skip forward 10 pages</source>
         <extracomment>Switch to 10 images in Volume button</extracomment>
         <translation>ПеремоткаВперед</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="825"/>
+        <location filename="../src/mainwindow.ui" line="823"/>
         <source>Skip back 10 pages</source>
         <extracomment>Switch to the previous 10 images in Volume button</extracomment>
         <translation>ПеремоткаНазад</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="839"/>
+        <location filename="../src/mainwindow.ui" line="837"/>
         <source>&amp;Rotate</source>
         <extracomment>Button to rotate the currently displayed image 90 degrees clockwise</extracomment>
         <translation>&amp;Поворот</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="878"/>
+        <location filename="../src/mainwindow.ui" line="876"/>
         <source>Load bookmark</source>
         <extracomment>Button to restore saved image page from registered bookmark</extracomment>
         <translation>ЗагрузитьЗакладку</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="869"/>
+        <location filename="../src/mainwindow.ui" line="867"/>
         <source>Manage bookmarks</source>
         <translation>УправлениеЗакладками</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="883"/>
+        <location filename="../src/mainwindow.ui" line="881"/>
         <source>Clear bookmarks</source>
         <extracomment>Button to delete all saved bookmarks</extracomment>
         <translation>ОчиститьЗакладки</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2219"/>
+        <location filename="../src/mainwindow.cpp" line="2354"/>
         <source>Bookmark saved.</source>
         <translation>Закладка сохранена.</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="380"/>
-        <location filename="../src/mainwindow.ui" line="1106"/>
+        <location filename="../src/mainwindow.ui" line="379"/>
+        <location filename="../src/mainwindow.ui" line="1096"/>
         <source>ContextMenu</source>
         <translation>КонтекстноеМеню</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="778"/>
+        <location filename="../src/mainwindow.ui" line="776"/>
         <source>Bi&amp;cubic interpolation (slow)</source>
         <extracomment>Menu for resizing image by bicubic interpolation by GPU</extracomment>
         <translation>&amp;Бикубическая интерполяция (медленная)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="786"/>
+        <location filename="../src/mainwindow.ui" line="784"/>
         <source>&amp;Lanczos interpolation (very slow)</source>
         <extracomment>Menu for resizing image by Lanczos interpolation by GPU</extracomment>
         <translation>&amp;Ланцошская интерполяция (очень медленная)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="433"/>
+        <location filename="../src/mainwindow.ui" line="431"/>
         <source>&amp;Catalog</source>
         <translation>&amp;Каталог</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="530"/>
+        <location filename="../src/mainwindow.ui" line="528"/>
         <source>Zoom &amp;in</source>
         <extracomment>Button for enlarging the currently displayed image</extracomment>
         <translation>&amp;Увеличить</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="533"/>
+        <location filename="../src/mainwindow.ui" line="531"/>
         <source>Zoom in</source>
         <translation>Увеличить</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="542"/>
+        <location filename="../src/mainwindow.ui" line="540"/>
         <source>Zoom &amp;out</source>
         <extracomment>Reduce the image currently displayed button</extracomment>
         <translation>&amp;Уменьшить</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="545"/>
+        <location filename="../src/mainwindow.ui" line="543"/>
         <source>Zoom out</source>
         <translation>Уменьшить</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="911"/>
+        <location filename="../src/mainwindow.ui" line="909"/>
         <source>Remove parenthesized text from book title</source>
         <extracomment>Ability to remove and display (parenthesized) text from Volume title in the catalog</extracomment>
         <translation>Удалить (Опции) из названия книги</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="919"/>
+        <location filename="../src/mainwindow.ui" line="917"/>
         <source>Ignore parenthesized text when searching titles</source>
         <extracomment>Ability to search with the title removed (parenthesized) removed from the title of Volume in the catalog</extracomment>
         <translation>Удалить (Опции) из названия книги при поиске</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="931"/>
-        <location filename="../src/mainwindow.ui" line="934"/>
+        <location filename="../src/mainwindow.ui" line="929"/>
+        <location filename="../src/mainwindow.ui" line="932"/>
         <source>Icons and titles</source>
         <extracomment>For Volume in the catalog, a mode to list up icons and titles vertically</extracomment>
         <translation>ЗначокПросмотраКаталога</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="955"/>
-        <location filename="../src/mainwindow.ui" line="958"/>
+        <location filename="../src/mainwindow.ui" line="953"/>
+        <location filename="../src/mainwindow.ui" line="956"/>
         <source>List</source>
         <extracomment>Mode to list volumes in the catalog with icons and titles arranged side by side</extracomment>
         <translation>КаталогПросмотрСписка</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="966"/>
+        <location filename="../src/mainwindow.ui" line="964"/>
         <source>Show tag bar</source>
         <extracomment>Squeeze the Volume of the catalog Function to erase the bar displaying the tag button</extracomment>
         <translation>ПоказатьПанельТегов</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="830"/>
+        <location filename="../src/mainwindow.ui" line="828"/>
         <source>Copy file to clipboard</source>
         <extracomment>Menu to copy currently displayed image file on Explorer</extracomment>
         <translation>Копировать файл в буфер обмена</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="770"/>
+        <location filename="../src/mainwindow.ui" line="768"/>
         <source>&amp;Bilinear interpolation (fast)</source>
         <extracomment>Menu to resize the image by bilinear interpolation by GPU</extracomment>
         <translation>&amp;Билинейная интерполяция (быстрая)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="449"/>
+        <location filename="../src/mainwindow.ui" line="447"/>
         <source>F&amp;older</source>
         <translation>&amp;Каталог</translation>
     </message>
@@ -1623,115 +1698,115 @@
         <translation type="vanished">Не увеличивайте маленькие изображения на примерке</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1079"/>
+        <location filename="../src/mainwindow.ui" line="1069"/>
         <source>Show image information in full screen</source>
         <extracomment>Signage that displays the file name of the image at full screen display</extracomment>
         <translation>Показывать текст в полноэкранном режиме</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="512"/>
+        <location filename="../src/mainwindow.ui" line="510"/>
         <source>&amp;Next</source>
         <extracomment>Switch to the next image button</extracomment>
         <translation>&amp;СледующееИзображение</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="521"/>
+        <location filename="../src/mainwindow.ui" line="519"/>
         <source>&amp;Previous</source>
         <extracomment>Switch to previous image button</extracomment>
         <translation>&amp;ПредыдущееИзображение</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="569"/>
+        <location filename="../src/mainwindow.ui" line="567"/>
         <source>2-page &amp;spread</source>
         <extracomment>Arranging two images side by side like when opening a book</extracomment>
         <translation>2страницы &amp;Разворот</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="606"/>
+        <location filename="../src/mainwindow.ui" line="604"/>
         <source>&amp;Right-bound</source>
         <extracomment>Books written in vertical writing such as Japanese and Chinese read from right, so read from right page to left page</extracomment>
         <translation>&amp;Связано с правой стороны</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="661"/>
+        <location filename="../src/mainwindow.ui" line="659"/>
         <source>Open in &amp;Explorer</source>
         <extracomment>Menu that displays Explorer with the currently displayed image file selected</extracomment>
         <translation>&amp;Открыть в проводнике</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="706"/>
+        <location filename="../src/mainwindow.ui" line="704"/>
         <source>Previous p&amp;age</source>
         <extracomment>Because there are times when the page is missing due to bookbinding convenience, digital books will fit the left and right pages with this operation</extracomment>
         <translation>&amp;Предыдущая только одна страница</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="727"/>
+        <location filename="../src/mainwindow.ui" line="725"/>
         <source>Display &amp;first page alone</source>
         <extracomment>In the case of a digital book, since the first image is a cover page, only one image is displayed</extracomment>
         <translation>&amp;Всегда открывайте первые изображения даже с одной страницы</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="794"/>
+        <location filename="../src/mainwindow.ui" line="792"/>
         <source>&amp;Nearest Neighbor interpolation (fast but coarse)</source>
         <extracomment>Menu to resize image by Nearest Neighbor interpolation by GPU</extracomment>
         <translation>&amp;Интерполяция ближайшего соседа (быстрая, но грубая)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="807"/>
+        <location filename="../src/mainwindow.ui" line="805"/>
         <source>&amp;Restore window display at next startup</source>
         <extracomment>When restarting the next time, restore the position size of the window at the time of the last termination</extracomment>
         <translation>&amp;Восстановить отображение окна при следующем запуске</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="860"/>
+        <location filename="../src/mainwindow.ui" line="858"/>
         <source>Add bookmark</source>
         <extracomment>Button to add the currently displayed volume and page to bookmark</extracomment>
         <translation>ДобавитьЗакладку</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="946"/>
+        <location filename="../src/mainwindow.ui" line="944"/>
         <source>Icons only</source>
         <extracomment>Mode to list Volume in the catalog with only the icons side by side</extracomment>
         <translation>ТолькоЗначок</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="976"/>
+        <location filename="../src/mainwindow.ui" line="974"/>
         <source>Send image by email...</source>
         <extracomment>Menu to attach the currently displayed image to the mail software and start up</extracomment>
         <translation>Активируйте свою электронную почту с приложением</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="984"/>
+        <location filename="../src/mainwindow.ui" line="982"/>
         <source>Larger &amp;grid for long titles</source>
         <extracomment>Functions to be used when the Volume title in the catalog is long</extracomment>
         <translation>&amp;Большая сетка для отображения длинного заголовка</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1012"/>
+        <location filename="../src/mainwindow.ui" line="1002"/>
         <source>Bicubic interpolation by CPU (quality)</source>
         <extracomment>Menu that performs bicubic interpolation with CPU when resizing image</extracomment>
         <translation>Бикубическая интерполяция ЦП (качество)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1024"/>
+        <location filename="../src/mainwindow.ui" line="1014"/>
         <source>Include images in subfolders</source>
         <extracomment>When enumerating images, subfolders are also included in the range</extracomment>
         <translation>Открыть с подпапками изображения</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1032"/>
+        <location filename="../src/mainwindow.ui" line="1022"/>
         <source>Open at last-read page</source>
         <extracomment>A setting menu that allows you to advance the page to the point you read when you reopen Volume that you read a part way up again</extracomment>
         <translation>Ранее открыл страницу в режиме предварительного просмотра</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1040"/>
+        <location filename="../src/mainwindow.ui" line="1030"/>
         <source>Show reading progress</source>
         <extracomment>Ability to display read information read in the middle in FolderWindow</extracomment>
         <translation>Покажите, как далеко вы читаете</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1050"/>
+        <location filename="../src/mainwindow.ui" line="1040"/>
         <source>Rename</source>
         <extracomment>A menu for changing the file name of the currently displayed image</extracomment>
         <translation>Переименовать</translation>
@@ -1753,139 +1828,138 @@
         <translation type="vanished">Пожалуйста, выберите изображение или архив</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="581"/>
+        <location filename="../src/mainwindow.ui" line="579"/>
         <source>Full screen</source>
         <extracomment>Button to switch the window display to full screen</extracomment>
         <translation>Полноэкранный</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="619"/>
+        <location filename="../src/mainwindow.ui" line="617"/>
         <source>&amp;Keep wide images together in 2-page view</source>
         <extracomment>Automatically switch because it may spread 2 pages are combined into one image in the digital book</extracomment>
         <translation>&amp;Всегда отображать одно пейзажное изображение даже при отображении на 2 страницах</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="648"/>
+        <location filename="../src/mainwindow.ui" line="646"/>
         <source>Show status &amp;bar</source>
         <translation>&amp;Показать строку состояния</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="656"/>
+        <location filename="../src/mainwindow.ui" line="654"/>
         <source>Show &amp;page bar</source>
         <translation>&amp;Показать панель страницы</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="678"/>
+        <location filename="../src/mainwindow.ui" line="676"/>
         <source>Check for &amp;updates...</source>
         <extracomment>A menu to start up the browser to check whether the currently used QuickViewer is the latest version on the project web page</extracomment>
         <translation>&amp;Проверьте версию в браузере</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="696"/>
+        <location filename="../src/mainwindow.ui" line="694"/>
         <source>P&amp;revious volume</source>
         <extracomment>Switch to the previous Volume in the same folder as Volume currently being displayed Button</extracomment>
         <translation>&amp;Предыдущий том</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="701"/>
+        <location filename="../src/mainwindow.ui" line="699"/>
         <source>Next &amp;page</source>
         <extracomment>Because there are times when the page is missing due to bookbinding convenience, digital books will fit the left and right pages with this operation</extracomment>
         <translation>&amp;Только на следующей странице</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="719"/>
+        <location filename="../src/mainwindow.ui" line="717"/>
         <source>Show &amp;toolbar</source>
         <translation>&amp;Показать панель инструментов</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="735"/>
+        <location filename="../src/mainwindow.ui" line="733"/>
         <source>Show &amp;menu bar</source>
         <translation>&amp;Показать строку меню</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="757"/>
+        <location filename="../src/mainwindow.ui" line="755"/>
         <source>&amp;Copy image to clipboard</source>
         <extracomment>A menu for copying the bitmap of the currently displayed image to the clipboard</extracomment>
         <translation>&amp;Скопировать изображение в буфер обмена</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="762"/>
+        <location filename="../src/mainwindow.ui" line="760"/>
         <source>Move image to &amp;Recycle Bin</source>
         <extracomment>Menu that puts the currently displayed image in Recycle Bin</extracomment>
         <translation>&amp;Переместить изображение в корзину</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="851"/>
+        <location filename="../src/mainwindow.ui" line="849"/>
         <source>&amp;Slideshow</source>
         <extracomment>Button to start displaying slideshow</extracomment>
         <translation>&amp;Слайд-шоу</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="888"/>
+        <location filename="../src/mainwindow.ui" line="886"/>
         <source>Project &amp;website</source>
         <extracomment>Button to display the web page of the project in the browser</extracomment>
         <translation>&amp;Показать домашнюю страницу в браузере</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="900"/>
+        <location filename="../src/mainwindow.ui" line="898"/>
         <source>Show &amp;Catalog</source>
         <extracomment>Button to display Catalog Window. Switch between internal display, independent display, and erase</extracomment>
         <translation>&amp;Показать каталог</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="903"/>
+        <location filename="../src/mainwindow.ui" line="901"/>
         <source>Show Catalog</source>
         <translation>Показать каталог</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="996"/>
+        <location filename="../src/mainwindow.ui" line="994"/>
         <source>Show &amp;Folder</source>
         <extracomment>Button to display FolderWindow. Switch between internal display, independent display, and erase</extracomment>
         <translation>&amp;Показать каталог</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1004"/>
         <source>CPU Bicubic after GPU Bilinear (standard)</source>
         <extracomment>Preview by bilinear with GPU, then replace with bicubic resized image by CPU</extracomment>
-        <translation>Процессор Бикубического после GPU Билинейного (стандарт)</translation>
+        <translation type="vanished">Процессор Бикубического после GPU Билинейного (стандарт)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1045"/>
+        <location filename="../src/mainwindow.ui" line="1035"/>
         <source>&amp;Settings</source>
         <extracomment>Menu for displaying a dialog for changing the adjunct setting of the application</extracomment>
         <translation>&amp;Настройки</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1058"/>
+        <location filename="../src/mainwindow.ui" line="1048"/>
         <source>Don&apos;t upscale small images</source>
         <extracomment>Ability to display an image smaller than the window as it is when fit is displayed</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1071"/>
+        <location filename="../src/mainwindow.ui" line="1061"/>
         <source>Full screen on startup</source>
         <extracomment>Ability to always launch applications in full screen</extracomment>
         <translation>Полный экран при запуске</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1096"/>
+        <location filename="../src/mainwindow.ui" line="1086"/>
         <source>Confirm moving image to &amp;Recycle Bin</source>
         <extracomment>A function to display a confirmation screen when moving the currently displayed image to Recycle Bin</extracomment>
         <translation>&amp;Подтвердите перемещение изображения в Корзину</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1101"/>
+        <location filename="../src/mainwindow.ui" line="1091"/>
         <source>File Associations... (administrator)</source>
         <extracomment>Ability to associate QuickViewer and image files on Explorer (Host Global)</extracomment>
         <translation>Ассоциации изображений (требуется администратор)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1111"/>
+        <location filename="../src/mainwindow.ui" line="1101"/>
         <source>&amp;Mouse Settings...</source>
         <translation>&amp;Конфигурация Мышки</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1116"/>
+        <location filename="../src/mainwindow.ui" line="1106"/>
         <source>Delete the image</source>
         <translation>Удалить изображение</translation>
     </message>
@@ -1902,143 +1976,143 @@
         <translation type="vanished">Вы уверены в том, что хотите удалить данное изображение?</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1121"/>
+        <location filename="../src/mainwindow.ui" line="1111"/>
         <source>File Associations... (current user)</source>
         <extracomment>Ability to associate QuickViewer and image files on Explorer (Host Global)</extracomment>
         <translation>Ассоциация изображений (только вы)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1129"/>
+        <location filename="../src/mainwindow.ui" line="1119"/>
         <source>Don&apos;t update history</source>
         <extracomment>Flag for prohibiting update of history</extracomment>
         <translation>Не обновлять историю</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1141"/>
+        <location filename="../src/mainwindow.ui" line="1131"/>
         <source>Open panels in separate windows</source>
         <extracomment>Flag separating the catalog and folder windows into independent windows</extracomment>
         <translation>Разблокировать в отдельном окне</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="463"/>
+        <location filename="../src/mainwindow.ui" line="461"/>
         <source>&amp;Image</source>
         <translation>&amp;Изображение</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1149"/>
+        <location filename="../src/mainwindow.ui" line="1139"/>
         <source>Large menu and toolbar</source>
         <translation>Большая панель инструментов и меню</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1154"/>
+        <location filename="../src/mainwindow.ui" line="1144"/>
         <source>Turn left page</source>
         <translation>Перевернуть страницу слева</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1159"/>
+        <location filename="../src/mainwindow.ui" line="1149"/>
         <source>Turn right page</source>
         <translation>Перевернуть страницу справа</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1167"/>
+        <location filename="../src/mainwindow.ui" line="1157"/>
         <source>Split wide images into two pages</source>
         <extracomment>Flag to display images on the left and right sides with a portrait display</extracomment>
         <translation>Разделить широкое изображение на 2 страницы</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1179"/>
+        <location filename="../src/mainwindow.ui" line="1169"/>
         <source>Loupe</source>
         <translation>Инструент Лупа</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1187"/>
+        <location filename="../src/mainwindow.ui" line="1177"/>
         <source>Pan with mouse movement when zoomed</source>
         <extracomment>Flag to scroll the image with moving the mouse pointer instead of displaying the scroll bar</extracomment>
         <translation>Прокрутка курсора мыши для масштабирования</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1199"/>
+        <location filename="../src/mainwindow.ui" line="1189"/>
         <source>Fit to width</source>
         <translation>По ширине</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="399"/>
+        <location filename="../src/mainwindow.ui" line="397"/>
         <source>Image actions</source>
         <translation>Редактировать изображение</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="411"/>
-        <location filename="../src/mainwindow.ui" line="467"/>
+        <location filename="../src/mainwindow.ui" line="409"/>
+        <location filename="../src/mainwindow.ui" line="465"/>
         <source>Fit mode</source>
         <translation>Режим Fit</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1211"/>
+        <location filename="../src/mainwindow.ui" line="1201"/>
         <source>Fit to window</source>
         <translation>По размеру окна</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1223"/>
+        <location filename="../src/mainwindow.ui" line="1213"/>
         <source>Image adjustments...</source>
         <extracomment>a menu test which show window changes brightness of the image</extracomment>
         <translation>Изменить значение яркости, контрастности или гаммы</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1231"/>
+        <location filename="../src/mainwindow.ui" line="1221"/>
         <source>Spline16 interpolation by CPU</source>
         <extracomment>Menu that performs Spline16 interpolation with CPU when resizing image</extracomment>
         <translation>Spline16 интерполяция процессором</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1239"/>
+        <location filename="../src/mainwindow.ui" line="1229"/>
         <source>Spline36 interpolation by CPU</source>
         <extracomment>Menu that performs Spline36 interpolation with CPU when resizing image</extracomment>
         <translation>Spline36 интерполяция процессором</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1247"/>
+        <location filename="../src/mainwindow.ui" line="1237"/>
         <source>Lanczos3 interpolation by CPU</source>
         <extracomment>Menu that performs Lanczos3 interpolation with CPU when resizing image</extracomment>
         <translation>Lanczos3 интерполяция процессором</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1255"/>
+        <location filename="../src/mainwindow.ui" line="1245"/>
         <source>Lanczos4 interpolation by CPU</source>
         <extracomment>Menu that performs Lanczos4 interpolation with CPU when resizing image</extracomment>
         <translation>Lanczos4 интерполяция процессором</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1260"/>
+        <location filename="../src/mainwindow.ui" line="1250"/>
         <source>Next page or volume</source>
         <extracomment>Switch to next image, or to next volume if the page is first button</extracomment>
         <translation>Следующая страница или том</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1265"/>
+        <location filename="../src/mainwindow.ui" line="1255"/>
         <source>Previous page or volume</source>
         <extracomment>Switch to previous image, or to previous volume if the page is last button</extracomment>
         <translation>Предыдущая страница или том</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1273"/>
+        <location filename="../src/mainwindow.ui" line="1263"/>
         <source>Remember catalog pane width</source>
         <extracomment>Flag to restore the width of Catalog view</extracomment>
         <translation>Сохранение ширины просмотра каталога</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1281"/>
+        <location filename="../src/mainwindow.ui" line="1271"/>
         <source>Remember folder pane width</source>
         <extracomment>Flag to restore the width of Folder view</extracomment>
         <translation>Сохранить ширину отображения папки</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1289"/>
+        <location filename="../src/mainwindow.ui" line="1279"/>
         <source>Save reading progress</source>
         <extracomment>Flag to save progress.ini</extracomment>
         <translation>Сохранить до места прочтения</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1297"/>
+        <location filename="../src/mainwindow.ui" line="1287"/>
         <source>Hide mouse cursor in full screen</source>
         <translation>Скрыть курсор мыши на весь экран</translation>
     </message>
@@ -2048,45 +2122,44 @@
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="274"/>
-        <location filename="../src/mainwindow.ui" line="1302"/>
+        <location filename="../src/mainwindow.ui" line="1292"/>
         <source>&amp;Sort by</source>
         <translation>&amp;Сортировать по</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1310"/>
+        <location filename="../src/mainwindow.ui" line="1300"/>
         <source>File name</source>
         <translation>Имени файла</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1318"/>
+        <location filename="../src/mainwindow.ui" line="1308"/>
         <source>File name (descending)</source>
         <translation>Имени файла (по убыванию)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1326"/>
+        <location filename="../src/mainwindow.ui" line="1316"/>
         <source>File size</source>
         <translation>Размеру файла</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1334"/>
+        <location filename="../src/mainwindow.ui" line="1324"/>
         <source>File size (descending)</source>
         <translation>Размеру файла(по убыванию)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1342"/>
+        <location filename="../src/mainwindow.ui" line="1332"/>
         <source>Modified time</source>
         <translation>Дате изменения</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1350"/>
+        <location filename="../src/mainwindow.ui" line="1340"/>
         <source>Modified time (descending)</source>
         <translation>Дате изменения(по убыванию)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="470"/>
         <source>No folder or archive is loaded.</source>
         <comment>The text of the status bar to be displayed when there is no image to be displayed immediately after the application is activated</comment>
-        <translation>Ни одна папка или архив не загружается.</translation>
+        <translation type="vanished">Ни одна папка или архив не загружается.</translation>
     </message>
     <message>
         <source>Image file not found. Can&apos;t be opened</source>
@@ -2099,50 +2172,53 @@
         <translation type="vanished">Файл изображения не найден. Не может быть открыт.</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="473"/>
-        <source>Image file not found. It cannot be opened.</source>
-        <comment>Text to display in the status bar when failed to open the specified Volume</comment>
+        <location filename="../src/mainwindow.cpp" line="1586"/>
+        <source>Loading...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="476"/>
-        <source>Image file was not found and cannot be opened.</source>
-        <comment>Text to display in the status bar when failed to open the specified Volume</comment>
+        <location filename="../src/mainwindow.cpp" line="1588"/>
+        <source>No images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1792"/>
+        <location filename="../src/mainwindow.cpp" line="1590"/>
+        <source>Unavailable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp" line="1935"/>
         <source>All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.heic *.heif);;Archives( *.zip *.7z *.rar)</source>
         <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1795"/>
+        <location filename="../src/mainwindow.cpp" line="1938"/>
         <source>Select an image or archive</source>
         <comment>Title of the dialog displayed when opening a file with OpenFileFolder</comment>
         <translation>Пожалуйста, выберите изображение или архив</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2025"/>
-        <location filename="../src/mainwindow.cpp" line="2066"/>
+        <location filename="../src/mainwindow.cpp" line="2173"/>
+        <location filename="../src/mainwindow.cpp" line="2214"/>
         <source>Confirmation</source>
         <comment>Confirm deleting image file on MessageBox title</comment>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2030"/>
+        <location filename="../src/mainwindow.cpp" line="2178"/>
         <source>Are you sure you want to move the image to Recycle Bin?</source>
         <comment>Confirm putting displayed file in Recycle Box Message Box body</comment>
         <translation>Вы уверены, что хотите переместить изображение в корзину?</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2071"/>
+        <location filename="../src/mainwindow.cpp" line="2219"/>
         <source>Are you sure you want to delete this image?</source>
         <comment>Confirm deleting image file on Message Box body</comment>
         <translation>Вы уверены в том, что хотите удалить данное изображение?</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="321"/>
+        <location filename="../src/mainwindow.ui" line="320"/>
         <source>&amp;Tools</source>
         <translation>Инструменты(&amp;T)</translation>
     </message>
@@ -2258,67 +2334,67 @@
         <translation type="vanished">Создание каталога отменено</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="20"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="19"/>
         <source>Name</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>Имя</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="21"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="20"/>
         <source>Created</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>ВремяСоздания</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="22"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="21"/>
         <source>Path</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>Путь</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="68"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="67"/>
         <source>Start</source>
         <comment>Button to start catalog creation for specified folder</comment>
         <translation>Начать обработку</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="86"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="85"/>
         <source>Cancel</source>
         <comment>Button to cancel the catalog being generated</comment>
         <translation>Отменить обработку</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="110"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="109"/>
         <source>Pending</source>
         <comment>Representation of time indicating that the catalog is not currently created and will be generated from now</comment>
         <translation>подход к</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="174"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="173"/>
         <source>Edit Catalog</source>
         <comment>Button for editing contents of already created catalog</comment>
         <translation>Редактировать каталог</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="231"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="230"/>
         <source>Completed</source>
         <comment>Title of message box when catalog generation finished successfully</comment>
         <translation>Успешно!</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="232"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="231"/>
         <source>Catalog creation completed.</source>
         <comment>Body of message box when catalog generation finished successfully</comment>
         <translation>Создание каталога завершено</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="264"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="263"/>
         <source>Cancelled!</source>
         <comment>Title of message box when catalog generation was canceled</comment>
         <translation>Отменен!</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="265"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="264"/>
         <source>Catalog creation was cancelled.</source>
         <comment>Body of message box when catalog generation is canceled</comment>
         <translation>Создание каталога отменено</translation>
@@ -2712,12 +2788,12 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.cpp" line="140"/>
+        <location filename="../src/optionsdialog.cpp" line="148"/>
         <source>resvg (Recommended)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.cpp" line="142"/>
+        <location filename="../src/optionsdialog.cpp" line="150"/>
         <source>Qt SVG (Compatibility mode)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2793,67 +2869,67 @@
         <translation type="vanished">Двойной просмотр</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="215"/>
+        <location filename="../src/models/qvapplication.cpp" line="252"/>
         <source>File</source>
         <comment>File Action Group</comment>
         <translation>Файл</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="222"/>
+        <location filename="../src/models/qvapplication.cpp" line="259"/>
         <source>Bookmark</source>
         <comment>Bookmark Action Group</comment>
         <translation>Закладка</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="228"/>
+        <location filename="../src/models/qvapplication.cpp" line="265"/>
         <source>Navigation</source>
         <comment>Navigation Action Group</comment>
         <translation>Навигация</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="246"/>
+        <location filename="../src/models/qvapplication.cpp" line="283"/>
         <source>Folder</source>
         <comment>Folder Action Group</comment>
         <translation>Папка</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="251"/>
+        <location filename="../src/models/qvapplication.cpp" line="288"/>
         <source>Catalog</source>
         <comment>Catalog Action Group</comment>
         <translation>Каталог</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="258"/>
+        <location filename="../src/models/qvapplication.cpp" line="295"/>
         <source>Image</source>
         <comment>Image Action Group</comment>
         <translation>Изображение</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="269"/>
+        <location filename="../src/models/qvapplication.cpp" line="306"/>
         <source>Dual View</source>
         <comment>Dual View Action Group</comment>
         <translation>Двойной просмотр</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="277"/>
+        <location filename="../src/models/qvapplication.cpp" line="314"/>
         <source>View</source>
         <comment>View Action Group</comment>
         <translation>Вид</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="299"/>
+        <location filename="../src/models/qvapplication.cpp" line="336"/>
         <source>ContextMenu</source>
         <comment>ContextMenu Action Group</comment>
         <translation>КонтекстноеМеню</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="311"/>
+        <location filename="../src/models/qvapplication.cpp" line="348"/>
         <source>Shader</source>
         <comment>Shader Action Group</comment>
         <translation>Шейдер</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="326"/>
+        <location filename="../src/models/qvapplication.cpp" line="362"/>
         <source>Help</source>
         <comment>Help Action Group</comment>
         <translation>Помощь</translation>
@@ -2896,7 +2972,7 @@
 <context>
     <name>RenderedPage</name>
     <message>
-        <location filename="../src/models/renderedpage.cpp" line="75"/>
+        <location filename="../src/models/renderedpage.cpp" line="72"/>
         <source>NOT IMAGE FILE</source>
         <comment>Error messages to be displayed on screen when image loading fails</comment>
         <translation type="unfinished">НЕТ ФАЙЛА ИЗОБРАЖЕНИЯ</translation>

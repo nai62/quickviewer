@@ -8,8 +8,10 @@
 #include "visiblepagecomposer.h"
 #include "visiblepages.h"
 #include "viewerstate.h"
+#include "viewerloadstatus.h"
 #include "volume.h"
 #include "volumecache.h"
+#include "volumelocation.h"
 
 class Volume;
 
@@ -31,11 +33,32 @@ public:
     ViewerSession(QObject *parent);
 
     // Volumes
-    bool loadVolume(QString path, bool coverOnly = false);
-    bool loadVolumeWithFile(QString path, bool allowSecondPage = false);
+    /**
+     * Opens a folder or an archive as a volume.
+     */
+    bool openContainer(const QString &containerPath, bool coverOnly = false);
+    /**
+     * Opens an entry the caller knows is inside the container.
+     */
+    bool openEntry(const VolumeLocation &location, bool coverOnly = false);
+    /**
+     * Opens a plain image file and, once it has been painted, the volume that
+     * contains it.
+     */
+    bool openFileInContainer(const QString &filePath, bool allowSecondPage = false);
     bool nextVolume();
     bool prevVolume();
     void reloadVolumeAfterImageRemoval();
+    /**
+     * Drops the cached listing of a container whose contents changed on disk.
+     */
+    void invalidateVolumeCache(const QString &containerPath);
+    /**
+     * Re-reads the container: the cached listing is dropped and, when the
+     * active volume comes from that container, the volume is loaded again on
+     * the page that is displayed now.
+     */
+    void reloadContainer(const QString &containerPath);
 
     // Pages
     bool advanceSpread();
@@ -54,6 +77,7 @@ public:
     void setViewportSize(QSize size);
     bool initialImagePaintPending() const;
     ViewerStateKind stateKind() const { return viewerStateKind(m_state); }
+    const ViewerLoadStatus &loadStatus() const { return m_loadStatus; }
     void deferFolderWorkUntilNextPaint();
     void notifyInitialImagePainted();
     void notifyPagePresentationChanged();
@@ -73,19 +97,21 @@ public:
         if (!volume || m_visiblePages.isEmpty()) {
             return "";
         }
-        return QDir::toNativeSeparators(volume->pagePathForName(m_visiblePages[0].path));
-    }
-    QString nextPagePathAfterDeleted() const
-    {
-        Volume *volume = activeVolume();
-        if (!volume || volume->isArchive() || volume->pageCount() <= 1) {
-            return "";
-        }
-        const int currentPageIndex = m_pageNavigator.currentPageIndex();
-        const int index = volume->pageCount() - 1 == currentPageIndex ? currentPageIndex - 1 : currentPageIndex + 1;
-        return QDir::toNativeSeparators(volume->pagePathAt(index));
+        return volumeLocationDisplayText({volume->volumePath(), m_visiblePages[0].path});
     }
     QString currentPageName() const { return m_visiblePages.isEmpty() ? QString() : m_visiblePages[0].path; }
+    /**
+     * Address of the currently displayed page, if any. Used by the code that
+     * persists the current position.
+     */
+    VolumeLocation currentLocation() const
+    {
+        Volume *volume = activeVolume();
+        if (!volume || m_visiblePages.isEmpty()) {
+            return {};
+        }
+        return {volume->volumePath(), m_visiblePages[0].path};
+    }
 
     /**
      * @brief currentPageNumberText: for the label text on PageBar
@@ -139,6 +165,8 @@ public:
         clearVisiblePages();
         m_volumeCache.clear();
         m_savedPagePositions.clear();
+        m_loadStatus = ViewerLoadStatus{};
+        emit loadStatusChanged();
     }
 
 signals:
@@ -153,6 +181,7 @@ signals:
      */
     void volumeChanged(QString path);
     void archiveOpenFailed(QString path, ArchiveOpenError error);
+    void loadStatusChanged();
     /**
      * Emitted after the directly opened image has had a chance to paint. Heavy
      * folder-related GUI work can resume after this signal.
@@ -165,18 +194,25 @@ public slots:
     void handleSlideShowStopped();
 
 private:
+    bool openLocation(const VolumeLocation &location, bool coverOnly);
     void startContainingVolumeLoad(const QString &normalizedImagePath,
                                    const QString &basePath,
                                    const QString &subfileName);
     void finishInitialImageDisplay(quint64 generation);
-    CachedVolumeLoadResult loadCachedVolume(QString path, bool onlyCover);
-    void prefetchVolume(QString path);
+    CachedVolumeLoadResult loadCachedVolume(const VolumeLocation &location, bool onlyCover);
+    void prefetchVolume(const QString &containerPath);
     VolumeHandle activeVolumeHandle() const;
     Volume *activeVolume() const;
     void setVolumeReady(VolumeHandle volume);
     void configureVolume(Volume *volume);
     void rememberActivePagePosition();
     bool failActiveArchiveLoad(ArchiveOpenError error, const QString &path);
+    void beginLoad(const QString &path, LoadTargetKind targetKind);
+    void setLoadFailure(const QString &path,
+                        LoadTargetKind targetKind,
+                        LoadFailureReason reason,
+                        bool terminal);
+    void setLoadReady(const QString &path, LoadTargetKind targetKind);
     int initialPageIndex(const VolumeHandle &volume, const QString &pageName, bool coverOnly);
     void replaceVisiblePages(QVector<ImageContent> pages);
     static QStringList siblingVolumeNames(const QDir &directory);
@@ -196,6 +232,7 @@ private:
     QStringList m_volumeNames;
 
     ViewerState m_state;
+    ViewerLoadStatus m_loadStatus;
     QSize m_viewportSize;
 
     LatestResultDispatcher<ImageContent> m_initialImageLoadDispatcher;

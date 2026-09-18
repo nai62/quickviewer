@@ -5,6 +5,7 @@
 #include <QMenu>
 #include <QMainWindow>
 #include "models/thumbnailmanager.h"
+#include "models/volumelocation.h"
 #include "volumeitemmodel.h"
 
 namespace Ui {
@@ -60,7 +61,7 @@ public slots:
     void handleTagButtonClicked();
 
 signals:
-    void openVolume(QString path);
+    void openVolume(const OpenTarget &target);
     void closed();
 
 protected:

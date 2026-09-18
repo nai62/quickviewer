@@ -5,6 +5,7 @@
 
 #include "imageview.h"
 #include "models/cursorscrollmapping.h"
+#include "models/shadereffect.h"
 #include "qvapplication.h"
 
 ImageView::ImageView(QWidget *parent)
@@ -55,7 +56,7 @@ ImageView::ImageView(QWidget *parent)
 #ifdef QV_WITHOUT_OPENGL
     setRenderer(Native);
 #else
-    if (qApp->Effect() > qvEnums::UsingFixedShader) {
+    if (usesGpuRendering(qApp->Effect())) {
         setRenderer(OpenGL);
     }
 #endif
@@ -88,6 +89,75 @@ QString ImageView::displayedMessage() const
     return m_messageTitle + QLatin1Char('\n') + m_messageBody;
 }
 
+void ImageView::showNoVolumeMessage()
+{
+    showMessage(
+        tr("No Image Open"),
+        tr("Open an image, folder, or archive to begin."));
+}
+
+void ImageView::showLoadFailureMessage(const ViewerLoadStatus &status)
+{
+    QString title;
+    QString body;
+    switch (status.failureReason) {
+    case LoadFailureReason::None:
+        clearMessage();
+        return;
+    case LoadFailureReason::NoViewableImages:
+        title = tr("No Viewable Images");
+        body = status.targetKind == LoadTargetKind::Folder
+                   ? tr("No supported images were found in this folder.")
+                   : tr("No supported images were found in this archive.");
+        break;
+    case LoadFailureReason::NotFound:
+        title = tr("Cannot Find Item");
+        body = tr("The selected file or folder does not exist.");
+        break;
+    case LoadFailureReason::PermissionDenied:
+        title = tr("Permission Denied");
+        body = tr("The selected item cannot be read because access was denied.");
+        break;
+    case LoadFailureReason::DecodeFailed:
+        title = tr("Cannot Display Image");
+        body = tr("The image could not be decoded.");
+        break;
+    case LoadFailureReason::PasswordProtected:
+        title = tr("Cannot Open Archive");
+        body = tr("This archive is password-protected.");
+        break;
+    case LoadFailureReason::UnsupportedFormat:
+        title = tr("Cannot Open Archive");
+        body = tr("This archive format is not supported.");
+        break;
+    case LoadFailureReason::CorruptData:
+        title = tr("Cannot Open Archive");
+        body = tr("This archive is damaged or invalid.");
+        break;
+    case LoadFailureReason::IoError:
+        title = status.targetKind == LoadTargetKind::Archive
+                    ? tr("Cannot Open Archive")
+                    : tr("Cannot Open");
+        body = tr("The selected item could not be read.");
+        break;
+    }
+
+    const QString path = status.failurePath.isEmpty()
+                             ? status.requestedPath
+                             : status.failurePath;
+    if (!path.isEmpty()) {
+        body += QStringLiteral("\n\n") + QDir::toNativeSeparators(path);
+    }
+    showMessage(title, body);
+}
+
+void ImageView::showMessage(const QString &title, const QString &body)
+{
+    m_messageTitle = title;
+    m_messageBody = body;
+    viewport()->update();
+}
+
 void ImageView::setRenderer(RendererType type)
 {
 #ifdef QV_WITHOUT_OPENGL
@@ -116,7 +186,7 @@ void ImageView::setViewerSession(ViewerSession *session)
     m_viewerSession = session;
     m_viewerSession->setViewportSize(viewport()->size());
     connect(session, &ViewerSession::visiblePagesChanged, this, &ImageView::handleVisiblePagesChanged);
-    connect(session, &ViewerSession::archiveOpenFailed, this, &ImageView::handleArchiveOpenFailed);
+    connect(session, &ViewerSession::loadStatusChanged, this, &ImageView::handleLoadStatusChanged);
     connect(session, SIGNAL(readyForPaint()), this, SLOT(refreshRenderedPages()));
     connect(session, SIGNAL(volumeChanged(QString)), this, SLOT(handleVolumeChanged(QString)));
     connect(this, SIGNAL(slideShowStarted()), session, SLOT(handleSlideShowStarted()));
@@ -175,7 +245,7 @@ ImageView::AddRenderedPageResult ImageView::addRenderedPage(ImageContent content
     }
     const bool landscape = content.loadedImage.width() > content.loadedImage.height();
     if (!m_renderedPages.add(
-            std::move(content), append, this, scene(), pageRenderSettings(), m_openSeparatedPageFromEnd, this, [this] { refreshRenderedPages(); })) {
+            std::move(content), append, this, scene(), pageRenderSettings(), m_openSeparatedPageFromEnd)) {
         return AddRenderedPageResult::Rejected;
     }
 
@@ -212,14 +282,19 @@ void ImageView::handleVisiblePagesChanged(VisiblePages pages)
     }
 }
 
-void ImageView::handleArchiveOpenFailed(QString, ArchiveOpenError error)
+void ImageView::handleLoadStatusChanged()
 {
-    if (error != ArchiveOpenError::PasswordProtected) {
+    if (!m_viewerSession) {
         return;
     }
-    m_messageTitle = tr("Cannot Open Archive");
-    m_messageBody = tr("This archive is password-protected. Password-protected archives are not supported.");
-    viewport()->update();
+    const ViewerLoadStatus &status = m_viewerSession->loadStatus();
+    if (status.failureReason != LoadFailureReason::None) {
+        showLoadFailureMessage(status);
+    } else if (status.phase == ViewerLoadPhase::Empty) {
+        showNoVolumeMessage();
+    } else {
+        clearMessage();
+    }
 }
 
 void ImageView::clearMessage()
@@ -234,7 +309,7 @@ void ImageView::clearMessage()
 
 void ImageView::refreshRenderedPages()
 {
-    if (qApp->Effect() > qvEnums::UsingFixedShader) {
+    if (usesGpuRendering(qApp->Effect())) {
         setRenderer(OpenGL);
     }
     const int renderedCount = renderedPageCount();
@@ -246,7 +321,7 @@ void ImageView::refreshRenderedPages()
         layout.viewport = QRect(QPoint(), viewport()->size());
         layout.fitMode = qApp->Fitting()
                              ? qApp->ImageFitMode()
-                             : qvEnums::NoFitting;
+                             : qvEnums::FitMode::NoFitting;
         layout.manualScale = manualZoomScale();
         layout.scaleFactor = m_loupeController.isActive() ? m_loupeController.scaleFactor() : 1.0;
         layout.loupe = m_loupeController.isActive();
@@ -266,7 +341,7 @@ void ImageView::refreshRenderedPages()
             });
         // if Size of Image overs Size of View, use Image's size
         updateSceneForContent(
-            !(qApp->Fitting() && qApp->ImageFitMode() == qvEnums::FitToRect) || m_loupeController.isActive() || m_lastScreenPixelRatio > 1.0, sceneRect);
+            !(qApp->Fitting() && qApp->ImageFitMode() == qvEnums::FitMode::FitToRect) || m_loupeController.isActive() || m_lastScreenPixelRatio > 1.0, sceneRect);
     }
     // QGraphicsView updates the cursor internally,
     // but QV cannot trap this event, so it forcibly clears the cursor.
@@ -626,17 +701,6 @@ void ImageView::handleRotateActionTriggered()
     refreshRenderedPages();
 }
 
-void ImageView::handleShowSubfoldersActionTriggered(bool checked)
-{
-    qApp->setShowSubfolders(checked);
-    if (!m_viewerSession) {
-        return;
-    }
-    if (m_viewerSession->isFolder()) {
-        m_viewerSession->reloadVolumeAfterImageRemoval();
-    }
-}
-
 void ImageView::handleSlideShowTimerTimeout()
 {
     if (!m_viewerSession) {
@@ -674,14 +738,14 @@ void ImageView::handleHideMouseCursorInFullscreenActionTriggered(bool checked)
     qApp->setHideMouseCursorInFullscreen(checked);
 }
 
-#define HOVER_BORDER 20
+constexpr int HoverBorder = 20;
 //#define NOT_HOVER_AREA 100
 
 void ImageView::mouseMoveEvent(QMouseEvent *e)
 {
     QGraphicsView::mouseMoveEvent(e);
     int NOT_HOVER_AREA = width() / 3;
-    int hover_border = qApp->LargeToolbarIcons() ? 3 * HOVER_BORDER : HOVER_BORDER;
+    int hover_border = qApp->LargeToolbarIcons() ? 3 * HoverBorder : HoverBorder;
     if (e->pos().x() < hover_border && e->pos().y() < height() - hover_border) {
         if (m_hoverState != Qt::AnchorLeft) {
             emit anchorHovered(Qt::AnchorLeft);
@@ -745,9 +809,9 @@ void ImageView::wheelEvent(QWheelEvent *event)
     int delta_y = event->angleDelta().y();
     int delta = 0;
     if (delta_y < 0) {
-        delta = -Q_MOUSE_DELTA;
+        delta = -MouseDelta;
     } else if (delta_y > 0) {
-        delta = Q_MOUSE_DELTA;
+        delta = MouseDelta;
     }
     QMouseValue mv(QKeySequence(qApp->keyboardModifiers()), event->buttons(), delta);
     QAction *action = qApp->mouseActions().getActionByValue(mv);
@@ -813,8 +877,8 @@ void ImageView::handleFitToWindowActionTriggered(bool checked)
     if (!checked) {
         return;
     }
-    qApp->setImageFitMode(qvEnums::FitToRect);
-    emit fittingChanged(qvEnums::FitToRect);
+    qApp->setImageFitMode(qvEnums::FitMode::FitToRect);
+    emit fittingChanged(qvEnums::FitMode::FitToRect);
     qApp->setFitting(true);
     refreshRenderedPages();
 }
@@ -824,8 +888,8 @@ void ImageView::handleFitToWidthActionTriggered(bool checked)
     if (!checked) {
         return;
     }
-    qApp->setImageFitMode(qvEnums::FitToWidth);
-    emit fittingChanged(qvEnums::FitToWidth);
+    qApp->setImageFitMode(qvEnums::FitMode::FitToWidth);
+    emit fittingChanged(qvEnums::FitMode::FitToWidth);
     qApp->setFitting(true);
     refreshRenderedPages();
 }
