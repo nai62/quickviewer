@@ -1,12 +1,12 @@
 #include "imagemetadata.h"
 #include "volume.h"
 
+#include <utility>
+
 ImageMetadata::ImageMetadata(Volume *volume, QString filename)
-    : QObject(volume)
-{
-    m_volume = volume;
-    m_filename = filename;
-}
+    : m_volume(volume),
+      m_filename(std::move(filename))
+{}
 
 QDateTime ImageMetadata::getMTime() const
 {

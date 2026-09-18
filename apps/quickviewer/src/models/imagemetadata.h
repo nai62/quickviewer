@@ -6,28 +6,14 @@
 class Volume;
 
 /**
- * @brief The ImageMetadata class
- *
- * This class holds various attributes of image files, such as file names and file sizes,
- * and provides a function to retrieve them when necessary.
+ * Attributes of one page of a volume, such as its file name, size and
+ * modification time, resolved lazily when they are asked for. Instances are
+ * copied into the volume's metadata list, so they are plain values.
  */
-class ImageMetadata : QObject
+class ImageMetadata
 {
-    Q_OBJECT
 public:
     ImageMetadata(Volume *volume, QString filename);
-    ImageMetadata(const ImageMetadata &rhs)
-    {
-        *this = rhs;
-    }
-    ImageMetadata &operator=(const ImageMetadata &rhs)
-    {
-        m_volume = rhs.m_volume;
-        m_filename = rhs.m_filename;
-        m_info = rhs.m_info;
-        m_dimension = rhs.m_dimension;
-        return *this;
-    }
 
     QString filename() const { return m_filename; }
     QDateTime getMTime() const;
