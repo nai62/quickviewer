@@ -29,40 +29,40 @@ enum class ShaderEffect {
 };
 Q_ENUM_NS(ShaderEffect)
 
-enum CatalogViewMode {
+enum class CatalogViewMode {
     List,
     Icon,
     IconNoText,
 };
 Q_ENUM_NS(CatalogViewMode)
 
-enum FolderViewSort {
+enum class FolderViewSort {
     OrderByName,
     OrderByUpdatedAt,
 };
 Q_ENUM_NS(FolderViewSort)
 
-enum ToolbarIconSize {
+enum class ToolbarIconSize {
     NormalIcon = 24,
     LargeIcon = 32,
     Large2Icon = 40,
 };
 Q_ENUM_NS(ToolbarIconSize)
 
-enum FitMode {
+enum class FitMode {
     NoFitting,
     FitToRect,
     FitToWidth
 };
 Q_ENUM_NS(FitMode)
 
-enum SvgLoaderBackend {
+enum class SvgLoaderBackend {
     Resvg,
     QtSvg,
 };
 Q_ENUM_NS(SvgLoaderBackend)
 
-enum OptionViewOnStartup {
+enum class OptionViewOnStartup {
     NoViewStartup,
     FolderStartup,
     CatalogStartup,
@@ -71,7 +71,7 @@ enum OptionViewOnStartup {
 };
 Q_ENUM_NS(OptionViewOnStartup)
 
-enum ImageSortBy {
+enum class ImageSortBy {
     SortByFileName,
     SortByFileNameDescending,
     SortByFileSize,

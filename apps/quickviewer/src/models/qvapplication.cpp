@@ -625,13 +625,13 @@ void QVApplication::saveSettings()
     m_settings->beginGroup("View");
     {
         int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("ImageSortBy");
-        QString sortByString = QString(qvEnums::staticMetaObject.enumerator(enumIdx).valueToKey(m_imageSortBy));
+        QString sortByString = QString(qvEnums::staticMetaObject.enumerator(enumIdx).valueToKey(static_cast<int>(m_imageSortBy)));
         m_settings->setValue("ImageSortBy", sortByString);
     }
     m_settings->setValue("Fitting", m_fitting);
     {
         int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("FitMode");
-        QString fitModestring = QString(qvEnums::staticMetaObject.enumerator(enumIdx).valueToKey(m_fitMode));
+        QString fitModestring = QString(qvEnums::staticMetaObject.enumerator(enumIdx).valueToKey(static_cast<int>(m_fitMode)));
         m_settings->setValue("ImageFitMode", fitModestring);
     }
     m_settings->setValue("DualView", m_dualView);
@@ -688,7 +688,7 @@ void QVApplication::saveSettings()
     {
         int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("OptionViewOnStartup");
         QString optionViewstring = QString(qvEnums::staticMetaObject.enumerator(enumIdx)
-                                               .valueToKey(m_showOptionViewOnStartup));
+                                               .valueToKey(static_cast<int>(m_showOptionViewOnStartup)));
         m_settings->setValue("ShowOptionViewOnStartup", optionViewstring);
     }
     m_settings->setValue("SlideShowOnNormalWindow", m_slideShowOnNormalWindow);
@@ -719,7 +719,7 @@ void QVApplication::saveSettings()
     m_settings->setValue("HomeFolderPath", m_homeFolderPath);
     {
         int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("FolderViewSort");
-        QString folderSortModestring = QString(qvEnums::staticMetaObject.enumerator(enumIdx).valueToKey(m_folderSortMode));
+        QString folderSortModestring = QString(qvEnums::staticMetaObject.enumerator(enumIdx).valueToKey(static_cast<int>(m_folderSortMode)));
         m_settings->setValue("FolderSortMode", folderSortModestring);
     }
     m_settings->setValue("OpenVolumeWithProgress", m_openVolumeWithProgress);
@@ -732,7 +732,7 @@ void QVApplication::saveSettings()
     m_settings->beginGroup("Catalog");
     {
         int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("CatalogViewMode");
-        QString viewModestring = QString(qvEnums::staticMetaObject.enumerator(enumIdx).valueToKey(m_catalogViewModeSetting));
+        QString viewModestring = QString(qvEnums::staticMetaObject.enumerator(enumIdx).valueToKey(static_cast<int>(m_catalogViewModeSetting)));
         m_settings->setValue("CatalogViewModeSetting", viewModestring);
     }
     m_settings->setValue("MaxSearchByCharChanged", m_maxSearchByCharChanged);

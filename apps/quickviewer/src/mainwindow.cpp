@@ -2052,8 +2052,8 @@ void MainWindow::handleLargeToolbarIconsActionTriggered(bool checked)
 {
     qApp->setLargeToolbarIcons(checked);
     ui->mainToolBar->setIconSize(
-        checked ? QSize(qvEnums::Large2Icon, qvEnums::Large2Icon)
-                : QSize(qvEnums::NormalIcon, qvEnums::NormalIcon));
+        checked ? QSize(static_cast<int>(qvEnums::Large2Icon), static_cast<int>(qvEnums::Large2Icon))
+                : QSize(static_cast<int>(qvEnums::NormalIcon), static_cast<int>(qvEnums::NormalIcon)));
     int fontsize = checked ? (int)(1.5 * m_menubarFontSize) : m_menubarFontSize;
     m_fullscreenButton->setIconSize(QSize(2 * fontsize, 2 * fontsize));
     QFont font = ui->menuBar->font();
