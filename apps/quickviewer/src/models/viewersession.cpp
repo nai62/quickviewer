@@ -324,7 +324,13 @@ bool ViewerSession::openFileInContainer(const QString &filePath, bool allowSecon
         m_allowSecondVisiblePage = allowSecondPage;
         const bool opened = openEntry(VolumeLocation{basePath, subfileName});
         m_allowSecondVisiblePage = true;
-        return opened;
+        if (opened || !QFileInfo(normalizedPath).exists()) {
+            return opened;
+        }
+        // The file exists but the cached listing does not know it yet: drop the
+        // listing and try once more.
+        invalidateVolumeCache(basePath);
+        return openEntry(VolumeLocation{basePath, subfileName});
     }
 
     m_initialImageLoadDispatcher.invalidate();
