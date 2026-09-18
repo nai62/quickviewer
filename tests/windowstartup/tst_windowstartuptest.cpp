@@ -40,6 +40,7 @@ private slots:
         qApp->setDontSavingHistory(false);
         qApp->clearHistory();
         qApp->setMaxVolumesCache(4);
+        qApp->setImageSortBy(qvEnums::SortByFileName);
     }
 
     void startupCloaking_data()
@@ -407,7 +408,7 @@ private slots:
         QVERIFY(image.open(QIODevice::WriteOnly));
         image.close();
 
-        qApp->setFolderSortMode(qvEnums::OrderByName);
+        qApp->setImageSortBy(qvEnums::SortByFileName);
         FolderWindow folder(nullptr, nullptr);
         folder.setFolderPath(directory.path(), false);
         QTreeView *view = folder.findChild<QTreeView *>(QStringLiteral("folderView"));
@@ -417,6 +418,77 @@ private slots:
         QCOMPARE(view->model()->index(0, 0).data().toString(), QStringLiteral("middle-folder"));
         QCOMPARE(view->model()->index(1, 0).data().toString(), QStringLiteral("a-first.png"));
         QCOMPARE(view->model()->index(2, 0).data().toString(), QStringLiteral("z-last.zip"));
+    }
+
+    void foldersStayFirstForEveryImageSort()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QVERIFY(QDir(directory.path()).mkdir(QStringLiteral("z-folder")));
+
+        QFile small(directory.filePath(QStringLiteral("a-small.bmp")));
+        QVERIFY(small.open(QIODevice::WriteOnly));
+        QCOMPARE(small.write(QByteArray(4, 'a')), qint64(4));
+        small.close();
+        QFile large(directory.filePath(QStringLiteral("b-large.bmp")));
+        QVERIFY(large.open(QIODevice::WriteOnly));
+        QCOMPARE(large.write(QByteArray(4096, 'b')), qint64(4096));
+        large.close();
+
+        const QList<qvEnums::ImageSortBy> sortModes{
+            qvEnums::SortByFileName,
+            qvEnums::SortByFileNameDescending,
+            qvEnums::SortByFileSize,
+            qvEnums::SortByFileSizeDescending,
+            qvEnums::SortByModifiedTime,
+            qvEnums::SortByModifiedTimeDescending,
+        };
+        for (const qvEnums::ImageSortBy sortBy : sortModes) {
+            qApp->setImageSortBy(sortBy);
+            FolderWindow folder(nullptr, nullptr);
+            folder.setFolderPath(directory.path(), false);
+            QTreeView *view = folder.findChild<QTreeView *>(QStringLiteral("folderView"));
+            QVERIFY(view);
+
+            QCOMPARE(view->model()->rowCount(), 3);
+            QCOMPARE(view->model()->index(0, 0).data().toString(), QStringLiteral("z-folder"));
+
+            if (sortBy == qvEnums::SortByFileSize) {
+                QCOMPARE(view->model()->index(1, 0).data().toString(), QStringLiteral("a-small.bmp"));
+                QCOMPARE(view->model()->index(2, 0).data().toString(), QStringLiteral("b-large.bmp"));
+            }
+            if (sortBy == qvEnums::SortByFileSizeDescending) {
+                QCOMPARE(view->model()->index(1, 0).data().toString(), QStringLiteral("b-large.bmp"));
+                QCOMPARE(view->model()->index(2, 0).data().toString(), QStringLiteral("a-small.bmp"));
+            }
+        }
+    }
+
+    void folderViewKeepsTheViewerPageOrder()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (const QString &name : {QStringLiteral("page2.bmp"), QStringLiteral("page10.bmp")}) {
+            QImage image(16, 24, QImage::Format_RGB32);
+            image.fill(Qt::white);
+            QVERIFY(image.save(directory.filePath(name)));
+        }
+
+        qApp->setImageSortBy(qvEnums::SortByFileName);
+        FolderWindow folder(nullptr, nullptr);
+        folder.setFolderPath(directory.path(), false);
+        QTreeView *view = folder.findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        QCOMPARE(view->model()->rowCount(), 2);
+        QCOMPARE(view->model()->index(0, 0).data().toString(), QStringLiteral("page2.bmp"));
+        QCOMPARE(view->model()->index(1, 0).data().toString(), QStringLiteral("page10.bmp"));
+
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(directory.path()));
+        QCOMPARE(session.pageCount(), 2);
+        QCOMPARE(session.currentPageName(), QStringLiteral("page2.bmp"));
+        QVERIFY(session.selectPage(1));
+        QCOMPARE(session.currentPageName(), QStringLiteral("page10.bmp"));
     }
 
     void separateWindowUsesSharedSavedWidthOnEnableAndExit()

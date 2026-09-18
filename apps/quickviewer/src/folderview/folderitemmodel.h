@@ -17,14 +17,17 @@ public:
     QString name;
     FileType type; // 0:folder, 1:archive
     QDateTime updated_at;
+    qint64 size;
 
     QvFolderItem()
-        : type(Dir)
+        : type(Dir),
+          size(0)
     {}
-    QvFolderItem(QString n, FileType t, QDateTime u)
+    QvFolderItem(QString n, FileType t, QDateTime u, qint64 s = 0)
         : name(n),
           type(t),
-          updated_at(u)
+          updated_at(u),
+          size(s)
     {}
 };
 

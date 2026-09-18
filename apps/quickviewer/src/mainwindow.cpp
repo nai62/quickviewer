@@ -1098,6 +1098,7 @@ void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
         }
         connect(m_folderWindow, SIGNAL(closed()), this, SLOT(handleFolderWindowClosed()));
         connect(m_folderWindow, &FolderWindow::openVolume, this, &MainWindow::handleFolderWindowOpenVolume);
+        connect(m_folderWindow, &FolderWindow::sortModeRequested, this, &MainWindow::applyImageSortBy);
         if (!replaceStartupPanelPlaceholder(m_folderWindow)) {
             ui->catalogSplitter->insertWidget(0, m_folderWindow);
         }
@@ -1123,6 +1124,7 @@ void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
         }
         connect(m_folderWindow, SIGNAL(closed()), this, SLOT(handleFolderWindowClosed()));
         connect(m_folderWindow, &FolderWindow::openVolume, this, &MainWindow::handleFolderWindowOpenVolume);
+        connect(m_folderWindow, &FolderWindow::sortModeRequested, this, &MainWindow::applyImageSortBy);
         m_folderWindow->show();
     }
     updateFolderViewCurrentItem();
@@ -2359,66 +2361,64 @@ void MainWindow::handleLoadBookmarkMenuTriggered(QAction *action)
 
 void MainWindow::handleSortByFileNameActionTriggered()
 {
-    uncheckAllSortByMenus();
-    ui->actionSortByFileName->setChecked(true);
-    if (qApp->ImageSortBy() == qvEnums::SortByFileName) {
-        return;
-    }
-    qApp->setImageSortBy(qvEnums::SortByFileName);
-    m_viewerSession.sortActiveVolumePages(qvEnums::SortByFileName);
+    applyImageSortBy(qvEnums::SortByFileName);
 }
 
 void MainWindow::handleSortByFileNameDescendingActionTriggered()
 {
-    uncheckAllSortByMenus();
-    ui->actionSortByFileNameDescending->setChecked(true);
-    if (qApp->ImageSortBy() == qvEnums::SortByFileNameDescending) {
-        return;
-    }
-    qApp->setImageSortBy(qvEnums::SortByFileNameDescending);
-    m_viewerSession.sortActiveVolumePages(qvEnums::SortByFileNameDescending);
+    applyImageSortBy(qvEnums::SortByFileNameDescending);
 }
 
 void MainWindow::handleSortByFileSizeActionTriggered()
 {
-    uncheckAllSortByMenus();
-    ui->actionSortByFileSize->setChecked(true);
-    if (qApp->ImageSortBy() == qvEnums::SortByFileSize) {
-        return;
-    }
-    qApp->setImageSortBy(qvEnums::SortByFileSize);
-    m_viewerSession.sortActiveVolumePages(qvEnums::SortByFileSize);
+    applyImageSortBy(qvEnums::SortByFileSize);
 }
 
 void MainWindow::handleSortByFileSizeDescendingActionTriggered()
 {
-    uncheckAllSortByMenus();
-    ui->actionSortByFileSizeDescending->setChecked(true);
-    if (qApp->ImageSortBy() == qvEnums::SortByFileSizeDescending) {
-        return;
-    }
-    qApp->setImageSortBy(qvEnums::SortByFileSizeDescending);
-    m_viewerSession.sortActiveVolumePages(qvEnums::SortByFileSizeDescending);
+    applyImageSortBy(qvEnums::SortByFileSizeDescending);
 }
 
 void MainWindow::handleSortByModifiedTimeActionTriggered()
 {
-    uncheckAllSortByMenus();
-    ui->actionSortByModifiedTime->setChecked(true);
-    if (qApp->ImageSortBy() == qvEnums::SortByModifiedTime) {
-        return;
-    }
-    qApp->setImageSortBy(qvEnums::SortByModifiedTime);
-    m_viewerSession.sortActiveVolumePages(qvEnums::SortByModifiedTime);
+    applyImageSortBy(qvEnums::SortByModifiedTime);
 }
 
 void MainWindow::handleSortByModifiedTimeDescendingActionTriggered()
 {
+    applyImageSortBy(qvEnums::SortByModifiedTimeDescending);
+}
+
+void MainWindow::applyImageSortBy(qvEnums::ImageSortBy sortBy)
+{
     uncheckAllSortByMenus();
-    ui->actionSortByModifiedTimeDescending->setChecked(true);
-    if (qApp->ImageSortBy() == qvEnums::SortByModifiedTimeDescending) {
+    switch (sortBy) {
+    case qvEnums::SortByFileName:
+        ui->actionSortByFileName->setChecked(true);
+        break;
+    case qvEnums::SortByFileNameDescending:
+        ui->actionSortByFileNameDescending->setChecked(true);
+        break;
+    case qvEnums::SortByFileSize:
+        ui->actionSortByFileSize->setChecked(true);
+        break;
+    case qvEnums::SortByFileSizeDescending:
+        ui->actionSortByFileSizeDescending->setChecked(true);
+        break;
+    case qvEnums::SortByModifiedTime:
+        ui->actionSortByModifiedTime->setChecked(true);
+        break;
+    case qvEnums::SortByModifiedTimeDescending:
+        ui->actionSortByModifiedTimeDescending->setChecked(true);
+        break;
+    }
+    if (qApp->ImageSortBy() == sortBy) {
         return;
     }
-    qApp->setImageSortBy(qvEnums::SortByModifiedTimeDescending);
-    m_viewerSession.sortActiveVolumePages(qvEnums::SortByModifiedTimeDescending);
+    qApp->setImageSortBy(sortBy);
+    m_viewerSession.sortActiveVolumePages(sortBy);
+    if (m_folderWindow) {
+        m_folderWindow->resetSortMode();
+        m_folderWindow->resortVolumes();
+    }
 }

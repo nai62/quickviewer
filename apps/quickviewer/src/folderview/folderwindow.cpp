@@ -1,4 +1,5 @@
 #include <QtWidgets>
+#include <QCollator>
 
 #include "ui_folderwindow.h"
 #include "ui_mainwindow.h"
@@ -56,6 +57,7 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
     m_sortModeMenu = ui->menuSort;
     ui->menuBar->removeAction(ui->menuItemContext->menuAction());
     m_itemContextMenu = ui->menuItemContext;
+    m_uiMain = uiMain;
 
     StartupProfiler::mark("folder-window.history-button.begin");
     setupHistoryButton(uiMain);
@@ -210,28 +212,63 @@ void FolderWindow::resizeEvent(QResizeEvent *event)
     }
 }
 
-static bool filenameLessThan(const QvFolderItem &lhs, const QvFolderItem &rhs)
+namespace {
+
+// The panel mirrors the order of the viewer pages, so names use the same
+// natural collation as Volume::applyPageSort().
+bool nameLessThan(const QString &lhs, const QString &rhs)
 {
-    const bool lhsIsDirectory = lhs.type == QvFolderItem::Dir;
-    const bool rhsIsDirectory = rhs.type == QvFolderItem::Dir;
-    if (lhsIsDirectory != rhsIsDirectory) {
-        return lhsIsDirectory;
-    }
-    return IFileLoader::caseInsensitiveLessThan(lhs.name, rhs.name);
+    static const QCollator collator = [] {
+        QCollator result;
+        result.setNumericMode(true);
+        return result;
+    }();
+    return collator.compare(lhs, rhs) < 0;
 }
 
-static bool updatedAtGreaterThan(const QvFolderItem &lhs, const QvFolderItem &rhs)
+bool sortDescending(qvEnums::ImageSortBy sortBy)
 {
-    if (lhs.updated_at != rhs.updated_at) {
-        return lhs.updated_at > rhs.updated_at;
-    }
-    if (lhs.type != rhs.type) {
-        return lhs.type < rhs.type;
-    }
-    return IFileLoader::caseInsensitiveLessThan(lhs.name, rhs.name);
+    return sortBy == qvEnums::SortByFileNameDescending || sortBy == qvEnums::SortByFileSizeDescending || sortBy == qvEnums::SortByModifiedTimeDescending;
 }
 
-//IFileLoader::caseInsensitiveLessThan
+bool sortByModifiedTime(qvEnums::ImageSortBy sortBy)
+{
+    return sortBy == qvEnums::SortByModifiedTime || sortBy == qvEnums::SortByModifiedTimeDescending;
+}
+
+bool sortByFileSize(qvEnums::ImageSortBy sortBy)
+{
+    return sortBy == qvEnums::SortByFileSize || sortBy == qvEnums::SortByFileSizeDescending;
+}
+
+// Orders two entries of the same group (folders, or files) with the key of the
+// viewer's image sort. Folders carry no size, so size sorts fall back to the
+// name for them.
+bool sortKeyLessThan(const QvFolderItem &lhs, const QvFolderItem &rhs, qvEnums::ImageSortBy sortBy)
+{
+    const bool descending = sortDescending(sortBy);
+    if (sortByModifiedTime(sortBy) && lhs.updated_at != rhs.updated_at) {
+        return descending ? lhs.updated_at > rhs.updated_at : lhs.updated_at < rhs.updated_at;
+    }
+    if (sortByFileSize(sortBy) && lhs.size != rhs.size) {
+        return descending ? lhs.size > rhs.size : lhs.size < rhs.size;
+    }
+    return descending ? nameLessThan(rhs.name, lhs.name) : nameLessThan(lhs.name, rhs.name);
+}
+
+bool folderViewLessThan(const QvFolderItem &lhs, const QvFolderItem &rhs, qvEnums::ImageSortBy sortBy)
+{
+    // Folders are navigator entries, not pages of the viewer, so they stay above
+    // the files in every sort mode.
+    const bool lhsIsFolder = lhs.type == QvFolderItem::Dir;
+    const bool rhsIsFolder = rhs.type == QvFolderItem::Dir;
+    if (lhsIsFolder != rhsIsFolder) {
+        return lhsIsFolder;
+    }
+    return sortKeyLessThan(lhs, rhs, sortBy);
+}
+
+} // namespace
 
 void FolderWindow::setFolderPath(QString path, bool showParent)
 {
@@ -285,15 +322,10 @@ void FolderWindow::setFolderPath(QString path, bool showParent)
                 }
                 QFileInfo fi(dir.absoluteFilePath(name));
                 const QvFolderItem::FileType type = isArchive ? QvFolderItem::Archive : QvFolderItem::Image;
-                m_volumes << QvFolderItem(name, type, fi.lastModified());
+                m_volumes << QvFolderItem(name, type, fi.lastModified(), fi.size());
             }
         }
-        qvEnums::FolderViewSort sortmode = qApp->FolderSortMode();
-        if (sortmode == qvEnums::OrderByName) {
-            std::sort(m_volumes.begin(), m_volumes.end(), filenameLessThan);
-        } else {
-            std::sort(m_volumes.begin(), m_volumes.end(), updatedAtGreaterThan);
-        }
+        sortVolumes();
     }
 
     if (m_volumes.empty()) {
@@ -312,18 +344,60 @@ void FolderWindow::reset()
     m_itemModel.setVolumes(&m_volumes);
 }
 
+void FolderWindow::resortVolumes()
+{
+    sortVolumes();
+    m_itemModel.setVolumes(&m_volumes);
+    updateCurrentVolumeRow();
+}
+
+void FolderWindow::sortVolumes()
+{
+    // The panel uses the viewer's image sort so that its image rows keep the
+    // page order. With "show subfolders" the viewer spans subdirectories that
+    // this one-level list does not contain, so the orders only match for the
+    // folder's own images.
+    const qvEnums::ImageSortBy sortBy = qApp->ImageSortBy();
+    std::sort(m_volumes.begin(), m_volumes.end(), [sortBy](const QvFolderItem &lhs, const QvFolderItem &rhs) {
+        return folderViewLessThan(lhs, rhs, sortBy);
+    });
+}
+
 void FolderWindow::resetSortMode()
 {
     ui->actionOrderByName->setText(tr("Name"));
     ui->actionOrderByUpdatedAt->setText(tr("Modified"));
 
-    qvEnums::FolderViewSort sortMode = qApp->FolderSortMode();
-    ui->actionOrderByName->setChecked(sortMode == qvEnums::OrderByName);
-    ui->actionOrderByUpdatedAt->setChecked(sortMode == qvEnums::OrderByUpdatedAt);
-    ui->sortModeButton->setText((sortMode == qvEnums::OrderByName
-                                     ? ui->actionOrderByName->text()
-                                     : ui->actionOrderByUpdatedAt->text()) +
-                                QStringLiteral(" ▾"));
+    // The panel follows the viewer, so the sort mode is the image sort mode.
+    const qvEnums::ImageSortBy sortBy = qApp->ImageSortBy();
+    ui->actionOrderByName->setChecked(sortBy == qvEnums::SortByFileName || sortBy == qvEnums::SortByFileNameDescending);
+    ui->actionOrderByUpdatedAt->setChecked(sortBy == qvEnums::SortByModifiedTime || sortBy == qvEnums::SortByModifiedTimeDescending);
+    ui->sortModeButton->setText(sortModeText() + QStringLiteral(" ▾"));
+}
+
+QString FolderWindow::sortModeText() const
+{
+    if (m_uiMain) {
+        switch (qApp->ImageSortBy()) {
+        case qvEnums::SortByFileName:
+            return m_uiMain->actionSortByFileName->text();
+        case qvEnums::SortByFileNameDescending:
+            return m_uiMain->actionSortByFileNameDescending->text();
+        case qvEnums::SortByFileSize:
+            return m_uiMain->actionSortByFileSize->text();
+        case qvEnums::SortByFileSizeDescending:
+            return m_uiMain->actionSortByFileSizeDescending->text();
+        case qvEnums::SortByModifiedTime:
+            return m_uiMain->actionSortByModifiedTime->text();
+        case qvEnums::SortByModifiedTimeDescending:
+            return m_uiMain->actionSortByModifiedTimeDescending->text();
+        }
+    }
+    // The panel is also built without a main window (tests), where only the two
+    // shortcut labels are available.
+    return qApp->ImageSortBy() == qvEnums::SortByModifiedTime || qApp->ImageSortBy() == qvEnums::SortByModifiedTimeDescending
+               ? ui->actionOrderByUpdatedAt->text()
+               : ui->actionOrderByName->text();
 }
 
 void FolderWindow::resetPathLabel(int)
@@ -473,16 +547,13 @@ void FolderWindow::handleSortModeButtonClicked()
 
 void FolderWindow::handleOrderByNameActionTriggered()
 {
-    qApp->setFolderSortMode(qvEnums::OrderByName);
-    resetSortMode();
-    handleReloadButtonClicked();
+    emit sortModeRequested(qvEnums::SortByFileName);
 }
 
 void FolderWindow::handleOrderByUpdatedAtActionTriggered()
 {
-    qApp->setFolderSortMode(qvEnums::OrderByUpdatedAt);
-    resetSortMode();
-    handleReloadButtonClicked();
+    // The panel has always shown the newest entries first for this mode.
+    emit sortModeRequested(qvEnums::SortByModifiedTimeDescending);
 }
 
 void FolderWindow::closeEvent(QCloseEvent *e)

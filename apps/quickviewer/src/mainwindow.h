@@ -232,6 +232,7 @@ private:
 
     void setStatusMessage(StatusMessage message);
     void syncPageBar();
+    void applyImageSortBy(qvEnums::ImageSortBy sortBy);
     void openResolvedTarget(const OpenTarget &target, bool allowSecondPage);
     void openStoredPath(const QString &storedPath, bool allowSecondPage = false);
     void saveVisibleFolderViewWidth();
