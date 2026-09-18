@@ -48,7 +48,7 @@ QVariant FolderItemModel::data(const QModelIndex &index, int role) const
     if (!m_searchedVolumes) {
         return QVariant();
     }
-    const QvFolderItem &fi = m_searchedVolumes->at(row);
+    const FolderItem &fi = m_searchedVolumes->at(row);
     switch (role) {
     case Qt::DisplayRole:
         switch (column) {
@@ -61,13 +61,13 @@ QVariant FolderItemModel::data(const QModelIndex &index, int role) const
     case Qt::DecorationRole:
         if (column == 0) {
             switch (fi.type) {
-            case QvFolderItem::Dir:
+            case FolderItem::Dir:
                 return m_folderIcon;
-            case QvFolderItem::Archive:
+            case FolderItem::Archive:
                 return m_archiveIcon;
-            case QvFolderItem::Image:
+            case FolderItem::Image:
                 return m_imageIcon;
-            case QvFolderItem::NoItems:
+            case FolderItem::NoItems:
                 break;
             }
         }
@@ -104,7 +104,7 @@ QModelIndex FolderItemModel::parent(const QModelIndex &) const
     return QModelIndex();
 }
 
-void FolderItemModel::setVolumes(QList<QvFolderItem> *volumes)
+void FolderItemModel::setVolumes(QList<FolderItem> *volumes)
 {
     if (!volumes) {
         return;

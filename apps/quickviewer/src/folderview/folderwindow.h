@@ -68,7 +68,7 @@ private:
     QToolButton *m_historyButton;
     QString m_currentPath;
     QString m_currentVolumePath;
-    QList<QvFolderItem> m_volumes;
+    QList<FolderItem> m_volumes;
     FolderItemModel m_itemModel;
     FolderItemDelegate m_itemDelegate;
 };

@@ -78,7 +78,7 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
         m_historyButton->setText(tr("History"));
         m_historyButton->setToolTip(tr("Open history"));
         resetSortMode();
-        if (m_volumes.size() == 1 && m_volumes.first().type == QvFolderItem::NoItems) {
+        if (m_volumes.size() == 1 && m_volumes.first().type == FolderItem::NoItems) {
             m_volumes.first().name = tr("No folders or archives found.", "Display when there is no display item in Folder Window");
             m_itemModel.setVolumes(&m_volumes);
         }
@@ -173,7 +173,7 @@ void FolderWindow::handleSetAsHomeFolderActionTriggered()
     if (row < 0 || row >= m_volumes.size()) {
         return;
     }
-    const QvFolderItem &item = m_volumes[row];
+    const FolderItem &item = m_volumes[row];
     QDir dir(m_currentPath);
     qApp->setHomeFolderPath(dir.filePath(item.name));
 }
@@ -244,7 +244,7 @@ bool sortByFileSize(qvEnums::ImageSortBy sortBy)
 // Orders two entries of the same group (folders, or files) with the key of the
 // viewer's image sort. Folders carry no size, so size sorts fall back to the
 // name for them.
-bool sortKeyLessThan(const QvFolderItem &lhs, const QvFolderItem &rhs, qvEnums::ImageSortBy sortBy)
+bool sortKeyLessThan(const FolderItem &lhs, const FolderItem &rhs, qvEnums::ImageSortBy sortBy)
 {
     const bool descending = sortDescending(sortBy);
     if (sortByModifiedTime(sortBy) && lhs.updated_at != rhs.updated_at) {
@@ -256,12 +256,12 @@ bool sortKeyLessThan(const QvFolderItem &lhs, const QvFolderItem &rhs, qvEnums::
     return descending ? nameLessThan(rhs.name, lhs.name) : nameLessThan(lhs.name, rhs.name);
 }
 
-bool folderViewLessThan(const QvFolderItem &lhs, const QvFolderItem &rhs, qvEnums::ImageSortBy sortBy)
+bool folderViewLessThan(const FolderItem &lhs, const FolderItem &rhs, qvEnums::ImageSortBy sortBy)
 {
     // Folders are navigator entries, not pages of the viewer, so they stay above
     // the files in every sort mode.
-    const bool lhsIsFolder = lhs.type == QvFolderItem::Dir;
-    const bool rhsIsFolder = rhs.type == QvFolderItem::Dir;
+    const bool lhsIsFolder = lhs.type == FolderItem::Dir;
+    const bool rhsIsFolder = rhs.type == FolderItem::Dir;
     if (lhsIsFolder != rhsIsFolder) {
         return lhsIsFolder;
     }
@@ -279,7 +279,7 @@ void FolderWindow::setFolderPath(QString path, bool showParent)
             m_currentPath = "";
             QList<QFileInfo> drives = QDir::drives();
             foreach (QFileInfo drive, drives) {
-                m_volumes << QvFolderItem(drive.absoluteFilePath(), QvFolderItem::Dir, drive.lastModified());
+                m_volumes << FolderItem(drive.absoluteFilePath(), FolderItem::Dir, drive.lastModified());
             }
         }
     } else
@@ -309,7 +309,7 @@ void FolderWindow::setFolderPath(QString path, bool showParent)
             QStringList subfolders = dir.entryList(QDir::NoDotAndDotDot | QDir::Dirs, QDir::Unsorted);
             foreach (const QString &sf, subfolders) {
                 QFileInfo fi(dir.absoluteFilePath(sf));
-                m_volumes << QvFolderItem(sf, QvFolderItem::Dir, fi.lastModified());
+                m_volumes << FolderItem(sf, FolderItem::Dir, fi.lastModified());
             }
         }
 
@@ -321,15 +321,15 @@ void FolderWindow::setFolderPath(QString path, bool showParent)
                     continue;
                 }
                 QFileInfo fi(dir.absoluteFilePath(name));
-                const QvFolderItem::FileType type = isArchive ? QvFolderItem::Archive : QvFolderItem::Image;
-                m_volumes << QvFolderItem(name, type, fi.lastModified(), fi.size());
+                const FolderItem::FileType type = isArchive ? FolderItem::Archive : FolderItem::Image;
+                m_volumes << FolderItem(name, type, fi.lastModified(), fi.size());
             }
         }
         sortVolumes();
     }
 
     if (m_volumes.empty()) {
-        m_volumes << QvFolderItem(tr("No folders or archives found.", "Display when there is no display item in Folder Window"), QvFolderItem::NoItems, QDateTime());
+        m_volumes << FolderItem(tr("No folders or archives found.", "Display when there is no display item in Folder Window"), FolderItem::NoItems, QDateTime());
     }
     m_itemModel.setVolumes(&m_volumes);
     updateCurrentVolumeRow();
@@ -358,7 +358,7 @@ void FolderWindow::sortVolumes()
     // this one-level list does not contain, so the orders only match for the
     // folder's own images.
     const qvEnums::ImageSortBy sortBy = qApp->ImageSortBy();
-    std::sort(m_volumes.begin(), m_volumes.end(), [sortBy](const QvFolderItem &lhs, const QvFolderItem &rhs) {
+    std::sort(m_volumes.begin(), m_volumes.end(), [sortBy](const FolderItem &lhs, const FolderItem &rhs) {
         return folderViewLessThan(lhs, rhs, sortBy);
     });
 }
@@ -497,7 +497,7 @@ void FolderWindow::handleViewerSessionVolumeChanged(QString path)
     }
     QString name = info.fileName();
     int row = -1;
-    foreach (const QvFolderItem &item, m_volumes) {
+    foreach (const FolderItem &item, m_volumes) {
         row++;
         if (name != item.name) {
             continue;
@@ -517,14 +517,14 @@ void FolderWindow::openFolderItem(const QModelIndex &index)
         return;
     }
 
-    const QvFolderItem &item = m_volumes[row];
-    if (item.type == QvFolderItem::NoItems) {
+    const FolderItem &item = m_volumes[row];
+    if (item.type == FolderItem::NoItems) {
         return;
     }
 
     const QString subpath = itemPath(index);
-    emit openVolume(item.type == QvFolderItem::Image ? OpenTarget::fileInContainer(subpath)
-                                                     : OpenTarget::container(subpath));
+    emit openVolume(item.type == FolderItem::Image ? OpenTarget::fileInContainer(subpath)
+                                                   : OpenTarget::container(subpath));
 }
 
 void FolderWindow::handleFolderViewItemSelected(const QModelIndex &index)

@@ -173,6 +173,7 @@ HEADERS  += \
     src/catalog/volumeitemmodel.h \
     src/exifdialog.h \
     src/folderview/folderitemdelegate.h \
+    src/folderview/folderitem.h \
     src/folderview/folderitemmodel.h \
     src/folderview/foldertreeview.h \
     src/folderview/folderwindow.h \
