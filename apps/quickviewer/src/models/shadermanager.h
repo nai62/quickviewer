@@ -34,7 +34,7 @@ public:
     static QString shaderEffectToString(qvEnums::ShaderEffect effect)
     {
         QMetaEnum metaEnum = QMetaEnum::fromType<qvEnums::ShaderEffect>();
-        return metaEnum.valueToKey(effect);
+        return metaEnum.valueToKey(static_cast<int>(effect));
     }
     static qvEnums::ShaderEffect stringToShaderEffect(QString effect)
     {

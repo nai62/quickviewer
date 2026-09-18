@@ -11,7 +11,7 @@
 namespace qvEnums {
 Q_NAMESPACE
 
-enum ShaderEffect {
+enum class ShaderEffect {
     UnPrepared,
     CpuBicubic,
     CpuSpline16,
