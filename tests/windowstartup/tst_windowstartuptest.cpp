@@ -395,6 +395,21 @@ private slots:
         QCOMPARE(buttonFrame->layout()->spacing(), 2);
     }
 
+    void reloadButtonRequestsAContainerReload()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+
+        FolderWindow folder(nullptr, nullptr);
+        folder.setFolderPath(directory.path(), false);
+        QSignalSpy reloadSpy(&folder, &FolderWindow::reloadRequested);
+
+        folder.handleReloadButtonClicked();
+
+        QCOMPARE(reloadSpy.size(), 1);
+        QCOMPARE(reloadSpy.first().first().toString(), folder.currentPath());
+    }
+
     void nameSortKeepsArchivesAndImagesInOneFileGroup()
     {
         QTemporaryDir directory;

@@ -49,6 +49,7 @@ public slots:
 signals:
     void openVolume(const OpenTarget &target);
     void sortModeRequested(qvEnums::ImageSortBy sortBy);
+    void reloadRequested(const QString &containerPath);
     void closed();
 
 protected:

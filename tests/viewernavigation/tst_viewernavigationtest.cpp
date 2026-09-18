@@ -320,6 +320,34 @@ private slots:
         QCOMPARE(spreadSession.visiblePageCount(), 2);
     }
 
+    void reloadingAContainerRereadsItsPages()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 2; ++page) {
+            QImage image(16, 24, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 40, 255, 255));
+            QVERIFY(image.save(directory.filePath(QString("page-%1.bmp").arg(page))));
+        }
+
+        qApp->setImageSortBy(qvEnums::SortByFileName);
+        qApp->setDualView(false);
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(directory.path()));
+        QCOMPARE(session.pageCount(), 2);
+        QVERIFY(session.selectPage(1));
+
+        // A file appears while the volume is open.
+        QImage added(16, 24, QImage::Format_RGB32);
+        added.fill(Qt::green);
+        QVERIFY(added.save(directory.filePath(QStringLiteral("page-2.bmp"))));
+
+        session.reloadContainer(directory.path());
+
+        QCOMPARE(session.pageCount(), 3);
+        QCOMPARE(session.currentPageName(), QStringLiteral("page-1.bmp"));
+    }
+
     void openingFileAddedAfterTheListingScansAgain()
     {
         QTemporaryDir directory;

@@ -112,6 +112,7 @@ public slots:
     void handleShowFolderActionTriggered();
     void handleFolderWindowClosed();
     void handleFolderWindowOpenVolume(const OpenTarget &target);
+    void handleFolderWindowReloadRequested(const QString &containerPath);
     void handleOpenVolumeWithProgressActionTriggered(bool checked);
     void handleShowReadProgressActionTriggered(bool checked);
     void handleSaveReadProgressActionTriggered(bool checked);

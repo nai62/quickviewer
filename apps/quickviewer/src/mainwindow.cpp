@@ -1063,6 +1063,11 @@ void MainWindow::handleFolderWindowOpenVolume(const OpenTarget &target)
     openTarget(target);
 }
 
+void MainWindow::handleFolderWindowReloadRequested(const QString &containerPath)
+{
+    m_viewerSession.reloadContainer(containerPath);
+}
+
 void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
 {
     const bool deferFolderLoad = deferLoad || m_viewerSession.initialImagePaintPending();
@@ -1101,6 +1106,7 @@ void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
         connect(m_folderWindow, SIGNAL(closed()), this, SLOT(handleFolderWindowClosed()));
         connect(m_folderWindow, &FolderWindow::openVolume, this, &MainWindow::handleFolderWindowOpenVolume);
         connect(m_folderWindow, &FolderWindow::sortModeRequested, this, &MainWindow::applyImageSortBy);
+        connect(m_folderWindow, &FolderWindow::reloadRequested, this, &MainWindow::handleFolderWindowReloadRequested);
         if (!replaceStartupPanelPlaceholder(m_folderWindow)) {
             ui->catalogSplitter->insertWidget(0, m_folderWindow);
         }
@@ -1127,6 +1133,7 @@ void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
         connect(m_folderWindow, SIGNAL(closed()), this, SLOT(handleFolderWindowClosed()));
         connect(m_folderWindow, &FolderWindow::openVolume, this, &MainWindow::handleFolderWindowOpenVolume);
         connect(m_folderWindow, &FolderWindow::sortModeRequested, this, &MainWindow::applyImageSortBy);
+        connect(m_folderWindow, &FolderWindow::reloadRequested, this, &MainWindow::handleFolderWindowReloadRequested);
         m_folderWindow->show();
     }
     updateFolderViewCurrentItem();

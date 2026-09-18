@@ -482,6 +482,7 @@ void FolderWindow::handleReloadButtonClicked()
         return;
     }
     setFolderPath(m_currentPath, false);
+    emit reloadRequested(m_currentPath);
 }
 
 void FolderWindow::handleViewerSessionVolumeChanged(QString path)

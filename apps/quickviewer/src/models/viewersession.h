@@ -53,6 +53,12 @@ public:
      * Drops the cached listing of a container whose contents changed on disk.
      */
     void invalidateVolumeCache(const QString &containerPath);
+    /**
+     * Re-reads the container: the cached listing is dropped and, when the
+     * active volume comes from that container, the volume is loaded again on
+     * the page that is displayed now.
+     */
+    void reloadContainer(const QString &containerPath);
 
     // Pages
     bool advanceSpread();

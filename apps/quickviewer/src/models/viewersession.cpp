@@ -705,6 +705,22 @@ void ViewerSession::invalidateVolumeCache(const QString &containerPath)
     m_volumeCache.invalidate(volumeCacheKey(QDir::fromNativeSeparators(containerPath)));
 }
 
+void ViewerSession::reloadContainer(const QString &containerPath)
+{
+    const QString path = QDir::fromNativeSeparators(containerPath);
+    invalidateVolumeCache(path);
+
+    Volume *volume = activeVolume();
+    if (!volume || volume->isArchive() || QDir::fromNativeSeparators(volume->volumePath()) != path) {
+        return;
+    }
+    const QString pageName = currentPageName();
+    if (pageName.isEmpty()) {
+        return;
+    }
+    openEntry(VolumeLocation{path, pageName});
+}
+
 CachedVolumeLoadResult ViewerSession::loadCachedVolume(const VolumeLocation &location, bool onlyCover)
 {
     const VolumeCacheKey key = volumeCacheKey(location.containerPath);
