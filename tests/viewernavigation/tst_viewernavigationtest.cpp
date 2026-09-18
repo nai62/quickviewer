@@ -384,6 +384,79 @@ private slots:
                      QDir(folder).absoluteFilePath(QStringLiteral("page.jpg"))));
     }
 
+    void removingDisplayedPageOpensItsNeighbour()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 3; ++page) {
+            QImage image(16, 24, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 40, 255, 255));
+            QVERIFY(image.save(directory.filePath(QString("page-%1.bmp").arg(page))));
+        }
+
+        qApp->setOpenVolumeWithProgress(false);
+        qApp->setDualView(false);
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(directory.path()));
+        QVERIFY(session.selectPage(1));
+        QCOMPARE(session.currentPageName(), QString("page-1.bmp"));
+
+        QVERIFY(QFile::remove(directory.filePath(QString("page-1.bmp"))));
+        session.reloadVolumeAfterImageRemoval();
+
+        QCOMPARE(session.pageCount(), 2);
+        QCOMPARE(session.stateKind(), ViewerStateKind::VolumeReady);
+        QCOMPARE(session.currentPageName(), QString("page-2.bmp"));
+    }
+
+    void removingLastDisplayedPageOpensPreviousOne()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 3; ++page) {
+            QImage image(16, 24, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 40, 255, 255));
+            QVERIFY(image.save(directory.filePath(QString("page-%1.bmp").arg(page))));
+        }
+
+        qApp->setOpenVolumeWithProgress(false);
+        qApp->setDualView(false);
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(directory.path()));
+        QVERIFY(session.lastPage());
+        QCOMPARE(session.currentPageName(), QString("page-2.bmp"));
+
+        QVERIFY(QFile::remove(directory.filePath(QString("page-2.bmp"))));
+        session.reloadVolumeAfterImageRemoval();
+
+        QCOMPARE(session.pageCount(), 2);
+        QCOMPARE(session.stateKind(), ViewerStateKind::VolumeReady);
+        QCOMPARE(session.currentPageName(), QString("page-1.bmp"));
+    }
+
+    void removingOnlyPageLeavesEmptyViewer()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const QString imagePath = directory.filePath(QStringLiteral("only.bmp"));
+        QImage image(16, 24, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        QVERIFY(image.save(imagePath));
+
+        qApp->setOpenVolumeWithProgress(false);
+        qApp->setDualView(false);
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(directory.path()));
+        QCOMPARE(session.pageCount(), 1);
+
+        QVERIFY(QFile::remove(imagePath));
+        session.reloadVolumeAfterImageRemoval();
+
+        QCOMPARE(session.stateKind(), ViewerStateKind::Empty);
+        QCOMPARE(session.pageCount(), 0);
+        QCOMPARE(session.currentPagePath(), QString());
+    }
+
     void visiblePagesAreReadOnlySnapshots()
     {
         ViewerSession session(nullptr);

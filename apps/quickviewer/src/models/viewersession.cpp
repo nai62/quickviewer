@@ -676,15 +676,21 @@ void ViewerSession::reloadVolumeAfterImageRemoval()
     }
     clearVisiblePages();
     const QString volumePath = QDir::fromNativeSeparators(volume->volumePath());
-    VolumeLocation removedLocation;
-    if (volume->pageCount() > 1) {
-        removedLocation = {volumePath, volume->pageNameAt(m_pageNavigator.currentPageIndex())};
+    // The displayed page no longer exists, so the reload has to target the page
+    // that takes its place: the next one, or the previous one at the end.
+    VolumeLocation nextLocation;
+    if (!volume->isArchive() && volume->pageCount() > 1) {
+        const int currentPageIndex = m_pageNavigator.currentPageIndex();
+        const int nextPageIndex =
+            volume->pageCount() - 1 == currentPageIndex ? currentPageIndex - 1
+                                                        : currentPageIndex + 1;
+        nextLocation = {volumePath, volume->pageNameAt(nextPageIndex)};
     }
     m_volumeCache.invalidate(volumeCacheKey(volumePath));
     m_savedPagePositions.remove(volume);
     m_state = EmptyViewerState{};
-    if (!removedLocation.isContainer()) {
-        openEntry(removedLocation);
+    if (!nextLocation.isContainer()) {
+        openEntry(nextLocation);
     }
 }
 
