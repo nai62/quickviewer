@@ -195,11 +195,11 @@ working installation at <k.kanryu@gmail.com>.
 Your feedback is always welcome at KATO Kanryu <<k.kanryu@gmail.com>>.
 
 
-## Project Source Code Repository
+## Development
 
-https://github.com/kanryu/quickviewer
+Source code: https://github.com/kanryu/quickviewer
 
-To build from the source code, visit: [developer/HowToBuild.md](developer/HowToBuild.md).
+Setup, build, test, and tooling documentation: [developer/README.md](developer/README.md).
 
 
 ## License
