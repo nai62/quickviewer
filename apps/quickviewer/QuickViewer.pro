@@ -149,6 +149,7 @@ SOURCES += \
     src/models/qvmovie.cpp \
     src/models/volume.cpp \
     src/models/volumeloader.cpp \
+    src/models/volumelocation.cpp \
     src/qactionmanager/keyconfigdialog.cpp \
     src/qactionmanager/mouseconfigdialog.cpp \
     src/qactionmanager/qactionmanager.cpp \
@@ -214,6 +215,7 @@ HEADERS  += \
     src/models/qvmovie.h \
     src/models/volume.h \
     src/models/volumeloader.h \
+    src/models/volumelocation.h \
     src/qactionmanager/keyconfigdialog.h \
     src/qactionmanager/mouseconfigdialog.h \
     src/qactionmanager/qactionmanager.h \

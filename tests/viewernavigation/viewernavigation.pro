@@ -55,6 +55,7 @@ SOURCES += \
     ../../apps/quickviewer/src/models/volumehandle.cpp \
     ../../apps/quickviewer/src/models/volume.cpp \
     ../../apps/quickviewer/src/models/volumeloader.cpp \
+    ../../apps/quickviewer/src/models/volumelocation.cpp \
     ../../apps/quickviewer/src/qactionmanager/keyconfigdialog.cpp \
     ../../apps/quickviewer/src/qactionmanager/mouseconfigdialog.cpp \
     ../../apps/quickviewer/src/qactionmanager/qactionmanager.cpp \
@@ -93,6 +94,7 @@ HEADERS += \
     ../../apps/quickviewer/src/models/viewerstate.h \
     ../../apps/quickviewer/src/models/volume.h \
     ../../apps/quickviewer/src/models/volumeloader.h \
+    ../../apps/quickviewer/src/models/volumelocation.h \
     ../../apps/quickviewer/src/qactionmanager/keyconfigdialog.h \
     ../../apps/quickviewer/src/qactionmanager/mouseconfigdialog.h \
     ../../apps/quickviewer/src/qactionmanager/qactionmanager.h \
