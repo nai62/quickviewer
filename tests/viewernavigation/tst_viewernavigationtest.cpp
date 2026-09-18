@@ -718,7 +718,7 @@ private slots:
 
     void storedVolumeLocationHandlesNamesWithTheSeparator()
     {
-        const QString folder = QDir::tempPath();
+        const QString folder = QDir::fromNativeSeparators(QDir::tempPath());
         const QString archivePath = QDir(folder).filePath(QStringLiteral("book.zip"));
         const QString entryName = QStringLiteral("pages/chapter::one.jpg");
 
@@ -728,22 +728,28 @@ private slots:
         const QString storedEntry = storeVolumeLocation(entry);
         QCOMPARE(storedEntry, archivePath + QStringLiteral("::") + entryName);
         const VolumeLocation loadedEntry = loadStoredVolumeLocation(storedEntry);
-        QCOMPARE(loadedEntry.containerPath, QDir::fromNativeSeparators(archivePath));
+        QCOMPARE(loadedEntry.containerPath, archivePath);
         QCOMPARE(loadedEntry.entryName, entryName);
-
-        // A path is classified by what it is, not by the separator inside its
-        // name.
-        const QString imagePath = QDir(folder).filePath(QStringLiteral("a::b.jpg"));
-        const VolumeLocation imageLocation = OpenTarget::forPath(imagePath).location;
-        QCOMPARE(imageLocation.containerPath, QDir::fromNativeSeparators(folder));
-        QCOMPARE(imageLocation.entryName, QStringLiteral("a::b.jpg"));
 
         // Known limitation: a folder page is stored as a plain path, so the
         // legacy parser cannot tell a name containing the separator from an
-        // archive entry. The stored form is the plain path either way.
-        const QString storedImage = storeVolumeLocation(imageLocation);
-        QCOMPARE(storedImage, QDir::fromNativeSeparators(imagePath));
-        QVERIFY(!loadStoredVolumeLocation(storedImage).isContainer());
+        // archive entry, and reads the one page back as two parts. The path is
+        // spelled out instead of being built with QDir, because Windows reads
+        // a colon inside a name as a drive letter.
+        const QString plainPagePath = folder + QStringLiteral("/a::b.jpg");
+        const VolumeLocation plainPage = loadStoredVolumeLocation(plainPagePath);
+        QVERIFY(!plainPage.isContainer());
+        QCOMPARE(plainPage.containerPath, folder + QStringLiteral("/a"));
+        QCOMPARE(plainPage.entryName, QStringLiteral("b.jpg"));
+
+#ifndef Q_OS_WIN
+        // The path is classified by what it is, not by the separator inside
+        // its name. Only the other platforms can name a file with a colon.
+        const VolumeLocation imageLocation = OpenTarget::forPath(plainPagePath).location;
+        QCOMPARE(imageLocation.containerPath, folder);
+        QCOMPARE(imageLocation.entryName, QStringLiteral("a::b.jpg"));
+        QCOMPARE(storeVolumeLocation(imageLocation), plainPagePath);
+#endif
     }
 
     void invalidatingFolderCacheOpensRenamedFile()
