@@ -148,7 +148,7 @@ private:
      * metadata sorts, so pageNameAt() has to use this instead of the current
      * application setting.
      */
-    qvEnums::ImageSortBy m_sortBy = qvEnums::SortByFileName;
+    qvEnums::ImageSortBy m_sortBy = qvEnums::ImageSortBy::SortByFileName;
     ImageContent m_initialImage;
     mutable LruCache<int, ImageLoadFuture> m_imageLoadCache;
     LruCache<int, ImageLoadFuture> m_previewLoadCache;

@@ -145,9 +145,9 @@ OptionsDialog::OptionsDialog(QWidget *parent)
 
     ui->comboBoxHowToLoadSVG->clear();
     ui->comboBoxHowToLoadSVG->addItem(
-        tr("resvg (Recommended)"), static_cast<int>(qvEnums::Resvg));
+        tr("resvg (Recommended)"), static_cast<int>(qvEnums::SvgLoaderBackend::Resvg));
     ui->comboBoxHowToLoadSVG->addItem(
-        tr("Qt SVG (Compatibility mode)"), static_cast<int>(qvEnums::QtSvg));
+        tr("Qt SVG (Compatibility mode)"), static_cast<int>(qvEnums::SvgLoaderBackend::QtSvg));
     ui->comboBoxHowToLoadSVG->setCurrentIndex(
         ui->comboBoxHowToLoadSVG->findData(static_cast<int>(qApp->SvgLoaderBackend())));
     ui->comboBoxThemeSelector->setCurrentText(qApp->UiTheme());

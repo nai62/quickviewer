@@ -19,12 +19,12 @@ private slots:
 
 void SvgLoaderTest::storageValuesAreIndependentOfDisplayLabels()
 {
-    QCOMPARE(SvgLoader::storageValue(qvEnums::Resvg), QString("resvg"));
-    QCOMPARE(SvgLoader::storageValue(qvEnums::QtSvg), QString("qtsvg"));
-    QCOMPARE(SvgLoader::backendFromStorageValue("resvg"), qvEnums::Resvg);
-    QCOMPARE(SvgLoader::backendFromStorageValue("qtsvg"), qvEnums::QtSvg);
-    QCOMPARE(SvgLoader::backendFromStorageValue("imageformat"), qvEnums::Resvg);
-    QCOMPARE(SvgLoader::backendFromStorageValue("svg-native-loader"), qvEnums::Resvg);
+    QCOMPARE(SvgLoader::storageValue(qvEnums::SvgLoaderBackend::Resvg), QString("resvg"));
+    QCOMPARE(SvgLoader::storageValue(qvEnums::SvgLoaderBackend::QtSvg), QString("qtsvg"));
+    QCOMPARE(SvgLoader::backendFromStorageValue("resvg"), qvEnums::SvgLoaderBackend::Resvg);
+    QCOMPARE(SvgLoader::backendFromStorageValue("qtsvg"), qvEnums::SvgLoaderBackend::QtSvg);
+    QCOMPARE(SvgLoader::backendFromStorageValue("imageformat"), qvEnums::SvgLoaderBackend::Resvg);
+    QCOMPARE(SvgLoader::backendFromStorageValue("svg-native-loader"), qvEnums::SvgLoaderBackend::Resvg);
 }
 
 void SvgLoaderTest::rasterDimensionsAreValidated()
@@ -51,9 +51,9 @@ void SvgLoaderTest::rendersWithResvg()
         <rect width="400" height="300" fill="#4080c0"/>
     </svg>)";
     const SvgLoader::RenderResult result = SvgLoader::render(
-        svg, QString(), QSize(1920, 1080), qvEnums::Resvg);
+        svg, QString(), QSize(1920, 1080), qvEnums::SvgLoaderBackend::Resvg);
 
-    QCOMPARE(result.backend, qvEnums::Resvg);
+    QCOMPARE(result.backend, qvEnums::SvgLoaderBackend::Resvg);
     QVERIFY2(result.resvgError.isEmpty(), qPrintable(result.resvgError));
     QCOMPARE(result.image.size(), QSize(1440, 1080));
     QVERIFY(!result.image.isNull());
@@ -62,9 +62,9 @@ void SvgLoaderTest::rendersWithResvg()
 void SvgLoaderTest::parseFailureFallsBackToQtSvg()
 {
     const SvgLoader::RenderResult result = SvgLoader::render(
-        QByteArray("not an svg"), QString(), QSize(1920, 1080), qvEnums::Resvg);
+        QByteArray("not an svg"), QString(), QSize(1920, 1080), qvEnums::SvgLoaderBackend::Resvg);
 
-    QCOMPARE(result.backend, qvEnums::QtSvg);
+    QCOMPARE(result.backend, qvEnums::SvgLoaderBackend::QtSvg);
     QVERIFY(!result.resvgError.isEmpty());
     QVERIFY(result.image.isNull());
 }
@@ -76,9 +76,9 @@ void SvgLoaderTest::rendersJapaneseTextWithResvg()
         <text x="10" y="65" font-family="Yu Gothic" font-size="52">&#x6F22;&#x5B57;</text>
     </svg>)";
     const SvgLoader::RenderResult result = SvgLoader::render(
-        svg, QString(), QSize(300, 100), qvEnums::Resvg);
+        svg, QString(), QSize(300, 100), qvEnums::SvgLoaderBackend::Resvg);
 
-    QCOMPARE(result.backend, qvEnums::Resvg);
+    QCOMPARE(result.backend, qvEnums::SvgLoaderBackend::Resvg);
     QVERIFY2(result.resvgError.isEmpty(), qPrintable(result.resvgError));
     QVERIFY(!result.image.isNull());
     int opaquePixels = 0;

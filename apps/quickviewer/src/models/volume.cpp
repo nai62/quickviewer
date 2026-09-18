@@ -201,13 +201,13 @@ void Volume::applyPageSort(qvEnums::ImageSortBy sortBy)
 {
     m_sortBy = sortBy;
     m_imageMetadataList.clear();
-    if (sortBy != qvEnums::SortByFileName && sortBy != qvEnums::SortByFileNameDescending) {
+    if (sortBy != qvEnums::ImageSortBy::SortByFileName && sortBy != qvEnums::ImageSortBy::SortByFileNameDescending) {
         foreach (const QString &fl, m_pageNames) {
             m_imageMetadataList << ImageMetadata(this, fl);
         }
     }
     switch (sortBy) {
-    case qvEnums::SortByFileName: {
+    case qvEnums::ImageSortBy::SortByFileName: {
         QCollator collator;
         collator.setNumericMode(true);
         std::sort(m_pageNames.begin(), m_pageNames.end(), [&collator](const QString &a, const QString &b) {
@@ -215,7 +215,7 @@ void Volume::applyPageSort(qvEnums::ImageSortBy sortBy)
         });
         break;
     }
-    case qvEnums::SortByFileNameDescending: {
+    case qvEnums::ImageSortBy::SortByFileNameDescending: {
         QCollator collator;
         collator.setNumericMode(true);
         std::sort(m_pageNames.begin(), m_pageNames.end(), [&collator](const QString &a, const QString &b) {
@@ -223,16 +223,16 @@ void Volume::applyPageSort(qvEnums::ImageSortBy sortBy)
         });
         break;
     }
-    case qvEnums::SortByFileSize:
+    case qvEnums::ImageSortBy::SortByFileSize:
         std::stable_sort(m_imageMetadataList.begin(), m_imageMetadataList.end(), fileSizeLessThan);
         break;
-    case qvEnums::SortByFileSizeDescending:
+    case qvEnums::ImageSortBy::SortByFileSizeDescending:
         std::stable_sort(m_imageMetadataList.begin(), m_imageMetadataList.end(), fileSizeDescendingLessThan);
         break;
-    case qvEnums::SortByModifiedTime:
+    case qvEnums::ImageSortBy::SortByModifiedTime:
         std::stable_sort(m_imageMetadataList.begin(), m_imageMetadataList.end(), modifiedTimeLessThan);
         break;
-    case qvEnums::SortByModifiedTimeDescending:
+    case qvEnums::ImageSortBy::SortByModifiedTimeDescending:
         std::stable_sort(m_imageMetadataList.begin(), m_imageMetadataList.end(), modifiedTimeDescendingLessThan);
         break;
     }
@@ -272,7 +272,7 @@ QString Volume::pageNameAt(int pageIndex) const
     if (!m_shuffledPageNames.isEmpty()) {
         return m_shuffledPageNames[pageIndex];
     }
-    if (m_sortBy == qvEnums::SortByFileName || m_sortBy == qvEnums::SortByFileNameDescending) {
+    if (m_sortBy == qvEnums::ImageSortBy::SortByFileName || m_sortBy == qvEnums::ImageSortBy::SortByFileNameDescending) {
         return m_pageNames[pageIndex];
     } else if (pageIndex < m_imageMetadataList.size()) {
         return m_imageMetadataList[pageIndex].filename();

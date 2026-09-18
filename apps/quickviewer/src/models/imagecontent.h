@@ -47,7 +47,7 @@ struct ImageContent
     bool isPreview = false;
     bool hasDetailedMetadata = false;
     RetouchParameters appliedRetouchParameters;
-    qvEnums::ShaderEffect appliedResizeMode = qvEnums::Bilinear;
+    qvEnums::ShaderEffect appliedResizeMode = qvEnums::ShaderEffect::Bilinear;
 
     ImageContent() = default;
     ImageContent(QString imagePath, size_t size)

@@ -3,19 +3,19 @@
 ShaderEffectKind shaderEffectKind(qvEnums::ShaderEffect effect)
 {
     switch (effect) {
-    case qvEnums::UnPrepared:
+    case qvEnums::ShaderEffect::UnPrepared:
         return ShaderEffectKind::Unprepared;
-    case qvEnums::CpuBicubic:
-    case qvEnums::CpuSpline16:
-    case qvEnums::CpuSpline36:
-    case qvEnums::CpuLanczos3:
-    case qvEnums::CpuLanczos4:
+    case qvEnums::ShaderEffect::CpuBicubic:
+    case qvEnums::ShaderEffect::CpuSpline16:
+    case qvEnums::ShaderEffect::CpuSpline36:
+    case qvEnums::ShaderEffect::CpuLanczos3:
+    case qvEnums::ShaderEffect::CpuLanczos4:
         return ShaderEffectKind::CpuOnly;
-    case qvEnums::NearestNeighbor:
-    case qvEnums::Bilinear:
+    case qvEnums::ShaderEffect::NearestNeighbor:
+    case qvEnums::ShaderEffect::Bilinear:
         return ShaderEffectKind::FixedShader;
-    case qvEnums::Bicubic:
-    case qvEnums::Lanczos:
+    case qvEnums::ShaderEffect::Bicubic:
+    case qvEnums::ShaderEffect::Lanczos:
         return ShaderEffectKind::GlShader;
     }
     return ShaderEffectKind::Unprepared;
@@ -50,15 +50,15 @@ bool resizesOnCpu(qvEnums::ShaderEffect effect)
 QZimg::FilterMode cpuFilterMode(qvEnums::ShaderEffect effect)
 {
     switch (effect) {
-    case qvEnums::CpuBicubic:
+    case qvEnums::ShaderEffect::CpuBicubic:
         return QZimg::ResizeBicubic;
-    case qvEnums::CpuSpline16:
+    case qvEnums::ShaderEffect::CpuSpline16:
         return QZimg::ResizeSpline16;
-    case qvEnums::CpuSpline36:
+    case qvEnums::ShaderEffect::CpuSpline36:
         return QZimg::ResizeSpline36;
-    case qvEnums::CpuLanczos3:
+    case qvEnums::ShaderEffect::CpuLanczos3:
         return QZimg::ResizeLanczos3;
-    case qvEnums::CpuLanczos4:
+    case qvEnums::ShaderEffect::CpuLanczos4:
         return QZimg::ResizeLanczos4;
     default:
         return QZimg::ResizeBicubic;

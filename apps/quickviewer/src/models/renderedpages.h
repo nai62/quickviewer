@@ -14,7 +14,7 @@
 struct RenderedPageLayout
 {
     QRect viewport;
-    qvEnums::FitMode fitMode = qvEnums::NoFitting;
+    qvEnums::FitMode fitMode = qvEnums::FitMode::NoFitting;
     qreal manualScale = 1.0;
     qreal scaleFactor = 1.0;
     bool loupe = false;

@@ -321,7 +321,7 @@ void ImageView::refreshRenderedPages()
         layout.viewport = QRect(QPoint(), viewport()->size());
         layout.fitMode = qApp->Fitting()
                              ? qApp->ImageFitMode()
-                             : qvEnums::NoFitting;
+                             : qvEnums::FitMode::NoFitting;
         layout.manualScale = manualZoomScale();
         layout.scaleFactor = m_loupeController.isActive() ? m_loupeController.scaleFactor() : 1.0;
         layout.loupe = m_loupeController.isActive();
@@ -341,7 +341,7 @@ void ImageView::refreshRenderedPages()
             });
         // if Size of Image overs Size of View, use Image's size
         updateSceneForContent(
-            !(qApp->Fitting() && qApp->ImageFitMode() == qvEnums::FitToRect) || m_loupeController.isActive() || m_lastScreenPixelRatio > 1.0, sceneRect);
+            !(qApp->Fitting() && qApp->ImageFitMode() == qvEnums::FitMode::FitToRect) || m_loupeController.isActive() || m_lastScreenPixelRatio > 1.0, sceneRect);
     }
     // QGraphicsView updates the cursor internally,
     // but QV cannot trap this event, so it forcibly clears the cursor.
@@ -877,8 +877,8 @@ void ImageView::handleFitToWindowActionTriggered(bool checked)
     if (!checked) {
         return;
     }
-    qApp->setImageFitMode(qvEnums::FitToRect);
-    emit fittingChanged(qvEnums::FitToRect);
+    qApp->setImageFitMode(qvEnums::FitMode::FitToRect);
+    emit fittingChanged(qvEnums::FitMode::FitToRect);
     qApp->setFitting(true);
     refreshRenderedPages();
 }
@@ -888,8 +888,8 @@ void ImageView::handleFitToWidthActionTriggered(bool checked)
     if (!checked) {
         return;
     }
-    qApp->setImageFitMode(qvEnums::FitToWidth);
-    emit fittingChanged(qvEnums::FitToWidth);
+    qApp->setImageFitMode(qvEnums::FitMode::FitToWidth);
+    emit fittingChanged(qvEnums::FitMode::FitToWidth);
     qApp->setFitting(true);
     refreshRenderedPages();
 }

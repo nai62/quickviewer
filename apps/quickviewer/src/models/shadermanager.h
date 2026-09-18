@@ -28,7 +28,7 @@ public:
     void prepareFinished();
     void prepareInitialize()
     {
-        m_oldEffect = qvEnums::UnPrepared;
+        m_oldEffect = qvEnums::ShaderEffect::UnPrepared;
         pageCnt = 0;
     }
 
@@ -43,10 +43,10 @@ public:
         bool ok = false;
         const int value = metaEnum.keysToValue(effect.toLatin1(), &ok);
         if (!ok) {
-            return qvEnums::Bilinear;
+            return qvEnums::ShaderEffect::Bilinear;
         }
         const qvEnums::ShaderEffect parsed = static_cast<qvEnums::ShaderEffect>(value);
-        return shaderEffectAvailable(parsed) ? parsed : qvEnums::Bilinear;
+        return shaderEffectAvailable(parsed) ? parsed : qvEnums::ShaderEffect::Bilinear;
     }
 
 private:

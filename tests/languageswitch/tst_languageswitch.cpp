@@ -194,7 +194,7 @@ private slots:
     {
         qApp->keyActions().clearActionGroups();
         qApp->mouseActions().clearActionGroups();
-        qApp->setCatalogViewModeSetting(qvEnums::List);
+        qApp->setCatalogViewModeSetting(qvEnums::CatalogViewMode::List);
         qApp->setShowTagBar(true);
     }
 

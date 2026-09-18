@@ -120,22 +120,22 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionFitting->setChecked(qApp->Fitting());
     ui->graphicsView->handleFittingActionTriggered(qApp->Fitting());
     switch (qApp->ImageSortBy()) {
-    case qvEnums::SortByFileName:
+    case qvEnums::ImageSortBy::SortByFileName:
         ui->actionSortByFileName->setChecked(true);
         break;
-    case qvEnums::SortByFileNameDescending:
+    case qvEnums::ImageSortBy::SortByFileNameDescending:
         ui->actionSortByFileNameDescending->setChecked(true);
         break;
-    case qvEnums::SortByFileSize:
+    case qvEnums::ImageSortBy::SortByFileSize:
         ui->actionSortByFileSize->setChecked(true);
         break;
-    case qvEnums::SortByFileSizeDescending:
+    case qvEnums::ImageSortBy::SortByFileSizeDescending:
         ui->actionSortByFileSizeDescending->setChecked(true);
         break;
-    case qvEnums::SortByModifiedTime:
+    case qvEnums::ImageSortBy::SortByModifiedTime:
         ui->actionSortByModifiedTime->setChecked(true);
         break;
-    case qvEnums::SortByModifiedTimeDescending:
+    case qvEnums::ImageSortBy::SortByModifiedTimeDescending:
         ui->actionSortByModifiedTimeDescending->setChecked(true);
         break;
     }
@@ -147,10 +147,10 @@ MainWindow::MainWindow(QWidget *parent)
         << ui->actionSortByModifiedTime
         << ui->actionSortByModifiedTimeDescending;
     switch (qApp->ImageFitMode()) {
-    case qvEnums::FitToRect:
+    case qvEnums::FitMode::FitToRect:
         ui->actionFitToWindow->setChecked(true);
         break;
-    case qvEnums::FitToWidth:
+    case qvEnums::FitMode::FitToWidth:
         ui->actionFitToWidth->setChecked(true);
         break;
     default:
@@ -235,13 +235,13 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionSaveCatalogViewWidth->setChecked(qApp->SaveCatalogViewWidth());
 
     switch (qApp->CatalogViewModeSetting()) {
-    case qvEnums::List:
+    case qvEnums::CatalogViewMode::List:
         ui->actionCatalogViewList->setChecked(true);
         break;
-    case qvEnums::Icon:
+    case qvEnums::CatalogViewMode::Icon:
         ui->actionCatalogViewIcon->setChecked(true);
         break;
-    case qvEnums::IconNoText:
+    case qvEnums::CatalogViewMode::IconNoText:
         ui->actionCatalogViewIconNoText->setChecked(true);
         break;
     }
@@ -268,31 +268,31 @@ MainWindow::MainWindow(QWidget *parent)
         << ui->actionShaderCpuLanczos3
         << ui->actionShaderCpuLanczos4;
     switch (qApp->Effect()) {
-    case qvEnums::NearestNeighbor:
+    case qvEnums::ShaderEffect::NearestNeighbor:
         ui->actionShaderNearestNeighbor->setChecked(true);
         break;
-    case qvEnums::Bilinear:
+    case qvEnums::ShaderEffect::Bilinear:
         ui->actionShaderBilinear->setChecked(true);
         break;
-    case qvEnums::Bicubic:
+    case qvEnums::ShaderEffect::Bicubic:
         ui->actionShaderBicubic->setChecked(true);
         break;
-    case qvEnums::Lanczos:
+    case qvEnums::ShaderEffect::Lanczos:
         ui->actionShaderLanczos->setChecked(true);
         break;
-    case qvEnums::CpuBicubic:
+    case qvEnums::ShaderEffect::CpuBicubic:
         ui->actionShaderCpuBicubic->setChecked(true);
         break;
-    case qvEnums::CpuSpline16:
+    case qvEnums::ShaderEffect::CpuSpline16:
         ui->actionShaderCpuSpline16->setChecked(true);
         break;
-    case qvEnums::CpuSpline36:
+    case qvEnums::ShaderEffect::CpuSpline36:
         ui->actionShaderCpuSpline36->setChecked(true);
         break;
-    case qvEnums::CpuLanczos3:
+    case qvEnums::ShaderEffect::CpuLanczos3:
         ui->actionShaderCpuLanczos3->setChecked(true);
         break;
-    case qvEnums::CpuLanczos4:
+    case qvEnums::ShaderEffect::CpuLanczos4:
         ui->actionShaderCpuLanczos4->setChecked(true);
         break;
     default:
@@ -823,15 +823,15 @@ void MainWindow::initializeConfiguredStartupPanel(const QString &folderPath)
     m_startupPanelInitialized = true;
 
     switch (qApp->ShowOptionViewOnStartup()) {
-    case qvEnums::NoViewStartup:
+    case qvEnums::OptionViewOnStartup::NoViewStartup:
         break;
-    case qvEnums::FolderStartup:
+    case qvEnums::OptionViewOnStartup::FolderStartup:
         createFolderWindow(!qApp->ShowPanelSeparateWindow(), folderPath);
         break;
-    case qvEnums::CatalogStartup:
+    case qvEnums::OptionViewOnStartup::CatalogStartup:
         createCatalogWindow(!qApp->ShowPanelSeparateWindow());
         break;
-    case qvEnums::RetouchStartup:
+    case qvEnums::OptionViewOnStartup::RetouchStartup:
         createRetouchWindow(!qApp->ShowPanelSeparateWindow());
         break;
     }
@@ -846,15 +846,15 @@ void MainWindow::reserveConfiguredStartupPanelSpace()
 
     int panelWidth = 0;
     switch (qApp->ShowOptionViewOnStartup()) {
-    case qvEnums::NoViewStartup:
+    case qvEnums::OptionViewOnStartup::NoViewStartup:
         return;
-    case qvEnums::FolderStartup:
+    case qvEnums::OptionViewOnStartup::FolderStartup:
         panelWidth = qApp->SaveFolderViewWidth() ? qApp->FolderViewWidth() : 200;
         break;
-    case qvEnums::CatalogStartup:
+    case qvEnums::OptionViewOnStartup::CatalogStartup:
         panelWidth = qApp->SaveCatalogViewWidth() ? qApp->CatalogViewWidth() : 200;
         break;
-    case qvEnums::RetouchStartup:
+    case qvEnums::OptionViewOnStartup::RetouchStartup:
         panelWidth = 200;
         break;
     }
@@ -1067,7 +1067,7 @@ void MainWindow::handleFolderWindowClosed()
         ui->actionShowFolder->setChecked(false);
 
         if (!m_onWindowClosing) {
-            qApp->setShowOptionViewOnStartup(qvEnums::NoViewStartup);
+            qApp->setShowOptionViewOnStartup(qvEnums::OptionViewOnStartup::NoViewStartup);
         }
     }
 }
@@ -1116,7 +1116,7 @@ void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
             oldpath = qApp->HomeFolderPath();
         }
     }
-    qApp->setShowOptionViewOnStartup(qvEnums::FolderStartup);
+    qApp->setShowOptionViewOnStartup(qvEnums::OptionViewOnStartup::FolderStartup);
     if (docked) {
         closeAllDockedWindow();
         StartupProfiler::mark("folder-window.construct.begin");
@@ -1251,7 +1251,7 @@ void MainWindow::handleCatalogWindowClosed()
         ui->actionShowCatalog->setChecked(false);
 
         if (!m_onWindowClosing) {
-            qApp->setShowOptionViewOnStartup(qvEnums::NoViewStartup);
+            qApp->setShowOptionViewOnStartup(qvEnums::OptionViewOnStartup::NoViewStartup);
         }
     }
 }
@@ -1269,7 +1269,7 @@ void MainWindow::createCatalogWindow(bool docked)
     if (m_catalogWindow) {
         handleCatalogWindowClosed();
     }
-    qApp->setShowOptionViewOnStartup(qvEnums::CatalogStartup);
+    qApp->setShowOptionViewOnStartup(qvEnums::OptionViewOnStartup::CatalogStartup);
     if (docked) {
         closeAllDockedWindow();
         int lastwidth = qApp->CatalogViewWidth();
@@ -1319,7 +1319,7 @@ void MainWindow::handleRetouchWindowClosed()
         ui->actionShowRetouchWindow->setChecked(false);
 
         if (!m_onWindowClosing) {
-            qApp->setShowOptionViewOnStartup(qvEnums::NoViewStartup);
+            qApp->setShowOptionViewOnStartup(qvEnums::OptionViewOnStartup::NoViewStartup);
         }
     }
 }
@@ -1332,7 +1332,7 @@ void MainWindow::createRetouchWindow(bool docked)
     if (m_viewerSession.visiblePages().isEmpty()) {
         return;
     }
-    qApp->setShowOptionViewOnStartup(qvEnums::RetouchStartup);
+    qApp->setShowOptionViewOnStartup(qvEnums::OptionViewOnStartup::RetouchStartup);
     m_retouchWindow = new RetouchWindow(nullptr);
     connect(m_retouchWindow, &RetouchWindow::closed, this, &MainWindow::handleRetouchWindowClosed);
     connect(m_retouchWindow, &RetouchWindow::retouchParametersChanged, ui->graphicsView, &ImageView::handleRetouchParametersChanged);
@@ -1482,8 +1482,8 @@ void MainWindow::handleStayOnTopActionTriggered(bool checked)
 void MainWindow::handleGraphicsViewFittingChanged(qvEnums::FitMode mode)
 {
     ui->actionFitting->setChecked(qApp->Fitting());
-    ui->actionFitToWindow->setChecked(mode == qvEnums::FitToRect);
-    ui->actionFitToWidth->setChecked(mode == qvEnums::FitToWidth);
+    ui->actionFitToWindow->setChecked(mode == qvEnums::FitMode::FitToRect);
+    ui->actionFitToWidth->setChecked(mode == qvEnums::FitMode::FitToWidth);
 }
 
 void MainWindow::handleViewerSessionPageChanged()
@@ -1854,7 +1854,7 @@ void MainWindow::handleCatalogTitleWithoutOptionsActionTriggered(bool checked)
 
 void MainWindow::handleCatalogViewListActionTriggered()
 {
-    qApp->setCatalogViewModeSetting(qvEnums::List);
+    qApp->setCatalogViewModeSetting(qvEnums::CatalogViewMode::List);
     ui->actionCatalogViewList->setChecked(true);
     ui->actionCatalogViewIcon->setChecked(false);
     ui->actionCatalogViewIconNoText->setChecked(false);
@@ -1865,7 +1865,7 @@ void MainWindow::handleCatalogViewListActionTriggered()
 
 void MainWindow::handleCatalogViewIconActionTriggered()
 {
-    qApp->setCatalogViewModeSetting(qvEnums::Icon);
+    qApp->setCatalogViewModeSetting(qvEnums::CatalogViewMode::Icon);
     ui->actionCatalogViewList->setChecked(false);
     ui->actionCatalogViewIcon->setChecked(true);
     ui->actionCatalogViewIconNoText->setChecked(false);
@@ -1876,7 +1876,7 @@ void MainWindow::handleCatalogViewIconActionTriggered()
 
 void MainWindow::handleCatalogViewIconNoTextActionTriggered()
 {
-    qApp->setCatalogViewModeSetting(qvEnums::IconNoText);
+    qApp->setCatalogViewModeSetting(qvEnums::CatalogViewMode::IconNoText);
     ui->actionCatalogViewList->setChecked(false);
     ui->actionCatalogViewIcon->setChecked(false);
     ui->actionCatalogViewIconNoText->setChecked(true);
@@ -2065,8 +2065,8 @@ void MainWindow::handleLargeToolbarIconsActionTriggered(bool checked)
 {
     qApp->setLargeToolbarIcons(checked);
     ui->mainToolBar->setIconSize(
-        checked ? QSize(static_cast<int>(qvEnums::Large2Icon), static_cast<int>(qvEnums::Large2Icon))
-                : QSize(static_cast<int>(qvEnums::NormalIcon), static_cast<int>(qvEnums::NormalIcon)));
+        checked ? QSize(static_cast<int>(qvEnums::ToolbarIconSize::Large2Icon), static_cast<int>(qvEnums::ToolbarIconSize::Large2Icon))
+                : QSize(static_cast<int>(qvEnums::ToolbarIconSize::NormalIcon), static_cast<int>(qvEnums::ToolbarIconSize::NormalIcon)));
     int fontsize = checked ? (int)(1.5 * m_menubarFontSize) : m_menubarFontSize;
     m_fullscreenButton->setIconSize(QSize(2 * fontsize, 2 * fontsize));
     QFont font = ui->menuBar->font();
@@ -2269,7 +2269,7 @@ void MainWindow::handleSlideShowStopped()
 void MainWindow::handleShaderNearestNeighborActionTriggered()
 {
     uncheckAllShaderMenus();
-    qApp->setEffect(qvEnums::NearestNeighbor);
+    qApp->setEffect(qvEnums::ShaderEffect::NearestNeighbor);
     ui->actionShaderNearestNeighbor->setChecked(true);
     ui->graphicsView->refreshRenderedPages();
 }
@@ -2278,14 +2278,14 @@ void MainWindow::handleShaderBilinearActionTriggered()
 {
     uncheckAllShaderMenus();
     ui->actionShaderBilinear->setChecked(true);
-    qApp->setEffect(qvEnums::Bilinear);
+    qApp->setEffect(qvEnums::ShaderEffect::Bilinear);
     ui->graphicsView->refreshRenderedPages();
 }
 
 void MainWindow::handleShaderBicubicActionTriggered()
 {
     uncheckAllShaderMenus();
-    qApp->setEffect(qvEnums::Bicubic);
+    qApp->setEffect(qvEnums::ShaderEffect::Bicubic);
     ui->actionShaderBicubic->setChecked(true);
     ui->graphicsView->refreshRenderedPages();
 }
@@ -2293,7 +2293,7 @@ void MainWindow::handleShaderBicubicActionTriggered()
 void MainWindow::handleShaderLanczosActionTriggered()
 {
     uncheckAllShaderMenus();
-    qApp->setEffect(qvEnums::Lanczos);
+    qApp->setEffect(qvEnums::ShaderEffect::Lanczos);
     ui->actionShaderLanczos->setChecked(true);
     ui->graphicsView->refreshRenderedPages();
 }
@@ -2301,7 +2301,7 @@ void MainWindow::handleShaderLanczosActionTriggered()
 void MainWindow::handleShaderCpuBicubicActionTriggered()
 {
     uncheckAllShaderMenus();
-    qApp->setEffect(qvEnums::CpuBicubic);
+    qApp->setEffect(qvEnums::ShaderEffect::CpuBicubic);
     ui->actionShaderCpuBicubic->setChecked(true);
     ui->graphicsView->refreshRenderedPages();
 }
@@ -2309,7 +2309,7 @@ void MainWindow::handleShaderCpuBicubicActionTriggered()
 void MainWindow::handleShaderCpuSpline16ActionTriggered()
 {
     uncheckAllShaderMenus();
-    qApp->setEffect(qvEnums::CpuSpline16);
+    qApp->setEffect(qvEnums::ShaderEffect::CpuSpline16);
     ui->actionShaderCpuSpline16->setChecked(true);
     ui->graphicsView->refreshRenderedPages();
 }
@@ -2317,7 +2317,7 @@ void MainWindow::handleShaderCpuSpline16ActionTriggered()
 void MainWindow::handleShaderCpuSpline36ActionTriggered()
 {
     uncheckAllShaderMenus();
-    qApp->setEffect(qvEnums::CpuSpline36);
+    qApp->setEffect(qvEnums::ShaderEffect::CpuSpline36);
     ui->actionShaderCpuSpline36->setChecked(true);
     ui->graphicsView->refreshRenderedPages();
 }
@@ -2325,7 +2325,7 @@ void MainWindow::handleShaderCpuSpline36ActionTriggered()
 void MainWindow::handleShaderCpuLanczos3ActionTriggered()
 {
     uncheckAllShaderMenus();
-    qApp->setEffect(qvEnums::CpuLanczos3);
+    qApp->setEffect(qvEnums::ShaderEffect::CpuLanczos3);
     ui->actionShaderCpuLanczos3->setChecked(true);
     ui->graphicsView->refreshRenderedPages();
 }
@@ -2333,7 +2333,7 @@ void MainWindow::handleShaderCpuLanczos3ActionTriggered()
 void MainWindow::handleShaderCpuLanczos4ActionTriggered()
 {
     uncheckAllShaderMenus();
-    qApp->setEffect(qvEnums::CpuLanczos4);
+    qApp->setEffect(qvEnums::ShaderEffect::CpuLanczos4);
     ui->actionShaderCpuLanczos4->setChecked(true);
     ui->graphicsView->refreshRenderedPages();
 }
@@ -2378,54 +2378,54 @@ void MainWindow::handleLoadBookmarkMenuTriggered(QAction *action)
 
 void MainWindow::handleSortByFileNameActionTriggered()
 {
-    applyImageSortBy(qvEnums::SortByFileName);
+    applyImageSortBy(qvEnums::ImageSortBy::SortByFileName);
 }
 
 void MainWindow::handleSortByFileNameDescendingActionTriggered()
 {
-    applyImageSortBy(qvEnums::SortByFileNameDescending);
+    applyImageSortBy(qvEnums::ImageSortBy::SortByFileNameDescending);
 }
 
 void MainWindow::handleSortByFileSizeActionTriggered()
 {
-    applyImageSortBy(qvEnums::SortByFileSize);
+    applyImageSortBy(qvEnums::ImageSortBy::SortByFileSize);
 }
 
 void MainWindow::handleSortByFileSizeDescendingActionTriggered()
 {
-    applyImageSortBy(qvEnums::SortByFileSizeDescending);
+    applyImageSortBy(qvEnums::ImageSortBy::SortByFileSizeDescending);
 }
 
 void MainWindow::handleSortByModifiedTimeActionTriggered()
 {
-    applyImageSortBy(qvEnums::SortByModifiedTime);
+    applyImageSortBy(qvEnums::ImageSortBy::SortByModifiedTime);
 }
 
 void MainWindow::handleSortByModifiedTimeDescendingActionTriggered()
 {
-    applyImageSortBy(qvEnums::SortByModifiedTimeDescending);
+    applyImageSortBy(qvEnums::ImageSortBy::SortByModifiedTimeDescending);
 }
 
 void MainWindow::applyImageSortBy(qvEnums::ImageSortBy sortBy)
 {
     uncheckAllSortByMenus();
     switch (sortBy) {
-    case qvEnums::SortByFileName:
+    case qvEnums::ImageSortBy::SortByFileName:
         ui->actionSortByFileName->setChecked(true);
         break;
-    case qvEnums::SortByFileNameDescending:
+    case qvEnums::ImageSortBy::SortByFileNameDescending:
         ui->actionSortByFileNameDescending->setChecked(true);
         break;
-    case qvEnums::SortByFileSize:
+    case qvEnums::ImageSortBy::SortByFileSize:
         ui->actionSortByFileSize->setChecked(true);
         break;
-    case qvEnums::SortByFileSizeDescending:
+    case qvEnums::ImageSortBy::SortByFileSizeDescending:
         ui->actionSortByFileSizeDescending->setChecked(true);
         break;
-    case qvEnums::SortByModifiedTime:
+    case qvEnums::ImageSortBy::SortByModifiedTime:
         ui->actionSortByModifiedTime->setChecked(true);
         break;
-    case qvEnums::SortByModifiedTimeDescending:
+    case qvEnums::ImageSortBy::SortByModifiedTimeDescending:
         ui->actionSortByModifiedTimeDescending->setChecked(true);
         break;
     }

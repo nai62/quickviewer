@@ -32,7 +32,7 @@ private slots:
     void init()
     {
         qApp->setAutoLoaded(false);
-        qApp->setShowOptionViewOnStartup(qvEnums::NoViewStartup);
+        qApp->setShowOptionViewOnStartup(qvEnums::OptionViewOnStartup::NoViewStartup);
         qApp->setShowPanelSeparateWindow(false);
         qApp->setSaveFolderViewWidth(false);
         qApp->setFolderViewWidth(200);
@@ -40,7 +40,7 @@ private slots:
         qApp->setDontSavingHistory(false);
         qApp->clearHistory();
         qApp->setMaxVolumesCache(4);
-        qApp->setImageSortBy(qvEnums::SortByFileName);
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
     }
 
     void startupCloaking_data()
@@ -83,7 +83,7 @@ private slots:
         qApp->setBeginAsFullscreen(beginAsFullscreen);
         qApp->setStayOnTop(false);
         qApp->setAutoLoaded(false);
-        qApp->setShowOptionViewOnStartup(qvEnums::NoViewStartup);
+        qApp->setShowOptionViewOnStartup(qvEnums::OptionViewOnStartup::NoViewStartup);
 
         StartupWindow viewer;
         viewer.initializeStartup();
@@ -100,7 +100,7 @@ private slots:
     {
         qApp->setAutoLoaded(true);
         qApp->setLastViewPath(QStringLiteral("deferred-startup.zip"));
-        qApp->setShowOptionViewOnStartup(qvEnums::FolderStartup);
+        qApp->setShowOptionViewOnStartup(qvEnums::OptionViewOnStartup::FolderStartup);
         qApp->setShowPanelSeparateWindow(false);
         qApp->setSaveFolderViewWidth(true);
         qApp->setFolderViewWidth(275);
@@ -406,7 +406,7 @@ private slots:
         small.fill(Qt::blue);
         QVERIFY(small.save(directory.filePath(QStringLiteral("b.bmp"))));
 
-        qApp->setImageSortBy(qvEnums::SortByFileName);
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
         StartupWindow viewer;
         viewer.createFolderWindow(true, directory.path(), false);
         FolderWindow *folder = viewer.folderWindow();
@@ -533,7 +533,7 @@ private slots:
         QVERIFY(image.open(QIODevice::WriteOnly));
         image.close();
 
-        qApp->setImageSortBy(qvEnums::SortByFileName);
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
         FolderWindow folder(nullptr, nullptr);
         folder.setFolderPath(directory.path(), false);
         QTreeView *view = folder.findChild<QTreeView *>(QStringLiteral("folderView"));
@@ -561,12 +561,12 @@ private slots:
         large.close();
 
         const QList<qvEnums::ImageSortBy> sortModes{
-            qvEnums::SortByFileName,
-            qvEnums::SortByFileNameDescending,
-            qvEnums::SortByFileSize,
-            qvEnums::SortByFileSizeDescending,
-            qvEnums::SortByModifiedTime,
-            qvEnums::SortByModifiedTimeDescending,
+            qvEnums::ImageSortBy::SortByFileName,
+            qvEnums::ImageSortBy::SortByFileNameDescending,
+            qvEnums::ImageSortBy::SortByFileSize,
+            qvEnums::ImageSortBy::SortByFileSizeDescending,
+            qvEnums::ImageSortBy::SortByModifiedTime,
+            qvEnums::ImageSortBy::SortByModifiedTimeDescending,
         };
         for (const qvEnums::ImageSortBy sortBy : sortModes) {
             qApp->setImageSortBy(sortBy);
@@ -578,11 +578,11 @@ private slots:
             QCOMPARE(view->model()->rowCount(), 3);
             QCOMPARE(view->model()->index(0, 0).data().toString(), QStringLiteral("z-folder"));
 
-            if (sortBy == qvEnums::SortByFileSize) {
+            if (sortBy == qvEnums::ImageSortBy::SortByFileSize) {
                 QCOMPARE(view->model()->index(1, 0).data().toString(), QStringLiteral("a-small.bmp"));
                 QCOMPARE(view->model()->index(2, 0).data().toString(), QStringLiteral("b-large.bmp"));
             }
-            if (sortBy == qvEnums::SortByFileSizeDescending) {
+            if (sortBy == qvEnums::ImageSortBy::SortByFileSizeDescending) {
                 QCOMPARE(view->model()->index(1, 0).data().toString(), QStringLiteral("b-large.bmp"));
                 QCOMPARE(view->model()->index(2, 0).data().toString(), QStringLiteral("a-small.bmp"));
             }
@@ -599,7 +599,7 @@ private slots:
             QVERIFY(image.save(directory.filePath(name)));
         }
 
-        qApp->setImageSortBy(qvEnums::SortByFileName);
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
         FolderWindow folder(nullptr, nullptr);
         folder.setFolderPath(directory.path(), false);
         QTreeView *view = folder.findChild<QTreeView *>(QStringLiteral("folderView"));

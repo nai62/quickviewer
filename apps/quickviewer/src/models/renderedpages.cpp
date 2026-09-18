@@ -80,7 +80,7 @@ QRect RenderedPages::layout(const PageRenderRequest &request,
 
         const int rotation = layout.rotations.value(index, 0);
         QRect drawRect;
-        if (layout.fitMode != qvEnums::NoFitting) {
+        if (layout.fitMode != qvEnums::FitMode::NoFitting) {
             drawRect = page.setPageLayoutFitting(
                 pageRect, alignment, layout.fitMode, layout.scaleFactor, rotation);
         } else {

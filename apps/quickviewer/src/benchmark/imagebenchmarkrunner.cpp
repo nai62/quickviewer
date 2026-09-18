@@ -54,7 +54,7 @@ struct BenchmarkOptions
     int runs = 5;
     int warmup = 2;
     PageSelection page;
-    qvEnums::ImageSortBy sort = qvEnums::SortByFileName;
+    qvEnums::ImageSortBy sort = qvEnums::ImageSortBy::SortByFileName;
     QString sortName = "name";
     QMap<QString, QStringList> decoderBackends;
     bool showHelp = false;
@@ -249,27 +249,27 @@ bool parseSuite(const QString &text, BenchmarkSuite &suite)
 bool parseSortMode(const QString &text, qvEnums::ImageSortBy &sort)
 {
     if (text == "name") {
-        sort = qvEnums::SortByFileName;
+        sort = qvEnums::ImageSortBy::SortByFileName;
         return true;
     }
     if (text == "name-desc") {
-        sort = qvEnums::SortByFileNameDescending;
+        sort = qvEnums::ImageSortBy::SortByFileNameDescending;
         return true;
     }
     if (text == "size") {
-        sort = qvEnums::SortByFileSize;
+        sort = qvEnums::ImageSortBy::SortByFileSize;
         return true;
     }
     if (text == "size-desc") {
-        sort = qvEnums::SortByFileSizeDescending;
+        sort = qvEnums::ImageSortBy::SortByFileSizeDescending;
         return true;
     }
     if (text == "mtime") {
-        sort = qvEnums::SortByModifiedTime;
+        sort = qvEnums::ImageSortBy::SortByModifiedTime;
         return true;
     }
     if (text == "mtime-desc") {
-        sort = qvEnums::SortByModifiedTimeDescending;
+        sort = qvEnums::ImageSortBy::SortByModifiedTimeDescending;
         return true;
     }
     return false;
@@ -1715,7 +1715,7 @@ void ImageBenchmarkRunner::applyStartupOverrides()
     });
     qApp->setProhibitMultipleRunning(false);
     qApp->setShowSubfolders(qgetenv(RecursiveEnv) == "1");
-    qvEnums::ImageSortBy sort = qvEnums::SortByFileName;
+    qvEnums::ImageSortBy sort = qvEnums::ImageSortBy::SortByFileName;
     if (parseSortMode(QString::fromLocal8Bit(qgetenv(SortEnv)).toLower(), sort)) {
         qApp->setImageSortBy(sort);
     }

@@ -331,13 +331,13 @@ private slots:
         small.fill(Qt::blue);
         QVERIFY(small.save(directory.filePath(QStringLiteral("b.bmp"))));
 
-        qApp->setImageSortBy(qvEnums::SortByFileName);
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
         qApp->setDualView(false);
         ViewerSession session(nullptr);
         QVERIFY(session.openContainer(directory.path()));
         QCOMPARE(session.currentPageName(), QStringLiteral("a.bmp"));
 
-        session.sortActiveVolumePages(qvEnums::SortByFileSize);
+        session.sortActiveVolumePages(qvEnums::ImageSortBy::SortByFileSize);
 
         QCOMPARE(session.pageCount(), 2);
         QCOMPARE(session.currentPageName(), QStringLiteral("a.bmp"));
@@ -354,7 +354,7 @@ private slots:
             QVERIFY(image.save(directory.filePath(QString("page-%1.bmp").arg(page))));
         }
 
-        qApp->setImageSortBy(qvEnums::SortByFileName);
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
         qApp->setDualView(false);
         ViewerSession session(nullptr);
         QVERIFY(session.openContainer(directory.path()));
@@ -381,7 +381,7 @@ private slots:
         image.fill(Qt::red);
         QVERIFY(image.save(firstPath));
 
-        qApp->setImageSortBy(qvEnums::SortByFileName);
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
         qApp->setDualView(false);
         ViewerSession session(nullptr);
         QVERIFY(session.openContainer(directory.path()));
@@ -408,16 +408,16 @@ private slots:
             QVERIFY(image.save(directory.filePath(QString("page-%1.bmp").arg(page))));
         }
 
-        qApp->setImageSortBy(qvEnums::SortByFileName);
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
         qApp->setDualView(false);
         ViewerSession session(nullptr);
         QVERIFY(session.openContainer(directory.path()));
 
         // Changing the setting does not re-sort this volume, so it must keep
         // reporting its own page names.
-        qApp->setImageSortBy(qvEnums::SortByModifiedTime);
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByModifiedTime);
         session.updateReadProgress();
-        qApp->setImageSortBy(qvEnums::SortByFileName);
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
 
         const QString volumePath = QDir::fromNativeSeparators(directory.path());
         QVERIFY(qApp->readProgressStore()->contains(volumePath));
@@ -683,21 +683,21 @@ private slots:
 
         page.setPageLayoutFitting(QRect(0, 0, 100, 100),
                                   RenderedPage::PageCenter,
-                                  qvEnums::FitToRect,
+                                  qvEnums::FitMode::FitToRect,
                                   1.0);
         QCOMPARE(page.displayScale(), 0.5);
 
         page.setRenderSettings(settings);
         page.setPageLayoutFitting(QRect(0, 0, 100, 100),
                                   RenderedPage::PageCenter,
-                                  qvEnums::FitToRect,
+                                  qvEnums::FitMode::FitToRect,
                                   1.0);
         QCOMPARE(page.displayScale(), 0.75);
 
         RenderedPage pageWithDefaults(nullptr, &scene, ImageContent(image, "preview.bmp", image.size(), {}, 0));
         pageWithDefaults.setPageLayoutFitting(QRect(0, 0, 100, 100),
                                               RenderedPage::PageCenter,
-                                              qvEnums::FitToRect,
+                                              qvEnums::FitMode::FitToRect,
                                               1.0);
         QCOMPARE(pageWithDefaults.displayScale(), 0.25);
     }

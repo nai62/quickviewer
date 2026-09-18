@@ -183,7 +183,7 @@ QRect RenderedPage::setPageLayoutFitting(QRect viewport, RenderedPage::PageAlign
     if (separatePage) {
         currentSize = QSize(currentSize.width() / 2, currentSize.height());
     }
-    const QSize targetSize = fitMode == qvEnums::FitToRect
+    const QSize targetSize = fitMode == qvEnums::FitMode::FitToRect
                                  ? currentSize.scaled(viewport1.size(), Qt::KeepAspectRatio)
                                  : QSize(viewport1.width(), currentSize.height() * viewport1.width() / currentSize.width());
     const qreal scale = m_drawScale = 1.0 * targetSize.width() / currentSize.width();
@@ -199,7 +199,7 @@ QRect RenderedPage::setPageLayoutFitting(QRect viewport, RenderedPage::PageAlign
     rotationOffsetPosition *= scale;
 
     QRect drawRect;
-    if (fitMode == qvEnums::FitToRect) {
+    if (fitMode == qvEnums::FitMode::FitToRect) {
         if (targetSize.height() == viewport1.height()) { // Fit to the top and bottom edges.
             const int horizontalOffset = horizontalOffsetForAlignment(
                 alignment, viewport, targetSize);
@@ -282,7 +282,7 @@ void RenderedPage::applyResize(qreal scale, int rotationOffset, QPoint position,
     const QSize resizeTargetSize = appliedRotation % 180
                                        ? QSize(targetSize.height(), targetSize.width())
                                        : targetSize;
-    const qvEnums::ShaderEffect effect = m_content.movie.isNull() ? qApp->Effect() : qvEnums::Bilinear;
+    const qvEnums::ShaderEffect effect = m_content.movie.isNull() ? qApp->Effect() : qvEnums::ShaderEffect::Bilinear;
     QImage &sourceImage = imageWithRetouch();
     const qreal retouchedScale = sourceImage.size() == m_content.loadedImageSize
                                      ? scale

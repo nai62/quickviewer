@@ -17,7 +17,7 @@ struct RenderResult
 {
     QImage image;
     QSize sourceSize;
-    qvEnums::SvgLoaderBackend backend = qvEnums::Resvg;
+    qvEnums::SvgLoaderBackend backend = qvEnums::SvgLoaderBackend::Resvg;
     QString resvgError;
 };
 

@@ -206,17 +206,17 @@ bool nameLessThan(const QString &lhs, const QString &rhs)
 
 bool sortDescending(qvEnums::ImageSortBy sortBy)
 {
-    return sortBy == qvEnums::SortByFileNameDescending || sortBy == qvEnums::SortByFileSizeDescending || sortBy == qvEnums::SortByModifiedTimeDescending;
+    return sortBy == qvEnums::ImageSortBy::SortByFileNameDescending || sortBy == qvEnums::ImageSortBy::SortByFileSizeDescending || sortBy == qvEnums::ImageSortBy::SortByModifiedTimeDescending;
 }
 
 bool sortByModifiedTime(qvEnums::ImageSortBy sortBy)
 {
-    return sortBy == qvEnums::SortByModifiedTime || sortBy == qvEnums::SortByModifiedTimeDescending;
+    return sortBy == qvEnums::ImageSortBy::SortByModifiedTime || sortBy == qvEnums::ImageSortBy::SortByModifiedTimeDescending;
 }
 
 bool sortByFileSize(qvEnums::ImageSortBy sortBy)
 {
-    return sortBy == qvEnums::SortByFileSize || sortBy == qvEnums::SortByFileSizeDescending;
+    return sortBy == qvEnums::ImageSortBy::SortByFileSize || sortBy == qvEnums::ImageSortBy::SortByFileSizeDescending;
 }
 
 // Orders two entries of the same group (folders, or files) with the key of the
