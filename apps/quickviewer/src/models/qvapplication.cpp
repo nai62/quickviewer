@@ -91,6 +91,7 @@ QVApplication::QVApplication(int &argc, char **argv)
     //#endif
     m_settings = new QSettings(
         getFilePathOfApplicationSetting(settingsSubPath()), QSettings::IniFormat, this);
+    StartupProfiler::mark("application.settings-opened");
 
     m_languageSelector.initialize();
     m_qtbaseLanguageSelector.copyLanguages(m_languageSelector.Languages());
@@ -99,8 +100,10 @@ QVApplication::QVApplication(int &argc, char **argv)
             SIGNAL(languageChanged(QString)),
             &m_qtbaseLanguageSelector,
             SLOT(resetTranslator(QString)));
+    StartupProfiler::mark("application.languages-ready");
     registerDefaultKeyMap();
     registerDefaultMouseMap();
+    StartupProfiler::mark("application.keymap-ready");
     loadSettings();
 
     // Qt6 has a limit on loading large images, but this is inconvenient,
@@ -657,6 +660,9 @@ void QVApplication::loadSettings()
     m_confirmDeletePage = m_settings->value("ConfirmDeletePage", true).toBool();
     m_settings->endGroup();
 
+    // The ini has been read; what follows is the theme, which is the other half
+    // of the work this constructor does.
+    StartupProfiler::mark("application.settings-read");
     m_settings->beginGroup("Appearance");
     m_uiTheme = m_settings->value("UiTheme", "Default").toString();
     //QString themeFilePath = getApplicationFilePath(":/themes/"+m_uiTheme+".qss"); //Local files
@@ -665,6 +671,7 @@ void QVApplication::loadSettings()
     const QString styleSheet = File.open(QFile::ReadOnly) ? QString(File.readAll()) : QString();
     QApplication::setStyleSheet(styleSheet);
     m_settings->endGroup();
+    StartupProfiler::mark("application.theme-ready");
 
     m_readProgressStore = new ReadProgressStore(this);
 }

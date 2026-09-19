@@ -18,6 +18,7 @@
 namespace {
 
 constexpr const char *FirstPaintChildEnv = "QV_BENCHMARK_FIRST_PAINT_CHILD";
+constexpr const char *EmptyWindowChildEnv = "QV_BENCHMARK_EMPTY_WINDOW_CHILD";
 constexpr const char *SortEnv = "QV_BENCHMARK_SORT";
 constexpr const char *RecursiveEnv = "QV_BENCHMARK_RECURSIVE";
 constexpr const char *PageIndexEnv = "QV_BENCHMARK_PAGE_INDEX";
@@ -31,6 +32,7 @@ enum class BenchmarkSuite {
     ArchiveOpen,
     FirstImage,
     FirstPaint,
+    EmptyWindow,
 };
 
 enum class PageSelectionKind {
@@ -122,6 +124,11 @@ struct ProfileMilestone
 const ProfileMilestone FirstPaintMilestones[] = {
     {"application.construct.begin", "application_construct_begin_at_us"},
     {"application.base-ready", "application_base_ready_at_us"},
+    {"application.settings-opened", "application_settings_opened_at_us"},
+    {"application.languages-ready", "application_languages_ready_at_us"},
+    {"application.keymap-ready", "application_keymap_ready_at_us"},
+    {"application.settings-read", "application_settings_read_at_us"},
+    {"application.theme-ready", "application_theme_ready_at_us"},
     {"application.settings-loaded", "application_settings_loaded_at_us"},
     {"application.construct.end", "application_construct_end_at_us"},
     {"application.constructed", "application_constructed_at_us"},
@@ -224,6 +231,8 @@ QString suiteName(BenchmarkSuite suite)
         return "first-image";
     case BenchmarkSuite::FirstPaint:
         return "first-paint";
+    case BenchmarkSuite::EmptyWindow:
+        return "empty-window";
     }
     return "unknown";
 }
@@ -248,6 +257,10 @@ bool parseSuite(const QString &text, BenchmarkSuite &suite)
     }
     if (text == "first-paint") {
         suite = BenchmarkSuite::FirstPaint;
+        return true;
+    }
+    if (text == "empty-window") {
+        suite = BenchmarkSuite::EmptyWindow;
         return true;
     }
     return false;
@@ -1504,6 +1517,76 @@ BenchmarkRecord measureFirstPaint(const BenchmarkOptions &options,
     return record;
 }
 
+/**
+ * Runs one empty-window child and reads its profile. The child measures a bare
+ * Qt window, so its milestones show how much of a first paint belongs to Qt and
+ * Windows rather than to QuickViewer's own startup work.
+ */
+BenchmarkRecord runEmptyWindowChild(int run, const QString &profilePath)
+{
+    BenchmarkRecord record;
+    record.suite = "empty-window";
+    record.run = run;
+
+    QFile::remove(profilePath);
+    QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
+    environment.insert(EmptyWindowChildEnv, "1");
+    environment.insert("QV_PROFILE_FIRST_IMAGE", QDir::toNativeSeparators(profilePath));
+
+    QProcess process;
+    process.setProgram(QCoreApplication::applicationFilePath());
+    process.setProcessEnvironment(environment);
+    process.setProcessChannelMode(QProcess::MergedChannels);
+    process.start();
+    if (!process.waitForStarted(30000)) {
+        record.error = "Failed to start the empty-window child process.";
+        return record;
+    }
+    if (!process.waitForFinished(120000)) {
+        process.kill();
+        process.waitForFinished(5000);
+        record.error = "Empty-window child process did not terminate after the first paint.";
+        return record;
+    }
+
+    const QMap<QString, qint64> markers = readProfile(profilePath);
+    if (!markers.contains("first-image-painted")) {
+        record.error =
+            QString("Empty-window profile is incomplete (exit code %1).").arg(process.exitCode());
+        return record;
+    }
+    for (const ProfileMilestone &milestone : FirstPaintMilestones) {
+        const auto marker = markers.constFind(QString::fromLatin1(milestone.label));
+        if (marker != markers.cend()) {
+            record.profileMilestoneNanoseconds.insert(QString::fromLatin1(milestone.label),
+                                                      marker.value() * 1000);
+        }
+    }
+    record.totalNanoseconds = markers.value("first-image-painted") * 1000;
+    record.success = process.exitStatus() == QProcess::NormalExit && process.exitCode() == 0;
+    if (!record.success) {
+        record.error = QString("Empty-window child exited with code %1.").arg(process.exitCode());
+    }
+    return record;
+}
+
+bool benchmarkEmptyWindow(const BenchmarkOptions &options, QVector<BenchmarkRecord> &records)
+{
+    QTemporaryDir profileDirectory;
+    if (!profileDirectory.isValid()) {
+        qCritical() << "Cannot create a temporary directory for empty-window profiles.";
+        return false;
+    }
+    for (int warmup = 0; warmup < options.warmup; ++warmup) {
+        runEmptyWindowChild(0, profileDirectory.filePath(QString("warmup-%1.tsv").arg(warmup)));
+    }
+    for (int run = 1; run <= options.runs; ++run) {
+        records.append(
+            runEmptyWindowChild(run, profileDirectory.filePath(QString("run-%1.tsv").arg(run))));
+    }
+    return true;
+}
+
 bool benchmarkFirstPaintInput(const BenchmarkOptions &options,
                               const QString &input,
                               const ReadProgressStore::ReadProgressMap &progress,
@@ -1549,11 +1632,13 @@ bool parseOptions(const QStringList &arguments, BenchmarkOptions &options, QStri
         "  entry-load   Source read/extraction plus decode and post-processing.\n"
         "  archive-open Archive opening/indexing without image extraction or decode.\n"
         "  first-image  Input opening through the selected decoded image; rendering excluded.\n"
-        "  first-paint  Fresh process startup through the first painted image.");
+        "  first-paint  Fresh process startup through the first painted image.\n"
+        "  empty-window Fresh process startup through the first paint of an empty window.");
     parser.addHelpOption();
     const QCommandLineOption benchmarkOption(
         "benchmark",
-        "Benchmark suite: decode, entry-load, archive-open, first-image, or first-paint.",
+        "Benchmark suite: decode, entry-load, archive-open, first-image, first-paint, or "
+        "empty-window.",
         "suite");
     const QCommandLineOption runsOption("runs", "Number of measured runs (default: 5).", "N", "5");
     const QCommandLineOption warmupOption(
@@ -1652,6 +1737,13 @@ bool parseOptions(const QStringList &arguments, BenchmarkOptions &options, QStri
         options.decoderBackends.insert(format, backends);
     }
     options.inputs = parser.positionalArguments();
+    if (options.suite == BenchmarkSuite::EmptyWindow) {
+        if (!options.inputs.isEmpty()) {
+            error = "empty-window does not take an input.";
+            return false;
+        }
+        return true;
+    }
     if (options.inputs.isEmpty()) {
         error = "At least one benchmark input is required.";
         return false;
@@ -1680,6 +1772,11 @@ bool ImageBenchmarkRunner::isRequested(const QStringList &arguments)
         }
     }
     return false;
+}
+
+bool ImageBenchmarkRunner::isEmptyWindowChildRequested()
+{
+    return !qEnvironmentVariableIsEmpty(EmptyWindowChildEnv);
 }
 
 void ImageBenchmarkRunner::applyStartupOverrides()
@@ -1732,6 +1829,9 @@ int ImageBenchmarkRunner::run(const QStringList &arguments)
 
     QVector<BenchmarkRecord> records;
     bool inputsSucceeded = true;
+    if (options.suite == BenchmarkSuite::EmptyWindow) {
+        inputsSucceeded = benchmarkEmptyWindow(options, records);
+    }
     for (const QString &input : options.inputs) {
         switch (options.suite) {
         case BenchmarkSuite::Decode:
@@ -1750,6 +1850,8 @@ int ImageBenchmarkRunner::run(const QStringList &arguments)
         case BenchmarkSuite::FirstPaint:
             inputsSucceeded =
                 benchmarkFirstPaintInput(options, input, progress, records) && inputsSucceeded;
+            break;
+        case BenchmarkSuite::EmptyWindow:
             break;
         }
     }

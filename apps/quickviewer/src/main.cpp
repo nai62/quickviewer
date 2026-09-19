@@ -1,4 +1,5 @@
 #include <QtCore>
+#include <QtWidgets>
 
 #include "benchmark/imagebenchmarkrunner.h"
 
@@ -24,6 +25,68 @@ class ImageLoadingShutdownGuard
 public:
     ~ImageLoadingShutdownGuard() { Volume::shutdownImageLoading(); }
 };
+
+/**
+ * Reports the first paint of the empty-window benchmark child. That child stops
+ * there, so its profile shows how much of a first paint belongs to Qt and
+ * Windows rather than to QuickViewer's startup work.
+ */
+class EmptyWindowPaintReporter : public QWidget
+{
+public:
+    explicit EmptyWindowPaintReporter(QWidget *parent = nullptr)
+        : QWidget(parent)
+    {
+    }
+
+protected:
+    void paintEvent(QPaintEvent *) override
+    {
+        if (m_reported) {
+            return;
+        }
+        m_reported = true;
+        StartupProfiler::mark("first-image-painted");
+        StartupProfiler::flush();
+        QCoreApplication::quit();
+    }
+
+private:
+    bool m_reported = false;
+};
+
+/**
+ * Startup measured by the empty-window suite: a plain QApplication and one bare
+ * window, with the same winId, show, and event steps the real startup performs.
+ */
+int runEmptyWindowChild(int argc, char **argv)
+{
+    StartupProfiler::mark("application.construct.begin");
+    QApplication app(argc, argv);
+    StartupProfiler::mark("application.construct.end");
+    StartupProfiler::mark("application.constructed");
+
+    EmptyWindowPaintReporter window;
+    window.resize(800, 600);
+    // The first winId() call creates the native window, in this child as in the
+    // QuickViewer startup that cloaks the window before showing it.
+    StartupProfiler::mark("startup.cloak.before-winid");
+    (void)window.winId();
+    StartupProfiler::mark("startup.cloak.after-winid");
+
+    StartupProfiler::mark("startup.show.begin");
+    window.show();
+    StartupProfiler::mark("startup.show.end");
+    StartupProfiler::mark("startup.window-shown");
+
+    StartupProfiler::mark("startup.process-events.begin");
+    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+    StartupProfiler::mark("startup.process-events.end");
+    StartupProfiler::mark("startup.initial-events-processed");
+
+    QTimer::singleShot(30000, &app, &QCoreApplication::quit);
+    return app.exec();
+}
 } // namespace
 
 int main(int argc, char *argv[])
@@ -55,6 +118,10 @@ int main(int argc, char *argv[])
         QApplication::instance()->setAttribute(Qt::AA_DontShowIconsInMenus, true);
     }
 #endif
+
+    if (ImageBenchmarkRunner::isEmptyWindowChildRequested()) {
+        return runEmptyWindowChild(argc, argv);
+    }
 
     StartupProfiler::mark("application.construct.begin");
     QVApplication app(argc, argv);
