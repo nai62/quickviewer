@@ -7,6 +7,7 @@
 #include "fileloader7zarchive.h"
 #include "fileloaderdirectory.h"
 #include "fileloaderrararchive.h"
+#include "imageformat.h"
 #include "rarextractor.h"
 
 #define DATAPATH SRCDIR "data/"
@@ -19,6 +20,8 @@ private Q_SLOTS:
     void initTestCase();
     void cleanupTestCase();
     void formatClassifiers();
+    void jpegContainerNamesAreOneFormat();
+    void imageFormatNamesFollowThePath();
     void zipArchives_data();
     void zipArchives();
     void rarArchives_data();
@@ -61,6 +64,35 @@ void FileLoaderTest::formatClassifiers()
     QVERIFY(!IFileLoader::isAnimatedImageFile("notagif"));
     QVERIFY(!IFileLoader::isArchiveFile("notazip"));
     QVERIFY(IFileLoader::isArchiveFile("BOOK.CBZ"));
+}
+
+void FileLoaderTest::jpegContainerNamesAreOneFormat()
+{
+    const QStringList suffixes{"jpg", "jpeg", "jpe", "jif", "jfif", "jfi"};
+    for (const QString &suffix : suffixes) {
+        const QString path = QString("image.%1").arg(suffix);
+        QVERIFY(imageFormatFromPath(path) == ImageFormat::Jpeg);
+        QVERIFY(imageFormatFromPath(path.toUpper()) == ImageFormat::Jpeg);
+        QCOMPARE(imageFormatCanonicalName(imageFormatFromPath(path)), QString("jpeg"));
+        // The EXIF gate follows the same classification.
+        QVERIFY(IFileLoader::isExifJpegImageFile(path));
+        QVERIFY(IFileLoader::isImageFile(path));
+    }
+    // JPEG is the only format with a plugin preference, and it has two names.
+    const QByteArray jpegName = IFileLoader::jpegQtFormatName();
+    QVERIFY(jpegName == "jpg" || jpegName == "turbojpeg");
+}
+
+void FileLoaderTest::imageFormatNamesFollowThePath()
+{
+    QCOMPARE(imageFormatNameForPath("book/page.jpg"), QString("jpeg"));
+    QCOMPARE(imageFormatNameForPath("book/page.JFIF"), QString("jpeg"));
+    QCOMPARE(imageFormatNameForPath("book/page.apng"), QString("png"));
+    QCOMPARE(imageFormatNameForPath("book/page.tif"), QString("tiff"));
+    // Formats QuickViewer does not model keep the suffix that identified them.
+    QCOMPARE(imageFormatNameForPath("book/page.bmp"), QString("bmp"));
+    // A path without a suffix has no name of its own.
+    QCOMPARE(imageFormatNameForPath("book/page"), QString());
 }
 
 void FileLoaderTest::zipArchives_data()

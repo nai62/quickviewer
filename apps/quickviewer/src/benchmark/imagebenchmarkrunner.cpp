@@ -9,6 +9,7 @@
 #include "fileloader.h"
 #include "fileloader7zarchive.h"
 #include "imageloadmetrics.h"
+#include "imageformat.h"
 #include "qvapplication.h"
 #include "readprogressstore.h"
 #include "volume.h"
@@ -275,24 +276,6 @@ bool parseSortMode(const QString &text, qvEnums::ImageSortBy &sort)
     return false;
 }
 
-QString canonicalImageFormat(const QString &path, const QString &measuredFormat = QString())
-{
-    QString format = QFileInfo(path).suffix().toLower();
-    if (format == "jpg" || format == "jpeg" || format == "jpe" || format == "jif" || format == "jfif" || format == "jfi") {
-        return "jpeg";
-    }
-    if (format == "png" || format == "apng") {
-        return "png";
-    }
-    if (format == "webp") {
-        return "webp";
-    }
-    if (format.isEmpty()) {
-        format = measuredFormat.toLower();
-    }
-    return format;
-}
-
 QString archiveContainerName(const QString &path)
 {
     const QFileInfo info(path);
@@ -439,7 +422,7 @@ bool parseDecoderSpec(const QString &spec, QString &format, QStringList &backend
 
 QStringList decoderCandidatesForEntry(const BenchmarkOptions &options, const QString &entry)
 {
-    const QString format = canonicalImageFormat(entry);
+    const QString format = imageFormatNameForPath(entry);
     const auto found = options.decoderBackends.constFind(format);
     return found == options.decoderBackends.cend() ? QStringList{"auto"} : found.value();
 }
@@ -812,7 +795,7 @@ BenchmarkRecord measureDecode(
     record.pageSource = pageSource;
     record.archiveSize = archiveSize;
     record.imageCount = imageCount;
-    const QString format = canonicalImageFormat(entry);
+    const QString format = imageFormatNameForPath(entry);
     record.format = format;
     record.requestedDecoder = requestedDecoderName(format, backend);
     const ImageDecodePolicy policy = decodePolicyFor(format, backend);
@@ -1102,7 +1085,7 @@ BenchmarkRecord measureDirectFirstImage(
     record.resolvedPage = page.index;
     record.pageSource = page.source;
     record.entry = QFileInfo(input).absoluteFilePath();
-    record.format = canonicalImageFormat(record.entry);
+    record.format = imageFormatNameForPath(record.entry);
     record.requestedDecoder = requestedDecoderName(record.format, backend);
     const ImageDecodePolicy policy = decodePolicyFor(record.format, backend);
 
@@ -1191,7 +1174,7 @@ BenchmarkRecord measureVolumeFirstImage(
         return record;
     }
     record.entryUncompressedSize = static_cast<qint64>(volume->fileLoader()->getFileSize(record.entry));
-    record.format = canonicalImageFormat(record.entry);
+    record.format = imageFormatNameForPath(record.entry);
     record.requestedDecoder = requestedDecoderName(record.format, backend);
     const ImageDecodePolicy policy = decodePolicyFor(record.format, backend);
 
@@ -1301,7 +1284,7 @@ PreparedFirstPaintInput prepareFirstPaintInput(
         }
         prepared.childInput = QFileInfo(input).absoluteFilePath();
         prepared.selectedEntry = prepared.childInput;
-        prepared.format = canonicalImageFormat(prepared.selectedEntry);
+        prepared.format = imageFormatNameForPath(prepared.selectedEntry);
         prepared.resolvedPage = 0;
         prepared.pageSource = page.source;
         prepared.container = "file";
@@ -1327,7 +1310,7 @@ PreparedFirstPaintInput prepareFirstPaintInput(
         prepared.error = "Failed to resolve the selected page.";
         return prepared;
     }
-    prepared.format = canonicalImageFormat(prepared.selectedEntry);
+    prepared.format = imageFormatNameForPath(prepared.selectedEntry);
     prepared.resolvedPage = page.index;
     prepared.pageSource = page.source;
     prepared.container = containerNameForInput(input, volume.get());

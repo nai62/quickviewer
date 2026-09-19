@@ -75,10 +75,8 @@ struct ImageDecodePolicy
 
 struct ImageDecodeMetrics
 {
-    QString format;
     QString decoderBackend;
     QSize sourceSize;
-    QSize outputSize;
     qint64 decodeNanoseconds = 0;
     qint64 pipelineNanoseconds = 0;
 };

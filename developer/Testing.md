@@ -165,7 +165,8 @@ Keep these rules when adapting those commands:
   authoritative; a matching `Totals:` line alone does not prove success.
 - Search for the error markers listed in those examples and print only the
   matching lines, with a little surrounding context for the first failure.
-- Keep the log until the failure, if any, is understood, then delete it.
+- Keep the log until the outcome is understood and anything worth reporting has
+  been captured, then delete it.
 
 ## Full Debug verification
 
@@ -254,3 +255,79 @@ to check or apply formatting manually, and the environment requirements.
 Startup painting, fullscreen, OpenGL, input timing, and other visual behavior
 must also be checked interactively on Windows when affected. Headless
 automation does not establish visual correctness.
+
+## Traps when adding source files or tests
+
+### A new or removed source needs `--qmake`
+
+`verify-windows.cmd` regenerates Makefiles only when they are missing or when
+`--qmake` is passed. Adding or removing a source in a `.pro` therefore leaves an
+existing build tree with a stale object list, and the first symptom is a link
+error about a class that clearly exists in the tree:
+
+```text
+volume.obj : error LNK2001: unresolved external symbol
+    "public: __cdecl ImageDecoder::ImageDecoder(struct ImageDecodeSettings)"
+fatal error LNK1120: 7 unresolved externals
+```
+
+Pass `--qmake` for the configuration you are building. Debug and Release keep
+separate build trees, so forcing qmake in one does not regenerate the other.
+
+A first `--qmake` build can still link against the old object list. `jom` may
+regenerate a sub-Makefile while it is already using the dependency graph it
+read at startup, so the new object is not built until the next run. When a link
+error names a class from a source you just added, repeat the same command
+before investigating anything else.
+
+### moc can leave a zero-byte `.moc` behind
+
+Qt 6.11.2 `moc` can fail to parse a translation unit that contains an awkward
+multi-line raw string literal before it has finished parsing the `Q_OBJECT`
+class. It then writes a zero-byte `.moc` and **still exits 0**:
+
+```text
+tst_viewernavigationtest.cpp: note: No relevant classes found. No output generated.
+```
+
+The compiler accepts the empty file, so the first visible failure is a link
+error about the meta-object:
+
+```text
+tst_viewernavigationtest.obj : error LNK2001: unresolved external symbol
+    "public: virtual struct QMetaObject const * __cdecl ViewerNavigationTest::metaObject(void)const"
+```
+
+The message text is localized, so match on the symbol name. When a link error
+names `metaObject`, `qt_metacast`, or `qt_metacall`, check the size of the
+generated `.moc` before anything else. In the test file that triggered this,
+the cause was an inline SVG literal inside a slot:
+
+```cpp
+const QByteArray svg = R"(<svg xmlns="http://www.w3.org/2000/svg" width="40" height="20">
+    <rect width="40" height="20" fill="#4080c0"/>
+</svg>)";
+```
+
+An escaped literal decodes identically and parses cleanly:
+
+```cpp
+const QByteArray svg =
+    "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"40\" height=\"20\">"
+    "<rect width=\"40\" height=\"20\" fill=\"#4080c0\"/>"
+    "</svg>";
+```
+
+The exact minimal trigger is not fully characterized. Verified so far: the same
+literal is harmless when it appears after the `Q_OBJECT` class, a multi-line
+raw string without double quotes is harmless, and a single-line raw string
+containing `//` is harmless. Prefer escaped literals in any file that `moc`
+processes, or move the data out of the class body.
+
+### Which test projects pick up application sources
+
+`tests/windowstartup` and `tests/languageswitch` include
+`apps/quickviewer/QuickViewer.pro` directly, so a source added to the
+application reaches those two without an edit of their own.
+`tests/viewernavigation` lists application sources explicitly and needs its own
+entry.

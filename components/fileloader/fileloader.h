@@ -47,6 +47,11 @@ public:
      * Name QImageReader reports for the TurboJPEG JPEG decoder plugin.
      */
     static constexpr const char *turboJpegFormatName() { return "turbojpeg"; }
+    /**
+     * Qt format name to read JPEG bytes with: the TurboJPEG plugin when it is
+     * registered, the plain JPEG handler otherwise.
+     */
+    static QByteArray jpegQtFormatName();
     static bool isArchiveFile(QString path);
     static bool isExifJpegImageFile(QString path);
     static bool isExifRawImageFile(QString path);
