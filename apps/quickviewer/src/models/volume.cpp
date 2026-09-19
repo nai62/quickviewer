@@ -972,10 +972,19 @@ ImageContent Volume::decodeImageBytes(const QString &path,
         return ImageContent();
     }
 
-    ImageDecodeDetail::PipelineMetricsScope<> pipelineMetrics(metrics);
+    QElapsedTimer pipelineTimer;
+    if (metrics) {
+        pipelineTimer.start();
+    }
+
     const DecodePlan plan = planDecode(path, decodePolicy);
-    return loadWithSpecifiedFormat(
+
+    ImageContent content = loadWithSpecifiedFormat(
         path, pageSize, decodeTargetSize, loadDetailedMetadata, bytes, plan, metrics);
+    if (metrics) {
+        metrics->pipelineNanoseconds = pipelineTimer.nsecsElapsed();
+    }
+    return content;
 }
 
 static ImageContent enrichDetailedMetadata(const QSharedPointer<ImageLoadContext> &context,

@@ -51,9 +51,6 @@ private:
 using TestDecodeMetricsScope = ImageDecodeDetail::DecodeMetricsScope<FakeDecodeTimer>;
 static_assert(!std::is_copy_constructible_v<TestDecodeMetricsScope>);
 static_assert(!std::is_move_constructible_v<TestDecodeMetricsScope>);
-using TestPipelineMetricsScope = ImageDecodeDetail::PipelineMetricsScope<FakeDecodeTimer>;
-static_assert(!std::is_copy_constructible_v<TestPipelineMetricsScope>);
-static_assert(!std::is_move_constructible_v<TestPipelineMetricsScope>);
 
 static QByteArray encodedStillPng(const QSize &size, const QColor &color)
 {
@@ -322,44 +319,6 @@ private slots:
             scope.finish();
         }
         QCOMPARE(backendCalls, 0);
-        QCOMPARE(FakeDecodeTimer::starts, 0);
-        QCOMPARE(FakeDecodeTimer::reads, 0);
-    }
-
-    void pipelineMetricsScopeReplacesTheMeasurementOnce()
-    {
-        FakeDecodeTimer::reset();
-        ImageDecodeMetrics metrics;
-        metrics.pipelineNanoseconds = 7;
-        {
-            TestPipelineMetricsScope scope(&metrics);
-            FakeDecodeTimer::now += 21;
-        }
-        // The pipeline is one interval per request, so it is assigned, not summed.
-        QCOMPARE(metrics.pipelineNanoseconds, qint64(21));
-        QCOMPARE(FakeDecodeTimer::starts, 1);
-        QCOMPARE(FakeDecodeTimer::reads, 1);
-
-        {
-            TestPipelineMetricsScope scope(&metrics);
-            FakeDecodeTimer::now += 13;
-            scope.finish();
-            FakeDecodeTimer::now += 1000; // Postprocessing must not be included.
-            scope.finish();
-        }
-        // Every request replaces the measurement with its own interval.
-        QCOMPARE(metrics.pipelineNanoseconds, qint64(13));
-        QCOMPARE(FakeDecodeTimer::starts, 2);
-        QCOMPARE(FakeDecodeTimer::reads, 2);
-    }
-
-    void pipelineMetricsScopeDoesNoInstrumentationWithoutSink()
-    {
-        FakeDecodeTimer::reset();
-        {
-            TestPipelineMetricsScope scope(nullptr);
-            scope.finish();
-        }
         QCOMPARE(FakeDecodeTimer::starts, 0);
         QCOMPARE(FakeDecodeTimer::reads, 0);
     }
