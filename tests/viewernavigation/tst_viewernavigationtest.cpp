@@ -6,6 +6,7 @@
 
 #include "imageview.h"
 #include "models/cursorscrollmapping.h"
+#include "models/imagedecoder.h"
 #include "models/imagestring.h"
 #include "models/loupecontroller.h"
 #include "models/pagedisplayformatter.h"
@@ -18,8 +19,38 @@
 #include "models/shadermanager.h"
 #include "models/volumecache.h"
 #include "models/volumehandle.h"
+#include "models/volume.h"
 
 #define FILELOADER_DATAPATH VIEWERNAVIGATION_SRCDIR "../fileloader/data/"
+
+static QByteArray encodedStillPng(const QSize &size, const QColor &color)
+{
+    QImage image(size, QImage::Format_RGB32);
+    image.fill(color);
+    QByteArray bytes;
+    QBuffer buffer(&bytes);
+    if (!buffer.open(QIODevice::WriteOnly)) {
+        return QByteArray();
+    }
+    image.save(&buffer, "PNG");
+    buffer.close();
+    return bytes;
+}
+
+// Inserts an acTL chunk right after IHDR, which is what marks a PNG as animated.
+static QByteArray withAnimationChunk(const QByteArray &png)
+{
+    if (png.size() < 33) {
+        return png;
+    }
+    QByteArray chunk;
+    chunk.append(4, '\0'); // chunk length
+    chunk.append("acTL", 4);
+    chunk.append(4, '\0'); // chunk CRC, not validated by the caller
+    QByteArray result = png;
+    result.insert(8 + 12 + 13, chunk);
+    return result;
+}
 
 class EmptyFileLoader final : public IFileLoader
 {
@@ -85,6 +116,101 @@ private slots:
         qApp->setSeparatePagesWhenWideImage(true);
         qApp->setDualView(false);
         qApp->setFitting(true);
+    }
+
+    void constrainedDecodeSizeHonorsTextureAndTargetLimits()
+    {
+        const QSize source(4000, 2000);
+        QCOMPARE(ImageDecoder::constrainedDecodeSize(source, QSize(), 4096), source);
+        QCOMPARE(ImageDecoder::constrainedDecodeSize(source, QSize(), 1024), QSize(1024, 512));
+        QCOMPARE(ImageDecoder::constrainedDecodeSize(source, QSize(800, 800), 4096), QSize(800, 400));
+        QCOMPARE(ImageDecoder::constrainedDecodeSize(QSize(), QSize(100, 100), 4096), QSize());
+    }
+
+    void imageDecoderDecodesStillPngItself()
+    {
+        const QByteArray bytes = encodedStillPng(QSize(7, 5), Qt::darkCyan);
+        QVERIFY(!bytes.isEmpty());
+
+        ImageDecoder decoder;
+        ImageDecodeOutput output;
+        QVERIFY(decoder.decodeSpng(bytes, output));
+        QCOMPARE(output.sourceSize, QSize(7, 5));
+        QCOMPARE(output.image.size(), QSize(7, 5));
+        QCOMPARE(output.image.pixelColor(0, 0).rgb(), QColor(Qt::darkCyan).rgb());
+    }
+
+    void imageDecoderLeavesAnimatedPngToTheCaller()
+    {
+        const QByteArray animated = withAnimationChunk(encodedStillPng(QSize(7, 5), Qt::darkCyan));
+        QVERIFY(!animated.isEmpty());
+
+        ImageDecoder decoder;
+        ImageDecodeOutput output;
+        QVERIFY(!decoder.decodeSpng(animated, output));
+    }
+
+    void imageDecoderReportsInputItCannotDecode()
+    {
+        ImageDecoder decoder;
+        ImageDecodeOutput output;
+        QVERIFY(!decoder.decodeTurboJpeg(QByteArray("not a jpeg"), QSize(), output));
+        QVERIFY(!decoder.decodeSpng(QByteArray("not a png"), output));
+        QVERIFY(!decoder.decodeWebP(QByteArray("not a webp"), QSize(), output));
+    }
+
+    void decodeImageBytesUsesNativePngDecoder()
+    {
+        const QByteArray bytes = encodedStillPng(QSize(9, 4), Qt::magenta);
+        QVERIFY(!bytes.isEmpty());
+
+        ImageDecodePolicy policy;
+        policy.jpeg = JpegDecoderPreference::Auto;
+        policy.png = PngDecoderPreference::Auto;
+        policy.webp = WebPDecoderPreference::Auto;
+
+        ImageDecodeMetrics metrics;
+        const ImageContent content = Volume::decodeImageBytes("still.png", bytes, QSize(), QSize(), true, policy, &metrics);
+
+        QCOMPARE(metrics.decoderBackend, QStringLiteral("libspng"));
+        QCOMPARE(content.originalSize, QSize(9, 4));
+        QCOMPARE(content.loadedImage.size(), QSize(9, 4));
+    }
+
+    void decodeImageBytesFallsBackToQtReaderWhenNativeDecoderIsDisabled()
+    {
+        if (!QImageReader::supportedImageFormats().contains("png")) {
+            QSKIP("Qt has no PNG image handler in this environment.");
+        }
+        const QByteArray bytes = encodedStillPng(QSize(9, 4), Qt::magenta);
+        QVERIFY(!bytes.isEmpty());
+
+        ImageDecodePolicy policy;
+        policy.png = PngDecoderPreference::Qt;
+
+        ImageDecodeMetrics metrics;
+        const ImageContent content = Volume::decodeImageBytes("still.png", bytes, QSize(), QSize(), true, policy, &metrics);
+
+        QVERIFY(metrics.decoderBackend.startsWith(QStringLiteral("qimagereader:")));
+        QCOMPARE(content.loadedImage.size(), QSize(9, 4));
+    }
+
+    void decodeImageBytesRasterizesSvgThroughDecoder()
+    {
+        // Keep this as an escaped literal: moc 6.11.2 produces an empty .moc
+        // when a multi-line raw string containing "//" appears in this file.
+        const QByteArray svg =
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"40\" height=\"20\">"
+            "<rect width=\"40\" height=\"20\" fill=\"#4080c0\"/>"
+            "</svg>";
+
+        ImageDecodeMetrics metrics;
+        const ImageContent content = Volume::decodeImageBytes("shape.svg", svg, QSize(), QSize(), true, ImageDecodePolicy(), &metrics);
+
+        QCOMPARE(metrics.decoderBackend, QStringLiteral("svgloader"));
+        QVERIFY(content.hasDetailedMetadata);
+        QCOMPARE(content.originalSize, QSize(40, 20));
+        QVERIFY(!content.loadedImage.isNull());
     }
 
     void emptyViewerSessionOperationsAreSafe()
