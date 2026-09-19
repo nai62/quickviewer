@@ -501,6 +501,7 @@ private slots:
         QTest::addColumn<QString>("path");
         QTest::newRow("unknown-format-name") << QStringLiteral("still.qv_unknown_format");
         QTest::newRow("apng-format-name") << QStringLiteral("still.apng");
+        QTest::newRow("no-suffix") << QStringLiteral("still");
     }
 
     void decodeImageBytesReadsPngWithFallbackFormatNames()

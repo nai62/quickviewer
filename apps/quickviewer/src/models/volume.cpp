@@ -611,6 +611,27 @@ qtFormatNameFor(const QString &path, ImageFormat format, const ImageDecodePolicy
     }
 }
 
+/**
+ * Qt format names to try, in the order they are tried, for bytes whose
+ * preferred name is `preferredQtFormatName`. The empty name, which lets Qt
+ * detect the format from the bytes, is always last: it is the only candidate
+ * that can read a file whose suffix matches no registered handler.
+ */
+static QList<QByteArray> qtFormatNameCandidates(const QByteArray &preferredQtFormatName)
+{
+    QList<QByteArray> candidates{preferredQtFormatName};
+    // An APNG-capable handler that will not animate these bytes cannot serve
+    // them, so the still-image handler gets a turn before Qt decides for itself.
+    if (preferredQtFormatName == QByteArrayLiteral("apng")) {
+        candidates.append(IFileLoader::supportsImageFormat("lodepng") ? QByteArrayLiteral("lodepng")
+                                                                      : QByteArrayLiteral("png"));
+    }
+    if (!candidates.contains(QByteArray())) {
+        candidates.append(QByteArray());
+    }
+    return candidates;
+}
+
 static ImageDecodeSettings currentImageDecodeSettings(int maxTextureSize)
 {
     ImageDecodeSettings settings;
@@ -810,7 +831,7 @@ static ImageContent loadWithSpecifiedFormat(QString path,
                                             bool loadDetailedMetadata,
                                             QByteArray bytes,
                                             ImageFormat format,
-                                            QByteArray qtFormatName,
+                                            QByteArray preferredQtFormatName,
                                             const ImageDecodePolicy &decodePolicy,
                                             ImageDecodeMetrics *metrics)
 {
@@ -841,12 +862,10 @@ static ImageContent loadWithSpecifiedFormat(QString path,
                                  maxTextureSize);
     }
 
-    // The native backends get one attempt each. Only the Qt reader is retried,
-    // to try another format name for bytes the first name cannot read.
-    // Preserve the initial attempt plus the five retries of the recursive implementation.
-    constexpr int kMaxDecodeAttempts = 6;
-    for (int attempt = 0; attempt < kMaxDecodeAttempts; ++attempt) {
-        // No native backend produced pixels, so read the bytes with Qt instead.
+    // No native backend produced pixels, so read the bytes with Qt instead. Each
+    // candidate format name gets one attempt; a name the reader cannot use hands
+    // over to the next candidate, and everything else decides the result.
+    for (const QByteArray &qtFormatName : qtFormatNameCandidates(preferredQtFormatName)) {
         QImage src;
         QSize baseSize;
         ImageContent ic(path, bytes.length());
@@ -854,7 +873,6 @@ static ImageContent loadWithSpecifiedFormat(QString path,
         QImageReader reader(&buffer, qtFormatName);
 
         if (!reader.canRead()) {
-            qtFormatName.clear();
             continue;
         }
 
@@ -871,8 +889,8 @@ static ImageContent loadWithSpecifiedFormat(QString path,
             return ic;
         }
         if (qtFormatName == QByteArrayLiteral("apng")) {
-            bool lodepng_exist = IFileLoader::supportsImageFormat("lodepng");
-            qtFormatName = lodepng_exist ? QByteArrayLiteral("lodepng") : QByteArrayLiteral("png");
+            // Readable, but this handler will not animate these bytes, so let
+            // the still-image candidate read them instead.
             continue;
         }
         baseSize = reader.size();
@@ -944,7 +962,7 @@ ImageContent Volume::decodeImageBytes(const QString &path,
 
     const ImageFormat format =
         IFileLoader::isExifJpegImageFile(path) ? ImageFormat::Jpeg : imageFormatFromPath(path);
-    const QByteArray qtFormatName = qtFormatNameFor(path, format, decodePolicy);
+    const QByteArray preferredQtFormatName = qtFormatNameFor(path, format, decodePolicy);
 
     ImageContent content = loadWithSpecifiedFormat(path,
                                                    pageSize,
@@ -952,7 +970,7 @@ ImageContent Volume::decodeImageBytes(const QString &path,
                                                    loadDetailedMetadata,
                                                    bytes,
                                                    format,
-                                                   qtFormatName,
+                                                   preferredQtFormatName,
                                                    decodePolicy,
                                                    metrics);
     if (metrics) {
