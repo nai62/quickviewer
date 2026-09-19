@@ -620,6 +620,124 @@ static ImageDecodeSettings currentImageDecodeSettings(int maxTextureSize)
     return settings;
 }
 
+// Metadata and display preparation are shared by native and Qt static-image decoders.
+// Keep this outside decode timing and hint negotiation.
+static ImageContent finishStaticImage(QImage src,
+                                      QSize baseSize,
+                                      const QString &path,
+                                      const QByteArray &bytes,
+                                      QSize pageSize,
+                                      QSize decodeTargetSize,
+                                      bool loadDetailedMetadata,
+                                      int maxTextureSize)
+{
+    easyexif::EXIFInfo info;
+    ImageContent ic(path, bytes.length());
+    const bool isExifJpeg = src.width() > 0 && IFileLoader::isExifJpegImageFile(path);
+    if (isExifJpeg) {
+        if (loadDetailedMetadata) {
+            info.parseFrom(reinterpret_cast<const unsigned char *>(bytes.constData()),
+                           bytes.length());
+        } else {
+            info.Orientation = parseJpegOrientation(bytes);
+        }
+    }
+
+    if (src.width() > 0 && IFileLoader::isExifRawImageFile(path)) {
+        parseExifTextExtents(src, info);
+    }
+
+    ic.originalSize = baseSize;
+    ic.exifInfo = info;
+    if (src.isNull()) {
+        return ic;
+    }
+    if (qApp->DontShrinkForLargeImage() ||
+        (src.width() <= maxTextureSize && src.height() <= maxTextureSize)) {
+        ic = ImageContent(src, path, baseSize, info, bytes.length());
+    } else {
+        // resample for too big images
+        QImage src2;
+        switch (src.depth()) {
+        case 32:
+            if ((src.width() & 0x3) != 0 || (src.height() & 0x1) != 0) {
+                // QImage processing sometimes fails
+                for (int count = 1;; count++) {
+                    src2 = src.copy(QRect(0, 0, src.width() >> 2 << 2, src.height() >> 1 << 1));
+                    if (!src2.isNull()) {
+                        break;
+                    }
+                    qDebug() << "[2]" << path << src2 << count;
+                    if (count >= 100) {
+                        return ImageContent(path, bytes.length());
+                    }
+                    QThread::currentThread()->usleep(40000);
+                }
+                src.swap(src2);
+            }
+            break;
+        default:
+            if (src.format() != QImage::Format::Format_Grayscale8 &&
+                src.format() != QImage::Format::Format_RGB888) {
+                src = src.convertToFormat(QImage::Format::Format_RGB888);
+            }
+            if ((src.width() & 0xF) != 0 || (src.height() & 0x1) != 0) {
+                // QImage processing sometimes fails
+                int count = 0;
+                do {
+                    src2 = src.copy(QRect(0, 0, src.width() >> 4 << 4, src.height() >> 1 << 1));
+                    qDebug() << "[2]" << path << src2 << count;
+                    if (!src2.isNull()) {
+                        break;
+                    }
+                    if (src2.isNull() && count++ < 1000) {
+                        QThread::currentThread()->usleep(1000);
+                        continue;
+                    }
+                    return ImageContent(path, bytes.length());
+                } while (1);
+                src.swap(src2);
+            }
+            break;
+        }
+
+        QSize srcSize = src.size();
+        QSize halfSize = QSize((srcSize.width()) / 2, (srcSize.height()) / 2);
+
+        QImage half = QImage(halfSize.width(), halfSize.height(), src.format());
+        ResizeHalf::FMT fmt = (ResizeHalf::FMT)(src.depth() >> 3);
+        ResizeHalf resizer(fmt);
+        resizer.resizeHV(half.bits(),
+                         src.bits(),
+                         src.width(),
+                         srcSize.height(),
+                         half.bytesPerLine(),
+                         src.bytesPerLine());
+
+        ic.loadedImage = half;
+        ic.loadedImageSize = half.size();
+    }
+    if (decodeTargetSize.isValid() && !decodeTargetSize.isEmpty() && !ic.loadedImage.isNull() &&
+        (ic.loadedImage.width() > decodeTargetSize.width() ||
+         ic.loadedImage.height() > decodeTargetSize.height())) {
+        ic.loadedImage =
+            ic.loadedImage.scaled(decodeTargetSize, Qt::KeepAspectRatio, Qt::FastTransformation);
+        ic.loadedImageSize = ic.loadedImage.size();
+    }
+    ic.hasDetailedMetadata = loadDetailedMetadata || !isExifJpeg;
+
+    // CPU resizing before Page Viewing
+    if (!pageSize.isEmpty() && !ic.loadedImage.isNull()) {
+        QSize newsize = ic.exifInfo.Orientation == 6 || ic.exifInfo.Orientation == 8
+                            ? QSize(pageSize.height(), pageSize.width())
+                            : pageSize;
+        ic.appliedResizeMode = qApp->Effect();
+        ic.resizedImage = QZimg::scaled(
+            ic.loadedImage, newsize, Qt::KeepAspectRatio, cpuFilterMode(qApp->Effect()));
+    }
+    return ic;
+}
+
 static ImageContent loadWithSpecifiedFormat(QString path,
                                             QSize pageSize,
                                             QSize decodeTargetSize,
@@ -635,8 +753,6 @@ static ImageContent loadWithSpecifiedFormat(QString path,
     for (int attempt = 0; attempt < kMaxDecodeAttempts; ++attempt) {
         int maxTextureSize = qApp->MaxTextureSize();
         const ImageDecoder decoder(currentImageDecodeSettings(maxTextureSize));
-        easyexif::EXIFInfo info;
-
         if (format == ImageFormat::Svg) {
             QElapsedTimer decodeTimer;
             if (metrics) {
@@ -647,7 +763,8 @@ static ImageContent loadWithSpecifiedFormat(QString path,
                 metrics->decoderBackend = "svgloader";
                 metrics->decodeNanoseconds += decodeTimer.nsecsElapsed();
             }
-            ImageContent ic(output.image, path, output.sourceSize, info, bytes.length());
+            ImageContent ic(
+                output.image, path, output.sourceSize, easyexif::EXIFInfo(), bytes.length());
             ic.hasDetailedMetadata = true;
             return ic;
         }
@@ -783,109 +900,14 @@ static ImageContent loadWithSpecifiedFormat(QString path,
             }
         }
 
-        const bool isExifJpeg = src.width() > 0 && IFileLoader::isExifJpegImageFile(path);
-        if (isExifJpeg) {
-            if (loadDetailedMetadata) {
-                info.parseFrom(reinterpret_cast<const unsigned char *>(bytes.constData()),
-                               bytes.length());
-            } else {
-                info.Orientation = parseJpegOrientation(bytes);
-            }
-        }
-
-        if (src.width() > 0 && IFileLoader::isExifRawImageFile(path)) {
-            parseExifTextExtents(src, info);
-        }
-
-        ic.originalSize = baseSize;
-        ic.exifInfo = info;
-        if (src.isNull()) {
-            return ic;
-        }
-        if (qApp->DontShrinkForLargeImage() ||
-            (src.width() <= maxTextureSize && src.height() <= maxTextureSize)) {
-            ic = ImageContent(src, path, baseSize, info, bytes.length());
-        } else {
-            // resample for too big images
-            QImage src2;
-            switch (src.depth()) {
-            case 32:
-                if ((src.width() & 0x3) != 0 || (src.height() & 0x1) != 0) {
-                    // QImage processing sometimes fails
-                    for (int count = 1;; count++) {
-                        src2 = src.copy(QRect(0, 0, src.width() >> 2 << 2, src.height() >> 1 << 1));
-                        if (!src2.isNull()) {
-                            break;
-                        }
-                        qDebug() << "[2]" << path << src2 << count;
-                        if (count >= 100) {
-                            return ImageContent(path, bytes.length());
-                        }
-                        QThread::currentThread()->usleep(40000);
-                    }
-                    src.swap(src2);
-                }
-                break;
-            default:
-                if (src.format() != QImage::Format::Format_Grayscale8 &&
-                    src.format() != QImage::Format::Format_RGB888) {
-                    src = src.convertToFormat(QImage::Format::Format_RGB888);
-                }
-                if ((src.width() & 0xF) != 0 || (src.height() & 0x1) != 0) {
-                    // QImage processing sometimes fails
-                    int count = 0;
-                    do {
-                        src2 = src.copy(QRect(0, 0, src.width() >> 4 << 4, src.height() >> 1 << 1));
-                        qDebug() << "[2]" << path << src2 << count;
-                        if (!src2.isNull()) {
-                            break;
-                        }
-                        if (src2.isNull() && count++ < 1000) {
-                            QThread::currentThread()->usleep(1000);
-                            continue;
-                        }
-                        return ImageContent(path, bytes.length());
-                    } while (1);
-                    src.swap(src2);
-                }
-                break;
-            }
-
-            QSize srcSize = src.size();
-            QSize halfSize = QSize((srcSize.width()) / 2, (srcSize.height()) / 2);
-
-            QImage half = QImage(halfSize.width(), halfSize.height(), src.format());
-            ResizeHalf::FMT fmt = (ResizeHalf::FMT)(src.depth() >> 3);
-            ResizeHalf resizer(fmt);
-            resizer.resizeHV(half.bits(),
-                             src.bits(),
-                             src.width(),
-                             srcSize.height(),
-                             half.bytesPerLine(),
-                             src.bytesPerLine());
-
-            ic.loadedImage = half;
-            ic.loadedImageSize = half.size();
-        }
-        if (decodeTargetSize.isValid() && !decodeTargetSize.isEmpty() && !ic.loadedImage.isNull() &&
-            (ic.loadedImage.width() > decodeTargetSize.width() ||
-             ic.loadedImage.height() > decodeTargetSize.height())) {
-            ic.loadedImage = ic.loadedImage.scaled(
-                decodeTargetSize, Qt::KeepAspectRatio, Qt::FastTransformation);
-            ic.loadedImageSize = ic.loadedImage.size();
-        }
-        ic.hasDetailedMetadata = loadDetailedMetadata || !isExifJpeg;
-
-        // CPU resizing before Page Viewing
-        if (!pageSize.isEmpty() && !ic.loadedImage.isNull()) {
-            QSize newsize = ic.exifInfo.Orientation == 6 || ic.exifInfo.Orientation == 8
-                                ? QSize(pageSize.height(), pageSize.width())
-                                : pageSize;
-            ic.appliedResizeMode = qApp->Effect();
-            ic.resizedImage = QZimg::scaled(
-                ic.loadedImage, newsize, Qt::KeepAspectRatio, cpuFilterMode(qApp->Effect()));
-        }
-        return ic;
+        return finishStaticImage(std::move(src),
+                                 baseSize,
+                                 path,
+                                 bytes,
+                                 pageSize,
+                                 decodeTargetSize,
+                                 loadDetailedMetadata,
+                                 maxTextureSize);
     }
     return ImageContent(path, bytes.length());
 }

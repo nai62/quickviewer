@@ -65,9 +65,9 @@ static void appendLittleEndian32(QByteArray &out, quint32 value)
 }
 
 // Builds a JPEG that carries IFD0 with nothing but an EXIF Orientation tag.
-static QByteArray jpegWithOrientation(int orientation)
+static QByteArray jpegWithOrientation(int orientation, const QSize &size = QSize(8, 4))
 {
-    QImage image(8, 4, QImage::Format_RGB32);
+    QImage image(size, QImage::Format_RGB32);
     image.fill(Qt::yellow);
     QByteArray bytes;
     QBuffer buffer(&bytes);
@@ -318,6 +318,77 @@ private slots:
         QCOMPARE(content.fileSize, size_t(bytes.size()));
         QVERIFY(metrics.decoderBackend.isEmpty());
         QVERIFY(!metrics.sourceSize.isValid());
+    }
+
+    void decodeImageBytesPreparesStaticImage_data()
+    {
+        QTest::addColumn<bool>("useQt");
+        QTest::addColumn<bool>("collectMetrics");
+        QTest::newRow("native") << false << false;
+        QTest::newRow("native-metrics") << false << true;
+        QTest::newRow("qt") << true << false;
+        QTest::newRow("qt-metrics") << true << true;
+    }
+
+    void decodeImageBytesPreparesStaticImage()
+    {
+        QFETCH(bool, useQt);
+        QFETCH(bool, collectMetrics);
+        const QByteArray bytes = encodedStillPng(QSize(64, 32), Qt::cyan);
+        QVERIFY(!bytes.isEmpty());
+        ImageDecodePolicy policy;
+        policy.png = useQt ? PngDecoderPreference::Qt : PngDecoderPreference::Auto;
+        ImageDecodeMetrics metrics;
+        const ImageContent content = Volume::decodeImageBytes("still.png",
+                                                              bytes,
+                                                              QSize(8, 8),
+                                                              QSize(32, 32),
+                                                              false,
+                                                              policy,
+                                                              collectMetrics ? &metrics : nullptr);
+
+        QCOMPARE(content.originalSize, QSize(64, 32));
+        QCOMPARE(content.loadedImageSize, QSize(32, 16));
+        QCOMPARE(content.loadedImage.size(), content.loadedImageSize);
+        // QZimg preserves aspect ratio using the requested height, not a bounding box.
+        QCOMPARE(content.resizedImage.size(), QSize(16, 8));
+        QCOMPARE(content.loadedImage.pixelColor(0, 0), QColor(Qt::cyan));
+        QVERIFY(content.hasDetailedMetadata); // PNG needs no deferred JPEG EXIF load.
+        QCOMPARE(content.path, QStringLiteral("still.png"));
+        QCOMPARE(content.fileSize, size_t(bytes.size()));
+        if (collectMetrics) {
+            QCOMPARE(metrics.sourceSize, content.originalSize);
+            if (useQt) {
+                QVERIFY(metrics.decoderBackend.startsWith(QStringLiteral("qimagereader:")));
+            } else {
+                QCOMPARE(metrics.decoderBackend, QStringLiteral("libspng"));
+            }
+        }
+    }
+
+    void decodeImageBytesPreservesOrientationDuringPreparation_data()
+    {
+        QTest::addColumn<bool>("detailedMetadata");
+        QTest::newRow("orientation-only") << false;
+        QTest::newRow("full-exif") << true;
+    }
+
+    void decodeImageBytesPreservesOrientationDuringPreparation()
+    {
+        QFETCH(bool, detailedMetadata);
+        const QByteArray bytes = jpegWithOrientation(6, QSize(64, 32));
+        QVERIFY(!bytes.isEmpty());
+        ImageDecodePolicy policy;
+        policy.jpeg = JpegDecoderPreference::Qt;
+        const ImageContent content = Volume::decodeImageBytes(
+            "rotated.jpg", bytes, QSize(8, 16), QSize(), detailedMetadata, policy);
+
+        QCOMPARE(content.originalSize, QSize(64, 32));
+        QCOMPARE(content.loadedImageSize, QSize(64, 32));
+        QCOMPARE(int(content.exifInfo.Orientation), 6);
+        QCOMPARE(content.hasDetailedMetadata, detailedMetadata);
+        // Page dimensions are swapped for EXIF orientation 6 before CPU resizing.
+        QCOMPARE(content.resizedImage.size(), QSize(16, 8));
     }
 
     void decodeImageBytesRasterizesSvgThroughDecoder()
