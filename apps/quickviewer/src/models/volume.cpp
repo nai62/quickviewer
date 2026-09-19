@@ -172,48 +172,46 @@ void Volume::sortPages(qvEnums::ImageSortBy sortBy)
 
 void Volume::applyPageSort(qvEnums::ImageSortBy sortBy)
 {
-    m_sortBy = sortBy;
-    m_imageMetadataList.clear();
-    if (sortBy != qvEnums::ImageSortBy::SortByFileName &&
-        sortBy != qvEnums::ImageSortBy::SortByFileNameDescending) {
-        foreach (const QString &fl, m_pageNames) {
-            m_imageMetadataList << ImageMetadata(this, fl);
+    if (sortBy == qvEnums::ImageSortBy::SortByFileName ||
+        sortBy == qvEnums::ImageSortBy::SortByFileNameDescending) {
+        QCollator collator;
+        collator.setNumericMode(true);
+        const bool descending = sortBy == qvEnums::ImageSortBy::SortByFileNameDescending;
+        std::sort(m_pageNames.begin(),
+                  m_pageNames.end(),
+                  [&collator, descending](const QString &a, const QString &b) {
+                      const int order = collator.compare(a, b);
+                      return descending ? order > 0 : order < 0;
+                  });
+    } else {
+        // The remaining sorts need attributes only the metadata list carries.
+        // Sort that, then let the page list follow it, so every index keeps
+        // meaning the same page for the viewers and the prefetcher.
+        QList<ImageMetadata> metadata;
+        for (const QString &name : m_pageNames) {
+            metadata.append(ImageMetadata(this, name));
         }
-    }
-    switch (sortBy) {
-    case qvEnums::ImageSortBy::SortByFileName: {
-        QCollator collator;
-        collator.setNumericMode(true);
-        std::sort(
-            m_pageNames.begin(),
-            m_pageNames.end(),
-            [&collator](const QString &a, const QString &b) { return collator.compare(a, b) < 0; });
-        break;
-    }
-    case qvEnums::ImageSortBy::SortByFileNameDescending: {
-        QCollator collator;
-        collator.setNumericMode(true);
-        std::sort(
-            m_pageNames.begin(),
-            m_pageNames.end(),
-            [&collator](const QString &a, const QString &b) { return collator.compare(a, b) > 0; });
-        break;
-    }
-    case qvEnums::ImageSortBy::SortByFileSize:
-        std::stable_sort(m_imageMetadataList.begin(), m_imageMetadataList.end(), fileSizeLessThan);
-        break;
-    case qvEnums::ImageSortBy::SortByFileSizeDescending:
-        std::stable_sort(
-            m_imageMetadataList.begin(), m_imageMetadataList.end(), fileSizeDescendingLessThan);
-        break;
-    case qvEnums::ImageSortBy::SortByModifiedTime:
-        std::stable_sort(
-            m_imageMetadataList.begin(), m_imageMetadataList.end(), modifiedTimeLessThan);
-        break;
-    case qvEnums::ImageSortBy::SortByModifiedTimeDescending:
-        std::stable_sort(
-            m_imageMetadataList.begin(), m_imageMetadataList.end(), modifiedTimeDescendingLessThan);
-        break;
+        switch (sortBy) {
+        case qvEnums::ImageSortBy::SortByFileSize:
+            std::stable_sort(metadata.begin(), metadata.end(), fileSizeLessThan);
+            break;
+        case qvEnums::ImageSortBy::SortByFileSizeDescending:
+            std::stable_sort(metadata.begin(), metadata.end(), fileSizeDescendingLessThan);
+            break;
+        case qvEnums::ImageSortBy::SortByModifiedTime:
+            std::stable_sort(metadata.begin(), metadata.end(), modifiedTimeLessThan);
+            break;
+        case qvEnums::ImageSortBy::SortByModifiedTimeDescending:
+            std::stable_sort(metadata.begin(), metadata.end(), modifiedTimeDescendingLessThan);
+            break;
+        case qvEnums::ImageSortBy::SortByFileName:
+        case qvEnums::ImageSortBy::SortByFileNameDescending:
+            break;
+        }
+        m_pageNames.clear();
+        for (const ImageMetadata &entry : metadata) {
+            m_pageNames.append(entry.filename());
+        }
     }
     m_imageLoadCache.clear();
     m_previewLoadCache.clear();
@@ -251,13 +249,7 @@ QString Volume::pageNameAt(int pageIndex) const
     if (!m_shuffledPageNames.isEmpty()) {
         return m_shuffledPageNames[pageIndex];
     }
-    if (m_sortBy == qvEnums::ImageSortBy::SortByFileName ||
-        m_sortBy == qvEnums::ImageSortBy::SortByFileNameDescending) {
-        return m_pageNames[pageIndex];
-    } else if (pageIndex < m_imageMetadataList.size()) {
-        return m_imageMetadataList[pageIndex].filename();
-    }
-    return "";
+    return m_pageNames[pageIndex];
 }
 
 int Volume::pageIndexForName(const QString &name) const
@@ -266,19 +258,7 @@ int Volume::pageIndexForName(const QString &name) const
     if (!m_shuffledPageNames.isEmpty()) {
         return m_shuffledPageNames.indexOf(nativeName);
     }
-    // The metadata sorts reorder the metadata list and leave the name list in
-    // the order the loader reported, so the lookup has to use the list that
-    // pageNameAt() reads from.
-    if (m_sortBy == qvEnums::ImageSortBy::SortByFileName ||
-        m_sortBy == qvEnums::ImageSortBy::SortByFileNameDescending) {
-        return m_pageNames.indexOf(nativeName);
-    }
-    for (int pageIndex = 0; pageIndex < m_imageMetadataList.size(); ++pageIndex) {
-        if (m_imageMetadataList[pageIndex].filename() == nativeName) {
-            return pageIndex;
-        }
-    }
-    return -1;
+    return m_pageNames.indexOf(nativeName);
 }
 
 static int recommendedPrefetchConcurrency(const IFileLoader *loader)

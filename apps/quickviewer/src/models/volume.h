@@ -150,15 +150,12 @@ private:
     ImageLoadFuture
     scheduleMetadataLoad(ImageContent content, const QString &path, quint64 generation);
 
+    /**
+     * Page names in display order: every index the viewers and the prefetcher
+     * use means the same page, whatever sort produced that order.
+     */
     QList<QString> m_pageNames;
     QList<QString> m_shuffledPageNames;
-    QList<ImageMetadata> m_imageMetadataList;
-    /**
-     * Sort the page list was built with. The metadata list only exists for the
-     * metadata sorts, so pageNameAt() has to use this instead of the current
-     * application setting.
-     */
-    qvEnums::ImageSortBy m_sortBy = qvEnums::ImageSortBy::SortByFileName;
     mutable LruCache<int, ImageLoadFuture> m_imageLoadCache;
     LruCache<int, ImageLoadFuture> m_previewLoadCache;
 

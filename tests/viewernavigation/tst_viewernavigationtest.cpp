@@ -1629,7 +1629,11 @@ private slots:
         // The size sort reverses the order the loader lists the pages in, so the
         // page at index 0 is not the first entry of the loader's own list.
         QCOMPARE(volume.pageNameAt(0), QStringLiteral("page-2.bmp"));
+        QCOMPARE(volume.pageNameAt(1), QStringLiteral("page-1.bmp"));
+        QCOMPARE(volume.pageNameAt(2), QStringLiteral("page-0.bmp"));
         QCOMPARE(volume.pageIndexForName(QStringLiteral("page-2.bmp")), 0);
+        QCOMPARE(volume.pageIndexForName(QStringLiteral("page-0.bmp")), 2);
+        QCOMPARE(QFileInfo(volume.pagePathAt(0)).fileName(), QStringLiteral("page-2.bmp"));
 
         volume.prefetchCoverImages(0);
         QCOMPARE(volume.imageLoadAt(0).result().path, QStringLiteral("page-2.bmp"));
