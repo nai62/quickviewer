@@ -91,19 +91,32 @@ static QByteArray stillWebP()
     return QByteArray::fromBase64("UklGRhwAAABXRUJQVlA4TBAAAAAvCMAAAAcQ/e9//wMR0f8A");
 }
 
-// Inserts an acTL chunk right after IHDR, which is what marks a PNG as animated.
-static QByteArray withAnimationChunk(const QByteArray &png)
+// Inserts a chunk right after IHDR. The CRC is left at zero: the callers below
+// and the PNG backend only look at the chunk type.
+static QByteArray
+withChunk(const QByteArray &png, const char *type, const QByteArray &payload = QByteArray())
 {
     if (png.size() < 33) {
         return png;
     }
+    const quint32 length = static_cast<quint32>(payload.size());
     QByteArray chunk;
-    chunk.append(4, '\0'); // chunk length
-    chunk.append("acTL", 4);
-    chunk.append(4, '\0'); // chunk CRC, not validated by the caller
+    chunk.append(static_cast<char>((length >> 24) & 0xFF));
+    chunk.append(static_cast<char>((length >> 16) & 0xFF));
+    chunk.append(static_cast<char>((length >> 8) & 0xFF));
+    chunk.append(static_cast<char>(length & 0xFF));
+    chunk.append(type, 4);
+    chunk.append(payload);
+    chunk.append(4, '\0');
     QByteArray result = png;
     result.insert(8 + 12 + 13, chunk);
     return result;
+}
+
+// Inserts an acTL chunk right after IHDR, which is what marks a PNG as animated.
+static QByteArray withAnimationChunk(const QByteArray &png)
+{
+    return withChunk(png, "acTL");
 }
 
 static void appendLittleEndian16(QByteArray &out, quint16 value)
@@ -439,6 +452,30 @@ private slots:
         ImageDecoder decoder;
         ImageDecodeOutput output;
         QVERIFY(!decoder.decodeSpng(animated, output));
+    }
+
+    void pngBackendLeavesColourManagedChunksToQt()
+    {
+        const QByteArray plain = encodedStillPng(QSize(9, 4), Qt::magenta);
+        QVERIFY(!plain.isEmpty());
+        // The sRGB chunk only names the colour space, so libspng can keep the
+        // bytes; a gamma chunk asks for a transform it does not apply.
+        const QByteArray srgb = withChunk(plain, "sRGB", QByteArray(1, '\0'));
+        const QByteArray gamma = withChunk(plain, "gAMA", QByteArray::fromHex("0000B18F"));
+
+        ImageDecodePolicy policy;
+        policy.png = PngDecoderPreference::Auto;
+        ImageDecodeMetrics srgbMetrics;
+        const ImageContent srgbContent = Volume::decodeImageBytes(
+            "srgb.png", srgb, QSize(), QSize(), true, policy, &srgbMetrics);
+        QCOMPARE(srgbMetrics.decoderBackend, QStringLiteral("libspng"));
+        QCOMPARE(srgbContent.loadedImage.colorSpace(), QColorSpace(QColorSpace::SRgb));
+
+        ImageDecodeMetrics gammaMetrics;
+        const ImageContent gammaContent = Volume::decodeImageBytes(
+            "gamma.png", gamma, QSize(), QSize(), true, policy, &gammaMetrics);
+        QVERIFY(gammaMetrics.decoderBackend.startsWith(QStringLiteral("qimagereader:")));
+        QVERIFY(!gammaContent.loadedImage.isNull());
     }
 
     void imageDecoderReportsInputItCannotDecode()

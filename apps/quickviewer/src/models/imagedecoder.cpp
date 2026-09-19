@@ -69,13 +69,22 @@ bool webpHasFeature(const QByteArray &bytes, unsigned char featureMask)
     return (static_cast<unsigned char>(data[20]) & featureMask) != 0;
 }
 
-bool pngHasChunk(const QByteArray &bytes, const char chunkType[5])
+/** The PNG chunks that decide whether this backend can serve the bytes. */
+struct PngChunks
+{
+    bool animated = false;
+    bool colourManaged = false;
+    bool srgb = false;
+};
+
+PngChunks readPngChunks(const QByteArray &bytes)
 {
     static constexpr unsigned char PngSignature[] = {0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A};
+    PngChunks chunks;
     const auto *data = reinterpret_cast<const unsigned char *>(bytes.constData());
     const qsizetype size = bytes.size();
     if (size < 8 || std::memcmp(data, PngSignature, sizeof(PngSignature)) != 0) {
-        return false;
+        return chunks;
     }
 
     qsizetype offset = 8;
@@ -85,28 +94,35 @@ bool pngHasChunk(const QByteArray &bytes, const char chunkType[5])
                                     (static_cast<quint32>(data[offset + 2]) << 8) |
                                     static_cast<quint32>(data[offset + 3]);
         if (static_cast<quint64>(chunkLength) > static_cast<quint64>(size - offset - 12)) {
-            return false;
+            return chunks;
         }
         const char *type = reinterpret_cast<const char *>(data + offset + 4);
-        if (std::memcmp(type, chunkType, 4) == 0) {
-            return true;
-        }
-        if (std::memcmp(type, "IEND", 4) == 0) {
+        if (std::memcmp(type, "acTL", 4) == 0) {
+            chunks.animated = true;
+        } else if (std::memcmp(type, "iCCP", 4) == 0 || std::memcmp(type, "gAMA", 4) == 0 ||
+                   std::memcmp(type, "cHRM", 4) == 0) {
+            chunks.colourManaged = true;
+        } else if (std::memcmp(type, "sRGB", 4) == 0) {
+            chunks.srgb = true;
+        } else if (std::memcmp(type, "IEND", 4) == 0) {
             break;
         }
         offset += static_cast<qsizetype>(chunkLength) + 12;
     }
-    return false;
+    return chunks;
 }
 
 bool tryDecodeSpng(const QByteArray &bytes, QImage &decoded, QSize &sourceSize)
 {
+    if (bytes.isEmpty()) {
+        return false;
+    }
+    const PngChunks chunks = readPngChunks(bytes);
     // Animated PNGs and colour managed ones go to Qt: stepping frames needs a
     // reader that keeps the animation, and iCCP/gAMA/cHRM would each need a
     // colour transform this backend does not apply. An sRGB chunk does not,
     // so those bytes are decoded here with the colour space set below.
-    if (bytes.isEmpty() || pngHasChunk(bytes, "acTL") || pngHasChunk(bytes, "iCCP") ||
-        pngHasChunk(bytes, "gAMA") || pngHasChunk(bytes, "cHRM")) {
+    if (chunks.animated || chunks.colourManaged) {
         return false;
     }
 
@@ -145,7 +161,7 @@ bool tryDecodeSpng(const QByteArray &bytes, QImage &decoded, QSize &sourceSize)
             context.get(), image.bits(), outputSize, SPNG_FMT_RGBA8, SPNG_DECODE_TRNS) != 0) {
         return false;
     }
-    if (pngHasChunk(bytes, "sRGB")) {
+    if (chunks.srgb) {
         image.setColorSpace(QColorSpace(QColorSpace::SRgb));
     }
 
