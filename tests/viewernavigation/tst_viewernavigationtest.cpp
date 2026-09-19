@@ -118,7 +118,8 @@ static void appendLittleEndian32(QByteArray &out, quint32 value)
 }
 
 // Builds a JPEG that carries IFD0 with nothing but an EXIF Orientation tag.
-static QByteArray jpegWithOrientation(int orientation, const QSize &size = QSize(8, 4))
+static QByteArray
+jpegWithOrientation(int orientation, const QSize &size = QSize(8, 4), quint32 ifdOffset = 8)
 {
     QImage image(size, QImage::Format_RGB32);
     image.fill(Qt::yellow);
@@ -137,7 +138,7 @@ static QByteArray jpegWithOrientation(int orientation, const QSize &size = QSize
     payload.append("Exif\0\0", 6);
     payload.append("II", 2);
     appendLittleEndian16(payload, 0x2A);
-    appendLittleEndian32(payload, 8); // offset of IFD0
+    appendLittleEndian32(payload, ifdOffset); // offset of IFD0
     appendLittleEndian16(payload, 1); // one IFD0 entry
     appendLittleEndian16(payload, 0x0112);
     appendLittleEndian16(payload, 3); // SHORT
@@ -646,6 +647,25 @@ private slots:
         QCOMPARE(content.hasDetailedMetadata, detailedMetadata);
         // Page dimensions are swapped for EXIF orientation 6 before CPU resizing.
         QCOMPARE(content.resizedImage.size(), QSize(16, 8));
+    }
+
+    void decodeImageBytesRejectsExifOffsetOutsideTheSegment()
+    {
+        // The IFD offset is a 32-bit field, so an offset near 4 GiB used to wrap
+        // the bounds check in the orientation fast path and read past the segment.
+        const quint32 offsets[] = {0xFFFFFFFFu, 0xFFFFFFFEu, 0x7FFFFFFFu};
+        for (quint32 ifdOffset : offsets) {
+            const QByteArray bytes = jpegWithOrientation(6, QSize(8, 4), ifdOffset);
+            QVERIFY(!bytes.isEmpty());
+            ImageDecodePolicy policy;
+            policy.jpeg = JpegDecoderPreference::Qt;
+            const ImageContent content = Volume::decodeImageBytes(
+                "out-of-range-ifd.jpg", bytes, QSize(), QSize(), false, policy);
+
+            QVERIFY(!content.loadedImage.isNull());
+            QCOMPARE(content.originalSize, QSize(8, 4));
+            QCOMPARE(int(content.exifInfo.Orientation), 1);
+        }
     }
 
     void decodeImageBytesRasterizesSvgThroughDecoder()

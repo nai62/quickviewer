@@ -538,15 +538,17 @@ static int parseJpegOrientation(const QByteArray &bytes)
             if (read16(tiff + 2) != 42) {
                 return 1;
             }
-            const quint32 ifdOffset = read32(tiff + 4);
-            if (ifdOffset + 2 > static_cast<quint32>(tiffSize)) {
+            // The offset is a 32-bit field, so the bounds check has to widen it
+            // before adding: near 4 GiB it used to wrap and read past the segment.
+            const qint64 ifdOffset = read32(tiff + 4);
+            if (ifdOffset + 2 > tiffSize) {
                 return 1;
             }
             const unsigned char *ifd = tiff + ifdOffset;
             const quint16 entryCount = read16(ifd);
             for (quint16 i = 0; i < entryCount; ++i) {
                 const qsizetype entryOffset = 2 + static_cast<qsizetype>(i) * 12;
-                if (ifdOffset + entryOffset + 12 > static_cast<quint32>(tiffSize)) {
+                if (ifdOffset + entryOffset + 12 > tiffSize) {
                     break;
                 }
                 const unsigned char *entry = ifd + entryOffset;
