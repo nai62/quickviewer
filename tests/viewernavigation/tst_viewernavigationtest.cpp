@@ -21,6 +21,7 @@
 #include "models/volumecache.h"
 #include "models/volumehandle.h"
 #include "models/volume.h"
+#include "qzimg.h"
 
 #define FILELOADER_DATAPATH VIEWERNAVIGATION_SRCDIR "../fileloader/data/"
 
@@ -1612,6 +1613,20 @@ private slots:
         pageWithDefaults.setPageLayoutFitting(
             QRect(0, 0, 100, 100), RenderedPage::PageCenter, qvEnums::FitMode::FitToRect, 1.0);
         QCOMPARE(pageWithDefaults.displayScale(), 0.25);
+    }
+
+    void cpuResizeGivesUpOnAnEmptyImage()
+    {
+        QElapsedTimer timer;
+        timer.start();
+        const QImage scaled =
+            QZimg::scaled(QImage(), QSize(64, 64), Qt::IgnoreAspectRatio, QZimg::ResizeBicubic);
+        const qint64 elapsedMilliseconds = timer.elapsed();
+
+        QVERIFY(scaled.isNull());
+        // Before the null check this slept through the allocation retries (~9 s).
+        QVERIFY2(elapsedMilliseconds < 1000,
+                 qPrintable(QStringLiteral("resize took %1 ms").arg(elapsedMilliseconds)));
     }
 
     void emptyVolumeOperationsAreSafe()
