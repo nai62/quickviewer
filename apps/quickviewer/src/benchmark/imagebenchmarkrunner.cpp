@@ -1517,6 +1517,18 @@ BenchmarkRecord measureFirstPaint(const BenchmarkOptions &options,
     return record;
 }
 
+/** Tail of what the child printed, for a failure that needs explaining. */
+QString childOutputSummary(QProcess &process)
+{
+    const QString output = QString::fromLocal8Bit(process.readAllStandardOutput()).simplified();
+    if (output.isEmpty()) {
+        return QString();
+    }
+    constexpr int MaximumOutputLength = 300;
+    const QString tail = output.right(MaximumOutputLength);
+    return QStringLiteral(" Output: %1").arg(tail);
+}
+
 /**
  * Runs one empty-window child and reads its profile. The child measures a bare
  * Qt window, so its milestones show how much of a first paint belongs to Qt and
@@ -1542,17 +1554,24 @@ BenchmarkRecord runEmptyWindowChild(int run, const QString &profilePath)
         record.error = "Failed to start the empty-window child process.";
         return record;
     }
-    if (!process.waitForFinished(120000)) {
+    if (!process.waitForFinished(60000)) {
         process.kill();
         process.waitForFinished(5000);
         record.error = "Empty-window child process did not terminate after the first paint.";
+        qWarning().noquote() << "empty-window run" << run << ':' << record.error;
         return record;
     }
 
     const QMap<QString, qint64> markers = readProfile(profilePath);
     if (!markers.contains("first-image-painted")) {
-        record.error =
-            QString("Empty-window profile is incomplete (exit code %1).").arg(process.exitCode());
+        const QString reason = markers.contains("empty-window.deadline")
+                                   ? QStringLiteral("the empty window never painted")
+                                   : QStringLiteral("the profile is incomplete");
+        record.error = QString("Empty-window child: %1 (exit code %2).%3")
+                           .arg(reason)
+                           .arg(process.exitCode())
+                           .arg(childOutputSummary(process));
+        qWarning().noquote() << "empty-window run" << run << ':' << record.error;
         return record;
     }
     for (const ProfileMilestone &milestone : FirstPaintMilestones) {
@@ -1566,6 +1585,7 @@ BenchmarkRecord runEmptyWindowChild(int run, const QString &profilePath)
     record.success = process.exitStatus() == QProcess::NormalExit && process.exitCode() == 0;
     if (!record.success) {
         record.error = QString("Empty-window child exited with code %1.").arg(process.exitCode());
+        qWarning().noquote() << "empty-window run" << run << ':' << record.error;
     }
     return record;
 }

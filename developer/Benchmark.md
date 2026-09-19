@@ -251,6 +251,10 @@ for the steps both children share:
 Milestone columns for QuickViewer-only work, such as the MainWindow constructor,
 the volume load, and the startup volume prefetch, stay blank.
 
+The child stops itself if the empty window never paints. That run is recorded as
+a failure naming the reason instead of holding the benchmark for its full
+timeout, and each failed run is reported on stderr while the suite runs.
+
 ## CSV output
 
 Each measured row records at least:

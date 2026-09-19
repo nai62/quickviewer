@@ -39,6 +39,8 @@ public:
     {
     }
 
+    bool hasReportedFirstPaint() const { return m_reported; }
+
 protected:
     void paintEvent(QPaintEvent *) override
     {
@@ -48,12 +50,14 @@ protected:
         m_reported = true;
         StartupProfiler::mark("first-image-painted");
         StartupProfiler::flush();
-        QCoreApplication::quit();
     }
 
 private:
     bool m_reported = false;
 };
+
+// A child that cannot paint must not hold the benchmark for its full timeout.
+constexpr int EmptyWindowDeadlineMilliseconds = 15000;
 
 /**
  * Startup measured by the empty-window suite: a plain QApplication and one bare
@@ -84,8 +88,24 @@ int runEmptyWindowChild(int argc, char **argv)
     StartupProfiler::mark("startup.process-events.end");
     StartupProfiler::mark("startup.initial-events-processed");
 
-    QTimer::singleShot(30000, &app, &QCoreApplication::quit);
-    return app.exec();
+    // Stopping from inside a paint event does not end the event loop, and the
+    // paint can arrive before this loop starts, so the first paint is polled
+    // from a timer that runs inside the loop.
+    QTimer firstPaintPoll;
+    QObject::connect(&firstPaintPoll, &QTimer::timeout, &app, [&window, &app] {
+        if (window.hasReportedFirstPaint()) {
+            app.exit(0);
+        }
+    });
+    firstPaintPoll.start(10);
+    QTimer::singleShot(EmptyWindowDeadlineMilliseconds, &app, [] {
+        StartupProfiler::mark("empty-window.deadline");
+        StartupProfiler::flush();
+        QCoreApplication::exit(2);
+    });
+    const int result = app.exec();
+    StartupProfiler::flush();
+    return result;
 }
 } // namespace
 
