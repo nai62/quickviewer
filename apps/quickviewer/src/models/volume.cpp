@@ -614,9 +614,6 @@ static ImageContent loadWithSpecifiedFormat(
         const ImageDecoder decoder(currentImageDecodeSettings(maxTextureSize));
         easyexif::EXIFInfo info;
 
-        if (metrics) {
-            metrics->format = format;
-        }
         if (format == ImageFormat::Svg) {
             QElapsedTimer decodeTimer;
             if (metrics) {
@@ -884,7 +881,6 @@ ImageContent Volume::decodeImageBytes(
         if (!metrics->sourceSize.isValid()) {
             metrics->sourceSize = content.originalSize;
         }
-        metrics->outputSize = content.loadedImageSize;
     }
     return content;
 }

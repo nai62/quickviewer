@@ -3,8 +3,6 @@
 
 #include <QtCore>
 
-#include "imageformat.h"
-
 enum class JpegDecoderPreference {
     Auto,
     Qt,
@@ -77,10 +75,8 @@ struct ImageDecodePolicy
 
 struct ImageDecodeMetrics
 {
-    ImageFormat format = ImageFormat::Unknown;
     QString decoderBackend;
     QSize sourceSize;
-    QSize outputSize;
     qint64 decodeNanoseconds = 0;
     qint64 pipelineNanoseconds = 0;
 };
