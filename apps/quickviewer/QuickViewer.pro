@@ -149,6 +149,7 @@ SOURCES += \
     src/widgets/innerframe.cpp \
     src/models/movie.cpp \
     src/models/volume.cpp \
+    src/models/imagedecoder.cpp \
     src/models/volumeloader.cpp \
     src/models/volumelocation.cpp \
     src/models/storedvolumelocation.cpp \
@@ -217,6 +218,7 @@ HEADERS  += \
     src/widgets/innerframe.h \
     src/models/movie.h \
     src/models/volume.h \
+    src/models/imagedecoder.h \
     src/models/volumeloader.h \
     src/models/volumelocation.h \
     src/models/storedvolumelocation.h \
