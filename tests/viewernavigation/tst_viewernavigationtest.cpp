@@ -7,6 +7,8 @@
 #include "imageview.h"
 #include "models/cursorscrollmapping.h"
 #include "models/imagedecoder.h"
+#include "models/jpegorientation.h"
+#include "models/decodemetricsscope.h"
 #include "models/imagestring.h"
 #include "models/loupecontroller.h"
 #include "models/pagedisplayformatter.h"
@@ -20,8 +22,36 @@
 #include "models/volumecache.h"
 #include "models/volumehandle.h"
 #include "models/volume.h"
+#include "qzimg.h"
 
 #define FILELOADER_DATAPATH VIEWERNAVIGATION_SRCDIR "../fileloader/data/"
+
+class FakeDecodeTimer
+{
+public:
+    inline static qint64 now = 0;
+    inline static int starts = 0;
+    inline static int reads = 0;
+
+    static void reset() { now = starts = reads = 0; }
+    void start()
+    {
+        ++starts;
+        m_startedAt = now;
+    }
+    qint64 nsecsElapsed() const
+    {
+        ++reads;
+        return now - m_startedAt;
+    }
+
+private:
+    qint64 m_startedAt = 0;
+};
+
+using TestDecodeMetricsScope = ImageDecodeDetail::DecodeMetricsScope<FakeDecodeTimer>;
+static_assert(!std::is_copy_constructible_v<TestDecodeMetricsScope>);
+static_assert(!std::is_move_constructible_v<TestDecodeMetricsScope>);
 
 static QByteArray encodedStillPng(const QSize &size, const QColor &color)
 {
@@ -37,19 +67,57 @@ static QByteArray encodedStillPng(const QSize &size, const QColor &color)
     return bytes;
 }
 
-// Inserts an acTL chunk right after IHDR, which is what marks a PNG as animated.
-static QByteArray withAnimationChunk(const QByteArray &png)
+// Encodes through a Qt plug-in that a test build may not ship.
+static QByteArray encodedStillJpeg(const QSize &size, const QColor &color)
+{
+    if (!QImageWriter::supportedImageFormats().contains("jpeg")) {
+        return QByteArray();
+    }
+    QImage image(size, QImage::Format_RGB32);
+    image.fill(color);
+    QByteArray bytes;
+    QBuffer buffer(&bytes);
+    if (!buffer.open(QIODevice::WriteOnly)) {
+        return QByteArray();
+    }
+    const bool saved = image.save(&buffer, "JPEG");
+    buffer.close();
+    return saved ? bytes : QByteArray();
+}
+
+// A 9x4 magenta still image. Qt's own WebP writer emits a profile chunk that
+// the still-image libwebp path rejects, so the bytes are embedded instead.
+static QByteArray stillWebP()
+{
+    return QByteArray::fromBase64("UklGRhwAAABXRUJQVlA4TBAAAAAvCMAAAAcQ/e9//wMR0f8A");
+}
+
+// Inserts a chunk right after IHDR. The CRC is left at zero: the callers below
+// and the PNG backend only look at the chunk type.
+static QByteArray
+withChunk(const QByteArray &png, const char *type, const QByteArray &payload = QByteArray())
 {
     if (png.size() < 33) {
         return png;
     }
+    const quint32 length = static_cast<quint32>(payload.size());
     QByteArray chunk;
-    chunk.append(4, '\0'); // chunk length
-    chunk.append("acTL", 4);
-    chunk.append(4, '\0'); // chunk CRC, not validated by the caller
+    chunk.append(static_cast<char>((length >> 24) & 0xFF));
+    chunk.append(static_cast<char>((length >> 16) & 0xFF));
+    chunk.append(static_cast<char>((length >> 8) & 0xFF));
+    chunk.append(static_cast<char>(length & 0xFF));
+    chunk.append(type, 4);
+    chunk.append(payload);
+    chunk.append(4, '\0');
     QByteArray result = png;
     result.insert(8 + 12 + 13, chunk);
     return result;
+}
+
+// Inserts an acTL chunk right after IHDR, which is what marks a PNG as animated.
+static QByteArray withAnimationChunk(const QByteArray &png)
+{
+    return withChunk(png, "acTL");
 }
 
 static void appendLittleEndian16(QByteArray &out, quint16 value)
@@ -65,9 +133,10 @@ static void appendLittleEndian32(QByteArray &out, quint32 value)
 }
 
 // Builds a JPEG that carries IFD0 with nothing but an EXIF Orientation tag.
-static QByteArray jpegWithOrientation(int orientation)
+static QByteArray
+jpegWithOrientation(int orientation, const QSize &size = QSize(8, 4), quint32 ifdOffset = 8)
 {
-    QImage image(8, 4, QImage::Format_RGB32);
+    QImage image(size, QImage::Format_RGB32);
     image.fill(Qt::yellow);
     QByteArray bytes;
     QBuffer buffer(&bytes);
@@ -84,7 +153,7 @@ static QByteArray jpegWithOrientation(int orientation)
     payload.append("Exif\0\0", 6);
     payload.append("II", 2);
     appendLittleEndian16(payload, 0x2A);
-    appendLittleEndian32(payload, 8); // offset of IFD0
+    appendLittleEndian32(payload, ifdOffset); // offset of IFD0
     appendLittleEndian16(payload, 1); // one IFD0 entry
     appendLittleEndian16(payload, 0x0112);
     appendLittleEndian16(payload, 3); // SHORT
@@ -130,7 +199,7 @@ public:
     InflateCacheMode getCacheMode() const override { return InflateNoCached; }
 };
 
-class MemoryFileLoader final : public IFileLoader
+class MemoryFileLoader : public IFileLoader
 {
 public:
     explicit MemoryFileLoader(int imageCount)
@@ -170,11 +239,148 @@ private:
     QStringList m_requestedNames;
 };
 
+// Reports the pages as archive entries whose sizes fall with the page number, so
+// sorting by file size reverses the order the loader lists them in.
+class SizeSortedArchiveFileLoader final : public MemoryFileLoader
+{
+public:
+    using MemoryFileLoader::MemoryFileLoader;
+
+    bool isArchive() const override { return true; }
+    quint64 getFileSize(QString name) const override
+    {
+        const int pageIndex = name.section('-', 1, 1).section('.', 0, 0).toInt();
+        return quint64(100 - pageIndex);
+    }
+};
+
 class ViewerNavigationTest : public QObject
 {
     Q_OBJECT
 
 private slots:
+    void decodeMetricsScopeAccountsForEarlyReturnsAndStopsOnce()
+    {
+        FakeDecodeTimer::reset();
+        ImageDecodeMetrics metrics;
+        metrics.decodeNanoseconds = 7;
+        metrics.pipelineNanoseconds = 99;
+        metrics.decoderBackend = QStringLiteral("previous");
+        int backendCalls = 0;
+        const auto backend = [&] {
+            ++backendCalls;
+            FakeDecodeTimer::now += 5; // Include name construction only while timing is active.
+            return QStringLiteral("successful");
+        };
+
+        const auto failedAttempt = [&] {
+            TestDecodeMetricsScope scope(&metrics);
+            FakeDecodeTimer::now += 11;
+            scope.recordBackendOnSuccess(false, backend);
+            return false; // No finish(): RAII must still accumulate the failed attempt.
+        };
+        QVERIFY(!failedAttempt());
+        QCOMPARE(metrics.decodeNanoseconds, qint64(18));
+        QCOMPARE(metrics.decoderBackend, QStringLiteral("previous"));
+        QCOMPARE(backendCalls, 0);
+        {
+            TestDecodeMetricsScope scope(&metrics);
+            FakeDecodeTimer::now += 13;
+            scope.finish();
+            scope.recordBackendOnSuccess(true, backend);
+            FakeDecodeTimer::now += 1000; // Postprocessing must not be included.
+            scope.finish();
+        }
+        QCOMPARE(metrics.decodeNanoseconds, qint64(31));
+        QCOMPARE(metrics.decoderBackend, QStringLiteral("successful"));
+        QCOMPARE(backendCalls, 1);
+        QCOMPARE(FakeDecodeTimer::starts, 2);
+        QCOMPARE(FakeDecodeTimer::reads, 2);
+        QCOMPARE(metrics.pipelineNanoseconds, qint64(99));
+    }
+
+    void decodeMetricsScopeRecordsUnconditionalBackendBeforeStopping()
+    {
+        FakeDecodeTimer::reset();
+        ImageDecodeMetrics metrics;
+        {
+            TestDecodeMetricsScope scope(&metrics);
+            FakeDecodeTimer::now += 17;
+            scope.recordBackend([] {
+                FakeDecodeTimer::now += 5;
+                return QStringLiteral("svgloader");
+            });
+            scope.finish();
+        }
+        QCOMPARE(metrics.decodeNanoseconds, qint64(22));
+        QCOMPARE(metrics.decoderBackend, QStringLiteral("svgloader"));
+        QCOMPARE(FakeDecodeTimer::reads, 1);
+    }
+
+    void decodeMetricsScopeDoesNoInstrumentationWithoutSink()
+    {
+        FakeDecodeTimer::reset();
+        int backendCalls = 0;
+        const auto backend = [&] {
+            ++backendCalls;
+            return QStringLiteral("unused");
+        };
+        {
+            TestDecodeMetricsScope scope(nullptr);
+            scope.recordBackend(backend);
+            scope.recordBackendOnSuccess(true, backend);
+            scope.recordBackendOnSuccess(false, backend);
+            scope.finish();
+        }
+        QCOMPARE(backendCalls, 0);
+        QCOMPARE(FakeDecodeTimer::starts, 0);
+        QCOMPARE(FakeDecodeTimer::reads, 0);
+    }
+
+    void decodeImageBytesRecordsBackendForFailedSvg()
+    {
+        ImageDecodeMetrics metrics;
+        const ImageContent content = Volume::decodeImageBytes("broken.svg",
+                                                              QByteArray("not an SVG"),
+                                                              QSize(),
+                                                              QSize(),
+                                                              true,
+                                                              ImageDecodePolicy(),
+                                                              &metrics);
+        QVERIFY(!content.isRenderable());
+        QCOMPARE(metrics.decoderBackend, QStringLiteral("svgloader"));
+    }
+
+    void decodeImageBytesRecordsMovieBackendBeforeLoadingFrames()
+    {
+        const QByteArray bytes =
+            QByteArray::fromBase64("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7");
+        ImageDecodeMetrics metrics;
+        ImageContent content = Volume::decodeImageBytes(
+            "frame.gif", bytes, QSize(), QSize(), true, ImageDecodePolicy(), &metrics);
+        QVERIFY(!content.movie.isNull());
+        QVERIFY(!content.movie.data()); // Frame decoding is deferred.
+        QCOMPARE(metrics.decoderBackend, QStringLiteral("qmovie:gif"));
+    }
+
+    void initializeAnimationLoadsTheFirstFrame()
+    {
+        const QByteArray bytes =
+            QByteArray::fromBase64("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7");
+        ImageContent content = Volume::decodeImageBytes(
+            "frame.gif", bytes, QSize(), QSize(), true, ImageDecodePolicy());
+        QVERIFY(!content.movie.isNull());
+        QVERIFY(!content.movie.data());
+        QCOMPARE(content.originalSize, QSize(1, 1));
+
+        content.initializeAnimation();
+        QVERIFY(content.movie.data());
+        QVERIFY(!content.loadedImage.isNull());
+        QCOMPARE(content.loadedImage.size(), QSize(1, 1));
+        QCOMPARE(content.originalSize, QSize(1, 1));
+        QCOMPARE(content.loadedImageSize, QSize(1, 1));
+    }
+
     void init()
     {
         qApp->setSeparatePagesWhenWideImage(true);
@@ -189,7 +395,41 @@ private slots:
         QCOMPARE(ImageDecoder::constrainedDecodeSize(source, QSize(), 1024), QSize(1024, 512));
         QCOMPARE(ImageDecoder::constrainedDecodeSize(source, QSize(800, 800), 4096),
                  QSize(800, 400));
+        // The default settings carry no limit, which still honours the request.
+        const int unlimited = ImageDecodeSettings::UnlimitedTextureSize;
+        QCOMPARE(ImageDecoder::constrainedDecodeSize(source, QSize(), unlimited), source);
+        QCOMPARE(ImageDecoder::constrainedDecodeSize(source, QSize(800, 800), unlimited),
+                 QSize(800, 400));
         QCOMPARE(ImageDecoder::constrainedDecodeSize(QSize(), QSize(100, 100), 4096), QSize());
+    }
+
+    void defaultDecodeSettingsImposeNoLimit()
+    {
+        ImageDecodeSettings settings;
+        QCOMPARE(settings.maxTextureSize, ImageDecodeSettings::UnlimitedTextureSize);
+
+        // libwebp refuses bytes it would have to scale, so a default without a
+        // limit is what keeps the backend usable for callers that name none.
+        const QByteArray bytes = stillWebP();
+        ImageDecoder decoder(settings);
+        ImageDecodeOutput output;
+        if (!decoder.decodeWebP(bytes, QSize(), output)) {
+            QSKIP("The libwebp backend cannot decode these bytes in this environment.");
+        }
+        QCOMPARE(output.sourceSize, QSize(9, 4));
+        QCOMPARE(output.image.size(), QSize(9, 4));
+    }
+
+    void textureSizeSettingIsClampedToItsRange()
+    {
+        QCOMPARE(QVApplication::clampTextureSizeSetting(0), QVApplication::TextureSizeSettingMin);
+        QCOMPARE(QVApplication::clampTextureSizeSetting(-4096),
+                 QVApplication::TextureSizeSettingMin);
+        QCOMPARE(QVApplication::clampTextureSizeSetting(4096), 4096);
+        QCOMPARE(QVApplication::clampTextureSizeSetting(999999),
+                 QVApplication::TextureSizeSettingMax);
+        // The default for an 8K display still fits under the cap.
+        QCOMPARE(QVApplication::clampTextureSizeSetting(int(7680 * 2.1)), 16128);
     }
 
     void imageDecoderDecodesStillPngItself()
@@ -213,6 +453,30 @@ private slots:
         ImageDecoder decoder;
         ImageDecodeOutput output;
         QVERIFY(!decoder.decodeSpng(animated, output));
+    }
+
+    void pngBackendLeavesColourManagedChunksToQt()
+    {
+        const QByteArray plain = encodedStillPng(QSize(9, 4), Qt::magenta);
+        QVERIFY(!plain.isEmpty());
+        // The sRGB chunk only names the colour space, so libspng can keep the
+        // bytes; a gamma chunk asks for a transform it does not apply.
+        const QByteArray srgb = withChunk(plain, "sRGB", QByteArray(1, '\0'));
+        const QByteArray gamma = withChunk(plain, "gAMA", QByteArray::fromHex("0000B18F"));
+
+        ImageDecodePolicy policy;
+        policy.png = PngDecoderPreference::Auto;
+        ImageDecodeMetrics srgbMetrics;
+        const ImageContent srgbContent = Volume::decodeImageBytes(
+            "srgb.png", srgb, QSize(), QSize(), true, policy, &srgbMetrics);
+        QCOMPARE(srgbMetrics.decoderBackend, QStringLiteral("libspng"));
+        QCOMPARE(srgbContent.loadedImage.colorSpace(), QColorSpace(QColorSpace::SRgb));
+
+        ImageDecodeMetrics gammaMetrics;
+        const ImageContent gammaContent = Volume::decodeImageBytes(
+            "gamma.png", gamma, QSize(), QSize(), true, policy, &gammaMetrics);
+        QVERIFY(gammaMetrics.decoderBackend.startsWith(QStringLiteral("qimagereader:")));
+        QVERIFY(!gammaContent.loadedImage.isNull());
     }
 
     void imageDecoderReportsInputItCannotDecode()
@@ -243,6 +507,56 @@ private slots:
         QCOMPARE(content.loadedImage.size(), QSize(9, 4));
     }
 
+    void decodeImageBytesUsesNativeJpegDecoder()
+    {
+        const QByteArray bytes = encodedStillJpeg(QSize(9, 4), Qt::magenta);
+        if (bytes.isEmpty()) {
+            QSKIP("Qt has no JPEG writer in this environment.");
+        }
+        // TurboJPEG is loaded at run time, so a test build can be without it.
+        ImageDecodeSettings settings;
+        settings.maxTextureSize = qApp->MaxTextureSize();
+        ImageDecoder decoder(settings);
+        ImageDecodeOutput probe;
+        if (!decoder.decodeTurboJpeg(bytes, QSize(), probe)) {
+            QSKIP("The TurboJPEG backend cannot decode these bytes in this environment.");
+        }
+
+        ImageDecodePolicy policy;
+        policy.jpeg = JpegDecoderPreference::TurboJpeg;
+        ImageDecodeMetrics metrics;
+        const ImageContent content =
+            Volume::decodeImageBytes("still.jpg", bytes, QSize(), QSize(), true, policy, &metrics);
+
+        QCOMPARE(metrics.decoderBackend, QStringLiteral("turbojpeg"));
+        QCOMPARE(content.originalSize, QSize(9, 4));
+        QCOMPARE(content.loadedImage.size(), QSize(9, 4));
+    }
+
+    void decodeImageBytesUsesNativeWebPDecoder()
+    {
+        const QByteArray bytes = stillWebP();
+        // libwebp is loaded at run time, so a test build can be without it.
+        ImageDecodeSettings settings;
+        settings.maxTextureSize = qApp->MaxTextureSize();
+        ImageDecoder decoder(settings);
+        ImageDecodeOutput probe;
+        if (!decoder.decodeWebP(bytes, QSize(), probe)) {
+            QSKIP("The libwebp backend cannot decode these bytes in this environment.");
+        }
+
+        ImageDecodePolicy policy;
+        policy.webp = WebPDecoderPreference::LibWebP;
+        ImageDecodeMetrics metrics;
+        const ImageContent content =
+            Volume::decodeImageBytes("still.webp", bytes, QSize(), QSize(), true, policy, &metrics);
+
+        QCOMPARE(metrics.decoderBackend, QStringLiteral("libwebp"));
+        QCOMPARE(content.originalSize, QSize(9, 4));
+        QCOMPARE(content.loadedImage.size(), QSize(9, 4));
+        QCOMPARE(content.loadedImage.pixelColor(0, 0), QColor(Qt::magenta));
+    }
+
     void decodeImageBytesFallsBackToQtReaderWhenNativeDecoderIsDisabled()
     {
         if (!QImageReader::supportedImageFormats().contains("png")) {
@@ -260,6 +574,221 @@ private slots:
 
         QVERIFY(metrics.decoderBackend.startsWith(QStringLiteral("qimagereader:")));
         QCOMPARE(content.loadedImage.size(), QSize(9, 4));
+    }
+
+    void decodeImageBytesFallsBackToQtWhenNativeDecoderRejectsTheBytes()
+    {
+        if (!QImageReader::supportedImageFormats().contains("png")) {
+            QSKIP("Qt has no PNG image handler in this environment.");
+        }
+        // The still-image libspng path rejects an animated PNG, so the native
+        // attempt fails and the Qt reader has to produce the image instead.
+        const QString path = QStringLiteral("still.png");
+        const QByteArray bytes = withAnimationChunk(encodedStillPng(QSize(9, 4), Qt::magenta));
+        QVERIFY(!bytes.isEmpty());
+        ImageDecodeOutput rejected;
+        QVERIFY(!ImageDecoder().decodeSpng(bytes, rejected));
+
+        ImageDecodePolicy policy;
+        policy.png = PngDecoderPreference::Auto;
+        ImageDecodeMetrics metrics;
+        const ImageContent content =
+            Volume::decodeImageBytes(path, bytes, QSize(), QSize(), true, policy, &metrics);
+
+        QVERIFY(metrics.decoderBackend.startsWith(QStringLiteral("qimagereader:")));
+        QCOMPARE(content.originalSize, QSize(9, 4));
+        QCOMPARE(content.loadedImage.size(), QSize(9, 4));
+        QCOMPARE(content.loadedImage.pixelColor(0, 0), QColor(Qt::magenta));
+    }
+
+    void decodeImageBytesReadsPngWithFallbackFormatNames_data()
+    {
+        QTest::addColumn<QString>("path");
+        QTest::newRow("unknown-format-name") << QStringLiteral("still.qv_unknown_format");
+        QTest::newRow("apng-format-name") << QStringLiteral("still.apng");
+        QTest::newRow("no-suffix") << QStringLiteral("still");
+    }
+
+    void decodeImageBytesReadsPngWithFallbackFormatNames()
+    {
+        QFETCH(QString, path);
+        const QSize size(9, 4);
+        const QByteArray bytes = encodedStillPng(size, Qt::magenta);
+        QVERIFY(!bytes.isEmpty());
+
+        ImageDecodePolicy policy;
+        policy.png = PngDecoderPreference::Qt;
+        ImageDecodeMetrics metrics;
+        const ImageContent content =
+            Volume::decodeImageBytes(path, bytes, QSize(), QSize(), true, policy, &metrics);
+
+        QVERIFY(content.movie.isNull());
+        QCOMPARE(content.path, path);
+        QCOMPARE(content.fileSize, size_t(bytes.size()));
+        QCOMPARE(content.originalSize, size);
+        QCOMPARE(content.loadedImageSize, size);
+        QCOMPARE(content.loadedImage.pixelColor(0, 0), QColor(Qt::magenta));
+        QVERIFY(content.hasDetailedMetadata);
+        QVERIFY(metrics.decoderBackend.startsWith(QStringLiteral("qimagereader:")));
+    }
+
+    void decodeImageBytesRejectsCorruptInput_data()
+    {
+        QTest::addColumn<QString>("path");
+        QTest::newRow("native-png") << QStringLiteral("broken.png");
+        QTest::newRow("apng") << QStringLiteral("broken.apng");
+        QTest::newRow("empty-format-name") << QStringLiteral("broken");
+    }
+
+    void decodeImageBytesRejectsCorruptInput()
+    {
+        QFETCH(QString, path);
+        const QByteArray bytes("not an image");
+        ImageDecodePolicy policy;
+        policy.png = PngDecoderPreference::Auto;
+        ImageDecodeMetrics metrics;
+        metrics.decoderBackend = QStringLiteral("previous-image");
+        const ImageContent content =
+            Volume::decodeImageBytes(path, bytes, QSize(), QSize(), true, policy, &metrics);
+
+        QVERIFY(!content.isRenderable());
+        QCOMPARE(content.path, path);
+        QCOMPARE(content.fileSize, size_t(bytes.size()));
+        QVERIFY(metrics.decoderBackend.isEmpty());
+    }
+
+    void decodeImageBytesStopsRetryingInputThatCannotBeDecoded()
+    {
+        if (!QImageReader::supportedImageFormats().contains("png")) {
+            QSKIP("Qt has no PNG image handler in this environment.");
+        }
+        // A truncated PNG keeps a parseable header, so the reader reports that it
+        // can read the file and only the decode fails with a data error. Retrying
+        // that cannot help; before the retry was bounded it cost about 4.6 s.
+        const QByteArray bytes = encodedStillPng(QSize(9, 4), Qt::magenta).left(43);
+        QByteArray probe = bytes;
+        QBuffer buffer(&probe);
+        buffer.open(QIODevice::ReadOnly);
+        QImageReader reader(&buffer, "png");
+        QVERIFY(reader.canRead());
+
+        QElapsedTimer timer;
+        timer.start();
+        ImageDecodeMetrics metrics;
+        const ImageContent content = Volume::decodeImageBytes(
+            "truncated.png", bytes, QSize(), QSize(), true, ImageDecodePolicy(), &metrics);
+        const qint64 elapsedMilliseconds = timer.elapsed();
+
+        QVERIFY(!content.isRenderable());
+        QVERIFY(metrics.decoderBackend.isEmpty());
+        QVERIFY2(elapsedMilliseconds < 1000,
+                 qPrintable(QStringLiteral("read took %1 ms").arg(elapsedMilliseconds)));
+    }
+
+    void decodeImageBytesPreparesStaticImage_data()
+    {
+        QTest::addColumn<bool>("useQt");
+        QTest::addColumn<bool>("collectMetrics");
+        QTest::newRow("native") << false << false;
+        QTest::newRow("native-metrics") << false << true;
+        QTest::newRow("qt") << true << false;
+        QTest::newRow("qt-metrics") << true << true;
+    }
+
+    void decodeImageBytesPreparesStaticImage()
+    {
+        QFETCH(bool, useQt);
+        QFETCH(bool, collectMetrics);
+        const QByteArray bytes = encodedStillPng(QSize(64, 32), Qt::cyan);
+        QVERIFY(!bytes.isEmpty());
+        ImageDecodePolicy policy;
+        policy.png = useQt ? PngDecoderPreference::Qt : PngDecoderPreference::Auto;
+        ImageDecodeMetrics metrics;
+        const ImageContent content = Volume::decodeImageBytes("still.png",
+                                                              bytes,
+                                                              QSize(8, 8),
+                                                              QSize(32, 32),
+                                                              false,
+                                                              policy,
+                                                              collectMetrics ? &metrics : nullptr);
+
+        QCOMPARE(content.originalSize, QSize(64, 32));
+        QCOMPARE(content.loadedImageSize, QSize(32, 16));
+        QCOMPARE(content.loadedImage.size(), content.loadedImageSize);
+        // QZimg preserves aspect ratio using the requested height, not a bounding box.
+        QCOMPARE(content.resizedImage.size(), QSize(16, 8));
+        QCOMPARE(content.loadedImage.pixelColor(0, 0), QColor(Qt::cyan));
+        QVERIFY(content.hasDetailedMetadata); // PNG needs no deferred JPEG EXIF load.
+        QCOMPARE(content.path, QStringLiteral("still.png"));
+        QCOMPARE(content.fileSize, size_t(bytes.size()));
+        if (collectMetrics) {
+            if (useQt) {
+                QVERIFY(metrics.decoderBackend.startsWith(QStringLiteral("qimagereader:")));
+            } else {
+                QCOMPARE(metrics.decoderBackend, QStringLiteral("libspng"));
+            }
+        }
+    }
+
+    void decodeImageBytesPreservesOrientationDuringPreparation_data()
+    {
+        QTest::addColumn<bool>("detailedMetadata");
+        QTest::newRow("orientation-only") << false;
+        QTest::newRow("full-exif") << true;
+    }
+
+    void decodeImageBytesPreservesOrientationDuringPreparation()
+    {
+        QFETCH(bool, detailedMetadata);
+        const QByteArray bytes = jpegWithOrientation(6, QSize(64, 32));
+        QVERIFY(!bytes.isEmpty());
+        ImageDecodePolicy policy;
+        policy.jpeg = JpegDecoderPreference::Qt;
+        const ImageContent content = Volume::decodeImageBytes(
+            "rotated.jpg", bytes, QSize(8, 16), QSize(), detailedMetadata, policy);
+
+        QCOMPARE(content.originalSize, QSize(64, 32));
+        QCOMPARE(content.loadedImageSize, QSize(64, 32));
+        QCOMPARE(int(content.exifInfo.Orientation), 6);
+        QCOMPARE(content.hasDetailedMetadata, detailedMetadata);
+        // Page dimensions are swapped for EXIF orientation 6 before CPU resizing.
+        QCOMPARE(content.resizedImage.size(), QSize(16, 8));
+    }
+
+    void jpegExifOrientationReadsTheExifSegment()
+    {
+        QCOMPARE(jpegExifOrientation(jpegWithOrientation(6)), 6);
+        QCOMPARE(jpegExifOrientation(jpegWithOrientation(1)), 1);
+        QCOMPARE(jpegExifOrientation(QByteArray()), 1);
+        QCOMPARE(jpegExifOrientation(QByteArray("not a jpeg")), 1);
+        // An APP1 segment that ends before its declared length is left alone.
+        QCOMPARE(jpegExifOrientation(QByteArray::fromHex("FFD8FFE1001045786966")), 1);
+
+        // Offsets that reach past the segment, including the 32-bit values that
+        // used to wrap the bounds check, are rejected without reading past it.
+        const quint32 offsets[] = {0xFFFFFFFFu, 0xFFFFFFFEu, 0x7FFFFFFFu, 0x10000u};
+        for (quint32 ifdOffset : offsets) {
+            QCOMPARE(jpegExifOrientation(jpegWithOrientation(6, QSize(8, 4), ifdOffset)), 1);
+        }
+    }
+
+    void decodeImageBytesRejectsExifOffsetOutsideTheSegment()
+    {
+        // The IFD offset is a 32-bit field, so an offset near 4 GiB used to wrap
+        // the bounds check in the orientation fast path and read past the segment.
+        const quint32 offsets[] = {0xFFFFFFFFu, 0xFFFFFFFEu, 0x7FFFFFFFu};
+        for (quint32 ifdOffset : offsets) {
+            const QByteArray bytes = jpegWithOrientation(6, QSize(8, 4), ifdOffset);
+            QVERIFY(!bytes.isEmpty());
+            ImageDecodePolicy policy;
+            policy.jpeg = JpegDecoderPreference::Qt;
+            const ImageContent content = Volume::decodeImageBytes(
+                "out-of-range-ifd.jpg", bytes, QSize(), QSize(), false, policy);
+
+            QVERIFY(!content.loadedImage.isNull());
+            QCOMPARE(content.originalSize, QSize(8, 4));
+            QCOMPARE(int(content.exifInfo.Orientation), 1);
+        }
     }
 
     void decodeImageBytesRasterizesSvgThroughDecoder()
@@ -1152,18 +1681,29 @@ private slots:
         QCOMPARE(pageWithDefaults.displayScale(), 0.25);
     }
 
+    void cpuResizeGivesUpOnAnEmptyImage()
+    {
+        QElapsedTimer timer;
+        timer.start();
+        const QImage scaled =
+            QZimg::scaled(QImage(), QSize(64, 64), Qt::IgnoreAspectRatio, QZimg::ResizeBicubic);
+        const qint64 elapsedMilliseconds = timer.elapsed();
+
+        QVERIFY(scaled.isNull());
+        // Before the null check this slept through the allocation retries (~9 s).
+        QVERIFY2(elapsedMilliseconds < 1000,
+                 qPrintable(QStringLiteral("resize took %1 ms").arg(elapsedMilliseconds)));
+    }
+
     void emptyVolumeOperationsAreSafe()
     {
         Volume volume(nullptr, std::make_unique<EmptyFileLoader>());
-        QSignalSpy pageListLoadedSpy(&volume, &Volume::pageListLoaded);
 
         QCOMPARE(volume.pageNameAt(0), QString());
         QCOMPARE(volume.pageIndexForName("missing.png"), -1);
         QCOMPARE(volume.pagePathAt(0), QString());
         QVERIFY(!volume.imageLoadAt(0).isValid());
         volume.updatePrefetchCache(0, PrefetchMode::Normal, QSize(100, 100));
-        volume.handlePageListLoaded();
-        QCOMPARE(pageListLoadedSpy.count(), 1);
         volume.moveToThread(nullptr);
     }
 
@@ -1172,6 +1712,8 @@ private slots:
         auto coverLoader = std::make_unique<MemoryFileLoader>(3);
         MemoryFileLoader *coverLoaderPtr = coverLoader.get();
         Volume coverVolume(nullptr, std::move(coverLoader));
+        coverVolume.prefetchCoverImages(0);
+        // A repeated cover prefetch must not schedule the same pages twice.
         coverVolume.prefetchCoverImages(0);
 
         const Volume::ImageLoadFuture firstCoverLoad = coverVolume.imageLoadAt(0);
@@ -1194,6 +1736,33 @@ private slots:
         QCOMPARE(thumbnailSource.loadedImage.size(), QSize(16, 24));
         QVERIFY(thumbnailSource.resizedImage.isNull());
         QCOMPARE(thumbnailLoaderPtr->requestedNames(), QStringList({"page-0.bmp"}));
+    }
+
+    void coverPrefetchFollowsTheSortedPageOrder()
+    {
+        const qvEnums::ImageSortBy previousSort = qApp->ImageSortBy();
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileSize);
+
+        auto loader = std::make_unique<SizeSortedArchiveFileLoader>(3);
+        MemoryFileLoader *loaderPtr = loader.get();
+        Volume volume(nullptr, std::move(loader));
+        volume.loadPageList();
+
+        // The size sort reverses the order the loader lists the pages in, so the
+        // page at index 0 is not the first entry of the loader's own list.
+        QCOMPARE(volume.pageNameAt(0), QStringLiteral("page-2.bmp"));
+        QCOMPARE(volume.pageNameAt(1), QStringLiteral("page-1.bmp"));
+        QCOMPARE(volume.pageNameAt(2), QStringLiteral("page-0.bmp"));
+        QCOMPARE(volume.pageIndexForName(QStringLiteral("page-2.bmp")), 0);
+        QCOMPARE(volume.pageIndexForName(QStringLiteral("page-0.bmp")), 2);
+        QCOMPARE(QFileInfo(volume.pagePathAt(0)).fileName(), QStringLiteral("page-2.bmp"));
+
+        volume.prefetchCoverImages(0);
+        QCOMPARE(volume.imageLoadAt(0).result().path, QStringLiteral("page-2.bmp"));
+        QCOMPARE(volume.loadThumbnailSourceImage().path, QStringLiteral("page-2.bmp"));
+        QVERIFY(loaderPtr->requestedNames().contains(QStringLiteral("page-2.bmp")));
+
+        qApp->setImageSortBy(previousSort);
     }
 
     void volumeHandleDestroysOnOwnerThread()

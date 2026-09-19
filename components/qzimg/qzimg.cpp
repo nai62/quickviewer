@@ -265,6 +265,37 @@ static void releaseBuff(void *pt)
     aligned_free(pt);
 }
 
+namespace {
+
+// QImage allocation and conversion can fail while the parallel decodes hold
+// memory, so a few retries are worth it; the pause gives them time to release
+// it. Work the input itself makes impossible fails all the same, so callers
+// check for that first instead of spending the retries.
+constexpr int MaximumImageAttempts = 3;
+constexpr int ImageRetryDelayMicroseconds = 40000;
+
+template <typename MakeImage>
+QImage makeImageWithRetry(MakeImage &&makeImage)
+{
+    for (int attempt = 1;; ++attempt) {
+        QImage image = makeImage();
+        if (!image.isNull()) {
+            return image;
+        }
+        qDebug() << "[3]" << attempt;
+        if (attempt >= MaximumImageAttempts) {
+            return QImage();
+        }
+#if QT_VERSION_MAJOR >= 5
+        QThread::currentThread()->usleep(ImageRetryDelayMicroseconds);
+#else
+        QThread::currentThread()->wait(40);
+#endif
+    }
+}
+
+} // namespace
+
 QImage QZimg::createPackedImage(QSize size, QImage::Format fmt, int stridePack)
 {
     return QImage(size, fmt);
@@ -272,55 +303,28 @@ QImage QZimg::createPackedImage(QSize size, QImage::Format fmt, int stridePack)
 
 QImage QZimg::toPackedImage(const QImage &src, int stridePack)
 {
-    QImage converted;
-    // QImage processing sometimes fails
-    for (int count = 1;; count++) {
-        switch (src.format()) {
-            //        case QImage::Format_RGBA8888:
-        case QImage::Format_ARGB32:
-        case QImage::Format_RGB32:
-            return src;
-        case QImage::Format_RGB555:
-        case QImage::Format_RGB666:
-        case QImage::Format_RGB888:
-        case QImage::Format_RGB444:
-#if QT_VERSION_MAJOR >= 5
-        case QImage::Format_RGB30:
-        case QImage::Format_BGR30:
-        case QImage::Format_RGBX8888:
-        case QImage::Format_Grayscale8:
-#endif
-            converted = src.convertToFormat(QImage::Format_RGB32);
-            break;
-            //        case QImage::Format_Indexed8:
-            //            converted = src.convertToFormat(QImage::Format_ARGB32);
-            //            break;
-            //        case QImage::Format_ARGB32_Premultiplied:
-            //        case QImage::Format_ARGB8565_Premultiplied:
-            //        case QImage::Format_ARGB6666_Premultiplied:
-            //        case QImage::Format_ARGB8555_Premultiplied:
-            //        case QImage::Format_ARGB4444_Premultiplied:
-            //        case QImage::Format_RGBA8888:
-            //        case QImage::Format_RGBA8888_Premultiplied:
-            //        case QImage::Format_A2BGR30_Premultiplied:
-            //        case QImage::Format_A2RGB30_Premultiplied:
-        default:
-            converted = src.convertToFormat(QImage::Format_ARGB32);
-            break;
-        }
-        if (!converted.isNull()) {
-            break;
-        }
-        if (count >= 100) {
-            return QImage();
-        }
-#if QT_VERSION_MAJOR >= 5
-        QThread::currentThread()->usleep(40000);
-#else
-        QThread::currentThread()->wait(40);
-#endif
+    Q_UNUSED(stridePack);
+    if (src.isNull()) {
+        return QImage();
     }
-    return converted;
+    switch (src.format()) {
+    case QImage::Format_ARGB32:
+    case QImage::Format_RGB32:
+        return src;
+    case QImage::Format_RGB555:
+    case QImage::Format_RGB666:
+    case QImage::Format_RGB888:
+    case QImage::Format_RGB444:
+#if QT_VERSION_MAJOR >= 5
+    case QImage::Format_RGB30:
+    case QImage::Format_BGR30:
+    case QImage::Format_RGBX8888:
+    case QImage::Format_Grayscale8:
+#endif
+        return makeImageWithRetry([&src] { return src.convertToFormat(QImage::Format_RGB32); });
+    default:
+        return makeImageWithRetry([&src] { return src.convertToFormat(QImage::Format_ARGB32); });
+    }
 }
 
 static QImage scaledRGB(QImage img,
@@ -328,21 +332,10 @@ static QImage scaledRGB(QImage img,
                         zimgxx::zimage_format out_format,
                         QZimg::FilterMode mode)
 {
-    QImage oimg;
-    // QImage processing sometimes fails
-    for (int count = 1;; count++) {
-        oimg = QImage(QSize(out_format.width, out_format.height), img.format());
-        if (!oimg.isNull()) {
-            break;
-        }
-        if (count >= 100) {
-            return QImage();
-        }
-#if QT_VERSION_MAJOR >= 5
-        QThread::currentThread()->usleep(40000);
-#else
-        QThread::currentThread()->wait(40);
-#endif
+    QImage oimg = makeImageWithRetry(
+        [&] { return QImage(QSize(out_format.width, out_format.height), img.format()); });
+    if (oimg.isNull()) {
+        return QImage();
     }
     try {
         const unsigned API_2_1 = ZIMG_MAKE_API_VERSION(2, 1);
@@ -413,21 +406,10 @@ static QImage scaledARGB(QImage img,
                          zimgxx::zimage_format out_format_alpha,
                          QZimg::FilterMode mode)
 {
-    QImage oimg;
-    // QImage processing sometimes fails
-    for (int count = 1;; count++) {
-        oimg = QImage(QSize(out_format.width, out_format.height), img.format());
-        if (!oimg.isNull()) {
-            break;
-        }
-        if (count >= 100) {
-            return QImage();
-        }
-#if QT_VERSION_MAJOR >= 5
-        QThread::currentThread()->usleep(40000);
-#else
-        QThread::currentThread()->wait(40);
-#endif
+    QImage oimg = makeImageWithRetry(
+        [&] { return QImage(QSize(out_format.width, out_format.height), img.format()); });
+    if (oimg.isNull()) {
+        return QImage();
     }
     try {
         const unsigned API_2_1 = ZIMG_MAKE_API_VERSION(2, 1);
@@ -514,6 +496,11 @@ QImage QZimg::scaled(const QImage &src,
                      Qt::AspectRatioMode aspectMode,
                      QZimg::FilterMode mode)
 {
+    // Nothing to resize: every later step would fail on the missing pixels, and
+    // the retries below would sleep through their budget before giving up.
+    if (src.isNull()) {
+        return QImage();
+    }
     QImage img = toPackedImage(src);
     zimgxx::zimage_format in_format;
     in_format.width = img.width();
