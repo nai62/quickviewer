@@ -237,6 +237,7 @@ private:
     void openResolvedTarget(const OpenTarget &target, bool allowSecondPage);
     void openStoredPath(const QString &storedPath, bool allowSecondPage = false);
     void saveVisibleFolderViewWidth();
+    void prefetchStartupTarget();
     void loadStartupVolume();
     void revealStartupWindow();
     void completeDeferredStartupWork();

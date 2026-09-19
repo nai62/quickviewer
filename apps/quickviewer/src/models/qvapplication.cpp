@@ -6,6 +6,7 @@
 #include "svgloader.h"
 #include "qvenums.h"
 #include "shadereffect.h"
+#include "startupprofiler.h"
 #include "ui_mainwindow.h"
 
 #ifdef Q_OS_WIN
@@ -41,6 +42,9 @@ QVApplication::QVApplication(int &argc, char **argv)
       m_portable(true)
 #endif
 {
+    // Qt's own application setup is finished by now; everything after this
+    // marker is QuickViewer's settings, theme, and translation work.
+    StartupProfiler::mark("application.base-ready");
     setApplicationVersion(APP_VERSION);
     setApplicationName(APP_NAME);
     //    qDebug() << "TranslationsPath" << QLibraryInfo::location(QLibraryInfo::TranslationsPath);
@@ -102,6 +106,7 @@ QVApplication::QVApplication(int &argc, char **argv)
     // Qt6 has a limit on loading large images, but this is inconvenient,
     // so we will relax this limit (and in the future make it a configurable value).
     QImageReader::setAllocationLimit(1024);
+    StartupProfiler::mark("application.settings-loaded");
 }
 
 QVApplication::~QVApplication()

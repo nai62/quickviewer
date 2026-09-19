@@ -757,6 +757,47 @@ void ViewerSession::prefetchVolume(const QString &containerPath)
     });
 }
 
+void ViewerSession::prefetchStartupVolume(const QString &startupPath)
+{
+    const OpenTarget target = OpenTarget::forPath(startupPath);
+    // A plain image opens through the standalone preview path, which checks the
+    // cache to decide what it is showing. Only containers are warmed here.
+    if (target.intent != OpenIntent::Container) {
+        return;
+    }
+    const QString containerPath = target.location.containerPath;
+    if (containerPath.isEmpty() ||
+        (!IFileLoader::isArchiveFile(containerPath) && !QFileInfo(containerPath).isDir())) {
+        return;
+    }
+
+    const VolumeCacheKey key = volumeCacheKey(containerPath);
+    QThread *guiThread = thread();
+    m_volumeCache.request(key, [containerPath, guiThread] {
+        return QtConcurrent::run([containerPath, guiThread] {
+            StartupProfiler::mark("startup-volume.prefetch.begin");
+            VolumeLoader loader(containerPath);
+            VolumeBuildResult built = loader.buildResult();
+            if (!built.volume) {
+                return CachedVolumeLoadResult{nullptr, built.error};
+            }
+            // The viewer waits for this page before it paints anything, so the
+            // volume is published only once that image has been decoded.
+            built.volume->prefetchInitialDisplayPage();
+            const ArchiveOpenError loadError = built.volume->fileLoader()
+                                                   ? built.volume->fileLoader()->archiveOpenError()
+                                                   : ArchiveOpenError::None;
+            if (loadError != ArchiveOpenError::None) {
+                delete built.volume;
+                return CachedVolumeLoadResult{nullptr, loadError};
+            }
+            StartupProfiler::mark("startup-volume.prefetch.page-ready");
+            built.volume->moveToThread(guiThread);
+            return CachedVolumeLoadResult{makeVolumeHandle(built.volume), built.error};
+        });
+    });
+}
+
 bool ViewerSession::advanceSpread()
 {
     Volume *volume = activeVolume();

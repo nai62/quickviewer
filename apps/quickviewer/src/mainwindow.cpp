@@ -56,6 +56,7 @@ MainWindow::MainWindow(QWidget *parent)
       m_statusMessage(StatusMessage::NoVolume)
 {
     ui->setupUi(this);
+    StartupProfiler::mark("mainwindow.ui-setup");
     // Establish the final window size before further UI initialization can
     // expose child surfaces created with the designer geometry.
     if (!qApp->BeginAsFullscreen() && qApp->RestoreWindowState()) {
@@ -114,6 +115,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Mapping to Key-Action Table and Key Config Dialog
     qApp->registerActions(ui);
+    StartupProfiler::mark("mainwindow.actions-registered");
     resetShortcutKeys();
 
     // Context menus(independent from menuBar)
@@ -336,6 +338,11 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::initializeStartup()
 {
+    // Warm the volume the startup will open while the window is still being
+    // created. loadStartupVolume() opens the same target later, so this only
+    // fills the volume cache and leaves the startup sequence unchanged.
+    prefetchStartupTarget();
+
     // restoreGeometry() in the constructor can restore fullscreen even when
     // the explicit "Begin as fullscreen" option is disabled.
     const bool startFullscreen = qApp->BeginAsFullscreen() || isFullScreen();
@@ -451,6 +458,21 @@ void MainWindow::loadStartupVolume()
     if (qApp->AutoLoaded() && !qApp->LastViewPath().isEmpty()) {
         openStoredPath(qApp->LastViewPath(), true);
         makeBookmarkMenu();
+    }
+}
+
+void MainWindow::prefetchStartupTarget()
+{
+    // loadStartupVolume() opens the first argument when it is given, and the
+    // stored view otherwise. Both targets are classified the same way here, so
+    // the prefetch warms exactly the container that startup is going to open.
+    if (qApp->arguments().length() >= 2) {
+        m_viewerSession.prefetchStartupVolume(qApp->arguments().last());
+        return;
+    }
+    if (qApp->AutoLoaded() && !qApp->LastViewPath().isEmpty()) {
+        m_viewerSession.prefetchStartupVolume(
+            loadStoredVolumeLocation(qApp->LastViewPath()).containerPath);
     }
 }
 

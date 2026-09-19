@@ -281,6 +281,23 @@ not a stage duration. Subtract adjacent milestone values to locate startup,
 volume loading, image preparation, and initial painting costs. A blank milestone
 means that marker was not reached or was not recorded during the run.
 
+Milestones inside the startup phases split the two blocks that dominate a cold
+process:
+
+- `application_base_ready_at_us` ends Qt's own application setup, so
+  `application_construct_begin_at_us` to `application_base_ready_at_us` is Qt
+  and `application_base_ready_at_us` to
+  `application_settings_loaded_at_us` is QuickViewer's settings, theme, and
+  key-map loading.
+- `mainwindow_ui_setup_at_us` ends `setupUi()` and
+  `mainwindow_actions_registered_at_us` ends the action registration inside the
+  MainWindow constructor.
+- `volume_prefetch_begin_at_us` and `volume_prefetch_page_ready_at_us` bracket
+  the startup volume prefetch that runs on a worker thread while the window is
+  still being created. When it finished before the startup load ran,
+  `volume_loader_begin_at_us` appears before `startup_volume_begin_at_us` and
+  `session_volume_built_at_us` follows `startup_volume_begin_at_us` closely.
+
 ## Reproducibility
 
 Run warmups before measured iterations and keep excluded setup work outside the

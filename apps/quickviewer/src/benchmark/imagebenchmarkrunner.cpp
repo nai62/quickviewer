@@ -121,9 +121,13 @@ struct ProfileMilestone
 
 const ProfileMilestone FirstPaintMilestones[] = {
     {"application.construct.begin", "application_construct_begin_at_us"},
+    {"application.base-ready", "application_base_ready_at_us"},
+    {"application.settings-loaded", "application_settings_loaded_at_us"},
     {"application.construct.end", "application_construct_end_at_us"},
     {"application.constructed", "application_constructed_at_us"},
     {"mainwindow.construct.begin", "mainwindow_construct_begin_at_us"},
+    {"mainwindow.ui-setup", "mainwindow_ui_setup_at_us"},
+    {"mainwindow.actions-registered", "mainwindow_actions_registered_at_us"},
     {"mainwindow.initial-message.begin", "mainwindow_initial_message_begin_at_us"},
     {"mainwindow.initial-message.end", "mainwindow_initial_message_end_at_us"},
     {"mainwindow.page-bar-sync.begin", "mainwindow_page_bar_sync_begin_at_us"},
@@ -173,6 +177,8 @@ const ProfileMilestone FirstPaintMilestones[] = {
     {"session.volume-built", "session_volume_built_at_us"},
     {"session.select-page.begin", "session_select_page_begin_at_us"},
     {"session.prefetch-scheduled", "session_prefetch_scheduled_at_us"},
+    {"startup-volume.prefetch.begin", "volume_prefetch_begin_at_us"},
+    {"startup-volume.prefetch.page-ready", "volume_prefetch_page_ready_at_us"},
     {"image-worker.extract.begin", "extract_begin_at_us"},
     {"image-worker.extract.end", "extract_end_at_us"},
     {"image-worker.decode-resize.end", "decode_resize_end_at_us"},
