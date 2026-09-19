@@ -555,6 +555,34 @@ private slots:
         QVERIFY(!metrics.sourceSize.isValid());
     }
 
+    void decodeImageBytesStopsRetryingInputThatCannotBeDecoded()
+    {
+        if (!QImageReader::supportedImageFormats().contains("png")) {
+            QSKIP("Qt has no PNG image handler in this environment.");
+        }
+        // A truncated PNG keeps a parseable header, so the reader reports that it
+        // can read the file and only the decode fails with a data error. Retrying
+        // that cannot help; before the retry was bounded it cost about 4.6 s.
+        const QByteArray bytes = encodedStillPng(QSize(9, 4), Qt::magenta).left(43);
+        QByteArray probe = bytes;
+        QBuffer buffer(&probe);
+        buffer.open(QIODevice::ReadOnly);
+        QImageReader reader(&buffer, "png");
+        QVERIFY(reader.canRead());
+
+        QElapsedTimer timer;
+        timer.start();
+        ImageDecodeMetrics metrics;
+        const ImageContent content = Volume::decodeImageBytes(
+            "truncated.png", bytes, QSize(), QSize(), true, ImageDecodePolicy(), &metrics);
+        const qint64 elapsedMilliseconds = timer.elapsed();
+
+        QVERIFY(!content.isRenderable());
+        QVERIFY(metrics.decoderBackend.isEmpty());
+        QVERIFY2(elapsedMilliseconds < 1000,
+                 qPrintable(QStringLiteral("read took %1 ms").arg(elapsedMilliseconds)));
+    }
+
     void decodeImageBytesPreparesStaticImage_data()
     {
         QTest::addColumn<bool>("useQt");

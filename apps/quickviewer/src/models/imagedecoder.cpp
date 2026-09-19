@@ -469,6 +469,24 @@ bool tryDecodeWebP(const QByteArray &bytes,
 #endif
 }
 
+// True when reading the same bytes again could still succeed. Qt reports a data
+// or format error for corrupt or unsupported input, which no retry can fix. The
+// remaining errors are the ones a handler raises for reasons outside the bytes,
+// such as failing to allocate an image while other decodes hold memory.
+bool isRetriableReaderError(QImageReader::ImageReaderError error)
+{
+    switch (error) {
+    case QImageReader::FileNotFoundError:
+    case QImageReader::InvalidDataError:
+    case QImageReader::UnsupportedFormatError:
+        return false;
+    case QImageReader::DeviceError:
+    case QImageReader::UnknownError:
+        break;
+    }
+    return true;
+}
+
 } // namespace
 
 ImageDecoder::ImageDecoder(ImageDecodeSettings settings)
@@ -526,19 +544,30 @@ ImageDecodeOutput ImageDecoder::decodeSvg(const QByteArray &bytes, const QString
 
 QImage ImageDecoder::readWithQt(QImageReader &reader, const QString &logPath, bool bailOutOnFailure)
 {
-    constexpr int MaximumAttempts = 100;
+    // A retry only helps a failure that came from outside the bytes. A truncated
+    // file reaches this function with a parseable header, and the old 100
+    // attempts spent about 4.6 s on every one of them before giving up.
+    constexpr int MaximumAttempts = 3;
+    constexpr int RetryDelayMicroseconds = 40000;
     const int maximumAttempts = bailOutOnFailure ? 1 : MaximumAttempts;
-    QImage image;
+
     // QImage processing sometimes fails
     for (int count = 1;; count++) {
-        image = reader.read();
+        QImage image = reader.read();
         if (!image.isNull()) {
             return image;
         }
         qDebug() << "[0]" << logPath << image << count;
-        if (count >= maximumAttempts) {
+        if (count >= maximumAttempts || !isRetriableReaderError(reader.error())) {
             return QImage();
         }
-        QThread::currentThread()->usleep(40000);
+        // The handler left the device where it stopped, so rewind it to make the
+        // next attempt a real re-decode, then wait for other decodes to release
+        // the memory this one could not get.
+        QIODevice *device = reader.device();
+        if (device && !device->isSequential()) {
+            device->seek(0);
+        }
+        QThread::currentThread()->usleep(RetryDelayMicroseconds);
     }
 }
