@@ -332,12 +332,8 @@ static bool shouldPrefetchFullResolution(int pageIndex, int anchorPageIndex)
 
 void Volume::updatePrefetchCache(int anchorPageIndex, PrefetchMode mode, QSize viewportSize)
 {
-    if (!m_pageListLoaded) {
-        loadPageList();
-    }
-    IFileLoader *loader = m_loadContext ? m_loadContext->loader() : nullptr;
-    if (!loader || anchorPageIndex < 0 || anchorPageIndex >= m_pageNames.size() ||
-        loader->contents().isEmpty()) {
+    IFileLoader *loader = loaderForPrefetch();
+    if (!loader || anchorPageIndex < 0 || anchorPageIndex >= m_pageNames.size()) {
         return;
     }
 
@@ -385,10 +381,7 @@ void Volume::updatePrefetchCache(int anchorPageIndex, PrefetchMode mode, QSize v
             ImageContent cachedImage = cachedImageLoad->result();
             if (cachedImage.loadedImageSize.isValid()) {
                 const QSize pageSize = viewportSize;
-                QSize resized =
-                    cachedImage.exifInfo.Orientation == 6 || cachedImage.exifInfo.Orientation == 8
-                        ? QSize(pageSize.height(), pageSize.width())
-                        : pageSize;
+                QSize resized = cachedImage.orientedSize(pageSize);
                 resized.setWidth(cachedImage.loadedImageSize.width() * resized.height() /
                                  cachedImage.loadedImageSize.height());
 
@@ -423,12 +416,8 @@ void Volume::updatePrefetchCache(int anchorPageIndex, PrefetchMode mode, QSize v
 
 void Volume::prefetchCoverImages(int anchorPageIndex)
 {
-    if (!m_pageListLoaded) {
-        loadPageList();
-    }
-    IFileLoader *loader = m_loadContext ? m_loadContext->loader() : nullptr;
-    if (!loader || anchorPageIndex < 0 || anchorPageIndex >= m_pageNames.size() ||
-        loader->contents().isEmpty()) {
+    IFileLoader *loader = loaderForPrefetch();
+    if (!loader || anchorPageIndex < 0 || anchorPageIndex >= m_pageNames.size()) {
         return;
     }
     imagePrefetchExecutor().setMaximumConcurrency(recommendedPrefetchConcurrency(loader));
@@ -450,14 +439,22 @@ void Volume::prefetchCoverImages(int anchorPageIndex)
 
 ImageContent Volume::loadThumbnailSourceImage()
 {
+    if (!loaderForPrefetch()) {
+        return ImageContent();
+    }
+    return futureLoadImageFromFileVolume(m_loadContext, m_pageNames[0], QSize());
+}
+
+IFileLoader *Volume::loaderForPrefetch()
+{
     if (!m_pageListLoaded) {
         loadPageList();
     }
     IFileLoader *loader = m_loadContext ? m_loadContext->loader() : nullptr;
     if (!loader || m_pageNames.isEmpty() || loader->contents().isEmpty()) {
-        return ImageContent();
+        return nullptr;
     }
-    return futureLoadImageFromFileVolume(m_loadContext, m_pageNames[0], QSize());
+    return loader;
 }
 
 Volume::ImageLoadFuture Volume::imageLoadAt(int pageIndex) const
@@ -708,6 +705,59 @@ static NativeDecodeOutcome tryNativeDecode(const ImageDecoder &decoder,
     return {std::move(output.image), output.sourceSize, true};
 }
 
+/**
+ * Trims `src` to the alignment the half-size resize needs. QImage copies can
+ * fail while other decodes hold memory, so they are retried here; the caller
+ * gives up on the image when they keep failing. Returns false in that case.
+ */
+static bool cropForHalfResize(QImage &src, const QString &path)
+{
+    QImage src2;
+    switch (src.depth()) {
+    case 32:
+        if ((src.width() & 0x3) != 0 || (src.height() & 0x1) != 0) {
+            // QImage processing sometimes fails
+            for (int count = 1;; count++) {
+                src2 = src.copy(QRect(0, 0, src.width() >> 2 << 2, src.height() >> 1 << 1));
+                if (!src2.isNull()) {
+                    break;
+                }
+                qDebug() << "[2]" << path << src2 << count;
+                if (count >= 100) {
+                    return false;
+                }
+                QThread::currentThread()->usleep(40000);
+            }
+            src.swap(src2);
+        }
+        break;
+    default:
+        if (src.format() != QImage::Format::Format_Grayscale8 &&
+            src.format() != QImage::Format::Format_RGB888) {
+            src = src.convertToFormat(QImage::Format::Format_RGB888);
+        }
+        if ((src.width() & 0xF) != 0 || (src.height() & 0x1) != 0) {
+            // QImage processing sometimes fails
+            int count = 0;
+            do {
+                src2 = src.copy(QRect(0, 0, src.width() >> 4 << 4, src.height() >> 1 << 1));
+                qDebug() << "[2]" << path << src2 << count;
+                if (!src2.isNull()) {
+                    break;
+                }
+                if (src2.isNull() && count++ < 1000) {
+                    QThread::currentThread()->usleep(1000);
+                    continue;
+                }
+                return false;
+            } while (1);
+            src.swap(src2);
+        }
+        break;
+    }
+    return true;
+}
+
 // Metadata and display preparation are shared by native and Qt static-image decoders.
 // Keep this outside decode timing and Qt format-name negotiation.
 static ImageContent finishStaticImage(QImage src,
@@ -745,48 +795,8 @@ static ImageContent finishStaticImage(QImage src,
         ic = ImageContent(src, path, baseSize, info, bytes.length());
     } else {
         // resample for too big images
-        QImage src2;
-        switch (src.depth()) {
-        case 32:
-            if ((src.width() & 0x3) != 0 || (src.height() & 0x1) != 0) {
-                // QImage processing sometimes fails
-                for (int count = 1;; count++) {
-                    src2 = src.copy(QRect(0, 0, src.width() >> 2 << 2, src.height() >> 1 << 1));
-                    if (!src2.isNull()) {
-                        break;
-                    }
-                    qDebug() << "[2]" << path << src2 << count;
-                    if (count >= 100) {
-                        return ImageContent(path, bytes.length());
-                    }
-                    QThread::currentThread()->usleep(40000);
-                }
-                src.swap(src2);
-            }
-            break;
-        default:
-            if (src.format() != QImage::Format::Format_Grayscale8 &&
-                src.format() != QImage::Format::Format_RGB888) {
-                src = src.convertToFormat(QImage::Format::Format_RGB888);
-            }
-            if ((src.width() & 0xF) != 0 || (src.height() & 0x1) != 0) {
-                // QImage processing sometimes fails
-                int count = 0;
-                do {
-                    src2 = src.copy(QRect(0, 0, src.width() >> 4 << 4, src.height() >> 1 << 1));
-                    qDebug() << "[2]" << path << src2 << count;
-                    if (!src2.isNull()) {
-                        break;
-                    }
-                    if (src2.isNull() && count++ < 1000) {
-                        QThread::currentThread()->usleep(1000);
-                        continue;
-                    }
-                    return ImageContent(path, bytes.length());
-                } while (1);
-                src.swap(src2);
-            }
-            break;
+        if (!cropForHalfResize(src, path)) {
+            return ImageContent(path, bytes.length());
         }
 
         QSize srcSize = src.size();
@@ -816,9 +826,7 @@ static ImageContent finishStaticImage(QImage src,
 
     // CPU resizing before Page Viewing
     if (!pageSize.isEmpty() && !ic.loadedImage.isNull()) {
-        QSize newsize = ic.exifInfo.Orientation == 6 || ic.exifInfo.Orientation == 8
-                            ? QSize(pageSize.height(), pageSize.width())
-                            : pageSize;
+        const QSize newsize = ic.orientedSize(pageSize);
         ic.appliedResizeMode = qApp->Effect();
         ic.resizedImage = QZimg::scaled(
             ic.loadedImage, newsize, Qt::KeepAspectRatio, cpuFilterMode(qApp->Effect()));
@@ -1039,9 +1047,7 @@ ImageContent Volume::loadImageFromFile(QString path,
 
 ImageContent Volume::resizeImageForViewport(ImageContent content, QSize pageSize)
 {
-    const QSize targetSize = content.exifInfo.Orientation == 6 || content.exifInfo.Orientation == 8
-                                 ? QSize(pageSize.height(), pageSize.width())
-                                 : pageSize;
+    const QSize targetSize = content.orientedSize(pageSize);
     content.appliedResizeMode = qApp->Effect();
     content.resizedImage = QZimg::scaled(
         content.loadedImage, targetSize, Qt::KeepAspectRatio, cpuFilterMode(qApp->Effect()));

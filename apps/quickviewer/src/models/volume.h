@@ -141,6 +141,11 @@ public slots:
     void handlePageListLoaded();
 
 private:
+    /**
+     * Loads the page list on demand and returns the loader when the volume has
+     * pages to prefetch. Returns nullptr when there is nothing to prefetch.
+     */
+    IFileLoader *loaderForPrefetch();
     ImageLoadFuture scheduleImageLoad(const QString &path,
                                       const QSize &pageSize,
                                       bool requiredForDisplay,
