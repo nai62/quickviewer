@@ -12,6 +12,7 @@
  */
 struct ImageDecodeSettings
 {
+    /** Largest edge a decode may keep, or 0 for no limit. */
     int maxTextureSize = 0;
     bool fastDctForJpeg = false;
     QSize svgRasterMaximum;

@@ -404,6 +404,9 @@ private slots:
         QCOMPARE(ImageDecoder::constrainedDecodeSize(source, QSize(), 1024), QSize(1024, 512));
         QCOMPARE(ImageDecoder::constrainedDecodeSize(source, QSize(800, 800), 4096),
                  QSize(800, 400));
+        // Zero means "no limit", which is what the default settings carry.
+        QCOMPARE(ImageDecoder::constrainedDecodeSize(source, QSize(), 0), source);
+        QCOMPARE(ImageDecoder::constrainedDecodeSize(source, QSize(800, 800), 0), QSize(800, 400));
         QCOMPARE(ImageDecoder::constrainedDecodeSize(QSize(), QSize(100, 100), 4096), QSize());
     }
 

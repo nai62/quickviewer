@@ -506,10 +506,19 @@ QSize ImageDecoder::constrainedDecodeSize(const QSize &sourceSize,
         return QSize();
     }
 
-    QSize limit(maxTextureSize, maxTextureSize);
+    // Zero means "no limit", so the default settings decode at full size instead
+    // of failing every comparison against a zero sized limit.
+    QSize limit;
+    if (maxTextureSize > 0) {
+        limit = QSize(maxTextureSize, maxTextureSize);
+    }
     if (requestedSize.isValid() && !requestedSize.isEmpty()) {
-        limit.setWidth(qMin(limit.width(), requestedSize.width()));
-        limit.setHeight(qMin(limit.height(), requestedSize.height()));
+        limit = limit.isValid() ? QSize(qMin(limit.width(), requestedSize.width()),
+                                        qMin(limit.height(), requestedSize.height()))
+                                : requestedSize;
+    }
+    if (!limit.isValid()) {
+        return sourceSize;
     }
     if (sourceSize.width() <= limit.width() && sourceSize.height() <= limit.height()) {
         return sourceSize;
