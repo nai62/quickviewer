@@ -141,7 +141,7 @@ goto run_tests
 
 :build_top_level
 echo === Incrementally building %QV_CONFIG% targets with jom ===
-call :run_jom "%QV_BUILD_DIR%"
+call :run_build "%QV_BUILD_DIR%"
 if errorlevel 1 exit /b 2
 call :stage_translations
 if errorlevel 1 exit /b 2
@@ -164,7 +164,7 @@ if not exist "%QV_BUILD_DIR%\apps\quickviewer\Makefile" (
     exit /b 2
 )
 echo === Incrementally building QuickViewer only with jom ===
-call :run_jom "%QV_BUILD_DIR%\apps\quickviewer"
+call :run_build "%QV_BUILD_DIR%\apps\quickviewer"
 if errorlevel 1 exit /b 2
 call :stage_translations
 if errorlevel 1 exit /b 2
@@ -185,6 +185,11 @@ if /I "%QV_CONFIG%"=="debug" (
     "%QV_QT_DIR%\bin\qmake.exe" -r "%QV_SOURCE_DIR%\QVproject.pro" CONFIG+=release CONFIG-=debug CONFIG-=debug_and_release CONFIG-=debug_and_release_target
 )
 if errorlevel 1 exit /b 2
+rem qmake -r leaves the sub-Makefiles alone, so regenerate them now: jom reads
+rem their object lists at startup, and only regenerating them afterwards would
+rem leave the build linking the list that was read.
+call :refresh_makefiles
+if errorlevel 1 exit /b 2
 exit /b 0
 
 :run_jom
@@ -198,6 +203,31 @@ if defined QV_JOBS (
 )
 set "QV_JOM_EXIT=!ERRORLEVEL!"
 popd
+exit /b !QV_JOM_EXIT!
+
+rem Regenerates every sub-Makefile through the qmake_all target, which runs qmake
+rem for each subproject without building anything.
+:refresh_makefiles
+if not exist "%QV_BUILD_DIR%\Makefile" exit /b 0
+pushd "%QV_BUILD_DIR%"
+"%QV_JOM%" /f Makefile qmake_all
+set "QV_REFRESH_EXIT=!ERRORLEVEL!"
+popd
+exit /b !QV_REFRESH_EXIT!
+
+rem A .pro that changed since the last qmake leaves a sub-Makefile with a stale
+rem object list, and jom may either link that list or refuse a dependency that was
+rem removed. Regenerate the Makefiles and try once more before reporting failure.
+:run_build
+call :run_jom "%~1"
+set "QV_JOM_EXIT=!ERRORLEVEL!"
+if not "!QV_JOM_EXIT!"=="0" (
+    echo === jom failed; regenerating the Makefiles and retrying once ===
+    call :refresh_makefiles
+    if errorlevel 1 exit /b 2
+    call :run_jom "%~1"
+    set "QV_JOM_EXIT=!ERRORLEVEL!"
+)
 exit /b !QV_JOM_EXIT!
 
 :run_selected_test
