@@ -627,11 +627,12 @@ static ImageContent loadWithSpecifiedFormat(QString path,
                                             QByteArray bytes,
                                             ImageFormat format,
                                             QByteArray qtHint,
-                                            uint loopcount,
                                             const ImageDecodePolicy &decodePolicy,
                                             ImageDecodeMetrics *metrics)
 {
-    for (;;) {
+    // Preserve the initial attempt plus the five retries of the recursive implementation.
+    constexpr int kMaxDecodeAttempts = 6;
+    for (int attempt = 0; attempt < kMaxDecodeAttempts; ++attempt) {
         int maxTextureSize = qApp->MaxTextureSize();
         const ImageDecoder decoder(currentImageDecodeSettings(maxTextureSize));
         easyexif::EXIFInfo info;
@@ -715,7 +716,7 @@ static ImageContent loadWithSpecifiedFormat(QString path,
 
             if (!reader.canRead()) {
                 qtHint = QByteArray();
-                break;
+                continue;
             }
 
             if (reader.supportsAnimation()) {
@@ -737,7 +738,7 @@ static ImageContent loadWithSpecifiedFormat(QString path,
             if (qtHint == QByteArrayLiteral("apng")) {
                 bool lodepng_exist = IFileLoader::supportsImageFormat("lodepng");
                 qtHint = lodepng_exist ? QByteArrayLiteral("lodepng") : QByteArrayLiteral("png");
-                break;
+                continue;
             }
             baseSize = reader.size();
             QSize loadingSize = baseSize;
@@ -886,19 +887,7 @@ static ImageContent loadWithSpecifiedFormat(QString path,
         }
         return ic;
     }
-    if (!loopcount) {
-        return ImageContent(path, bytes.length());
-    }
-    return loadWithSpecifiedFormat(path,
-                                   pageSize,
-                                   decodeTargetSize,
-                                   loadDetailedMetadata,
-                                   bytes,
-                                   format,
-                                   qtHint,
-                                   loopcount - 1,
-                                   decodePolicy,
-                                   metrics);
+    return ImageContent(path, bytes.length());
 }
 
 ImageContent Volume::decodeImageBytes(const QString &path,
@@ -932,7 +921,6 @@ ImageContent Volume::decodeImageBytes(const QString &path,
                                                    bytes,
                                                    format,
                                                    qtHint,
-                                                   5,
                                                    decodePolicy,
                                                    metrics);
     if (metrics) {

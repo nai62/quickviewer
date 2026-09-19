@@ -262,6 +262,64 @@ private slots:
         QCOMPARE(content.loadedImage.size(), QSize(9, 4));
     }
 
+    void decodeImageBytesReadsPngWithFallbackHints_data()
+    {
+        QTest::addColumn<QString>("path");
+        QTest::newRow("unknown-hint") << QStringLiteral("still.qv_unknown_format");
+        QTest::newRow("apng-hint") << QStringLiteral("still.apng");
+    }
+
+    void decodeImageBytesReadsPngWithFallbackHints()
+    {
+        QFETCH(QString, path);
+        const QSize size(9, 4);
+        const QByteArray bytes = encodedStillPng(size, Qt::magenta);
+        QVERIFY(!bytes.isEmpty());
+
+        ImageDecodePolicy policy;
+        policy.png = PngDecoderPreference::Qt;
+        ImageDecodeMetrics metrics;
+        const ImageContent content =
+            Volume::decodeImageBytes(path, bytes, QSize(), QSize(), true, policy, &metrics);
+
+        QVERIFY(content.movie.isNull());
+        QCOMPARE(content.path, path);
+        QCOMPARE(content.fileSize, size_t(bytes.size()));
+        QCOMPARE(content.originalSize, size);
+        QCOMPARE(content.loadedImageSize, size);
+        QCOMPARE(content.loadedImage.pixelColor(0, 0), QColor(Qt::magenta));
+        QVERIFY(content.hasDetailedMetadata);
+        QVERIFY(metrics.decoderBackend.startsWith(QStringLiteral("qimagereader:")));
+        QCOMPARE(metrics.sourceSize, size);
+    }
+
+    void decodeImageBytesRejectsCorruptInput_data()
+    {
+        QTest::addColumn<QString>("path");
+        QTest::newRow("native-png") << QStringLiteral("broken.png");
+        QTest::newRow("apng") << QStringLiteral("broken.apng");
+        QTest::newRow("empty-hint") << QStringLiteral("broken");
+    }
+
+    void decodeImageBytesRejectsCorruptInput()
+    {
+        QFETCH(QString, path);
+        const QByteArray bytes("not an image");
+        ImageDecodePolicy policy;
+        policy.png = PngDecoderPreference::Auto;
+        ImageDecodeMetrics metrics;
+        metrics.decoderBackend = QStringLiteral("previous-image");
+        metrics.sourceSize = QSize(100, 100);
+        const ImageContent content =
+            Volume::decodeImageBytes(path, bytes, QSize(), QSize(), true, policy, &metrics);
+
+        QVERIFY(!content.isRenderable());
+        QCOMPARE(content.path, path);
+        QCOMPARE(content.fileSize, size_t(bytes.size()));
+        QVERIFY(metrics.decoderBackend.isEmpty());
+        QVERIFY(!metrics.sourceSize.isValid());
+    }
+
     void decodeImageBytesRasterizesSvgThroughDecoder()
     {
         // Keep this as an escaped literal: moc 6.11.2 produces an empty .moc
