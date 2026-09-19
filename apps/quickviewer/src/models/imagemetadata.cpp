@@ -3,6 +3,8 @@
 
 #include <utility>
 
+#include "imageformat.h"
+
 ImageMetadata::ImageMetadata(Volume *volume, QString filename)
     : m_volume(volume),
       m_filename(std::move(filename))
@@ -35,19 +37,17 @@ QSize ImageMetadata::getDimension() const
     if (!m_dimension.isEmpty()) {
         return m_dimension;
     }
-    QString aformat;
-    if (IFileLoader::isExifJpegImageFile(m_filename)) {
-        if (IFileLoader::supportsImageFormat(IFileLoader::turboJpegFormatName())) {
-            aformat = IFileLoader::turboJpegFormatName();
-        } else {
-            aformat = "jpg";
-        }
+    // Only JPEG has a plugin worth preferring here. Every other format is read
+    // with the suffix it was found with, since this reader never retries.
+    QByteArray qtFormatName;
+    if (imageFormatFromPath(m_filename) == ImageFormat::Jpeg) {
+        qtFormatName = IFileLoader::jpegQtFormatName();
     } else {
-        aformat = QFileInfo(m_filename.toLower()).suffix();
+        qtFormatName = QFileInfo(m_filename.toLower()).suffix().toUtf8();
     }
     QByteArray bytes = m_volume->loadByteArrayByName(m_filename);
     QBuffer buffer(&bytes);
-    QImageReader reader(&buffer, aformat.toUtf8());
+    QImageReader reader(&buffer, qtFormatName);
     return m_dimension = reader.size();
 }
 

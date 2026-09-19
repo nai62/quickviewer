@@ -842,8 +842,8 @@ QList<VolumeThumbRecord> ThumbnailManager::volumes()
 
 static VolumeThumbRecord thumbnail2Icon(VolumeThumbRecord vtr)
 {
-    QString aformat = IFileLoader::supportsImageFormat(IFileLoader::turboJpegFormatName()) ? IFileLoader::turboJpegFormatName() : "jpg";
-    QPixmap pixmap = QPixmap::fromImage(QImage::fromData(vtr.thumbnail, aformat.toUtf8()));
+    // Stored thumbnails are JPEG, so they follow the same plugin preference.
+    QPixmap pixmap = QPixmap::fromImage(QImage::fromData(vtr.thumbnail, IFileLoader::jpegQtFormatName()));
     //    QPixmap pixmap = QPixmap::fromImage(QImage::fromData(vtr.thumbnail));
     vtr.icon = QIcon(pixmap);
     //    vtr.thumbnail.clear();

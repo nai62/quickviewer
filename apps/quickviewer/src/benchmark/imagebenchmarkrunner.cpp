@@ -835,8 +835,6 @@ BenchmarkRecord measureDecode(
     record.decodePipelineNanoseconds = metrics.pipelineNanoseconds;
     record.postprocessNanoseconds = qMax<qint64>(0, metrics.pipelineNanoseconds - metrics.decodeNanoseconds);
     record.sourceSize = metrics.sourceSize.isValid() ? metrics.sourceSize : content.originalSize;
-    // An entry without a suffix only reveals its format once it was decoded.
-    record.format = imageFormatNameForPath(record.entry, metrics.format);
     record.actualDecoder = metrics.decoderBackend;
     record.decoderFallbackReason = fallbackReason(record.requestedDecoder, record.actualDecoder);
     record.success = isDecodedImageValid(content);
@@ -1057,8 +1055,6 @@ void fillDecodedMetrics(
     record.decodePipelineNanoseconds = metrics.pipelineNanoseconds;
     record.postprocessNanoseconds = qMax<qint64>(0, metrics.pipelineNanoseconds - metrics.decodeNanoseconds);
     record.sourceSize = metrics.sourceSize.isValid() ? metrics.sourceSize : content.originalSize;
-    // An entry without a suffix only reveals its format once it was decoded.
-    record.format = imageFormatNameForPath(record.entry, metrics.format);
     record.actualDecoder = metrics.decoderBackend;
     record.decoderFallbackReason = fallbackReason(record.requestedDecoder, record.actualDecoder);
     record.success = isDecodedImageValid(content);

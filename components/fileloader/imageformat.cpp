@@ -8,13 +8,8 @@ struct SuffixFormat
     ImageFormat format;
 };
 
-// I think the excessive normalization of recent years is really ridiculous.
-// Calling what we've traditionally called JPEG something else, like JFIF, is causing confusion for many people.
-// And it hasn't helped solve any of the problems with the JPEG file format.
-// The incompatibility with EXIF remains unresolved.
-//
-// The JPEG container names below are therefore one format, for display, for
-// decoding and for EXIF alike.
+// The JPEG container names below are one format, for display, for decoding and
+// for EXIF alike.
 const SuffixFormat SuffixFormats[] = {
     {"jpg", ImageFormat::Jpeg},
     {"jpeg", ImageFormat::Jpeg},
@@ -72,12 +67,9 @@ QString imageFormatCanonicalName(ImageFormat format)
     return QString();
 }
 
-QString imageFormatNameForPath(const QString &path, ImageFormat measured)
+QString imageFormatNameForPath(const QString &path)
 {
     const QString suffix = QFileInfo(path).suffix().toLower();
-    if (suffix.isEmpty()) {
-        return imageFormatCanonicalName(measured);
-    }
     const QString canonical = imageFormatCanonicalName(imageFormatFromSuffix(suffix));
     return canonical.isEmpty() ? suffix : canonical;
 }

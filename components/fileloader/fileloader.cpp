@@ -63,6 +63,14 @@ bool IFileLoader::supportsImageFormat(const QByteArray &format)
     return QImageReader::supportedImageFormats().contains(format.toLower());
 }
 
+QByteArray IFileLoader::jpegQtFormatName()
+{
+    if (supportsImageFormat(turboJpegFormatName())) {
+        return QByteArray(turboJpegFormatName());
+    }
+    return QByteArrayLiteral("jpg");
+}
+
 bool IFileLoader::isArchiveFile(QString path)
 {
     return archiveFormats().contains(fileSuffix(path));

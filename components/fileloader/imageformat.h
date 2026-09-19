@@ -34,11 +34,10 @@ ImageFormat imageFormatFromPath(const QString &path);
 QString imageFormatCanonicalName(ImageFormat format);
 
 /**
- * Machine-facing name for a path: the canonical name of its format, the
- * lower-cased suffix for formats QuickViewer does not model, or the canonical
- * name of `measured` when the path carries no suffix at all. The measured
- * format is what keeps extensionless archive entries identifiable.
+ * Machine-facing name for a path: the canonical name of its format, or the
+ * lower-cased suffix for formats QuickViewer does not model. Empty when the
+ * path carries no suffix.
  */
-QString imageFormatNameForPath(const QString &path, ImageFormat measured = ImageFormat::Unknown);
+QString imageFormatNameForPath(const QString &path);
 
 #endif // IMAGEFORMAT_H

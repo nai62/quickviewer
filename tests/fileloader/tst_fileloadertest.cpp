@@ -78,6 +78,9 @@ void FileLoaderTest::jpegContainerNamesAreOneFormat()
         QVERIFY(IFileLoader::isExifJpegImageFile(path));
         QVERIFY(IFileLoader::isImageFile(path));
     }
+    // JPEG is the only format with a plugin preference, and it has two names.
+    const QByteArray jpegName = IFileLoader::jpegQtFormatName();
+    QVERIFY(jpegName == "jpg" || jpegName == "turbojpeg");
 }
 
 void FileLoaderTest::imageFormatNamesFollowThePath()
@@ -88,10 +91,8 @@ void FileLoaderTest::imageFormatNamesFollowThePath()
     QCOMPARE(imageFormatNameForPath("book/page.tif"), QString("tiff"));
     // Formats QuickViewer does not model keep the suffix that identified them.
     QCOMPARE(imageFormatNameForPath("book/page.bmp"), QString("bmp"));
+    // A path without a suffix has no name of its own.
     QCOMPARE(imageFormatNameForPath("book/page"), QString());
-    // Archive entries without a suffix fall back to the format the decoder saw.
-    QCOMPARE(imageFormatNameForPath("book/page", ImageFormat::Jpeg), QString("jpeg"));
-    QCOMPARE(imageFormatNameForPath("book/page.png", ImageFormat::Jpeg), QString("png"));
 }
 
 void FileLoaderTest::zipArchives_data()

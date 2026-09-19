@@ -572,8 +572,8 @@ static QByteArray qtFormatHint(const QString &path, ImageFormat format, const Im
 {
     switch (format) {
     case ImageFormat::Jpeg:
-        if (policy.jpeg == JpegDecoderPreference::Auto && IFileLoader::supportsImageFormat(IFileLoader::turboJpegFormatName())) {
-            return QByteArray(IFileLoader::turboJpegFormatName());
+        if (policy.jpeg == JpegDecoderPreference::Auto) {
+            return IFileLoader::jpegQtFormatName();
         }
         return QByteArrayLiteral("jpg");
     case ImageFormat::Png:
