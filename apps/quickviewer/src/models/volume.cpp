@@ -622,6 +622,70 @@ static ImageDecodeSettings currentImageDecodeSettings(int maxTextureSize)
     return settings;
 }
 
+// Pixels from the native backend chosen for the format, or `decoded == false`
+// when the policy asks for the Qt reader or the backend rejected the bytes.
+struct NativeDecodeOutcome
+{
+    QImage image;
+    QSize sourceSize;
+    bool decoded = false;
+};
+
+// One native decoder call, timed the way the branches it replaces were. The
+// backend name is built only when metrics are collected and the call succeeded.
+template <typename DecodeFn>
+static bool measuredNativeDecode(ImageDecodeMetrics *metrics,
+                                 const char *backendName,
+                                 ImageDecodeOutput &output,
+                                 DecodeFn &&decode)
+{
+    ImageDecodeDetail::DecodeMetricsScope<> decodeMetrics(metrics);
+    const bool decoded = decode(output);
+    decodeMetrics.finish();
+    decodeMetrics.recordBackendOnSuccess(
+        decoded, [backendName] { return QString::fromLatin1(backendName); });
+    return decoded;
+}
+
+/**
+ * Runs the native backend the policy selects for `format`, if that format has
+ * one. Which backends exist, and when they are tried, stays with the caller of
+ * ImageDecoder, which only knows how to run one backend at a time.
+ */
+static NativeDecodeOutcome tryNativeDecode(const ImageDecoder &decoder,
+                                           const QByteArray &bytes,
+                                           ImageFormat format,
+                                           const ImageDecodePolicy &decodePolicy,
+                                           QSize decodeTargetSize,
+                                           ImageDecodeMetrics *metrics)
+{
+    ImageDecodeOutput output;
+    if (format == ImageFormat::Jpeg && decodePolicy.jpeg != JpegDecoderPreference::Qt) {
+        if (!measuredNativeDecode(metrics, "turbojpeg", output, [&](ImageDecodeOutput &target) {
+                return decoder.decodeTurboJpeg(bytes, decodeTargetSize, target);
+            })) {
+            return {};
+        }
+    } else if ((format == ImageFormat::Png || format == ImageFormat::Apng) &&
+               decodePolicy.png != PngDecoderPreference::Qt) {
+        if (!measuredNativeDecode(metrics, "libspng", output, [&](ImageDecodeOutput &target) {
+                return decoder.decodeSpng(bytes, target);
+            })) {
+            return {};
+        }
+    } else if (format == ImageFormat::WebP && decodePolicy.webp != WebPDecoderPreference::Qt) {
+        if (!measuredNativeDecode(metrics, "libwebp", output, [&](ImageDecodeOutput &target) {
+                return decoder.decodeWebP(bytes, decodeTargetSize, target);
+            })) {
+            return {};
+        }
+    } else {
+        return {};
+    }
+
+    return {std::move(output.image), output.sourceSize, true};
+}
+
 // Metadata and display preparation are shared by native and Qt static-image decoders.
 // Keep this outside decode timing and Qt format-name negotiation.
 static ImageContent finishStaticImage(QImage src,
@@ -767,108 +831,81 @@ static ImageContent loadWithSpecifiedFormat(QString path,
             return ic;
         }
 
+        NativeDecodeOutcome native =
+            tryNativeDecode(decoder, bytes, format, decodePolicy, decodeTargetSize, metrics);
+        if (native.decoded) {
+            return finishStaticImage(std::move(native.image),
+                                     native.sourceSize,
+                                     path,
+                                     bytes,
+                                     pageSize,
+                                     decodeTargetSize,
+                                     loadDetailedMetadata,
+                                     maxTextureSize);
+        }
+
+        // No native backend produced pixels, so read the bytes with Qt instead.
         QImage src;
         QSize baseSize;
-        bool nativeDecoded = false;
-        if (format == ImageFormat::Jpeg && decodePolicy.jpeg != JpegDecoderPreference::Qt) {
+        ImageContent ic(path, bytes.length());
+        QBuffer buffer(&bytes);
+        QImageReader reader(&buffer, qtFormatName);
+
+        if (!reader.canRead()) {
+            qtFormatName.clear();
+            continue;
+        }
+
+        if (reader.supportsAnimation()) {
             ImageDecodeDetail::DecodeMetricsScope<> decodeMetrics(metrics);
-            ImageDecodeOutput output;
-            nativeDecoded = decoder.decodeTurboJpeg(bytes, decodeTargetSize, output);
+            Movie movie = Movie(bytes, QString::fromUtf8(qtFormatName));
+            // Movie construction records the backend before lazy frame decoding.
+            decodeMetrics.recordBackend(
+                [&] { return QString("qmovie:%1").arg(QString::fromLatin1(reader.format())); });
             decodeMetrics.finish();
-            decodeMetrics.recordBackendOnSuccess(nativeDecoded,
-                                                 [] { return QStringLiteral("turbojpeg"); });
-            if (nativeDecoded) {
-                src = std::move(output.image);
-                baseSize = output.sourceSize;
-            }
-        } else if ((format == ImageFormat::Png || format == ImageFormat::Apng) &&
-                   decodePolicy.png != PngDecoderPreference::Qt) {
-            ImageDecodeDetail::DecodeMetricsScope<> decodeMetrics(metrics);
-            ImageDecodeOutput output;
-            nativeDecoded = decoder.decodeSpng(bytes, output);
-            decodeMetrics.finish();
-            decodeMetrics.recordBackendOnSuccess(nativeDecoded,
-                                                 [] { return QStringLiteral("libspng"); });
-            if (nativeDecoded) {
-                src = std::move(output.image);
-                baseSize = output.sourceSize;
-            }
-        } else if (format == ImageFormat::WebP && decodePolicy.webp != WebPDecoderPreference::Qt) {
-            ImageDecodeDetail::DecodeMetricsScope<> decodeMetrics(metrics);
-            ImageDecodeOutput output;
-            nativeDecoded = decoder.decodeWebP(bytes, decodeTargetSize, output);
-            decodeMetrics.finish();
-            decodeMetrics.recordBackendOnSuccess(nativeDecoded,
-                                                 [] { return QStringLiteral("libwebp"); });
-            if (nativeDecoded) {
-                src = std::move(output.image);
-                baseSize = output.sourceSize;
+            ic.movie = movie;
+            ic.originalSize = ic.loadedImageSize = reader.size();
+            ic.hasDetailedMetadata = true;
+            return ic;
+        }
+        if (qtFormatName == QByteArrayLiteral("apng")) {
+            bool lodepng_exist = IFileLoader::supportsImageFormat("lodepng");
+            qtFormatName = lodepng_exist ? QByteArrayLiteral("lodepng") : QByteArrayLiteral("png");
+            continue;
+        }
+        baseSize = reader.size();
+        QSize loadingSize = baseSize;
+        if (reader.format() == IFileLoader::turboJpegFormatName() && !qApp->UseFastDCTForJPEG()) {
+            reader.setQuality(0);
+        }
+        if (shouldUseDecoderScaling(format, reader)) {
+            const QSize targetSize =
+                ImageDecoder::constrainedDecodeSize(baseSize, decodeTargetSize, maxTextureSize);
+            if (targetSize.isValid() && targetSize != baseSize) {
+                loadingSize = targetSize;
+                reader.setScaledSize(loadingSize);
             }
         }
 
-        ImageContent ic(path, bytes.length());
-        if (!nativeDecoded) {
-            QBuffer buffer(&bytes);
-            QImageReader reader(&buffer, qtFormatName);
-
-            if (!reader.canRead()) {
-                qtFormatName.clear();
-                continue;
-            }
-
-            if (reader.supportsAnimation()) {
-                ImageDecodeDetail::DecodeMetricsScope<> decodeMetrics(metrics);
-                Movie movie = Movie(bytes, QString::fromUtf8(qtFormatName));
-                // Movie construction records the backend before lazy frame decoding.
-                decodeMetrics.recordBackend(
-                    [&] { return QString("qmovie:%1").arg(QString::fromLatin1(reader.format())); });
-                decodeMetrics.finish();
-                ic.movie = movie;
-                ic.originalSize = ic.loadedImageSize = reader.size();
-                ic.hasDetailedMetadata = true;
-                return ic;
-            }
-            if (qtFormatName == QByteArrayLiteral("apng")) {
-                bool lodepng_exist = IFileLoader::supportsImageFormat("lodepng");
-                qtFormatName =
-                    lodepng_exist ? QByteArrayLiteral("lodepng") : QByteArrayLiteral("png");
-                continue;
-            }
-            baseSize = reader.size();
-            QSize loadingSize = baseSize;
-            if (reader.format() == IFileLoader::turboJpegFormatName() &&
-                !qApp->UseFastDCTForJPEG()) {
-                reader.setQuality(0);
-            }
-            if (shouldUseDecoderScaling(format, reader)) {
-                const QSize targetSize =
-                    ImageDecoder::constrainedDecodeSize(baseSize, decodeTargetSize, maxTextureSize);
-                if (targetSize.isValid() && targetSize != baseSize) {
-                    loadingSize = targetSize;
-                    reader.setScaledSize(loadingSize);
-                }
-            }
-
-            ImageDecodeDetail::DecodeMetricsScope<> decodeMetrics(metrics);
-            QImage tmp = ImageDecoder::readWithQt(reader, path, format == ImageFormat::Tiff);
-            decodeMetrics.recordBackendOnSuccess(!tmp.isNull(), [&] {
-                return QString("qimagereader:%1").arg(QString::fromLatin1(reader.format()));
-            });
-            decodeMetrics.finish();
-            if (tmp.isNull()) {
-                return ic;
-            }
-            if (baseSize.isEmpty()) {
-                baseSize = loadingSize = tmp.size();
-            }
-            if (tmp.format() == QImage::Format_ARGB32 || tmp.format() == QImage::Format_RGB32) {
-                src = std::move(tmp);
-            } else {
-                src = QZimg::toPackedImage(tmp);
-            }
-            if (src.isNull()) {
-                return ImageContent(path, bytes.length());
-            }
+        ImageDecodeDetail::DecodeMetricsScope<> decodeMetrics(metrics);
+        QImage tmp = ImageDecoder::readWithQt(reader, path, format == ImageFormat::Tiff);
+        decodeMetrics.recordBackendOnSuccess(!tmp.isNull(), [&] {
+            return QString("qimagereader:%1").arg(QString::fromLatin1(reader.format()));
+        });
+        decodeMetrics.finish();
+        if (tmp.isNull()) {
+            return ic;
+        }
+        if (baseSize.isEmpty()) {
+            baseSize = loadingSize = tmp.size();
+        }
+        if (tmp.format() == QImage::Format_ARGB32 || tmp.format() == QImage::Format_RGB32) {
+            src = std::move(tmp);
+        } else {
+            src = QZimg::toPackedImage(tmp);
+        }
+        if (src.isNull()) {
+            return ImageContent(path, bytes.length());
         }
 
         return finishStaticImage(std::move(src),

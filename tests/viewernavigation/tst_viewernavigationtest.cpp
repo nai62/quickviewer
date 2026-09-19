@@ -65,6 +65,31 @@ static QByteArray encodedStillPng(const QSize &size, const QColor &color)
     return bytes;
 }
 
+// Encodes through a Qt plug-in that a test build may not ship.
+static QByteArray encodedStillJpeg(const QSize &size, const QColor &color)
+{
+    if (!QImageWriter::supportedImageFormats().contains("jpeg")) {
+        return QByteArray();
+    }
+    QImage image(size, QImage::Format_RGB32);
+    image.fill(color);
+    QByteArray bytes;
+    QBuffer buffer(&bytes);
+    if (!buffer.open(QIODevice::WriteOnly)) {
+        return QByteArray();
+    }
+    const bool saved = image.save(&buffer, "JPEG");
+    buffer.close();
+    return saved ? bytes : QByteArray();
+}
+
+// A 9x4 magenta still image. Qt's own WebP writer emits a profile chunk that
+// the still-image libwebp path rejects, so the bytes are embedded instead.
+static QByteArray stillWebP()
+{
+    return QByteArray::fromBase64("UklGRhwAAABXRUJQVlA4TBAAAAAvCMAAAAcQ/e9//wMR0f8A");
+}
+
 // Inserts an acTL chunk right after IHDR, which is what marks a PNG as animated.
 static QByteArray withAnimationChunk(const QByteArray &png)
 {
@@ -377,6 +402,56 @@ private slots:
         QCOMPARE(content.loadedImage.size(), QSize(9, 4));
     }
 
+    void decodeImageBytesUsesNativeJpegDecoder()
+    {
+        const QByteArray bytes = encodedStillJpeg(QSize(9, 4), Qt::magenta);
+        if (bytes.isEmpty()) {
+            QSKIP("Qt has no JPEG writer in this environment.");
+        }
+        // TurboJPEG is loaded at run time, so a test build can be without it.
+        ImageDecodeSettings settings;
+        settings.maxTextureSize = qApp->MaxTextureSize();
+        ImageDecoder decoder(settings);
+        ImageDecodeOutput probe;
+        if (!decoder.decodeTurboJpeg(bytes, QSize(), probe)) {
+            QSKIP("The TurboJPEG backend cannot decode these bytes in this environment.");
+        }
+
+        ImageDecodePolicy policy;
+        policy.jpeg = JpegDecoderPreference::TurboJpeg;
+        ImageDecodeMetrics metrics;
+        const ImageContent content =
+            Volume::decodeImageBytes("still.jpg", bytes, QSize(), QSize(), true, policy, &metrics);
+
+        QCOMPARE(metrics.decoderBackend, QStringLiteral("turbojpeg"));
+        QCOMPARE(content.originalSize, QSize(9, 4));
+        QCOMPARE(content.loadedImage.size(), QSize(9, 4));
+    }
+
+    void decodeImageBytesUsesNativeWebPDecoder()
+    {
+        const QByteArray bytes = stillWebP();
+        // libwebp is loaded at run time, so a test build can be without it.
+        ImageDecodeSettings settings;
+        settings.maxTextureSize = qApp->MaxTextureSize();
+        ImageDecoder decoder(settings);
+        ImageDecodeOutput probe;
+        if (!decoder.decodeWebP(bytes, QSize(), probe)) {
+            QSKIP("The libwebp backend cannot decode these bytes in this environment.");
+        }
+
+        ImageDecodePolicy policy;
+        policy.webp = WebPDecoderPreference::LibWebP;
+        ImageDecodeMetrics metrics;
+        const ImageContent content =
+            Volume::decodeImageBytes("still.webp", bytes, QSize(), QSize(), true, policy, &metrics);
+
+        QCOMPARE(metrics.decoderBackend, QStringLiteral("libwebp"));
+        QCOMPARE(content.originalSize, QSize(9, 4));
+        QCOMPARE(content.loadedImage.size(), QSize(9, 4));
+        QCOMPARE(content.loadedImage.pixelColor(0, 0), QColor(Qt::magenta));
+    }
+
     void decodeImageBytesFallsBackToQtReaderWhenNativeDecoderIsDisabled()
     {
         if (!QImageReader::supportedImageFormats().contains("png")) {
@@ -394,6 +469,31 @@ private slots:
 
         QVERIFY(metrics.decoderBackend.startsWith(QStringLiteral("qimagereader:")));
         QCOMPARE(content.loadedImage.size(), QSize(9, 4));
+    }
+
+    void decodeImageBytesFallsBackToQtWhenNativeDecoderRejectsTheBytes()
+    {
+        if (!QImageReader::supportedImageFormats().contains("png")) {
+            QSKIP("Qt has no PNG image handler in this environment.");
+        }
+        // The still-image libspng path rejects an animated PNG, so the native
+        // attempt fails and the Qt reader has to produce the image instead.
+        const QString path = QStringLiteral("still.png");
+        const QByteArray bytes = withAnimationChunk(encodedStillPng(QSize(9, 4), Qt::magenta));
+        QVERIFY(!bytes.isEmpty());
+        ImageDecodeOutput rejected;
+        QVERIFY(!ImageDecoder().decodeSpng(bytes, rejected));
+
+        ImageDecodePolicy policy;
+        policy.png = PngDecoderPreference::Auto;
+        ImageDecodeMetrics metrics;
+        const ImageContent content =
+            Volume::decodeImageBytes(path, bytes, QSize(), QSize(), true, policy, &metrics);
+
+        QVERIFY(metrics.decoderBackend.startsWith(QStringLiteral("qimagereader:")));
+        QCOMPARE(content.originalSize, QSize(9, 4));
+        QCOMPARE(content.loadedImage.size(), QSize(9, 4));
+        QCOMPARE(content.loadedImage.pixelColor(0, 0), QColor(Qt::magenta));
     }
 
     void decodeImageBytesReadsPngWithFallbackFormatNames_data()
