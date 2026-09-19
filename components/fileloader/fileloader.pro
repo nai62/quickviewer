@@ -32,6 +32,7 @@ include(../../qmake/third_party/lib7zip/lib7zip.pri)
 
 SOURCES += \
     $$PWD/fileloader.cpp \
+    $$PWD/imageformat.cpp \
     $$PWD/fileloader7zarchive.cpp \
     $$PWD/fileloaderdirectory.cpp \
     $$PWD/fileloadersubdirectory.cpp \
@@ -39,6 +40,7 @@ SOURCES += \
 
 HEADERS += \
     $$PWD/fileloader.h \
+    $$PWD/imageformat.h \
     $$PWD/fileloader7zarchive.h \
     $$PWD/fileloaderdirectory.h \
     $$PWD/fileloadersubdirectory.h \

@@ -12,6 +12,7 @@
 #include "fileloader.h"
 #include "boundedexecutor.h"
 #include "imagedecoder.h"
+#include "imageformat.h"
 #include "startupprofiler.h"
 
 static std::atomic<quint64> nextPrefetchOwnerId{1};
@@ -556,11 +557,34 @@ static void parseExifTextExtents(QImage &img, easyexif::EXIFInfo &info)
     info.ImageHeight = img.text("ImageHeight").toInt();
 }
 
-static bool shouldUseDecoderScaling(const QString &format, const QImageReader &reader)
+static bool shouldUseDecoderScaling(ImageFormat format, const QImageReader &reader)
 {
-    const QString normalized = format.toLower();
-    const bool hotRaster = normalized == "jpg" || normalized == "jpeg" || normalized == IFileLoader::turboJpegFormatName() || normalized == "webp";
+    const bool hotRaster = format == ImageFormat::Jpeg || format == ImageFormat::WebP;
     return hotRaster && reader.supportsOption(QImageIOHandler::ScaledSize);
+}
+
+/**
+ * Qt format name to read `path` with. Only the formats whose registered plugin
+ * depends on the user's decoder preference need a name of their own; everything
+ * else is handed to Qt under the suffix it was found with.
+ */
+static QByteArray qtFormatHint(const QString &path, ImageFormat format, const ImageDecodePolicy &policy)
+{
+    switch (format) {
+    case ImageFormat::Jpeg:
+        if (policy.jpeg == JpegDecoderPreference::Auto && IFileLoader::supportsImageFormat(IFileLoader::turboJpegFormatName())) {
+            return QByteArray(IFileLoader::turboJpegFormatName());
+        }
+        return QByteArrayLiteral("jpg");
+    case ImageFormat::Png:
+        return IFileLoader::supportsImageFormat("apng") ? QByteArrayLiteral("apng") : QByteArrayLiteral("png");
+    case ImageFormat::Apng:
+        return QByteArrayLiteral("apng");
+    case ImageFormat::WebP:
+        return QByteArrayLiteral("webp");
+    default:
+        return QFileInfo(path.toLower()).suffix().toUtf8();
+    }
 }
 
 static ImageDecodeSettings currentImageDecodeSettings(int maxTextureSize)
@@ -579,7 +603,8 @@ static ImageContent loadWithSpecifiedFormat(
     QSize decodeTargetSize,
     bool loadDetailedMetadata,
     QByteArray bytes,
-    QString aformat,
+    ImageFormat format,
+    QByteArray qtHint,
     uint loopcount,
     const ImageDecodePolicy &decodePolicy,
     ImageDecodeMetrics *metrics)
@@ -589,21 +614,16 @@ static ImageContent loadWithSpecifiedFormat(
         const ImageDecoder decoder(currentImageDecodeSettings(maxTextureSize));
         easyexif::EXIFInfo info;
 
-        // I think the excessive normalization of recent years is really ridiculous.
-        // Calling what we've traditionally called JPEG something else, like JFIF, is causing confusion for many people.
-        // And it hasn't helped solve any of the problems with the JPEG file format.
-        // The incompatibility with EXIF remains unresolved.
-        if (aformat == "jif" || aformat == "jfif" || aformat == "jfi" || aformat == "jpe") {
-            aformat = "jpg";
+        if (metrics) {
+            metrics->format = format;
         }
-        if (aformat == "svg") {
+        if (format == ImageFormat::Svg) {
             QElapsedTimer decodeTimer;
             if (metrics) {
                 decodeTimer.start();
             }
             const ImageDecodeOutput output = decoder.decodeSvg(bytes, path);
             if (metrics) {
-                metrics->format = "svg";
                 metrics->decoderBackend = "svgloader";
                 metrics->decodeNanoseconds += decodeTimer.nsecsElapsed();
             }
@@ -614,18 +634,8 @@ static ImageContent loadWithSpecifiedFormat(
 
         QImage src;
         QSize baseSize;
-        const QString normalizedFormat = aformat.toLower();
-        if (metrics) {
-            if (normalizedFormat == IFileLoader::turboJpegFormatName() || normalizedFormat == "jpeg") {
-                metrics->format = "jpg";
-            } else if (normalizedFormat == "apng" || normalizedFormat == "lodepng") {
-                metrics->format = "png";
-            } else {
-                metrics->format = normalizedFormat;
-            }
-        }
         bool nativeDecoded = false;
-        if ((normalizedFormat == "jpg" || normalizedFormat == "jpeg" || normalizedFormat == IFileLoader::turboJpegFormatName()) && decodePolicy.jpeg != JpegDecoderPreference::Qt) {
+        if (format == ImageFormat::Jpeg && decodePolicy.jpeg != JpegDecoderPreference::Qt) {
             QElapsedTimer decodeTimer;
             if (metrics) {
                 decodeTimer.start();
@@ -642,7 +652,7 @@ static ImageContent loadWithSpecifiedFormat(
                 src = std::move(output.image);
                 baseSize = output.sourceSize;
             }
-        } else if ((normalizedFormat == "png" || normalizedFormat == "apng") && decodePolicy.png != PngDecoderPreference::Qt) {
+        } else if ((format == ImageFormat::Png || format == ImageFormat::Apng) && decodePolicy.png != PngDecoderPreference::Qt) {
             QElapsedTimer decodeTimer;
             if (metrics) {
                 decodeTimer.start();
@@ -659,7 +669,7 @@ static ImageContent loadWithSpecifiedFormat(
                 src = std::move(output.image);
                 baseSize = output.sourceSize;
             }
-        } else if (normalizedFormat == "webp" && decodePolicy.webp != WebPDecoderPreference::Qt) {
+        } else if (format == ImageFormat::WebP && decodePolicy.webp != WebPDecoderPreference::Qt) {
             QElapsedTimer decodeTimer;
             if (metrics) {
                 decodeTimer.start();
@@ -681,10 +691,10 @@ static ImageContent loadWithSpecifiedFormat(
         ImageContent ic(path, bytes.length());
         if (!nativeDecoded) {
             QBuffer buffer(&bytes);
-            QImageReader reader(&buffer, aformat.toUtf8());
+            QImageReader reader(&buffer, qtHint);
 
             if (!reader.canRead()) {
-                aformat = "";
+                qtHint = QByteArray();
                 break;
             }
 
@@ -693,7 +703,7 @@ static ImageContent loadWithSpecifiedFormat(
                 if (metrics) {
                     decodeTimer.start();
                 }
-                Movie movie = Movie(bytes, aformat.toUtf8());
+                Movie movie = Movie(bytes, QString::fromUtf8(qtHint));
                 if (metrics) {
                     metrics->decoderBackend = QString("qmovie:%1").arg(QString::fromLatin1(reader.format()));
                     metrics->decodeNanoseconds += decodeTimer.nsecsElapsed();
@@ -703,9 +713,9 @@ static ImageContent loadWithSpecifiedFormat(
                 ic.hasDetailedMetadata = true;
                 return ic;
             }
-            if (aformat == "apng") {
+            if (qtHint == QByteArrayLiteral("apng")) {
                 bool lodepng_exist = IFileLoader::supportsImageFormat("lodepng");
-                aformat = lodepng_exist ? "lodepng" : "png";
+                qtHint = lodepng_exist ? QByteArrayLiteral("lodepng") : QByteArrayLiteral("png");
                 break;
             }
             baseSize = reader.size();
@@ -713,7 +723,7 @@ static ImageContent loadWithSpecifiedFormat(
             if (reader.format() == IFileLoader::turboJpegFormatName() && !qApp->UseFastDCTForJPEG()) {
                 reader.setQuality(0);
             }
-            if (shouldUseDecoderScaling(aformat, reader)) {
+            if (shouldUseDecoderScaling(format, reader)) {
                 const QSize targetSize = ImageDecoder::constrainedDecodeSize(baseSize, decodeTargetSize, maxTextureSize);
                 if (targetSize.isValid() && targetSize != baseSize) {
                     loadingSize = targetSize;
@@ -725,7 +735,7 @@ static ImageContent loadWithSpecifiedFormat(
             if (metrics) {
                 decodeTimer.start();
             }
-            QImage tmp = ImageDecoder::readWithQt(reader, path, aformat.startsWith("tif"));
+            QImage tmp = ImageDecoder::readWithQt(reader, path, format == ImageFormat::Tiff);
             if (metrics) {
                 if (!tmp.isNull()) {
                     metrics->decoderBackend = QString("qimagereader:%1").arg(QString::fromLatin1(reader.format()));
@@ -841,7 +851,7 @@ static ImageContent loadWithSpecifiedFormat(
     if (!loopcount) {
         return ImageContent(path, bytes.length());
     }
-    return loadWithSpecifiedFormat(path, pageSize, decodeTargetSize, loadDetailedMetadata, bytes, aformat, loopcount - 1, decodePolicy, metrics);
+    return loadWithSpecifiedFormat(path, pageSize, decodeTargetSize, loadDetailedMetadata, bytes, format, qtHint, loopcount - 1, decodePolicy, metrics);
 }
 
 ImageContent Volume::decodeImageBytes(
@@ -865,22 +875,10 @@ ImageContent Volume::decodeImageBytes(
         pipelineTimer.start();
     }
 
-    QString aformat;
-    if (IFileLoader::isExifJpegImageFile(path)) {
-        if (decodePolicy.jpeg == JpegDecoderPreference::Auto && IFileLoader::supportsImageFormat(IFileLoader::turboJpegFormatName())) {
-            aformat = IFileLoader::turboJpegFormatName();
-        } else {
-            aformat = "jpg";
-        }
-    } else {
-        aformat = QFileInfo(path.toLower()).suffix();
-    }
-    // Extension "png" might be an APNG.
-    if (aformat == "png" && IFileLoader::supportsImageFormat("apng")) {
-        aformat = "apng";
-    }
+    const ImageFormat format = IFileLoader::isExifJpegImageFile(path) ? ImageFormat::Jpeg : imageFormatFromPath(path);
+    const QByteArray qtHint = qtFormatHint(path, format, decodePolicy);
 
-    ImageContent content = loadWithSpecifiedFormat(path, pageSize, decodeTargetSize, loadDetailedMetadata, bytes, aformat, 5, decodePolicy, metrics);
+    ImageContent content = loadWithSpecifiedFormat(path, pageSize, decodeTargetSize, loadDetailedMetadata, bytes, format, qtHint, 5, decodePolicy, metrics);
     if (metrics) {
         metrics->pipelineNanoseconds = pipelineTimer.nsecsElapsed();
         if (!metrics->sourceSize.isValid()) {

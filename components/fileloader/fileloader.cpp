@@ -4,6 +4,8 @@
 
 #include <QImageReader>
 
+#include "imageformat.h"
+
 #ifdef Q_OS_WIN
 #    include <Shlwapi.h>
 #endif
@@ -37,21 +39,9 @@ const QList<QByteArray> &supportedImageFormats()
     return formats;
 }
 
-const QStringList &exifJpegImageFormats()
-{
-    static const QStringList formats{"jpg", "jpeg", "jpe"};
-    return formats;
-}
-
 const QStringList &exifRawImageFormats()
 {
     static const QStringList formats{"crw", "cr2", "arw", "nef", "raf", "dng", "tif", "tiff"};
-    return formats;
-}
-
-const QStringList &animatedImageFormats()
-{
-    static const QStringList formats{"gif", "apng"};
     return formats;
 }
 
@@ -80,7 +70,7 @@ bool IFileLoader::isArchiveFile(QString path)
 
 bool IFileLoader::isExifJpegImageFile(QString path)
 {
-    return exifJpegImageFormats().contains(fileSuffix(path));
+    return imageFormatFromPath(path) == ImageFormat::Jpeg;
 }
 
 bool IFileLoader::isExifRawImageFile(QString path)
@@ -90,7 +80,8 @@ bool IFileLoader::isExifRawImageFile(QString path)
 
 bool IFileLoader::isAnimatedImageFile(QString path)
 {
-    return animatedImageFormats().contains(fileSuffix(path));
+    const ImageFormat format = imageFormatFromPath(path);
+    return format == ImageFormat::Gif || format == ImageFormat::Apng;
 }
 
 void IFileLoader::sortFiles(QStringList &filenames)
