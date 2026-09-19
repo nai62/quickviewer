@@ -587,10 +587,11 @@ static bool shouldUseDecoderScaling(ImageFormat format, const QImageReader &read
 /**
  * Qt format name to read `path` with. Only the formats whose registered plugin
  * depends on the user's decoder preference need a name of their own; everything
- * else is handed to Qt under the suffix it was found with.
+ * else is handed to Qt under the suffix it was found with. An empty name asks Qt
+ * to detect the format instead, which is what the decoder fallback relies on.
  */
 static QByteArray
-qtFormatHint(const QString &path, ImageFormat format, const ImageDecodePolicy &policy)
+qtFormatNameFor(const QString &path, ImageFormat format, const ImageDecodePolicy &policy)
 {
     switch (format) {
     case ImageFormat::Jpeg:
@@ -622,7 +623,7 @@ static ImageDecodeSettings currentImageDecodeSettings(int maxTextureSize)
 }
 
 // Metadata and display preparation are shared by native and Qt static-image decoders.
-// Keep this outside decode timing and hint negotiation.
+// Keep this outside decode timing and Qt format-name negotiation.
 static ImageContent finishStaticImage(QImage src,
                                       QSize baseSize,
                                       const QString &path,
@@ -745,7 +746,7 @@ static ImageContent loadWithSpecifiedFormat(QString path,
                                             bool loadDetailedMetadata,
                                             QByteArray bytes,
                                             ImageFormat format,
-                                            QByteArray qtHint,
+                                            QByteArray qtFormatName,
                                             const ImageDecodePolicy &decodePolicy,
                                             ImageDecodeMetrics *metrics)
 {
@@ -808,16 +809,16 @@ static ImageContent loadWithSpecifiedFormat(QString path,
         ImageContent ic(path, bytes.length());
         if (!nativeDecoded) {
             QBuffer buffer(&bytes);
-            QImageReader reader(&buffer, qtHint);
+            QImageReader reader(&buffer, qtFormatName);
 
             if (!reader.canRead()) {
-                qtHint = QByteArray();
+                qtFormatName.clear();
                 continue;
             }
 
             if (reader.supportsAnimation()) {
                 ImageDecodeDetail::DecodeMetricsScope<> decodeMetrics(metrics);
-                Movie movie = Movie(bytes, QString::fromUtf8(qtHint));
+                Movie movie = Movie(bytes, QString::fromUtf8(qtFormatName));
                 // Movie construction records the backend before lazy frame decoding.
                 decodeMetrics.recordBackend(
                     [&] { return QString("qmovie:%1").arg(QString::fromLatin1(reader.format())); });
@@ -827,9 +828,10 @@ static ImageContent loadWithSpecifiedFormat(QString path,
                 ic.hasDetailedMetadata = true;
                 return ic;
             }
-            if (qtHint == QByteArrayLiteral("apng")) {
+            if (qtFormatName == QByteArrayLiteral("apng")) {
                 bool lodepng_exist = IFileLoader::supportsImageFormat("lodepng");
-                qtHint = lodepng_exist ? QByteArrayLiteral("lodepng") : QByteArrayLiteral("png");
+                qtFormatName =
+                    lodepng_exist ? QByteArrayLiteral("lodepng") : QByteArrayLiteral("png");
                 continue;
             }
             baseSize = reader.size();
@@ -903,7 +905,7 @@ ImageContent Volume::decodeImageBytes(const QString &path,
 
     const ImageFormat format =
         IFileLoader::isExifJpegImageFile(path) ? ImageFormat::Jpeg : imageFormatFromPath(path);
-    const QByteArray qtHint = qtFormatHint(path, format, decodePolicy);
+    const QByteArray qtFormatName = qtFormatNameFor(path, format, decodePolicy);
 
     ImageContent content = loadWithSpecifiedFormat(path,
                                                    pageSize,
@@ -911,7 +913,7 @@ ImageContent Volume::decodeImageBytes(const QString &path,
                                                    loadDetailedMetadata,
                                                    bytes,
                                                    format,
-                                                   qtHint,
+                                                   qtFormatName,
                                                    decodePolicy,
                                                    metrics);
     if (metrics) {

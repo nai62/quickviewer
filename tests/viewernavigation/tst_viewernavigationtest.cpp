@@ -396,14 +396,14 @@ private slots:
         QCOMPARE(content.loadedImage.size(), QSize(9, 4));
     }
 
-    void decodeImageBytesReadsPngWithFallbackHints_data()
+    void decodeImageBytesReadsPngWithFallbackFormatNames_data()
     {
         QTest::addColumn<QString>("path");
-        QTest::newRow("unknown-hint") << QStringLiteral("still.qv_unknown_format");
-        QTest::newRow("apng-hint") << QStringLiteral("still.apng");
+        QTest::newRow("unknown-format-name") << QStringLiteral("still.qv_unknown_format");
+        QTest::newRow("apng-format-name") << QStringLiteral("still.apng");
     }
 
-    void decodeImageBytesReadsPngWithFallbackHints()
+    void decodeImageBytesReadsPngWithFallbackFormatNames()
     {
         QFETCH(QString, path);
         const QSize size(9, 4);
@@ -432,7 +432,7 @@ private slots:
         QTest::addColumn<QString>("path");
         QTest::newRow("native-png") << QStringLiteral("broken.png");
         QTest::newRow("apng") << QStringLiteral("broken.apng");
-        QTest::newRow("empty-hint") << QStringLiteral("broken");
+        QTest::newRow("empty-format-name") << QStringLiteral("broken");
     }
 
     void decodeImageBytesRejectsCorruptInput()
