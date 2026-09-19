@@ -390,6 +390,24 @@ private slots:
         QCOMPARE(metrics.decoderBackend, QStringLiteral("qmovie:gif"));
     }
 
+    void initializeAnimationLoadsTheFirstFrame()
+    {
+        const QByteArray bytes =
+            QByteArray::fromBase64("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7");
+        ImageContent content = Volume::decodeImageBytes(
+            "frame.gif", bytes, QSize(), QSize(), true, ImageDecodePolicy());
+        QVERIFY(!content.movie.isNull());
+        QVERIFY(!content.movie.data());
+        QCOMPARE(content.originalSize, QSize(1, 1));
+
+        content.initializeAnimation();
+        QVERIFY(content.movie.data());
+        QVERIFY(!content.loadedImage.isNull());
+        QCOMPARE(content.loadedImage.size(), QSize(1, 1));
+        QCOMPARE(content.originalSize, QSize(1, 1));
+        QCOMPARE(content.loadedImageSize, QSize(1, 1));
+    }
+
     void init()
     {
         qApp->setSeparatePagesWhenWideImage(true);
