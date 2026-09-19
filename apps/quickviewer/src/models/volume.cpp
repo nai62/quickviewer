@@ -560,12 +560,6 @@ static void parseExifTextExtents(QImage &img, easyexif::EXIFInfo &info)
     info.ImageHeight = img.text("ImageHeight").toInt();
 }
 
-static bool shouldUseDecoderScaling(ImageFormat format, const QImageReader &reader)
-{
-    const bool hotRaster = format == ImageFormat::Jpeg || format == ImageFormat::WebP;
-    return hotRaster && reader.supportsOption(QImageIOHandler::ScaledSize);
-}
-
 /**
  * Qt format name to read `path` with. Only the formats whose registered plugin
  * depends on the user's decoder preference need a name of their own; everything
@@ -614,6 +608,51 @@ static QList<QByteArray> qtFormatNameCandidates(const QByteArray &preferredQtFor
     return candidates;
 }
 
+/** Native decoders a load can start with, before handing over to Qt. */
+enum class NativeImageBackend {
+    None,
+    TurboJpeg,
+    LibSpng,
+    LibWebP,
+};
+
+/**
+ * What one load has to do, derived once from the path and the decoder policy.
+ * The loader consumes this instead of asking about ImageFormat, which keeps the
+ * format specific decisions in one place.
+ */
+struct DecodePlan
+{
+    NativeImageBackend native = NativeImageBackend::None;
+    QList<QByteArray> qtFormatNames;
+    bool svg = false;
+    bool decoderScaling = false;
+    bool bailOutOnReaderFailure = false;
+};
+
+static DecodePlan planDecode(const QString &path, const ImageDecodePolicy &policy)
+{
+    const ImageFormat format =
+        IFileLoader::isExifJpegImageFile(path) ? ImageFormat::Jpeg : imageFormatFromPath(path);
+
+    DecodePlan plan;
+    plan.svg = format == ImageFormat::Svg;
+    // Only the formats whose handler compares the target size with the source
+    // size gain from asking Qt to decode scaled; the others decode in full.
+    plan.decoderScaling = format == ImageFormat::Jpeg || format == ImageFormat::WebP;
+    plan.bailOutOnReaderFailure = format == ImageFormat::Tiff;
+    if (format == ImageFormat::Jpeg && policy.jpeg != JpegDecoderPreference::Qt) {
+        plan.native = NativeImageBackend::TurboJpeg;
+    } else if ((format == ImageFormat::Png || format == ImageFormat::Apng) &&
+               policy.png != PngDecoderPreference::Qt) {
+        plan.native = NativeImageBackend::LibSpng;
+    } else if (format == ImageFormat::WebP && policy.webp != WebPDecoderPreference::Qt) {
+        plan.native = NativeImageBackend::LibWebP;
+    }
+    plan.qtFormatNames = qtFormatNameCandidates(qtFormatNameFor(path, format, policy));
+    return plan;
+}
+
 static ImageDecodeSettings currentImageDecodeSettings(int maxTextureSize)
 {
     ImageDecodeSettings settings;
@@ -625,8 +664,8 @@ static ImageDecodeSettings currentImageDecodeSettings(int maxTextureSize)
     return settings;
 }
 
-// Pixels from the native backend chosen for the format, or `decoded == false`
-// when the policy asks for the Qt reader or the backend rejected the bytes.
+// Pixels from the native backend the plan picked, or `decoded == false` when the
+// plan has no native backend or the backend rejected the bytes.
 struct NativeDecodeOutcome
 {
     QImage image;
@@ -651,41 +690,41 @@ static bool measuredNativeDecode(ImageDecodeMetrics *metrics,
 }
 
 /**
- * Runs the native backend the policy selects for `format`, if that format has
- * one. Which backends exist, and when they are tried, stays with the caller of
- * ImageDecoder, which only knows how to run one backend at a time.
+ * Runs the native backend the plan picked, if any. Which backends exist, and
+ * when they are tried, stays with the caller of ImageDecoder, which only knows
+ * how to run one backend at a time.
  */
 static NativeDecodeOutcome tryNativeDecode(const ImageDecoder &decoder,
                                            const QByteArray &bytes,
-                                           ImageFormat format,
-                                           const ImageDecodePolicy &decodePolicy,
+                                           NativeImageBackend backend,
                                            QSize decodeTargetSize,
                                            ImageDecodeMetrics *metrics)
 {
     ImageDecodeOutput output;
-    if (format == ImageFormat::Jpeg && decodePolicy.jpeg != JpegDecoderPreference::Qt) {
-        if (!measuredNativeDecode(metrics, "turbojpeg", output, [&](ImageDecodeOutput &target) {
+    bool decoded = false;
+    switch (backend) {
+    case NativeImageBackend::None:
+        return {};
+    case NativeImageBackend::TurboJpeg:
+        decoded =
+            measuredNativeDecode(metrics, "turbojpeg", output, [&](ImageDecodeOutput &target) {
                 return decoder.decodeTurboJpeg(bytes, decodeTargetSize, target);
-            })) {
-            return {};
-        }
-    } else if ((format == ImageFormat::Png || format == ImageFormat::Apng) &&
-               decodePolicy.png != PngDecoderPreference::Qt) {
-        if (!measuredNativeDecode(metrics, "libspng", output, [&](ImageDecodeOutput &target) {
-                return decoder.decodeSpng(bytes, target);
-            })) {
-            return {};
-        }
-    } else if (format == ImageFormat::WebP && decodePolicy.webp != WebPDecoderPreference::Qt) {
-        if (!measuredNativeDecode(metrics, "libwebp", output, [&](ImageDecodeOutput &target) {
-                return decoder.decodeWebP(bytes, decodeTargetSize, target);
-            })) {
-            return {};
-        }
-    } else {
+            });
+        break;
+    case NativeImageBackend::LibSpng:
+        decoded = measuredNativeDecode(metrics, "libspng", output, [&](ImageDecodeOutput &target) {
+            return decoder.decodeSpng(bytes, target);
+        });
+        break;
+    case NativeImageBackend::LibWebP:
+        decoded = measuredNativeDecode(metrics, "libwebp", output, [&](ImageDecodeOutput &target) {
+            return decoder.decodeWebP(bytes, decodeTargetSize, target);
+        });
+        break;
+    }
+    if (!decoded) {
         return {};
     }
-
     return {std::move(output.image), output.sourceSize, true};
 }
 
@@ -823,14 +862,12 @@ static ImageContent loadWithSpecifiedFormat(QString path,
                                             QSize decodeTargetSize,
                                             bool loadDetailedMetadata,
                                             QByteArray bytes,
-                                            ImageFormat format,
-                                            QByteArray preferredQtFormatName,
-                                            const ImageDecodePolicy &decodePolicy,
+                                            const DecodePlan &plan,
                                             ImageDecodeMetrics *metrics)
 {
     const int maxTextureSize = qApp->MaxTextureSize();
     const ImageDecoder decoder(currentImageDecodeSettings(maxTextureSize));
-    if (format == ImageFormat::Svg) {
+    if (plan.svg) {
         ImageDecodeDetail::DecodeMetricsScope<> decodeMetrics(metrics);
         const ImageDecodeOutput output = decoder.decodeSvg(bytes, path);
         // SVG records its backend even when rasterization fails.
@@ -843,7 +880,7 @@ static ImageContent loadWithSpecifiedFormat(QString path,
     }
 
     NativeDecodeOutcome native =
-        tryNativeDecode(decoder, bytes, format, decodePolicy, decodeTargetSize, metrics);
+        tryNativeDecode(decoder, bytes, plan.native, decodeTargetSize, metrics);
     if (native.decoded) {
         return finishStaticImage(std::move(native.image),
                                  native.sourceSize,
@@ -858,7 +895,7 @@ static ImageContent loadWithSpecifiedFormat(QString path,
     // No native backend produced pixels, so read the bytes with Qt instead. Each
     // candidate format name gets one attempt; a name the reader cannot use hands
     // over to the next candidate, and everything else decides the result.
-    for (const QByteArray &qtFormatName : qtFormatNameCandidates(preferredQtFormatName)) {
+    for (const QByteArray &qtFormatName : plan.qtFormatNames) {
         QImage src;
         QSize baseSize;
         ImageContent ic(path, bytes.length());
@@ -891,7 +928,7 @@ static ImageContent loadWithSpecifiedFormat(QString path,
         if (reader.format() == IFileLoader::turboJpegFormatName() && !qApp->UseFastDCTForJPEG()) {
             reader.setQuality(0);
         }
-        if (shouldUseDecoderScaling(format, reader)) {
+        if (plan.decoderScaling && reader.supportsOption(QImageIOHandler::ScaledSize)) {
             const QSize targetSize =
                 ImageDecoder::constrainedDecodeSize(baseSize, decodeTargetSize, maxTextureSize);
             if (targetSize.isValid() && targetSize != baseSize) {
@@ -901,7 +938,7 @@ static ImageContent loadWithSpecifiedFormat(QString path,
         }
 
         ImageDecodeDetail::DecodeMetricsScope<> decodeMetrics(metrics);
-        QImage tmp = ImageDecoder::readWithQt(reader, path, format == ImageFormat::Tiff);
+        QImage tmp = ImageDecoder::readWithQt(reader, path, plan.bailOutOnReaderFailure);
         decodeMetrics.recordBackendOnSuccess(!tmp.isNull(), [&] {
             return QString("qimagereader:%1").arg(QString::fromLatin1(reader.format()));
         });
@@ -953,19 +990,10 @@ ImageContent Volume::decodeImageBytes(const QString &path,
         pipelineTimer.start();
     }
 
-    const ImageFormat format =
-        IFileLoader::isExifJpegImageFile(path) ? ImageFormat::Jpeg : imageFormatFromPath(path);
-    const QByteArray preferredQtFormatName = qtFormatNameFor(path, format, decodePolicy);
+    const DecodePlan plan = planDecode(path, decodePolicy);
 
-    ImageContent content = loadWithSpecifiedFormat(path,
-                                                   pageSize,
-                                                   decodeTargetSize,
-                                                   loadDetailedMetadata,
-                                                   bytes,
-                                                   format,
-                                                   preferredQtFormatName,
-                                                   decodePolicy,
-                                                   metrics);
+    ImageContent content = loadWithSpecifiedFormat(
+        path, pageSize, decodeTargetSize, loadDetailedMetadata, bytes, plan, metrics);
     if (metrics) {
         metrics->pipelineNanoseconds = pipelineTimer.nsecsElapsed();
     }
