@@ -406,6 +406,18 @@ private slots:
         QCOMPARE(output.image.size(), QSize(9, 4));
     }
 
+    void textureSizeSettingIsClampedToItsRange()
+    {
+        QCOMPARE(QVApplication::clampTextureSizeSetting(0), QVApplication::TextureSizeSettingMin);
+        QCOMPARE(QVApplication::clampTextureSizeSetting(-4096),
+                 QVApplication::TextureSizeSettingMin);
+        QCOMPARE(QVApplication::clampTextureSizeSetting(4096), 4096);
+        QCOMPARE(QVApplication::clampTextureSizeSetting(999999),
+                 QVApplication::TextureSizeSettingMax);
+        // The default for an 8K display still fits under the cap.
+        QCOMPARE(QVApplication::clampTextureSizeSetting(int(7680 * 2.1)), 16128);
+    }
+
     void imageDecoderDecodesStillPngItself()
     {
         const QByteArray bytes = encodedStillPng(QSize(7, 5), Qt::darkCyan);
