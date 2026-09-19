@@ -177,12 +177,10 @@ void FileLoaderTest::rarArchives_data()
     QTest::addColumn<QString>("archivePath");
     QTest::addColumn<QString>("firstName");
 
-    QTest::newRow("rar4")
-        << QString(SRCDIR "../../third_party/p7zip/check/test/7za433_rar4.rar")
-        << QString("7za433_rar4/bin/7za.exe");
-    QTest::newRow("rar5")
-        << QString(SRCDIR "../../third_party/p7zip/check/test/7za433_rar.rar")
-        << QString("7za433_rar/bin/7za.exe");
+    QTest::newRow("rar4") << QString(SRCDIR "../../third_party/p7zip/check/test/7za433_rar4.rar")
+                          << QString("7za433_rar4/bin/7za.exe");
+    QTest::newRow("rar5") << QString(SRCDIR "../../third_party/p7zip/check/test/7za433_rar.rar")
+                          << QString("7za433_rar/bin/7za.exe");
 }
 
 void FileLoaderTest::rarArchives()
@@ -221,12 +219,19 @@ void FileLoaderTest::directoryLinks()
     const QString targetPath = root.filePath("target");
     const QString linkPath = root.filePath("container/link");
     QProcess mklink;
-    mklink.start("cmd.exe", {"/c", "mklink", mklinkOption, QDir::toNativeSeparators(linkPath), QDir::toNativeSeparators(targetPath)});
+    mklink.start("cmd.exe",
+                 {"/c",
+                  "mklink",
+                  mklinkOption,
+                  QDir::toNativeSeparators(linkPath),
+                  QDir::toNativeSeparators(targetPath)});
     QVERIFY(mklink.waitForFinished());
     const QByteArray output = mklink.readAllStandardOutput() + mklink.readAllStandardError();
     if (mklink.exitCode() != 0 && mklinkOption == "/D") {
-        QSKIP(qPrintable(QString("Cannot create a directory symbolic link. Enable Windows Developer Mode or run the test with elevated privileges. mklink output: %1")
-                             .arg(QString::fromLocal8Bit(output).trimmed())));
+        QSKIP(
+            qPrintable(QString("Cannot create a directory symbolic link. Enable Windows Developer "
+                               "Mode or run the test with elevated privileges. mklink output: %1")
+                           .arg(QString::fromLocal8Bit(output).trimmed())));
     }
     QVERIFY2(mklink.exitCode() == 0, output.constData());
 
@@ -241,7 +246,8 @@ void FileLoaderTest::directoryLinks()
 
     QDir logicalDirectory(linkPath);
     QVERIFY(logicalDirectory.cdUp());
-    QCOMPARE(QDir::cleanPath(logicalDirectory.absolutePath()), QDir::cleanPath(root.filePath("container")));
+    QCOMPARE(QDir::cleanPath(logicalDirectory.absolutePath()),
+             QDir::cleanPath(root.filePath("container")));
     QVERIFY(QDir(root.filePath("container")).rmdir("link"));
 #endif
 }
@@ -264,16 +270,24 @@ void FileLoaderTest::heifExtensionsAreImages()
 
 void FileLoaderTest::heifPluginDecodesImage()
 {
-    QVERIFY2(QImageReader::supportedImageFormats().contains("heic"), "The HEIF image format plug-in is unavailable");
+    QVERIFY2(QImageReader::supportedImageFormats().contains("heic"),
+             "The HEIF image format plug-in is unavailable");
 
     const QByteArray bytes = QByteArray::fromBase64(
-        "AAAAHGZ0eXBoZWljAAAAAG1pZjFoZWljbWlhZgAAAXttZXRhAAAAAAAAACFoZGxyAAAAAAAAAABwaWN0AAAAAAAAAAAAAAAAAAAA"
-        "ACJpbG9jAAAAAERAAAEAAQAAAAABnwABAAAAAAAAAGwAAAAjaWluZgAAAAAAAQAAABVpbmZlAgAAAAABAABodmMxAAAAAA5waXRt"
-        "AAAAAAABAAAA+2lwcnAAAADbaXBjbwAAAHZodmNDAQNwAAAAAAAAAAAAHvAA/P34+AAADwNgAAEAGEABDAH//wNwAAADAJAAAAMA"
-        "AAMAHroCQGEAAQAqQgEBA3AAAAMAkAAAAwAAAwAeoCCBBZbq5Ka5uAhoMCAAAAMDIAAAAwAhYgABAAZEAcFzwIkAAAATY29scm5j"
-        "bHgAAQANAAaAAAAAFGlzcGUAAAAAAAAAQAAAAEAAAAAoY2xhcAAAACAAAAABAAAAIAAAAAH////gAAAAAv///+AAAAACAAAADnBp"
-        "eGkAAAAAAQgAAAAYaXBtYQAAAAAAAAABAAEFgQIDBYQAAAB0bWRhdAAAAGgoAa8TgPUrAhGDczL1mz4HCRRzxqbGjnnUrr1cLTO7"
-        "99zRz6nw0QjRMp+4I2Da10D3ghQEMvB53CWoI0S3qXIb99YsvLFaQ9ZLHxsJsZ9SxlvNJ5EgD4Y4miuaKu3bxPGXDHirp/9TzA==");
+        "AAAAHGZ0eXBoZWljAAAAAG1pZjFoZWljbWlhZgAAAXttZXRhAAAAAAAAACFoZGxyAAAAAAAAAABwaWN0AAAAAAAAAA"
+        "AAAAAAAAAA"
+        "ACJpbG9jAAAAAERAAAEAAQAAAAABnwABAAAAAAAAAGwAAAAjaWluZgAAAAAAAQAAABVpbmZlAgAAAAABAABodmMxAA"
+        "AAAA5waXRt"
+        "AAAAAAABAAAA+2lwcnAAAADbaXBjbwAAAHZodmNDAQNwAAAAAAAAAAAAHvAA/P34+AAADwNgAAEAGEABDAH//"
+        "wNwAAADAJAAAAMA"
+        "AAMAHroCQGEAAQAqQgEBA3AAAAMAkAAAAwAAAwAeoCCBBZbq5Ka5uAhoMCAAAAMDIAAAAwAhYgABAAZEAcFzwIkAAA"
+        "ATY29scm5j"
+        "bHgAAQANAAaAAAAAFGlzcGUAAAAAAAAAQAAAAEAAAAAoY2xhcAAAACAAAAABAAAAIAAAAAH////gAAAAAv///"
+        "+AAAAACAAAADnBp"
+        "eGkAAAAAAQgAAAAYaXBtYQAAAAAAAAABAAEFgQIDBYQAAAB0bWRhdAAAAGgoAa8TgPUrAhGDczL1mz4HCRRzxqbGjn"
+        "nUrr1cLTO7"
+        "99zRz6nw0QjRMp+"
+        "4I2Da10D3ghQEMvB53CWoI0S3qXIb99YsvLFaQ9ZLHxsJsZ9SxlvNJ5EgD4Y4miuaKu3bxPGXDHirp/9TzA==");
     QBuffer buffer;
     buffer.setData(bytes);
     QVERIFY(buffer.open(QIODevice::ReadOnly));
@@ -329,7 +343,8 @@ void FileLoaderTest::sevenZipImages()
     QVERIFY(archive.isValid());
     QVERIFY(archive.archiveOpenError() == ArchiveOpenError::None);
 
-    const QString unicodeName = QString("[rootnuko＋H] てにおはっ！ ～女の子だってホントはえっちだよ？～/red.jpg");
+    const QString unicodeName =
+        QString("[rootnuko＋H] てにおはっ！ ～女の子だってホントはえっちだよ？～/red.jpg");
     const QStringList files = archive.contents();
     QVERIFY(files.contains("red.jpg"));
     QVERIFY(files.contains("yellow.png"));

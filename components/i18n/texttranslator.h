@@ -26,7 +26,10 @@ public:
     TextTranslator(QObject *parent, QString path, TextTranslator *reverse = nullptr);
     virtual ~TextTranslator() {}
 
-    QString translate(const char *context, const char *sourceText, const char *disambiguation = Q_NULLPTR, int n = -1) const override;
+    QString translate(const char *context,
+                      const char *sourceText,
+                      const char *disambiguation = Q_NULLPTR,
+                      int n = -1) const override;
 
     QString getString(const QString &group, const QString &key) const;
 

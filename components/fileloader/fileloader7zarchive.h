@@ -9,7 +9,9 @@ class FileLoader7zArchivePrivate;
 class FileLoader7zArchive : public IFileLoader
 {
 public:
-    FileLoader7zArchive(QString sevenzippath, QString extensionOfFile, bool extractSolidArchiveToTemporaryDir = false);
+    FileLoader7zArchive(QString sevenzippath,
+                        QString extensionOfFile,
+                        bool extractSolidArchiveToTemporaryDir = false);
     ~FileLoader7zArchive();
 
     /**

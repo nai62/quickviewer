@@ -87,13 +87,15 @@ public:
         : id(-1),
           type_id(0),
           count(0)
-    {}
+    {
+    }
     TagRecord(QString nm, int tpid)
         : id(-1),
           name(nm),
           type_id(tpid),
           count(0)
-    {}
+    {
+    }
     inline const TagRecord &operator=(const TagRecord &rhs)
     {
         id = rhs.id;

@@ -54,8 +54,7 @@ ReadProgressStore::ReadProgressMap ReadProgressStore::initializeAsync()
         int pages = settings.value("Pages", 0).toInt();
         int current = settings.value("Current", 0).toInt();
         bool completed = settings.value("Completed", false).toBool();
-        ReadProgress progress = {
-            title, path, currentPage, pages, current, completed};
+        ReadProgress progress = {title, path, currentPage, pages, current, completed};
         result[path] = progress;
         settings.endGroup();
     }

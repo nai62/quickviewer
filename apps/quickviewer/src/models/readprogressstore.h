@@ -34,14 +34,24 @@ public:
 
     static ReadProgressMap initializeAsync();
 
-    bool contains(QString path) { return m_sessionOverrides.contains(path) || m_progressByVolumePath.contains(path); }
+    bool contains(QString path)
+    {
+        return m_sessionOverrides.contains(path) || m_progressByVolumePath.contains(path);
+    }
     ReadProgress at(QString path)
     {
         const auto sessionOverride = m_sessionOverrides.constFind(path);
-        return sessionOverride == m_sessionOverrides.cend() ? m_progressByVolumePath[path] : sessionOverride.value();
+        return sessionOverride == m_sessionOverrides.cend() ? m_progressByVolumePath[path]
+                                                            : sessionOverride.value();
     }
-    void insert(QString path, const ReadProgress &value) { m_progressByVolumePath.insert(path, value); }
-    void insertSessionOverride(QString path, const ReadProgress &value) { m_sessionOverrides.insert(path, value); }
+    void insert(QString path, const ReadProgress &value)
+    {
+        m_progressByVolumePath.insert(path, value);
+    }
+    void insertSessionOverride(QString path, const ReadProgress &value)
+    {
+        m_sessionOverrides.insert(path, value);
+    }
     void moveToThread(QThread *targetThread);
 
 public slots:

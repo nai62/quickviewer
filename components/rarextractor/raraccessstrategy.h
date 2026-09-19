@@ -65,7 +65,9 @@ public:
 class NonSolidRarAccessStrategy final : public IRarAccessStrategy
 {
 public:
-    NonSolidRarAccessStrategy(QString archiveName, QStringList physicalEntries, RarAccessStatistics *statistics);
+    NonSolidRarAccessStrategy(QString archiveName,
+                              QStringList physicalEntries,
+                              RarAccessStatistics *statistics);
 
     bool open() override;
     bool reopen() override;
@@ -83,7 +85,9 @@ private:
 class SolidRarAccessStrategy final : public IRarAccessStrategy
 {
 public:
-    SolidRarAccessStrategy(QString archiveName, QStringList physicalEntries, RarAccessStatistics *statistics);
+    SolidRarAccessStrategy(QString archiveName,
+                           QStringList physicalEntries,
+                           RarAccessStatistics *statistics);
 
     bool open() override;
     bool reopen() override;

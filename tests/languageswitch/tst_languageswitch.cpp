@@ -25,9 +25,13 @@ public:
     DecoratingTranslator(QString prefix, QString suffix)
         : m_prefix(std::move(prefix)),
           m_suffix(std::move(suffix))
-    {}
+    {
+    }
 
-    QString translate(const char *context, const char *sourceText, const char *disambiguation = nullptr, int n = -1) const override
+    QString translate(const char *context,
+                      const char *sourceText,
+                      const char *disambiguation = nullptr,
+                      int n = -1) const override
     {
         Q_UNUSED(context);
         Q_UNUSED(disambiguation);
@@ -87,11 +91,10 @@ static QString marker(const QString &source)
 
 static bool emitLanguageChanged(const QString &language)
 {
-    return QMetaObject::invokeMethod(
-        qApp->languageSelector(),
-        "languageChanged",
-        Qt::DirectConnection,
-        Q_ARG(QString, language));
+    return QMetaObject::invokeMethod(qApp->languageSelector(),
+                                     "languageChanged",
+                                     Qt::DirectConnection,
+                                     Q_ARG(QString, language));
 }
 
 static QAction *actionForSubmenu(QMenu *parentMenu, QMenu *submenu)
@@ -108,8 +111,7 @@ static bool containsJapanese(const QString &text)
 {
     for (const QChar ch : text) {
         const ushort code = ch.unicode();
-        if ((code >= 0x3040 && code <= 0x30ff) ||
-            (code >= 0x3400 && code <= 0x4dbf) ||
+        if ((code >= 0x3040 && code <= 0x30ff) || (code >= 0x3400 && code <= 0x4dbf) ||
             (code >= 0x4e00 && code <= 0x9fff)) {
             return true;
         }
@@ -123,7 +125,8 @@ static bool isContentDerivedLabel(const QLabel *label)
     return name == QStringLiteral("pageLabel") || name == QStringLiteral("pathLabel");
 }
 
-static void appendText(QStringList &texts, QObject *object, const QString &property, const QString &text)
+static void
+appendText(QStringList &texts, QObject *object, const QString &property, const QString &text)
 {
     if (text.isEmpty()) {
         return;
@@ -166,7 +169,8 @@ static QStringList relevantUiText(QObject *root)
             }
         }
         if (auto *lineEdit = qobject_cast<QLineEdit *>(object)) {
-            appendText(texts, lineEdit, QStringLiteral("placeholderText"), lineEdit->placeholderText());
+            appendText(
+                texts, lineEdit, QStringLiteral("placeholderText"), lineEdit->placeholderText());
         }
         if (auto *menu = qobject_cast<QMenu *>(object)) {
             appendText(texts, menu, QStringLiteral("title"), menu->title());
@@ -284,10 +288,9 @@ private slots:
         QCOMPARE(loadAction->text(), marker(QStringLiteral("Load bookmark")));
         QCOMPARE(fileMenu->title(), marker(QStringLiteral("&File")));
         QVERIFY(statusLabel->text().isEmpty());
-        QCOMPARE(
-            imageView->displayedMessage(),
-            marker(QStringLiteral("No Image Open")) + QLatin1Char('\n') +
-                marker(QStringLiteral("Open an image, folder, or archive to begin.")));
+        QCOMPARE(imageView->displayedMessage(),
+                 marker(QStringLiteral("No Image Open")) + QLatin1Char('\n') +
+                     marker(QStringLiteral("Open an image, folder, or archive to begin.")));
         QCOMPARE(viewer.fullscreenButton()->toolTip(), marker(QStringLiteral("&Fullscreen")));
 
         const QList<QString> keyGroups = qApp->keyActions().nameByGroups().uniqueKeys();
@@ -303,12 +306,10 @@ private slots:
 
         QCOMPARE(catalog.windowTitle(), marker(QStringLiteral("Catalog")));
         QCOMPARE(catalogViewMenu->title(), marker(QStringLiteral("&View")));
-        QCOMPARE(
-            catalogSearch->lineEdit()->placeholderText(),
-            marker(QStringLiteral("Enter a search term and press Enter to search by title.")));
-        QCOMPARE(
-            catalogStatus->text(),
-            marker(QStringLiteral("Drop an image folder here to create a catalog.")));
+        QCOMPARE(catalogSearch->lineEdit()->placeholderText(),
+                 marker(QStringLiteral("Enter a search term and press Enter to search by title.")));
+        QCOMPARE(catalogStatus->text(),
+                 marker(QStringLiteral("Drop an image folder here to create a catalog.")));
 
         QCOMPARE(exif.windowTitle(), marker(QStringLiteral("Exif Information")));
         QCOMPARE(exifClipboard->text(), marker(QStringLiteral("Copy to clipboard")));
@@ -361,9 +362,10 @@ private slots:
                 }
             }
         }
-        const QByteArray message = QStringLiteral("Stale Japanese UI text after switching to English:\n%1")
-                                       .arg(staleJapanese.join(QLatin1Char('\n')))
-                                       .toUtf8();
+        const QByteArray message =
+            QStringLiteral("Stale Japanese UI text after switching to English:\n%1")
+                .arg(staleJapanese.join(QLatin1Char('\n')))
+                .toUtf8();
         QVERIFY2(staleJapanese.isEmpty(), message.constData());
     }
 };

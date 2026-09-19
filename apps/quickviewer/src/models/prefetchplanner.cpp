@@ -58,7 +58,8 @@ QList<int> PrefetchPlanner::offsets(PrefetchMode mode, int cacheCapacity)
     return result;
 }
 
-QList<int> PrefetchPlanner::indexes(PrefetchMode mode, int currentIndex, int pageCount, int cacheCapacity)
+QList<int>
+PrefetchPlanner::indexes(PrefetchMode mode, int currentIndex, int pageCount, int cacheCapacity)
 {
     QList<int> result;
     const QList<int> plannedOffsets = offsets(mode, cacheCapacity);

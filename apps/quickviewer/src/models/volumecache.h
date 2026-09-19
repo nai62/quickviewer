@@ -21,12 +21,15 @@ struct VolumeCacheKey
 
     friend bool operator==(const VolumeCacheKey &lhs, const VolumeCacheKey &rhs)
     {
-        return lhs.normalizedVolumePath == rhs.normalizedVolumePath && lhs.includeSubfolders == rhs.includeSubfolders && lhs.extractSolidArchive == rhs.extractSolidArchive;
+        return lhs.normalizedVolumePath == rhs.normalizedVolumePath &&
+               lhs.includeSubfolders == rhs.includeSubfolders &&
+               lhs.extractSolidArchive == rhs.extractSolidArchive;
     }
 
     friend bool operator<(const VolumeCacheKey &lhs, const VolumeCacheKey &rhs)
     {
-        return std::tie(lhs.normalizedVolumePath, lhs.includeSubfolders, lhs.extractSolidArchive) < std::tie(rhs.normalizedVolumePath, rhs.includeSubfolders, rhs.extractSolidArchive);
+        return std::tie(lhs.normalizedVolumePath, lhs.includeSubfolders, lhs.extractSolidArchive) <
+               std::tie(rhs.normalizedVolumePath, rhs.includeSubfolders, rhs.extractSolidArchive);
     }
 };
 
@@ -62,7 +65,8 @@ public:
     int size() const;
 
 private:
-    void watchFailedLoad(const VolumeCacheKey &key, quint64 generation, const VolumeLoadFuture &load);
+    void
+    watchFailedLoad(const VolumeCacheKey &key, quint64 generation, const VolumeLoadFuture &load);
 
     LruCache<VolumeCacheKey, VolumeLoadFuture, DeferredVolumeLoadCleanup> m_loads;
     QMap<VolumeCacheKey, quint64> m_generations;

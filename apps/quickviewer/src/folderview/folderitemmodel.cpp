@@ -71,7 +71,9 @@ QModelIndex FolderItemModel::index(int row, int column, const QModelIndex &) con
     if (!m_searchedVolumes) {
         return QModelIndex();
     }
-    return row < m_searchedVolumes->size() ? createIndex(row, column, (void *)&m_searchedVolumes->at(row)) : QModelIndex();
+    return row < m_searchedVolumes->size()
+               ? createIndex(row, column, (void *)&m_searchedVolumes->at(row))
+               : QModelIndex();
 }
 
 QModelIndex FolderItemModel::parent(const QModelIndex &) const
@@ -104,6 +106,7 @@ void FolderItemModel::setCurrentVolumeRow(int row)
         emit dataChanged(index(previousRow, 0), index(previousRow, 0), {CurrentVolumeRole});
     }
     if (m_currentVolumeRow >= 0) {
-        emit dataChanged(index(m_currentVolumeRow, 0), index(m_currentVolumeRow, 0), {CurrentVolumeRole});
+        emit dataChanged(
+            index(m_currentVolumeRow, 0), index(m_currentVolumeRow, 0), {CurrentVolumeRole});
     }
 }

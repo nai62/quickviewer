@@ -17,32 +17,22 @@ public:
           m_willBeClose(false)
     {
         std::wstring p = path.toStdWString();
-        m_handlepipe = ::CreateNamedPipeW(
-            p.data(),
-            PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
-            PIPE_TYPE_BYTE,
-            1,
-            PipeBufferLength,
-            PipeBufferLength,
-            1000,
-            NULL);
+        m_handlepipe = ::CreateNamedPipeW(p.data(),
+                                          PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
+                                          PIPE_TYPE_BYTE,
+                                          1,
+                                          PipeBufferLength,
+                                          PipeBufferLength,
+                                          1000,
+                                          NULL);
         if (m_handlepipe != INVALID_HANDLE_VALUE) {
             m_serverMode = true;
         } else {
             m_handlepipe = ::CreateFileW(
-                p.data(),
-                GENERIC_READ | GENERIC_WRITE,
-                0,
-                NULL,
-                OPEN_EXISTING,
-                0,
-                NULL);
+                p.data(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
         }
     }
-    ~QNamedPipePrivate()
-    {
-        dispose();
-    }
+    ~QNamedPipePrivate() { dispose(); }
     void dispose()
     {
         if (m_handlepipe) {
@@ -128,10 +118,7 @@ public:
             m_serverMode = true;
         }
     }
-    ~QNamedPipePrivate()
-    {
-        dispose();
-    }
+    ~QNamedPipePrivate() { dispose(); }
 
     bool isValid() { return m_fd > 0; }
     void sendMessage(QByteArray bytes)

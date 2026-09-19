@@ -19,10 +19,14 @@ void LatestResultDispatcherTest::appliesResultOnOwningThread()
     bool applied = false;
     QThread *callbackThread = nullptr;
 
-    dispatcher.submit(QtConcurrent::run([] { return 42; }), [&](int result) {
+    dispatcher.submit(
+        QtConcurrent::run([] { return 42; }),
+        [&](int result) {
             QCOMPARE(result, 42);
             callbackThread = QThread::currentThread();
-            applied = true; }, [](int) { QFAIL("The current result must not be discarded"); });
+            applied = true;
+        },
+        [](int) { QFAIL("The current result must not be discarded"); });
 
     QTRY_VERIFY(applied);
     QCOMPARE(callbackThread, dispatcher.thread());
@@ -66,11 +70,16 @@ void LatestResultDispatcherTest::discardsResultAfterOwnerIsDestroyed()
     bool applied = false;
     int discarded = 0;
     auto *dispatcher = new LatestResultDispatcher<int *>();
-    dispatcher->submit(promise.future(), [&](int *result) {
+    dispatcher->submit(
+        promise.future(),
+        [&](int *result) {
             applied = true;
-            delete result; }, [&](int *result) {
+            delete result;
+        },
+        [&](int *result) {
             discarded = *result;
-            delete result; });
+            delete result;
+        });
 
     delete dispatcher;
     promise.addResult(new int(7));

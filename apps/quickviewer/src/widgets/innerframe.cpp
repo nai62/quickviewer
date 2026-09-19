@@ -17,9 +17,9 @@ InnerFrame::InnerFrame(QWidget *parent, Qt::AnchorPoint anchor, int autoCloseSpa
     m_mainWindow->installEventFilter(this);
 
     // Since no background is set, borrow the setting of the top level Widget
-    auto layout = new QBoxLayout(
-        Qt::AnchorTop || Qt::AnchorBottom ? QBoxLayout::TopToBottom : QBoxLayout::LeftToRight,
-        this);
+    auto layout = new QBoxLayout(Qt::AnchorTop || Qt::AnchorBottom ? QBoxLayout::TopToBottom
+                                                                   : QBoxLayout::LeftToRight,
+                                 this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     setLayout(layout);
@@ -54,16 +54,14 @@ void InnerFrame::showWithoutTitleBar()
     setMaximumHeight(size().height());
     switch (m_anchor) {
     case Qt::AnchorTop:
-        setGeometry(QRect(rectMain.topLeft(),
-                          QSize(rectMain.width(), height())));
+        setGeometry(QRect(rectMain.topLeft(), QSize(rectMain.width(), height())));
         break;
     case Qt::AnchorBottom:
         setGeometry(QRect(QPoint(rectMain.left(), rectMain.bottom() - height() + 1),
                           QSize(rectMain.width(), height())));
         break;
     case Qt::AnchorLeft:
-        setGeometry(QRect(rectMain.topLeft(),
-                          QSize(width(), rectMain.height())));
+        setGeometry(QRect(rectMain.topLeft(), QSize(width(), rectMain.height())));
         break;
     case Qt::AnchorRight:
         setGeometry(QRect(QPoint(rectMain.right() - width() + 1, rectMain.top()),

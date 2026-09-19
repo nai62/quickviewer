@@ -18,7 +18,8 @@ public:
         : KeyboardModifier(""),
           Buttons(0),
           Delta(0)
-    {}
+    {
+    }
 
     QMouseValue(const QString key);
 
@@ -35,7 +36,8 @@ public:
           Buttons(rhs.Buttons),
           Delta(rhs.Delta),
           Key(rhs.Key)
-    {}
+    {
+    }
 
     inline QMouseValue &operator=(const QMouseValue &rhs)
     {
@@ -48,12 +50,10 @@ public:
 
     inline bool operator==(const QMouseValue &other) const
     {
-        return KeyboardModifier == other.KeyboardModifier && Buttons == other.Buttons && Delta == other.Delta;
+        return KeyboardModifier == other.KeyboardModifier && Buttons == other.Buttons &&
+               Delta == other.Delta;
     }
-    inline bool operator<(const QMouseValue &other) const
-    {
-        return Key < other.Key;
-    }
+    inline bool operator<(const QMouseValue &other) const { return Key < other.Key; }
 
     QString toString();
 
@@ -95,14 +95,8 @@ public:
         return *this;
     }
 
-    inline bool operator==(const QMouseSequence &rhs) const
-    {
-        return m_seq == rhs.m_seq;
-    }
-    inline bool operator<(const QMouseSequence &rhs) const
-    {
-        return m_seq < rhs.m_seq;
-    }
+    inline bool operator==(const QMouseSequence &rhs) const { return m_seq == rhs.m_seq; }
+    inline bool operator<(const QMouseSequence &rhs) const { return m_seq < rhs.m_seq; }
     inline QMouseValue operator[](const int idx) { return m_values[idx]; }
     inline int count() const { return m_values.count(); }
 

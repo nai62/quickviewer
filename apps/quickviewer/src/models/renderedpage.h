@@ -21,19 +21,14 @@ class RenderedPage : public QObject
 {
     Q_OBJECT
 public:
-    enum PageAlign {
-        PageCenter,
-        PageLeft,
-        PageRight
-    };
-    enum SeparationState {
-        NotSeparated,
-        FirstHalf,
-        SecondHalf
-    };
+    enum PageAlign { PageCenter, PageLeft, PageRight };
+    enum SeparationState { NotSeparated, FirstHalf, SecondHalf };
 
     explicit RenderedPage(QObject *parent = nullptr, PageRenderSettings renderSettings = {});
-    RenderedPage(QObject *parent, QGraphicsScene *graphicsScene, ImageContent imageContent, PageRenderSettings renderSettings = {});
+    RenderedPage(QObject *parent,
+                 QGraphicsScene *graphicsScene,
+                 ImageContent imageContent,
+                 PageRenderSettings renderSettings = {});
     ~RenderedPage() override;
     Q_DISABLE_COPY_MOVE(RenderedPage)
 
@@ -43,11 +38,20 @@ public:
     /**
      * @brief Lay out an image fitted within the viewport
      */
-    QRect setPageLayoutFitting(QRect viewport, PageAlign alignment, qvEnums::FitMode fitMode, qreal loupe, int rotationOffset = 0);
-    QRect setPageLayoutManual(QRect viewport, PageAlign alignment, qreal scale, int rotationOffset = 0, bool loupe = false);
+    QRect setPageLayoutFitting(QRect viewport,
+                               PageAlign alignment,
+                               qvEnums::FitMode fitMode,
+                               qreal loupe,
+                               int rotationOffset = 0);
+    QRect setPageLayoutManual(QRect viewport,
+                              PageAlign alignment,
+                              qreal scale,
+                              int rotationOffset = 0,
+                              bool loupe = false);
 
     void setRenderSettings(PageRenderSettings renderSettings);
-    void applyResize(qreal scale, int rotationOffset, QPoint position, QSize targetSize, bool loupe = false);
+    void applyResize(
+        qreal scale, int rotationOffset, QPoint position, QSize targetSize, bool loupe = false);
     void initializePage(bool resetResizedImage = false);
     void resetSignage(QRect viewport, RenderedPage::PageAlign alignment);
     const ImageContent &imageContent() const { return m_content; }

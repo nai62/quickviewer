@@ -71,7 +71,8 @@ QString QMouseValue::toString()
     }
     QString keymod = KeyboardModifier.toString();
     //    qDebug() << keymod.mid(keymod.length()-2);
-    if (!keymod.isEmpty() && keymod.mid(keymod.length() - 2) != "++" && keymod.mid(keymod.length() - 1) == "+") {
+    if (!keymod.isEmpty() && keymod.mid(keymod.length() - 2) != "++" &&
+        keymod.mid(keymod.length() - 1) == "+") {
         keymod = keymod.left(keymod.length() - 1);
     }
     Key = keymod + "+::" + out.join("+");

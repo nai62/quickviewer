@@ -99,7 +99,10 @@ public:
         }
         return volumeLocationDisplayText({volume->volumePath(), m_visiblePages[0].path});
     }
-    QString currentPageName() const { return m_visiblePages.isEmpty() ? QString() : m_visiblePages[0].path; }
+    QString currentPageName() const
+    {
+        return m_visiblePages.isEmpty() ? QString() : m_visiblePages[0].path;
+    }
     /**
      * Address of the currently displayed page, if any. Used by the code that
      * persists the current position.

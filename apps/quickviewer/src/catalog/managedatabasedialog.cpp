@@ -16,9 +16,13 @@ ManageDatabaseDialog::ManageDatabaseDialog(QWidget *parent)
     // CatalogTree
     ui->treeWidget->sortByColumn(1, Qt::DescendingOrder);
     QTreeWidgetItem *header = ui->treeWidget->headerItem();
-    header->setText(0, tr("Name", "Title of the column in the list part of the folder registered as Catalog"));
-    header->setText(1, tr("Created", "Title of the column in the list part of the folder registered as Catalog"));
-    header->setText(2, tr("Path", "Title of the column in the list part of the folder registered as Catalog"));
+    header->setText(
+        0, tr("Name", "Title of the column in the list part of the folder registered as Catalog"));
+    header->setText(
+        1,
+        tr("Created", "Title of the column in the list part of the folder registered as Catalog"));
+    header->setText(
+        2, tr("Path", "Title of the column in the list part of the folder registered as Catalog"));
     header->setHidden(false);
 
     // Buttons
@@ -64,7 +68,8 @@ void ManageDatabaseDialog::normalButtonStates()
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
     } else {
         ui->cancelButton->setVisible(true);
-        ui->cancelButton->setText(tr("Start", "Button to start catalog creation for specified folder"));
+        ui->cancelButton->setText(
+            tr("Start", "Button to start catalog creation for specified folder"));
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
     }
     ui->progressBar->setVisible(false);
@@ -106,7 +111,10 @@ void ManageDatabaseDialog::resetCatalogList()
         foreach (const CatalogRecord &catalog, m_makeCatalogs) {
             QTreeWidgetItem *item = new QTreeWidgetItem;
             item->setText(0, "* " + catalog.name);
-            item->setText(1, tr("Pending", "Representation of time indicating that the catalog is not currently created and will be generated from now"));
+            item->setText(1,
+                          tr("Pending",
+                             "Representation of time indicating that the catalog is not currently "
+                             "created and will be generated from now"));
             item->setText(2, catalog.path);
             item->setData(0, Qt::UserRole, cnt--);
             item->setBackground(0, QBrush(QColor("lightgreen")));
@@ -170,7 +178,8 @@ bool ManageDatabaseDialog::databaseSettingDialog(CatalogRecord &catalog, bool ed
     dialog.setPath(catalog.path);
     dialog.setForEditing(editing);
     if (editing) {
-        dialog.setWindowTitle(tr("Edit Catalog", "Button for editing contents of already created catalog"));
+        dialog.setWindowTitle(
+            tr("Edit Catalog", "Button for editing contents of already created catalog"));
     }
 
     int result = dialog.exec();
@@ -214,12 +223,22 @@ void ManageDatabaseDialog::handleCatalogCreationFinished()
     if (!m_catalogWatcher) {
         return;
     }
-    disconnect(m_thumbManager, SIGNAL(catalogCreated(CatalogRecord)), this, SLOT(handleCatalogCreated(CatalogRecord)));
+    disconnect(m_thumbManager,
+               SIGNAL(catalogCreated(CatalogRecord)),
+               this,
+               SLOT(handleCatalogCreated(CatalogRecord)));
     disconnect(m_catalogWatcher, SIGNAL(finished()), this, SLOT(handleCatalogCreationFinished()));
-    disconnect(m_catalogWatcher, SIGNAL(progressRangeChanged(int, int)), ui->progressBar, SLOT(setRange(int, int)));
-    disconnect(m_catalogWatcher, SIGNAL(progressValueChanged(int)), ui->progressBar, SLOT(setValue(int)));
+    disconnect(m_catalogWatcher,
+               SIGNAL(progressRangeChanged(int, int)),
+               ui->progressBar,
+               SLOT(setRange(int, int)));
+    disconnect(
+        m_catalogWatcher, SIGNAL(progressValueChanged(int)), ui->progressBar, SLOT(setValue(int)));
     //  disconnect(m_catalogWatcher, SIGNAL(progressTextChanged(QString)), ui->progressBar, SLOT(setWindowTitle(QString)));
-    disconnect(m_catalogWatcher, SIGNAL(progressTextChanged(QString)), ui->volumeNameLabel, SLOT(setText(QString)));
+    disconnect(m_catalogWatcher,
+               SIGNAL(progressTextChanged(QString)),
+               ui->volumeNameLabel,
+               SLOT(setText(QString)));
 
     m_catalogWatcher = nullptr;
 
@@ -227,8 +246,11 @@ void ManageDatabaseDialog::handleCatalogCreationFinished()
     normalButtonStates();
 
     QMessageBox msgBox(this);
-    msgBox.setWindowTitle(tr("Completed", "Title of message box when catalog generation finished successfully"));
-    QString message = QString(tr("Catalog creation completed.", "Body of message box when catalog generation finished successfully"));
+    msgBox.setWindowTitle(
+        tr("Completed", "Title of message box when catalog generation finished successfully"));
+    QString message =
+        QString(tr("Catalog creation completed.",
+                   "Body of message box when catalog generation finished successfully"));
 
     msgBox.setText(message);
     msgBox.exec();
@@ -240,19 +262,41 @@ void ManageDatabaseDialog::handleCancelButtonClicked()
         return;
     }
     if (!m_catalogWatcher) {
-        connect(m_thumbManager, SIGNAL(catalogCreated(CatalogRecord)), this, SLOT(handleCatalogCreated(CatalogRecord)));
+        connect(m_thumbManager,
+                SIGNAL(catalogCreated(CatalogRecord)),
+                this,
+                SLOT(handleCatalogCreated(CatalogRecord)));
         m_catalogWatcher = m_thumbManager->createCatalogAsync(m_makeCatalogs);
         connect(m_catalogWatcher, SIGNAL(finished()), this, SLOT(handleCatalogCreationFinished()));
-        connect(m_catalogWatcher, SIGNAL(progressRangeChanged(int, int)), ui->progressBar, SLOT(setRange(int, int)));
-        connect(m_catalogWatcher, SIGNAL(progressValueChanged(int)), ui->progressBar, SLOT(setValue(int)));
-        connect(m_catalogWatcher, SIGNAL(progressTextChanged(QString)), ui->volumeNameLabel, SLOT(setText(QString)));
+        connect(m_catalogWatcher,
+                SIGNAL(progressRangeChanged(int, int)),
+                ui->progressBar,
+                SLOT(setRange(int, int)));
+        connect(m_catalogWatcher,
+                SIGNAL(progressValueChanged(int)),
+                ui->progressBar,
+                SLOT(setValue(int)));
+        connect(m_catalogWatcher,
+                SIGNAL(progressTextChanged(QString)),
+                ui->volumeNameLabel,
+                SLOT(setText(QString)));
 
         progressButtonStates();
     } else {
-        disconnect(m_thumbManager, SIGNAL(catalogCreated(CatalogRecord)), this, SLOT(handleCatalogCreated(CatalogRecord)));
-        disconnect(m_catalogWatcher, SIGNAL(finished()), this, SLOT(handleCatalogCreationFinished()));
-        disconnect(m_catalogWatcher, SIGNAL(progressRangeChanged(int, int)), ui->progressBar, SLOT(setRange(int, int)));
-        disconnect(m_catalogWatcher, SIGNAL(progressValueChanged(int)), ui->progressBar, SLOT(setValue(int)));
+        disconnect(m_thumbManager,
+                   SIGNAL(catalogCreated(CatalogRecord)),
+                   this,
+                   SLOT(handleCatalogCreated(CatalogRecord)));
+        disconnect(
+            m_catalogWatcher, SIGNAL(finished()), this, SLOT(handleCatalogCreationFinished()));
+        disconnect(m_catalogWatcher,
+                   SIGNAL(progressRangeChanged(int, int)),
+                   ui->progressBar,
+                   SLOT(setRange(int, int)));
+        disconnect(m_catalogWatcher,
+                   SIGNAL(progressValueChanged(int)),
+                   ui->progressBar,
+                   SLOT(setValue(int)));
         m_thumbManager->cancelCreateCatalogAsync();
         m_catalogWatcher = nullptr;
 
@@ -260,8 +304,10 @@ void ManageDatabaseDialog::handleCancelButtonClicked()
         normalButtonStates();
 
         QMessageBox msgBox(this);
-        msgBox.setWindowTitle(tr("Cancelled!", "Title of message box when catalog generation was canceled"));
-        QString message = QString(tr("Catalog creation was cancelled.", "Body of message box when catalog generation is canceled"));
+        msgBox.setWindowTitle(
+            tr("Cancelled!", "Title of message box when catalog generation was canceled"));
+        QString message = QString(tr("Catalog creation was cancelled.",
+                                     "Body of message box when catalog generation is canceled"));
         msgBox.setText(message);
         msgBox.exec();
     }
@@ -325,9 +371,7 @@ void ManageDatabaseDialog::handleDeleteButtonClicked()
     normalButtonStates();
 }
 
-void ManageDatabaseDialog::handleUpdateButtonClicked()
-{
-}
+void ManageDatabaseDialog::handleUpdateButtonClicked() {}
 
 void ManageDatabaseDialog::handleDeleteAllButtonClicked()
 {
@@ -342,6 +386,4 @@ void ManageDatabaseDialog::handleDeleteAllButtonClicked()
     normalButtonStates();
 }
 
-void ManageDatabaseDialog::handleUpdateAllButtonClicked()
-{
-}
+void ManageDatabaseDialog::handleUpdateAllButtonClicked() {}

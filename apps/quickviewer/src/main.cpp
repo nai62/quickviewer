@@ -22,10 +22,7 @@ namespace {
 class ImageLoadingShutdownGuard
 {
 public:
-    ~ImageLoadingShutdownGuard()
-    {
-        Volume::shutdownImageLoading();
-    }
+    ~ImageLoadingShutdownGuard() { Volume::shutdownImageLoading(); }
 };
 } // namespace
 
@@ -41,11 +38,13 @@ int main(int argc, char *argv[])
         QString inipath = QDir::toNativeSeparators(QFileInfo(argv[0]).path());
         inipath += QStringLiteral("\\") + QVApplication::settingsSubPath();
 #    else
-        QString inipath = QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation)).filePath(QVApplication::settingsSubPath());
+        QString inipath = QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation))
+                              .filePath(QVApplication::settingsSubPath());
 #    endif
         std::wstring winipath = inipath.toStdWString();
         WCHAR value[128];
-        qDebug() << ::GetPrivateProfileString(L"View", L"UseDirect2D", L"false", value, sizeof(value) - 1, winipath.c_str());
+        qDebug() << ::GetPrivateProfileString(
+            L"View", L"UseDirect2D", L"false", value, sizeof(value) - 1, winipath.c_str());
         if (::lstrcmp(value, L"true") == 0) {
             qputenv("QT_QPA_PLATFORM", "direct2d");
         }

@@ -46,49 +46,104 @@ FileAssocDialog::FileAssocDialog(QWidget *parent)
     ui->setupUi(this);
 
     m_assocOfActions["Jpeg"] = ui->checkBoxJpeg;
-    m_assocs["Jpeg"] = AssocInfo{"Jpeg", tr("JPEG Image", "description of File format on Explorer(.jpeg)"), "qv_jpeg.ico", {".jpg", ".jpeg", ".jpe"}};
+    m_assocs["Jpeg"] = AssocInfo{"Jpeg",
+                                 tr("JPEG Image", "description of File format on Explorer(.jpeg)"),
+                                 "qv_jpeg.ico",
+                                 {".jpg", ".jpeg", ".jpe"}};
 
     m_assocOfActions["Png"] = ui->checkBoxPng;
-    m_assocs["Png"] = AssocInfo{"Png", tr("PNG File", "description of File format on Explorer(.png)"), "qv_png.ico", {".png"}};
+    m_assocs["Png"] = AssocInfo{"Png",
+                                tr("PNG File", "description of File format on Explorer(.png)"),
+                                "qv_png.ico",
+                                {".png"}};
 
     m_assocOfActions["Tga"] = ui->checkBoxTga;
-    m_assocs["Tga"] = AssocInfo{"Tga", tr("Truevision Graphics Adapter Format Image", "description of File format on Explorer(.tga)"), "qv_tga.ico", {".tga"}};
+    m_assocs["Tga"] = AssocInfo{"Tga",
+                                tr("Truevision Graphics Adapter Format Image",
+                                   "description of File format on Explorer(.tga)"),
+                                "qv_tga.ico",
+                                {".tga"}};
 
     m_assocOfActions["Apng"] = ui->checkBoxApng;
-    m_assocs["Apng"] = AssocInfo{"Apng", tr("Animated PNG File", "description of File format on Explorer(.apng)"), "qv_apng.ico", {".apng"}};
+    m_assocs["Apng"] =
+        AssocInfo{"Apng",
+                  tr("Animated PNG File", "description of File format on Explorer(.apng)"),
+                  "qv_apng.ico",
+                  {".apng"}};
 
     m_assocOfActions["Bitmap"] = ui->checkBoxBmp;
-    m_assocs["Bitmap"] = AssocInfo{"Bitmap", tr("Bitmap File", "description of File format on Explorer(.bmp)"), "qv_bmp.ico", {".bmp"}};
+    m_assocs["Bitmap"] =
+        AssocInfo{"Bitmap",
+                  tr("Bitmap File", "description of File format on Explorer(.bmp)"),
+                  "qv_bmp.ico",
+                  {".bmp"}};
 
     m_assocOfActions["Dds"] = ui->checkBoxDds;
-    m_assocs["Dds"] = AssocInfo{"Dds", tr("DirectDraw Surface Image", "description of File format on Explorer(.dds)"), "qv_dds.ico", {".dds"}};
+    m_assocs["Dds"] =
+        AssocInfo{"Dds",
+                  tr("DirectDraw Surface Image", "description of File format on Explorer(.dds)"),
+                  "qv_dds.ico",
+                  {".dds"}};
 
     m_assocOfActions["Gif"] = ui->checkBoxGif;
-    m_assocs["Gif"] = AssocInfo{"Gif", tr("GIF Image", "description of File format on Explorer(.gif)"), "qv_gif.ico", {".gif"}};
+    m_assocs["Gif"] = AssocInfo{"Gif",
+                                tr("GIF Image", "description of File format on Explorer(.gif)"),
+                                "qv_gif.ico",
+                                {".gif"}};
 
     m_assocOfActions["Icon"] = ui->checkBoxIcon;
-    m_assocs["Icon"] = AssocInfo{"Icon", tr("Windows Icon File", "description of File format on Explorer(.ico)"), "", {".ico"}};
+    m_assocs["Icon"] =
+        AssocInfo{"Icon",
+                  tr("Windows Icon File", "description of File format on Explorer(.ico)"),
+                  "",
+                  {".ico"}};
 
     m_assocOfActions["Tiff"] = ui->checkBoxTiff;
-    m_assocs["Tiff"] = AssocInfo{"Tiff", tr("TIFF image", "description of File format on Explorer(.tiff)"), "qv_tiff.ico", {".tif", ".tiff"}};
+    m_assocs["Tiff"] = AssocInfo{"Tiff",
+                                 tr("TIFF image", "description of File format on Explorer(.tiff)"),
+                                 "qv_tiff.ico",
+                                 {".tif", ".tiff"}};
 
     m_assocOfActions["WebP"] = ui->checkBoxWebp;
-    m_assocs["WebP"] = AssocInfo{"WebP", tr("WebP Image", "description of File format on Explorer(.webp)"), "qv_webp.ico", {".webp"}};
+    m_assocs["WebP"] = AssocInfo{"WebP",
+                                 tr("WebP Image", "description of File format on Explorer(.webp)"),
+                                 "qv_webp.ico",
+                                 {".webp"}};
 
     m_assocOfActions["Heif"] = ui->checkBoxHeif;
-    m_assocs["Heif"] = AssocInfo{"Heif", tr("HEIF Image", "description of File format on Explorer(.heic, .heif)"), "", {".heic", ".heif"}};
+    m_assocs["Heif"] =
+        AssocInfo{"Heif",
+                  tr("HEIF Image", "description of File format on Explorer(.heic, .heif)"),
+                  "",
+                  {".heic", ".heif"}};
 
     m_assocOfActions["RawCanon"] = ui->checkBoxRawCanon;
-    m_assocs["RawCanon"] = AssocInfo{"RawCanon", tr("Canon RAW format", "description of File format on Explorer(.cr2)"), "qv_raw.ico", {".crw", ".cr2"}};
+    m_assocs["RawCanon"] =
+        AssocInfo{"RawCanon",
+                  tr("Canon RAW format", "description of File format on Explorer(.cr2)"),
+                  "qv_raw.ico",
+                  {".crw", ".cr2"}};
 
     m_assocOfActions["RawDng"] = ui->checkBoxRawDng;
-    m_assocs["RawDng"] = AssocInfo{"RawDng", tr("Adobe Digital Negative Format", "description of File format on Explorer(.dng)"), "qv_raw.ico", {".dng"}};
+    m_assocs["RawDng"] = AssocInfo{
+        "RawDng",
+        tr("Adobe Digital Negative Format", "description of File format on Explorer(.dng)"),
+        "qv_raw.ico",
+        {".dng"}};
 
     m_assocOfActions["RawNicon"] = ui->checkBoxRawNicon;
-    m_assocs["RawNicon"] = AssocInfo{"RawNicon", tr("Nikon RAW format", "description of File format on Explorer(.nef)"), "qv_raw.ico", {".nef"}};
+    m_assocs["RawNicon"] =
+        AssocInfo{"RawNicon",
+                  tr("Nikon RAW format", "description of File format on Explorer(.nef)"),
+                  "qv_raw.ico",
+                  {".nef"}};
 
     m_assocOfActions["RawSony"] = ui->checkBoxRawSony;
-    m_assocs["RawSony"] = AssocInfo{"RawSony", tr("Sony RAW format", "description of File format on Explorer(.arw)"), "qv_raw.ico", {".arw"}};
+    m_assocs["RawSony"] =
+        AssocInfo{"RawSony",
+                  tr("Sony RAW format", "description of File format on Explorer(.arw)"),
+                  "qv_raw.ico",
+                  {".arw"}};
 
     {
         // check on if assoiation exists for each extension
@@ -182,7 +237,9 @@ void FileAssocDialog::registerEntries(QStringList formats)
             }
             settings.beginGroup("shell");
             settings.beginGroup("open");
-            settings.setValue(".", tr("&View with QuickViewer", "Menu displayed when right clicking on file in Explorer"));
+            settings.setValue(".",
+                              tr("&View with QuickViewer",
+                                 "Menu displayed when right clicking on file in Explorer"));
             settings.beginGroup("command");
             settings.setValue(".", getExecuteApplication());
             settings.endGroup();
@@ -221,7 +278,9 @@ void FileAssocDialog::registerEntries(QStringList formats)
 
         settings.beginGroup("shell");
         settings.beginGroup("open");
-        settings.setValue(".", tr("&View with QuickViewer", "Menu displayed when right clicking on file in Explorer"));
+        settings.setValue(
+            ".",
+            tr("&View with QuickViewer", "Menu displayed when right clicking on file in Explorer"));
         settings.beginGroup("command");
         settings.setValue(".", getExecuteApplication());
         settings.endGroup();
@@ -231,7 +290,11 @@ void FileAssocDialog::registerEntries(QStringList formats)
     }
 
     IApplicationAssociationRegistrationUI *pAARUI = nullptr;
-    HRESULT hr = ::CoCreateInstance(CLSID_ApplicationAssociationRegistrationUI, nullptr, CLSCTX_INPROC, __uuidof(IApplicationAssociationRegistrationUI), reinterpret_cast<void **>(&pAARUI));
+    HRESULT hr = ::CoCreateInstance(CLSID_ApplicationAssociationRegistrationUI,
+                                    nullptr,
+                                    CLSCTX_INPROC,
+                                    __uuidof(IApplicationAssociationRegistrationUI),
+                                    reinterpret_cast<void **>(&pAARUI));
 
     if (SUCCEEDED(hr) && pAARUI != nullptr) {
         hr = pAARUI->LaunchAdvancedAssociationUI(L"QuickViewer");

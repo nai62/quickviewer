@@ -24,7 +24,8 @@ void SvgLoaderTest::storageValuesAreIndependentOfDisplayLabels()
     QCOMPARE(SvgLoader::backendFromStorageValue("resvg"), qvEnums::SvgLoaderBackend::Resvg);
     QCOMPARE(SvgLoader::backendFromStorageValue("qtsvg"), qvEnums::SvgLoaderBackend::QtSvg);
     QCOMPARE(SvgLoader::backendFromStorageValue("imageformat"), qvEnums::SvgLoaderBackend::Resvg);
-    QCOMPARE(SvgLoader::backendFromStorageValue("svg-native-loader"), qvEnums::SvgLoaderBackend::Resvg);
+    QCOMPARE(SvgLoader::backendFromStorageValue("svg-native-loader"),
+             qvEnums::SvgLoaderBackend::Resvg);
 }
 
 void SvgLoaderTest::rasterDimensionsAreValidated()
@@ -37,12 +38,8 @@ void SvgLoaderTest::rasterDimensionsAreValidated()
 
 void SvgLoaderTest::rasterSizeFitsWithinBothLimits()
 {
-    QCOMPARE(
-        SvgLoader::fittedRasterSize(QSizeF(4000, 3000), QSize(1920, 1080)),
-        QSize(1440, 1080));
-    QCOMPARE(
-        SvgLoader::fittedRasterSize(QSizeF(100, 200), QSize(1920, 1080)),
-        QSize(540, 1080));
+    QCOMPARE(SvgLoader::fittedRasterSize(QSizeF(4000, 3000), QSize(1920, 1080)), QSize(1440, 1080));
+    QCOMPARE(SvgLoader::fittedRasterSize(QSizeF(100, 200), QSize(1920, 1080)), QSize(540, 1080));
 }
 
 void SvgLoaderTest::rendersWithResvg()
@@ -50,8 +47,8 @@ void SvgLoaderTest::rendersWithResvg()
     const QByteArray svg = R"(<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">
         <rect width="400" height="300" fill="#4080c0"/>
     </svg>)";
-    const SvgLoader::RenderResult result = SvgLoader::render(
-        svg, QString(), QSize(1920, 1080), qvEnums::SvgLoaderBackend::Resvg);
+    const SvgLoader::RenderResult result =
+        SvgLoader::render(svg, QString(), QSize(1920, 1080), qvEnums::SvgLoaderBackend::Resvg);
 
     QCOMPARE(result.backend, qvEnums::SvgLoaderBackend::Resvg);
     QVERIFY2(result.resvgError.isEmpty(), qPrintable(result.resvgError));
@@ -75,8 +72,8 @@ void SvgLoaderTest::rendersJapaneseTextWithResvg()
     const QByteArray svg = R"(<svg xmlns="http://www.w3.org/2000/svg" width="300" height="100">
         <text x="10" y="65" font-family="Yu Gothic" font-size="52">&#x6F22;&#x5B57;</text>
     </svg>)";
-    const SvgLoader::RenderResult result = SvgLoader::render(
-        svg, QString(), QSize(300, 100), qvEnums::SvgLoaderBackend::Resvg);
+    const SvgLoader::RenderResult result =
+        SvgLoader::render(svg, QString(), QSize(300, 100), qvEnums::SvgLoaderBackend::Resvg);
 
     QCOMPARE(result.backend, qvEnums::SvgLoaderBackend::Resvg);
     QVERIFY2(result.resvgError.isEmpty(), qPrintable(result.resvgError));

@@ -20,10 +20,7 @@ static int CALLBACK rarArchiveCallback(UINT msg, LPARAM rawArchive, LPARAM, LPAR
 
 struct RarFileWriter
 {
-    RarFileWriter()
-    {
-        buffer.open(QIODevice::ReadWrite);
-    }
+    RarFileWriter() { buffer.open(QIODevice::ReadWrite); }
 
     static int CALLBACK callback(UINT msg, LPARAM rawWriter, LPARAM p1, LPARAM p2)
     {
@@ -64,7 +61,8 @@ RarArchive::RarArchive(QString archiveName, RarAccessStatistics *statistics)
       m_isSolid(false),
       m_headersEncrypted(false),
       m_filesEncrypted(false)
-{}
+{
+}
 
 RarArchive::~RarArchive()
 {
@@ -243,8 +241,9 @@ RarFileDataResult RarArchive::extractCurrent()
     return {writer.data(), RarArchiveError::None, true};
 }
 
-NonSolidRarAccessStrategy::NonSolidRarAccessStrategy(
-    QString archiveName, QStringList physicalEntries, RarAccessStatistics *statistics)
+NonSolidRarAccessStrategy::NonSolidRarAccessStrategy(QString archiveName,
+                                                     QStringList physicalEntries,
+                                                     RarAccessStatistics *statistics)
     : m_archive(new RarArchive(std::move(archiveName), statistics)),
       m_physicalEntries(std::move(physicalEntries)),
       m_statistics(statistics),
@@ -298,7 +297,8 @@ RarFileDataResult NonSolidRarAccessStrategy::read(const QString &fileName)
         if (readResult == RarArchive::HeaderReadResult::Error) {
             return {{}, m_archive->error(), false};
         }
-        if (m_cursor >= m_physicalEntries.size() || info.fileName != m_physicalEntries.at(m_cursor)) {
+        if (m_cursor >= m_physicalEntries.size() ||
+            info.fileName != m_physicalEntries.at(m_cursor)) {
             return {{}, RarArchiveError::Corrupt, false};
         }
 
@@ -326,8 +326,9 @@ RarArchiveError NonSolidRarAccessStrategy::error() const
     return m_archive->error();
 }
 
-SolidRarAccessStrategy::SolidRarAccessStrategy(
-    QString archiveName, QStringList physicalEntries, RarAccessStatistics *statistics)
+SolidRarAccessStrategy::SolidRarAccessStrategy(QString archiveName,
+                                               QStringList physicalEntries,
+                                               RarAccessStatistics *statistics)
     : m_archive(new RarArchive(std::move(archiveName), statistics)),
       m_physicalEntries(std::move(physicalEntries)),
       m_dataCache(RarExtractor::MAX_DATA_CACHE_KIB),
@@ -383,7 +384,8 @@ RarFileDataResult SolidRarAccessStrategy::read(const QString &fileName)
         if (readResult == RarArchive::HeaderReadResult::Error) {
             return {{}, m_archive->error(), false};
         }
-        if (m_cursor >= m_physicalEntries.size() || info.fileName != m_physicalEntries.at(m_cursor)) {
+        if (m_cursor >= m_physicalEntries.size() ||
+            info.fileName != m_physicalEntries.at(m_cursor)) {
             return {{}, RarArchiveError::Corrupt, false};
         }
 
@@ -403,7 +405,8 @@ RarFileDataResult SolidRarAccessStrategy::read(const QString &fileName)
 
         const qsizetype cacheCost = qMax<qsizetype>(1, (result.data.size() + 1023) / 1024);
         if (cacheCost <= RarExtractor::MAX_DATA_CACHE_KIB) {
-            m_dataCache.insert(targetIndex, new QByteArray(result.data), static_cast<int>(cacheCost));
+            m_dataCache.insert(
+                targetIndex, new QByteArray(result.data), static_cast<int>(cacheCost));
         }
         return result;
     }

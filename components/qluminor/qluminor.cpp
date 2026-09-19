@@ -34,8 +34,10 @@ QImage QLuminor::toLuminor(const QImage &src, float brightness, float contrast, 
 QImage QLuminor::toLuminorRGBA(const QImage &src, float brightness, float contrast, float gamma)
 {
     QImage dest(src.size(), src.format());
-    auto input = Buffer<uint8_t>::make_interleaved(const_cast<uint8_t *>(src.bits()), src.width(), src.height(), src.depth() / 8);
-    auto output = Buffer<uint8_t>::make_interleaved(const_cast<uint8_t *>(dest.bits()), dest.width(), dest.height(), dest.depth() / 8);
+    auto input = Buffer<uint8_t>::make_interleaved(
+        const_cast<uint8_t *>(src.bits()), src.width(), src.height(), src.depth() / 8);
+    auto output = Buffer<uint8_t>::make_interleaved(
+        const_cast<uint8_t *>(dest.bits()), dest.width(), dest.height(), dest.depth() / 8);
 
     int result = 0;
     result = luminor_rgba(input, brightness, contrast, gamma, output);

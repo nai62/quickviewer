@@ -47,7 +47,8 @@ bool jpegHasIccProfile(const QByteArray &bytes)
         if (segmentLength < 2 || offset + segmentLength > size) {
             break;
         }
-        if (marker == 0xE2 && segmentLength >= 14 && std::memcmp(data + offset + 2, "ICC_PROFILE\0", 12) == 0) {
+        if (marker == 0xE2 && segmentLength >= 14 &&
+            std::memcmp(data + offset + 2, "ICC_PROFILE\0", 12) == 0) {
             return true;
         }
         offset += segmentLength;
@@ -61,7 +62,8 @@ bool webpHasFeature(const QByteArray &bytes, unsigned char featureMask)
         return false;
     }
     const char *data = bytes.constData();
-    if (std::memcmp(data, "RIFF", 4) != 0 || std::memcmp(data + 8, "WEBP", 4) != 0 || std::memcmp(data + 12, "VP8X", 4) != 0) {
+    if (std::memcmp(data, "RIFF", 4) != 0 || std::memcmp(data + 8, "WEBP", 4) != 0 ||
+        std::memcmp(data + 12, "VP8X", 4) != 0) {
         return false;
     }
     return (static_cast<unsigned char>(data[20]) & featureMask) != 0;
@@ -78,7 +80,10 @@ bool pngHasChunk(const QByteArray &bytes, const char chunkType[5])
 
     qsizetype offset = 8;
     while (offset + 12 <= size) {
-        const quint32 chunkLength = (static_cast<quint32>(data[offset]) << 24) | (static_cast<quint32>(data[offset + 1]) << 16) | (static_cast<quint32>(data[offset + 2]) << 8) | static_cast<quint32>(data[offset + 3]);
+        const quint32 chunkLength = (static_cast<quint32>(data[offset]) << 24) |
+                                    (static_cast<quint32>(data[offset + 1]) << 16) |
+                                    (static_cast<quint32>(data[offset + 2]) << 8) |
+                                    static_cast<quint32>(data[offset + 3]);
         if (static_cast<quint64>(chunkLength) > static_cast<quint64>(size - offset - 12)) {
             return false;
         }
@@ -94,12 +99,10 @@ bool pngHasChunk(const QByteArray &bytes, const char chunkType[5])
     return false;
 }
 
-bool tryDecodeSpng(
-    const QByteArray &bytes,
-    QImage &decoded,
-    QSize &sourceSize)
+bool tryDecodeSpng(const QByteArray &bytes, QImage &decoded, QSize &sourceSize)
 {
-    if (bytes.isEmpty() || pngHasChunk(bytes, "acTL") || pngHasChunk(bytes, "iCCP") || pngHasChunk(bytes, "gAMA") || pngHasChunk(bytes, "cHRM")) {
+    if (bytes.isEmpty() || pngHasChunk(bytes, "acTL") || pngHasChunk(bytes, "iCCP") ||
+        pngHasChunk(bytes, "gAMA") || pngHasChunk(bytes, "cHRM")) {
         return false;
     }
 
@@ -108,12 +111,14 @@ bool tryDecodeSpng(
     if (!context) {
         return false;
     }
-    if (spng_set_png_buffer(context.get(), bytes.constData(), static_cast<size_t>(bytes.size())) != 0) {
+    if (spng_set_png_buffer(context.get(), bytes.constData(), static_cast<size_t>(bytes.size())) !=
+        0) {
         return false;
     }
 
     spng_ihdr ihdr{};
-    if (spng_get_ihdr(context.get(), &ihdr) != 0 || ihdr.width == 0 || ihdr.height == 0 || ihdr.width > INT_MAX || ihdr.height > INT_MAX || ihdr.bit_depth > 8) {
+    if (spng_get_ihdr(context.get(), &ihdr) != 0 || ihdr.width == 0 || ihdr.height == 0 ||
+        ihdr.width > INT_MAX || ihdr.height > INT_MAX || ihdr.bit_depth > 8) {
         return false;
     }
     sourceSize = QSize(static_cast<int>(ihdr.width), static_cast<int>(ihdr.height));
@@ -123,7 +128,8 @@ bool tryDecodeSpng(
         return false;
     }
     const quint64 expectedSize = static_cast<quint64>(ihdr.width) * ihdr.height * 4;
-    if (outputSize != expectedSize || expectedSize > static_cast<quint64>(std::numeric_limits<qsizetype>::max())) {
+    if (outputSize != expectedSize ||
+        expectedSize > static_cast<quint64>(std::numeric_limits<qsizetype>::max())) {
         return false;
     }
 
@@ -131,7 +137,8 @@ bool tryDecodeSpng(
     if (image.isNull() || static_cast<quint64>(image.sizeInBytes()) < expectedSize) {
         return false;
     }
-    if (spng_decode_image(context.get(), image.bits(), outputSize, SPNG_FMT_RGBA8, SPNG_DECODE_TRNS) != 0) {
+    if (spng_decode_image(
+            context.get(), image.bits(), outputSize, SPNG_FMT_RGBA8, SPNG_DECODE_TRNS) != 0) {
         return false;
     }
     if (pngHasChunk(bytes, "sRGB")) {
@@ -153,9 +160,11 @@ public:
 
     using Handle = void *;
     using InitDecompress = Handle (*)();
-    using DecompressHeader3 = int (*)(Handle, const unsigned char *, unsigned long, int *, int *, int *, int *);
+    using DecompressHeader3 =
+        int (*)(Handle, const unsigned char *, unsigned long, int *, int *, int *, int *);
     using GetScalingFactors = ScalingFactor *(*)(int *);
-    using Decompress2 = int (*)(Handle, const unsigned char *, unsigned long, unsigned char *, int, int, int, int, int);
+    using Decompress2 = int (*)(
+        Handle, const unsigned char *, unsigned long, unsigned char *, int, int, int, int, int);
     using Destroy = int (*)(Handle);
 
     NativeTurboJpegApi()
@@ -174,9 +183,12 @@ public:
             if (!m_library.load()) {
                 continue;
             }
-            initDecompress = reinterpret_cast<InitDecompress>(m_library.resolve("tjInitDecompress"));
-            decompressHeader3 = reinterpret_cast<DecompressHeader3>(m_library.resolve("tjDecompressHeader3"));
-            getScalingFactors = reinterpret_cast<GetScalingFactors>(m_library.resolve("tjGetScalingFactors"));
+            initDecompress =
+                reinterpret_cast<InitDecompress>(m_library.resolve("tjInitDecompress"));
+            decompressHeader3 =
+                reinterpret_cast<DecompressHeader3>(m_library.resolve("tjDecompressHeader3"));
+            getScalingFactors =
+                reinterpret_cast<GetScalingFactors>(m_library.resolve("tjGetScalingFactors"));
             decompress2 = reinterpret_cast<Decompress2>(m_library.resolve("tjDecompress2"));
             destroy = reinterpret_cast<Destroy>(m_library.resolve("tjDestroy"));
             if (available()) {
@@ -238,12 +250,11 @@ int turboScaledDimension(int dimension, const NativeTurboJpegApi::ScalingFactor 
     return (dimension * factor.num + factor.denom - 1) / factor.denom;
 }
 
-bool tryDecodeTurboJpeg(
-    const QByteArray &bytes,
-    const QSize &decodeTargetSize,
-    const ImageDecodeSettings &settings,
-    QImage &decoded,
-    QSize &sourceSize)
+bool tryDecodeTurboJpeg(const QByteArray &bytes,
+                        const QSize &decodeTargetSize,
+                        const ImageDecodeSettings &settings,
+                        QImage &decoded,
+                        QSize &sourceSize)
 {
 #if Q_BYTE_ORDER != Q_LITTLE_ENDIAN
     Q_UNUSED(bytes);
@@ -253,7 +264,8 @@ bool tryDecodeTurboJpeg(
     Q_UNUSED(sourceSize);
     return false;
 #else
-    if (bytes.isEmpty() || static_cast<quint64>(bytes.size()) > ULONG_MAX || jpegHasIccProfile(bytes)) {
+    if (bytes.isEmpty() || static_cast<quint64>(bytes.size()) > ULONG_MAX ||
+        jpegHasIccProfile(bytes)) {
         return false;
     }
 
@@ -269,7 +281,9 @@ bool tryDecodeTurboJpeg(
     int colorSpace = 0;
     const auto *data = reinterpret_cast<const unsigned char *>(bytes.constData());
     const auto dataSize = static_cast<unsigned long>(bytes.size());
-    if (api.decompressHeader3(handle, data, dataSize, &width, &height, &subsampling, &colorSpace) != 0 || width <= 0 || height <= 0) {
+    if (api.decompressHeader3(handle, data, dataSize, &width, &height, &subsampling, &colorSpace) !=
+            0 ||
+        width <= 0 || height <= 0) {
         return false;
     }
     // TurboJPEG's direct BGRA conversion does not preserve CMYK/YCCK semantics.
@@ -278,7 +292,8 @@ bool tryDecodeTurboJpeg(
     }
 
     sourceSize = QSize(width, height);
-    const QSize desiredSize = ImageDecoder::constrainedDecodeSize(sourceSize, decodeTargetSize, settings.maxTextureSize);
+    const QSize desiredSize =
+        ImageDecoder::constrainedDecodeSize(sourceSize, decodeTargetSize, settings.maxTextureSize);
     int outputWidth = width;
     int outputHeight = height;
     if (desiredSize.isValid() && desiredSize != sourceSize) {
@@ -332,16 +347,15 @@ bool tryDecodeTurboJpeg(
     static constexpr int TurboJpegPixelFormatBgra = 8;
     static constexpr int TurboJpegFlagFastDct = 2048;
     const int flags = settings.fastDctForJpeg ? TurboJpegFlagFastDct : 0;
-    if (api.decompress2(
-            handle,
-            data,
-            dataSize,
-            image.bits(),
-            outputWidth,
-            image.bytesPerLine(),
-            outputHeight,
-            TurboJpegPixelFormatBgra,
-            flags) != 0) {
+    if (api.decompress2(handle,
+                        data,
+                        dataSize,
+                        image.bits(),
+                        outputWidth,
+                        image.bytesPerLine(),
+                        outputHeight,
+                        TurboJpegPixelFormatBgra,
+                        flags) != 0) {
         return false;
     }
 
@@ -354,7 +368,8 @@ class NativeWebPApi
 {
 public:
     using GetInfo = int (*)(const unsigned char *, size_t, int *, int *);
-    using DecodeBgraInto = unsigned char *(*)(const unsigned char *, size_t, unsigned char *, size_t, int);
+    using DecodeBgraInto =
+        unsigned char *(*)(const unsigned char *, size_t, unsigned char *, size_t, int);
 
     NativeWebPApi()
     {
@@ -373,7 +388,8 @@ public:
                 continue;
             }
             getInfo = reinterpret_cast<GetInfo>(m_library.resolve("WebPGetInfo"));
-            decodeBgraInto = reinterpret_cast<DecodeBgraInto>(m_library.resolve("WebPDecodeBGRAInto"));
+            decodeBgraInto =
+                reinterpret_cast<DecodeBgraInto>(m_library.resolve("WebPDecodeBGRAInto"));
             if (available()) {
                 return;
             }
@@ -396,12 +412,11 @@ NativeWebPApi &nativeWebPApi()
     return *api;
 }
 
-bool tryDecodeWebP(
-    const QByteArray &bytes,
-    const QSize &decodeTargetSize,
-    const ImageDecodeSettings &settings,
-    QImage &decoded,
-    QSize &sourceSize)
+bool tryDecodeWebP(const QByteArray &bytes,
+                   const QSize &decodeTargetSize,
+                   const ImageDecodeSettings &settings,
+                   QImage &decoded,
+                   QSize &sourceSize)
 {
 #if Q_BYTE_ORDER != Q_LITTLE_ENDIAN
     Q_UNUSED(bytes);
@@ -413,7 +428,8 @@ bool tryDecodeWebP(
 #else
     static constexpr unsigned char WebPFeatureAnimation = 0x02;
     static constexpr unsigned char WebPFeatureIcc = 0x20;
-    if (bytes.isEmpty() || webpHasFeature(bytes, WebPFeatureAnimation) || webpHasFeature(bytes, WebPFeatureIcc)) {
+    if (bytes.isEmpty() || webpHasFeature(bytes, WebPFeatureAnimation) ||
+        webpHasFeature(bytes, WebPFeatureIcc)) {
         return false;
     }
 
@@ -431,7 +447,8 @@ bool tryDecodeWebP(
     }
 
     sourceSize = QSize(width, height);
-    if (ImageDecoder::constrainedDecodeSize(sourceSize, decodeTargetSize, settings.maxTextureSize) != sourceSize) {
+    if (ImageDecoder::constrainedDecodeSize(
+            sourceSize, decodeTargetSize, settings.maxTextureSize) != sourceSize) {
         // The convenience direct-to-buffer API has no scaling option. Let the
         // Qt/libwebp handler use its scaled decode path for large/preview images.
         return false;
@@ -441,7 +458,8 @@ bool tryDecodeWebP(
     if (image.isNull()) {
         return false;
     }
-    const size_t outputSize = static_cast<size_t>(image.bytesPerLine()) * static_cast<size_t>(image.height());
+    const size_t outputSize =
+        static_cast<size_t>(image.bytesPerLine()) * static_cast<size_t>(image.height());
     if (!api.decodeBgraInto(data, dataSize, image.bits(), outputSize, image.bytesPerLine())) {
         return false;
     }
@@ -458,7 +476,9 @@ ImageDecoder::ImageDecoder(ImageDecodeSettings settings)
 {
 }
 
-QSize ImageDecoder::constrainedDecodeSize(const QSize &sourceSize, const QSize &requestedSize, int maxTextureSize)
+QSize ImageDecoder::constrainedDecodeSize(const QSize &sourceSize,
+                                          const QSize &requestedSize,
+                                          int maxTextureSize)
 {
     if (!sourceSize.isValid()) {
         return QSize();
@@ -475,7 +495,9 @@ QSize ImageDecoder::constrainedDecodeSize(const QSize &sourceSize, const QSize &
     return sourceSize.scaled(limit, Qt::KeepAspectRatio);
 }
 
-bool ImageDecoder::decodeTurboJpeg(const QByteArray &bytes, const QSize &decodeTargetSize, ImageDecodeOutput &output) const
+bool ImageDecoder::decodeTurboJpeg(const QByteArray &bytes,
+                                   const QSize &decodeTargetSize,
+                                   ImageDecodeOutput &output) const
 {
     return tryDecodeTurboJpeg(bytes, decodeTargetSize, m_settings, output.image, output.sourceSize);
 }
@@ -485,18 +507,17 @@ bool ImageDecoder::decodeSpng(const QByteArray &bytes, ImageDecodeOutput &output
     return tryDecodeSpng(bytes, output.image, output.sourceSize);
 }
 
-bool ImageDecoder::decodeWebP(const QByteArray &bytes, const QSize &decodeTargetSize, ImageDecodeOutput &output) const
+bool ImageDecoder::decodeWebP(const QByteArray &bytes,
+                              const QSize &decodeTargetSize,
+                              ImageDecodeOutput &output) const
 {
     return tryDecodeWebP(bytes, decodeTargetSize, m_settings, output.image, output.sourceSize);
 }
 
 ImageDecodeOutput ImageDecoder::decodeSvg(const QByteArray &bytes, const QString &path) const
 {
-    const SvgLoader::RenderResult rendered = SvgLoader::render(
-        bytes,
-        path,
-        m_settings.svgRasterMaximum,
-        m_settings.svgLoaderBackend);
+    const SvgLoader::RenderResult rendered =
+        SvgLoader::render(bytes, path, m_settings.svgRasterMaximum, m_settings.svgLoaderBackend);
     ImageDecodeOutput output;
     output.image = rendered.image;
     output.sourceSize = rendered.sourceSize;

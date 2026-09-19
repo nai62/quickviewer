@@ -12,7 +12,10 @@ public:
     QList<bool> cloakRequests;
 
     FolderWindow *folderWindow() const { return m_folderWindow; }
-    QSplitter *panelSplitter() const { return findChild<QSplitter *>(QStringLiteral("catalogSplitter")); }
+    QSplitter *panelSplitter() const
+    {
+        return findChild<QSplitter *>(QStringLiteral("catalogSplitter"));
+    }
     ViewerSession *viewerSession() { return &m_viewerSession; }
     ImageView *imageView() const { return findChild<ImageView *>(QStringLiteral("graphicsView")); }
 
@@ -54,7 +57,8 @@ private slots:
         QTest::newRow("maximized") << false << true << int(Qt::WindowMaximized) << false;
         QTest::newRow("explicit-fullscreen") << true << false << int(Qt::WindowNoState) << true;
         QTest::newRow("restored-fullscreen") << false << true << int(Qt::WindowFullScreen) << true;
-        QTest::newRow("restoration-disabled") << false << false << int(Qt::WindowFullScreen) << false;
+        QTest::newRow("restoration-disabled")
+            << false << false << int(Qt::WindowFullScreen) << false;
     }
 
     void destroyingWindowKeepsUiAliveWhileSessionResets()
@@ -90,7 +94,8 @@ private slots:
         QCOMPARE(viewer.isFullScreen(), expectedFullscreen);
         const QList<bool> expectedRequests = expectedFullscreen ? QList<bool>{} : QList<bool>{true};
         QCOMPARE(viewer.cloakRequests, expectedRequests);
-        const QList<bool> completedRequests = expectedFullscreen ? QList<bool>{} : QList<bool>{true, false};
+        const QList<bool> completedRequests =
+            expectedFullscreen ? QList<bool>{} : QList<bool>{true, false};
         QTRY_COMPARE(viewer.cloakRequests, completedRequests);
         QTRY_COMPARE(viewer.windowOpacity(), qreal(1.0));
         QCOMPARE(viewer.isFullScreen(), expectedFullscreen);
@@ -110,7 +115,8 @@ private slots:
         viewer.initializeStartup();
 
         QVERIFY(viewer.folderWindow() == nullptr);
-        QWidget *placeholder = viewer.findChild<QWidget *>(QStringLiteral("startupPanelPlaceholder"));
+        QWidget *placeholder =
+            viewer.findChild<QWidget *>(QStringLiteral("startupPanelPlaceholder"));
         QVERIFY(placeholder);
         QCOMPARE(viewer.panelSplitter()->indexOf(placeholder), 0);
         QCOMPARE(viewer.panelSplitter()->sizes().at(0), 275);
@@ -174,7 +180,8 @@ private slots:
         viewer.panelSplitter()->setSizes({285, 605});
         QCoreApplication::processEvents();
         const int movedWidth = viewer.folderWindow()->width();
-        QVERIFY(QMetaObject::invokeMethod(viewer.panelSplitter(), "splitterMoved", Q_ARG(int, movedWidth), Q_ARG(int, 1)));
+        QVERIFY(QMetaObject::invokeMethod(
+            viewer.panelSplitter(), "splitterMoved", Q_ARG(int, movedWidth), Q_ARG(int, 1)));
         QCOMPARE(qApp->FolderViewWidth(), movedWidth);
 
         viewer.panelSplitter()->setSizes({345, 545});
@@ -315,7 +322,8 @@ private slots:
             QDir::cleanPath(QDir::fromNativeSeparators(imagePath)));
         viewer.createFolderWindow(true, directory.path(), false);
 
-        QTreeView *view = viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QTreeView *view =
+            viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         const QModelIndex currentFile = view->model()->index(0, 0);
         QCOMPARE(currentFile.data().toString(), QStringLiteral("current.png"));
@@ -329,15 +337,14 @@ private slots:
         QVERIFY(view);
         QVERIFY(view->uniformRowHeights());
 
-        QWheelEvent event(
-            QPointF(1, 1),
-            QPointF(1, 1),
-            QPoint(),
-            QPoint(0, -120),
-            Qt::NoButton,
-            Qt::NoModifier,
-            Qt::NoScrollPhase,
-            false);
+        QWheelEvent event(QPointF(1, 1),
+                          QPointF(1, 1),
+                          QPoint(),
+                          QPoint(0, -120),
+                          Qt::NoButton,
+                          Qt::NoModifier,
+                          Qt::NoScrollPhase,
+                          false);
         event.ignore();
         QApplication::sendEvent(view->viewport(), &event);
 
@@ -360,7 +367,8 @@ private slots:
         viewer.resize(800, 600);
         viewer.show();
         viewer.createFolderWindow(true, QString(), true);
-        QTreeView *view = viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QTreeView *view =
+            viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         viewer.activateWindow();
         QCoreApplication::processEvents();
@@ -435,7 +443,8 @@ private slots:
     void historyButtonUsesClockIconAndLabel()
     {
         FolderWindow folder(nullptr, nullptr);
-        QToolButton *historyButton = folder.findChild<QToolButton *>(QStringLiteral("historyButton"));
+        QToolButton *historyButton =
+            folder.findChild<QToolButton *>(QStringLiteral("historyButton"));
         QVERIFY(historyButton);
         QCOMPARE(historyButton->text(), QStringLiteral("History"));
         QVERIFY(!historyButton->icon().isNull());
@@ -445,7 +454,8 @@ private slots:
     void historyButtonIsTheLastControlInTheButtonRow()
     {
         FolderWindow folder(nullptr, nullptr);
-        QToolButton *historyButton = folder.findChild<QToolButton *>(QStringLiteral("historyButton"));
+        QToolButton *historyButton =
+            folder.findChild<QToolButton *>(QStringLiteral("historyButton"));
         QVERIFY(historyButton);
         QFrame *frame = folder.findChild<QFrame *>(QStringLiteral("frame"));
         QVERIFY(frame);
@@ -465,7 +475,8 @@ private slots:
 
         StartupWindow viewer;
         viewer.createFolderWindow(true, directory.path(), false);
-        QTreeView *view = viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QTreeView *view =
+            viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         QVERIFY(view->isHeaderHidden());
         QCOMPARE(view->model()->columnCount(), 1);
@@ -540,7 +551,8 @@ private slots:
         StartupWindow viewer;
         viewer.createFolderWindow(false, directory.path(), false);
         QVERIFY(viewer.folderWindow());
-        QTreeView *view = viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QTreeView *view =
+            viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         QCOMPARE(view->model()->index(0, 0).data().toString(), QStringLiteral("a.bmp"));
 
@@ -836,12 +848,16 @@ private slots:
             QCOMPARE(view->model()->index(0, 0).data().toString(), QStringLiteral("z-folder"));
 
             if (sortBy == qvEnums::ImageSortBy::SortByFileSize) {
-                QCOMPARE(view->model()->index(1, 0).data().toString(), QStringLiteral("a-small.bmp"));
-                QCOMPARE(view->model()->index(2, 0).data().toString(), QStringLiteral("b-large.bmp"));
+                QCOMPARE(view->model()->index(1, 0).data().toString(),
+                         QStringLiteral("a-small.bmp"));
+                QCOMPARE(view->model()->index(2, 0).data().toString(),
+                         QStringLiteral("b-large.bmp"));
             }
             if (sortBy == qvEnums::ImageSortBy::SortByFileSizeDescending) {
-                QCOMPARE(view->model()->index(1, 0).data().toString(), QStringLiteral("b-large.bmp"));
-                QCOMPARE(view->model()->index(2, 0).data().toString(), QStringLiteral("a-small.bmp"));
+                QCOMPARE(view->model()->index(1, 0).data().toString(),
+                         QStringLiteral("b-large.bmp"));
+                QCOMPARE(view->model()->index(2, 0).data().toString(),
+                         QStringLiteral("a-small.bmp"));
             }
         }
     }
@@ -911,12 +927,11 @@ private slots:
 
         viewer.openPath(encryptedPath);
 
-        QCOMPARE(
-            viewer.imageView()->displayedMessage(),
-            QStringLiteral("Cannot Open Archive\n"
-                           "This archive is password-protected.\n\n"
-                           "%1")
-                .arg(QDir::toNativeSeparators(encryptedPath)));
+        QCOMPARE(viewer.imageView()->displayedMessage(),
+                 QStringLiteral("Cannot Open Archive\n"
+                                "This archive is password-protected.\n\n"
+                                "%1")
+                     .arg(QDir::toNativeSeparators(encryptedPath)));
         QFrame *pageFrame = viewer.findChild<QFrame *>(QStringLiteral("pageFrame"));
         QLabel *pageLabel = viewer.findChild<QLabel *>(QStringLiteral("pageLabel"));
         QVERIFY(pageFrame);
@@ -944,7 +959,8 @@ private slots:
 
         viewer.openPath(archivePath);
 
-        QTreeView *view = viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QTreeView *view =
+            viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         QModelIndex archiveIndex;
         for (int row = 0; row < view->model()->rowCount(); ++row) {
@@ -956,12 +972,11 @@ private slots:
         }
         QVERIFY(archiveIndex.isValid());
         QVERIFY(archiveIndex.data(FolderItemModel::CurrentVolumeRole).toBool());
-        QCOMPARE(
-            viewer.imageView()->displayedMessage(),
-            QStringLiteral("No Viewable Images\n"
-                           "No supported images were found in this archive.\n\n"
-                           "%1")
-                .arg(QDir::toNativeSeparators(archivePath)));
+        QCOMPARE(viewer.imageView()->displayedMessage(),
+                 QStringLiteral("No Viewable Images\n"
+                                "No supported images were found in this archive.\n\n"
+                                "%1")
+                     .arg(QDir::toNativeSeparators(archivePath)));
         QSlider *pageSlider = viewer.findChild<QSlider *>(QStringLiteral("pageSlider"));
         QLabel *pageLabel = viewer.findChild<QLabel *>(QStringLiteral("pageLabel"));
         QVERIFY(pageSlider);
@@ -979,13 +994,13 @@ private slots:
         QVERIFY(directory.isValid());
         const QString archivePath = directory.filePath(QStringLiteral("book.zip"));
         QVERIFY(QFile::copy(QString(FILELOADER_DATAPATH "deflate-utf8.zip"), archivePath));
-        QVERIFY(QFile::setPermissions(
-            archivePath,
-            QFileDevice::ReadOwner | QFileDevice::WriteOwner));
+        QVERIFY(
+            QFile::setPermissions(archivePath, QFileDevice::ReadOwner | QFileDevice::WriteOwner));
 
         StartupWindow viewer;
         viewer.createFolderWindow(true, directory.path(), false);
-        QTreeView *view = viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QTreeView *view =
+            viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         const auto archiveIsCurrent = [view] {
             for (int row = 0; row < view->model()->rowCount(); ++row) {
@@ -1017,12 +1032,11 @@ private slots:
 
         viewer.openPath(directory.path());
 
-        QCOMPARE(
-            viewer.imageView()->displayedMessage(),
-            QStringLiteral("No Viewable Images\n"
-                           "No supported images were found in this folder.\n\n"
-                           "%1")
-                .arg(QDir::toNativeSeparators(directory.path())));
+        QCOMPARE(viewer.imageView()->displayedMessage(),
+                 QStringLiteral("No Viewable Images\n"
+                                "No supported images were found in this folder.\n\n"
+                                "%1")
+                     .arg(QDir::toNativeSeparators(directory.path())));
         QFrame *pageFrame = viewer.findChild<QFrame *>(QStringLiteral("pageFrame"));
         QSlider *pageSlider = viewer.findChild<QSlider *>(QStringLiteral("pageSlider"));
         QLabel *pageLabel = viewer.findChild<QLabel *>(QStringLiteral("pageLabel"));

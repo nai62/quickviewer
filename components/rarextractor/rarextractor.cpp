@@ -10,7 +10,8 @@ RarExtractor::RarExtractor()
       m_isSolid(false),
       m_mode(OpenModeNotOpen),
       m_archiveError(RarArchiveError::None)
-{}
+{
+}
 
 RarExtractor::RarExtractor(const QString &arcName)
     : m_arcName(arcName),
@@ -20,7 +21,8 @@ RarExtractor::RarExtractor(const QString &arcName)
       m_isSolid(false),
       m_mode(OpenModeNotOpen),
       m_archiveError(RarArchiveError::None)
-{}
+{
+}
 
 RarExtractor::~RarExtractor() = default;
 
@@ -184,7 +186,8 @@ RarFileDataResult RarExtractor::fileDataResult(QString fileName)
 
     const auto sensitive = m_fileNameToIndexSensitive.constFind(fileName);
     const auto insensitive = m_fileNameToIndexInsensitive.constFind(fileName.toLower());
-    if (sensitive == m_fileNameToIndexSensitive.cend() && insensitive == m_fileNameToIndexInsensitive.cend()) {
+    if (sensitive == m_fileNameToIndexSensitive.cend() &&
+        insensitive == m_fileNameToIndexInsensitive.cend()) {
         return {{}, RarArchiveError::Unsupported, false};
     }
 

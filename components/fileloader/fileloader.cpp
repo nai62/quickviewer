@@ -100,9 +100,8 @@ void IFileLoader::sortFiles(QStringList &filenames)
 #ifdef Q_OS_WIN
 bool IFileLoader::caseInsensitiveLessThan(const QString &s1, const QString &s2)
 {
-    return ::StrCmpLogicalW(
-               reinterpret_cast<LPCWSTR>(s1.utf16()),
-               reinterpret_cast<LPCWSTR>(s2.utf16())) < 0;
+    return ::StrCmpLogicalW(reinterpret_cast<LPCWSTR>(s1.utf16()),
+                            reinterpret_cast<LPCWSTR>(s2.utf16())) < 0;
 }
 #else
 bool IFileLoader::caseInsensitiveLessThan(const QString &s1, const QString &s2)

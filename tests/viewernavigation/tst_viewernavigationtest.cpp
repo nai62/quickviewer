@@ -105,7 +105,8 @@ static QByteArray jpegWithOrientation(int orientation)
     // JFIF keeps APP0 first, so the Exif segment goes right after it.
     qsizetype insertAt = 2;
     if (bytes.size() > 6 && static_cast<unsigned char>(bytes[2]) == 0xFF) {
-        const int firstSegmentLength = (static_cast<unsigned char>(bytes[4]) << 8) | static_cast<unsigned char>(bytes[5]);
+        const int firstSegmentLength =
+            (static_cast<unsigned char>(bytes[4]) << 8) | static_cast<unsigned char>(bytes[5]);
         if (firstSegmentLength >= 2) {
             insertAt = 4 + firstSegmentLength;
         }
@@ -186,7 +187,8 @@ private slots:
         const QSize source(4000, 2000);
         QCOMPARE(ImageDecoder::constrainedDecodeSize(source, QSize(), 4096), source);
         QCOMPARE(ImageDecoder::constrainedDecodeSize(source, QSize(), 1024), QSize(1024, 512));
-        QCOMPARE(ImageDecoder::constrainedDecodeSize(source, QSize(800, 800), 4096), QSize(800, 400));
+        QCOMPARE(ImageDecoder::constrainedDecodeSize(source, QSize(800, 800), 4096),
+                 QSize(800, 400));
         QCOMPARE(ImageDecoder::constrainedDecodeSize(QSize(), QSize(100, 100), 4096), QSize());
     }
 
@@ -233,7 +235,8 @@ private slots:
         policy.webp = WebPDecoderPreference::Auto;
 
         ImageDecodeMetrics metrics;
-        const ImageContent content = Volume::decodeImageBytes("still.png", bytes, QSize(), QSize(), true, policy, &metrics);
+        const ImageContent content =
+            Volume::decodeImageBytes("still.png", bytes, QSize(), QSize(), true, policy, &metrics);
 
         QCOMPARE(metrics.decoderBackend, QStringLiteral("libspng"));
         QCOMPARE(content.originalSize, QSize(9, 4));
@@ -252,7 +255,8 @@ private slots:
         policy.png = PngDecoderPreference::Qt;
 
         ImageDecodeMetrics metrics;
-        const ImageContent content = Volume::decodeImageBytes("still.png", bytes, QSize(), QSize(), true, policy, &metrics);
+        const ImageContent content =
+            Volume::decodeImageBytes("still.png", bytes, QSize(), QSize(), true, policy, &metrics);
 
         QVERIFY(metrics.decoderBackend.startsWith(QStringLiteral("qimagereader:")));
         QCOMPARE(content.loadedImage.size(), QSize(9, 4));
@@ -268,7 +272,8 @@ private slots:
             "</svg>";
 
         ImageDecodeMetrics metrics;
-        const ImageContent content = Volume::decodeImageBytes("shape.svg", svg, QSize(), QSize(), true, ImageDecodePolicy(), &metrics);
+        const ImageContent content = Volume::decodeImageBytes(
+            "shape.svg", svg, QSize(), QSize(), true, ImageDecodePolicy(), &metrics);
 
         QCOMPARE(metrics.decoderBackend, QStringLiteral("svgloader"));
         QVERIFY(content.hasDetailedMetadata);
@@ -289,7 +294,8 @@ private slots:
             policy.jpeg = JpegDecoderPreference::Qt;
 
             ImageDecodeMetrics metrics;
-            const ImageContent content = Volume::decodeImageBytes(path, jpeg, QSize(), QSize(), true, policy, &metrics);
+            const ImageContent content =
+                Volume::decodeImageBytes(path, jpeg, QSize(), QSize(), true, policy, &metrics);
 
             QVERIFY(!content.loadedImage.isNull());
             QCOMPARE(int(content.exifInfo.Orientation), 6);
@@ -350,7 +356,11 @@ private slots:
             {"first page landscape", {1, 4, true, false, {true, false, true, true}}, {1}, 1, false},
             {"second page landscape", {1, 4, false, true, {true, false, true, true}}, {1}, 1, true},
             {"wide pages allowed", {1, 4, true, true, {true, false, false, true}}, {1, 2}, 2, true},
-            {"second page disallowed", {1, 4, false, false, {true, false, true, false}}, {1}, 1, false},
+            {"second page disallowed",
+             {1, 4, false, false, {true, false, true, false}},
+             {1},
+             1,
+             false},
             {"last page", {3, 4, false, false, {true, false, true, true}}, {3}, 3, false},
             {"invalid page", {4, 4, false, false, {true, false, true, true}}, {}, -1, false},
         };
@@ -375,8 +385,8 @@ private slots:
         const QVector<PageDisplayEntry> onePage{{"first.png", {640, 480}}};
         QCOMPARE(PageDisplayFormatter::statusText(0, 12, onePage),
                  QString("first.png (1/12)[640x480]"));
-        const QVector<PageDisplayEntry> spread{
-            {"first.png", {640, 480}}, {"second.png", {800, 600}}};
+        const QVector<PageDisplayEntry> spread{{"first.png", {640, 480}},
+                                               {"second.png", {800, 600}}};
         QCOMPARE(PageDisplayFormatter::statusText(4, 12, spread),
                  QString("first.png (5-6/12)[640x480] | second.png [800x600]"));
         QCOMPARE(PageDisplayFormatter::statusText(0, 12, {}), QString());
@@ -408,9 +418,11 @@ private slots:
         for (const EffectCase &testCase : cases) {
             QCOMPARE(shaderEffectKind(testCase.effect), testCase.kind);
             QCOMPARE(usesGpuRendering(testCase.effect),
-                     testCase.kind == ShaderEffectKind::FixedShader || testCase.kind == ShaderEffectKind::GlShader);
+                     testCase.kind == ShaderEffectKind::FixedShader ||
+                         testCase.kind == ShaderEffectKind::GlShader);
             QCOMPARE(resizesOnCpu(testCase.effect),
-                     testCase.kind == ShaderEffectKind::Unprepared || testCase.kind == ShaderEffectKind::CpuOnly);
+                     testCase.kind == ShaderEffectKind::Unprepared ||
+                         testCase.kind == ShaderEffectKind::CpuOnly);
             // Only the fragment shader effects depend on the build.
             QCOMPARE(shaderEffectAvailable(testCase.effect),
                      testCase.kind != ShaderEffectKind::GlShader || gpuShadersAvailable());
@@ -472,8 +484,7 @@ private slots:
         QVERIFY(session.initialImagePaintPending());
 
         QTRY_COMPARE(session.stateKind(), ViewerStateKind::StandalonePreview);
-        QCOMPARE(QFileInfo(session.currentPageName()).fileName(),
-                 QString("preview.bmp"));
+        QCOMPARE(QFileInfo(session.currentPageName()).fileName(), QString("preview.bmp"));
         QVERIFY(session.initialImagePaintPending());
         QVERIFY(view.renderedPageMetrics().notationalScaleAt(0) < 1.0);
 
@@ -496,8 +507,7 @@ private slots:
         for (int page = 0; page < 4; ++page) {
             QImage image(16, 16, QImage::Format_RGB32);
             image.fill(QColor::fromHsv(page * 60, 255, 255));
-            QVERIFY(image.save(directory.filePath(
-                QString("page-%1.bmp").arg(page))));
+            QVERIFY(image.save(directory.filePath(QString("page-%1.bmp").arg(page))));
         }
 
         qApp->setOpenVolumeWithProgress(false);
@@ -534,14 +544,13 @@ private slots:
         // The position was recorded against a listing that no longer exists, so
         // only the stored name still points at the page the reader stopped on.
         const QString volumePath = QDir::fromNativeSeparators(directory.path());
-        qApp->readProgressStore()->insert(
-            volumePath,
-            ReadProgress{QFileInfo(directory.path()).fileName(),
-                         volumePath,
-                         QStringLiteral("page-2.bmp"),
-                         3,
-                         0,
-                         false});
+        qApp->readProgressStore()->insert(volumePath,
+                                          ReadProgress{QFileInfo(directory.path()).fileName(),
+                                                       volumePath,
+                                                       QStringLiteral("page-2.bmp"),
+                                                       3,
+                                                       0,
+                                                       false});
         qApp->setOpenVolumeWithProgress(true);
         qApp->setDualView(false);
 
@@ -563,14 +572,13 @@ private slots:
         }
 
         const QString volumePath = QDir::fromNativeSeparators(directory.path());
-        qApp->readProgressStore()->insert(
-            volumePath,
-            ReadProgress{QFileInfo(directory.path()).fileName(),
-                         volumePath,
-                         QStringLiteral("renamed.bmp"),
-                         3,
-                         1,
-                         false});
+        qApp->readProgressStore()->insert(volumePath,
+                                          ReadProgress{QFileInfo(directory.path()).fileName(),
+                                                       volumePath,
+                                                       QStringLiteral("renamed.bmp"),
+                                                       3,
+                                                       1,
+                                                       false});
         qApp->setOpenVolumeWithProgress(true);
         qApp->setDualView(false);
 
@@ -592,14 +600,13 @@ private slots:
         }
 
         const QString volumePath = QDir::fromNativeSeparators(directory.path());
-        qApp->readProgressStore()->insert(
-            volumePath,
-            ReadProgress{QFileInfo(directory.path()).fileName(),
-                         volumePath,
-                         QStringLiteral("page-2.bmp"),
-                         3,
-                         0,
-                         true});
+        qApp->readProgressStore()->insert(volumePath,
+                                          ReadProgress{QFileInfo(directory.path()).fileName(),
+                                                       volumePath,
+                                                       QStringLiteral("page-2.bmp"),
+                                                       3,
+                                                       0,
+                                                       true});
         qApp->setOpenVolumeWithProgress(true);
         qApp->setDualView(false);
 
@@ -616,14 +623,13 @@ private slots:
         QVERIFY(QFileInfo::exists(archivePath));
 
         const QString volumePath = QDir::fromNativeSeparators(archivePath);
-        qApp->readProgressStore()->insert(
-            volumePath,
-            ReadProgress{QFileInfo(archivePath).fileName(),
-                         volumePath,
-                         QStringLiteral("yellow.png"),
-                         3,
-                         0,
-                         false});
+        qApp->readProgressStore()->insert(volumePath,
+                                          ReadProgress{QFileInfo(archivePath).fileName(),
+                                                       volumePath,
+                                                       QStringLiteral("yellow.png"),
+                                                       3,
+                                                       0,
+                                                       false});
         qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
         qApp->setOpenVolumeWithProgress(true);
         qApp->setDualView(false);
@@ -640,12 +646,7 @@ private slots:
     {
         const QString volumePath = "read-progress-key-compatibility";
         const ReadProgress progress = {
-            "Compatibility title",
-            volumePath,
-            "page-7.bmp",
-            12,
-            7,
-            false};
+            "Compatibility title", volumePath, "page-7.bmp", 12, 7, false};
         qApp->readProgressStore()->insert(volumePath, progress);
         qApp->readProgressStore()->save();
 
@@ -676,8 +677,7 @@ private slots:
         for (int page = 0; page < 6; ++page) {
             QImage image(16, 24, QImage::Format_RGB32);
             image.fill(QColor::fromHsv(page * 40, 255, 255));
-            QVERIFY(image.save(directory.filePath(
-                QString("page-%1.bmp").arg(page))));
+            QVERIFY(image.save(directory.filePath(QString("page-%1.bmp").arg(page))));
         }
 
         qApp->setOpenVolumeWithProgress(false);
@@ -759,8 +759,7 @@ private slots:
 
         // The size sort orders the pages differently from their file names, so
         // a lookup by name has to follow the order the volume displays.
-        QVERIFY(session.openEntry(
-            VolumeLocation{directory.path(), QStringLiteral("a-large.bmp")}));
+        QVERIFY(session.openEntry(VolumeLocation{directory.path(), QStringLiteral("a-large.bmp")}));
 
         QCOMPARE(session.currentPageName(), QStringLiteral("a-large.bmp"));
         QCOMPARE(session.currentPageIndex(), 1);
@@ -843,8 +842,7 @@ private slots:
 
         const QString volumePath = QDir::fromNativeSeparators(directory.path());
         QVERIFY(qApp->readProgressStore()->contains(volumePath));
-        QCOMPARE(qApp->readProgressStore()->at(volumePath).currentPageName,
-                 QString("page-0.bmp"));
+        QCOMPARE(qApp->readProgressStore()->at(volumePath).currentPageName, QString("page-0.bmp"));
     }
 
     void cachedVolumesKeepIndependentPagePositions()
@@ -859,7 +857,8 @@ private slots:
             for (int pageIndex = 0; pageIndex < 4; ++pageIndex) {
                 QImage image(16, 24, QImage::Format_RGB32);
                 image.fill(QColor::fromHsv(pageIndex * 40, 255, 255));
-                QVERIFY(image.save(QDir(volumePath).filePath(QString("page-%1.bmp").arg(pageIndex))));
+                QVERIFY(
+                    image.save(QDir(volumePath).filePath(QString("page-%1.bmp").arg(pageIndex))));
             }
         }
 
@@ -897,9 +896,9 @@ private slots:
 
         QCOMPARE(volumeLocationDisplayText({archivePath, QStringLiteral("page.jpg")}),
                  QDir::toNativeSeparators(archivePath) + QStringLiteral(" (page.jpg)"));
-        QCOMPARE(volumeLocationDisplayText({folder, QStringLiteral("page.jpg")}),
-                 QDir::toNativeSeparators(
-                     QDir(folder).absoluteFilePath(QStringLiteral("page.jpg"))));
+        QCOMPARE(
+            volumeLocationDisplayText({folder, QStringLiteral("page.jpg")}),
+            QDir::toNativeSeparators(QDir(folder).absoluteFilePath(QStringLiteral("page.jpg"))));
     }
 
     void storedVolumeLocationKeepsLegacyArchiveForm()
@@ -1119,14 +1118,11 @@ private slots:
 
         ViewerSession session(nullptr);
         QImage image(100, 200, QImage::Format_RGB32);
-        QVERIFY(session.appendVisiblePage(
-            ImageContent(image, "sample.png", image.size(), {}, 1024)));
-        imageString.initialize(&session, [] {
-            return RenderedPageMetrics(QVector<qreal>{0.5});
-        });
+        QVERIFY(
+            session.appendVisiblePage(ImageContent(image, "sample.png", image.size(), {}, 1024)));
+        imageString.initialize(&session, [] { return RenderedPageMetrics(QVector<qreal>{0.5}); });
 
-        QCOMPARE(imageString.formatString("%p|%s|%m"),
-                 QString("sample.png|100x200|50%"));
+        QCOMPARE(imageString.formatString("%p|%s|%m"), QString("sample.png|100x200|50%"));
     }
 
     void renderedPageUsesRenderSettingsSnapshot()
@@ -1136,27 +1132,23 @@ private slots:
         image.fill(Qt::red);
         PageRenderSettings settings;
         settings.pixelRatio = 2.0;
-        RenderedPage page(nullptr, &scene, ImageContent(image, "page.bmp", image.size(), {}, 0), settings);
+        RenderedPage page(
+            nullptr, &scene, ImageContent(image, "page.bmp", image.size(), {}, 0), settings);
         settings.pixelRatio = 3.0;
 
-        page.setPageLayoutFitting(QRect(0, 0, 100, 100),
-                                  RenderedPage::PageCenter,
-                                  qvEnums::FitMode::FitToRect,
-                                  1.0);
+        page.setPageLayoutFitting(
+            QRect(0, 0, 100, 100), RenderedPage::PageCenter, qvEnums::FitMode::FitToRect, 1.0);
         QCOMPARE(page.displayScale(), 0.5);
 
         page.setRenderSettings(settings);
-        page.setPageLayoutFitting(QRect(0, 0, 100, 100),
-                                  RenderedPage::PageCenter,
-                                  qvEnums::FitMode::FitToRect,
-                                  1.0);
+        page.setPageLayoutFitting(
+            QRect(0, 0, 100, 100), RenderedPage::PageCenter, qvEnums::FitMode::FitToRect, 1.0);
         QCOMPARE(page.displayScale(), 0.75);
 
-        RenderedPage pageWithDefaults(nullptr, &scene, ImageContent(image, "preview.bmp", image.size(), {}, 0));
-        pageWithDefaults.setPageLayoutFitting(QRect(0, 0, 100, 100),
-                                              RenderedPage::PageCenter,
-                                              qvEnums::FitMode::FitToRect,
-                                              1.0);
+        RenderedPage pageWithDefaults(
+            nullptr, &scene, ImageContent(image, "preview.bmp", image.size(), {}, 0));
+        pageWithDefaults.setPageLayoutFitting(
+            QRect(0, 0, 100, 100), RenderedPage::PageCenter, qvEnums::FitMode::FitToRect, 1.0);
         QCOMPARE(pageWithDefaults.displayScale(), 0.25);
     }
 
@@ -1169,8 +1161,7 @@ private slots:
         QCOMPARE(volume.pageIndexForName("missing.png"), -1);
         QCOMPARE(volume.pagePathAt(0), QString());
         QVERIFY(!volume.imageLoadAt(0).isValid());
-        volume.updatePrefetchCache(
-            0, PrefetchMode::Normal, QSize(100, 100));
+        volume.updatePrefetchCache(0, PrefetchMode::Normal, QSize(100, 100));
         volume.handlePageListLoaded();
         QCOMPARE(pageListLoadedSpy.count(), 1);
         volume.moveToThread(nullptr);
@@ -1192,8 +1183,7 @@ private slots:
         QVERIFY(!coverVolume.imageLoadAt(2).isValid());
         QStringList coverRequests = coverLoaderPtr->requestedNames();
         coverRequests.sort();
-        QCOMPARE(coverRequests,
-                 QStringList({"page-0.bmp", "page-1.bmp"}));
+        QCOMPARE(coverRequests, QStringList({"page-0.bmp", "page-1.bmp"}));
 
         auto thumbnailLoader = std::make_unique<MemoryFileLoader>(3);
         MemoryFileLoader *thumbnailLoaderPtr = thumbnailLoader.get();
@@ -1203,21 +1193,23 @@ private slots:
         QCOMPARE(thumbnailSource.path, QString("page-0.bmp"));
         QCOMPARE(thumbnailSource.loadedImage.size(), QSize(16, 24));
         QVERIFY(thumbnailSource.resizedImage.isNull());
-        QCOMPARE(thumbnailLoaderPtr->requestedNames(),
-                 QStringList({"page-0.bmp"}));
+        QCOMPARE(thumbnailLoaderPtr->requestedNames(), QStringList({"page-0.bmp"}));
     }
 
     void volumeHandleDestroysOnOwnerThread()
     {
         auto *volume = new Volume(nullptr, std::make_unique<EmptyFileLoader>());
         QThread *destructionThread = nullptr;
-        QObject::connect(volume, &QObject::destroyed, this, [&destructionThread] { destructionThread = QThread::currentThread(); }, Qt::DirectConnection);
+        QObject::connect(
+            volume,
+            &QObject::destroyed,
+            this,
+            [&destructionThread] { destructionThread = QThread::currentThread(); },
+            Qt::DirectConnection);
 
         VolumeHandle handle = makeVolumeHandle(volume);
         QFuture<void> release = QtConcurrent::run(
-            [workerHandle = std::move(handle)]() mutable {
-                workerHandle.reset();
-            });
+            [workerHandle = std::move(handle)]() mutable { workerHandle.reset(); });
         release.waitForFinished();
 
         QTRY_COMPARE(destructionThread, QThread::currentThread());
@@ -1225,8 +1217,7 @@ private slots:
 
     void activeVolumeSurvivesCacheEviction()
     {
-        auto *volume = new Volume(
-            nullptr, std::make_unique<EmptyFileLoader>());
+        auto *volume = new Volume(nullptr, std::make_unique<EmptyFileLoader>());
         bool destroyed = false;
         QObject::connect(volume, &QObject::destroyed, this, [&destroyed] { destroyed = true; });
 
@@ -1262,8 +1253,8 @@ private slots:
         QVERIFY(secondRequest.isValid());
         QVERIFY(!cache.findReady(key).volume);
 
-        VolumeHandle loadedVolume = makeVolumeHandle(
-            new Volume(nullptr, std::make_unique<EmptyFileLoader>()));
+        VolumeHandle loadedVolume =
+            makeVolumeHandle(new Volume(nullptr, std::make_unique<EmptyFileLoader>()));
         pendingLoad.addResult({loadedVolume, ArchiveOpenError::None});
         pendingLoad.finish();
 
@@ -1354,13 +1345,22 @@ private slots:
 
     void cursorLoupeMappingKeepsAnchorStable()
     {
-        const std::optional<QPoint> position = CursorScrollMapping::loupeScrollPosition(
-            QPoint(200, 150), QPoint(200, 150), QSize(400, 300), QRect(0, 0, 400, 300), QRectF(0, 0, 800, 600), QPoint());
+        const std::optional<QPoint> position =
+            CursorScrollMapping::loupeScrollPosition(QPoint(200, 150),
+                                                     QPoint(200, 150),
+                                                     QSize(400, 300),
+                                                     QRect(0, 0, 400, 300),
+                                                     QRectF(0, 0, 800, 600),
+                                                     QPoint());
 
         QVERIFY(position);
         QCOMPARE(*position, QPoint(200, 150));
-        QVERIFY(!CursorScrollMapping::loupeScrollPosition(
-            QPoint(200, 150), QPoint(0, 150), QSize(400, 300), QRect(0, 0, 400, 300), QRectF(0, 0, 800, 600), QPoint()));
+        QVERIFY(!CursorScrollMapping::loupeScrollPosition(QPoint(200, 150),
+                                                          QPoint(0, 150),
+                                                          QSize(400, 300),
+                                                          QRect(0, 0, 400, 300),
+                                                          QRectF(0, 0, 800, 600),
+                                                          QPoint()));
     }
 
     void loupeControllerTracksActivationAndRestoration()
@@ -1370,7 +1370,8 @@ private slots:
         const QPoint initialScrollPosition(25, 40);
 
         QVERIFY(!loupe.isActive());
-        LoupeController::SceneUpdate update = loupe.prepareSceneUpdate(contentRect, initialScrollPosition);
+        LoupeController::SceneUpdate update =
+            loupe.prepareSceneUpdate(contentRect, initialScrollPosition);
         QVERIFY(!update.leavingLoupe);
 
         loupe.activate();
@@ -1450,34 +1451,31 @@ private slots:
         view.setViewerSession(&session);
 
         const QImage image(8, 4, QImage::Format_ARGB32);
-        QCOMPARE(view.addRenderedPage(
-                     ImageContent(image, "first.png", image.size(), {}, 0), true),
+        QCOMPARE(view.addRenderedPage(ImageContent(image, "first.png", image.size(), {}, 0), true),
                  ImageView::AddRenderedPageResult::AddedLandscape);
         QCOMPARE(view.renderedPageCount(), 1);
         QCOMPARE(view.renderedPageContents().count(), 1);
 
-        QCOMPARE(view.addRenderedPage(
-                     ImageContent(image, "second.png", image.size(), {}, 0), true),
+        QCOMPARE(view.addRenderedPage(ImageContent(image, "second.png", image.size(), {}, 0), true),
                  ImageView::AddRenderedPageResult::AddedLandscape);
         QCOMPARE(view.renderedPageCount(), 2);
         VisiblePages contents = view.renderedPageContents();
         QCOMPARE(contents.at(0)->path, QString("first.png"));
         QCOMPARE(contents.at(1)->path, QString("second.png"));
-        QCOMPARE(view.addRenderedPage(
-                     ImageContent(image, "third.png", image.size(), {}, 0), true),
+        QCOMPARE(view.addRenderedPage(ImageContent(image, "third.png", image.size(), {}, 0), true),
                  ImageView::AddRenderedPageResult::Rejected);
 
         view.clearRenderedPages();
         QCOMPARE(view.renderedPageCount(), 0);
         QVERIFY(view.renderedPageContents().isEmpty());
 
-        QCOMPARE(view.addRenderedPage(
-                     ImageContent(image, "replacement.png", image.size(), {}, 0), false),
+        QCOMPARE(view.addRenderedPage(ImageContent(image, "replacement.png", image.size(), {}, 0),
+                                      false),
                  ImageView::AddRenderedPageResult::AddedLandscape);
         QCOMPARE(view.renderedPageCount(), 1);
-        QCOMPARE(view.addRenderedPage(
-                     ImageContent(image, "prepended.png", image.size(), {}, 0), false),
-                 ImageView::AddRenderedPageResult::AddedLandscape);
+        QCOMPARE(
+            view.addRenderedPage(ImageContent(image, "prepended.png", image.size(), {}, 0), false),
+            ImageView::AddRenderedPageResult::AddedLandscape);
         QCOMPARE(view.renderedPageCount(), 2);
         contents = view.renderedPageContents();
         QCOMPARE(contents.at(0)->path, QString("prepended.png"));
@@ -1495,8 +1493,7 @@ private slots:
 
         QImage image(640, 480, QImage::Format_ARGB32);
         image.fill(Qt::red);
-        QVERIFY(session.appendVisiblePage(
-            ImageContent(image, "fitting.png", image.size(), {}, 0)));
+        QVERIFY(session.appendVisiblePage(ImageContent(image, "fitting.png", image.size(), {}, 0)));
 
         qApp->setFitting(false);
         view.refreshRenderedPages();
@@ -1516,20 +1513,18 @@ private slots:
 
         QAction fittingAction;
         fittingAction.setCheckable(true);
-        connect(&fittingAction, &QAction::triggered, &view, &ImageView::handleFittingActionTriggered);
-        QAction *previousAction =
-            qApp->keyActions().actions().value("actionFitting", nullptr);
-        auto restoreAction = qScopeGuard([previousAction]() {
-            qApp->keyActions().actions()["actionFitting"] = previousAction;
-        });
+        connect(
+            &fittingAction, &QAction::triggered, &view, &ImageView::handleFittingActionTriggered);
+        QAction *previousAction = qApp->keyActions().actions().value("actionFitting", nullptr);
+        auto restoreAction = qScopeGuard(
+            [previousAction]() { qApp->keyActions().actions()["actionFitting"] = previousAction; });
         QAction *fittingActionPtr = &fittingAction;
-        qApp->keyActions().registerAction(
-            "actionFitting", fittingActionPtr, "Image");
+        qApp->keyActions().registerAction("actionFitting", fittingActionPtr, "Image");
 
         QImage image(640, 480, QImage::Format_ARGB32);
         image.fill(Qt::red);
-        QVERIFY(session.appendVisiblePage(
-            ImageContent(image, "shortcut.png", image.size(), {}, 0)));
+        QVERIFY(
+            session.appendVisiblePage(ImageContent(image, "shortcut.png", image.size(), {}, 0)));
 
         qApp->setFitting(false);
         fittingAction.setChecked(false);
@@ -1581,8 +1576,7 @@ private slots:
         QFile archive(archivePath);
         QVERIFY(archive.open(QIODevice::WriteOnly));
         // Empty ZIP end-of-central-directory record.
-        QCOMPARE(archive.write(QByteArray::fromHex(
-                     "504b0506000000000000000000000000000000000000")),
+        QCOMPARE(archive.write(QByteArray::fromHex("504b0506000000000000000000000000000000000000")),
                  qint64(22));
         archive.close();
 

@@ -17,39 +17,42 @@ static VolumeLoadFuture makeReadyVolumeFuture(VolumeHandle volume)
 void DeferredVolumeLoadCleanup::operator()(VolumeLoadFuture evictedLoad) const
 {
     QThreadPool::globalInstance()->start(
-        [evictedLoad = std::move(evictedLoad)]() mutable {
-            evictedLoad.waitForFinished();
-        });
+        [evictedLoad = std::move(evictedLoad)]() mutable { evictedLoad.waitForFinished(); });
 }
 
 VolumeCache::VolumeCache(int capacity, QObject *parent)
     : QObject(parent),
       m_loads(capacity)
-{}
+{
+}
 
 void VolumeCache::watchFailedLoad(const VolumeCacheKey &key,
                                   quint64 generation,
                                   const VolumeLoadFuture &load)
 {
     auto *watcher = new QFutureWatcher<CachedVolumeLoadResult>(this);
-    connect(watcher, &QFutureWatcher<CachedVolumeLoadResult>::finished, this, [this, key, generation, watcher] {
-        const VolumeLoadFuture finished = watcher->future();
-        const bool hasResult = !finished.isCanceled() && finished.resultCount() > 0;
-        const CachedVolumeLoadResult result = hasResult ? finished.result() : CachedVolumeLoadResult{};
-        const bool failed = !hasResult || !result.volume;
-        if (m_generations.value(key, 0) == generation) {
-            if (failed) {
-                if (result.error != ArchiveOpenError::None) {
-                    m_recentErrors.insert(key, result.error);
+    connect(watcher,
+            &QFutureWatcher<CachedVolumeLoadResult>::finished,
+            this,
+            [this, key, generation, watcher] {
+                const VolumeLoadFuture finished = watcher->future();
+                const bool hasResult = !finished.isCanceled() && finished.resultCount() > 0;
+                const CachedVolumeLoadResult result =
+                    hasResult ? finished.result() : CachedVolumeLoadResult{};
+                const bool failed = !hasResult || !result.volume;
+                if (m_generations.value(key, 0) == generation) {
+                    if (failed) {
+                        if (result.error != ArchiveOpenError::None) {
+                            m_recentErrors.insert(key, result.error);
+                        }
+                        m_loads.remove(key);
+                        m_generations.remove(key);
+                    } else if (!m_loads.contains(key)) {
+                        m_generations.remove(key);
+                    }
                 }
-                m_loads.remove(key);
-                m_generations.remove(key);
-            } else if (!m_loads.contains(key)) {
-                m_generations.remove(key);
-            }
-        }
-        watcher->deleteLater();
-    });
+                watcher->deleteLater();
+            });
     watcher->setFuture(load);
 }
 

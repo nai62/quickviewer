@@ -10,15 +10,14 @@ class FolderItemModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    enum ItemRole {
-        CurrentVolumeRole = Qt::UserRole
-    };
+    enum ItemRole { CurrentVolumeRole = Qt::UserRole };
 
     FolderItemModel(QObject *parent);
     QVariant data(const QModelIndex &index, int role) const override;
     int rowCount(const QModelIndex &parent) const override;
     int columnCount(const QModelIndex &) const override;
-    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
+    QModelIndex
+    index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex &) const override;
 
     void setVolumes(QList<FolderItem> *volumes);

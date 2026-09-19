@@ -47,7 +47,8 @@ QModelIndex VolumeItemModel::index(int row, int column, const QModelIndex &) con
     if (column > 1 || !m_volumeSearch) {
         return QModelIndex();
     }
-    return row < m_volumeSearch->size() ? createIndex(row, column, m_volumeSearch->at(row)) : QModelIndex();
+    return row < m_volumeSearch->size() ? createIndex(row, column, m_volumeSearch->at(row))
+                                        : QModelIndex();
 }
 
 void VolumeItemModel::setVolumes(QList<VolumeThumbRecord *> *volumes)

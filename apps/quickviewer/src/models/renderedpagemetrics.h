@@ -21,9 +21,7 @@ public:
     bool isEmpty() const { return m_notationalScales.isEmpty(); }
     qreal notationalScaleAt(int index) const
     {
-        return index >= 0 && index < count()
-                   ? m_notationalScales[index]
-                   : 1.0;
+        return index >= 0 && index < count() ? m_notationalScales[index] : 1.0;
     }
 
 private:

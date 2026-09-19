@@ -68,9 +68,7 @@ VolumeBuildResult VolumeLoader::createVolumeResult(QObject *parent, QString path
         return volumeFromLoader(
             parent,
             std::make_unique<FileLoader7zArchive>(
-                path,
-                archiveFormat,
-                qApp->ExtractSolidArchiveToTemporaryDir()));
+                path, archiveFormat, qApp->ExtractSolidArchiveToTemporaryDir()));
     }
 
     if (IFileLoader::isImageFile(path)) {
@@ -104,7 +102,8 @@ VolumeLoader::VolumeLoader(QString path)
     : QObject(nullptr),
       m_path(std::move(path)),
       m_volume(nullptr)
-{}
+{
+}
 
 VolumeBuildResult VolumeLoader::buildLoadedVolume()
 {

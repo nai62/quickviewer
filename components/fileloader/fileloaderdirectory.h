@@ -13,7 +13,8 @@ public:
         Recursive,
     };
 
-    FileLoaderDirectory(QString path, TraversalMode traversalMode = TraversalMode::CurrentDirectory);
+    FileLoaderDirectory(QString path,
+                        TraversalMode traversalMode = TraversalMode::CurrentDirectory);
     ~FileLoaderDirectory() override = default;
 
     bool isArchive() const override { return false; }

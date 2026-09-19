@@ -71,7 +71,8 @@ void FileLoaderDirectory::collectRecursiveFiles(const QString &path, const QStri
     const QStringList files = directory.entryList(QDir::Files, QDir::Name);
     for (const QString &name : files) {
         if (IFileLoader::isImageFile(name)) {
-            const QString relativePath = subpath.isEmpty() ? name : relativeDirectory.filePath(name);
+            const QString relativePath =
+                subpath.isEmpty() ? name : relativeDirectory.filePath(name);
             images.append(QDir::toNativeSeparators(relativePath));
         }
     }

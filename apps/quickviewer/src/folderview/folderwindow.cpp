@@ -57,15 +57,18 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
 
     ui->horizontalLayout->addWidget(m_historyButton);
 
-    connect(qApp->languageSelector(), &LanguageManager::languageChanged, this, [this](const QString &) {
-        ui->retranslateUi(this);
-        m_historyButton->setText(tr("History"));
-        m_historyButton->setToolTip(tr("Open history"));
-        if (m_volumes.size() == 1 && m_volumes.first().type == FolderItem::NoItems) {
-            m_volumes.first().name = tr("No folders or archives found.", "Display when there is no display item in Folder Window");
-            m_itemModel.setVolumes(&m_volumes);
-        }
-    });
+    connect(
+        qApp->languageSelector(), &LanguageManager::languageChanged, this, [this](const QString &) {
+            ui->retranslateUi(this);
+            m_historyButton->setText(tr("History"));
+            m_historyButton->setToolTip(tr("Open history"));
+            if (m_volumes.size() == 1 && m_volumes.first().type == FolderItem::NoItems) {
+                m_volumes.first().name =
+                    tr("No folders or archives found.",
+                       "Display when there is no display item in Folder Window");
+                m_itemModel.setVolumes(&m_volumes);
+            }
+        });
 
     // Freeze the panel's effective minimum before a path or folder entries
     // are loaded. The constraint represents the controls needed by the UI,
@@ -197,17 +200,21 @@ bool nameLessThan(const QString &lhs, const QString &rhs)
 
 bool sortDescending(qvEnums::ImageSortBy sortBy)
 {
-    return sortBy == qvEnums::ImageSortBy::SortByFileNameDescending || sortBy == qvEnums::ImageSortBy::SortByFileSizeDescending || sortBy == qvEnums::ImageSortBy::SortByModifiedTimeDescending;
+    return sortBy == qvEnums::ImageSortBy::SortByFileNameDescending ||
+           sortBy == qvEnums::ImageSortBy::SortByFileSizeDescending ||
+           sortBy == qvEnums::ImageSortBy::SortByModifiedTimeDescending;
 }
 
 bool sortByModifiedTime(qvEnums::ImageSortBy sortBy)
 {
-    return sortBy == qvEnums::ImageSortBy::SortByModifiedTime || sortBy == qvEnums::ImageSortBy::SortByModifiedTimeDescending;
+    return sortBy == qvEnums::ImageSortBy::SortByModifiedTime ||
+           sortBy == qvEnums::ImageSortBy::SortByModifiedTimeDescending;
 }
 
 bool sortByFileSize(qvEnums::ImageSortBy sortBy)
 {
-    return sortBy == qvEnums::ImageSortBy::SortByFileSize || sortBy == qvEnums::ImageSortBy::SortByFileSizeDescending;
+    return sortBy == qvEnums::ImageSortBy::SortByFileSize ||
+           sortBy == qvEnums::ImageSortBy::SortByFileSizeDescending;
 }
 
 // Orders two entries of the same group (folders, or files) with the key of the
@@ -248,7 +255,8 @@ void FolderWindow::setFolderPath(QString path, bool showParent)
             m_currentPath = "";
             QList<QFileInfo> drives = QDir::drives();
             foreach (QFileInfo drive, drives) {
-                m_volumes << FolderItem(drive.absoluteFilePath(), FolderItem::Dir, drive.lastModified());
+                m_volumes << FolderItem(
+                    drive.absoluteFilePath(), FolderItem::Dir, drive.lastModified());
             }
         }
     } else
@@ -275,7 +283,8 @@ void FolderWindow::setFolderPath(QString path, bool showParent)
 
         m_volumes.clear();
         {
-            QStringList subfolders = dir.entryList(QDir::NoDotAndDotDot | QDir::Dirs, QDir::Unsorted);
+            QStringList subfolders =
+                dir.entryList(QDir::NoDotAndDotDot | QDir::Dirs, QDir::Unsorted);
             foreach (const QString &sf, subfolders) {
                 QFileInfo fi(dir.absoluteFilePath(sf));
                 m_volumes << FolderItem(sf, FolderItem::Dir, fi.lastModified());
@@ -283,14 +292,16 @@ void FolderWindow::setFolderPath(QString path, bool showParent)
         }
 
         {
-            foreach (const QString name, dir.entryList(QDir::NoDotAndDotDot | QDir::Files, QDir::Unsorted)) {
+            foreach (const QString name,
+                     dir.entryList(QDir::NoDotAndDotDot | QDir::Files, QDir::Unsorted)) {
                 const bool isArchive = IFileLoader::isArchiveFile(name);
                 const bool isImage = IFileLoader::isImageFile(name);
                 if (!isArchive && !isImage) {
                     continue;
                 }
                 QFileInfo fi(dir.absoluteFilePath(name));
-                const FolderItem::FileType type = isArchive ? FolderItem::Archive : FolderItem::Image;
+                const FolderItem::FileType type =
+                    isArchive ? FolderItem::Archive : FolderItem::Image;
                 m_volumes << FolderItem(name, type, fi.lastModified(), fi.size());
             }
         }
@@ -298,7 +309,10 @@ void FolderWindow::setFolderPath(QString path, bool showParent)
     }
 
     if (m_volumes.empty()) {
-        m_volumes << FolderItem(tr("No folders or archives found.", "Display when there is no display item in Folder Window"), FolderItem::NoItems, QDateTime());
+        m_volumes << FolderItem(tr("No folders or archives found.",
+                                   "Display when there is no display item in Folder Window"),
+                                FolderItem::NoItems,
+                                QDateTime());
     }
     m_itemModel.setVolumes(&m_volumes);
     updateCurrentVolumeRow();
@@ -327,9 +341,10 @@ void FolderWindow::sortVolumes()
     // this one-level list does not contain, so the orders only match for the
     // folder's own images.
     const qvEnums::ImageSortBy sortBy = qApp->ImageSortBy();
-    std::sort(m_volumes.begin(), m_volumes.end(), [sortBy](const FolderItem &lhs, const FolderItem &rhs) {
-        return folderViewLessThan(lhs, rhs, sortBy);
-    });
+    std::sort(
+        m_volumes.begin(), m_volumes.end(), [sortBy](const FolderItem &lhs, const FolderItem &rhs) {
+            return folderViewLessThan(lhs, rhs, sortBy);
+        });
 }
 
 void FolderWindow::resetPathLabel(int)
@@ -371,7 +386,8 @@ int FolderWindow::currentVolumeRow() const
     // represents the page is the file itself, or the folder containing it.
     const QString relative =
         QDir(m_currentPath).relativeFilePath(QDir::fromNativeSeparators(m_currentVolumePath));
-    if (relative.isEmpty() || QDir::isAbsolutePath(relative) || relative.startsWith(QStringLiteral(".."))) {
+    if (relative.isEmpty() || QDir::isAbsolutePath(relative) ||
+        relative.startsWith(QStringLiteral(".."))) {
         return -1;
     }
     const QString name = relative.section(QLatin1Char('/'), 0, 0);
@@ -450,9 +466,8 @@ void FolderWindow::handleReloadButtonClicked()
 
 void FolderWindow::handleViewerSessionVolumeChanged(QString path)
 {
-    m_currentVolumePath = path.isEmpty()
-                              ? QString()
-                              : QDir::cleanPath(QDir::fromNativeSeparators(path));
+    m_currentVolumePath =
+        path.isEmpty() ? QString() : QDir::cleanPath(QDir::fromNativeSeparators(path));
     updateCurrentVolumeRow();
 }
 

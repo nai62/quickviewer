@@ -19,19 +19,17 @@ public:
           m_currentPage(10),
           m_volumePath("C:\\SampleBook")
     {
-        m_pages = VisiblePages(QVector<ImageContent>{
-            ImageContent(
-                QImage(1000, 1200, QImage::Format_RGB32),
-                "page11.jpg",
-                QSize(1000, 1200),
-                easyexif::EXIFInfo(),
-                1234567),
-            ImageContent(
-                QImage(1000, 1200, QImage::Format_RGB32),
-                "page12.jpg",
-                QSize(1000, 1200),
-                easyexif::EXIFInfo(),
-                1234567)});
+        m_pages = VisiblePages(
+            QVector<ImageContent>{ImageContent(QImage(1000, 1200, QImage::Format_RGB32),
+                                               "page11.jpg",
+                                               QSize(1000, 1200),
+                                               easyexif::EXIFInfo(),
+                                               1234567),
+                                  ImageContent(QImage(1000, 1200, QImage::Format_RGB32),
+                                               "page12.jpg",
+                                               QSize(1000, 1200),
+                                               easyexif::EXIFInfo(),
+                                               1234567)});
     }
     int pageCount() const override { return m_size; }
     int currentPageIndex() const override { return m_currentPage; }
@@ -39,9 +37,7 @@ public:
     QString volumePath() const override { return m_volumePath; }
     QString currentPagePath() const override
     {
-        return QString("%1\\%2")
-            .arg(m_volumePath)
-            .arg("page11.jpg");
+        return QString("%1\\%2").arg(m_volumePath).arg("page11.jpg");
     }
 
 private:
@@ -58,22 +54,19 @@ OptionsDialog::OptionsDialog(QWidget *parent)
       ui(new Ui::OptionsDialog)
 {
     ui->setupUi(this);
-    connect(
-        ui->radioButtonWindowTitleUserDefined,
-        &QRadioButton::toggled,
-        this,
-        &OptionsDialog::handleWindowTitleUserDefinedRadioButtonToggled);
-    connect(
-        ui->radioButtonStatusBarUserDefined,
-        &QRadioButton::toggled,
-        this,
-        &OptionsDialog::handleStatusBarUserDefinedRadioButtonToggled);
+    connect(ui->radioButtonWindowTitleUserDefined,
+            &QRadioButton::toggled,
+            this,
+            &OptionsDialog::handleWindowTitleUserDefinedRadioButtonToggled);
+    connect(ui->radioButtonStatusBarUserDefined,
+            &QRadioButton::toggled,
+            this,
+            &OptionsDialog::handleStatusBarUserDefinedRadioButtonToggled);
     if (!stSamplePageContent) {
         stSamplePageContent = new SamplePageContent;
     }
-    m_imageString.initialize(stSamplePageContent, [] {
-        return RenderedPageMetrics(QVector<qreal>{0.5, 0.5});
-    });
+    m_imageString.initialize(stSamplePageContent,
+                             [] { return RenderedPageMetrics(QVector<qreal>{0.5, 0.5}); });
 #ifndef Q_OS_WIN
     ui->checkBoxUseDirect2D->setVisible(false);
 #endif
@@ -144,18 +137,16 @@ OptionsDialog::OptionsDialog(QWidget *parent)
     }
 
     ui->comboBoxHowToLoadSVG->clear();
-    ui->comboBoxHowToLoadSVG->addItem(
-        tr("resvg (Recommended)"), static_cast<int>(qvEnums::SvgLoaderBackend::Resvg));
-    ui->comboBoxHowToLoadSVG->addItem(
-        tr("Qt SVG (Compatibility mode)"), static_cast<int>(qvEnums::SvgLoaderBackend::QtSvg));
+    ui->comboBoxHowToLoadSVG->addItem(tr("resvg (Recommended)"),
+                                      static_cast<int>(qvEnums::SvgLoaderBackend::Resvg));
+    ui->comboBoxHowToLoadSVG->addItem(tr("Qt SVG (Compatibility mode)"),
+                                      static_cast<int>(qvEnums::SvgLoaderBackend::QtSvg));
     ui->comboBoxHowToLoadSVG->setCurrentIndex(
         ui->comboBoxHowToLoadSVG->findData(static_cast<int>(qApp->SvgLoaderBackend())));
     ui->comboBoxThemeSelector->setCurrentText(qApp->UiTheme());
 }
 
-OptionsDialog::~OptionsDialog()
-{
-}
+OptionsDialog::~OptionsDialog() {}
 
 void OptionsDialog::reflectResults()
 {
@@ -201,8 +192,8 @@ void OptionsDialog::reflectResults()
         qApp->setStatusTextFormat(ui->lineEditStatusBarUserStyle->text());
     }
 
-    qApp->setSvgLoaderBackend(static_cast<qvEnums::SvgLoaderBackend>(
-        ui->comboBoxHowToLoadSVG->currentData().toInt()));
+    qApp->setSvgLoaderBackend(
+        static_cast<qvEnums::SvgLoaderBackend>(ui->comboBoxHowToLoadSVG->currentData().toInt()));
     qApp->setSvgRasterMaximumWidth(ui->spinSvgRasterMaximumWidth->value());
     qApp->setSvgRasterMaximumHeight(ui->spinSvgRasterMaximumHeight->value());
     qApp->setUiTheme(ui->comboBoxThemeSelector->currentText());

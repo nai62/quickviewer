@@ -34,19 +34,22 @@ class RenderedPages
 {
 public:
     static constexpr int Capacity = 2;
-    using EffectPreparer = std::function<void(
-        QGraphicsPixmapItem *, const ImageContent &, QSize)>;
+    using EffectPreparer = std::function<void(QGraphicsPixmapItem *, const ImageContent &, QSize)>;
 
     RenderedPages() = default;
     ~RenderedPages();
     Q_DISABLE_COPY_MOVE(RenderedPages)
 
     int count() const;
-    bool add(ImageContent content, bool append, QObject *owner, QGraphicsScene *scene, const PageRenderSettings &renderSettings, bool openSeparatedPageFromEnd);
+    bool add(ImageContent content,
+             bool append,
+             QObject *owner,
+             QGraphicsScene *scene,
+             const PageRenderSettings &renderSettings,
+             bool openSeparatedPageFromEnd);
     void clear();
 
-    QRect layout(const PageRenderRequest &request,
-                 const EffectPreparer &prepareEffect);
+    QRect layout(const PageRenderRequest &request, const EffectPreparer &prepareEffect);
     bool advanceSeparatedPage();
     bool rewindSeparatedPage();
     void setCursor(const QCursor &cursor);

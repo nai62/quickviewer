@@ -49,15 +49,13 @@ void LanguageManager::resetTranslator(QString languageId)
             m_reversed = new TextTranslator(this, translationDir.filePath(m_reverseFile));
         }
         if (m_reversed != nullptr) {
-            m_translator = new TextTranslator(this, translationDir.filePath(info.TextFile), m_reversed);
+            m_translator =
+                new TextTranslator(this, translationDir.filePath(info.TextFile), m_reversed);
             qApp->installTranslator(m_translator);
         }
     } else {
         m_translator = new QTranslator;
-        bool exist = m_translator->load(QLocale(info.Code),
-                                        "",
-                                        m_prefix,
-                                        m_path);
+        bool exist = m_translator->load(QLocale(info.Code), "", m_prefix, m_path);
         if (exist) {
             qApp->installTranslator(m_translator);
         } else {
@@ -148,7 +146,9 @@ void LanguageManager::initializeMenu(QMenu *parent)
     }
     if (useText) {
         parent->addSeparator();
-        QAction *action = parent->addAction(tr("Always use text translation", "Menu text that uses textual translation rather than regular qm format"));
+        QAction *action = parent->addAction(
+            tr("Always use text translation",
+               "Menu text that uses textual translation rather than regular qm format"));
         action->setCheckable(true);
         if (m_forceUseText) {
             action->setChecked(true);

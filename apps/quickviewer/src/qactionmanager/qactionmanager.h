@@ -18,9 +18,7 @@ template <typename Key, typename Value, typename Action>
 class QActionManager
 {
 public:
-    explicit QActionManager()
-    {
-    }
+    explicit QActionManager() {}
     explicit QActionManager(QActionManager &rhs)
         : m_actionByName(rhs.m_actionByName),
           m_keyByName(rhs.m_keyByName),
@@ -48,14 +46,8 @@ public:
         m_actionByName[name] = action;
         m_nameByGroup.insert(group, name);
     }
-    void clearActionGroups()
-    {
-        m_nameByGroup.clear();
-    }
-    void copyActions(QMap<QString, Action> &rhs)
-    {
-        m_actionByName = rhs;
-    }
+    void clearActionGroups() { m_nameByGroup.clear(); }
+    void copyActions(QMap<QString, Action> &rhs) { m_actionByName = rhs; }
 
     void addDefaultKey(QString name, Key key)
     {
@@ -69,8 +61,14 @@ public:
     QMultiMap<QString, QString> &nameByGroups() { return m_nameByGroup; }
     QMap<QString, Action> &actions() { return m_actionByName; }
     QMap<QString, Key> &keyMaps() { return m_keyByName; }
-    Key getKey(const QString &name) { return m_keyByName.contains(name) ? m_keyByName[name] : Key(); }
-    Key getKeyDefault(const QString &name) { return m_keyByNameDefaults.contains(name) ? m_keyByNameDefaults[name] : Key(); }
+    Key getKey(const QString &name)
+    {
+        return m_keyByName.contains(name) ? m_keyByName[name] : Key();
+    }
+    Key getKeyDefault(const QString &name)
+    {
+        return m_keyByNameDefaults.contains(name) ? m_keyByNameDefaults[name] : Key();
+    }
     Action getActionByKey(Key &key)
     {
         QString keystring = valueToString(key);
@@ -133,10 +131,7 @@ public:
     // {
     //     return value.toString();
     // }
-    QString valueToString(Key key)
-    {
-        return key.toString();
-    }
+    QString valueToString(Key key) { return key.toString(); }
     QString valueToString(Value value);
 
     void updateKey(const QString &name, Key key, bool force = false)

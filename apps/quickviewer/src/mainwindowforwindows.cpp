@@ -12,7 +12,8 @@
 
 MainWindowForWindows::MainWindowForWindows(QWidget *parent)
     : ArchiveAwareMainWindow(parent)
-{}
+{
+}
 
 bool MainWindowForWindows::setStartupWindowCloaked(bool cloaked)
 {
@@ -22,7 +23,8 @@ bool MainWindowForWindows::setStartupWindowCloaked(bool cloaked)
         StartupProfiler::mark("startup.cloak.begin");
     }
     QLibrary dwmapi("dwmapi");
-    auto setWindowAttribute = reinterpret_cast<DwmSetWindowAttributeFunction>(dwmapi.resolve("DwmSetWindowAttribute"));
+    auto setWindowAttribute =
+        reinterpret_cast<DwmSetWindowAttributeFunction>(dwmapi.resolve("DwmSetWindowAttribute"));
     auto flush = reinterpret_cast<DwmFlushFunction>(dwmapi.resolve("DwmFlush"));
     if (!setWindowAttribute) {
         qWarning() << "DwmSetWindowAttribute is unavailable";
@@ -95,7 +97,9 @@ void MainWindowForWindows::setWindowTop(bool signalOnly)
     //    ::SwitchToThisWindow(hwnd, false);
     const DWORD currentThreadId = ::GetCurrentThreadId();
     const DWORD foregroundThreadId = ::GetWindowThreadProcessId(::GetForegroundWindow(), nullptr);
-    const bool inputAttached = !signalOnly && foregroundThreadId != 0 && foregroundThreadId != currentThreadId && ::AttachThreadInput(currentThreadId, foregroundThreadId, TRUE);
+    const bool inputAttached = !signalOnly && foregroundThreadId != 0 &&
+                               foregroundThreadId != currentThreadId &&
+                               ::AttachThreadInput(currentThreadId, foregroundThreadId, TRUE);
 
     ::SetForegroundWindow(hwnd);
     ::SetActiveWindow(hwnd);

@@ -5,7 +5,8 @@ FolderTreeView::FolderTreeView(QWidget *parent)
 {
 }
 
-void FolderTreeView::selectionChanged(const QItemSelection &selection, const QItemSelection &deselected)
+void FolderTreeView::selectionChanged(const QItemSelection &selection,
+                                      const QItemSelection &deselected)
 {
     QTreeView::selectionChanged(selection, deselected);
 

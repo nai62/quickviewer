@@ -20,15 +20,19 @@ const RenderedPage *RenderedPages::at(int index) const
     return index >= 0 && index < count() ? m_pages[index].get() : nullptr;
 }
 
-bool RenderedPages::add(ImageContent content, bool append, QObject *owner, QGraphicsScene *scene, const PageRenderSettings &renderSettings, bool openSeparatedPageFromEnd)
+bool RenderedPages::add(ImageContent content,
+                        bool append,
+                        QObject *owner,
+                        QGraphicsScene *scene,
+                        const PageRenderSettings &renderSettings,
+                        bool openSeparatedPageFromEnd)
 {
     const int pageCount = count();
     if (pageCount >= Capacity || !scene) {
         return false;
     }
 
-    auto page = std::make_unique<RenderedPage>(
-        owner, scene, std::move(content), renderSettings);
+    auto page = std::make_unique<RenderedPage>(owner, scene, std::move(content), renderSettings);
     if (openSeparatedPageFromEnd) {
         page->showLastSeparatedHalf();
     }
@@ -49,8 +53,7 @@ void RenderedPages::clear()
     m_pages[0].reset();
 }
 
-QRect RenderedPages::layout(const PageRenderRequest &request,
-                            const EffectPreparer &prepareEffect)
+QRect RenderedPages::layout(const PageRenderRequest &request, const EffectPreparer &prepareEffect)
 {
     QRect sceneRect;
     const int pageCount = count();
@@ -61,21 +64,18 @@ QRect RenderedPages::layout(const PageRenderRequest &request,
     const RenderedPageLayout &layout = request.layout;
     for (int index = 0; index < pageCount; ++index) {
         RenderedPage &page = *m_pages[index];
-        page.updateSeparationForViewport(
-            layout.separateWideImages, layout.viewport.size());
+        page.updateSeparationForViewport(layout.separateWideImages, layout.viewport.size());
 
         RenderedPage::PageAlign alignment = RenderedPage::PageCenter;
         QRect pageRect = layout.viewport;
         if (pageCount == Capacity) {
-            alignment = ((index == 0 && !layout.rightSideBook) || (index == 1 && layout.rightSideBook))
-                            ? RenderedPage::PageLeft
-                            : RenderedPage::PageRight;
-            pageRect = QRect(
-                QPoint(alignment == RenderedPage::PageRight
-                           ? pageRect.width() / 2
-                           : 0,
-                       0),
-                QSize(pageRect.width() / 2, pageRect.height()));
+            alignment =
+                ((index == 0 && !layout.rightSideBook) || (index == 1 && layout.rightSideBook))
+                    ? RenderedPage::PageLeft
+                    : RenderedPage::PageRight;
+            pageRect =
+                QRect(QPoint(alignment == RenderedPage::PageRight ? pageRect.width() / 2 : 0, 0),
+                      QSize(pageRect.width() / 2, pageRect.height()));
         }
 
         const int rotation = layout.rotations.value(index, 0);
@@ -84,15 +84,16 @@ QRect RenderedPages::layout(const PageRenderRequest &request,
             drawRect = page.setPageLayoutFitting(
                 pageRect, alignment, layout.fitMode, layout.scaleFactor, rotation);
         } else {
-            drawRect = page.setPageLayoutManual(
-                pageRect, alignment, layout.manualScale * layout.scaleFactor, rotation, layout.loupe);
+            drawRect = page.setPageLayoutManual(pageRect,
+                                                alignment,
+                                                layout.manualScale * layout.scaleFactor,
+                                                rotation,
+                                                layout.loupe);
         }
         page.setSignageText(layout.signage.value(index));
         page.resetSignage(layout.viewport, alignment);
         if (prepareEffect) {
-            prepareEffect(page.graphicsPixmapItem(),
-                          page.imageContent(),
-                          drawRect.size());
+            prepareEffect(page.graphicsPixmapItem(), page.imageContent(), drawRect.size());
         }
         sceneRect = sceneRect.united(drawRect);
     }

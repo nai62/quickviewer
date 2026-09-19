@@ -4,13 +4,13 @@
 #include "shortcutbutton.h"
 #include "ui_keyconfigdialog.h"
 
-static int translateModifiers(Qt::KeyboardModifiers state,
-                              const QString &text)
+static int translateModifiers(Qt::KeyboardModifiers state, const QString &text)
 {
     int result = 0;
     // The shift modifier only counts when it is not used to type a symbol
     // that is only reachable using the shift key anyway
-    if ((state & Qt::ShiftModifier) && (text.size() == 0 || !text.at(0).isPrint() || text.at(0).isLetterOrNumber() || text.at(0).isSpace())) {
+    if ((state & Qt::ShiftModifier) && (text.size() == 0 || !text.at(0).isPrint() ||
+                                        text.at(0).isLetterOrNumber() || text.at(0).isSpace())) {
         result |= Qt::SHIFT;
     }
     if (state & Qt::ControlModifier) {
@@ -70,7 +70,9 @@ ShortcutButton::ShortcutButton(QWidget *parent)
       m_key({{0, 0, 0, 0}})
 {
     // Using ShortcutButton::tr() as workaround for QTBUG-34128
-    setToolTip(ShortcutButton::tr("Click and enter a new shortcut key.", "Gray text to be displayed on LineEdit to input the shortcut key"));
+    setToolTip(
+        ShortcutButton::tr("Click and enter a new shortcut key.",
+                           "Gray text to be displayed on LineEdit to input the shortcut key"));
     setCheckable(true);
     m_checkedText = ShortcutButton::tr("Stop Recording", "Button for canceling shortcut key input");
     m_uncheckedText = ShortcutButton::tr("Record", "Button for starting entering the shortcut key");
@@ -101,7 +103,8 @@ bool ShortcutButton::eventFilter(QObject *obj, QEvent *evt)
         evt->accept();
         return true;
     }
-    if (evt->type() == QEvent::KeyRelease || evt->type() == QEvent::Shortcut || evt->type() == QEvent::Close /*Escape tries to close dialog*/) {
+    if (evt->type() == QEvent::KeyRelease || evt->type() == QEvent::Shortcut ||
+        evt->type() == QEvent::Close /*Escape tries to close dialog*/) {
         return true;
     }
     if (evt->type() == QEvent::MouseButtonPress && isChecked()) {
@@ -111,7 +114,8 @@ bool ShortcutButton::eventFilter(QObject *obj, QEvent *evt)
     if (evt->type() == QEvent::KeyPress) {
         QKeyEvent *k = static_cast<QKeyEvent *>(evt);
         int nextKey = k->key();
-        if (m_keyNum > 3 || nextKey == Qt::Key_Control || nextKey == Qt::Key_Shift || nextKey == Qt::Key_Meta || nextKey == Qt::Key_Alt) {
+        if (m_keyNum > 3 || nextKey == Qt::Key_Control || nextKey == Qt::Key_Shift ||
+            nextKey == Qt::Key_Meta || nextKey == Qt::Key_Alt) {
             return false;
         }
 
@@ -174,19 +178,37 @@ KeyConfigDialog::KeyConfigDialog(KeyConfigDialog::KeyActionManager &keyActions, 
     ui->addSequenceButton->setVisible(false);
     connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(ui->buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
-    connect(ui->buttonBox, SIGNAL(clicked(QAbstractButton *)), this, SLOT(handleButtonBoxClicked(QAbstractButton *)));
-    connect(ui->treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)), this, SLOT(handleTreeWidgetCurrentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)));
+    connect(ui->buttonBox,
+            SIGNAL(clicked(QAbstractButton *)),
+            this,
+            SLOT(handleButtonBoxClicked(QAbstractButton *)));
+    connect(ui->treeWidget,
+            SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
+            this,
+            SLOT(handleTreeWidgetCurrentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)));
     connect(ui->resetButton, SIGNAL(clicked()), this, SLOT(handleResetButtonClicked()));
-    connect(ui->shortcutEdit, SIGNAL(textChanged(QString)), this, SLOT(handleShortcutLineEditTextChanged(QString)));
+    connect(ui->shortcutEdit,
+            SIGNAL(textChanged(QString)),
+            this,
+            SLOT(handleShortcutLineEditTextChanged(QString)));
 
-    connect(ui->recordButton, &ShortcutButton::keySequenceChanged, this, &KeyConfigDialog::handleRecordButtonKeySequenceChanged);
+    connect(ui->recordButton,
+            &ShortcutButton::keySequenceChanged,
+            this,
+            &KeyConfigDialog::handleRecordButtonKeySequenceChanged);
 
     ui->treeWidget->sortByColumn(0, Qt::AscendingOrder);
     QTreeWidgetItem *header = ui->treeWidget->headerItem();
     //    header->setText(0, tr("Motions", "Title of the column of Action to be registered with the shortcut key"));
     header->setText(0, tr("Group", "Group of the Action to be registered with the shortcut key"));
-    header->setText(1, tr("Description", "Title of the column that displays the meaning of the action to be registered with the shortcut key"));
-    header->setText(2, tr("Current shortcut", "Title of the column of the content of the shortcut key registered for Action"));
+    header->setText(1,
+                    tr("Description",
+                       "Title of the column that displays the meaning of the action to be "
+                       "registered with the shortcut key"));
+    header->setText(
+        2,
+        tr("Current shortcut",
+           "Title of the column of the content of the shortcut key registered for Action"));
     //    header->setSizeHint(0, QSize(100, 30));
     //    header->setSizeHint(1, QSize(300, 30));
     //    header->setSizeHint(2, QSize(300, 30));
@@ -261,11 +283,15 @@ void KeyConfigDialog::handleRecordButtonKeySequenceChanged(QKeySequence key)
     QString shortcutText = keySequenceToEditString(key);
     setEditTextWithoutSignal(shortcutText);
     if (!keySequenceIsValid(key)) {
-        ui->warningLabel->setText(tr("Invalid key sequence.", "Message when rejecting input contents of inappropriate shortcut key"));
+        ui->warningLabel->setText(
+            tr("Invalid key sequence.",
+               "Message when rejecting input contents of inappropriate shortcut key"));
         return;
     }
     if (m_keyActions.markCollisions(m_actionName, key)) {
-        ui->warningLabel->setText(tr("Key sequence has potential conflicts.", "Text to be displayed when the entered shortcut key conflicts with another shortcut key"));
+        ui->warningLabel->setText(tr("Key sequence has potential conflicts.",
+                                     "Text to be displayed when the entered shortcut key conflicts "
+                                     "with another shortcut key"));
         return;
     }
     ui->warningLabel->clear();
@@ -281,7 +307,9 @@ void KeyConfigDialog::handleResetButtonClicked()
     QString shortcutText = keySequenceToEditString(key);
     setEditTextWithoutSignal(shortcutText);
     if (m_keyActions.markCollisions(m_actionName, key)) {
-        ui->warningLabel->setText(tr("Key sequence has potential conflicts.", "Text to be displayed when the entered shortcut key conflicts with another shortcut key"));
+        ui->warningLabel->setText(tr("Key sequence has potential conflicts.",
+                                     "Text to be displayed when the entered shortcut key conflicts "
+                                     "with another shortcut key"));
         return;
     }
     ui->warningLabel->clear();
@@ -296,7 +324,9 @@ void KeyConfigDialog::handleShortcutLineEditTextChanged(QString text)
     if (!m_ignoreEdited) {
         QKeySequence key(text);
         if (!keySequenceIsValid(key)) {
-            ui->warningLabel->setText(tr("Invalid key sequence.", "Message when rejecting input contents of inappropriate shortcut key"));
+            ui->warningLabel->setText(
+                tr("Invalid key sequence.",
+                   "Message when rejecting input contents of inappropriate shortcut key"));
             return;
         }
         handleRecordButtonKeySequenceChanged(key);
