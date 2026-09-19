@@ -57,6 +57,7 @@ SOURCES += \
     ../../apps/quickviewer/src/models/volumehandle.cpp \
     ../../apps/quickviewer/src/models/volume.cpp \
     ../../apps/quickviewer/src/models/imagedecoder.cpp \
+    ../../apps/quickviewer/src/models/jpegorientation.cpp \
     ../../apps/quickviewer/src/models/volumeloader.cpp \
     ../../apps/quickviewer/src/models/volumelocation.cpp \
     ../../apps/quickviewer/src/models/storedvolumelocation.cpp \
@@ -99,6 +100,7 @@ HEADERS += \
     ../../apps/quickviewer/src/models/viewerstate.h \
     ../../apps/quickviewer/src/models/volume.h \
     ../../apps/quickviewer/src/models/imagedecoder.h \
+    ../../apps/quickviewer/src/models/jpegorientation.h \
     ../../apps/quickviewer/src/models/decodemetricsscope.h \
     ../../apps/quickviewer/src/models/volumeloader.h \
     ../../apps/quickviewer/src/models/volumelocation.h \

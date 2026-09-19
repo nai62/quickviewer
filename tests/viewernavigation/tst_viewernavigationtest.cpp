@@ -7,6 +7,7 @@
 #include "imageview.h"
 #include "models/cursorscrollmapping.h"
 #include "models/imagedecoder.h"
+#include "models/jpegorientation.h"
 #include "models/decodemetricsscope.h"
 #include "models/imagestring.h"
 #include "models/loupecontroller.h"
@@ -752,6 +753,23 @@ private slots:
         QCOMPARE(content.hasDetailedMetadata, detailedMetadata);
         // Page dimensions are swapped for EXIF orientation 6 before CPU resizing.
         QCOMPARE(content.resizedImage.size(), QSize(16, 8));
+    }
+
+    void jpegExifOrientationReadsTheExifSegment()
+    {
+        QCOMPARE(jpegExifOrientation(jpegWithOrientation(6)), 6);
+        QCOMPARE(jpegExifOrientation(jpegWithOrientation(1)), 1);
+        QCOMPARE(jpegExifOrientation(QByteArray()), 1);
+        QCOMPARE(jpegExifOrientation(QByteArray("not a jpeg")), 1);
+        // An APP1 segment that ends before its declared length is left alone.
+        QCOMPARE(jpegExifOrientation(QByteArray::fromHex("FFD8FFE1001045786966")), 1);
+
+        // Offsets that reach past the segment, including the 32-bit values that
+        // used to wrap the bounds check, are rejected without reading past it.
+        const quint32 offsets[] = {0xFFFFFFFFu, 0xFFFFFFFEu, 0x7FFFFFFFu, 0x10000u};
+        for (quint32 ifdOffset : offsets) {
+            QCOMPARE(jpegExifOrientation(jpegWithOrientation(6, QSize(8, 4), ifdOffset)), 1);
+        }
     }
 
     void decodeImageBytesRejectsExifOffsetOutsideTheSegment()
