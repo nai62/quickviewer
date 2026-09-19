@@ -12,6 +12,7 @@
 #include "fileloader.h"
 #include "boundedexecutor.h"
 #include "imagedecoder.h"
+#include "decodemetricsscope.h"
 #include "imageformat.h"
 #include "startupprofiler.h"
 
@@ -754,15 +755,11 @@ static ImageContent loadWithSpecifiedFormat(QString path,
         int maxTextureSize = qApp->MaxTextureSize();
         const ImageDecoder decoder(currentImageDecodeSettings(maxTextureSize));
         if (format == ImageFormat::Svg) {
-            QElapsedTimer decodeTimer;
-            if (metrics) {
-                decodeTimer.start();
-            }
+            ImageDecodeDetail::DecodeMetricsScope<> decodeMetrics(metrics);
             const ImageDecodeOutput output = decoder.decodeSvg(bytes, path);
-            if (metrics) {
-                metrics->decoderBackend = "svgloader";
-                metrics->decodeNanoseconds += decodeTimer.nsecsElapsed();
-            }
+            // SVG records its backend even when rasterization fails.
+            decodeMetrics.recordBackend([] { return QStringLiteral("svgloader"); });
+            decodeMetrics.finish();
             ImageContent ic(
                 output.image, path, output.sourceSize, easyexif::EXIFInfo(), bytes.length());
             ic.hasDetailedMetadata = true;
@@ -773,53 +770,35 @@ static ImageContent loadWithSpecifiedFormat(QString path,
         QSize baseSize;
         bool nativeDecoded = false;
         if (format == ImageFormat::Jpeg && decodePolicy.jpeg != JpegDecoderPreference::Qt) {
-            QElapsedTimer decodeTimer;
-            if (metrics) {
-                decodeTimer.start();
-            }
+            ImageDecodeDetail::DecodeMetricsScope<> decodeMetrics(metrics);
             ImageDecodeOutput output;
             nativeDecoded = decoder.decodeTurboJpeg(bytes, decodeTargetSize, output);
-            if (metrics) {
-                metrics->decodeNanoseconds += decodeTimer.nsecsElapsed();
-                if (nativeDecoded) {
-                    metrics->decoderBackend = "turbojpeg";
-                }
-            }
+            decodeMetrics.finish();
+            decodeMetrics.recordBackendOnSuccess(nativeDecoded,
+                                                 [] { return QStringLiteral("turbojpeg"); });
             if (nativeDecoded) {
                 src = std::move(output.image);
                 baseSize = output.sourceSize;
             }
         } else if ((format == ImageFormat::Png || format == ImageFormat::Apng) &&
                    decodePolicy.png != PngDecoderPreference::Qt) {
-            QElapsedTimer decodeTimer;
-            if (metrics) {
-                decodeTimer.start();
-            }
+            ImageDecodeDetail::DecodeMetricsScope<> decodeMetrics(metrics);
             ImageDecodeOutput output;
             nativeDecoded = decoder.decodeSpng(bytes, output);
-            if (metrics) {
-                metrics->decodeNanoseconds += decodeTimer.nsecsElapsed();
-                if (nativeDecoded) {
-                    metrics->decoderBackend = "libspng";
-                }
-            }
+            decodeMetrics.finish();
+            decodeMetrics.recordBackendOnSuccess(nativeDecoded,
+                                                 [] { return QStringLiteral("libspng"); });
             if (nativeDecoded) {
                 src = std::move(output.image);
                 baseSize = output.sourceSize;
             }
         } else if (format == ImageFormat::WebP && decodePolicy.webp != WebPDecoderPreference::Qt) {
-            QElapsedTimer decodeTimer;
-            if (metrics) {
-                decodeTimer.start();
-            }
+            ImageDecodeDetail::DecodeMetricsScope<> decodeMetrics(metrics);
             ImageDecodeOutput output;
             nativeDecoded = decoder.decodeWebP(bytes, decodeTargetSize, output);
-            if (metrics) {
-                metrics->decodeNanoseconds += decodeTimer.nsecsElapsed();
-                if (nativeDecoded) {
-                    metrics->decoderBackend = "libwebp";
-                }
-            }
+            decodeMetrics.finish();
+            decodeMetrics.recordBackendOnSuccess(nativeDecoded,
+                                                 [] { return QStringLiteral("libwebp"); });
             if (nativeDecoded) {
                 src = std::move(output.image);
                 baseSize = output.sourceSize;
@@ -837,16 +816,12 @@ static ImageContent loadWithSpecifiedFormat(QString path,
             }
 
             if (reader.supportsAnimation()) {
-                QElapsedTimer decodeTimer;
-                if (metrics) {
-                    decodeTimer.start();
-                }
+                ImageDecodeDetail::DecodeMetricsScope<> decodeMetrics(metrics);
                 Movie movie = Movie(bytes, QString::fromUtf8(qtHint));
-                if (metrics) {
-                    metrics->decoderBackend =
-                        QString("qmovie:%1").arg(QString::fromLatin1(reader.format()));
-                    metrics->decodeNanoseconds += decodeTimer.nsecsElapsed();
-                }
+                // Movie construction records the backend before lazy frame decoding.
+                decodeMetrics.recordBackend(
+                    [&] { return QString("qmovie:%1").arg(QString::fromLatin1(reader.format())); });
+                decodeMetrics.finish();
                 ic.movie = movie;
                 ic.originalSize = ic.loadedImageSize = reader.size();
                 ic.hasDetailedMetadata = true;
@@ -872,18 +847,12 @@ static ImageContent loadWithSpecifiedFormat(QString path,
                 }
             }
 
-            QElapsedTimer decodeTimer;
-            if (metrics) {
-                decodeTimer.start();
-            }
+            ImageDecodeDetail::DecodeMetricsScope<> decodeMetrics(metrics);
             QImage tmp = ImageDecoder::readWithQt(reader, path, format == ImageFormat::Tiff);
-            if (metrics) {
-                if (!tmp.isNull()) {
-                    metrics->decoderBackend =
-                        QString("qimagereader:%1").arg(QString::fromLatin1(reader.format()));
-                }
-                metrics->decodeNanoseconds += decodeTimer.nsecsElapsed();
-            }
+            decodeMetrics.recordBackendOnSuccess(!tmp.isNull(), [&] {
+                return QString("qimagereader:%1").arg(QString::fromLatin1(reader.format()));
+            });
+            decodeMetrics.finish();
             if (tmp.isNull()) {
                 return ic;
             }

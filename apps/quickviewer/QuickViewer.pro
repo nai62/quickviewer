@@ -219,6 +219,7 @@ HEADERS  += \
     src/models/movie.h \
     src/models/volume.h \
     src/models/imagedecoder.h \
+    src/models/decodemetricsscope.h \
     src/models/volumeloader.h \
     src/models/volumelocation.h \
     src/models/storedvolumelocation.h \

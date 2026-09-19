@@ -99,6 +99,7 @@ HEADERS += \
     ../../apps/quickviewer/src/models/viewerstate.h \
     ../../apps/quickviewer/src/models/volume.h \
     ../../apps/quickviewer/src/models/imagedecoder.h \
+    ../../apps/quickviewer/src/models/decodemetricsscope.h \
     ../../apps/quickviewer/src/models/volumeloader.h \
     ../../apps/quickviewer/src/models/volumelocation.h \
     ../../apps/quickviewer/src/models/storedvolumelocation.h \

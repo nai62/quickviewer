@@ -7,6 +7,7 @@
 #include "imageview.h"
 #include "models/cursorscrollmapping.h"
 #include "models/imagedecoder.h"
+#include "models/decodemetricsscope.h"
 #include "models/imagestring.h"
 #include "models/loupecontroller.h"
 #include "models/pagedisplayformatter.h"
@@ -22,6 +23,33 @@
 #include "models/volume.h"
 
 #define FILELOADER_DATAPATH VIEWERNAVIGATION_SRCDIR "../fileloader/data/"
+
+class FakeDecodeTimer
+{
+public:
+    inline static qint64 now = 0;
+    inline static int starts = 0;
+    inline static int reads = 0;
+
+    static void reset() { now = starts = reads = 0; }
+    void start()
+    {
+        ++starts;
+        m_startedAt = now;
+    }
+    qint64 nsecsElapsed() const
+    {
+        ++reads;
+        return now - m_startedAt;
+    }
+
+private:
+    qint64 m_startedAt = 0;
+};
+
+using TestDecodeMetricsScope = ImageDecodeDetail::DecodeMetricsScope<FakeDecodeTimer>;
+static_assert(!std::is_copy_constructible_v<TestDecodeMetricsScope>);
+static_assert(!std::is_move_constructible_v<TestDecodeMetricsScope>);
 
 static QByteArray encodedStillPng(const QSize &size, const QColor &color)
 {
@@ -175,6 +203,112 @@ class ViewerNavigationTest : public QObject
     Q_OBJECT
 
 private slots:
+    void decodeMetricsScopeAccountsForEarlyReturnsAndStopsOnce()
+    {
+        FakeDecodeTimer::reset();
+        ImageDecodeMetrics metrics;
+        metrics.decodeNanoseconds = 7;
+        metrics.pipelineNanoseconds = 99;
+        metrics.sourceSize = QSize(10, 20);
+        metrics.decoderBackend = QStringLiteral("previous");
+        int backendCalls = 0;
+        const auto backend = [&] {
+            ++backendCalls;
+            FakeDecodeTimer::now += 5; // Include name construction only while timing is active.
+            return QStringLiteral("successful");
+        };
+
+        const auto failedAttempt = [&] {
+            TestDecodeMetricsScope scope(&metrics);
+            FakeDecodeTimer::now += 11;
+            scope.recordBackendOnSuccess(false, backend);
+            return false; // No finish(): RAII must still accumulate the failed attempt.
+        };
+        QVERIFY(!failedAttempt());
+        QCOMPARE(metrics.decodeNanoseconds, qint64(18));
+        QCOMPARE(metrics.decoderBackend, QStringLiteral("previous"));
+        QCOMPARE(backendCalls, 0);
+        {
+            TestDecodeMetricsScope scope(&metrics);
+            FakeDecodeTimer::now += 13;
+            scope.finish();
+            scope.recordBackendOnSuccess(true, backend);
+            FakeDecodeTimer::now += 1000; // Postprocessing must not be included.
+            scope.finish();
+        }
+        QCOMPARE(metrics.decodeNanoseconds, qint64(31));
+        QCOMPARE(metrics.decoderBackend, QStringLiteral("successful"));
+        QCOMPARE(backendCalls, 1);
+        QCOMPARE(FakeDecodeTimer::starts, 2);
+        QCOMPARE(FakeDecodeTimer::reads, 2);
+        QCOMPARE(metrics.pipelineNanoseconds, qint64(99));
+        QCOMPARE(metrics.sourceSize, QSize(10, 20));
+    }
+
+    void decodeMetricsScopeRecordsUnconditionalBackendBeforeStopping()
+    {
+        FakeDecodeTimer::reset();
+        ImageDecodeMetrics metrics;
+        {
+            TestDecodeMetricsScope scope(&metrics);
+            FakeDecodeTimer::now += 17;
+            scope.recordBackend([] {
+                FakeDecodeTimer::now += 5;
+                return QStringLiteral("svgloader");
+            });
+            scope.finish();
+        }
+        QCOMPARE(metrics.decodeNanoseconds, qint64(22));
+        QCOMPARE(metrics.decoderBackend, QStringLiteral("svgloader"));
+        QCOMPARE(FakeDecodeTimer::reads, 1);
+    }
+
+    void decodeMetricsScopeDoesNoInstrumentationWithoutSink()
+    {
+        FakeDecodeTimer::reset();
+        int backendCalls = 0;
+        const auto backend = [&] {
+            ++backendCalls;
+            return QStringLiteral("unused");
+        };
+        {
+            TestDecodeMetricsScope scope(nullptr);
+            scope.recordBackend(backend);
+            scope.recordBackendOnSuccess(true, backend);
+            scope.recordBackendOnSuccess(false, backend);
+            scope.finish();
+        }
+        QCOMPARE(backendCalls, 0);
+        QCOMPARE(FakeDecodeTimer::starts, 0);
+        QCOMPARE(FakeDecodeTimer::reads, 0);
+    }
+
+    void decodeImageBytesRecordsBackendForFailedSvg()
+    {
+        ImageDecodeMetrics metrics;
+        const ImageContent content = Volume::decodeImageBytes("broken.svg",
+                                                              QByteArray("not an SVG"),
+                                                              QSize(),
+                                                              QSize(),
+                                                              true,
+                                                              ImageDecodePolicy(),
+                                                              &metrics);
+        QVERIFY(!content.isRenderable());
+        QCOMPARE(metrics.decoderBackend, QStringLiteral("svgloader"));
+    }
+
+    void decodeImageBytesRecordsMovieBackendBeforeLoadingFrames()
+    {
+        const QByteArray bytes =
+            QByteArray::fromBase64("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7");
+        ImageDecodeMetrics metrics;
+        ImageContent content = Volume::decodeImageBytes(
+            "frame.gif", bytes, QSize(), QSize(), true, ImageDecodePolicy(), &metrics);
+        QVERIFY(!content.movie.isNull());
+        QVERIFY(!content.movie.data()); // Frame decoding is deferred.
+        QCOMPARE(metrics.decoderBackend, QStringLiteral("qmovie:gif"));
+    }
+
     void init()
     {
         qApp->setSeparatePagesWhenWideImage(true);
