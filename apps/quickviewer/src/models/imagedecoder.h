@@ -4,6 +4,8 @@
 #include <QtCore>
 #include <QtGui>
 
+#include <limits>
+
 #include "qvenums.h"
 
 /**
@@ -12,8 +14,13 @@
  */
 struct ImageDecodeSettings
 {
-    /** Largest edge a decode may keep, or 0 for no limit. */
-    int maxTextureSize = 0;
+    /**
+     * Largest edge a decode may keep when there is no limit. It is only compared
+     * or passed to qMin, so nothing scales or multiplies it.
+     */
+    static constexpr int UnlimitedTextureSize = std::numeric_limits<int>::max();
+    /** Largest edge a decode may keep; UnlimitedTextureSize means no limit. */
+    int maxTextureSize = UnlimitedTextureSize;
     bool fastDctForJpeg = false;
     QSize svgRasterMaximum;
     qvEnums::SvgLoaderBackend svgLoaderBackend = qvEnums::SvgLoaderBackend::Resvg;

@@ -381,10 +381,29 @@ private slots:
         QCOMPARE(ImageDecoder::constrainedDecodeSize(source, QSize(), 1024), QSize(1024, 512));
         QCOMPARE(ImageDecoder::constrainedDecodeSize(source, QSize(800, 800), 4096),
                  QSize(800, 400));
-        // Zero means "no limit", which is what the default settings carry.
-        QCOMPARE(ImageDecoder::constrainedDecodeSize(source, QSize(), 0), source);
-        QCOMPARE(ImageDecoder::constrainedDecodeSize(source, QSize(800, 800), 0), QSize(800, 400));
+        // The default settings carry no limit, which still honours the request.
+        const int unlimited = ImageDecodeSettings::UnlimitedTextureSize;
+        QCOMPARE(ImageDecoder::constrainedDecodeSize(source, QSize(), unlimited), source);
+        QCOMPARE(ImageDecoder::constrainedDecodeSize(source, QSize(800, 800), unlimited),
+                 QSize(800, 400));
         QCOMPARE(ImageDecoder::constrainedDecodeSize(QSize(), QSize(100, 100), 4096), QSize());
+    }
+
+    void defaultDecodeSettingsImposeNoLimit()
+    {
+        ImageDecodeSettings settings;
+        QCOMPARE(settings.maxTextureSize, ImageDecodeSettings::UnlimitedTextureSize);
+
+        // libwebp refuses bytes it would have to scale, so a default without a
+        // limit is what keeps the backend usable for callers that name none.
+        const QByteArray bytes = stillWebP();
+        ImageDecoder decoder(settings);
+        ImageDecodeOutput output;
+        if (!decoder.decodeWebP(bytes, QSize(), output)) {
+            QSKIP("The libwebp backend cannot decode these bytes in this environment.");
+        }
+        QCOMPARE(output.sourceSize, QSize(9, 4));
+        QCOMPARE(output.image.size(), QSize(9, 4));
     }
 
     void imageDecoderDecodesStillPngItself()
