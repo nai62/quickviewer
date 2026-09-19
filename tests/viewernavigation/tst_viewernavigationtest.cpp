@@ -234,7 +234,6 @@ private slots:
         ImageDecodeMetrics metrics;
         metrics.decodeNanoseconds = 7;
         metrics.pipelineNanoseconds = 99;
-        metrics.sourceSize = QSize(10, 20);
         metrics.decoderBackend = QStringLiteral("previous");
         int backendCalls = 0;
         const auto backend = [&] {
@@ -267,7 +266,6 @@ private slots:
         QCOMPARE(FakeDecodeTimer::starts, 2);
         QCOMPARE(FakeDecodeTimer::reads, 2);
         QCOMPARE(metrics.pipelineNanoseconds, qint64(99));
-        QCOMPARE(metrics.sourceSize, QSize(10, 20));
     }
 
     void decodeMetricsScopeRecordsUnconditionalBackendBeforeStopping()
@@ -525,7 +523,6 @@ private slots:
         QCOMPARE(content.loadedImage.pixelColor(0, 0), QColor(Qt::magenta));
         QVERIFY(content.hasDetailedMetadata);
         QVERIFY(metrics.decoderBackend.startsWith(QStringLiteral("qimagereader:")));
-        QCOMPARE(metrics.sourceSize, size);
     }
 
     void decodeImageBytesRejectsCorruptInput_data()
@@ -544,7 +541,6 @@ private slots:
         policy.png = PngDecoderPreference::Auto;
         ImageDecodeMetrics metrics;
         metrics.decoderBackend = QStringLiteral("previous-image");
-        metrics.sourceSize = QSize(100, 100);
         const ImageContent content =
             Volume::decodeImageBytes(path, bytes, QSize(), QSize(), true, policy, &metrics);
 
@@ -552,7 +548,6 @@ private slots:
         QCOMPARE(content.path, path);
         QCOMPARE(content.fileSize, size_t(bytes.size()));
         QVERIFY(metrics.decoderBackend.isEmpty());
-        QVERIFY(!metrics.sourceSize.isValid());
     }
 
     void decodeImageBytesStopsRetryingInputThatCannotBeDecoded()
@@ -620,7 +615,6 @@ private slots:
         QCOMPARE(content.path, QStringLiteral("still.png"));
         QCOMPARE(content.fileSize, size_t(bytes.size()));
         if (collectMetrics) {
-            QCOMPARE(metrics.sourceSize, content.originalSize);
             if (useQt) {
                 QVERIFY(metrics.decoderBackend.startsWith(QStringLiteral("qimagereader:")));
             } else {

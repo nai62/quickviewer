@@ -975,9 +975,6 @@ ImageContent Volume::decodeImageBytes(const QString &path,
                                                    metrics);
     if (metrics) {
         metrics->pipelineNanoseconds = pipelineTimer.nsecsElapsed();
-        if (!metrics->sourceSize.isValid()) {
-            metrics->sourceSize = content.originalSize;
-        }
     }
     return content;
 }
