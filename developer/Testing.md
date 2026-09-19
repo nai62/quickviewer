@@ -274,6 +274,12 @@ fatal error LNK1120: 7 unresolved externals
 Pass `--qmake` for the configuration you are building. Debug and Release keep
 separate build trees, so forcing qmake in one does not regenerate the other.
 
+A first `--qmake` build can still link against the old object list. `jom` may
+regenerate a sub-Makefile while it is already using the dependency graph it
+read at startup, so the new object is not built until the next run. When a link
+error names a class from a source you just added, repeat the same command
+before investigating anything else.
+
 ### moc can leave a zero-byte `.moc` behind
 
 Qt 6.11.2 `moc` can fail to parse a translation unit that contains an awkward
