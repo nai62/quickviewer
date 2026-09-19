@@ -709,29 +709,44 @@ static NativeDecodeOutcome tryNativeDecode(const ImageDecoder &decoder,
 }
 
 /**
+ * Runs one image copy for the half size resize, retrying while the allocator is
+ * under pressure from the parallel decodes. The budget matches readWithQt: a few
+ * attempts, then the caller gives the image up.
+ */
+template <typename CopyImage>
+static bool copyImageWithRetry(QImage &destination, const QString &path, CopyImage &&copyImage)
+{
+    constexpr int MaximumAttempts = 3;
+    for (int attempt = 1;; ++attempt) {
+        destination = copyImage();
+        if (!destination.isNull()) {
+            return true;
+        }
+        qDebug() << "[2]" << path << destination << attempt;
+        if (attempt >= MaximumAttempts) {
+            return false;
+        }
+        QThread::currentThread()->usleep(40000);
+    }
+}
+
+/**
  * Trims `src` to the alignment the half-size resize needs. QImage copies can
  * fail while other decodes hold memory, so they are retried here; the caller
  * gives up on the image when they keep failing. Returns false in that case.
  */
 static bool cropForHalfResize(QImage &src, const QString &path)
 {
-    QImage src2;
     switch (src.depth()) {
     case 32:
         if ((src.width() & 0x3) != 0 || (src.height() & 0x1) != 0) {
-            // QImage processing sometimes fails
-            for (int count = 1;; count++) {
-                src2 = src.copy(QRect(0, 0, src.width() >> 2 << 2, src.height() >> 1 << 1));
-                if (!src2.isNull()) {
-                    break;
-                }
-                qDebug() << "[2]" << path << src2 << count;
-                if (count >= 100) {
-                    return false;
-                }
-                QThread::currentThread()->usleep(40000);
+            QImage cropped;
+            if (!copyImageWithRetry(cropped, path, [&] {
+                    return src.copy(QRect(0, 0, src.width() >> 2 << 2, src.height() >> 1 << 1));
+                })) {
+                return false;
             }
-            src.swap(src2);
+            src.swap(cropped);
         }
         break;
     default:
@@ -740,21 +755,13 @@ static bool cropForHalfResize(QImage &src, const QString &path)
             src = src.convertToFormat(QImage::Format::Format_RGB888);
         }
         if ((src.width() & 0xF) != 0 || (src.height() & 0x1) != 0) {
-            // QImage processing sometimes fails
-            int count = 0;
-            do {
-                src2 = src.copy(QRect(0, 0, src.width() >> 4 << 4, src.height() >> 1 << 1));
-                qDebug() << "[2]" << path << src2 << count;
-                if (!src2.isNull()) {
-                    break;
-                }
-                if (src2.isNull() && count++ < 1000) {
-                    QThread::currentThread()->usleep(1000);
-                    continue;
-                }
+            QImage cropped;
+            if (!copyImageWithRetry(cropped, path, [&] {
+                    return src.copy(QRect(0, 0, src.width() >> 4 << 4, src.height() >> 1 << 1));
+                })) {
                 return false;
-            } while (1);
-            src.swap(src2);
+            }
+            src.swap(cropped);
         }
         break;
     }

@@ -101,6 +101,10 @@ bool pngHasChunk(const QByteArray &bytes, const char chunkType[5])
 
 bool tryDecodeSpng(const QByteArray &bytes, QImage &decoded, QSize &sourceSize)
 {
+    // Animated PNGs and colour managed ones go to Qt: stepping frames needs a
+    // reader that keeps the animation, and iCCP/gAMA/cHRM would each need a
+    // colour transform this backend does not apply. An sRGB chunk does not,
+    // so those bytes are decoded here with the colour space set below.
     if (bytes.isEmpty() || pngHasChunk(bytes, "acTL") || pngHasChunk(bytes, "iCCP") ||
         pngHasChunk(bytes, "gAMA") || pngHasChunk(bytes, "cHRM")) {
         return false;
