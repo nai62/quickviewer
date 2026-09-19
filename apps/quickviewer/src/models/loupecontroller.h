@@ -25,10 +25,9 @@ public:
 
     SceneUpdate prepareSceneUpdate(const QRect &contentRect, const QPoint &currentScrollPosition);
     void setAnchorPosition(const QPoint &position) { m_anchorPosition = position; }
-    std::optional<QPoint> scrollPositionForCursor(
-        const QPoint &cursorPosition,
-        const QSize &viewportSize,
-        const QRectF &magnifiedSceneRect) const;
+    std::optional<QPoint> scrollPositionForCursor(const QPoint &cursorPosition,
+                                                  const QSize &viewportSize,
+                                                  const QRectF &magnifiedSceneRect) const;
 
 private:
     static constexpr qreal InitialScaleFactor = 3.0;

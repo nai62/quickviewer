@@ -33,11 +33,7 @@ public:
         ToAllFilesExtract, // header scan, and read all archived file under worker thread
     };
 
-    enum InflateCacheMode {
-        InflateNoCached,
-        InflateCaching,
-        InflateCached
-    };
+    enum InflateCacheMode { InflateNoCached, InflateCaching, InflateCached };
 
     virtual ~IFileLoader() = default;
 

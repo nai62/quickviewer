@@ -46,11 +46,16 @@ public:
      * Largest size an image may be decoded to, honoring both the maximum
      * texture size and the caller's target size.
      */
-    static QSize constrainedDecodeSize(const QSize &sourceSize, const QSize &requestedSize, int maxTextureSize);
+    static QSize
+    constrainedDecodeSize(const QSize &sourceSize, const QSize &requestedSize, int maxTextureSize);
 
-    bool decodeTurboJpeg(const QByteArray &bytes, const QSize &decodeTargetSize, ImageDecodeOutput &output) const;
+    bool decodeTurboJpeg(const QByteArray &bytes,
+                         const QSize &decodeTargetSize,
+                         ImageDecodeOutput &output) const;
     bool decodeSpng(const QByteArray &bytes, ImageDecodeOutput &output) const;
-    bool decodeWebP(const QByteArray &bytes, const QSize &decodeTargetSize, ImageDecodeOutput &output) const;
+    bool decodeWebP(const QByteArray &bytes,
+                    const QSize &decodeTargetSize,
+                    ImageDecodeOutput &output) const;
 
     /**
      * SVG rasterization has no alternative backend, so this always reports the

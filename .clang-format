@@ -21,7 +21,7 @@ BraceWrapping:
   BeforeLambdaBody: false
   BeforeWhile: false
   IndentBraces: false
-  SplitEmptyFunction: false
+  SplitEmptyFunction: true
 
 SpaceBeforeParens: ControlStatements
 SpaceBeforeAssignmentOperators: true
@@ -36,9 +36,9 @@ AllowShortCaseLabelsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Inline
 AllowShortBlocksOnASingleLine: Never
 
-# With no column limit, clang-format preserves existing line breaks inside
-# statements unless another rule requires changing them.
-ColumnLimit: 0
+# A 100-column limit keeps long statements readable in editors. Comments are
+# left alone because ReflowComments is disabled below.
+ColumnLimit: 100
 IndentWidth: 4
 ContinuationIndentWidth: 4
 ConstructorInitializerIndentWidth: 4

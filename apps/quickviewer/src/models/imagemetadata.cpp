@@ -8,7 +8,8 @@
 ImageMetadata::ImageMetadata(Volume *volume, QString filename)
     : m_volume(volume),
       m_filename(std::move(filename))
-{}
+{
+}
 
 QDateTime ImageMetadata::getMTime() const
 {

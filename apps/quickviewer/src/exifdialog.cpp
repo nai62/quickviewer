@@ -31,7 +31,9 @@ struct ImageMetaContents
     }
     QString getRichText()
     {
-        QString text = QString("<style>th {text-align: right;padding-right: 10px;} </style><table>%1</table>").arg(stringsRichText.join(""));
+        QString text =
+            QString("<style>th {text-align: right;padding-right: 10px;} </style><table>%1</table>")
+                .arg(stringsRichText.join(""));
         return text;
     }
     QString getClipBoard()
@@ -47,12 +49,13 @@ ExifDialog::ExifDialog(QWidget *parent)
       m_hasContent(false)
 {
     ui->setupUi(this);
-    connect(qApp->languageSelector(), &LanguageManager::languageChanged, this, [this](const QString &) {
-        ui->retranslateUi(this);
-        if (m_hasContent) {
-            updateExifText();
-        }
-    });
+    connect(
+        qApp->languageSelector(), &LanguageManager::languageChanged, this, [this](const QString &) {
+            ui->retranslateUi(this);
+            if (m_hasContent) {
+                updateExifText();
+            }
+        });
 }
 
 ExifDialog::~ExifDialog()
@@ -79,39 +82,54 @@ QString ExifDialog::generateFlash(char flash)
     case 0x0009:
         return tr("Flash fired, compulsory flash mode", "JPEG EXIF Flash setting value (0x9)");
     case 0x000D:
-        return tr("Flash fired, compulsory flash mode, return light not detected", "JPEG EXIF Flash setting value (0xD)");
+        return tr("Flash fired, compulsory flash mode, return light not detected",
+                  "JPEG EXIF Flash setting value (0xD)");
     case 0x000F:
-        return tr("Flash fired, compulsory flash mode, return light detected", "JPEG EXIF Flash setting value (0xF)");
+        return tr("Flash fired, compulsory flash mode, return light detected",
+                  "JPEG EXIF Flash setting value (0xF)");
     case 0x0010:
-        return tr("Flash did not fire, compulsory flash mode", "JPEG EXIF Flash setting value (0x10)");
+        return tr("Flash did not fire, compulsory flash mode",
+                  "JPEG EXIF Flash setting value (0x10)");
     case 0x0018:
         return tr("Flash did not fire, auto mode", "JPEG EXIF Flash setting value (0x18)");
     case 0x0019:
         return tr("Flash fired, auto mode", "JPEG EXIF Flash setting value (0x19)");
     case 0x001D:
-        return tr("Flash fired, auto mode, return light not detected", "JPEG EXIF Flash setting value (0x1D)");
+        return tr("Flash fired, auto mode, return light not detected",
+                  "JPEG EXIF Flash setting value (0x1D)");
     case 0x001F:
-        return tr("Flash fired, auto mode, return light detected", "JPEG EXIF Flash setting value (0x1F)");
+        return tr("Flash fired, auto mode, return light detected",
+                  "JPEG EXIF Flash setting value (0x1F)");
     case 0x0020:
         return tr("No flash function", "JPEG EXIF Flash setting value (0x20)");
     case 0x0041:
         return tr("Flash fired, red-eye reduction mode", "JPEG EXIF Flash setting value (0x41)");
     case 0x0045:
-        return tr("Flash fired, red-eye reduction mode, return light not detected", "JPEG EXIF Flash setting value (0x45)");
+        return tr("Flash fired, red-eye reduction mode, return light not detected",
+                  "JPEG EXIF Flash setting value (0x45)");
     case 0x0047:
-        return tr("Flash fired, red-eye reduction mode, return light detected", "JPEG EXIF Flash setting value (0x47)");
+        return tr("Flash fired, red-eye reduction mode, return light detected",
+                  "JPEG EXIF Flash setting value (0x47)");
     case 0x0049:
-        return tr("Flash fired, compulsory flash mode, red-eye reduction mode", "JPEG EXIF Flash setting value (0x49)");
+        return tr("Flash fired, compulsory flash mode, red-eye reduction mode",
+                  "JPEG EXIF Flash setting value (0x49)");
     case 0x004D:
-        return tr("Flash fired, compulsory flash mode, red-eye reduction mode, return light not detected", "JPEG EXIF Flash setting value (0x4D)");
+        return tr(
+            "Flash fired, compulsory flash mode, red-eye reduction mode, return light not detected",
+            "JPEG EXIF Flash setting value (0x4D)");
     case 0x004F:
-        return tr("Flash fired, compulsory flash mode, red-eye reduction mode, return light detected", "JPEG EXIF Flash setting value (0x4F)");
+        return tr(
+            "Flash fired, compulsory flash mode, red-eye reduction mode, return light detected",
+            "JPEG EXIF Flash setting value (0x4F)");
     case 0x0059:
-        return tr("Flash fired, auto mode, red-eye reduction mode", "JPEG EXIF Flash setting value (0x59)");
+        return tr("Flash fired, auto mode, red-eye reduction mode",
+                  "JPEG EXIF Flash setting value (0x59)");
     case 0x005D:
-        return tr("Flash fired, auto mode, return light not detected, red-eye reduction mode", "JPEG EXIF Flash setting value (0x5D)");
+        return tr("Flash fired, auto mode, return light not detected, red-eye reduction mode",
+                  "JPEG EXIF Flash setting value (0x5D)");
     case 0x005F:
-        return tr("Flash fired, auto mode, return light detected, red-eye reduction mode", "JPEG EXIF Flash setting value (0x5F)");
+        return tr("Flash fired, auto mode, return light detected, red-eye reduction mode",
+                  "JPEG EXIF Flash setting value (0x5F)");
     }
     return notflash;
 }
@@ -144,7 +162,8 @@ QString ExifDialog::generateFlash(char flash)
 
 QString ExifDialog::generateOrientation(unsigned short orient)
 {
-    QString normal = tr("Horizontal (normal)", "JPEG EXIF Orientation of the main body of the camera(0 or 1)");
+    QString normal =
+        tr("Horizontal (normal)", "JPEG EXIF Orientation of the main body of the camera(0 or 1)");
     switch (orient) {
     case 0:
         return normal;
@@ -157,11 +176,13 @@ QString ExifDialog::generateOrientation(unsigned short orient)
     case 4:
         return tr("Mirror vertical", "JPEG EXIF Orientation of the main body of the camera(4)");
     case 5:
-        return tr("Mirror horizontal and rotate 270 CW", "JPEG EXIF Orientation of the main body of the camera(5)");
+        return tr("Mirror horizontal and rotate 270 CW",
+                  "JPEG EXIF Orientation of the main body of the camera(5)");
     case 6:
         return tr("Rotate 90 CW", "JPEG EXIF Orientation of the main body of the camera(6)");
     case 7:
-        return tr("Mirror horizontal and rotate 90 CW", "JPEG EXIF Orientation of the main body of the camera(7)");
+        return tr("Mirror horizontal and rotate 90 CW",
+                  "JPEG EXIF Orientation of the main body of the camera(7)");
     case 8:
         return tr("Rotate 270 CW", "JPEG EXIF Orientation of the main body of the camera(8)");
     }
@@ -181,12 +202,14 @@ void ExifDialog::updateExifText()
 {
     const easyexif::EXIFInfo &info = m_exifInfo;
     if (!info.ImageWidth) {
-        ui->textEdit->setText(tr("Exif is not included.", "Text to display if EXIF is not included in JPEG"));
+        ui->textEdit->setText(
+            tr("Exif is not included.", "Text to display if EXIF is not included in JPEG"));
         return;
     }
     ImageMetaContents meta;
     meta.addContent(tr("Filename"), m_exifPath);
-    meta.addContent(tr("Pixels"), QString("%L1").arg(m_originalSize.width() * m_originalSize.height()));
+    meta.addContent(tr("Pixels"),
+                    QString("%L1").arg(m_originalSize.width() * m_originalSize.height()));
     meta.addContent(tr("Image width"), info.ImageWidth);
     meta.addContent(tr("Image height"), info.ImageHeight);
     meta.addContent(tr("Make"), QString::fromStdString(info.Make));
@@ -207,7 +230,9 @@ void ExifDialog::updateExifText()
     meta.addContent(tr("Subject distance"), info.SubjectDistance);
     meta.addContent(tr("Focal length"), info.FocalLength);
     meta.addContent(tr("35 mm equivalent focal length"), info.FocalLengthIn35mm);
-    meta.addContent(tr("Flash"), generateFlash(info.Flash | (info.FlashMode << 3) | (info.FlashReturnedLight << 1)));
+    meta.addContent(
+        tr("Flash"),
+        generateFlash(info.Flash | (info.FlashMode << 3) | (info.FlashReturnedLight << 1)));
     meta.addContent(tr("Metering mode"), info.MeteringMode);
     meta.addContent(tr("Image description"), QString::fromStdString(info.ImageDescription));
     meta.addContent(tr("Copyright"), QString::fromStdString(info.Copyright));

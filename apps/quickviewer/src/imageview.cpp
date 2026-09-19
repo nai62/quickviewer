@@ -30,20 +30,19 @@ ImageView::ImageView(QWidget *parent)
       m_scrollMode(false),
       m_openSeparatedPageFromEnd(false)
 {
-    m_zoomLevels
-        << ZoomFraction(1, 6)    //  16.6%
-        << ZoomFraction(1, 5)    //  20.0%
-        << ZoomFraction(1, 4)    //  25.0%
-        << ZoomFraction(1, 3)    //  33.3%
-        << ZoomFraction(1, 2)    //  50.0%
-        << ZoomFraction(3, 4)    //  75.0%
-        << ZoomFraction(1, 1)    // 100  %
-        << ZoomFraction(3, 2)    // 150  %
-        << ZoomFraction(2, 1)    // 200  %
-        << ZoomFraction(3, 1)    // 300  %
-        << ZoomFraction(4, 1)    // 400  %
-        << ZoomFraction(6, 1)    // 600  %
-        << ZoomFraction(8, 1);   // 800  %
+    m_zoomLevels << ZoomFraction(1, 6)    //  16.6%
+                 << ZoomFraction(1, 5)    //  20.0%
+                 << ZoomFraction(1, 4)    //  25.0%
+                 << ZoomFraction(1, 3)    //  33.3%
+                 << ZoomFraction(1, 2)    //  50.0%
+                 << ZoomFraction(3, 4)    //  75.0%
+                 << ZoomFraction(1, 1)    // 100  %
+                 << ZoomFraction(3, 2)    // 150  %
+                 << ZoomFraction(2, 1)    // 200  %
+                 << ZoomFraction(3, 1)    // 300  %
+                 << ZoomFraction(4, 1)    // 400  %
+                 << ZoomFraction(6, 1)    // 600  %
+                 << ZoomFraction(8, 1);   // 800  %
     m_zoomLevelIndex = 6; // 100
 
     QGraphicsScene *scene = new QGraphicsScene(this);
@@ -91,9 +90,7 @@ QString ImageView::displayedMessage() const
 
 void ImageView::showNoVolumeMessage()
 {
-    showMessage(
-        tr("No Image Open"),
-        tr("Open an image, folder, or archive to begin."));
+    showMessage(tr("No Image Open"), tr("Open an image, folder, or archive to begin."));
 }
 
 void ImageView::showLoadFailureMessage(const ViewerLoadStatus &status)
@@ -135,16 +132,13 @@ void ImageView::showLoadFailureMessage(const ViewerLoadStatus &status)
         body = tr("This archive is damaged or invalid.");
         break;
     case LoadFailureReason::IoError:
-        title = status.targetKind == LoadTargetKind::Archive
-                    ? tr("Cannot Open Archive")
-                    : tr("Cannot Open");
+        title = status.targetKind == LoadTargetKind::Archive ? tr("Cannot Open Archive")
+                                                             : tr("Cannot Open");
         body = tr("The selected item could not be read.");
         break;
     }
 
-    const QString path = status.failurePath.isEmpty()
-                             ? status.requestedPath
-                             : status.failurePath;
+    const QString path = status.failurePath.isEmpty() ? status.requestedPath : status.failurePath;
     if (!path.isEmpty()) {
         body += QStringLiteral("\n\n") + QDir::toNativeSeparators(path);
     }
@@ -185,7 +179,8 @@ void ImageView::setViewerSession(ViewerSession *session)
     }
     m_viewerSession = session;
     m_viewerSession->setViewportSize(viewport()->size());
-    connect(session, &ViewerSession::visiblePagesChanged, this, &ImageView::handleVisiblePagesChanged);
+    connect(
+        session, &ViewerSession::visiblePagesChanged, this, &ImageView::handleVisiblePagesChanged);
     connect(session, &ViewerSession::loadStatusChanged, this, &ImageView::handleLoadStatusChanged);
     connect(session, SIGNAL(readyForPaint()), this, SLOT(refreshRenderedPages()));
     connect(session, SIGNAL(volumeChanged(QString)), this, SLOT(handleVolumeChanged(QString)));
@@ -244,15 +239,18 @@ ImageView::AddRenderedPageResult ImageView::addRenderedPage(ImageContent content
         return AddRenderedPageResult::Rejected;
     }
     const bool landscape = content.loadedImage.width() > content.loadedImage.height();
-    if (!m_renderedPages.add(
-            std::move(content), append, this, scene(), pageRenderSettings(), m_openSeparatedPageFromEnd)) {
+    if (!m_renderedPages.add(std::move(content),
+                             append,
+                             this,
+                             scene(),
+                             pageRenderSettings(),
+                             m_openSeparatedPageFromEnd)) {
         return AddRenderedPageResult::Rejected;
     }
 
     m_shaderManager.prepareInitialize();
 
-    return landscape ? AddRenderedPageResult::AddedLandscape
-                     : AddRenderedPageResult::AddedPortrait;
+    return landscape ? AddRenderedPageResult::AddedLandscape : AddRenderedPageResult::AddedPortrait;
 }
 
 PageRenderSettings ImageView::pageRenderSettings() const
@@ -319,29 +317,28 @@ void ImageView::refreshRenderedPages()
         request.settings = pageRenderSettings();
         RenderedPageLayout &layout = request.layout;
         layout.viewport = QRect(QPoint(), viewport()->size());
-        layout.fitMode = qApp->Fitting()
-                             ? qApp->ImageFitMode()
-                             : qvEnums::FitMode::NoFitting;
+        layout.fitMode = qApp->Fitting() ? qApp->ImageFitMode() : qvEnums::FitMode::NoFitting;
         layout.manualScale = manualZoomScale();
         layout.scaleFactor = m_loupeController.isActive() ? m_loupeController.scaleFactor() : 1.0;
         layout.loupe = m_loupeController.isActive();
         layout.separateWideImages = qApp->SeparatePagesWhenWideImage();
         layout.rightSideBook = qApp->RightSideBook();
         for (int index = 0; index < renderedCount; ++index) {
-            layout.rotations.push_back(
-                m_pageRotations.value(currentPage + index, 0));
-            layout.signage.push_back(
-                qApp->ShowFullscreenSignage() && m_isFullScreen
-                    ? m_viewerSession->pageSignage(index)
-                    : QString());
+            layout.rotations.push_back(m_pageRotations.value(currentPage + index, 0));
+            layout.signage.push_back(qApp->ShowFullscreenSignage() && m_isFullScreen
+                                         ? m_viewerSession->pageSignage(index)
+                                         : QString());
         }
         const QRect sceneRect = m_renderedPages.layout(
-            request, [this](QGraphicsPixmapItem *item, const ImageContent &content, QSize drawSize) {
+            request,
+            [this](QGraphicsPixmapItem *item, const ImageContent &content, QSize drawSize) {
                 m_shaderManager.prepare(item, content, drawSize);
             });
         // if Size of Image overs Size of View, use Image's size
         updateSceneForContent(
-            !(qApp->Fitting() && qApp->ImageFitMode() == qvEnums::FitMode::FitToRect) || m_loupeController.isActive() || m_lastScreenPixelRatio > 1.0, sceneRect);
+            !(qApp->Fitting() && qApp->ImageFitMode() == qvEnums::FitMode::FitToRect) ||
+                m_loupeController.isActive() || m_lastScreenPixelRatio > 1.0,
+            sceneRect);
     }
     // QGraphicsView updates the cursor internally,
     // but QV cannot trap this event, so it forcibly clears the cursor.
@@ -360,12 +357,14 @@ void ImageView::updateSceneForContent(bool allowScrolling, const QRect &contentR
     m_sceneRectUpdateDepth++;
 
     const LoupeController::SceneUpdate loupeUpdate = m_loupeController.prepareSceneUpdate(
-        contentRect,
-        QPoint(horizontalScrollBar()->value(), verticalScrollBar()->value()));
-    const bool scrollable = allowScrolling && (size().width() < contentRect.width() || size().height() < contentRect.height());
+        contentRect, QPoint(horizontalScrollBar()->value(), verticalScrollBar()->value()));
+    const bool scrollable = allowScrolling && (size().width() < contentRect.width() ||
+                                               size().height() < contentRect.height());
     const QRectF previousSceneRect = scene()->sceneRect();
     const QRectF updatedSceneRect = scrollable
-                                        ? QRectF(QPoint(qMin(0, contentRect.left()), 0), QSize(qMax(size().width(), contentRect.width()), qMax(size().height(), contentRect.height())))
+                                        ? QRectF(QPoint(qMin(0, contentRect.left()), 0),
+                                                 QSize(qMax(size().width(), contentRect.width()),
+                                                       qMax(size().height(), contentRect.height())))
                                         : QRectF(QPoint(), size());
     scene()->setSceneRect(updatedSceneRect);
     configureScrollInteraction(scrollable, loupeUpdate, contentRect);
@@ -387,10 +386,9 @@ void ImageView::updateSceneForContent(bool allowScrolling, const QRect &contentR
     m_sceneRectUpdateDepth--;
 }
 
-void ImageView::configureScrollInteraction(
-    bool scrollable,
-    const LoupeController::SceneUpdate &loupeUpdate,
-    const QRect &contentRect)
+void ImageView::configureScrollInteraction(bool scrollable,
+                                           const LoupeController::SceneUpdate &loupeUpdate,
+                                           const QRect &contentRect)
 {
     if (!scrollable) {
         setDragMode(QGraphicsView::NoDrag);
@@ -413,8 +411,14 @@ void ImageView::configureScrollInteraction(
     }
 
     const bool hideScrollBars = m_isFullScreen && qApp->HideScrollBarInFullscreen();
-    setHorizontalScrollBarPolicy(!hideScrollBars && size().width() < contentRect.width() + verticalScrollBar()->width() ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
-    setVerticalScrollBarPolicy(!hideScrollBars && size().height() < contentRect.height() + horizontalScrollBar()->height() ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
+    setHorizontalScrollBarPolicy(
+        !hideScrollBars && size().width() < contentRect.width() + verticalScrollBar()->width()
+            ? Qt::ScrollBarAsNeeded
+            : Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(
+        !hideScrollBars && size().height() < contentRect.height() + horizontalScrollBar()->height()
+            ? Qt::ScrollBarAsNeeded
+            : Qt::ScrollBarAlwaysOff);
     setDragMode(QGraphicsView::ScrollHandDrag);
     if (loupeUpdate.leavingLoupe) {
         horizontalScrollBar()->setValue(loupeUpdate.scrollPositionToRestore.x());
@@ -422,13 +426,20 @@ void ImageView::configureScrollInteraction(
     }
 }
 
-void ImageView::preserveViewportCenter(qreal newScale, int previousHorizontalScroll, int previousVerticalScroll)
+void ImageView::preserveViewportCenter(qreal newScale,
+                                       int previousHorizontalScroll,
+                                       int previousVerticalScroll)
 {
-    if (!qApp->Fitting() && !m_loupeController.isActive() && m_previousDrawScale > 0 && m_previousDrawScale != newScale) {
+    if (!qApp->Fitting() && !m_loupeController.isActive() && m_previousDrawScale > 0 &&
+        m_previousDrawScale != newScale) {
         const int halfViewportWidth = 0.5 * viewport()->width();
         const int halfViewportHeight = 0.5 * viewport()->height();
-        horizontalScrollBar()->setValue((previousHorizontalScroll + halfViewportWidth) / m_previousDrawScale * newScale - halfViewportWidth);
-        verticalScrollBar()->setValue((previousVerticalScroll + halfViewportHeight) / m_previousDrawScale * newScale - halfViewportHeight);
+        horizontalScrollBar()->setValue((previousHorizontalScroll + halfViewportWidth) /
+                                            m_previousDrawScale * newScale -
+                                        halfViewportWidth);
+        verticalScrollBar()->setValue((previousVerticalScroll + halfViewportHeight) /
+                                          m_previousDrawScale * newScale -
+                                      halfViewportHeight);
     }
     m_previousDrawScale = newScale;
 }
@@ -450,7 +461,10 @@ void ImageView::updateZoomScrollFromCursor()
         return;
     }
     const QPoint scrollPosition = CursorScrollMapping::zoomScrollPosition(
-        mapFromGlobal(QCursor::pos()), size(), QPoint(horizontalScrollBar()->minimum(), verticalScrollBar()->minimum()), QPoint(horizontalScrollBar()->maximum(), verticalScrollBar()->maximum()));
+        mapFromGlobal(QCursor::pos()),
+        size(),
+        QPoint(horizontalScrollBar()->minimum(), verticalScrollBar()->minimum()),
+        QPoint(horizontalScrollBar()->maximum(), verticalScrollBar()->maximum()));
     horizontalScrollBar()->setValue(scrollPosition.x());
     verticalScrollBar()->setValue(scrollPosition.y());
 }
@@ -459,10 +473,9 @@ void ImageView::updateGestureTransform(qreal scale, qreal rotationDegrees)
 {
     m_pendingGestureScale = scale;
     m_pendingGestureRotationDegrees = rotationDegrees;
-    setTransform(
-        QTransform()
-            .scale(m_committedGestureScale * scale, m_committedGestureScale * scale)
-            .rotate(m_committedGestureRotationDegrees + rotationDegrees));
+    setTransform(QTransform()
+                     .scale(m_committedGestureScale * scale, m_committedGestureScale * scale)
+                     .rotate(m_committedGestureRotationDegrees + rotationDegrees));
 }
 
 void ImageView::commitGestureTransform()
@@ -507,22 +520,17 @@ void ImageView::paintEvent(QPaintEvent *event)
         const int spacing = bodyMetrics.height() / 2;
         const int horizontalPadding = bodyMetrics.averageCharWidth() * 3;
         const int verticalPadding = bodyMetrics.height();
-        const int availableTextWidth = qMax(
-            1,
-            viewport()->width() - 64 - horizontalPadding * 2);
-        const int textWidth = qMin(
-            qMax(titleMetrics.horizontalAdvance(m_messageTitle), bodyMetrics.horizontalAdvance(m_messageBody)),
-            availableTextWidth);
-        const QRect bodyBounds = bodyMetrics.boundingRect(
-            QRect(0, 0, textWidth, viewport()->height()),
-            Qt::AlignHCenter | Qt::TextWordWrap,
-            m_messageBody);
+        const int availableTextWidth = qMax(1, viewport()->width() - 64 - horizontalPadding * 2);
+        const int textWidth = qMin(qMax(titleMetrics.horizontalAdvance(m_messageTitle),
+                                        bodyMetrics.horizontalAdvance(m_messageBody)),
+                                   availableTextWidth);
+        const QRect bodyBounds =
+            bodyMetrics.boundingRect(QRect(0, 0, textWidth, viewport()->height()),
+                                     Qt::AlignHCenter | Qt::TextWordWrap,
+                                     m_messageBody);
         const int contentHeight = titleMetrics.height() + spacing + bodyBounds.height();
         QRect panelRect(
-            0,
-            0,
-            textWidth + horizontalPadding * 2,
-            contentHeight + verticalPadding * 2);
+            0, 0, textWidth + horizontalPadding * 2, contentHeight + verticalPadding * 2);
         panelRect.moveCenter(viewport()->rect().center());
 
         painter.setPen(Qt::NoPen);
@@ -530,7 +538,8 @@ void ImageView::paintEvent(QPaintEvent *event)
         painter.drawRoundedRect(panelRect, 6, 6);
         painter.setPen(Qt::white);
 
-        QRect titleRect = panelRect.adjusted(horizontalPadding, verticalPadding, -horizontalPadding, 0);
+        QRect titleRect =
+            panelRect.adjusted(horizontalPadding, verticalPadding, -horizontalPadding, 0);
         titleRect.setHeight(titleMetrics.height());
         painter.setFont(titleFont);
         painter.drawText(titleRect, Qt::AlignCenter, m_messageTitle);
@@ -780,7 +789,8 @@ void ImageView::mouseMoveEvent(QMouseEvent *e)
     }
     if (m_loupeController.isActive()) {
         updateLoupeScrollFromCursor();
-    } else if (qApp->ScrollWithCursorWhenZooming() && (scene()->sceneRect().width() > width() || scene()->sceneRect().height() > height())) {
+    } else if (qApp->ScrollWithCursorWhenZooming() && (scene()->sceneRect().width() > width() ||
+                                                       scene()->sceneRect().height() > height())) {
         updateZoomScrollFromCursor();
     }
 

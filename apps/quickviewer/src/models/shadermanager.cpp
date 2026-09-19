@@ -13,7 +13,8 @@ class LanczosShaderEffect : public QGraphicsShaderEffect
 public:
     LanczosShaderEffect(QObject *parent = nullptr)
         : QGraphicsShaderEffect(parent)
-    {}
+    {
+    }
     void createKernel(float delta, int *size);
     void createOffsets(int count, float width, Qt::Orientation direction);
     void setViewWidth(int viewWidth) { m_viewWidth = viewWidth; }
@@ -22,8 +23,10 @@ public:
 protected:
     void setUniforms(QGLShaderProgram *program)
     {
-        program->setUniformValueArray((const char *)("offsets"), (const QVector2D *)&m_offsets, BLOCK);
-        program->setUniformValueArray((const char *)("kernel"), (const QVector4D *)&m_kernel, BLOCK);
+        program->setUniformValueArray(
+            (const char *)("offsets"), (const QVector2D *)&m_offsets, BLOCK);
+        program->setUniformValueArray(
+            (const char *)("kernel"), (const QVector4D *)&m_kernel, BLOCK);
     }
 
 private:
@@ -86,7 +89,8 @@ void LanczosShaderEffect::createOffsets(int count, float width, Qt::Orientation 
 {
     memset(m_offsets, 0, BLOCK * sizeof(QVector2D));
     for (int i = 0; i < count; i++) {
-        m_offsets[i] = (direction == Qt::Horizontal) ? QVector2D(i / width, 0) : QVector2D(0, i / width);
+        m_offsets[i] =
+            (direction == Qt::Horizontal) ? QVector2D(i / width, 0) : QVector2D(0, i / width);
     }
 }
 #endif

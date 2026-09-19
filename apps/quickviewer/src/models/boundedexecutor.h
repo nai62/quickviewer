@@ -35,9 +35,11 @@ public:
     BoundedExecutor(const BoundedExecutor &) = delete;
     BoundedExecutor &operator=(const BoundedExecutor &) = delete;
 
-    template <typename Function,
-              typename T = std::invoke_result_t<std::decay_t<Function>>>
-    Submission<T> submit(Function &&function, Priority priority = Priority::Normal, quint64 owner = 0, quint64 generation = 0)
+    template <typename Function, typename T = std::invoke_result_t<std::decay_t<Function>>>
+    Submission<T> submit(Function &&function,
+                         Priority priority = Priority::Normal,
+                         quint64 owner = 0,
+                         quint64 generation = 0)
     {
         auto promise = QSharedPointer<QPromise<T>>::create();
         promise->start();

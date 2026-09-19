@@ -289,20 +289,20 @@ public:
     explicit ArchiveAwareMainWindow(QWidget *parent = nullptr)
         : MainWindow(parent)
     {
-        connect(
-            &m_viewerSession,
-            &ViewerSession::archiveOpenFailed,
-            this,
-            [this](const QString &path, ArchiveOpenError error) {
-                m_lastArchiveOpenFailurePath = QDir::fromNativeSeparators(path);
-                m_lastArchiveOpenFailure = error;
-            });
+        connect(&m_viewerSession,
+                &ViewerSession::archiveOpenFailed,
+                this,
+                [this](const QString &path, ArchiveOpenError error) {
+                    m_lastArchiveOpenFailurePath = QDir::fromNativeSeparators(path);
+                    m_lastArchiveOpenFailure = error;
+                });
     }
 
     bool changeFolderPath(QString path) override
     {
         const QString volumePath = QDir::fromNativeSeparators(path);
-        if (m_lastArchiveOpenFailure == ArchiveOpenError::PasswordProtected && volumePath == m_lastArchiveOpenFailurePath) {
+        if (m_lastArchiveOpenFailure == ArchiveOpenError::PasswordProtected &&
+            volumePath == m_lastArchiveOpenFailurePath) {
             clearArchiveOpenFailure();
             return true;
         }

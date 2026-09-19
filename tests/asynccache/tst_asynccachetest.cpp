@@ -46,8 +46,7 @@ void AsyncCacheTest::evictingUnfinishedFutureDoesNotWait()
     timer.start();
     cache.insert(2, replacement.future());
 
-    QVERIFY2(timer.elapsed() < 100,
-             "Evicting an unfinished future must not wait for its task");
+    QVERIFY2(timer.elapsed() < 100, "Evicting an unfinished future must not wait for its task");
     QVERIFY(!cache.contains(1));
     QVERIFY(cache.contains(2));
     unfinished.addResult(1);
@@ -57,8 +56,7 @@ void AsyncCacheTest::evictingUnfinishedFutureDoesNotWait()
 void AsyncCacheTest::replacingValueInvokesEvictionHandler()
 {
     QList<int> evictedValues;
-    LruCache<int, int, RecordEvictedIntegers> cache(
-        1, RecordEvictedIntegers{&evictedValues});
+    LruCache<int, int, RecordEvictedIntegers> cache(1, RecordEvictedIntegers{&evictedValues});
 
     cache.insert(1, 10);
     cache.insert(1, 20);
@@ -176,7 +174,8 @@ void AsyncCacheTest::shutdownCancelsPendingJobsAndWaitsForActiveJobs()
     const bool shutdownReturnedWhileActive = shutdownFinished.tryAcquire(1, 100);
 
     activeJobGate.release();
-    const bool shutdownReturnedAfterActive = shutdownReturnedWhileActive || shutdownFinished.tryAcquire(1, 1000);
+    const bool shutdownReturnedAfterActive =
+        shutdownReturnedWhileActive || shutdownFinished.tryAcquire(1, 1000);
     shutdownThread.join();
 
     QVERIFY(pendingWasCanceled);

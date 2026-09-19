@@ -21,13 +21,14 @@ static BoundedExecutor &imagePrefetchExecutor()
 {
     static constexpr int InitialPrefetchThreads = 4;
     static constexpr int MaximumPendingPrefetchJobs = 128;
-    static BoundedExecutor executor(
-        qBound(1, QThread::idealThreadCount(), InitialPrefetchThreads),
-        MaximumPendingPrefetchJobs);
+    static BoundedExecutor executor(qBound(1, QThread::idealThreadCount(), InitialPrefetchThreads),
+                                    MaximumPendingPrefetchJobs);
     return executor;
 }
 
-static ImageContent enrichDetailedMetadata(const QSharedPointer<ImageLoadContext> &context, ImageContent content, const QString &path);
+static ImageContent enrichDetailedMetadata(const QSharedPointer<ImageLoadContext> &context,
+                                           ImageContent content,
+                                           const QString &path);
 
 static QFuture<ImageContent> readyImageFuture(ImageContent content)
 {
@@ -78,19 +79,19 @@ static BoundedExecutor::Priority prefetchPriorityForPage(int pageIndex, int anch
     return BoundedExecutor::Priority::Low;
 }
 
-Volume::ImageLoadFuture Volume::scheduleImageLoad(
-    const QString &path,
-    const QSize &pageSize,
-    bool requiredForDisplay,
-    const QSize &decodeTargetSize,
-    bool loadDetailedMetadata,
-    int pageIndex,
-    quint64 generation)
+Volume::ImageLoadFuture Volume::scheduleImageLoad(const QString &path,
+                                                  const QSize &pageSize,
+                                                  bool requiredForDisplay,
+                                                  const QSize &decodeTargetSize,
+                                                  bool loadDetailedMetadata,
+                                                  int pageIndex,
+                                                  quint64 generation)
 {
     const QSharedPointer<ImageLoadContext> context = m_loadContext;
     auto submission = imagePrefetchExecutor().submit(
         [context, path, pageSize, decodeTargetSize, loadDetailedMetadata] {
-            ImageContent content = futureLoadImageFromFileVolume(context, path, pageSize, decodeTargetSize, loadDetailedMetadata);
+            ImageContent content = futureLoadImageFromFileVolume(
+                context, path, pageSize, decodeTargetSize, loadDetailedMetadata);
             content.isPreview = decodeTargetSize.isValid() && !decodeTargetSize.isEmpty();
             return content;
         },
@@ -105,17 +106,15 @@ Volume::ImageLoadFuture Volume::scheduleImageLoad(
         return QFuture<ImageContent>();
     }
 
-    return readyImageFuture(
-        futureLoadImageFromFileVolume(context, path, pageSize, decodeTargetSize, loadDetailedMetadata));
+    return readyImageFuture(futureLoadImageFromFileVolume(
+        context, path, pageSize, decodeTargetSize, loadDetailedMetadata));
 }
 
-Volume::ImageLoadFuture Volume::scheduleResize(
-    ImageContent content, const QSize &pageSize)
+Volume::ImageLoadFuture Volume::scheduleResize(ImageContent content, const QSize &pageSize)
 {
-    auto submission = imagePrefetchExecutor().submit(
-        [content, pageSize]() mutable {
-            return resizeImageForViewport(std::move(content), pageSize);
-        });
+    auto submission = imagePrefetchExecutor().submit([content, pageSize]() mutable {
+        return resizeImageForViewport(std::move(content), pageSize);
+    });
     if (submission.accepted) {
         return submission.future;
     }
@@ -123,8 +122,8 @@ Volume::ImageLoadFuture Volume::scheduleResize(
     return QFuture<ImageContent>();
 }
 
-Volume::ImageLoadFuture Volume::scheduleMetadataLoad(
-    ImageContent content, const QString &path, quint64 generation)
+Volume::ImageLoadFuture
+Volume::scheduleMetadataLoad(ImageContent content, const QString &path, quint64 generation)
 {
     const QSharedPointer<ImageLoadContext> context = m_loadContext;
     auto submission = imagePrefetchExecutor().submit(
@@ -196,7 +195,8 @@ void Volume::applyPageSort(qvEnums::ImageSortBy sortBy)
 {
     m_sortBy = sortBy;
     m_imageMetadataList.clear();
-    if (sortBy != qvEnums::ImageSortBy::SortByFileName && sortBy != qvEnums::ImageSortBy::SortByFileNameDescending) {
+    if (sortBy != qvEnums::ImageSortBy::SortByFileName &&
+        sortBy != qvEnums::ImageSortBy::SortByFileNameDescending) {
         foreach (const QString &fl, m_pageNames) {
             m_imageMetadataList << ImageMetadata(this, fl);
         }
@@ -205,30 +205,35 @@ void Volume::applyPageSort(qvEnums::ImageSortBy sortBy)
     case qvEnums::ImageSortBy::SortByFileName: {
         QCollator collator;
         collator.setNumericMode(true);
-        std::sort(m_pageNames.begin(), m_pageNames.end(), [&collator](const QString &a, const QString &b) {
-            return collator.compare(a, b) < 0;
-        });
+        std::sort(
+            m_pageNames.begin(),
+            m_pageNames.end(),
+            [&collator](const QString &a, const QString &b) { return collator.compare(a, b) < 0; });
         break;
     }
     case qvEnums::ImageSortBy::SortByFileNameDescending: {
         QCollator collator;
         collator.setNumericMode(true);
-        std::sort(m_pageNames.begin(), m_pageNames.end(), [&collator](const QString &a, const QString &b) {
-            return collator.compare(a, b) > 0;
-        });
+        std::sort(
+            m_pageNames.begin(),
+            m_pageNames.end(),
+            [&collator](const QString &a, const QString &b) { return collator.compare(a, b) > 0; });
         break;
     }
     case qvEnums::ImageSortBy::SortByFileSize:
         std::stable_sort(m_imageMetadataList.begin(), m_imageMetadataList.end(), fileSizeLessThan);
         break;
     case qvEnums::ImageSortBy::SortByFileSizeDescending:
-        std::stable_sort(m_imageMetadataList.begin(), m_imageMetadataList.end(), fileSizeDescendingLessThan);
+        std::stable_sort(
+            m_imageMetadataList.begin(), m_imageMetadataList.end(), fileSizeDescendingLessThan);
         break;
     case qvEnums::ImageSortBy::SortByModifiedTime:
-        std::stable_sort(m_imageMetadataList.begin(), m_imageMetadataList.end(), modifiedTimeLessThan);
+        std::stable_sort(
+            m_imageMetadataList.begin(), m_imageMetadataList.end(), modifiedTimeLessThan);
         break;
     case qvEnums::ImageSortBy::SortByModifiedTimeDescending:
-        std::stable_sort(m_imageMetadataList.begin(), m_imageMetadataList.end(), modifiedTimeDescendingLessThan);
+        std::stable_sort(
+            m_imageMetadataList.begin(), m_imageMetadataList.end(), modifiedTimeDescendingLessThan);
         break;
     }
     m_imageLoadCache.clear();
@@ -267,7 +272,8 @@ QString Volume::pageNameAt(int pageIndex) const
     if (!m_shuffledPageNames.isEmpty()) {
         return m_shuffledPageNames[pageIndex];
     }
-    if (m_sortBy == qvEnums::ImageSortBy::SortByFileName || m_sortBy == qvEnums::ImageSortBy::SortByFileNameDescending) {
+    if (m_sortBy == qvEnums::ImageSortBy::SortByFileName ||
+        m_sortBy == qvEnums::ImageSortBy::SortByFileNameDescending) {
         return m_pageNames[pageIndex];
     } else if (pageIndex < m_imageMetadataList.size()) {
         return m_imageMetadataList[pageIndex].filename();
@@ -284,7 +290,8 @@ int Volume::pageIndexForName(const QString &name) const
     // The metadata sorts reorder the metadata list and leave the name list in
     // the order the loader reported, so the lookup has to use the list that
     // pageNameAt() reads from.
-    if (m_sortBy == qvEnums::ImageSortBy::SortByFileName || m_sortBy == qvEnums::ImageSortBy::SortByFileNameDescending) {
+    if (m_sortBy == qvEnums::ImageSortBy::SortByFileName ||
+        m_sortBy == qvEnums::ImageSortBy::SortByFileNameDescending) {
         return m_pageNames.indexOf(nativeName);
     }
     for (int pageIndex = 0; pageIndex < m_imageMetadataList.size(); ++pageIndex) {
@@ -312,9 +319,8 @@ static QSize previewDecodeSize(const QSize &viewportSize)
         return QSize(fallback, fallback);
     }
 
-    const QSize oversampled(
-        qMin(maxTextureSize, qMax(1, viewportSize.width() * 3 / 2)),
-        qMin(maxTextureSize, qMax(1, viewportSize.height() * 3 / 2)));
+    const QSize oversampled(qMin(maxTextureSize, qMax(1, viewportSize.width() * 3 / 2)),
+                            qMin(maxTextureSize, qMax(1, viewportSize.height() * 3 / 2)));
     return oversampled;
 }
 
@@ -323,14 +329,14 @@ static bool shouldPrefetchFullResolution(int pageIndex, int anchorPageIndex)
     return qAbs(pageIndex - anchorPageIndex) <= 3;
 }
 
-void Volume::updatePrefetchCache(
-    int anchorPageIndex, PrefetchMode mode, QSize viewportSize)
+void Volume::updatePrefetchCache(int anchorPageIndex, PrefetchMode mode, QSize viewportSize)
 {
     if (!m_pageListLoaded) {
         loadPageList();
     }
     IFileLoader *loader = m_loadContext ? m_loadContext->loader() : nullptr;
-    if (!loader || anchorPageIndex < 0 || anchorPageIndex >= m_pageNames.size() || loader->contents().isEmpty()) {
+    if (!loader || anchorPageIndex < 0 || anchorPageIndex >= m_pageNames.size() ||
+        loader->contents().isEmpty()) {
         return;
     }
 
@@ -343,8 +349,8 @@ void Volume::updatePrefetchCache(
         imagePrefetchExecutor().cancelPendingOlderThan(m_prefetchOwnerId, m_prefetchGeneration);
     }
 
-    const QList<int> indexes = PrefetchPlanner::indexes(
-        mode, anchorPageIndex, m_pageNames.size(), qApp->MaxImagesCache());
+    const QList<int> indexes =
+        PrefetchPlanner::indexes(mode, anchorPageIndex, m_pageNames.size(), qApp->MaxImagesCache());
     for (int cnt : indexes) {
         const bool fullResolution = shouldPrefetchFullResolution(cnt, anchorPageIndex);
         if (fullResolution) {
@@ -352,15 +358,18 @@ void Volume::updatePrefetchCache(
         } else if (m_imageLoadCache.touch(cnt)) {
             continue;
         }
-        LruCache<int, ImageLoadFuture> &cache = fullResolution ? m_imageLoadCache : m_previewLoadCache;
+        LruCache<int, ImageLoadFuture> &cache =
+            fullResolution ? m_imageLoadCache : m_previewLoadCache;
         ImageLoadFuture *cachedImageLoad = cache.find(cnt);
         if (cachedImageLoad && cachedImageLoad->isCanceled()) {
             cache.remove(cnt);
             cachedImageLoad = nullptr;
         }
-        if (fullResolution && cnt == anchorPageIndex && cachedImageLoad && cachedImageLoad->isFinished()) {
+        if (fullResolution && cnt == anchorPageIndex && cachedImageLoad &&
+            cachedImageLoad->isFinished()) {
             ImageContent cachedImage = cachedImageLoad->result();
-            if (!cachedImage.hasDetailedMetadata && IFileLoader::isExifJpegImageFile(cachedImage.path)) {
+            if (!cachedImage.hasDetailedMetadata &&
+                IFileLoader::isExifJpegImageFile(cachedImage.path)) {
                 const QString metadataPath = cachedImage.path;
                 const ImageLoadFuture metadataLoad = scheduleMetadataLoad(
                     std::move(cachedImage), metadataPath, m_prefetchGeneration);
@@ -370,17 +379,22 @@ void Volume::updatePrefetchCache(
                 }
             }
         }
-        if (fullResolution && resizesOnCpu(qApp->Effect()) && cachedImageLoad && cachedImageLoad->isFinished()) {
+        if (fullResolution && resizesOnCpu(qApp->Effect()) && cachedImageLoad &&
+            cachedImageLoad->isFinished()) {
             ImageContent cachedImage = cachedImageLoad->result();
             if (cachedImage.loadedImageSize.isValid()) {
                 const QSize pageSize = viewportSize;
-                QSize resized = cachedImage.exifInfo.Orientation == 6 || cachedImage.exifInfo.Orientation == 8 ? QSize(pageSize.height(), pageSize.width()) : pageSize;
-                resized.setWidth(cachedImage.loadedImageSize.width() * resized.height() / cachedImage.loadedImageSize.height());
+                QSize resized =
+                    cachedImage.exifInfo.Orientation == 6 || cachedImage.exifInfo.Orientation == 8
+                        ? QSize(pageSize.height(), pageSize.width())
+                        : pageSize;
+                resized.setWidth(cachedImage.loadedImageSize.width() * resized.height() /
+                                 cachedImage.loadedImageSize.height());
 
-                if (cachedImage.resizedImage.size() != resized && !cachedImage.loadedImage.isNull()) {
+                if (cachedImage.resizedImage.size() != resized &&
+                    !cachedImage.loadedImage.isNull()) {
                     qDebug() << cachedImage.resizedImage.size() << resized;
-                    const ImageLoadFuture future = scheduleResize(
-                        cachedImage, pageSize);
+                    const ImageLoadFuture future = scheduleResize(cachedImage, pageSize);
                     if (future.isValid()) {
                         cache.insert(cnt, future);
                     }
@@ -388,18 +402,18 @@ void Volume::updatePrefetchCache(
             }
         }
         if (!cache.touch(cnt)) {
-            const QSize pageSize = fullResolution && resizesOnCpu(qApp->Effect())
-                                       ? viewportSize
-                                       : QSize();
-            const QSize decodeTargetSize = fullResolution ? QSize() : previewDecodeSize(viewportSize);
-            const ImageLoadFuture future = scheduleImageLoad(
-                pageNameAt(cnt),
-                pageSize,
-                cnt == anchorPageIndex,
-                decodeTargetSize,
-                cnt == anchorPageIndex || loader->isArchive(),
-                cnt,
-                m_prefetchGeneration);
+            const QSize pageSize =
+                fullResolution && resizesOnCpu(qApp->Effect()) ? viewportSize : QSize();
+            const QSize decodeTargetSize =
+                fullResolution ? QSize() : previewDecodeSize(viewportSize);
+            const ImageLoadFuture future =
+                scheduleImageLoad(pageNameAt(cnt),
+                                  pageSize,
+                                  cnt == anchorPageIndex,
+                                  decodeTargetSize,
+                                  cnt == anchorPageIndex || loader->isArchive(),
+                                  cnt,
+                                  m_prefetchGeneration);
             if (future.isValid()) {
                 cache.insert(cnt, future);
             }
@@ -413,14 +427,21 @@ void Volume::prefetchCoverImages(int anchorPageIndex)
         loadPageList();
     }
     IFileLoader *loader = m_loadContext ? m_loadContext->loader() : nullptr;
-    if (!loader || anchorPageIndex < 0 || anchorPageIndex >= m_pageNames.size() || loader->contents().isEmpty()) {
+    if (!loader || anchorPageIndex < 0 || anchorPageIndex >= m_pageNames.size() ||
+        loader->contents().isEmpty()) {
         return;
     }
     imagePrefetchExecutor().setMaximumConcurrency(recommendedPrefetchConcurrency(loader));
-    for (int pageIndex : PrefetchPlanner::indexes(
-             PrefetchMode::Normal, anchorPageIndex, m_pageNames.size(), 2)) {
-        const ImageLoadFuture future = scheduleImageLoad(
-            m_pageNames[pageIndex], QSize(), pageIndex == anchorPageIndex, QSize(), pageIndex == anchorPageIndex || loader->isArchive(), pageIndex, m_prefetchGeneration);
+    for (int pageIndex :
+         PrefetchPlanner::indexes(PrefetchMode::Normal, anchorPageIndex, m_pageNames.size(), 2)) {
+        const ImageLoadFuture future =
+            scheduleImageLoad(m_pageNames[pageIndex],
+                              QSize(),
+                              pageIndex == anchorPageIndex,
+                              QSize(),
+                              pageIndex == anchorPageIndex || loader->isArchive(),
+                              pageIndex,
+                              m_prefetchGeneration);
         if (future.isValid()) {
             m_imageLoadCache.insert(pageIndex, future);
         }
@@ -505,9 +526,8 @@ static int parseJpegOrientation(const QByteArray &bytes)
                 return 1;
             }
             auto read16 = [littleEndian](const unsigned char *p) -> quint16 {
-                return littleEndian
-                           ? static_cast<quint16>(p[0] | (p[1] << 8))
-                           : static_cast<quint16>((p[0] << 8) | p[1]);
+                return littleEndian ? static_cast<quint16>(p[0] | (p[1] << 8))
+                                    : static_cast<quint16>((p[0] << 8) | p[1]);
             };
             auto read32 = [littleEndian](const unsigned char *p) -> quint32 {
                 return littleEndian
@@ -568,7 +588,8 @@ static bool shouldUseDecoderScaling(ImageFormat format, const QImageReader &read
  * depends on the user's decoder preference need a name of their own; everything
  * else is handed to Qt under the suffix it was found with.
  */
-static QByteArray qtFormatHint(const QString &path, ImageFormat format, const ImageDecodePolicy &policy)
+static QByteArray
+qtFormatHint(const QString &path, ImageFormat format, const ImageDecodePolicy &policy)
 {
     switch (format) {
     case ImageFormat::Jpeg:
@@ -577,7 +598,8 @@ static QByteArray qtFormatHint(const QString &path, ImageFormat format, const Im
         }
         return QByteArrayLiteral("jpg");
     case ImageFormat::Png:
-        return IFileLoader::supportsImageFormat("apng") ? QByteArrayLiteral("apng") : QByteArrayLiteral("png");
+        return IFileLoader::supportsImageFormat("apng") ? QByteArrayLiteral("apng")
+                                                        : QByteArrayLiteral("png");
     case ImageFormat::Apng:
         return QByteArrayLiteral("apng");
     case ImageFormat::WebP:
@@ -592,22 +614,22 @@ static ImageDecodeSettings currentImageDecodeSettings(int maxTextureSize)
     ImageDecodeSettings settings;
     settings.maxTextureSize = maxTextureSize;
     settings.fastDctForJpeg = qApp->UseFastDCTForJPEG();
-    settings.svgRasterMaximum = QSize(qApp->SvgRasterMaximumWidth(), qApp->SvgRasterMaximumHeight());
+    settings.svgRasterMaximum =
+        QSize(qApp->SvgRasterMaximumWidth(), qApp->SvgRasterMaximumHeight());
     settings.svgLoaderBackend = qApp->SvgLoaderBackend();
     return settings;
 }
 
-static ImageContent loadWithSpecifiedFormat(
-    QString path,
-    QSize pageSize,
-    QSize decodeTargetSize,
-    bool loadDetailedMetadata,
-    QByteArray bytes,
-    ImageFormat format,
-    QByteArray qtHint,
-    uint loopcount,
-    const ImageDecodePolicy &decodePolicy,
-    ImageDecodeMetrics *metrics)
+static ImageContent loadWithSpecifiedFormat(QString path,
+                                            QSize pageSize,
+                                            QSize decodeTargetSize,
+                                            bool loadDetailedMetadata,
+                                            QByteArray bytes,
+                                            ImageFormat format,
+                                            QByteArray qtHint,
+                                            uint loopcount,
+                                            const ImageDecodePolicy &decodePolicy,
+                                            ImageDecodeMetrics *metrics)
 {
     for (;;) {
         int maxTextureSize = qApp->MaxTextureSize();
@@ -649,7 +671,8 @@ static ImageContent loadWithSpecifiedFormat(
                 src = std::move(output.image);
                 baseSize = output.sourceSize;
             }
-        } else if ((format == ImageFormat::Png || format == ImageFormat::Apng) && decodePolicy.png != PngDecoderPreference::Qt) {
+        } else if ((format == ImageFormat::Png || format == ImageFormat::Apng) &&
+                   decodePolicy.png != PngDecoderPreference::Qt) {
             QElapsedTimer decodeTimer;
             if (metrics) {
                 decodeTimer.start();
@@ -702,7 +725,8 @@ static ImageContent loadWithSpecifiedFormat(
                 }
                 Movie movie = Movie(bytes, QString::fromUtf8(qtHint));
                 if (metrics) {
-                    metrics->decoderBackend = QString("qmovie:%1").arg(QString::fromLatin1(reader.format()));
+                    metrics->decoderBackend =
+                        QString("qmovie:%1").arg(QString::fromLatin1(reader.format()));
                     metrics->decodeNanoseconds += decodeTimer.nsecsElapsed();
                 }
                 ic.movie = movie;
@@ -717,11 +741,13 @@ static ImageContent loadWithSpecifiedFormat(
             }
             baseSize = reader.size();
             QSize loadingSize = baseSize;
-            if (reader.format() == IFileLoader::turboJpegFormatName() && !qApp->UseFastDCTForJPEG()) {
+            if (reader.format() == IFileLoader::turboJpegFormatName() &&
+                !qApp->UseFastDCTForJPEG()) {
                 reader.setQuality(0);
             }
             if (shouldUseDecoderScaling(format, reader)) {
-                const QSize targetSize = ImageDecoder::constrainedDecodeSize(baseSize, decodeTargetSize, maxTextureSize);
+                const QSize targetSize =
+                    ImageDecoder::constrainedDecodeSize(baseSize, decodeTargetSize, maxTextureSize);
                 if (targetSize.isValid() && targetSize != baseSize) {
                     loadingSize = targetSize;
                     reader.setScaledSize(loadingSize);
@@ -735,7 +761,8 @@ static ImageContent loadWithSpecifiedFormat(
             QImage tmp = ImageDecoder::readWithQt(reader, path, format == ImageFormat::Tiff);
             if (metrics) {
                 if (!tmp.isNull()) {
-                    metrics->decoderBackend = QString("qimagereader:%1").arg(QString::fromLatin1(reader.format()));
+                    metrics->decoderBackend =
+                        QString("qimagereader:%1").arg(QString::fromLatin1(reader.format()));
                 }
                 metrics->decodeNanoseconds += decodeTimer.nsecsElapsed();
             }
@@ -758,7 +785,8 @@ static ImageContent loadWithSpecifiedFormat(
         const bool isExifJpeg = src.width() > 0 && IFileLoader::isExifJpegImageFile(path);
         if (isExifJpeg) {
             if (loadDetailedMetadata) {
-                info.parseFrom(reinterpret_cast<const unsigned char *>(bytes.constData()), bytes.length());
+                info.parseFrom(reinterpret_cast<const unsigned char *>(bytes.constData()),
+                               bytes.length());
             } else {
                 info.Orientation = parseJpegOrientation(bytes);
             }
@@ -773,7 +801,8 @@ static ImageContent loadWithSpecifiedFormat(
         if (src.isNull()) {
             return ic;
         }
-        if (qApp->DontShrinkForLargeImage() || (src.width() <= maxTextureSize && src.height() <= maxTextureSize)) {
+        if (qApp->DontShrinkForLargeImage() ||
+            (src.width() <= maxTextureSize && src.height() <= maxTextureSize)) {
             ic = ImageContent(src, path, baseSize, info, bytes.length());
         } else {
             // resample for too big images
@@ -797,7 +826,8 @@ static ImageContent loadWithSpecifiedFormat(
                 }
                 break;
             default:
-                if (src.format() != QImage::Format::Format_Grayscale8 && src.format() != QImage::Format::Format_RGB888) {
+                if (src.format() != QImage::Format::Format_Grayscale8 &&
+                    src.format() != QImage::Format::Format_RGB888) {
                     src = src.convertToFormat(QImage::Format::Format_RGB888);
                 }
                 if ((src.width() & 0xF) != 0 || (src.height() & 0x1) != 0) {
@@ -826,39 +856,58 @@ static ImageContent loadWithSpecifiedFormat(
             QImage half = QImage(halfSize.width(), halfSize.height(), src.format());
             ResizeHalf::FMT fmt = (ResizeHalf::FMT)(src.depth() >> 3);
             ResizeHalf resizer(fmt);
-            resizer.resizeHV(half.bits(), src.bits(), src.width(), srcSize.height(), half.bytesPerLine(), src.bytesPerLine());
+            resizer.resizeHV(half.bits(),
+                             src.bits(),
+                             src.width(),
+                             srcSize.height(),
+                             half.bytesPerLine(),
+                             src.bytesPerLine());
 
             ic.loadedImage = half;
             ic.loadedImageSize = half.size();
         }
-        if (decodeTargetSize.isValid() && !decodeTargetSize.isEmpty() && !ic.loadedImage.isNull() && (ic.loadedImage.width() > decodeTargetSize.width() || ic.loadedImage.height() > decodeTargetSize.height())) {
-            ic.loadedImage = ic.loadedImage.scaled(decodeTargetSize, Qt::KeepAspectRatio, Qt::FastTransformation);
+        if (decodeTargetSize.isValid() && !decodeTargetSize.isEmpty() && !ic.loadedImage.isNull() &&
+            (ic.loadedImage.width() > decodeTargetSize.width() ||
+             ic.loadedImage.height() > decodeTargetSize.height())) {
+            ic.loadedImage = ic.loadedImage.scaled(
+                decodeTargetSize, Qt::KeepAspectRatio, Qt::FastTransformation);
             ic.loadedImageSize = ic.loadedImage.size();
         }
         ic.hasDetailedMetadata = loadDetailedMetadata || !isExifJpeg;
 
         // CPU resizing before Page Viewing
         if (!pageSize.isEmpty() && !ic.loadedImage.isNull()) {
-            QSize newsize = ic.exifInfo.Orientation == 6 || ic.exifInfo.Orientation == 8 ? QSize(pageSize.height(), pageSize.width()) : pageSize;
+            QSize newsize = ic.exifInfo.Orientation == 6 || ic.exifInfo.Orientation == 8
+                                ? QSize(pageSize.height(), pageSize.width())
+                                : pageSize;
             ic.appliedResizeMode = qApp->Effect();
-            ic.resizedImage = QZimg::scaled(ic.loadedImage, newsize, Qt::KeepAspectRatio, cpuFilterMode(qApp->Effect()));
+            ic.resizedImage = QZimg::scaled(
+                ic.loadedImage, newsize, Qt::KeepAspectRatio, cpuFilterMode(qApp->Effect()));
         }
         return ic;
     }
     if (!loopcount) {
         return ImageContent(path, bytes.length());
     }
-    return loadWithSpecifiedFormat(path, pageSize, decodeTargetSize, loadDetailedMetadata, bytes, format, qtHint, loopcount - 1, decodePolicy, metrics);
+    return loadWithSpecifiedFormat(path,
+                                   pageSize,
+                                   decodeTargetSize,
+                                   loadDetailedMetadata,
+                                   bytes,
+                                   format,
+                                   qtHint,
+                                   loopcount - 1,
+                                   decodePolicy,
+                                   metrics);
 }
 
-ImageContent Volume::decodeImageBytes(
-    const QString &path,
-    const QByteArray &bytes,
-    QSize pageSize,
-    QSize decodeTargetSize,
-    bool loadDetailedMetadata,
-    const ImageDecodePolicy &decodePolicy,
-    ImageDecodeMetrics *metrics)
+ImageContent Volume::decodeImageBytes(const QString &path,
+                                      const QByteArray &bytes,
+                                      QSize pageSize,
+                                      QSize decodeTargetSize,
+                                      bool loadDetailedMetadata,
+                                      const ImageDecodePolicy &decodePolicy,
+                                      ImageDecodeMetrics *metrics)
 {
     if (metrics) {
         *metrics = ImageDecodeMetrics();
@@ -872,10 +921,20 @@ ImageContent Volume::decodeImageBytes(
         pipelineTimer.start();
     }
 
-    const ImageFormat format = IFileLoader::isExifJpegImageFile(path) ? ImageFormat::Jpeg : imageFormatFromPath(path);
+    const ImageFormat format =
+        IFileLoader::isExifJpegImageFile(path) ? ImageFormat::Jpeg : imageFormatFromPath(path);
     const QByteArray qtHint = qtFormatHint(path, format, decodePolicy);
 
-    ImageContent content = loadWithSpecifiedFormat(path, pageSize, decodeTargetSize, loadDetailedMetadata, bytes, format, qtHint, 5, decodePolicy, metrics);
+    ImageContent content = loadWithSpecifiedFormat(path,
+                                                   pageSize,
+                                                   decodeTargetSize,
+                                                   loadDetailedMetadata,
+                                                   bytes,
+                                                   format,
+                                                   qtHint,
+                                                   5,
+                                                   decodePolicy,
+                                                   metrics);
     if (metrics) {
         metrics->pipelineNanoseconds = pipelineTimer.nsecsElapsed();
         if (!metrics->sourceSize.isValid()) {
@@ -885,8 +944,9 @@ ImageContent Volume::decodeImageBytes(
     return content;
 }
 
-static ImageContent enrichDetailedMetadata(
-    const QSharedPointer<ImageLoadContext> &context, ImageContent content, const QString &path)
+static ImageContent enrichDetailedMetadata(const QSharedPointer<ImageLoadContext> &context,
+                                           ImageContent content,
+                                           const QString &path)
 {
     if (content.hasDetailedMetadata || !IFileLoader::isExifJpegImageFile(path)) {
         content.hasDetailedMetadata = true;
@@ -895,37 +955,50 @@ static ImageContent enrichDetailedMetadata(
 
     const QByteArray bytes = context ? context->load(path) : QByteArray();
     if (!bytes.isEmpty()) {
-        content.exifInfo.parseFrom(
-            reinterpret_cast<const unsigned char *>(bytes.constData()), bytes.length());
+        content.exifInfo.parseFrom(reinterpret_cast<const unsigned char *>(bytes.constData()),
+                                   bytes.length());
     }
     content.hasDetailedMetadata = true;
     return content;
 }
 
-static ImageContent futureLoadImageFromFileVolumeImpl(
-    const QSharedPointer<ImageLoadContext> &context, QString path, QSize pageSize, QSize decodeTargetSize, bool loadDetailedMetadata)
+static ImageContent
+futureLoadImageFromFileVolumeImpl(const QSharedPointer<ImageLoadContext> &context,
+                                  QString path,
+                                  QSize pageSize,
+                                  QSize decodeTargetSize,
+                                  bool loadDetailedMetadata)
 {
     StartupProfiler::mark("image-worker.extract.begin");
     const QByteArray bytes = context->load(path);
     StartupProfiler::mark("image-worker.extract.end");
-    ImageContent content = Volume::decodeImageBytes(path, bytes, pageSize, decodeTargetSize, loadDetailedMetadata);
+    ImageContent content =
+        Volume::decodeImageBytes(path, bytes, pageSize, decodeTargetSize, loadDetailedMetadata);
     StartupProfiler::mark("image-worker.decode-resize.end");
     return content;
 }
 
-ImageContent Volume::futureLoadImageFromFileVolume(
-    QSharedPointer<ImageLoadContext> context, QString path, QSize pageSize, QSize decodeTargetSize, bool loadDetailedMetadata)
+ImageContent Volume::futureLoadImageFromFileVolume(QSharedPointer<ImageLoadContext> context,
+                                                   QString path,
+                                                   QSize pageSize,
+                                                   QSize decodeTargetSize,
+                                                   bool loadDetailedMetadata)
 {
     QElapsedTimer et_load;
     et_load.start();
-    ImageContent ic = futureLoadImageFromFileVolumeImpl(context, path, pageSize, decodeTargetSize, loadDetailedMetadata);
+    ImageContent ic = futureLoadImageFromFileVolumeImpl(
+        context, path, pageSize, decodeTargetSize, loadDetailedMetadata);
     qint64 t_load = et_load.elapsed();
 
-    qDebug() << "futureLoadImageFromFileVolume" << path << t_load << "ms, resizedImage=" << !ic.resizedImage.isNull();
+    qDebug() << "futureLoadImageFromFileVolume" << path << t_load
+             << "ms, resizedImage=" << !ic.resizedImage.isNull();
     return ic;
 }
 
-ImageContent Volume::loadImageFromFile(QString path, QSize pageSize, QSize decodeTargetSize, bool loadDetailedMetadata)
+ImageContent Volume::loadImageFromFile(QString path,
+                                       QSize pageSize,
+                                       QSize decodeTargetSize,
+                                       bool loadDetailedMetadata)
 {
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) {

@@ -86,7 +86,8 @@ bool ThumbnailManager::caseInsensitiveLessThan(const QString &s1, const QString 
     return ::StrCmpLogicalW(ss1.c_str(), ss2.c_str()) < 0;
 }
 
-bool ThumbnailManager::caseInsensitiveLessThanWString(const std::wstring &s1, const std::wstring &s2)
+bool ThumbnailManager::caseInsensitiveLessThanWString(const std::wstring &s1,
+                                                      const std::wstring &s2)
 {
     return ::StrCmpLogicalW(s1.c_str(), s2.c_str()) < 0;
 }
@@ -95,7 +96,8 @@ bool ThumbnailManager::caseInsensitiveLessThan(const QString &s1, const QString 
 {
     return s1.toLower() < s2.toLower();
 }
-bool ThumbnailManager::caseInsensitiveLessThanWString(const std::wstring &s1, const std::wstring &s2)
+bool ThumbnailManager::caseInsensitiveLessThanWString(const std::wstring &s1,
+                                                      const std::wstring &s2)
 {
     return s1 < s2;
 }
@@ -167,7 +169,8 @@ int ThumbnailManager::createSubVolumes(QString dirpath, int catalog_id, int pare
     return volume_id;
 }
 
-VolumeWorker ThumbnailManager::createSubVolumesConcurrent(QString dirpath, int volume_id, int parent_id)
+VolumeWorker
+ThumbnailManager::createSubVolumesConcurrent(QString dirpath, int volume_id, int parent_id)
 {
     VolumeWorker vw = {0};
     vw.frontPage.asc = -1;
@@ -225,8 +228,11 @@ int ThumbnailManager::createVolumesFrontPageOnly(QString dirpath, int catalog_id
     }
 
     QSqlQuery t_files(m_db);
-    t_files.prepare("INSERT INTO t_files (volume_id,name,size,width,height,thumb_id,created_at,updated_at,alternated)"
-                    " VALUES (:volume_id,:name,:size,:width,:height,:thumb_id,:created_at,:updated_at,:alternated)");
+    t_files.prepare(
+        "INSERT INTO t_files "
+        "(volume_id,name,size,width,height,thumb_id,created_at,updated_at,alternated)"
+        " VALUES "
+        "(:volume_id,:name,:size,:width,:height,:thumb_id,:created_at,:updated_at,:alternated)");
     QSqlQuery t_fileorders(m_db);
     t_fileorders.prepare("INSERT INTO t_fileorders (id,volume_id,filename_asc)"
                          " VALUES (:id,:volume_id,:filename_asc)");
@@ -234,7 +240,8 @@ int ThumbnailManager::createVolumesFrontPageOnly(QString dirpath, int catalog_id
     t_thumbs.prepare("INSERT INTO t_thumbnails (width,height,thumbnail,created_at)"
                      " VALUES (:width,:height,:thumbnail,:created_at)");
     QSqlQuery t_volumes(m_db);
-    t_volumes.prepare("UPDATE t_volumes SET frontpage_id=:frontpage_id, thumb_id=:thumb_id WHERE id=:id");
+    t_volumes.prepare(
+        "UPDATE t_volumes SET frontpage_id=:frontpage_id, thumb_id=:thumb_id WHERE id=:id");
 
     QList<VolumeWorker> parentworkers;
     {
@@ -272,7 +279,8 @@ int ThumbnailManager::createVolumesFrontPageOnly(QString dirpath, int catalog_id
                 if (sub_id < 0) {
                     return -1;
                 }
-                workers.append(QtConcurrent::run([&] { return createSubVolumesConcurrent(subpath, sub_id, p.volume_id); }));
+                workers.append(QtConcurrent::run(
+                    [&] { return createSubVolumesConcurrent(subpath, sub_id, p.volume_id); }));
             }
         }
         parentworkers.clear();
@@ -374,7 +382,8 @@ static TaggedName realname2BookTitle(QString realname)
             if (tag.size()) {
                 if (tag[0] == "[") {
                     QString publisher = tag.join("");
-                    result.tags << TagRecord(publisher.mid(1, publisher.length() - 2), type_id); // Normal
+                    result.tags << TagRecord(publisher.mid(1, publisher.length() - 2),
+                                             type_id); // Normal
                 } else {
                     result.tags << TagRecord(tag.join(""), type_id);
                 }
@@ -392,7 +401,8 @@ static TaggedName realname2BookTitle(QString realname)
             if (!NumberSign && !authorExported && tag.size()) {
                 clist << tag.join("");
                 QString pubauthor = tag.join("");
-                result.tags << TagRecord(pubauthor.mid(1, pubauthor.length() - 2), type_id); // Publisher(Author)
+                result.tags << TagRecord(pubauthor.mid(1, pubauthor.length() - 2),
+                                         type_id); // Publisher(Author)
                 type_id = 0;
                 tag.clear();
                 authorExported = true;
@@ -442,7 +452,9 @@ static TaggedName realname2BookTitle(QString realname)
                 } else if (NumberSign && c != ' ' && tag.size()) {
                     // last tag will be Publisher/Author
                     QString pubauthor = tag.join("");
-                    result.tags << TagRecord(pubauthor.mid(1, pubauthor.length() - 2), pubauthor.indexOf("(") > 0 ? 1 : 2); // Publisher(Author)
+                    result.tags << TagRecord(pubauthor.mid(1, pubauthor.length() - 2),
+                                             pubauthor.indexOf("(") > 0 ? 1
+                                                                        : 2); // Publisher(Author)
                     clist << tag.join("") << " " << c;
                     tag.clear();
                     NumberSign = false;
@@ -469,7 +481,8 @@ int ThumbnailManager::createVolumeInternal(QString dirpath, int catalog_id, int 
     TaggedName tagged = realname2BookTitle(realname);
 
     QSqlQuery t_volumes(m_db);
-    t_volumes.prepare("INSERT INTO t_volumes (name, realname, path, catalog_id, parent_id) VALUES (:name, :realname,:path,:catalog_id,:parent_id)");
+    t_volumes.prepare("INSERT INTO t_volumes (name, realname, path, catalog_id, parent_id) VALUES "
+                      "(:name, :realname,:path,:catalog_id,:parent_id)");
     t_volumes.bindValue(":name", tagged.name);
     t_volumes.bindValue(":realname", realname);
     t_volumes.bindValue(":path", QDir::toNativeSeparators(dirpath));
@@ -483,7 +496,8 @@ int ThumbnailManager::createVolumeInternal(QString dirpath, int catalog_id, int 
     QSqlQuery t_tags(m_db);
     t_tags.prepare("INSERT INTO t_tags (name, type_id) VALUES (:name, :type_id)");
     QSqlQuery t_tagentries(m_db);
-    t_tagentries.prepare("INSERT INTO t_volumetags (volume_id, tag_id, catalog_id) VALUES (:volume_id, :tag_id, :catalog_id)");
+    t_tagentries.prepare("INSERT INTO t_volumetags (volume_id, tag_id, catalog_id) VALUES "
+                         "(:volume_id, :tag_id, :catalog_id)");
     foreach (const TagRecord &t, tagged.tags) {
         QString tagkey = QString("%1:%2").arg(t.type_id).arg(t.name.toLower());
         if (!m_tags.contains(tagkey)) {
@@ -590,7 +604,9 @@ FileWorker ThumbnailManager::createFileRecord(QString filename, QString filepath
     return result;
 }
 
-FileWorker ThumbnailManager::createFileRecordFromArchive(QString archivePath, ImageContent &ic, int filename_asc)
+FileWorker ThumbnailManager::createFileRecordFromArchive(QString archivePath,
+                                                         ImageContent &ic,
+                                                         int filename_asc)
 {
     FileWorker result;
     result.filename = ic.path;
@@ -627,8 +643,11 @@ int ThumbnailManager::createVolumeContent(QString dirpath, int volume_id)
     forceTransaction();
 
     QSqlQuery t_files(m_db);
-    t_files.prepare("INSERT INTO t_files (volume_id,name,size,width,height,thumb_id,created_at,updated_at,alternated)"
-                    " VALUES (:volume_id,:name,:size,:width,:height,:thumb_id,:created_at,:updated_at,:alternated)");
+    t_files.prepare(
+        "INSERT INTO t_files "
+        "(volume_id,name,size,width,height,thumb_id,created_at,updated_at,alternated)"
+        " VALUES "
+        "(:volume_id,:name,:size,:width,:height,:thumb_id,:created_at,:updated_at,:alternated)");
     QSqlQuery t_fileorders(m_db);
     t_fileorders.prepare("INSERT INTO t_fileorders (id,volume_id,filename_asc)"
                          " VALUES (:id,:volume_id,:filename_asc)");
@@ -655,7 +674,8 @@ int ThumbnailManager::createVolumeContent(QString dirpath, int volume_id)
             continue;
         }
         QString filepath = dir.filePath(filename);
-        workers.append(QtConcurrent::run([&] { return createFileRecord(filename, filepath, filename_asc++); }));
+        workers.append(QtConcurrent::run(
+            [&] { return createFileRecord(filename, filepath, filename_asc++); }));
     }
     foreach (auto worker, workers) {
         const FileWorker &w = worker.result();
@@ -696,7 +716,8 @@ int ThumbnailManager::createVolumeContent(QString dirpath, int volume_id)
 
         if (bFrontPage) {
             QSqlQuery t_volumes(m_db);
-            t_volumes.prepare("UPDATE t_volumes SET frontpage_id=:frontpage_id, thumb_id=:thumb_id WHERE id=:id");
+            t_volumes.prepare(
+                "UPDATE t_volumes SET frontpage_id=:frontpage_id, thumb_id=:thumb_id WHERE id=:id");
             t_volumes.bindValue(":frontpage_id", t_files.lastInsertId());
             t_volumes.bindValue(":thumb_id", t_thumbs.lastInsertId());
             t_volumes.bindValue(":id", volume_id);
@@ -775,9 +796,11 @@ QList<CatalogRecord> ThumbnailManager::callCreateCatalog(const QList<CatalogReco
     return result;
 }
 
-QFutureWatcher<QList<CatalogRecord>> *ThumbnailManager::createCatalogAsync(QList<CatalogRecord> newers)
+QFutureWatcher<QList<CatalogRecord>> *
+ThumbnailManager::createCatalogAsync(QList<CatalogRecord> newers)
 {
-    QFuture<QList<CatalogRecord>> future = QtConcurrent::run([&] { return callCreateCatalog(newers); });
+    QFuture<QList<CatalogRecord>> future =
+        QtConcurrent::run([&] { return callCreateCatalog(newers); });
     m_catalogWatcher.setFuture(future);
     return &m_catalogWatcher;
 }
@@ -843,7 +866,8 @@ QList<VolumeThumbRecord> ThumbnailManager::volumes()
 static VolumeThumbRecord thumbnail2Icon(VolumeThumbRecord vtr)
 {
     // Stored thumbnails are JPEG, so they follow the same plugin preference.
-    QPixmap pixmap = QPixmap::fromImage(QImage::fromData(vtr.thumbnail, IFileLoader::jpegQtFormatName()));
+    QPixmap pixmap =
+        QPixmap::fromImage(QImage::fromData(vtr.thumbnail, IFileLoader::jpegQtFormatName()));
     //    QPixmap pixmap = QPixmap::fromImage(QImage::fromData(vtr.thumbnail));
     vtr.icon = QIcon(pixmap);
     //    vtr.thumbnail.clear();
@@ -955,7 +979,8 @@ QList<TagRecord> ThumbnailManager::getTagsFromVolumeId(int volume_id)
 void ThumbnailManager::deleteCatalog(int id)
 {
     QSqlQuery t_thumbs(m_db);
-    t_thumbs.prepare("DELETE FROM t_thumbnails WHERE id IN (SELECT thumb_id FROM t_files WHERE volume_id IN (SELECT id FROM t_volumes WHERE catalog_id=:catalog_id))");
+    t_thumbs.prepare("DELETE FROM t_thumbnails WHERE id IN (SELECT thumb_id FROM t_files WHERE "
+                     "volume_id IN (SELECT id FROM t_volumes WHERE catalog_id=:catalog_id))");
     t_thumbs.bindValue(":catalog_id", id);
     if (!execInsertQuery(t_thumbs, "t_thumbnails")) {
         return;
@@ -964,21 +989,24 @@ void ThumbnailManager::deleteCatalog(int id)
     m_volumesDurty = true;
 
     QSqlQuery t_files(m_db);
-    t_files.prepare("DELETE FROM t_files WHERE volume_id IN (SELECT id FROM t_volumes WHERE catalog_id=:catalog_id)");
+    t_files.prepare("DELETE FROM t_files WHERE volume_id IN (SELECT id FROM t_volumes WHERE "
+                    "catalog_id=:catalog_id)");
     t_files.bindValue(":catalog_id", id);
     if (!execInsertQuery(t_files, "t_files")) {
         return;
     }
 
     QSqlQuery t_fileorders(m_db);
-    t_fileorders.prepare("DELETE FROM t_fileorders WHERE volume_id IN (SELECT id FROM t_volumes WHERE catalog_id=:catalog_id)");
+    t_fileorders.prepare("DELETE FROM t_fileorders WHERE volume_id IN (SELECT id FROM t_volumes "
+                         "WHERE catalog_id=:catalog_id)");
     t_fileorders.bindValue(":catalog_id", id);
     if (!execInsertQuery(t_fileorders, "t_fileorders")) {
         return;
     }
 
     QSqlQuery t_volumeorders(m_db);
-    t_volumeorders.prepare("DELETE FROM t_volumeorders WHERE id IN (SELECT id FROM t_volumes WHERE catalog_id=:catalog_id)");
+    t_volumeorders.prepare("DELETE FROM t_volumeorders WHERE id IN (SELECT id FROM t_volumes WHERE "
+                           "catalog_id=:catalog_id)");
     t_volumeorders.bindValue(":catalog_id", id);
     if (!execInsertQuery(t_volumeorders, "t_volumeorders")) {
         return;

@@ -19,18 +19,16 @@ QString ImageString::getTitleBarText()
         return QString("%1 v%2").arg(qApp->applicationName()).arg(qApp->applicationVersion());
     }
     return QString("%1 - %2")
-        .arg(formatString(qApp->ShowStatusBar() ? qApp->TitleTextFormat() : qApp->StatusTextFormat()))
+        .arg(formatString(qApp->ShowStatusBar() ? qApp->TitleTextFormat()
+                                                : qApp->StatusTextFormat()))
         .arg(qApp->applicationName());
 }
 
 QString ImageString::getStatusBarText()
 {
-    const RenderedPageMetrics metrics = m_metricsProvider
-                                            ? m_metricsProvider()
-                                            : RenderedPageMetrics();
-    return metrics.isEmpty()
-               ? ""
-               : formatString(qApp->StatusTextFormat());
+    const RenderedPageMetrics metrics =
+        m_metricsProvider ? m_metricsProvider() : RenderedPageMetrics();
+    return metrics.isEmpty() ? "" : formatString(qApp->StatusTextFormat());
 }
 
 static void addString(QStringList &tags, QString key, QString value)
@@ -41,18 +39,55 @@ static void addString(QStringList &tags, QString key, QString value)
 QString ImageString::getFormatUsage()
 {
     QStringList tags = {"<table>"};
-    addString(tags, "%v", tr("Volume name (only folder/archive name), e.g. 'Sample Book')", "Format tag of text displayed in title bar and status bar"));
-    addString(tags, "%V", tr("Volume full path, e.g. 'C:/Users/qv/Desktop/Sample Book'", "Format tag of text displayed in title bar and status bar"));
-    addString(tags, "%p", tr("Image file name (only file name), e.g. 'page01.jpg'", "Format tag of text displayed in title bar and status bar"));
-    addString(tags, "%P", tr("Image file path in volume, e.g. 'subpath/page01.jpg'", "Format tag of text displayed in title bar and status bar"));
-    addString(tags, "%Q", tr("Image file full path in volume, e.g. 'C:/Users/qv/Desktop/Sample Book/subpath/page01.jpg'", "Format tag of text displayed in title bar and status bar"));
-    addString(tags, "%s", tr("Image size, e.g. '1920x1080'", "Format tag of text displayed in title bar and status bar"));
-    addString(tags, "%m", tr("Display magnification of image, e.g. '25%'", "Format tag of text displayed in title bar and status bar"));
-    addString(tags, "%f", tr("Image file size in a readable format, e.g. '63.23 KB'", "Format tag of text displayed in title bar and status bar"));
-    addString(tags, "%F", tr("Exact image file size in bytes, e.g. '1,154,340 bytes'", "Format tag of text displayed in title bar and status bar"));
-    addString(tags, "%b", tr("Decoded image size in a human-readable format, e.g. '1.59 MB'", "Format tag of text displayed in title bar and status bar"));
-    addString(tags, "%n", tr("Current page number in the volume, e.g. '33/100' or '33-34/100'", "Format tag of text displayed in title bar and status bar"));
-    addString(tags, "%2", tr("Separator before the second image in 2-page spread view", "Format tag of text displayed in title bar and status bar"));
+    addString(tags,
+              "%v",
+              tr("Volume name (only folder/archive name), e.g. 'Sample Book')",
+                 "Format tag of text displayed in title bar and status bar"));
+    addString(tags,
+              "%V",
+              tr("Volume full path, e.g. 'C:/Users/qv/Desktop/Sample Book'",
+                 "Format tag of text displayed in title bar and status bar"));
+    addString(tags,
+              "%p",
+              tr("Image file name (only file name), e.g. 'page01.jpg'",
+                 "Format tag of text displayed in title bar and status bar"));
+    addString(tags,
+              "%P",
+              tr("Image file path in volume, e.g. 'subpath/page01.jpg'",
+                 "Format tag of text displayed in title bar and status bar"));
+    addString(tags,
+              "%Q",
+              tr("Image file full path in volume, e.g. 'C:/Users/qv/Desktop/Sample "
+                 "Book/subpath/page01.jpg'",
+                 "Format tag of text displayed in title bar and status bar"));
+    addString(tags,
+              "%s",
+              tr("Image size, e.g. '1920x1080'",
+                 "Format tag of text displayed in title bar and status bar"));
+    addString(tags,
+              "%m",
+              tr("Display magnification of image, e.g. '25%'",
+                 "Format tag of text displayed in title bar and status bar"));
+    addString(tags,
+              "%f",
+              tr("Image file size in a readable format, e.g. '63.23 KB'",
+                 "Format tag of text displayed in title bar and status bar"));
+    addString(tags,
+              "%F",
+              tr("Exact image file size in bytes, e.g. '1,154,340 bytes'",
+                 "Format tag of text displayed in title bar and status bar"));
+    addString(tags,
+              "%b",
+              tr("Decoded image size in a human-readable format, e.g. '1.59 MB'",
+                 "Format tag of text displayed in title bar and status bar"));
+    addString(tags,
+              "%n",
+              tr("Current page number in the volume, e.g. '33/100' or '33-34/100'",
+                 "Format tag of text displayed in title bar and status bar"));
+    addString(tags,
+              "%2",
+              tr("Separator before the second image in 2-page spread view",
+                 "Format tag of text displayed in title bar and status bar"));
     tags << "</table>";
     return tags.join("");
 }
@@ -63,9 +98,8 @@ QString ImageString::formatString(QString fmt)
         return QString();
     }
     const VisiblePages visiblePages = m_viewerSession->visiblePages();
-    const RenderedPageMetrics metrics = m_metricsProvider
-                                            ? m_metricsProvider()
-                                            : RenderedPageMetrics();
+    const RenderedPageMetrics metrics =
+        m_metricsProvider ? m_metricsProvider() : RenderedPageMetrics();
     const int pageCount = qMin(visiblePages.count(), metrics.count());
     QList<int> pages = qApp->RightSideBook() ? QList<int>{1, 0} : QList<int>{0, 1};
     QStringList result;
@@ -77,18 +111,13 @@ QString ImageString::formatString(QString fmt)
             continue;
         }
         c = fmt.at(++i);
-        const ImageContent fallback(
-            QImage(1000, 1200, QImage::Format_RGB32),
-            "page11.jpg",
-            QSize(1000, 1200),
-            easyexif::EXIFInfo(),
-            1234567);
-        const int requestedPage = pageCount == 2 && p < pages.size()
-                                      ? pages[p]
-                                      : 0;
-        const ImageContent *page = pageCount > 0
-                                       ? visiblePages.at(requestedPage)
-                                       : &fallback;
+        const ImageContent fallback(QImage(1000, 1200, QImage::Format_RGB32),
+                                    "page11.jpg",
+                                    QSize(1000, 1200),
+                                    easyexif::EXIFInfo(),
+                                    1234567);
+        const int requestedPage = pageCount == 2 && p < pages.size() ? pages[p] : 0;
+        const ImageContent *page = pageCount > 0 ? visiblePages.at(requestedPage) : &fallback;
         if (!page) {
             page = &fallback;
         }
@@ -120,7 +149,9 @@ QString ImageString::formatString(QString fmt)
         }
             // Image size, e.g. '1920x1080'
         case 's':
-            result << QString("%1x%2").arg(page->originalSize.width()).arg(page->originalSize.height());
+            result << QString("%1x%2")
+                          .arg(page->originalSize.width())
+                          .arg(page->originalSize.height());
             break;
             // Display magnification of image, e.g. '25%'
         case 'm':
@@ -157,9 +188,14 @@ QString ImageString::formatString(QString fmt)
             // Current page number in the volume, e.g. '33/100' or '33-34/100'
         case 'n': {
             if (pageCount == 2) {
-                result << QString("%1-%2/%3").arg(m_viewerSession->currentPageIndex() + 1).arg(m_viewerSession->currentPageIndex() + 2).arg(m_viewerSession->pageCount());
+                result << QString("%1-%2/%3")
+                              .arg(m_viewerSession->currentPageIndex() + 1)
+                              .arg(m_viewerSession->currentPageIndex() + 2)
+                              .arg(m_viewerSession->pageCount());
             } else {
-                result << QString("%1/%2").arg(m_viewerSession->currentPageIndex() + 1).arg(m_viewerSession->pageCount());
+                result << QString("%1/%2")
+                              .arg(m_viewerSession->currentPageIndex() + 1)
+                              .arg(m_viewerSession->pageCount());
             }
             break;
         }

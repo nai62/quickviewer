@@ -324,7 +324,8 @@ bool isDirectImageInput(const QString &input)
 
 bool isDecodedImageValid(const ImageContent &content)
 {
-    return !content.loadedImage.isNull() || !content.resizedImage.isNull() || !content.movie.isNull();
+    return !content.loadedImage.isNull() || !content.resizedImage.isNull() ||
+           !content.movie.isNull();
 }
 
 QString fallbackReason(const QString &requested, const QString &actual)
@@ -333,9 +334,8 @@ QString fallbackReason(const QString &requested, const QString &actual)
         return QString();
     }
     const QString backend = requested.section('=', 1, 1);
-    if (backend == "qt" &&
-        (actual.startsWith("qimagereader:", Qt::CaseInsensitive) ||
-         actual.startsWith("qmovie:", Qt::CaseInsensitive))) {
+    if (backend == "qt" && (actual.startsWith("qimagereader:", Qt::CaseInsensitive) ||
+                            actual.startsWith("qmovie:", Qt::CaseInsensitive))) {
         return QString();
     }
     if (actual.contains(backend, Qt::CaseInsensitive)) {
@@ -387,7 +387,8 @@ bool parseDecoderSpec(const QString &spec, QString &format, QStringList &backend
 {
     const int equals = spec.indexOf('=');
     if (equals <= 0 || equals == spec.size() - 1) {
-        error = QString("Invalid --decoder value '%1'. Expected FORMAT=BACKEND[,BACKEND...].").arg(spec);
+        error = QString("Invalid --decoder value '%1'. Expected FORMAT=BACKEND[,BACKEND...].")
+                    .arg(spec);
         return false;
     }
     format = spec.left(equals).trimmed().toLower();
@@ -395,7 +396,9 @@ bool parseDecoderSpec(const QString &spec, QString &format, QStringList &backend
         format = "jpeg";
     }
     if (format != "jpeg" && format != "png" && format != "webp") {
-        error = QString("Unsupported decoder format '%1'. Supported formats are jpeg, png, and webp.").arg(format);
+        error =
+            QString("Unsupported decoder format '%1'. Supported formats are jpeg, png, and webp.")
+                .arg(format);
         return false;
     }
     const QStringList rawBackends = spec.mid(equals + 1).split(',', Qt::SkipEmptyParts);
@@ -478,7 +481,8 @@ PageResolution resolveSingleImagePage(const PageSelection &selection)
 {
     PageResolution resolution;
     if (selection.kind == PageSelectionKind::Index && selection.index != 0) {
-        resolution.error = QString("Requested page %1 is out of range for a single image input.").arg(selection.index);
+        resolution.error = QString("Requested page %1 is out of range for a single image input.")
+                               .arg(selection.index);
         return resolution;
     }
     resolution.success = true;
@@ -493,10 +497,9 @@ PageResolution resolveSingleImagePage(const PageSelection &selection)
     return resolution;
 }
 
-PageResolution resolvePage(
-    const Volume *volume,
-    const PageSelection &selection,
-    const ReadProgressStore::ReadProgressMap &progress)
+PageResolution resolvePage(const Volume *volume,
+                           const PageSelection &selection,
+                           const ReadProgressStore::ReadProgressMap &progress)
 {
     PageResolution resolution;
     if (!volume || volume->pageCount() <= 0) {
@@ -523,7 +526,8 @@ PageResolution resolvePage(
     }
     const QString path = QDir::fromNativeSeparators(volume->volumePath());
     const auto saved = progress.constFind(path);
-    if (qApp->OpenVolumeWithProgress() && !volume->openedWithSpecifiedImageFile() && saved != progress.cend()) {
+    if (qApp->OpenVolumeWithProgress() && !volume->openedWithSpecifiedImageFile() &&
+        saved != progress.cend()) {
         const int index = saved.value().resumePageIndex;
         if (index >= 0 && index < volume->pageCount()) {
             resolution.success = true;
@@ -541,7 +545,8 @@ PageResolution resolvePage(
 QString csvValue(QString value)
 {
     value.replace('"', "\"\"");
-    if (value.contains(',') || value.contains('"') || value.contains('\n') || value.contains('\r')) {
+    if (value.contains(',') || value.contains('"') || value.contains('\n') ||
+        value.contains('\r')) {
         return QString("\"%1\"").arg(value);
     }
     return value;
@@ -570,38 +575,38 @@ bool writeCsv(const QString &path, const QVector<BenchmarkRecord> &records)
         return false;
     }
     QTextStream stream(&output);
-    stream << "suite,input,run,success,error,container,archive_size,archive_entry_count,image_count,"
-              "selected_entry,selected_uncompressed_size,image_format,width,height,"
-              "requested_page,resolved_page,page_source,requested_decoder,actual_decoder,decoder_fallback_reason,sort";
+    stream
+        << "suite,input,run,success,error,container,archive_size,archive_entry_count,image_count,"
+           "selected_entry,selected_uncompressed_size,image_format,width,height,"
+           "requested_page,resolved_page,page_source,requested_decoder,actual_decoder,decoder_"
+           "fallback_reason,sort";
     for (const ProfileMilestone &milestone : FirstPaintMilestones) {
         stream << ',' << milestone.csvColumn;
     }
-    stream << ",library_init_us,archive_open_us,enumeration_us,filter_us,archive_sort_us,page_list_us,page_sort_us,page_select_us,"
+    stream << ",library_init_us,archive_open_us,enumeration_us,filter_us,archive_sort_us,page_list_"
+              "us,page_sort_us,page_select_us,"
               "source_load_us,extract_us,decode_us,postprocess_us,decode_pipeline_us,total_us\n";
     for (const BenchmarkRecord &record : records) {
-        stream << csvValue(record.suite) << ','
-               << csvValue(record.input) << ','
-               << record.run << ','
-               << (record.success ? "1" : "0") << ','
-               << csvValue(record.error) << ','
-               << csvValue(record.container) << ','
-               << numericCsv(record.archiveSize) << ','
-               << numericCsv(record.archiveEntryCount) << ','
-               << numericCsv(record.imageCount) << ','
-               << csvValue(record.entry) << ','
-               << numericCsv(record.entryUncompressedSize) << ','
-               << csvValue(record.format) << ','
-               << (record.sourceSize.isValid() ? QString::number(record.sourceSize.width()) : QString()) << ','
-               << (record.sourceSize.isValid() ? QString::number(record.sourceSize.height()) : QString()) << ','
-               << csvValue(record.requestedPage) << ','
-               << (record.resolvedPage >= 0 ? QString::number(record.resolvedPage) : QString()) << ','
-               << csvValue(record.pageSource) << ','
-               << csvValue(record.requestedDecoder) << ','
-               << csvValue(record.actualDecoder) << ','
-               << csvValue(record.decoderFallbackReason) << ','
-               << csvValue(record.sort);
+        stream << csvValue(record.suite) << ',' << csvValue(record.input) << ',' << record.run
+               << ',' << (record.success ? "1" : "0") << ',' << csvValue(record.error) << ','
+               << csvValue(record.container) << ',' << numericCsv(record.archiveSize) << ','
+               << numericCsv(record.archiveEntryCount) << ',' << numericCsv(record.imageCount)
+               << ',' << csvValue(record.entry) << ',' << numericCsv(record.entryUncompressedSize)
+               << ',' << csvValue(record.format) << ','
+               << (record.sourceSize.isValid() ? QString::number(record.sourceSize.width())
+                                               : QString())
+               << ','
+               << (record.sourceSize.isValid() ? QString::number(record.sourceSize.height())
+                                               : QString())
+               << ',' << csvValue(record.requestedPage) << ','
+               << (record.resolvedPage >= 0 ? QString::number(record.resolvedPage) : QString())
+               << ',' << csvValue(record.pageSource) << ',' << csvValue(record.requestedDecoder)
+               << ',' << csvValue(record.actualDecoder) << ','
+               << csvValue(record.decoderFallbackReason) << ',' << csvValue(record.sort);
         for (const ProfileMilestone &milestone : FirstPaintMilestones) {
-            stream << ',' << nanosecondsToMicrosecondsCsv(record.profileMilestoneNanoseconds.value(QString::fromLatin1(milestone.label), -1));
+            stream << ','
+                   << nanosecondsToMicrosecondsCsv(record.profileMilestoneNanoseconds.value(
+                          QString::fromLatin1(milestone.label), -1));
         }
         stream << ',' << nanosecondsToMicrosecondsCsv(record.libraryInitNanoseconds) << ','
                << nanosecondsToMicrosecondsCsv(record.archiveOpenNanoseconds) << ','
@@ -646,7 +651,8 @@ bool writeSummary(const QString &path, const QVector<BenchmarkRecord> &records)
 {
     const QFileInfo info(path);
     if (!info.absoluteDir().exists() && !QDir().mkpath(info.absolutePath())) {
-        qCritical().noquote() << "Cannot create benchmark summary directory:" << info.absolutePath();
+        qCritical().noquote() << "Cannot create benchmark summary directory:"
+                              << info.absolutePath();
         return false;
     }
     QFile output(path);
@@ -670,7 +676,11 @@ bool writeSummary(const QString &path, const QVector<BenchmarkRecord> &records)
     QMap<QString, SummaryGroup> groups;
     for (const BenchmarkRecord &record : records) {
         const QString key = QString("%1\x1f%2\x1f%3\x1f%4\x1f%5")
-                                .arg(record.suite, record.input, record.entry, record.requestedDecoder, record.actualDecoder);
+                                .arg(record.suite,
+                                     record.input,
+                                     record.entry,
+                                     record.requestedDecoder,
+                                     record.actualDecoder);
         SummaryGroup &group = groups[key];
         group.suite = record.suite;
         group.input = record.input;
@@ -715,7 +725,8 @@ bool writeSummary(const QString &path, const QVector<BenchmarkRecord> &records)
     QMap<QString, QStringList> decoderOrder;
     QMap<QString, QMap<QString, QVector<double>>> decoderMetrics;
     for (const BenchmarkRecord &record : records) {
-        if (!record.success || record.requestedDecoder.isEmpty() || !record.decoderFallbackReason.isEmpty()) {
+        if (!record.success || record.requestedDecoder.isEmpty() ||
+            !record.decoderFallbackReason.isEmpty()) {
             continue;
         }
         const qint64 metric = comparisonMetric(record);
@@ -743,9 +754,9 @@ bool writeSummary(const QString &path, const QVector<BenchmarkRecord> &records)
             if (candidateMedian <= 0.0) {
                 continue;
             }
-            out << "  comparison baseline=" << baseline
-                << " candidate=" << candidate
-                << " speed_ratio=" << QString::number(baselineMedian / candidateMedian, 'f', 3) << '\n';
+            out << "  comparison baseline=" << baseline << " candidate=" << candidate
+                << " speed_ratio=" << QString::number(baselineMedian / candidateMedian, 'f', 3)
+                << '\n';
         }
     }
     return true;
@@ -769,19 +780,18 @@ bool initializeArchiveLibraryIfApplicable(const QString &input, qint64 &elapsedN
     return initialized;
 }
 
-BenchmarkRecord measureDecode(
-    const BenchmarkOptions &options,
-    const QString &input,
-    const QString &entry,
-    const QString &container,
-    const ByteLoader &loader,
-    const QByteArray *preloadedBytes,
-    const QString &backend,
-    int run,
-    int resolvedPage,
-    const QString &pageSource,
-    qint64 archiveSize,
-    qint64 imageCount)
+BenchmarkRecord measureDecode(const BenchmarkOptions &options,
+                              const QString &input,
+                              const QString &entry,
+                              const QString &container,
+                              const ByteLoader &loader,
+                              const QByteArray *preloadedBytes,
+                              const QString &backend,
+                              int run,
+                              int resolvedPage,
+                              const QString &pageSource,
+                              qint64 archiveSize,
+                              qint64 imageCount)
 {
     BenchmarkRecord record;
     record.suite = suiteName(options.suite);
@@ -822,18 +832,13 @@ BenchmarkRecord measureDecode(
     }
     record.entryUncompressedSize = bytes.size();
     ImageDecodeMetrics metrics;
-    const ImageContent content = Volume::decodeImageBytes(
-        entry,
-        bytes,
-        QSize(),
-        QSize(),
-        true,
-        policy,
-        &metrics);
+    const ImageContent content =
+        Volume::decodeImageBytes(entry, bytes, QSize(), QSize(), true, policy, &metrics);
     record.totalNanoseconds = totalTimer.nsecsElapsed();
     record.decodeNanoseconds = metrics.decodeNanoseconds;
     record.decodePipelineNanoseconds = metrics.pipelineNanoseconds;
-    record.postprocessNanoseconds = qMax<qint64>(0, metrics.pipelineNanoseconds - metrics.decodeNanoseconds);
+    record.postprocessNanoseconds =
+        qMax<qint64>(0, metrics.pipelineNanoseconds - metrics.decodeNanoseconds);
     record.sourceSize = metrics.sourceSize.isValid() ? metrics.sourceSize : content.originalSize;
     record.actualDecoder = metrics.decoderBackend;
     record.decoderFallbackReason = fallbackReason(record.requestedDecoder, record.actualDecoder);
@@ -844,17 +849,16 @@ BenchmarkRecord measureDecode(
     return record;
 }
 
-void benchmarkSample(
-    const BenchmarkOptions &options,
-    const QString &input,
-    const QString &entry,
-    const QString &container,
-    const ByteLoader &loader,
-    int resolvedPage,
-    const QString &pageSource,
-    qint64 archiveSize,
-    qint64 imageCount,
-    QVector<BenchmarkRecord> &records)
+void benchmarkSample(const BenchmarkOptions &options,
+                     const QString &input,
+                     const QString &entry,
+                     const QString &container,
+                     const ByteLoader &loader,
+                     int resolvedPage,
+                     const QString &pageSource,
+                     qint64 archiveSize,
+                     qint64 imageCount,
+                     QVector<BenchmarkRecord> &records)
 {
     const QStringList backends = decoderCandidatesForEntry(options, entry);
     QByteArray preloaded;
@@ -880,46 +884,44 @@ void benchmarkSample(
     for (int warmup = 0; warmup < options.warmup; ++warmup) {
         const QStringList order = rotatedBackends(backends, warmup);
         for (const QString &backend : order) {
-            measureDecode(
-                options,
-                input,
-                entry,
-                container,
-                loader,
-                options.suite == BenchmarkSuite::Decode ? &preloaded : nullptr,
-                backend,
-                0,
-                resolvedPage,
-                pageSource,
-                archiveSize,
-                imageCount);
+            measureDecode(options,
+                          input,
+                          entry,
+                          container,
+                          loader,
+                          options.suite == BenchmarkSuite::Decode ? &preloaded : nullptr,
+                          backend,
+                          0,
+                          resolvedPage,
+                          pageSource,
+                          archiveSize,
+                          imageCount);
         }
     }
     for (int measuredRun = 1; measuredRun <= options.runs; ++measuredRun) {
         const QStringList order = rotatedBackends(backends, measuredRun - 1);
         for (const QString &backend : order) {
-            records.append(measureDecode(
-                options,
-                input,
-                entry,
-                container,
-                loader,
-                options.suite == BenchmarkSuite::Decode ? &preloaded : nullptr,
-                backend,
-                measuredRun,
-                resolvedPage,
-                pageSource,
-                archiveSize,
-                imageCount));
+            records.append(
+                measureDecode(options,
+                              input,
+                              entry,
+                              container,
+                              loader,
+                              options.suite == BenchmarkSuite::Decode ? &preloaded : nullptr,
+                              backend,
+                              measuredRun,
+                              resolvedPage,
+                              pageSource,
+                              archiveSize,
+                              imageCount));
         }
     }
 }
 
-bool benchmarkDecodeInput(
-    const BenchmarkOptions &options,
-    const QString &input,
-    const ReadProgressStore::ReadProgressMap &progress,
-    QVector<BenchmarkRecord> &records)
+bool benchmarkDecodeInput(const BenchmarkOptions &options,
+                          const QString &input,
+                          const ReadProgressStore::ReadProgressMap &progress,
+                          QVector<BenchmarkRecord> &records)
 {
     if (isDirectImageInput(input)) {
         const PageResolution page = resolveSingleImagePage(options.page);
@@ -969,9 +971,7 @@ bool benchmarkDecodeInput(
         input,
         decodePath,
         container,
-        [volumePtr = volume.get(), entryName] {
-            return volumePtr->loadByteArrayByName(entryName);
-        },
+        [volumePtr = volume.get(), entryName] { return volumePtr->loadByteArrayByName(entryName); },
         page.index,
         page.source,
         archiveSize,
@@ -980,11 +980,10 @@ bool benchmarkDecodeInput(
     return true;
 }
 
-BenchmarkRecord measureArchiveOpen(
-    const BenchmarkOptions &options,
-    const QString &input,
-    int run,
-    const ReadProgressStore::ReadProgressMap &progress)
+BenchmarkRecord measureArchiveOpen(const BenchmarkOptions &options,
+                                   const QString &input,
+                                   int run,
+                                   const ReadProgressStore::ReadProgressMap &progress)
 {
     BenchmarkRecord record;
     record.suite = suiteName(options.suite);
@@ -1031,11 +1030,10 @@ BenchmarkRecord measureArchiveOpen(
     return record;
 }
 
-bool benchmarkArchiveOpenInput(
-    const BenchmarkOptions &options,
-    const QString &input,
-    const ReadProgressStore::ReadProgressMap &progress,
-    QVector<BenchmarkRecord> &records)
+bool benchmarkArchiveOpenInput(const BenchmarkOptions &options,
+                               const QString &input,
+                               const ReadProgressStore::ReadProgressMap &progress,
+                               QVector<BenchmarkRecord> &records)
 {
     for (int warmup = 0; warmup < options.warmup; ++warmup) {
         measureArchiveOpen(options, input, 0, progress);
@@ -1046,14 +1044,14 @@ bool benchmarkArchiveOpenInput(
     return true;
 }
 
-void fillDecodedMetrics(
-    BenchmarkRecord &record,
-    const ImageContent &content,
-    const ImageDecodeMetrics &metrics)
+void fillDecodedMetrics(BenchmarkRecord &record,
+                        const ImageContent &content,
+                        const ImageDecodeMetrics &metrics)
 {
     record.decodeNanoseconds = metrics.decodeNanoseconds;
     record.decodePipelineNanoseconds = metrics.pipelineNanoseconds;
-    record.postprocessNanoseconds = qMax<qint64>(0, metrics.pipelineNanoseconds - metrics.decodeNanoseconds);
+    record.postprocessNanoseconds =
+        qMax<qint64>(0, metrics.pipelineNanoseconds - metrics.decodeNanoseconds);
     record.sourceSize = metrics.sourceSize.isValid() ? metrics.sourceSize : content.originalSize;
     record.actualDecoder = metrics.decoderBackend;
     record.decoderFallbackReason = fallbackReason(record.requestedDecoder, record.actualDecoder);
@@ -1063,11 +1061,10 @@ void fillDecodedMetrics(
     }
 }
 
-BenchmarkRecord measureDirectFirstImage(
-    const BenchmarkOptions &options,
-    const QString &input,
-    const QString &backend,
-    int run)
+BenchmarkRecord measureDirectFirstImage(const BenchmarkOptions &options,
+                                        const QString &input,
+                                        const QString &backend,
+                                        int run)
 {
     BenchmarkRecord record;
     record.suite = suiteName(options.suite);
@@ -1103,25 +1100,18 @@ BenchmarkRecord measureDirectFirstImage(
     }
     record.entryUncompressedSize = bytes.size();
     ImageDecodeMetrics metrics;
-    const ImageContent content = Volume::decodeImageBytes(
-        record.entry,
-        bytes,
-        QSize(),
-        QSize(),
-        true,
-        policy,
-        &metrics);
+    const ImageContent content =
+        Volume::decodeImageBytes(record.entry, bytes, QSize(), QSize(), true, policy, &metrics);
     record.totalNanoseconds = totalTimer.nsecsElapsed();
     fillDecodedMetrics(record, content, metrics);
     return record;
 }
 
-BenchmarkRecord measureVolumeFirstImage(
-    const BenchmarkOptions &options,
-    const QString &input,
-    const QString &backend,
-    int run,
-    const ReadProgressStore::ReadProgressMap &progress)
+BenchmarkRecord measureVolumeFirstImage(const BenchmarkOptions &options,
+                                        const QString &input,
+                                        const QString &backend,
+                                        int run,
+                                        const ReadProgressStore::ReadProgressMap &progress)
 {
     BenchmarkRecord record;
     record.suite = suiteName(options.suite);
@@ -1173,7 +1163,8 @@ BenchmarkRecord measureVolumeFirstImage(
         record.error = "Failed to resolve the selected page.";
         return record;
     }
-    record.entryUncompressedSize = static_cast<qint64>(volume->fileLoader()->getFileSize(record.entry));
+    record.entryUncompressedSize =
+        static_cast<qint64>(volume->fileLoader()->getFileSize(record.entry));
     record.format = imageFormatNameForPath(record.entry);
     record.requestedDecoder = requestedDecoderName(record.format, backend);
     const ImageDecodePolicy policy = decodePolicyFor(record.format, backend);
@@ -1194,24 +1185,17 @@ BenchmarkRecord measureVolumeFirstImage(
         record.entryUncompressedSize = bytes.size();
     }
     ImageDecodeMetrics metrics;
-    const ImageContent content = Volume::decodeImageBytes(
-        record.entry,
-        bytes,
-        QSize(),
-        QSize(),
-        true,
-        policy,
-        &metrics);
+    const ImageContent content =
+        Volume::decodeImageBytes(record.entry, bytes, QSize(), QSize(), true, policy, &metrics);
     record.totalNanoseconds = totalTimer.nsecsElapsed();
     fillDecodedMetrics(record, content, metrics);
     return record;
 }
 
-QString selectedFirstImageEntry(
-    const BenchmarkOptions &options,
-    const QString &input,
-    const ReadProgressStore::ReadProgressMap &progress,
-    QString &error)
+QString selectedFirstImageEntry(const BenchmarkOptions &options,
+                                const QString &input,
+                                const ReadProgressStore::ReadProgressMap &progress,
+                                QString &error)
 {
     if (isDirectImageInput(input)) {
         const PageResolution page = resolveSingleImagePage(options.page);
@@ -1239,11 +1223,10 @@ QString selectedFirstImageEntry(
     return entry;
 }
 
-bool benchmarkFirstImageInput(
-    const BenchmarkOptions &options,
-    const QString &input,
-    const ReadProgressStore::ReadProgressMap &progress,
-    QVector<BenchmarkRecord> &records)
+bool benchmarkFirstImageInput(const BenchmarkOptions &options,
+                              const QString &input,
+                              const ReadProgressStore::ReadProgressMap &progress,
+                              QVector<BenchmarkRecord> &records)
 {
     QString error;
     const QString entry = selectedFirstImageEntry(options, input, progress, error);
@@ -1270,10 +1253,9 @@ bool benchmarkFirstImageInput(
     return true;
 }
 
-PreparedFirstPaintInput prepareFirstPaintInput(
-    const BenchmarkOptions &options,
-    const QString &input,
-    const ReadProgressStore::ReadProgressMap &progress)
+PreparedFirstPaintInput prepareFirstPaintInput(const BenchmarkOptions &options,
+                                               const QString &input,
+                                               const ReadProgressStore::ReadProgressMap &progress)
 {
     PreparedFirstPaintInput prepared;
     if (isDirectImageInput(input)) {
@@ -1316,7 +1298,8 @@ PreparedFirstPaintInput prepareFirstPaintInput(
     prepared.container = containerNameForInput(input, volume.get());
     prepared.archiveSize = volume->isArchive() ? QFileInfo(volume->volumePath()).size() : -1;
     prepared.imageCount = volume->pageCount();
-    prepared.entryUncompressedSize = static_cast<qint64>(volume->fileLoader()->getFileSize(prepared.selectedEntry));
+    prepared.entryUncompressedSize =
+        static_cast<qint64>(volume->fileLoader()->getFileSize(prepared.selectedEntry));
     prepared.childInput = QDir::fromNativeSeparators(volume->volumePath());
     prepared.success = true;
     return prepared;
@@ -1359,7 +1342,9 @@ bool restoreFileSnapshot(const FileSnapshot &snapshot)
     return file.commit();
 }
 
-void setDecoderEnvironment(QProcessEnvironment &environment, const QString &format, const QString &backend)
+void setDecoderEnvironment(QProcessEnvironment &environment,
+                           const QString &format,
+                           const QString &backend)
 {
     environment.remove(JpegDecoderEnv);
     environment.remove(PngDecoderEnv);
@@ -1398,10 +1383,9 @@ QMap<QString, qint64> readProfile(const QString &path)
     return markers;
 }
 
-qint64 profileDurationNanoseconds(
-    const QMap<QString, qint64> &markers,
-    const QString &begin,
-    const QString &end)
+qint64 profileDurationNanoseconds(const QMap<QString, qint64> &markers,
+                                  const QString &begin,
+                                  const QString &end)
 {
     if (!markers.contains(begin) || !markers.contains(end)) {
         return -1;
@@ -1410,13 +1394,12 @@ qint64 profileDurationNanoseconds(
     return microseconds < 0 ? -1 : microseconds * 1000;
 }
 
-BenchmarkRecord measureFirstPaint(
-    const BenchmarkOptions &options,
-    const QString &input,
-    const PreparedFirstPaintInput &prepared,
-    const QString &backend,
-    int run,
-    const QString &profilePath)
+BenchmarkRecord measureFirstPaint(const BenchmarkOptions &options,
+                                  const QString &input,
+                                  const PreparedFirstPaintInput &prepared,
+                                  const QString &backend,
+                                  int run,
+                                  const QString &profilePath)
 {
     BenchmarkRecord record;
     record.suite = suiteName(options.suite);
@@ -1462,43 +1445,47 @@ BenchmarkRecord measureFirstPaint(
     process.setProcessChannelMode(QProcess::MergedChannels);
     process.start();
     if (!process.waitForStarted(30000)) {
-        record.error = restorePersistentState()
-                           ? "Failed to start the first-paint child process."
-                           : "Failed to start the first-paint child process and restore QuickViewer settings.";
+        record.error =
+            restorePersistentState()
+                ? "Failed to start the first-paint child process."
+                : "Failed to start the first-paint child process and restore QuickViewer settings.";
         return record;
     }
     if (!process.waitForFinished(120000)) {
         process.kill();
         process.waitForFinished(5000);
-        record.error = restorePersistentState()
-                           ? "First-paint child process did not terminate after the first paint."
-                           : "First-paint child timed out and QuickViewer settings could not be restored.";
+        record.error =
+            restorePersistentState()
+                ? "First-paint child process did not terminate after the first paint."
+                : "First-paint child timed out and QuickViewer settings could not be restored.";
         return record;
     }
     if (!restorePersistentState()) {
-        record.error = "First-paint child completed, but QuickViewer settings could not be restored.";
+        record.error =
+            "First-paint child completed, but QuickViewer settings could not be restored.";
         return record;
     }
 
     const QMap<QString, qint64> markers = readProfile(profilePath);
     if (!markers.contains("first-image-painted")) {
-        record.error = QString("First-paint profile is incomplete (exit code %1).").arg(process.exitCode());
+        record.error =
+            QString("First-paint profile is incomplete (exit code %1).").arg(process.exitCode());
         return record;
     }
     for (const ProfileMilestone &milestone : FirstPaintMilestones) {
         const auto marker = markers.constFind(QString::fromLatin1(milestone.label));
         if (marker != markers.cend()) {
-            record.profileMilestoneNanoseconds.insert(
-                QString::fromLatin1(milestone.label), marker.value() * 1000);
+            record.profileMilestoneNanoseconds.insert(QString::fromLatin1(milestone.label),
+                                                      marker.value() * 1000);
         }
     }
     record.totalNanoseconds = markers.value("first-image-painted") * 1000;
     if (prepared.container != "file" && prepared.container != "directory") {
-        record.archiveOpenNanoseconds = profileDurationNanoseconds(
-            markers, "volume-loader.begin", "volume-loader.created");
+        record.archiveOpenNanoseconds =
+            profileDurationNanoseconds(markers, "volume-loader.begin", "volume-loader.created");
     }
-    record.pageListNanoseconds = profileDurationNanoseconds(
-        markers, "volume.page-list.begin", "volume.page-list.end");
+    record.pageListNanoseconds =
+        profileDurationNanoseconds(markers, "volume.page-list.begin", "volume.page-list.end");
     record.extractNanoseconds = profileDurationNanoseconds(
         markers, "image-worker.extract.begin", "image-worker.extract.end");
     record.sourceLoadNanoseconds = record.extractNanoseconds;
@@ -1511,11 +1498,10 @@ BenchmarkRecord measureFirstPaint(
     return record;
 }
 
-bool benchmarkFirstPaintInput(
-    const BenchmarkOptions &options,
-    const QString &input,
-    const ReadProgressStore::ReadProgressMap &progress,
-    QVector<BenchmarkRecord> &records)
+bool benchmarkFirstPaintInput(const BenchmarkOptions &options,
+                              const QString &input,
+                              const ReadProgressStore::ReadProgressMap &progress,
+                              QVector<BenchmarkRecord> &records)
 {
     const PreparedFirstPaintInput prepared = prepareFirstPaintInput(options, input, progress);
     if (!prepared.success) {
@@ -1539,8 +1525,8 @@ bool benchmarkFirstPaintInput(
     for (int run = 1; run <= options.runs; ++run) {
         int backendIndex = 0;
         for (const QString &backend : rotatedBackends(backends, run - 1)) {
-            const QString path = profileDirectory.filePath(
-                QString("run-%1-%2.tsv").arg(run).arg(backendIndex++));
+            const QString path =
+                profileDirectory.filePath(QString("run-%1-%2.tsv").arg(run).arg(backendIndex++));
             records.append(measureFirstPaint(options, input, prepared, backend, run, path));
         }
     }
@@ -1564,15 +1550,25 @@ bool parseOptions(const QStringList &arguments, BenchmarkOptions &options, QStri
         "Benchmark suite: decode, entry-load, archive-open, first-image, or first-paint.",
         "suite");
     const QCommandLineOption runsOption("runs", "Number of measured runs (default: 5).", "N", "5");
-    const QCommandLineOption warmupOption("warmup", "Number of unmeasured warmup runs (default: 2).", "N", "2");
-    const QCommandLineOption outputOption(
-        "output",
-        "Write raw benchmark records to CSV (default: results/quickviewer-benchmark-<timestamp>.csv).",
-        "path");
-    const QCommandLineOption recursiveOption("recursive", "Recursively include supported images in directory inputs.");
-    const QCommandLineOption pageOption("page", "Initial page: first, resume, or a zero-based page index.", "first|resume|N", "first");
-    const QCommandLineOption sortOption("sort", "Production page sort: name, name-desc, size, size-desc, mtime, or mtime-desc.", "mode", "name");
-    const QCommandLineOption decoderOption("decoder", "Decoder selection; repeatable. FORMAT=BACKEND[,BACKEND...]", "spec");
+    const QCommandLineOption warmupOption(
+        "warmup", "Number of unmeasured warmup runs (default: 2).", "N", "2");
+    const QCommandLineOption outputOption("output",
+                                          "Write raw benchmark records to CSV (default: "
+                                          "results/quickviewer-benchmark-<timestamp>.csv).",
+                                          "path");
+    const QCommandLineOption recursiveOption(
+        "recursive", "Recursively include supported images in directory inputs.");
+    const QCommandLineOption pageOption("page",
+                                        "Initial page: first, resume, or a zero-based page index.",
+                                        "first|resume|N",
+                                        "first");
+    const QCommandLineOption sortOption(
+        "sort",
+        "Production page sort: name, name-desc, size, size-desc, mtime, or mtime-desc.",
+        "mode",
+        "name");
+    const QCommandLineOption decoderOption(
+        "decoder", "Decoder selection; repeatable. FORMAT=BACKEND[,BACKEND...]", "spec");
     parser.addOption(benchmarkOption);
     parser.addOption(runsOption);
     parser.addOption(warmupOption);
@@ -1622,7 +1618,9 @@ bool parseOptions(const QStringList &arguments, BenchmarkOptions &options, QStri
     } else {
         int pageIndex = 0;
         if (!parseNonNegativeInteger(pageValue, pageIndex)) {
-            error = QString("Invalid --page value '%1'. Use first, resume, or a non-negative integer.").arg(pageValue);
+            error =
+                QString("Invalid --page value '%1'. Use first, resume, or a non-negative integer.")
+                    .arg(pageValue);
             return false;
         }
         options.page.kind = PageSelectionKind::Index;
@@ -1661,12 +1659,9 @@ bool parseOptions(const QStringList &arguments, BenchmarkOptions &options, QStri
 
 bool anyFailures(const QVector<BenchmarkRecord> &records)
 {
-    return std::any_of(
-        records.cbegin(),
-        records.cend(),
-        [](const BenchmarkRecord &record) {
-            return !record.success;
-        });
+    return std::any_of(records.cbegin(), records.cend(), [](const BenchmarkRecord &record) {
+        return !record.success;
+    });
 }
 
 } // namespace
@@ -1708,8 +1703,7 @@ void ImageBenchmarkRunner::applyStartupOverrides()
         const QString path = QDir::fromNativeSeparators(qApp->arguments().last());
         qApp->setOpenVolumeWithProgress(true);
         qApp->readProgressStore()->insertSessionOverride(
-            path,
-            {QFileInfo(path).fileName(), path, QString(), 0, pageIndex, false});
+            path, {QFileInfo(path).fileName(), path, QString(), 0, pageIndex, false});
     }
 }
 
@@ -1727,9 +1721,8 @@ int ImageBenchmarkRunner::run(const QStringList &arguments)
     qApp->setImageSortBy(options.sort);
     qApp->setShowSubfolders(options.recursive);
     const ReadProgressStore::ReadProgressMap progress =
-        options.page.kind == PageSelectionKind::Resume
-            ? ReadProgressStore::initializeAsync()
-            : ReadProgressStore::ReadProgressMap();
+        options.page.kind == PageSelectionKind::Resume ? ReadProgressStore::initializeAsync()
+                                                       : ReadProgressStore::ReadProgressMap();
 
     QVector<BenchmarkRecord> records;
     bool inputsSucceeded = true;
@@ -1737,16 +1730,20 @@ int ImageBenchmarkRunner::run(const QStringList &arguments)
         switch (options.suite) {
         case BenchmarkSuite::Decode:
         case BenchmarkSuite::EntryLoad:
-            inputsSucceeded = benchmarkDecodeInput(options, input, progress, records) && inputsSucceeded;
+            inputsSucceeded =
+                benchmarkDecodeInput(options, input, progress, records) && inputsSucceeded;
             break;
         case BenchmarkSuite::ArchiveOpen:
-            inputsSucceeded = benchmarkArchiveOpenInput(options, input, progress, records) && inputsSucceeded;
+            inputsSucceeded =
+                benchmarkArchiveOpenInput(options, input, progress, records) && inputsSucceeded;
             break;
         case BenchmarkSuite::FirstImage:
-            inputsSucceeded = benchmarkFirstImageInput(options, input, progress, records) && inputsSucceeded;
+            inputsSucceeded =
+                benchmarkFirstImageInput(options, input, progress, records) && inputsSucceeded;
             break;
         case BenchmarkSuite::FirstPaint:
-            inputsSucceeded = benchmarkFirstPaintInput(options, input, progress, records) && inputsSucceeded;
+            inputsSucceeded =
+                benchmarkFirstPaintInput(options, input, progress, records) && inputsSucceeded;
             break;
         }
     }
@@ -1757,11 +1754,10 @@ int ImageBenchmarkRunner::run(const QStringList &arguments)
     if (!writeSummary(summaryPath, records)) {
         return 1;
     }
-    QTextStream(stdout) << "CSV: "
-                        << QDir::toNativeSeparators(QFileInfo(options.outputPath).absoluteFilePath())
-                        << '\n'
-                        << "Summary: "
-                        << QDir::toNativeSeparators(QFileInfo(summaryPath).absoluteFilePath())
-                        << '\n';
+    QTextStream(stdout)
+        << "CSV: " << QDir::toNativeSeparators(QFileInfo(options.outputPath).absoluteFilePath())
+        << '\n'
+        << "Summary: " << QDir::toNativeSeparators(QFileInfo(summaryPath).absoluteFilePath())
+        << '\n';
     return inputsSucceeded && !anyFailures(records) ? 0 : 1;
 }

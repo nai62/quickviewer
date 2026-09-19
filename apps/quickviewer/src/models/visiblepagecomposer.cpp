@@ -18,8 +18,7 @@ bool VisiblePageComposer::shouldLoadSecondPageCandidate(
     return !request.options.widePageAsSingle || !request.firstPageIsLandscape;
 }
 
-VisiblePageComposition VisiblePageComposer::compose(
-    const VisiblePageCompositionRequest &request)
+VisiblePageComposition VisiblePageComposer::compose(const VisiblePageCompositionRequest &request)
 {
     VisiblePageComposition composition;
     if (request.firstPageIndex < 0 || request.firstPageIndex >= request.pageCount) {
@@ -28,7 +27,8 @@ VisiblePageComposition VisiblePageComposer::compose(
 
     composition.pageIndexes.push_back(request.firstPageIndex);
     composition.prefetchAnchorIndex = request.firstPageIndex;
-    if (shouldLoadSecondPageCandidate(request) && (!request.options.widePageAsSingle || !request.secondPageIsLandscape)) {
+    if (shouldLoadSecondPageCandidate(request) &&
+        (!request.options.widePageAsSingle || !request.secondPageIsLandscape)) {
         composition.pageIndexes.push_back(request.firstPageIndex + 1);
         composition.prefetchAnchorIndex = request.firstPageIndex + 1;
     }

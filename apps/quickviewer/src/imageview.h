@@ -130,11 +130,12 @@ private:
     PageRenderSettings pageRenderSettings() const;
     qreal manualZoomScale() const;
     void updateSceneForContent(bool allowScrolling, const QRect &contentRect);
-    void configureScrollInteraction(
-        bool scrollable,
-        const LoupeController::SceneUpdate &loupeUpdate,
-        const QRect &contentRect);
-    void preserveViewportCenter(qreal newScale, int previousHorizontalScroll, int previousVerticalScroll);
+    void configureScrollInteraction(bool scrollable,
+                                    const LoupeController::SceneUpdate &loupeUpdate,
+                                    const QRect &contentRect);
+    void preserveViewportCenter(qreal newScale,
+                                int previousHorizontalScroll,
+                                int previousVerticalScroll);
     void updateLoupeScrollFromCursor();
     void updateZoomScrollFromCursor();
     void clearMessage();

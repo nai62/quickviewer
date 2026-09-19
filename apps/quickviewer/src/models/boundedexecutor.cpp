@@ -78,7 +78,9 @@ bool BoundedExecutor::enqueue(Job job)
             launchImmediately = true;
         } else if (m_pendingJobs.size() < m_maximumPendingJobs) {
             auto position = m_pendingJobs.begin();
-            while (position != m_pendingJobs.end() && (position->priority > job.priority || (position->priority == job.priority && position->sequence < job.sequence))) {
+            while (position != m_pendingJobs.end() &&
+                   (position->priority > job.priority ||
+                    (position->priority == job.priority && position->sequence < job.sequence))) {
                 ++position;
             }
             m_pendingJobs.insert(position, std::move(job));

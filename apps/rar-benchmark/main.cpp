@@ -43,8 +43,9 @@ static void printHelp(QTextStream &out)
         << "  -h, --help, /?    Show this help." << '\n';
 }
 
-static BenchmarkCaseResult runReads(
-    const QString &archiveName, const QStringList &warmupFiles, const QStringList &measuredFiles)
+static BenchmarkCaseResult runReads(const QString &archiveName,
+                                    const QStringList &warmupFiles,
+                                    const QStringList &measuredFiles)
 {
     BenchmarkCaseResult result;
     RarExtractor extractor(archiveName);
@@ -85,10 +86,8 @@ static BenchmarkCaseResult runReads(
 static void printCase(QTextStream &out, const QString &name, const BenchmarkCaseResult &result)
 {
     out << name << ": "
-        << QString::number(static_cast<double>(result.elapsedNs) / 1000000.0, 'f', 3)
-        << " ms"
-        << ", bytes=" << result.bytes
-        << ", reopenCount=" << result.statistics.reopenCount
+        << QString::number(static_cast<double>(result.elapsedNs) / 1000000.0, 'f', 3) << " ms"
+        << ", bytes=" << result.bytes << ", reopenCount=" << result.statistics.reopenCount
         << ", readHeaderCount=" << result.statistics.readHeaderCount
         << ", skipCount=" << result.statistics.skipCount
         << ", extractCount=" << result.statistics.extractCount
@@ -125,13 +124,11 @@ static bool benchmarkArchive(const QString &archiveName, QTextStream &out)
     }
 
     out << "solid: " << (extractor.isSolid() ? "true" : "false")
-        << ", entries=" << extractor.fileInfoList().size()
-        << ", files=" << files.size() << '\n';
+        << ", entries=" << extractor.fileInfoList().size() << ", files=" << files.size() << '\n';
     printCase(out, QStringLiteral("list"), listResult);
 
     if (files.isEmpty()) {
-        out << "No file entries to benchmark." << '\n'
-            << '\n';
+        out << "No file entries to benchmark." << '\n' << '\n';
         return true;
     }
 
@@ -142,33 +139,24 @@ static bool benchmarkArchive(const QString &archiveName, QTextStream &out)
         upper = files.size() - 1;
     }
 
-    printCase(
-        out,
-        QStringLiteral("cold read"),
-        runReads(archiveName, {}, {files.at(middle)}));
+    printCase(out, QStringLiteral("cold read"), runReads(archiveName, {}, {files.at(middle)}));
 
     if (lower != upper) {
-        printCase(
-            out,
-            QStringLiteral("forward"),
-            runReads(archiveName, {files.at(lower)}, {files.at(upper)}));
-        printCase(
-            out,
-            QStringLiteral("backward"),
-            runReads(archiveName, {files.at(upper)}, {files.at(lower)}));
+        printCase(out,
+                  QStringLiteral("forward"),
+                  runReads(archiveName, {files.at(lower)}, {files.at(upper)}));
+        printCase(out,
+                  QStringLiteral("backward"),
+                  runReads(archiveName, {files.at(upper)}, {files.at(lower)}));
     } else {
         out << "forward: n/a (requires at least two distinct entries)" << '\n';
         out << "backward: n/a (requires at least two distinct entries)" << '\n';
     }
 
-    printCase(
-        out,
-        QStringLiteral("sequence"),
-        runReads(archiveName, {}, files));
-    printCase(
-        out,
-        QStringLiteral("cache hit"),
-        runReads(archiveName, {files.at(middle)}, {files.at(middle)}));
+    printCase(out, QStringLiteral("sequence"), runReads(archiveName, {}, files));
+    printCase(out,
+              QStringLiteral("cache hit"),
+              runReads(archiveName, {files.at(middle)}, {files.at(middle)}));
     out << '\n';
     return true;
 }
@@ -180,7 +168,8 @@ int main(int argc, char *argv[])
     QTextStream err(stderr);
 
     const QStringList arguments = app.arguments();
-    if (arguments.contains(QStringLiteral("--help")) || arguments.contains(QStringLiteral("-h")) || arguments.contains(QStringLiteral("/?"))) {
+    if (arguments.contains(QStringLiteral("--help")) || arguments.contains(QStringLiteral("-h")) ||
+        arguments.contains(QStringLiteral("/?"))) {
         printHelp(out);
         return 0;
     }

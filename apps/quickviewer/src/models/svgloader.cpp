@@ -27,10 +27,7 @@ struct ResvgState
         resvg_options_load_system_fonts(options);
     }
 
-    ~ResvgState()
-    {
-        resvg_options_destroy(options);
-    }
+    ~ResvgState() { resvg_options_destroy(options); }
 
     resvg_options *options;
 };
@@ -63,14 +60,12 @@ QString resvgErrorString(int error)
 
 int sourceDimension(qreal value)
 {
-    return static_cast<int>(qBound(
-        1.0,
-        std::ceil(value),
-        static_cast<double>(std::numeric_limits<int>::max())));
+    return static_cast<int>(
+        qBound(1.0, std::ceil(value), static_cast<double>(std::numeric_limits<int>::max())));
 }
 
-SvgLoader::RenderResult renderWithResvg(
-    const QByteArray &data, const QString &sourcePath, const QSize &maximumSize)
+SvgLoader::RenderResult
+renderWithResvg(const QByteArray &data, const QString &sourcePath, const QSize &maximumSize)
 {
     SvgLoader::RenderResult result;
     result.backend = qvEnums::SvgLoaderBackend::Resvg;
@@ -84,8 +79,7 @@ SvgLoader::RenderResult renderWithResvg(
         resourcesDirectory = sourceInfo.absolutePath().toUtf8();
     }
     resvg_options_set_resources_dir(
-        state.options,
-        resourcesDirectory.isEmpty() ? nullptr : resourcesDirectory.constData());
+        state.options, resourcesDirectory.isEmpty() ? nullptr : resourcesDirectory.constData());
 
     resvg_render_tree *rawTree = nullptr;
     const int error = resvg_parse_tree_from_data(
@@ -105,9 +99,8 @@ SvgLoader::RenderResult renderWithResvg(
         return result;
     }
 
-    result.sourceSize = QSize(
-        sourceDimension(sourceSize.width()),
-        sourceDimension(sourceSize.height()));
+    result.sourceSize =
+        QSize(sourceDimension(sourceSize.width()), sourceDimension(sourceSize.height()));
     result.image = QImage(rasterSize, QImage::Format_RGBA8888_Premultiplied);
     if (result.image.isNull()) {
         result.resvgError = QStringLiteral("resvg failed to allocate the output image");
@@ -118,17 +111,17 @@ SvgLoader::RenderResult renderWithResvg(
     resvg_transform transform = resvg_transform_identity();
     transform.a = static_cast<float>(rasterSize.width() / sourceSize.width());
     transform.d = static_cast<float>(rasterSize.height() / sourceSize.height());
-    resvg_render(
-        tree.get(),
-        transform,
-        static_cast<uint32_t>(rasterSize.width()),
-        static_cast<uint32_t>(rasterSize.height()),
-        reinterpret_cast<char *>(result.image.bits()));
+    resvg_render(tree.get(),
+                 transform,
+                 static_cast<uint32_t>(rasterSize.width()),
+                 static_cast<uint32_t>(rasterSize.height()),
+                 reinterpret_cast<char *>(result.image.bits()));
     return result;
 }
 
-SvgLoader::RenderResult renderWithQtSvg(
-    const QByteArray &data, const QSize &maximumSize, const QString &resvgError = QString())
+SvgLoader::RenderResult renderWithQtSvg(const QByteArray &data,
+                                        const QSize &maximumSize,
+                                        const QString &resvgError = QString())
 {
     SvgLoader::RenderResult result;
     result.backend = qvEnums::SvgLoaderBackend::QtSvg;
@@ -185,23 +178,21 @@ qvEnums::SvgLoaderBackend backendFromStorageValue(const QString &value)
 
 QSize fittedRasterSize(const QSizeF &sourceSize, const QSize &maximumSize)
 {
-    if (sourceSize.width() <= 0.0 || sourceSize.height() <= 0.0 || maximumSize.width() <= 0 || maximumSize.height() <= 0) {
+    if (sourceSize.width() <= 0.0 || sourceSize.height() <= 0.0 || maximumSize.width() <= 0 ||
+        maximumSize.height() <= 0) {
         return QSize();
     }
 
-    const qreal scale = qMin(
-        maximumSize.width() / sourceSize.width(),
-        maximumSize.height() / sourceSize.height());
-    return QSize(
-        qBound(1, qRound(sourceSize.width() * scale), maximumSize.width()),
-        qBound(1, qRound(sourceSize.height() * scale), maximumSize.height()));
+    const qreal scale =
+        qMin(maximumSize.width() / sourceSize.width(), maximumSize.height() / sourceSize.height());
+    return QSize(qBound(1, qRound(sourceSize.width() * scale), maximumSize.width()),
+                 qBound(1, qRound(sourceSize.height() * scale), maximumSize.height()));
 }
 
-RenderResult render(
-    const QByteArray &data,
-    const QString &sourcePath,
-    const QSize &maximumSize,
-    qvEnums::SvgLoaderBackend preferredBackend)
+RenderResult render(const QByteArray &data,
+                    const QString &sourcePath,
+                    const QSize &maximumSize,
+                    qvEnums::SvgLoaderBackend preferredBackend)
 {
     if (preferredBackend == qvEnums::SvgLoaderBackend::QtSvg) {
         return renderWithQtSvg(data, maximumSize);

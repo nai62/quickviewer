@@ -37,20 +37,29 @@ public:
     bool isPageListLoaded() const { return m_pageListLoaded; }
     ImageContent loadImageBeforePageList(QString subfileName);
     IFileLoader *fileLoader() { return m_loadContext ? m_loadContext->loader() : nullptr; }
-    const IFileLoader *fileLoader() const { return m_loadContext ? m_loadContext->loader() : nullptr; }
+    const IFileLoader *fileLoader() const
+    {
+        return m_loadContext ? m_loadContext->loader() : nullptr;
+    }
 
     static void shutdownImageLoading() { BoundedExecutor::shutdownAll(); }
-    static ImageContent futureLoadImageFromFileVolume(
-        QSharedPointer<ImageLoadContext> context, QString path, QSize pageSize, QSize decodeTargetSize = QSize(), bool loadDetailedMetadata = true);
-    static ImageContent decodeImageBytes(
-        const QString &path,
-        const QByteArray &bytes,
-        QSize pageSize = QSize(),
-        QSize decodeTargetSize = QSize(),
-        bool loadDetailedMetadata = true,
-        const ImageDecodePolicy &decodePolicy = ImageDecodePolicy(),
-        ImageDecodeMetrics *metrics = nullptr);
-    static ImageContent loadImageFromFile(QString path, QSize pageSize, QSize decodeTargetSize = QSize(), bool loadDetailedMetadata = true);
+    static ImageContent futureLoadImageFromFileVolume(QSharedPointer<ImageLoadContext> context,
+                                                      QString path,
+                                                      QSize pageSize,
+                                                      QSize decodeTargetSize = QSize(),
+                                                      bool loadDetailedMetadata = true);
+    static ImageContent
+    decodeImageBytes(const QString &path,
+                     const QByteArray &bytes,
+                     QSize pageSize = QSize(),
+                     QSize decodeTargetSize = QSize(),
+                     bool loadDetailedMetadata = true,
+                     const ImageDecodePolicy &decodePolicy = ImageDecodePolicy(),
+                     ImageDecodeMetrics *metrics = nullptr);
+    static ImageContent loadImageFromFile(QString path,
+                                          QSize pageSize,
+                                          QSize decodeTargetSize = QSize(),
+                                          bool loadDetailedMetadata = true);
     static ImageContent resizeImageForViewport(ImageContent content, QSize pageSize);
 
     bool isArchive() const
@@ -119,7 +128,10 @@ public:
 
     ImageLoadFuture imageLoadAt(int pageIndex) const;
     bool openedWithSpecifiedImageFile() const { return m_openedWithSpecifiedImageFile; }
-    void setOpenedWithSpecifiedImageFile(bool openedWithSpecifiedImageFile) { m_openedWithSpecifiedImageFile = openedWithSpecifiedImageFile; }
+    void setOpenedWithSpecifiedImageFile(bool openedWithSpecifiedImageFile)
+    {
+        m_openedWithSpecifiedImageFile = openedWithSpecifiedImageFile;
+    }
     void moveToThread(QThread *targetThread);
 
 signals:
@@ -129,16 +141,16 @@ public slots:
     void handlePageListLoaded();
 
 private:
-    ImageLoadFuture scheduleImageLoad(
-        const QString &path,
-        const QSize &pageSize,
-        bool requiredForDisplay,
-        const QSize &decodeTargetSize = QSize(),
-        bool loadDetailedMetadata = true,
-        int pageIndex = -1,
-        quint64 generation = 0);
+    ImageLoadFuture scheduleImageLoad(const QString &path,
+                                      const QSize &pageSize,
+                                      bool requiredForDisplay,
+                                      const QSize &decodeTargetSize = QSize(),
+                                      bool loadDetailedMetadata = true,
+                                      int pageIndex = -1,
+                                      quint64 generation = 0);
     ImageLoadFuture scheduleResize(ImageContent content, const QSize &pageSize);
-    ImageLoadFuture scheduleMetadataLoad(ImageContent content, const QString &path, quint64 generation);
+    ImageLoadFuture
+    scheduleMetadataLoad(ImageContent content, const QString &path, quint64 generation);
 
     QList<QString> m_pageNames;
     QList<QString> m_shuffledPageNames;

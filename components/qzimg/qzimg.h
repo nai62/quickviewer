@@ -41,7 +41,10 @@ public:
      */
     static QImage toPackedImage(const QImage &src, int stridePack = 64);
 
-    static QImage scaled(const QImage &src, const QSize &s, Qt::AspectRatioMode aspectMode = Qt::IgnoreAspectRatio, FilterMode mode = ResizeBicubic);
+    static QImage scaled(const QImage &src,
+                         const QSize &s,
+                         Qt::AspectRatioMode aspectMode = Qt::IgnoreAspectRatio,
+                         FilterMode mode = ResizeBicubic);
 
 signals:
 

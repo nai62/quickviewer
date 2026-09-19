@@ -13,7 +13,8 @@ signals:
     void selected(const QModelIndex &index);
 
 protected:
-    void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected) override;
+    void selectionChanged(const QItemSelection &selected,
+                          const QItemSelection &deselected) override;
     void wheelEvent(QWheelEvent *event) override;
 };
 

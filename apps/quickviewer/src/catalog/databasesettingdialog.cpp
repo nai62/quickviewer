@@ -87,7 +87,11 @@ void DatabaseSettingDialog::handleNameLineEditTextChanged(QString name)
 
 void DatabaseSettingDialog::handleSelectFolderButtonClicked()
 {
-    QString folder = QFileDialog::getExistingDirectory(this, tr("Select a folder containing images or archives", "Caption of FolderSelectDialog urging selection of folders containing Images and Archives"));
+    QString folder =
+        QFileDialog::getExistingDirectory(this,
+                                          tr("Select a folder containing images or archives",
+                                             "Caption of FolderSelectDialog urging selection of "
+                                             "folders containing Images and Archives"));
     if (!folder.isEmpty()) {
         ui->pathEdit->setText(folder);
     }

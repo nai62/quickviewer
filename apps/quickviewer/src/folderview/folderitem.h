@@ -14,12 +14,7 @@
 class FolderItem
 {
 public:
-    enum FileType {
-        Dir,
-        Archive,
-        Image,
-        NoItems
-    };
+    enum FileType { Dir, Archive, Image, NoItems };
 
     QString name;
     FileType type;
@@ -29,14 +24,16 @@ public:
     FolderItem()
         : type(Dir),
           size(0)
-    {}
+    {
+    }
 
     FolderItem(QString name, FileType type, QDateTime updated_at, qint64 size = 0)
         : name(std::move(name)),
           type(type),
           updated_at(std::move(updated_at)),
           size(size)
-    {}
+    {
+    }
 };
 
 #endif // FOLDERITEM_H

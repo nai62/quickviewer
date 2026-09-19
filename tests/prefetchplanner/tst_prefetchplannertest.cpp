@@ -21,8 +21,7 @@ private Q_SLOTS:
 
 void PrefetchPlannerTest::preservesInitialDisplayPlan()
 {
-    QCOMPARE(PrefetchPlanner::offsets(PrefetchMode::InitialDisplay, 22),
-             QList<int>({0}));
+    QCOMPARE(PrefetchPlanner::offsets(PrefetchMode::InitialDisplay, 22), QList<int>({0}));
 }
 
 void PrefetchPlannerTest::preservesNormalPlan()
@@ -61,28 +60,24 @@ void PrefetchPlannerTest::respectsCacheCapacity_data()
     QTest::addColumn<int>("capacity");
     QTest::addColumn<QList<int>>("expected");
 
-    QTest::newRow("initial-display-6") << PrefetchMode::InitialDisplay << 6
-                                       << QList<int>({0});
-    QTest::newRow("normal-6") << PrefetchMode::Normal << 6
-                              << QList<int>({0, 1, 2, 3, -1, -2});
+    QTest::newRow("initial-display-6") << PrefetchMode::InitialDisplay << 6 << QList<int>({0});
+    QTest::newRow("normal-6") << PrefetchMode::Normal << 6 << QList<int>({0, 1, 2, 3, -1, -2});
     QTest::newRow("forward-6") << PrefetchMode::NormalForward << 6
                                << QList<int>({0, 1, 2, 3, 4, 5});
     QTest::newRow("backward-6") << PrefetchMode::NormalBackward << 6
                                 << QList<int>({0, -1, -2, -3, -4, 1});
-    QTest::newRow("fast-forward-6") << PrefetchMode::FastForward << 6
-                                    << QList<int>({0, 1, 10, 11, -10, -9});
-    QTest::newRow("fast-backward-6") << PrefetchMode::FastBackward << 6
-                                     << QList<int>({0, 1, -10, -9, 10, 11});
-    QTest::newRow("normal-minimum-dual-page") << PrefetchMode::Normal << 2
-                                              << QList<int>({0, 1});
-    QTest::newRow("forward-minimum-dual-page") << PrefetchMode::NormalForward << 2
-                                               << QList<int>({0, 1});
-    QTest::newRow("backward-minimum-dual-page") << PrefetchMode::NormalBackward << 2
-                                                << QList<int>({0, 1});
-    QTest::newRow("fast-minimum-dual-page") << PrefetchMode::FastForward << 2
-                                            << QList<int>({0, 1});
-    QTest::newRow("fast-backward-minimum-dual-page") << PrefetchMode::FastBackward << 2
-                                                     << QList<int>({0, 1});
+    QTest::newRow("fast-forward-6")
+        << PrefetchMode::FastForward << 6 << QList<int>({0, 1, 10, 11, -10, -9});
+    QTest::newRow("fast-backward-6")
+        << PrefetchMode::FastBackward << 6 << QList<int>({0, 1, -10, -9, 10, 11});
+    QTest::newRow("normal-minimum-dual-page") << PrefetchMode::Normal << 2 << QList<int>({0, 1});
+    QTest::newRow("forward-minimum-dual-page")
+        << PrefetchMode::NormalForward << 2 << QList<int>({0, 1});
+    QTest::newRow("backward-minimum-dual-page")
+        << PrefetchMode::NormalBackward << 2 << QList<int>({0, 1});
+    QTest::newRow("fast-minimum-dual-page") << PrefetchMode::FastForward << 2 << QList<int>({0, 1});
+    QTest::newRow("fast-backward-minimum-dual-page")
+        << PrefetchMode::FastBackward << 2 << QList<int>({0, 1});
 }
 
 void PrefetchPlannerTest::respectsCacheCapacity()
@@ -98,14 +93,12 @@ void PrefetchPlannerTest::respectsCacheCapacity()
 
 void PrefetchPlannerTest::excludesIndexesBeforeFirstPage()
 {
-    QCOMPARE(PrefetchPlanner::indexes(PrefetchMode::Normal, 0, 4, 22),
-             QList<int>({0, 1, 2, 3}));
+    QCOMPARE(PrefetchPlanner::indexes(PrefetchMode::Normal, 0, 4, 22), QList<int>({0, 1, 2, 3}));
 }
 
 void PrefetchPlannerTest::excludesIndexesAfterLastPage()
 {
-    QCOMPARE(PrefetchPlanner::indexes(PrefetchMode::Normal, 3, 4, 22),
-             QList<int>({3, 2, 1, 0}));
+    QCOMPARE(PrefetchPlanner::indexes(PrefetchMode::Normal, 3, 4, 22), QList<int>({3, 2, 1, 0}));
 }
 
 QTEST_APPLESS_MAIN(PrefetchPlannerTest)

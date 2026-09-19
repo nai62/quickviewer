@@ -29,10 +29,8 @@ struct VisiblePageComposition
 class VisiblePageComposer
 {
 public:
-    static bool shouldLoadSecondPageCandidate(
-        const VisiblePageCompositionRequest &request);
-    static VisiblePageComposition compose(
-        const VisiblePageCompositionRequest &request);
+    static bool shouldLoadSecondPageCandidate(const VisiblePageCompositionRequest &request);
+    static VisiblePageComposition compose(const VisiblePageCompositionRequest &request);
 };
 
 #endif // VISIBLEPAGECOMPOSER_H

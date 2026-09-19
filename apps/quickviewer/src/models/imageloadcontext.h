@@ -24,10 +24,7 @@ public:
         return m_loader ? m_loader->getFileResult(name) : FileLoadResult{};
     }
 
-    QByteArray load(const QString &name)
-    {
-        return loadResult(name).data;
-    }
+    QByteArray load(const QString &name) { return loadResult(name).data; }
 
     IFileLoader *loader() const { return m_loader.get(); }
 

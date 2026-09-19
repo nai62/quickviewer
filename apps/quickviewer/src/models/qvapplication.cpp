@@ -60,7 +60,8 @@ QVApplication::QVApplication(int &argc, char **argv)
         // In a non-portable environment, QuickViewer creates a directory for the application
         // in a fixed PATH inside the user directory, and stores data files in it.
 #if defined(Q_OS_MAC) || defined(Q_OS_LINUX)
-        QString datapath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)).filePath(DataDirectory);
+        QString datapath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation))
+                               .filePath(DataDirectory);
 #elif defined(Q_OS_WIN)
         QString datapath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
 //        qDebug() << datapath;
@@ -84,12 +85,16 @@ QVApplication::QVApplication(int &argc, char **argv)
         }
     }
     //#endif
-    m_settings = new QSettings(getFilePathOfApplicationSetting(settingsSubPath()), QSettings::IniFormat, this);
+    m_settings = new QSettings(
+        getFilePathOfApplicationSetting(settingsSubPath()), QSettings::IniFormat, this);
 
     m_languageSelector.initialize();
     m_qtbaseLanguageSelector.copyLanguages(m_languageSelector.Languages());
     //m_settings->setIniCodec(QTextCodec::codecForName("UTF-8"));
-    connect(&m_languageSelector, SIGNAL(languageChanged(QString)), &m_qtbaseLanguageSelector, SLOT(resetTranslator(QString)));
+    connect(&m_languageSelector,
+            SIGNAL(languageChanged(QString)),
+            &m_qtbaseLanguageSelector,
+            SLOT(resetTranslator(QString)));
     registerDefaultKeyMap();
     registerDefaultMouseMap();
     loadSettings();
@@ -115,7 +120,8 @@ QString QVApplication::getFilePathOfApplicationSetting(QString subFilePath)
     if (m_portable) {
         return getApplicationFilePath(subFilePath);
     } else {
-        return QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).filePath(subFilePath);
+        return QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation))
+            .filePath(subFilePath);
     }
 #else
     return getUserHomeFilePath(subFilePath);
@@ -124,7 +130,8 @@ QString QVApplication::getFilePathOfApplicationSetting(QString subFilePath)
 
 QString QVApplication::getUserHomeFilePath(QString subFilePath)
 {
-    return QDir::toNativeSeparators(QString("%1/%2").arg(QString(qgetenv("HOME"))).arg(subFilePath));
+    return QDir::toNativeSeparators(
+        QString("%1/%2").arg(QString(qgetenv("HOME"))).arg(subFilePath));
 }
 
 QString QVApplication::settingsSubPath()
@@ -172,18 +179,14 @@ QString QVApplication::getTranslationPath()
 
 void QVApplication::setSvgRasterMaximumWidth(int width)
 {
-    m_svgRasterMaximumWidth = qBound(
-        SvgLoader::MinimumRasterDimension,
-        width,
-        SvgLoader::MaximumRasterDimension);
+    m_svgRasterMaximumWidth =
+        qBound(SvgLoader::MinimumRasterDimension, width, SvgLoader::MaximumRasterDimension);
 }
 
 void QVApplication::setSvgRasterMaximumHeight(int height)
 {
-    m_svgRasterMaximumHeight = qBound(
-        SvgLoader::MinimumRasterDimension,
-        height,
-        SvgLoader::MaximumRasterDimension);
+    m_svgRasterMaximumHeight =
+        qBound(SvgLoader::MinimumRasterDimension, height, SvgLoader::MaximumRasterDimension);
 }
 
 QString QVApplication::CatalogDatabasePath()
@@ -237,12 +240,16 @@ void QVApplication::registerDefaultKeyMap()
 void QVApplication::registerDefaultMouseMap()
 {
     // Default mouse configs
-    m_mouseActions.addDefaultKey("actionNextPage", QMouseSequence("+::WheelDown, +::ForwardButton"));
+    m_mouseActions.addDefaultKey("actionNextPage",
+                                 QMouseSequence("+::WheelDown, +::ForwardButton"));
     m_mouseActions.addDefaultKey("actionPrevPage", QMouseSequence("+::WheelUp, +::BackButton"));
     m_mouseActions.addDefaultKey("actionContextMenu", QMouseSequence("+::RightButton"));
-    m_mouseActions.addDefaultKey("actionFitting", QMouseSequence("+::RightButton+MiddleButton, Ctrl+::MiddleButton"));
-    m_mouseActions.addDefaultKey("actionZoomIn", QMouseSequence("+::RightButton+WheelUp, Ctrl+::WheelUp"));
-    m_mouseActions.addDefaultKey("actionZoomOut", QMouseSequence("+::RightButton+WheelDown, Ctrl+::WheelDown"));
+    m_mouseActions.addDefaultKey(
+        "actionFitting", QMouseSequence("+::RightButton+MiddleButton, Ctrl+::MiddleButton"));
+    m_mouseActions.addDefaultKey("actionZoomIn",
+                                 QMouseSequence("+::RightButton+WheelUp, Ctrl+::WheelUp"));
+    m_mouseActions.addDefaultKey("actionZoomOut",
+                                 QMouseSequence("+::RightButton+WheelDown, Ctrl+::WheelDown"));
     m_mouseActions.addDefaultKey("actionFullscreen", QMouseSequence("+::MiddleButton"));
 }
 
@@ -287,9 +294,12 @@ void QVApplication::registerActions(Ui::MainWindow *ui)
     // Catalog
     groupName = tr("Catalog", "Catalog Action Group");
     m_keyActions.registerAction("actionShowCatalog", ui->actionShowCatalog, groupName);
-    m_keyActions.registerAction("actionSearchTitleWithOptions", ui->actionSearchTitleWithOptions, groupName);
-    m_keyActions.registerAction("actionCatalogTitleWithoutOptions", ui->actionCatalogTitleWithoutOptions, groupName);
-    m_keyActions.registerAction("actionCatalogIconLongText", ui->actionCatalogIconLongText, groupName);
+    m_keyActions.registerAction(
+        "actionSearchTitleWithOptions", ui->actionSearchTitleWithOptions, groupName);
+    m_keyActions.registerAction(
+        "actionCatalogTitleWithoutOptions", ui->actionCatalogTitleWithoutOptions, groupName);
+    m_keyActions.registerAction(
+        "actionCatalogIconLongText", ui->actionCatalogIconLongText, groupName);
 
     // Image
     groupName = tr("Image", "Image Action Group");
@@ -299,16 +309,22 @@ void QVApplication::registerActions(Ui::MainWindow *ui)
     m_keyActions.registerAction("actionFitToWidth", ui->actionFitToWidth, groupName);
     m_keyActions.registerAction("actionZoomIn", ui->actionZoomIn, groupName);
     m_keyActions.registerAction("actionZoomOut", ui->actionZoomOut, groupName);
-    m_keyActions.registerAction("actionDontEnlargeSmallImagesOnFitting", ui->actionDontEnlargeSmallImagesOnFitting, groupName);
-    m_keyActions.registerAction("actionScrollWithCursorWhenZooming", ui->actionScrollWithCursorWhenZooming, groupName);
+    m_keyActions.registerAction("actionDontEnlargeSmallImagesOnFitting",
+                                ui->actionDontEnlargeSmallImagesOnFitting,
+                                groupName);
+    m_keyActions.registerAction(
+        "actionScrollWithCursorWhenZooming", ui->actionScrollWithCursorWhenZooming, groupName);
     m_keyActions.registerAction("actionLoupeTool", ui->actionLoupeTool, groupName);
 
     groupName = tr("Dual View", "Dual View Action Group");
     m_keyActions.registerAction("actionDualView", ui->actionDualView, groupName);
     m_keyActions.registerAction("actionRightSideBook", ui->actionRightSideBook, groupName);
-    m_keyActions.registerAction("actionWideImageAsOneView", ui->actionWideImageAsOneView, groupName);
-    m_keyActions.registerAction("actionFirstImageAsOneView", ui->actionFirstImageAsOneView, groupName);
-    m_keyActions.registerAction("actionSeparatePagesWhenWideImage", ui->actionSeparatePagesWhenWideImage, groupName);
+    m_keyActions.registerAction(
+        "actionWideImageAsOneView", ui->actionWideImageAsOneView, groupName);
+    m_keyActions.registerAction(
+        "actionFirstImageAsOneView", ui->actionFirstImageAsOneView, groupName);
+    m_keyActions.registerAction(
+        "actionSeparatePagesWhenWideImage", ui->actionSeparatePagesWhenWideImage, groupName);
 
     // View
     groupName = tr("View", "View Action Group");
@@ -317,20 +333,29 @@ void QVApplication::registerActions(Ui::MainWindow *ui)
     m_keyActions.registerAction("actionShowStatusBar", ui->actionShowStatusBar, groupName);
     m_keyActions.registerAction("actionShowPageBar", ui->actionShowPageBar, groupName);
     m_keyActions.registerAction("actionShowMenuBar", ui->actionShowMenuBar, groupName);
-    m_keyActions.registerAction("actionShowFullscreenSignage", ui->actionShowFullscreenSignage, groupName);
-    m_keyActions.registerAction("actionRestoreWindowState", ui->actionRestoreWindowState, groupName);
+    m_keyActions.registerAction(
+        "actionShowFullscreenSignage", ui->actionShowFullscreenSignage, groupName);
+    m_keyActions.registerAction(
+        "actionRestoreWindowState", ui->actionRestoreWindowState, groupName);
     m_keyActions.registerAction("actionFullscreen", ui->actionFullscreen, groupName);
-    m_keyActions.registerAction("actionExitApplicationOrFullscreen", ui->actionExitApplicationOrFullscreen, groupName);
+    m_keyActions.registerAction(
+        "actionExitApplicationOrFullscreen", ui->actionExitApplicationOrFullscreen, groupName);
     m_keyActions.registerAction("actionMaximizeOrNormal", ui->actionMaximizeOrNormal, groupName);
-    m_keyActions.registerAction("actionShowPanelSeparateWindow", ui->actionShowPanelSeparateWindow, groupName);
+    m_keyActions.registerAction(
+        "actionShowPanelSeparateWindow", ui->actionShowPanelSeparateWindow, groupName);
     m_keyActions.registerAction("actionStayOnTop", ui->actionStayOnTop, groupName);
-    m_keyActions.registerAction("actionHideMouseCursorInFullscreen", ui->actionHideMouseCursorInFullscreen, groupName);
+    m_keyActions.registerAction(
+        "actionHideMouseCursorInFullscreen", ui->actionHideMouseCursorInFullscreen, groupName);
     m_keyActions.registerAction("actionSortByFileName", ui->actionSortByFileName, groupName);
-    m_keyActions.registerAction("actionSortByFileNameDescending", ui->actionSortByFileNameDescending, groupName);
+    m_keyActions.registerAction(
+        "actionSortByFileNameDescending", ui->actionSortByFileNameDescending, groupName);
     m_keyActions.registerAction("actionSortByFileSize", ui->actionSortByFileSize, groupName);
-    m_keyActions.registerAction("actionSortByFileSizeDescending", ui->actionSortByFileSizeDescending, groupName);
-    m_keyActions.registerAction("actionSortByModifiedTime", ui->actionSortByModifiedTime, groupName);
-    m_keyActions.registerAction("actionSortByModifiedTimeDescending", ui->actionSortByModifiedTimeDescending, groupName);
+    m_keyActions.registerAction(
+        "actionSortByFileSizeDescending", ui->actionSortByFileSizeDescending, groupName);
+    m_keyActions.registerAction(
+        "actionSortByModifiedTime", ui->actionSortByModifiedTime, groupName);
+    m_keyActions.registerAction(
+        "actionSortByModifiedTimeDescending", ui->actionSortByModifiedTimeDescending, groupName);
 
     // ContextMenu
     groupName = tr("ContextMenu", "ContextMenu Action Group");
@@ -356,7 +381,8 @@ void QVApplication::registerActions(Ui::MainWindow *ui)
     m_keyActions.registerAction("actionShaderCpuSpline36", ui->actionShaderCpuSpline36, groupName);
     m_keyActions.registerAction("actionShaderCpuLanczos3", ui->actionShaderCpuLanczos3, groupName);
     m_keyActions.registerAction("actionShaderCpuLanczos4", ui->actionShaderCpuLanczos4, groupName);
-    m_keyActions.registerAction("actionShaderNearestNeighbor", ui->actionShaderNearestNeighbor, groupName);
+    m_keyActions.registerAction(
+        "actionShaderNearestNeighbor", ui->actionShaderNearestNeighbor, groupName);
 
     // Help
     groupName = tr("Help", "Help Action Group");
@@ -434,21 +460,25 @@ void QVApplication::loadSettings()
     {
         QString sortByString = m_settings->value("ImageSortBy", "SortByFileName").toString();
         int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("ImageSortBy");
-        m_imageSortBy = (qvEnums::ImageSortBy)qvEnums::staticMetaObject.enumerator(enumIdx)
-                            .keysToValue(sortByString.toLatin1().data());
+        m_imageSortBy =
+            (qvEnums::ImageSortBy)qvEnums::staticMetaObject.enumerator(enumIdx).keysToValue(
+                sortByString.toLatin1().data());
     }
     m_fitting = m_settings->value("Fitting", true).toBool();
     {
         QString fitModestring = m_settings->value("ImageFitMode", "FitToRect").toString();
         int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("FitMode");
-        m_fitMode = (qvEnums::FitMode)qvEnums::staticMetaObject.enumerator(enumIdx).keysToValue(fitModestring.toLatin1().data());
+        m_fitMode = (qvEnums::FitMode)qvEnums::staticMetaObject.enumerator(enumIdx).keysToValue(
+            fitModestring.toLatin1().data());
     }
     m_dualView = m_settings->value("DualView", false).toBool();
     m_stayOnTop = m_settings->value("StayOnTop", false).toBool();
 
     m_rightSideBook = m_settings->value("RightSideBook", bRightSideBookDefault).toBool();
-    m_wideImageAsOnePageInDualView = m_settings->value("WideImageAsOnePageInDualView", true).toBool();
-    m_firstImageAsOnePageInDualView = m_settings->value("FirstImageAsOnePageInDualView", false).toBool();
+    m_wideImageAsOnePageInDualView =
+        m_settings->value("WideImageAsOnePageInDualView", true).toBool();
+    m_firstImageAsOnePageInDualView =
+        m_settings->value("FirstImageAsOnePageInDualView", false).toBool();
     m_separatePagesWhenWideImage = m_settings->value("SeparatePagesWhenWideImage", false).toBool();
 
     m_showToolBar = m_settings->value("ShowToolBar", true).toBool();
@@ -469,17 +499,20 @@ void QVApplication::loadSettings()
     m_maxVolumesCache = m_settings->value("MaxVolumesCache", 1).toInt();
     m_maxImagesCache = m_settings->value("MaxImagesCache", 6).toInt();
 #endif
-    m_backgroundColor = QColor(m_settings->value("BackgroundColor", "0x797979").toString().toUInt(nullptr, 16));
-    m_backgroundColor2 = QColor(m_settings->value("BackgroundColor2", "0x5e5e5e").toString().toUInt(nullptr, 16));
+    m_backgroundColor =
+        QColor(m_settings->value("BackgroundColor", "0x797979").toString().toUInt(nullptr, 16));
+    m_backgroundColor2 =
+        QColor(m_settings->value("BackgroundColor2", "0x5e5e5e").toString().toUInt(nullptr, 16));
     m_useCheckeredPattern = m_settings->value("UseCheckeredPattern", true).toBool();
-    m_dontEnlargeSmallImagesOnFitting = m_settings->value("DontEnlargeSmallImagesOnFitting", true).toBool();
+    m_dontEnlargeSmallImagesOnFitting =
+        m_settings->value("DontEnlargeSmallImagesOnFitting", true).toBool();
     m_showFullscreenSignage = m_settings->value("ShowFullscreenSignage", false).toBool();
     m_dontShrinkForLargeImage = m_settings->value("DontShrinkForLargeImage", false).toBool();
     //    m_showFullscreenTitleBar = m_settings->value("ShowFullscreenTitleBar", true).toBool();
     m_useDirect2D = m_settings->value("UseDirect2D", false).toBool();
     m_useFastDCTForJPEG = m_settings->value("UseFastDCTForJPEG", true).toBool();
-    m_svgLoaderBackend = SvgLoader::backendFromStorageValue(
-        m_settings->value("HowToLoadSVG", "resvg").toString());
+    m_svgLoaderBackend =
+        SvgLoader::backendFromStorageValue(m_settings->value("HowToLoadSVG", "resvg").toString());
     m_svgRasterMaximumWidth = SvgLoader::validatedRasterDimension(
         m_settings->value("SvgRasterMaximumWidth", SvgLoader::DefaultMaximumWidth).toInt(),
         SvgLoader::DefaultMaximumWidth);
@@ -497,19 +530,23 @@ void QVApplication::loadSettings()
     m_hideToolBarInFullscreen = m_settings->value("HideToolBarInFullscreen", false).toBool();
     m_hidePageBarInFullscreen = m_settings->value("HidePageBarInFullscreen", false).toBool();
     m_hideScrollBarInFullscreen = m_settings->value("HideScrollBarInFullscreen", true).toBool();
-    m_hideMouseCursorInFullscreen = m_settings->value("HideMouseCursorInFullscreen", false).toBool();
+    m_hideMouseCursorInFullscreen =
+        m_settings->value("HideMouseCursorInFullscreen", false).toBool();
 
     m_titleTextFormat = m_settings->value("TitleTextFormat", defaultTitleTextFormat()).toString();
-    m_statusTextFormat = m_settings->value("StatusTextFormat", defaultStatusTextFormat()).toString();
+    m_statusTextFormat =
+        m_settings->value("StatusTextFormat", defaultStatusTextFormat()).toString();
     m_topWindowWhenRunWithAssoc = m_settings->value("TopWindowWhenRunWithAssoc", true).toBool();
     m_topWindowWhenDropped = m_settings->value("TopWindowWhenDropped", true).toBool();
     m_loupeTool = m_settings->value("LoupeTool", false).toBool();
     m_scrollWithCursorWhenZooming = m_settings->value("ScrollWithCursorWhenZooming", true).toBool();
     {
-        QString showOptionstring = m_settings->value("ShowOptionViewOnStartup", "FolderStartup").toString();
+        QString showOptionstring =
+            m_settings->value("ShowOptionViewOnStartup", "FolderStartup").toString();
         int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("OptionViewOnStartup");
-        m_showOptionViewOnStartup = (qvEnums::OptionViewOnStartup)qvEnums::staticMetaObject.enumerator(enumIdx)
-                                        .keysToValue(showOptionstring.toLatin1().data());
+        m_showOptionViewOnStartup =
+            (qvEnums::OptionViewOnStartup)qvEnums::staticMetaObject.enumerator(enumIdx).keysToValue(
+                showOptionstring.toLatin1().data());
     }
     m_slideShowOnNormalWindow = m_settings->value("SlideShowOnNormalWindow", true).toBool();
     m_slideShowRandomly = m_settings->value("SlideshowRandomly", false).toBool();
@@ -533,7 +570,8 @@ void QVApplication::loadSettings()
     m_prohibitMultipleRunning = m_settings->value("ProhibitMultipleRunning", false).toBool();
     m_lastViewPath = m_settings->value("LastViewPath", "").toString();
     m_dontSavingHistory = m_settings->value("DontSavingHistory", false).toBool();
-    m_extractSolidArchiveToTemporaryDir = m_settings->value("ExtractSolidArchiveToTemporaryDir", true).toBool();
+    m_extractSolidArchiveToTemporaryDir =
+        m_settings->value("ExtractSolidArchiveToTemporaryDir", true).toBool();
     m_lastOpenedFolderPath = m_settings->value("LastOpenedFolderPath", "").toString();
     m_settings->endGroup();
 
@@ -553,16 +591,21 @@ void QVApplication::loadSettings()
     {
         QString viewModestring = m_settings->value("CatalogViewModeSetting", "Icon").toString();
         int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("CatalogViewMode");
-        m_catalogViewModeSetting = (qvEnums::CatalogViewMode)qvEnums::staticMetaObject.enumerator(enumIdx).keysToValue(viewModestring.toLatin1().data());
+        m_catalogViewModeSetting =
+            (qvEnums::CatalogViewMode)qvEnums::staticMetaObject.enumerator(enumIdx).keysToValue(
+                viewModestring.toLatin1().data());
     }
 #ifdef Q_OS_WIN
     if (m_portable) {
-        m_catalogDatabasePath = m_settings->value("CatalogDatabasePath", "database/thumbnail.sqlite3.db").toString();
+        m_catalogDatabasePath =
+            m_settings->value("CatalogDatabasePath", "database/thumbnail.sqlite3.db").toString();
     } else {
-        m_catalogDatabasePath = m_settings->value("CatalogDatabasePath", "thumbnail.sqlite3.db").toString();
+        m_catalogDatabasePath =
+            m_settings->value("CatalogDatabasePath", "thumbnail.sqlite3.db").toString();
     }
 #else
-    m_catalogDatabasePath = m_settings->value("CatalogDatabasePath", ".quickviewer/thumbnail.sqlite3.db").toString();
+    m_catalogDatabasePath =
+        m_settings->value("CatalogDatabasePath", ".quickviewer/thumbnail.sqlite3.db").toString();
 #endif
     m_maxSearchByCharChanged = m_settings->value("MaxSearchByCharChanged", 10000).toInt();
     m_maxShowFrontpage = m_settings->value("MaxShowFrontpage", 1000).toInt();
@@ -621,13 +664,15 @@ void QVApplication::saveSettings()
     m_settings->beginGroup("View");
     {
         int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("ImageSortBy");
-        QString sortByString = QString(qvEnums::staticMetaObject.enumerator(enumIdx).valueToKey(static_cast<int>(m_imageSortBy)));
+        QString sortByString = QString(qvEnums::staticMetaObject.enumerator(enumIdx).valueToKey(
+            static_cast<int>(m_imageSortBy)));
         m_settings->setValue("ImageSortBy", sortByString);
     }
     m_settings->setValue("Fitting", m_fitting);
     {
         int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("FitMode");
-        QString fitModestring = QString(qvEnums::staticMetaObject.enumerator(enumIdx).valueToKey(static_cast<int>(m_fitMode)));
+        QString fitModestring = QString(
+            qvEnums::staticMetaObject.enumerator(enumIdx).valueToKey(static_cast<int>(m_fitMode)));
         m_settings->setValue("ImageFitMode", fitModestring);
     }
     m_settings->setValue("DualView", m_dualView);
@@ -683,8 +728,8 @@ void QVApplication::saveSettings()
     m_settings->setValue("ScrollWithCursorWhenZooming", m_scrollWithCursorWhenZooming);
     {
         int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("OptionViewOnStartup");
-        QString optionViewstring = QString(qvEnums::staticMetaObject.enumerator(enumIdx)
-                                               .valueToKey(static_cast<int>(m_showOptionViewOnStartup)));
+        QString optionViewstring = QString(qvEnums::staticMetaObject.enumerator(enumIdx).valueToKey(
+            static_cast<int>(m_showOptionViewOnStartup)));
         m_settings->setValue("ShowOptionViewOnStartup", optionViewstring);
     }
     m_settings->setValue("SlideShowOnNormalWindow", m_slideShowOnNormalWindow);
@@ -723,7 +768,8 @@ void QVApplication::saveSettings()
     m_settings->beginGroup("Catalog");
     {
         int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("CatalogViewMode");
-        QString viewModestring = QString(qvEnums::staticMetaObject.enumerator(enumIdx).valueToKey(static_cast<int>(m_catalogViewModeSetting)));
+        QString viewModestring = QString(qvEnums::staticMetaObject.enumerator(enumIdx).valueToKey(
+            static_cast<int>(m_catalogViewModeSetting)));
         m_settings->setValue("CatalogViewModeSetting", viewModestring);
     }
     m_settings->setValue("MaxSearchByCharChanged", m_maxSearchByCharChanged);

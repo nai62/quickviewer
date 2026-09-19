@@ -40,13 +40,11 @@ void StartupProfiler::mark(const char *label)
     if (!enabled()) {
         return;
     }
-    const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(
-                             Clock::now() - origin)
-                             .count();
+    const auto elapsed =
+        std::chrono::duration_cast<std::chrono::microseconds>(Clock::now() - origin).count();
     QMutexLocker locker(&recordsMutex);
-    records.push_back({elapsed,
-                       reinterpret_cast<quintptr>(QThread::currentThreadId()),
-                       QByteArray(label)});
+    records.push_back(
+        {elapsed, reinterpret_cast<quintptr>(QThread::currentThreadId()), QByteArray(label)});
 }
 
 void StartupProfiler::flush()
@@ -66,7 +64,7 @@ void StartupProfiler::flush()
     }
     QTextStream stream(&output);
     for (const Record &record : snapshot) {
-        stream << record.elapsedMicroseconds << '\t' << record.threadId
-               << '\t' << record.label << '\n';
+        stream << record.elapsedMicroseconds << '\t' << record.threadId << '\t' << record.label
+               << '\n';
     }
 }

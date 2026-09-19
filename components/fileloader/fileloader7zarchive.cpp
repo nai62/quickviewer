@@ -46,7 +46,8 @@ public:
     Qt7zStreamReader(QIODevice *stream, const QString &extension)
         : m_stream(stream),
           m_extension(extension.toStdWString())
-    {}
+    {
+    }
 
     wstring GetExt() const override { return m_extension; }
 
@@ -113,7 +114,8 @@ class Qt7zStreamWriter : public C7ZipOutStream
 public:
     explicit Qt7zStreamWriter(QIODevice *stream)
         : m_stream(stream)
-    {}
+    {
+    }
 
     int Write(const void *data, unsigned int size, unsigned int *processedSize) override
     {
@@ -221,7 +223,8 @@ public:
         }
 
         bool archiveEncrypted = false;
-        if (m_pArchive->GetBoolProperty(PropertyIndexEnum::kpidEncrypted, archiveEncrypted) && archiveEncrypted) {
+        if (m_pArchive->GetBoolProperty(PropertyIndexEnum::kpidEncrypted, archiveEncrypted) &&
+            archiveEncrypted) {
             invalidate(ArchiveOpenError::PasswordProtected);
             return;
         }
@@ -248,10 +251,7 @@ public:
         }
     }
 
-    ~FileLoader7zArchivePrivate()
-    {
-        closeArchive();
-    }
+    ~FileLoader7zArchivePrivate() { closeArchive(); }
 
     ArchiveOpenError error() const { return m_error; }
 
@@ -303,7 +303,8 @@ public:
         if (!m_pArchive->Extract(index, &writer)) {
             ArchiveOpenError extractError = mapLib7zipError(c7zipLib->GetLastError());
             if (extractError == ArchiveOpenError::None) {
-                extractError = info.isEncrypted ? ArchiveOpenError::PasswordProtected : ArchiveOpenError::Corrupt;
+                extractError = info.isEncrypted ? ArchiveOpenError::PasswordProtected
+                                                : ArchiveOpenError::Corrupt;
             }
             invalidate(extractError);
             return {{}, extractError, false};
@@ -343,7 +344,8 @@ public:
             if (!m_pArchive->Extract(static_cast<unsigned int>(i), &writer)) {
                 ArchiveOpenError extractError = mapLib7zipError(c7zipLib->GetLastError());
                 if (extractError == ArchiveOpenError::None) {
-                    extractError = info.isEncrypted ? ArchiveOpenError::PasswordProtected : ArchiveOpenError::Corrupt;
+                    extractError = info.isEncrypted ? ArchiveOpenError::PasswordProtected
+                                                    : ArchiveOpenError::Corrupt;
                 }
                 invalidate(extractError);
                 return extractError;

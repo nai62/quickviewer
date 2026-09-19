@@ -40,11 +40,7 @@ enum class ToolbarIconSize {
 };
 Q_ENUM_NS(ToolbarIconSize)
 
-enum class FitMode {
-    NoFitting,
-    FitToRect,
-    FitToWidth
-};
+enum class FitMode { NoFitting, FitToRect, FitToWidth };
 Q_ENUM_NS(FitMode)
 
 enum class SvgLoaderBackend {

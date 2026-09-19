@@ -19,11 +19,9 @@ struct RetouchParameters
         : brightness(brightness),
           contrast(contrast),
           gamma(gamma)
-    {}
-    bool isDefault() const
     {
-        return *this == RetouchParameters();
     }
+    bool isDefault() const { return *this == RetouchParameters(); }
     bool operator==(const RetouchParameters &rhs) const
     {
         return brightness == rhs.brightness && contrast == rhs.contrast && gamma == rhs.gamma;
@@ -53,16 +51,22 @@ struct ImageContent
     ImageContent(QString imagePath, size_t size)
         : path(std::move(imagePath)),
           fileSize(size)
-    {}
-    ImageContent(QImage image, QString imagePath, QSize sourceSize, easyexif::EXIFInfo metadata, size_t size)
+    {
+    }
+    ImageContent(
+        QImage image, QString imagePath, QSize sourceSize, easyexif::EXIFInfo metadata, size_t size)
         : loadedImage(std::move(image)),
           originalSize(sourceSize),
           loadedImageSize(loadedImage.size()),
           path(std::move(imagePath)),
           exifInfo(std::move(metadata)),
           fileSize(size)
-    {}
-    bool isRenderable() const { return !loadedImage.isNull() || !resizedImage.isNull() || !movie.isNull(); }
+    {
+    }
+    bool isRenderable() const
+    {
+        return !loadedImage.isNull() || !resizedImage.isNull() || !movie.isNull();
+    }
     bool isLandscape() const { return originalSize.width() > originalSize.height(); }
     void initializeAnimation();
 };

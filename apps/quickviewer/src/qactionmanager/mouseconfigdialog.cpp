@@ -1,7 +1,8 @@
 #include "mouseconfigdialog.h"
 #include "ui_keyconfigdialog.h"
 
-MouseConfigDialog::MouseConfigDialog(MouseConfigDialog::MouseActionManager &mouseActions, QWidget *parent)
+MouseConfigDialog::MouseConfigDialog(MouseConfigDialog::MouseActionManager &mouseActions,
+                                     QWidget *parent)
     : QDialog(parent),
       ui(new Ui::KeyConfigDialog),
       m_mouseActions(mouseActions),
@@ -12,8 +13,11 @@ MouseConfigDialog::MouseConfigDialog(MouseConfigDialog::MouseActionManager &mous
     ui->frameMouseOptions->setEnabled(false);
     ui->recordButton->setVisible(false);
     setWindowTitle(tr("Mouse Settings", "Title of the dialog to customize the mouse sequences"));
-    ui->label->setText(tr("Mouse shortcut:", "Title of LineEdit label to which mouse sequence is input"));
-    ui->shortcutEdit->setPlaceholderText(tr("Select a mouse button and modifiers, then click 'Add shortcut'.", "Placeholder text urging the mouse input setting procedure"));
+    ui->label->setText(
+        tr("Mouse shortcut:", "Title of LineEdit label to which mouse sequence is input"));
+    ui->shortcutEdit->setPlaceholderText(
+        tr("Select a mouse button and modifiers, then click 'Add shortcut'.",
+           "Placeholder text urging the mouse input setting procedure"));
 
 #ifdef Q_OS_WIN
     ui->checkBoxMeta->setVisible(false);
@@ -25,11 +29,20 @@ MouseConfigDialog::MouseConfigDialog(MouseConfigDialog::MouseActionManager &mous
 
     connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(ui->buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
-    connect(ui->buttonBox, SIGNAL(clicked(QAbstractButton *)), this, SLOT(handleButtonBoxClicked(QAbstractButton *)));
-    connect(ui->treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)), this, SLOT(handleTreeWidgetCurrentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)));
+    connect(ui->buttonBox,
+            SIGNAL(clicked(QAbstractButton *)),
+            this,
+            SLOT(handleButtonBoxClicked(QAbstractButton *)));
+    connect(ui->treeWidget,
+            SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
+            this,
+            SLOT(handleTreeWidgetCurrentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)));
     connect(ui->resetButton, SIGNAL(clicked()), this, SLOT(handleResetButtonClicked()));
     connect(ui->addSequenceButton, SIGNAL(clicked()), this, SLOT(handleAddSequenceButtonClicked()));
-    connect(ui->shortcutEdit, SIGNAL(textChanged(QString)), this, SLOT(handleShortcutLineEditTextChanged(QString)));
+    connect(ui->shortcutEdit,
+            SIGNAL(textChanged(QString)),
+            this,
+            SLOT(handleShortcutLineEditTextChanged(QString)));
 
     connect(ui->checkBoxLeft, SIGNAL(toggled(bool)), this, SLOT(handleInputOptionToggled()));
     connect(ui->checkBoxRight, SIGNAL(toggled(bool)), this, SLOT(handleInputOptionToggled()));
@@ -47,8 +60,14 @@ MouseConfigDialog::MouseConfigDialog(MouseConfigDialog::MouseActionManager &mous
     QTreeWidgetItem *header = ui->treeWidget->headerItem();
     //    header->setText(0, tr("Motions", "Title of the column of Action to be registered with the mouse sequence"));
     header->setText(0, tr("Group", "Group of the Action to be registered with the shortcut key"));
-    header->setText(1, tr("Description", "Title of the column that displays the meaning of the action to be registered with the mouse sequence"));
-    header->setText(2, tr("Current mouse shortcut", "Title of the column of the content of the mouse sequence registered for Action"));
+    header->setText(1,
+                    tr("Description",
+                       "Title of the column that displays the meaning of the action to be "
+                       "registered with the mouse sequence"));
+    header->setText(
+        2,
+        tr("Current mouse shortcut",
+           "Title of the column of the content of the mouse sequence registered for Action"));
 
     resetView();
 }
@@ -120,7 +139,9 @@ void MouseConfigDialog::handleRecordButtonKeySequenceChanged(QMouseSequence key)
     QString shortcutText = key.toString();
     setEditTextWithoutSignal(shortcutText);
     if (!shortcutText.isEmpty() && m_mouseActions.markCollisions(m_actionName, key)) {
-        ui->warningLabel->setText(tr("Mouse sequence has potential conflicts.", "Text to be displayed when the entered mouse sequence conflicts with another mouse sequence"));
+        ui->warningLabel->setText(tr("Mouse sequence has potential conflicts.",
+                                     "Text to be displayed when the entered mouse sequence "
+                                     "conflicts with another mouse sequence"));
         return;
     }
     ui->warningLabel->clear();
@@ -185,7 +206,9 @@ void MouseConfigDialog::handleResetButtonClicked()
     QString shortcutText = key.toString();
     setEditTextWithoutSignal(shortcutText);
     if (m_mouseActions.markCollisions(m_actionName, key)) {
-        ui->warningLabel->setText(tr("Mouse sequence has potential conflicts.", "Text to be displayed when the entered mouse sequence conflicts with another mouse sequence"));
+        ui->warningLabel->setText(tr("Mouse sequence has potential conflicts.",
+                                     "Text to be displayed when the entered mouse sequence "
+                                     "conflicts with another mouse sequence"));
         return;
     }
     ui->warningLabel->clear();
@@ -209,7 +232,10 @@ void MouseConfigDialog::handleShortcutLineEditTextChanged(QString text)
 
 void MouseConfigDialog::handleInputOptionToggled()
 {
-    bool enabled = ui->checkBoxLeft->isChecked() || ui->checkBoxRight->isChecked() || ui->checkBoxWheel->isChecked() || ui->checkBoxForward->isChecked() || ui->checkBoxBackward->isChecked() || ui->radioButtonDown->isChecked() || ui->radioButtonUp->isChecked();
+    bool enabled = ui->checkBoxLeft->isChecked() || ui->checkBoxRight->isChecked() ||
+                   ui->checkBoxWheel->isChecked() || ui->checkBoxForward->isChecked() ||
+                   ui->checkBoxBackward->isChecked() || ui->radioButtonDown->isChecked() ||
+                   ui->radioButtonUp->isChecked();
     ui->addSequenceButton->setEnabled(enabled);
 }
 

@@ -14,9 +14,10 @@ RetouchWindow::RetouchWindow(QWidget *parent)
       m_ignoreTextChange(false)
 {
     ui->setupUi(this);
-    connect(qApp->languageSelector(), &LanguageManager::languageChanged, this, [this](const QString &) {
-        ui->retranslateUi(this);
-    });
+    connect(qApp->languageSelector(),
+            &LanguageManager::languageChanged,
+            this,
+            [this](const QString &) { ui->retranslateUi(this); });
     ui->checkBoxForAll->setVisible(false);
 }
 

@@ -25,11 +25,10 @@ int validatedRasterDimension(int value, int defaultValue);
 QString storageValue(qvEnums::SvgLoaderBackend backend);
 qvEnums::SvgLoaderBackend backendFromStorageValue(const QString &value);
 QSize fittedRasterSize(const QSizeF &sourceSize, const QSize &maximumSize);
-RenderResult render(
-    const QByteArray &data,
-    const QString &sourcePath,
-    const QSize &maximumSize,
-    qvEnums::SvgLoaderBackend preferredBackend);
+RenderResult render(const QByteArray &data,
+                    const QString &sourcePath,
+                    const QSize &maximumSize,
+                    qvEnums::SvgLoaderBackend preferredBackend);
 
 } // namespace SvgLoader
 
