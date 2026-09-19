@@ -146,6 +146,27 @@ Supported names are:
 The optional `test-function` is passed to QtTest as the function selector.
 `--viewer-only` and `--startup-only` are obsolete and are not supported.
 
+## Running verification as an agent
+
+Build and test output is far larger than a conversation needs. When an agent
+runs any of the commands above, redirect stdout and stderr to a temporary file
+outside the repository and search that file instead of streaming the whole run.
+The exact command is in "Full Debug verification" for a Windows command prompt
+and in "Running from WSL" for a WSL shell; both already write to a log file and
+search it rather than printing the run in full.
+
+Keep these rules when adapting those commands:
+
+- Write the log outside the source tree (a WSL temporary directory, or
+  `C:\build` on Windows) so it cannot be committed. Do not commit verification
+  logs, transcripts, or captured test reports.
+- Save the exit code immediately after the command, before the search runs,
+  because the search replaces `ERRORLEVEL`/`$?`. The saved exit code is
+  authoritative; a matching `Totals:` line alone does not prove success.
+- Search for the error markers listed in those examples and print only the
+  matching lines, with a little surrounding context for the first failure.
+- Keep the log until the failure, if any, is understood, then delete it.
+
 ## Full Debug verification
 
 From a Windows command prompt in the repository root:
