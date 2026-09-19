@@ -462,6 +462,7 @@ QString QVApplication::getDefaultPictureFolderPath()
 void QVApplication::loadSettings()
 {
     bool bRightSideBookDefault = QLocale::system().language() == QLocale::Japanese;
+    StartupProfiler::mark("application.locale-ready");
 
     // View
     m_settings->beginGroup("View");
@@ -496,6 +497,7 @@ void QVApplication::loadSettings()
     m_showSubfolders = m_settings->value("ShowSubfolders", false).toBool();
     m_slideShowWait = m_settings->value("SlideShowWait", 5000).toInt();
     QRect rec = QGuiApplication::primaryScreen()->geometry();
+    StartupProfiler::mark("application.screen-ready");
     const qint64 desktopWidth = rec.width();
     // The default follows the display, because a page has to fit on it, and stops
     // at the cap so that a very wide desktop cannot ask for a decode that would
@@ -590,8 +592,14 @@ void QVApplication::loadSettings()
 
     // Folder
     m_settings->beginGroup("Folder");
-    QString defaultPath = getDefaultPictureFolderPath();
+    // Asking the shell for the Pictures folder is the expensive part of this
+    // group, and the answer is only used when the setting has no value yet.
+    QString defaultPath;
+    if (!m_settings->contains("HomeFolderPath")) {
+        defaultPath = getDefaultPictureFolderPath();
+    }
     m_homeFolderPath = m_settings->value("HomeFolderPath", defaultPath).toString();
+    StartupProfiler::mark("application.pictures-folder-ready");
     m_openVolumeWithProgress = m_settings->value("OpenVolumeWithProgress", true).toBool();
     m_showReadProgress = m_settings->value("ShowReadProgress", true).toBool();
     m_saveReadProgress = m_settings->value("SaveReadProgress", true).toBool();
