@@ -814,36 +814,38 @@ static ImageContent loadWithSpecifiedFormat(QString path,
                                             const ImageDecodePolicy &decodePolicy,
                                             ImageDecodeMetrics *metrics)
 {
+    const int maxTextureSize = qApp->MaxTextureSize();
+    const ImageDecoder decoder(currentImageDecodeSettings(maxTextureSize));
+    if (format == ImageFormat::Svg) {
+        ImageDecodeDetail::DecodeMetricsScope<> decodeMetrics(metrics);
+        const ImageDecodeOutput output = decoder.decodeSvg(bytes, path);
+        // SVG records its backend even when rasterization fails.
+        decodeMetrics.recordBackend([] { return QStringLiteral("svgloader"); });
+        decodeMetrics.finish();
+        ImageContent ic(
+            output.image, path, output.sourceSize, easyexif::EXIFInfo(), bytes.length());
+        ic.hasDetailedMetadata = true;
+        return ic;
+    }
+
+    NativeDecodeOutcome native =
+        tryNativeDecode(decoder, bytes, format, decodePolicy, decodeTargetSize, metrics);
+    if (native.decoded) {
+        return finishStaticImage(std::move(native.image),
+                                 native.sourceSize,
+                                 path,
+                                 bytes,
+                                 pageSize,
+                                 decodeTargetSize,
+                                 loadDetailedMetadata,
+                                 maxTextureSize);
+    }
+
+    // The native backends get one attempt each. Only the Qt reader is retried,
+    // to try another format name for bytes the first name cannot read.
     // Preserve the initial attempt plus the five retries of the recursive implementation.
     constexpr int kMaxDecodeAttempts = 6;
     for (int attempt = 0; attempt < kMaxDecodeAttempts; ++attempt) {
-        int maxTextureSize = qApp->MaxTextureSize();
-        const ImageDecoder decoder(currentImageDecodeSettings(maxTextureSize));
-        if (format == ImageFormat::Svg) {
-            ImageDecodeDetail::DecodeMetricsScope<> decodeMetrics(metrics);
-            const ImageDecodeOutput output = decoder.decodeSvg(bytes, path);
-            // SVG records its backend even when rasterization fails.
-            decodeMetrics.recordBackend([] { return QStringLiteral("svgloader"); });
-            decodeMetrics.finish();
-            ImageContent ic(
-                output.image, path, output.sourceSize, easyexif::EXIFInfo(), bytes.length());
-            ic.hasDetailedMetadata = true;
-            return ic;
-        }
-
-        NativeDecodeOutcome native =
-            tryNativeDecode(decoder, bytes, format, decodePolicy, decodeTargetSize, metrics);
-        if (native.decoded) {
-            return finishStaticImage(std::move(native.image),
-                                     native.sourceSize,
-                                     path,
-                                     bytes,
-                                     pageSize,
-                                     decodeTargetSize,
-                                     loadDetailedMetadata,
-                                     maxTextureSize);
-        }
-
         // No native backend produced pixels, so read the bytes with Qt instead.
         QImage src;
         QSize baseSize;
