@@ -77,21 +77,21 @@
         <translation>Αφαίρεση (Επιλογές) από Τίτλο βιβλίου</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="41"/>
-        <location filename="../src/catalog/catalogwindow.cpp" line="59"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="43"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="68"/>
         <source>Enter a search term and press Enter to search by title.</source>
         <comment>Gray text that prompts a keyword search of Volume</comment>
         <translation>Εισάγετε λέξεις αναζήτησης και πατήστε Enter για αναζήτηση βάσει τίτλου.</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="43"/>
-        <location filename="../src/catalog/catalogwindow.cpp" line="76"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="47"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="86"/>
         <source>Drop an image folder here to create a catalog.</source>
         <comment>Status bar text briefly explaining how to use CatalogWindow</comment>
         <translation>Αφήστε εδώ έναν φάκελο εικόνων και δημιουργήστε έναν κατάλογο.</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="197"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="209"/>
         <source>%1 of %2 volumes</source>
         <comment>Text of the status bar showing [the number of hits]/[total number] of Volume</comment>
         <translation>(%1/%2) τόμοι εμφανίστηκαν.</translation>
@@ -121,7 +121,7 @@
         <translation>Δημιουργία νέου καταλόγου</translation>
     </message>
     <message>
-        <location filename="../src/catalog/databasesettingdialog.cpp" line="90"/>
+        <location filename="../src/catalog/databasesettingdialog.cpp" line="92"/>
         <source>Select a folder containing images or archives</source>
         <comment>Caption of FolderSelectDialog urging selection of folders containing Images and Archives</comment>
         <translation>Επιλέξτε έναν φάκελο που περιέχει εικόνες ή αρχειοθήκες</translation>
@@ -130,28 +130,28 @@
 <context>
     <name>ExifDialog</name>
     <message>
-        <location filename="../src/exifdialog.cpp" line="192"/>
+        <location filename="../src/exifdialog.cpp" line="215"/>
         <source>Make</source>
         <translation>Κάμερα</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="154"/>
+        <location filename="../src/exifdialog.cpp" line="173"/>
         <source>Mirror horizontal</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(2)</comment>
         <translation>Καθρέφτης οριζόντια</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="210"/>
+        <location filename="../src/exifdialog.cpp" line="234"/>
         <source>Flash</source>
         <translation>Φλας</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="193"/>
+        <location filename="../src/exifdialog.cpp" line="216"/>
         <source>Model</source>
         <translation>Μοντέλο</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="164"/>
+        <location filename="../src/exifdialog.cpp" line="184"/>
         <source>Mirror horizontal and rotate 90 CW</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(7)</comment>
         <translation>Καθρέπτης οριζόντια και περιστροφή 90° δεξιά</translation>
@@ -162,281 +162,281 @@
         <translation>Πληροφορίες EXIF</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="166"/>
+        <location filename="../src/exifdialog.cpp" line="187"/>
         <source>Rotate 270 CW</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(8)</comment>
         <translation>Περιστροφή 270° δεξιά</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="160"/>
+        <location filename="../src/exifdialog.cpp" line="179"/>
         <source>Mirror horizontal and rotate 270 CW</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(5)</comment>
         <translation>Καθρέπτης οριζόντια και περιστροφή 270° δεξιά</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="158"/>
+        <location filename="../src/exifdialog.cpp" line="177"/>
         <source>Mirror vertical</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(4)</comment>
         <translation>Καθρέπτης κατακόρυφα</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="212"/>
+        <location filename="../src/exifdialog.cpp" line="237"/>
         <source>Image description</source>
         <translation>Περιγραφή εικόνας</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="194"/>
+        <location filename="../src/exifdialog.cpp" line="217"/>
         <source>Orientation of camera</source>
         <translation>Προσανατολισμός κάμερας</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="65"/>
+        <location filename="../src/exifdialog.cpp" line="68"/>
         <source>Flash did not fire</source>
         <comment>JPEG EXIF Flash setting value (0x0)</comment>
         <translation>Το φλάς δεν άναψε</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="147"/>
+        <location filename="../src/exifdialog.cpp" line="166"/>
         <source>Horizontal (normal)</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(0 or 1)</comment>
         <translation>Οριζόντια (κανονικά)</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="162"/>
+        <location filename="../src/exifdialog.cpp" line="182"/>
         <source>Rotate 90 CW</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(6)</comment>
         <translation>Περιστροφή 90° δεξιά</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="156"/>
+        <location filename="../src/exifdialog.cpp" line="175"/>
         <source>Rotate 180</source>
         <comment>JPEG EXIF Orientation of the main body of the camera(3)</comment>
         <translation>Περιστροφή 180°</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="191"/>
+        <location filename="../src/exifdialog.cpp" line="214"/>
         <source>Image height</source>
         <translation>Ύψος εικόνας</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="96"/>
+        <location filename="../src/exifdialog.cpp" line="104"/>
         <source>No flash function</source>
         <comment>JPEG EXIF Flash setting value (0x20)</comment>
         <translation>Χωρίς λειτουργία φλας</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="203"/>
+        <location filename="../src/exifdialog.cpp" line="226"/>
         <source>F-number</source>
         <translation>Αριθμός F</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="74"/>
+        <location filename="../src/exifdialog.cpp" line="77"/>
         <source>Flash fired</source>
         <comment>JPEG EXIF Flash setting value (0x1)</comment>
         <translation>Το φλάς άναψε</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="190"/>
+        <location filename="../src/exifdialog.cpp" line="213"/>
         <source>Image width</source>
         <translation>Πλάτος εικόνας</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="196"/>
+        <location filename="../src/exifdialog.cpp" line="219"/>
         <source>Bits per sample</source>
         <translation>Bits ανά δείγμα</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="197"/>
+        <location filename="../src/exifdialog.cpp" line="220"/>
         <source>Software</source>
         <translation>Λογισμικό</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="198"/>
+        <location filename="../src/exifdialog.cpp" line="221"/>
         <source>DateTime</source>
         <translation>Χρόνος</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="199"/>
+        <location filename="../src/exifdialog.cpp" line="222"/>
         <source>Date/time original</source>
         <translation>Αρχικός χρόνος</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="200"/>
+        <location filename="../src/exifdialog.cpp" line="223"/>
         <source>Date/time digitized</source>
         <translation>Χρόνος ψηφιοποίησης</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="201"/>
+        <location filename="../src/exifdialog.cpp" line="224"/>
         <source>Subsecond time original</source>
         <translation>Αρχικός δευτερ. χρόνος</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="202"/>
+        <location filename="../src/exifdialog.cpp" line="225"/>
         <source>Exposure time</source>
         <translation>Χρόνος έκθεσης</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="204"/>
+        <location filename="../src/exifdialog.cpp" line="227"/>
         <source>ISO speed</source>
         <translation>Δείκτες ταχύτητας ISO</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="205"/>
+        <location filename="../src/exifdialog.cpp" line="228"/>
         <source>Shutter speed</source>
         <translation>Ταχύτητα κλείστρου</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="206"/>
+        <location filename="../src/exifdialog.cpp" line="229"/>
         <source>Exposure bias</source>
         <translation>Τιμή πόλωσης έκθεσης</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="207"/>
+        <location filename="../src/exifdialog.cpp" line="230"/>
         <source>Subject distance</source>
         <translation>Απόσταση θέματος</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="208"/>
+        <location filename="../src/exifdialog.cpp" line="231"/>
         <source>Focal length</source>
         <translation>Εστιακό μήκος</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="209"/>
+        <location filename="../src/exifdialog.cpp" line="232"/>
         <source>35 mm equivalent focal length</source>
         <translation>Εστιακό μήκος 35 mm</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="211"/>
+        <location filename="../src/exifdialog.cpp" line="236"/>
         <source>Metering mode</source>
         <translation>Λειτουργία μέτρησης</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="76"/>
+        <location filename="../src/exifdialog.cpp" line="79"/>
         <source>Strobe return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x5)</comment>
         <translation>Δεν ανιχνεύθηκε επιστροφή φωτός</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="78"/>
+        <location filename="../src/exifdialog.cpp" line="81"/>
         <source>Strobe return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x7)</comment>
         <translation>Aνιχνεύθηκε επιστροφή φωτός</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="80"/>
+        <location filename="../src/exifdialog.cpp" line="83"/>
         <source>Flash fired, compulsory flash mode</source>
         <comment>JPEG EXIF Flash setting value (0x9)</comment>
         <translation>Το φλας άναψε σε αναγκαστική λειτουργία φλας</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="82"/>
+        <location filename="../src/exifdialog.cpp" line="85"/>
         <source>Flash fired, compulsory flash mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0xD)</comment>
         <translation>Το φλας άναψε σε αναγκαστική λειτουργία φλας. Δεν ανιχνεύθηκε επιστροφή φωτός</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="84"/>
+        <location filename="../src/exifdialog.cpp" line="88"/>
         <source>Flash fired, compulsory flash mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0xF)</comment>
         <translation>Το φλας άναψε σε αναγκαστική λειτουργία φλας. Ανιχνεύθηκε επιστροφή φωτός</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="86"/>
+        <location filename="../src/exifdialog.cpp" line="91"/>
         <source>Flash did not fire, compulsory flash mode</source>
         <comment>JPEG EXIF Flash setting value (0x10)</comment>
         <translation>Το φλας δεν άναψε σε αναγκαστική λειτουργία φλας</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="88"/>
+        <location filename="../src/exifdialog.cpp" line="94"/>
         <source>Flash did not fire, auto mode</source>
         <comment>JPEG EXIF Flash setting value (0x18)</comment>
         <translation>Το φλας δεν άναψε σε αυτόματη λειτουργία</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="90"/>
+        <location filename="../src/exifdialog.cpp" line="96"/>
         <source>Flash fired, auto mode</source>
         <comment>JPEG EXIF Flash setting value (0x19)</comment>
         <translation>Το φλας άναψε σε αυτόματη λειτουργία</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="92"/>
+        <location filename="../src/exifdialog.cpp" line="98"/>
         <source>Flash fired, auto mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x1D)</comment>
         <translation>Το φλας άναψε σε αυτόματη λειτουργία. Δεν ανιχνεύθηκε επιστροφή φωτός</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="94"/>
+        <location filename="../src/exifdialog.cpp" line="101"/>
         <source>Flash fired, auto mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x1F)</comment>
         <translation>Το φλας άναψε σε αυτόματη λειτουργία. Ανιχνεύθηκε επιστροφή φωτός</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="98"/>
+        <location filename="../src/exifdialog.cpp" line="106"/>
         <source>Flash fired, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x41)</comment>
         <translation>Το φλας άναψε σε λειτουργία μείωσης κόκκινων ματιών</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="100"/>
+        <location filename="../src/exifdialog.cpp" line="108"/>
         <source>Flash fired, red-eye reduction mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x45)</comment>
         <translation>Το φλας άναψε σε λειτουργία μείωσης κόκκινων ματιών. Δεν ανιχνεύθηκε επιστροφή φωτός</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="102"/>
+        <location filename="../src/exifdialog.cpp" line="111"/>
         <source>Flash fired, red-eye reduction mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x47)</comment>
         <translation>Το φλας άναψε σε λειτουργία μείωσης κόκκινων ματιών. Ανιχνεύθηκε επιστροφή φωτός</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="104"/>
+        <location filename="../src/exifdialog.cpp" line="114"/>
         <source>Flash fired, compulsory flash mode, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x49)</comment>
         <translation>Το φλας άναψε σε αναγκαστική λειτουργία φλας και μείωσης κόκκινων ματιών</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="106"/>
+        <location filename="../src/exifdialog.cpp" line="117"/>
         <source>Flash fired, compulsory flash mode, red-eye reduction mode, return light not detected</source>
         <comment>JPEG EXIF Flash setting value (0x4D)</comment>
         <translation>Το φλας άναψε σε αναγκαστική λειτουργία φλας και μείωσης κόκκινων ματιών. Δεν ανιχνεύθηκε επιστροφή φωτός</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="108"/>
+        <location filename="../src/exifdialog.cpp" line="121"/>
         <source>Flash fired, compulsory flash mode, red-eye reduction mode, return light detected</source>
         <comment>JPEG EXIF Flash setting value (0x4F)</comment>
         <translation>Το φλας άναψε σε αναγκαστική λειτουργία φλας και μείωσης κόκκινων ματιών. Ανιχνεύθηκε επιστροφή φωτός</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="110"/>
+        <location filename="../src/exifdialog.cpp" line="125"/>
         <source>Flash fired, auto mode, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x59)</comment>
         <translation>Το φλας άναψε σε αυτόματη λειτουργία και μείωση κόκκινων ματιών</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="112"/>
+        <location filename="../src/exifdialog.cpp" line="128"/>
         <source>Flash fired, auto mode, return light not detected, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x5D)</comment>
         <translation>Το φλας άναψε σε αυτόματη λειτουργία και μείωση κόκκινων ματιών. Δεν ανιχνεύθηκε επιστροφή φωτός</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="114"/>
+        <location filename="../src/exifdialog.cpp" line="131"/>
         <source>Flash fired, auto mode, return light detected, red-eye reduction mode</source>
         <comment>JPEG EXIF Flash setting value (0x5F)</comment>
         <translation>Το φλας άναψε σε αυτόματη λειτουργία και μείωση κόκκινων ματιών. Ανιχνεύθηκε επιστροφή φωτός</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="184"/>
+        <location filename="../src/exifdialog.cpp" line="206"/>
         <source>Exif is not included.</source>
         <comment>Text to display if EXIF is not included in JPEG</comment>
         <translation>Δεν περιέχονται EXIF.</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="188"/>
+        <location filename="../src/exifdialog.cpp" line="210"/>
         <source>Filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="213"/>
+        <location filename="../src/exifdialog.cpp" line="238"/>
         <source>Copyright</source>
         <translation></translation>
     </message>
@@ -451,7 +451,7 @@
         <translation type="vanished">Όνομα αρχείου</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="189"/>
+        <location filename="../src/exifdialog.cpp" line="211"/>
         <source>Pixels</source>
         <translation>Πίξελ</translation>
     </message>
@@ -475,25 +475,25 @@
         <translation>Εάν πατήσετε το κουμπί OK θα καταχωρηθεί στο μητρώο. Πατήστε Ακύρωση αν δεν χρειάζεται.</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="91"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="144"/>
         <source>Sony RAW format</source>
         <comment>description of File format on Explorer(.arw)</comment>
         <translation>Μορφή Sony Raw</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="88"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="137"/>
         <source>Nikon RAW format</source>
         <comment>description of File format on Explorer(.nef)</comment>
         <translation>Μορφή Nicon Raw</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="79"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="116"/>
         <source>HEIF Image</source>
         <comment>description of File format on Explorer(.heic, .heif)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="82"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="123"/>
         <source>Canon RAW format</source>
         <comment>description of File format on Explorer(.cr2)</comment>
         <translation>Μορφη Canon Raw</translation>
@@ -510,7 +510,7 @@
         <translation>Εικόνα WebP (*.webp)</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="85"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="130"/>
         <source>Adobe Digital Negative Format</source>
         <comment>description of File format on Explorer(.dng)</comment>
         <translation></translation>
@@ -530,8 +530,8 @@
         <translation>Μορφή Canon Raw (*.crw, *.cr2)</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="185"/>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="224"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="241"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="283"/>
         <source>&amp;View with QuickViewer</source>
         <comment>Menu displayed when right clicking on file in Explorer</comment>
         <translation>Πρ&amp;οβολή με το QuickViewer</translation>
@@ -572,7 +572,7 @@
         <translation>Μορφή Sony Raw (*.arw)</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="55"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="62"/>
         <source>Truevision Graphics Adapter Format Image</source>
         <comment>description of File format on Explorer(.tga)</comment>
         <translation>Εικόνα μορφής Truevision Graphics Adapter</translation>
@@ -608,55 +608,55 @@
         <translation>για Ricoh, Casio, Pentax, Nokia, Leica κλπ...</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="49"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="50"/>
         <source>JPEG Image</source>
         <comment>description of File format on Explorer(.jpeg)</comment>
         <translation>Εικόνα JPEG</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="52"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="56"/>
         <source>PNG File</source>
         <comment>description of File format on Explorer(.png)</comment>
         <translation>Αρχείο PNG</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="58"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="70"/>
         <source>Animated PNG File</source>
         <comment>description of File format on Explorer(.apng)</comment>
         <translation>Αρχεία κινούμενου PNG</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="61"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="77"/>
         <source>Bitmap File</source>
         <comment>description of File format on Explorer(.bmp)</comment>
         <translation>Αρχείο Bitmap</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="64"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="84"/>
         <source>DirectDraw Surface Image</source>
         <comment>description of File format on Explorer(.dds)</comment>
         <translation>Εικόνα DirectDraw Surface</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="67"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="90"/>
         <source>GIF Image</source>
         <comment>description of File format on Explorer(.gif)</comment>
         <translation>Εικόνα GIF</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="70"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="97"/>
         <source>Windows Icon File</source>
         <comment>description of File format on Explorer(.ico)</comment>
         <translation>Αρχείο εικονιδίου των Windows</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="73"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="103"/>
         <source>TIFF image</source>
         <comment>description of File format on Explorer(.tiff)</comment>
         <translation>Εικόνα Tiff</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="76"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="109"/>
         <source>WebP Image</source>
         <comment>description of File format on Explorer(.webp)</comment>
         <translation>Εικόνα WebP</translation>
@@ -739,14 +739,14 @@
         <translation>Επαναφόρτωση</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="62"/>
-        <location filename="../src/folderview/folderwindow.cpp" line="94"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="63"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="97"/>
         <source>History</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="63"/>
-        <location filename="../src/folderview/folderwindow.cpp" line="95"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="64"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="98"/>
         <source>Open history</source>
         <translation type="unfinished"></translation>
     </message>
@@ -778,8 +778,8 @@
         <translation type="vanished">Αλλαγή μεθόδου ταξινόμησης</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="65"/>
-        <location filename="../src/folderview/folderwindow.cpp" line="301"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="67"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="312"/>
         <source>No folders or archives found.</source>
         <comment>Display when there is no display item in Folder Window</comment>
         <translation>Δεν βρέθηκαν φάκελοι ή αρχειοθήκες</translation>
@@ -794,61 +794,61 @@
         <translation>Όνομα τόμου (μόνο όνομα φακέλου/αρχείου), π.χ. «Δείγμα βιβλίου»)</translation>
     </message>
     <message>
-        <location filename="../src/models/imagestring.cpp" line="45"/>
+        <location filename="../src/models/imagestring.cpp" line="48"/>
         <source>Volume full path, e.g. &apos;C:/Users/qv/Desktop/Sample Book&apos;</source>
         <comment>Format tag of text displayed in title bar and status bar</comment>
         <translation>Πλήρης διαδρομή τόμου, π.χ. «C:/Users/qv/Desktop/Δείγμα βιβλίου»</translation>
     </message>
     <message>
-        <location filename="../src/models/imagestring.cpp" line="46"/>
+        <location filename="../src/models/imagestring.cpp" line="52"/>
         <source>Image file name (only file name), e.g. &apos;page01.jpg&apos;</source>
         <comment>Format tag of text displayed in title bar and status bar</comment>
         <translation>Όνομα αρχείου εικόνας (μόνο όνομα αρχείου), π.χ. «page01.jpg»</translation>
     </message>
     <message>
-        <location filename="../src/models/imagestring.cpp" line="47"/>
+        <location filename="../src/models/imagestring.cpp" line="56"/>
         <source>Image file path in volume, e.g. &apos;subpath/page01.jpg&apos;</source>
         <comment>Format tag of text displayed in title bar and status bar</comment>
         <translation>Διαδρομή αρχείου εικόνας στον τόμο, π.χ. «υποφάκελος/page01.jpg»</translation>
     </message>
     <message>
-        <location filename="../src/models/imagestring.cpp" line="48"/>
+        <location filename="../src/models/imagestring.cpp" line="60"/>
         <source>Image file full path in volume, e.g. &apos;C:/Users/qv/Desktop/Sample Book/subpath/page01.jpg&apos;</source>
         <comment>Format tag of text displayed in title bar and status bar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/models/imagestring.cpp" line="49"/>
+        <location filename="../src/models/imagestring.cpp" line="65"/>
         <source>Image size, e.g. &apos;1920x1080&apos;</source>
         <comment>Format tag of text displayed in title bar and status bar</comment>
         <translation>Μέγεθος εικόνας, π.χ. «1920x1080»</translation>
     </message>
     <message>
-        <location filename="../src/models/imagestring.cpp" line="50"/>
+        <location filename="../src/models/imagestring.cpp" line="69"/>
         <source>Display magnification of image, e.g. &apos;25%&apos;</source>
         <comment>Format tag of text displayed in title bar and status bar</comment>
         <translation>Εμφάνιση μεγέθυνσης εικόνας, π.χ. «25%»</translation>
     </message>
     <message>
-        <location filename="../src/models/imagestring.cpp" line="51"/>
+        <location filename="../src/models/imagestring.cpp" line="73"/>
         <source>Image file size in a readable format, e.g. &apos;63.23 KB&apos;</source>
         <comment>Format tag of text displayed in title bar and status bar</comment>
         <translation>Μέγεθος αρχείου εικόνας με χρήσιμο, π.χ. «63.23 KB»</translation>
     </message>
     <message>
-        <location filename="../src/models/imagestring.cpp" line="52"/>
+        <location filename="../src/models/imagestring.cpp" line="77"/>
         <source>Exact image file size in bytes, e.g. &apos;1,154,340 bytes&apos;</source>
         <comment>Format tag of text displayed in title bar and status bar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/models/imagestring.cpp" line="53"/>
+        <location filename="../src/models/imagestring.cpp" line="81"/>
         <source>Decoded image size in a human-readable format, e.g. &apos;1.59 MB&apos;</source>
         <comment>Format tag of text displayed in title bar and status bar</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/models/imagestring.cpp" line="54"/>
+        <location filename="../src/models/imagestring.cpp" line="85"/>
         <source>Current page number in the volume, e.g. &apos;33/100&apos; or &apos;33-34/100&apos;</source>
         <comment>Format tag of text displayed in title bar and status bar</comment>
         <translation type="unfinished"></translation>
@@ -869,31 +869,31 @@
         <translation type="vanished">Τρέχων αριθμός σελίδας του τόμου, π.χ. «33/100» ή «33-34/100»</translation>
     </message>
     <message>
-        <location filename="../src/models/imagestring.cpp" line="55"/>
+        <location filename="../src/models/imagestring.cpp" line="89"/>
         <source>Separator before the second image in 2-page spread view</source>
         <comment>Format tag of text displayed in title bar and status bar</comment>
         <translation>Διαχωριστικό δεύτερης εικόνας (όταν η προβολή σε 2 σελίδες είναι ενεργή)</translation>
     </message>
     <message>
-        <location filename="../src/models/imagestring.cpp" line="133"/>
-        <location filename="../src/models/imagestring.cpp" line="149"/>
+        <location filename="../src/models/imagestring.cpp" line="164"/>
+        <location filename="../src/models/imagestring.cpp" line="180"/>
         <source>%1 Bytes</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/models/imagestring.cpp" line="135"/>
-        <location filename="../src/models/imagestring.cpp" line="151"/>
+        <location filename="../src/models/imagestring.cpp" line="166"/>
+        <location filename="../src/models/imagestring.cpp" line="182"/>
         <source>%1 KB</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/models/imagestring.cpp" line="137"/>
-        <location filename="../src/models/imagestring.cpp" line="153"/>
+        <location filename="../src/models/imagestring.cpp" line="168"/>
+        <location filename="../src/models/imagestring.cpp" line="184"/>
         <source>%1 MB</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/models/imagestring.cpp" line="143"/>
+        <location filename="../src/models/imagestring.cpp" line="174"/>
         <source>%L1 Bytes</source>
         <translation></translation>
     </message>
@@ -901,90 +901,90 @@
 <context>
     <name>ImageView</name>
     <message>
-        <location filename="../src/imageview.cpp" line="95"/>
+        <location filename="../src/imageview.cpp" line="93"/>
         <source>No Image Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="96"/>
+        <location filename="../src/imageview.cpp" line="93"/>
         <source>Open an image, folder, or archive to begin.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="108"/>
+        <location filename="../src/imageview.cpp" line="105"/>
         <source>No Viewable Images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="110"/>
+        <location filename="../src/imageview.cpp" line="107"/>
         <source>No supported images were found in this folder.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="111"/>
+        <location filename="../src/imageview.cpp" line="108"/>
         <source>No supported images were found in this archive.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="114"/>
+        <location filename="../src/imageview.cpp" line="111"/>
         <source>Cannot Find Item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="115"/>
+        <location filename="../src/imageview.cpp" line="112"/>
         <source>The selected file or folder does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="118"/>
+        <location filename="../src/imageview.cpp" line="115"/>
         <source>Permission Denied</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="119"/>
+        <location filename="../src/imageview.cpp" line="116"/>
         <source>The selected item cannot be read because access was denied.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="122"/>
+        <location filename="../src/imageview.cpp" line="119"/>
         <source>Cannot Display Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="123"/>
+        <location filename="../src/imageview.cpp" line="120"/>
         <source>The image could not be decoded.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="126"/>
-        <location filename="../src/imageview.cpp" line="130"/>
-        <location filename="../src/imageview.cpp" line="134"/>
-        <location filename="../src/imageview.cpp" line="139"/>
+        <location filename="../src/imageview.cpp" line="123"/>
+        <location filename="../src/imageview.cpp" line="127"/>
+        <location filename="../src/imageview.cpp" line="131"/>
+        <location filename="../src/imageview.cpp" line="135"/>
         <source>Cannot Open Archive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="127"/>
+        <location filename="../src/imageview.cpp" line="124"/>
         <source>This archive is password-protected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="131"/>
+        <location filename="../src/imageview.cpp" line="128"/>
         <source>This archive format is not supported.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="135"/>
+        <location filename="../src/imageview.cpp" line="132"/>
         <source>This archive is damaged or invalid.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="140"/>
+        <location filename="../src/imageview.cpp" line="136"/>
         <source>Cannot Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="141"/>
+        <location filename="../src/imageview.cpp" line="137"/>
         <source>The selected item could not be read.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1038,8 +1038,8 @@
         <translation>Τροχός</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="268"/>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="284"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="292"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="310"/>
         <source>Key sequence has potential conflicts.</source>
         <comment>Text to be displayed when the entered shortcut key conflicts with another shortcut key</comment>
         <translation>Η ακολουθία του πλήκτρου έχει πιθανές διενέξεις.</translation>
@@ -1050,8 +1050,8 @@
         <translation>Κύλιση κάτω</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="264"/>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="299"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="287"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="328"/>
         <source>Invalid key sequence.</source>
         <comment>Message when rejecting input contents of inappropriate shortcut key</comment>
         <translation>Μη έγκυρη ακολουθία πλήκτρων.</translation>
@@ -1122,19 +1122,19 @@
         <translation>Εντολή</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="188"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="205"/>
         <source>Description</source>
         <comment>Title of the column that displays the meaning of the action to be registered with the shortcut key</comment>
         <translation>Περιγραφή</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="189"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="210"/>
         <source>Current shortcut</source>
         <comment>Title of the column of the content of the shortcut key registered for Action</comment>
         <translation>Τρέχουσα συντόμευση</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="187"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="203"/>
         <source>Group</source>
         <comment>Group of the Action to be registered with the shortcut key</comment>
         <translation type="unfinished"></translation>
@@ -1143,7 +1143,7 @@
 <context>
     <name>LanguageManager</name>
     <message>
-        <location filename="../../../components/i18n/languagemanager.cpp" line="151"/>
+        <location filename="../../../components/i18n/languagemanager.cpp" line="150"/>
         <source>Always use text translation</source>
         <comment>Menu text that uses textual translation rather than regular qm format</comment>
         <translation type="unfinished"></translation>
@@ -1270,18 +1270,18 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="166"/>
-        <location filename="../src/mainwindow.cpp" line="1627"/>
+        <location filename="../src/mainwindow.cpp" line="1700"/>
         <source>&amp;Fullscreen</source>
         <translation>Πλήρης οθόνη</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1935"/>
+        <location filename="../src/mainwindow.cpp" line="2014"/>
         <source>All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.heic *.heif);;Archives( *.zip *.7z *.rar)</source>
         <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2354"/>
+        <location filename="../src/mainwindow.cpp" line="2446"/>
         <source>Bookmark saved.</source>
         <translation>Ο σελιδοδείκτης αποθηκεύτηκε.</translation>
     </message>
@@ -1620,8 +1620,8 @@
         <translation>Επιβεβαίωση μετακίνησης εικόνας στον &amp;Κάδο ανακύκλωσης</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2173"/>
-        <location filename="../src/mainwindow.cpp" line="2214"/>
+        <location filename="../src/mainwindow.cpp" line="2261"/>
+        <location filename="../src/mainwindow.cpp" line="2305"/>
         <source>Confirmation</source>
         <comment>Confirm deleting image file on MessageBox title</comment>
         <translation>Επιβεβαίωση</translation>
@@ -1700,34 +1700,34 @@
         <translation type="vanished">Δεν είναι δυνατό το άνοιγμα γιατί δεν βρέθηκε το αρχείο εικόνας.</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1586"/>
+        <location filename="../src/mainwindow.cpp" line="1651"/>
         <source>Loading...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1588"/>
+        <location filename="../src/mainwindow.cpp" line="1654"/>
         <source>No images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1590"/>
+        <location filename="../src/mainwindow.cpp" line="1656"/>
         <source>Unavailable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1938"/>
+        <location filename="../src/mainwindow.cpp" line="2020"/>
         <source>Select an image or archive</source>
         <comment>Title of the dialog displayed when opening a file with OpenFileFolder</comment>
         <translation>Παρακαλώ επιλέξτε μια εικόνα ή αρχειοθήκη</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2178"/>
+        <location filename="../src/mainwindow.cpp" line="2267"/>
         <source>Are you sure you want to move the image to Recycle Bin?</source>
         <comment>Confirm putting displayed file in Recycle Box Message Box body</comment>
         <translation>Είστε βέβαιος ότι θέλετε να μετακινήσετε την εικόνα στον κάδο ανακύκλωσης;</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2219"/>
+        <location filename="../src/mainwindow.cpp" line="2310"/>
         <source>Are you sure you want to delete this image?</source>
         <comment>Confirm deleting image file on Message Box body</comment>
         <translation>Είστε βέβαιος ότι θέλετε τη διαγραφή αυτής της εικόνας;</translation>
@@ -1926,7 +1926,7 @@
 <context>
     <name>ManageDatabaseDialog</name>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="21"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="25"/>
         <source>Path</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>Διαδρομή</translation>
@@ -1948,19 +1948,19 @@
         <translation>Διαγραφή όλων</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="67"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="72"/>
         <source>Start</source>
         <comment>Button to start catalog creation for specified folder</comment>
         <translation>Έναρξη εργασίας</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="263"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="308"/>
         <source>Cancelled!</source>
         <comment>Title of message box when catalog generation was canceled</comment>
         <translation>Ακυρώθηκε!</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="230"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="250"/>
         <source>Completed</source>
         <comment>Title of message box when catalog generation finished successfully</comment>
         <translation>Ολοκληρώθηκε!</translation>
@@ -1984,7 +1984,7 @@
         <translation>&amp;Διαγραφή</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="85"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="90"/>
         <source>Cancel</source>
         <comment>Button to cancel the catalog being generated</comment>
         <translation>Ακύρωση εργασίας</translation>
@@ -2008,37 +2008,37 @@
         <translation>Όλοι οι κατάλογοι</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="19"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="20"/>
         <source>Name</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>Όνομα</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="20"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="23"/>
         <source>Created</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>Χρόνος δημιουργίας</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="109"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="115"/>
         <source>Pending</source>
         <comment>Representation of time indicating that the catalog is not currently created and will be generated from now</comment>
         <translation>προσέγγιση σε</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="173"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="182"/>
         <source>Edit Catalog</source>
         <comment>Button for editing contents of already created catalog</comment>
         <translation>Επεξεργασία ενός καταλόγου</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="231"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="252"/>
         <source>Catalog creation completed.</source>
         <comment>Body of message box when catalog generation finished successfully</comment>
         <translation>Η δημιουργία καταλόγου ολοκληρώθηκε</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="264"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="309"/>
         <source>Catalog creation was cancelled.</source>
         <comment>Body of message box when catalog generation is canceled</comment>
         <translation>Η δημιουργία καταλόγου ακυρώθηκε</translation>
@@ -2047,13 +2047,13 @@
 <context>
     <name>MouseConfigDialog</name>
     <message>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="14"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="15"/>
         <source>Mouse Settings</source>
         <comment>Title of the dialog to customize the mouse sequences</comment>
         <translation>Διαμόρφωση ποντικιού</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="15"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="17"/>
         <source>Mouse shortcut:</source>
         <comment>Title of LineEdit label to which mouse sequence is input</comment>
         <translation>Ακολουθία ποντικιού:</translation>
@@ -2064,44 +2064,44 @@
         <translation type="vanished">Επιλέξτε συνδυασμό από τα παρακάτω πλαίσια και πατήστε «Προσθήκη ακολουθίας»</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="16"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="19"/>
         <source>Select a mouse button and modifiers, then click &apos;Add shortcut&apos;.</source>
         <comment>Placeholder text urging the mouse input setting procedure</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="22"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="26"/>
         <source>Command</source>
         <comment>caption of Command key</comment>
         <translation>Εντολή</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="23"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="27"/>
         <source>Option</source>
         <comment>caption of Option key</comment>
         <translation>Επιλογή</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="50"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="64"/>
         <source>Description</source>
         <comment>Title of the column that displays the meaning of the action to be registered with the mouse sequence</comment>
         <translation>Περιγραφή</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="51"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="69"/>
         <source>Current mouse shortcut</source>
         <comment>Title of the column of the content of the mouse sequence registered for Action</comment>
         <translation>Τρέχουσα ακολουθία ποντικιού</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="123"/>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="188"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="142"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="209"/>
         <source>Mouse sequence has potential conflicts.</source>
         <comment>Text to be displayed when the entered mouse sequence conflicts with another mouse sequence</comment>
         <translation>Η ακολουθία του ποντικιού έχει πιθανές διενέξεις.</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="49"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="62"/>
         <source>Group</source>
         <comment>Group of the Action to be registered with the shortcut key</comment>
         <translation type="unfinished"></translation>
@@ -2110,7 +2110,7 @@
 <context>
     <name>OptionsDialog</name>
     <message>
-        <location filename="../src/optionsdialog.ui" line="400"/>
+        <location filename="../src/optionsdialog.ui" line="401"/>
         <source>Use checkered pattern</source>
         <extracomment>Function to make the background of the application a pattern of chessboard</extracomment>
         <translation>Χρήση καρώ μοτίβου</translation>
@@ -2128,12 +2128,12 @@
         <translation>Αριθμός ταυτόχρονα διαχειριζόμενων τόμων (απαιτείται επανεκκίνηση)</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="222"/>
+        <location filename="../src/optionsdialog.ui" line="223"/>
         <source>Allow only one QuickViewer instance (restart required)</source>
         <translation>Να επιτρέπεται μόνο μια παρουσία (απαιτείται επανεκκίνηση)</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="239"/>
+        <location filename="../src/optionsdialog.ui" line="240"/>
         <source>Use Direct2D rendering (restart required)</source>
         <extracomment>Normally it is drawing with Windows GDI, but switching to drawing by Direct2D. QPA is loaded at startup.</extracomment>
         <translation>Απόδοση με Direct2D (απαιτείται επανεκκίνηση)</translation>
@@ -2150,7 +2150,7 @@
         <translation>Επιλογές</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="236"/>
+        <location filename="../src/optionsdialog.ui" line="237"/>
         <source>Direct2D may improve rendering on high-resolution displays. Leave this off unless needed.</source>
         <translation>Σε περιβάλλον υψηλής ευκρίνειας, ενδέχεται να μη λειτουργεί σωστά αν δεν είναι Direct2D. 
  Κανονικά πρέπει να είναι κλειστό</translation>
@@ -2173,7 +2173,7 @@
     </message>
     <message>
         <location filename="../src/optionsdialog.ui" line="163"/>
-        <location filename="../src/optionsdialog.ui" line="173"/>
+        <location filename="../src/optionsdialog.ui" line="174"/>
         <source>Increasing the value will degrade performance. Approximately twice the value of your display is appropriate.</source>
         <translation>Αυξάνοντας την τιμή θα υποβαθμιστεί η απόδοση. 
 Κατάλληλη είναι περίπου η διπλάσια της τιμής της οθόνης σας.</translation>
@@ -2191,40 +2191,40 @@
         <translation>Μέγιστο μέγεθος διατήρησης εικόνας (πίξελ)</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="374"/>
+        <location filename="../src/optionsdialog.ui" line="375"/>
         <source>Background color</source>
         <translation>Χρώμα φόντου 1</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="407"/>
+        <location filename="../src/optionsdialog.ui" line="408"/>
         <source>Alternate background color</source>
         <translation>Χρώμα φόντου 2</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="353"/>
+        <location filename="../src/optionsdialog.ui" line="354"/>
         <source>Background</source>
         <extracomment>Title of frame to change background color or pattern</extracomment>
         <translation>Μοτίβο φόντου</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="202"/>
+        <location filename="../src/optionsdialog.ui" line="203"/>
         <source>Speeds up JPEG decoding at the cost of some image quality.</source>
         <translation>Επιταχύνει τη φόρτωση JPEG σε βάρος της ποιότητας προβολής.</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="205"/>
+        <location filename="../src/optionsdialog.ui" line="206"/>
         <source>Use fast DCT for JPEG decoding</source>
         <extracomment>Option to use TJFLAG_FASTDCT on libjpeg-turbo</extracomment>
         <translation>Χρήση ταχείας DCT για φόρτωση JPEG</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="501"/>
+        <location filename="../src/optionsdialog.ui" line="502"/>
         <source>Always hide page bar</source>
         <extracomment>Flag to suppress the automatic display of the page bar</extracomment>
         <translation>Απόκρυψη γραμμής σελίδας μόνιμα</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="544"/>
+        <location filename="../src/optionsdialog.ui" line="545"/>
         <source>Hide scrollbars in full screen</source>
         <extracomment>Flag to suppress the automatic display of the scrollbars in fullscreen</extracomment>
         <translation>Απόκρυψη γραμμών κύλισης σε πλήρη οθόνη</translation>
@@ -2235,171 +2235,171 @@
         <translation>Γενικές</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="195"/>
+        <location filename="../src/optionsdialog.ui" line="196"/>
         <source>Keep large images at their original size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="571"/>
+        <location filename="../src/optionsdialog.ui" line="572"/>
         <source>Display text</source>
         <translation>Μορφή λεζάντας</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="598"/>
+        <location filename="../src/optionsdialog.ui" line="599"/>
         <source>Window title format</source>
         <translation>Μορφή τίτλου παραθύρου</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="331"/>
-        <location filename="../src/optionsdialog.ui" line="604"/>
-        <location filename="../src/optionsdialog.ui" line="1511"/>
+        <location filename="../src/optionsdialog.ui" line="332"/>
+        <location filename="../src/optionsdialog.ui" line="605"/>
+        <location filename="../src/optionsdialog.ui" line="1512"/>
         <source>Default</source>
         <translation>Κανονικό στυλ</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="1033"/>
-        <location filename="../src/optionsdialog.ui" line="1940"/>
+        <location filename="../src/optionsdialog.ui" line="1034"/>
+        <location filename="../src/optionsdialog.ui" line="1941"/>
         <source>IrfanView style</source>
         <translation>Στυλ IrfanView</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="1462"/>
-        <location filename="../src/optionsdialog.ui" line="2369"/>
+        <location filename="../src/optionsdialog.ui" line="1463"/>
+        <location filename="../src/optionsdialog.ui" line="2370"/>
         <source>Custom</source>
         <translation>Προσαρμογή χρήστη</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="1479"/>
-        <location filename="../src/optionsdialog.ui" line="2386"/>
+        <location filename="../src/optionsdialog.ui" line="1480"/>
+        <location filename="../src/optionsdialog.ui" line="2387"/>
         <source>Preview:</source>
         <translation>Δείγμα εμφάνισης:</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="1505"/>
+        <location filename="../src/optionsdialog.ui" line="1506"/>
         <source>Status bar format</source>
         <translation>Μορφή λεζάντας γραμμής κατάστασης</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="2406"/>
+        <location filename="../src/optionsdialog.ui" line="2407"/>
         <source>Format syntax</source>
         <translation>Μορφοποίηση χρήσης</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="212"/>
+        <location filename="../src/optionsdialog.ui" line="213"/>
         <source>Initial extraction takes longer, but switching images is faster afterward.</source>
         <translation>Χρειάζεται χρόνος για την ανάπτυξη όλων των περιεχομένων, αλλά η εναλλαγή των εικόνων γίνεται ταχύτερα.</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="192"/>
+        <location filename="../src/optionsdialog.ui" line="193"/>
         <source>Disables automatic downscaling when loading large images. This may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="215"/>
+        <location filename="../src/optionsdialog.ui" line="216"/>
         <source>Extract solid archives to a temporary directory</source>
         <extracomment>Flag to expand contents of solid compressed archive to temporary directory</extracomment>
         <translation>Εξαγωγή συμπιεσμένων αρχειοθηκών σε προσωρινό κατάλογο</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="229"/>
+        <location filename="../src/optionsdialog.ui" line="230"/>
         <source>Activate window when opened from a file association</source>
         <comment>Check box to activate the window when activated by image association</comment>
         <translation>Ενεργοποίηση παραθύρου κατά την εκκίνηση με τη συσχετισμένη εικόνα</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="246"/>
+        <location filename="../src/optionsdialog.ui" line="247"/>
         <source>Activate window when an image is dropped onto it</source>
         <comment>Check box to activate the window when an image dropped on</comment>
         <translation>Ενεργοποίηση παραθύρου όταν αφήνεται πάνω μια εικόνα</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="260"/>
+        <location filename="../src/optionsdialog.ui" line="261"/>
         <source>SVG loading method</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="277"/>
+        <location filename="../src/optionsdialog.ui" line="278"/>
         <source>Maximum SVG raster width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="297"/>
+        <location filename="../src/optionsdialog.ui" line="298"/>
         <source>Maximum SVG raster height</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="466"/>
+        <location filename="../src/optionsdialog.ui" line="467"/>
         <source>Interface</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="481"/>
+        <location filename="../src/optionsdialog.ui" line="482"/>
         <source>Always hide</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="487"/>
+        <location filename="../src/optionsdialog.ui" line="488"/>
         <source>Always hide menu bar</source>
         <extracomment>Flag to suppress the automatic display of the page bar</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="494"/>
+        <location filename="../src/optionsdialog.ui" line="495"/>
         <source>Always hide toolbar</source>
         <extracomment>Flag to suppress the automatic display of the page bar</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="517"/>
+        <location filename="../src/optionsdialog.ui" line="518"/>
         <source>Hide in full screen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="523"/>
+        <location filename="../src/optionsdialog.ui" line="524"/>
         <source>Hide menu bar in full screen</source>
         <extracomment>Flag to suppress the automatic display of the scrollbars in fullscreen</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="530"/>
+        <location filename="../src/optionsdialog.ui" line="531"/>
         <source>Hide toolbar in full screen</source>
         <extracomment>Flag to suppress the automatic display of the scrollbars in fullscreen</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="537"/>
+        <location filename="../src/optionsdialog.ui" line="538"/>
         <source>Hide page bar in full screen</source>
         <extracomment>Flag to suppress the automatic display of the scrollbars in fullscreen</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="2422"/>
+        <location filename="../src/optionsdialog.ui" line="2423"/>
         <source>Show format help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="253"/>
+        <location filename="../src/optionsdialog.ui" line="254"/>
         <source>Randomize slideshow order</source>
         <extracomment>The text of the check box. Slideshow usually moves to the next page in the current sorting order, but displays it in random order</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="317"/>
+        <location filename="../src/optionsdialog.ui" line="318"/>
         <source>Theme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="336"/>
+        <location filename="../src/optionsdialog.ui" line="337"/>
         <source>Dark</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.cpp" line="148"/>
+        <location filename="../src/optionsdialog.cpp" line="140"/>
         <source>resvg (Recommended)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.cpp" line="150"/>
+        <location filename="../src/optionsdialog.cpp" line="142"/>
         <source>Qt SVG (Compatibility mode)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2415,67 +2415,67 @@
 <context>
     <name>QVApplication</name>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="252"/>
+        <location filename="../src/models/qvapplication.cpp" line="259"/>
         <source>File</source>
         <comment>File Action Group</comment>
         <translation>Αρχείο</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="259"/>
+        <location filename="../src/models/qvapplication.cpp" line="266"/>
         <source>Bookmark</source>
         <comment>Bookmark Action Group</comment>
         <translation>Σελιδοδείκτης</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="283"/>
+        <location filename="../src/models/qvapplication.cpp" line="290"/>
         <source>Folder</source>
         <comment>Folder Action Group</comment>
         <translation>Φάκελος</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="288"/>
+        <location filename="../src/models/qvapplication.cpp" line="295"/>
         <source>Catalog</source>
         <comment>Catalog Action Group</comment>
         <translation>Κατάλογος</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="314"/>
+        <location filename="../src/models/qvapplication.cpp" line="330"/>
         <source>View</source>
         <comment>View Action Group</comment>
         <translation>Προβολή</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="336"/>
+        <location filename="../src/models/qvapplication.cpp" line="361"/>
         <source>ContextMenu</source>
         <comment>ContextMenu Action Group</comment>
         <translation>Μενού περιβάλλοντος</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="348"/>
+        <location filename="../src/models/qvapplication.cpp" line="373"/>
         <source>Shader</source>
         <comment>Shader Action Group</comment>
         <translation>Σκίαση</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="362"/>
+        <location filename="../src/models/qvapplication.cpp" line="388"/>
         <source>Help</source>
         <comment>Help Action Group</comment>
         <translation>Βοήθεια</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="295"/>
+        <location filename="../src/models/qvapplication.cpp" line="305"/>
         <source>Image</source>
         <comment>Image Action Group</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="265"/>
+        <location filename="../src/models/qvapplication.cpp" line="272"/>
         <source>Navigation</source>
         <comment>Navigation Action Group</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="306"/>
+        <location filename="../src/models/qvapplication.cpp" line="319"/>
         <source>Dual View</source>
         <comment>Dual View Action Group</comment>
         <translation type="unfinished"></translation>
@@ -2495,13 +2495,13 @@
         <translation>Επεξεργασία ονόματος αρχείου</translation>
     </message>
     <message>
-        <location filename="../src/renamedialog.cpp" line="26"/>
+        <location filename="../src/renamedialog.cpp" line="27"/>
         <source>Filename is required.</source>
         <comment>An error message to be displayed when the file name is set to the empty character in the file name change dialog</comment>
         <translation>Απαιτείται όνομα αρχείου.</translation>
     </message>
     <message>
-        <location filename="../src/renamedialog.cpp" line="40"/>
+        <location filename="../src/renamedialog.cpp" line="43"/>
         <source>Rename failed. A file with the same name may already exist.</source>
         <comment>Error message to display when file name change fails</comment>
         <translation>Η μετονομασία απέτυχε. Ίσως το όνομα αρχείου να υπάρχει ήδη.</translation>
@@ -2510,7 +2510,7 @@
 <context>
     <name>RenderedPage</name>
     <message>
-        <location filename="../src/models/renderedpage.cpp" line="72"/>
+        <location filename="../src/models/renderedpage.cpp" line="76"/>
         <source>NOT IMAGE FILE</source>
         <comment>Error messages to be displayed on screen when image loading fails</comment>
         <translation type="unfinished">ΔΕΝ ΥΠΑΡΧΕΙ ΑΡΧΕΙΟ ΕΙΚΟΝΑΣ</translation>
@@ -2555,19 +2555,19 @@
 <context>
     <name>ShortcutButton</name>
     <message>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="75"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="77"/>
         <source>Stop Recording</source>
         <comment>Button for canceling shortcut key input</comment>
         <translation>Διακοπή εγγραφής</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="76"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="78"/>
         <source>Record</source>
         <comment>Button for starting entering the shortcut key</comment>
         <translation>Εγγραφή</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="73"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="74"/>
         <source>Click and enter a new shortcut key.</source>
         <comment>Gray text to be displayed on LineEdit to input the shortcut key</comment>
         <translation>Κάντε κλικ και εισάγετε ένα νέο πλήκτρο συντόμευσης.</translation>
