@@ -35,7 +35,6 @@ public:
     ~Volume();
     void loadPageList();
     bool isPageListLoaded() const { return m_pageListLoaded; }
-    ImageContent loadImageBeforePageList(QString subfileName);
     IFileLoader *fileLoader() { return m_loadContext ? m_loadContext->loader() : nullptr; }
     const IFileLoader *fileLoader() const
     {
@@ -134,13 +133,12 @@ public:
     }
     void moveToThread(QThread *targetThread);
 
-signals:
-    void pageListLoaded();
-
-public slots:
-    void handlePageListLoaded();
-
 private:
+    /**
+     * Loads the page list on demand and returns the loader when the volume has
+     * pages to prefetch. Returns nullptr when there is nothing to prefetch.
+     */
+    IFileLoader *loaderForPrefetch();
     ImageLoadFuture scheduleImageLoad(const QString &path,
                                       const QSize &pageSize,
                                       bool requiredForDisplay,
@@ -148,35 +146,27 @@ private:
                                       bool loadDetailedMetadata = true,
                                       int pageIndex = -1,
                                       quint64 generation = 0);
-    ImageLoadFuture scheduleResize(ImageContent content, const QSize &pageSize);
+    ImageLoadFuture
+    scheduleResize(ImageContent content, const QSize &pageSize, int pageIndex, quint64 generation);
     ImageLoadFuture
     scheduleMetadataLoad(ImageContent content, const QString &path, quint64 generation);
 
+    /**
+     * Page names in display order: every index the viewers and the prefetcher
+     * use means the same page, whatever sort produced that order.
+     */
     QList<QString> m_pageNames;
     QList<QString> m_shuffledPageNames;
-    QList<ImageMetadata> m_imageMetadataList;
-    /**
-     * Sort the page list was built with. The metadata list only exists for the
-     * metadata sorts, so pageNameAt() has to use this instead of the current
-     * application setting.
-     */
-    qvEnums::ImageSortBy m_sortBy = qvEnums::ImageSortBy::SortByFileName;
-    ImageContent m_initialImage;
     mutable LruCache<int, ImageLoadFuture> m_imageLoadCache;
     LruCache<int, ImageLoadFuture> m_previewLoadCache;
 
     QSharedPointer<ImageLoadContext> m_loadContext;
     bool m_pageListLoaded;
     bool m_openedWithSpecifiedImageFile;
-    QString m_volumePath;
     quint64 m_prefetchOwnerId;
     quint64 m_prefetchGeneration;
     int m_lastPrefetchAnchor;
     PrefetchMode m_lastPrefetchMode;
-
-    // fast image loading
-    QString m_subfileName;
-    QFutureWatcher<void> m_watcher;
 
     friend class VolumeLoader;
 };

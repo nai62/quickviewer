@@ -3,33 +3,24 @@
 
 #include <QtGui>
 
-class Movie : public QObject
+/**
+ * The encoded bytes of an animation and, once load() has run, the QMovie that
+ * plays them. load() deliberately waits until the caller that will display the
+ * animation runs, because that is the thread the QMovie belongs to. Copies share
+ * the bytes and the reader, so a Movie behaves as a value.
+ */
+class Movie
 {
-    Q_OBJECT
 public:
-    Movie(QByteArray bytes, QString format, QObject *parent = nullptr);
-    Movie(QObject *parent = nullptr);
-    Movie(const Movie &rhs)
-        : QObject(nullptr),
-          m_movie(rhs.m_movie),
-          m_buffer(rhs.m_buffer),
-          m_bytes(rhs.m_bytes),
-          m_format(rhs.m_format)
-    {
-    }
-    inline Movie &operator=(const Movie &rhs)
-    {
-        m_movie = rhs.m_movie;
-        m_buffer = rhs.m_buffer;
-        m_bytes = rhs.m_bytes;
-        m_format = rhs.m_format;
-        return *this;
-    }
+    Movie() = default;
+    Movie(QByteArray bytes, QString format);
+
+    /** Creates the reader. Repeated calls keep the reader that already exists. */
     void load();
 
     QMovie *data() { return m_movie.data(); }
+    /** True when no bytes were ever set, which is how a default Movie reads. */
     bool isNull() const { return m_bytes.isNull(); }
-    void reset() { m_buffer.data()->reset(); }
 
 private:
     QSharedPointer<QMovie> m_movie;

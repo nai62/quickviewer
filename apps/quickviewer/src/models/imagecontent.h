@@ -67,6 +67,18 @@ struct ImageContent
     {
         return !loadedImage.isNull() || !resizedImage.isNull() || !movie.isNull();
     }
+    /**
+     * True when the EXIF orientation rotates the stored pixels by 90 degrees, so
+     * the displayed size has width and height exchanged.
+     */
+    bool isOrientationRotated() const
+    {
+        return exifInfo.Orientation == 6 || exifInfo.Orientation == 8;
+    }
+    QSize orientedSize(const QSize &size) const
+    {
+        return isOrientationRotated() ? QSize(size.height(), size.width()) : size;
+    }
     bool isLandscape() const { return originalSize.width() > originalSize.height(); }
     void initializeAnimation();
 };

@@ -27,6 +27,7 @@ private Q_SLOTS:
     void findingMissingValueDoesNotInsertIt();
     void touchingValueUpdatesRecencyWithoutInserting();
     void boundsActiveAndPendingJobs();
+    void cancellingDropsOnlyTheOlderGenerationOfThatOwner();
     void keepsTaskContextAliveUntilCompletion();
     void shutdownCancelsPendingJobsAndWaitsForActiveJobs();
 };
@@ -115,6 +116,38 @@ void AsyncCacheTest::boundsActiveAndPendingJobs()
     for (QFuture<int> &future : futures) {
         future.waitForFinished();
     }
+    QTRY_COMPARE(executor.activeCount(), 0);
+    QCOMPARE(executor.pendingCount(), 0);
+}
+
+void AsyncCacheTest::cancellingDropsOnlyTheOlderGenerationOfThatOwner()
+{
+    BoundedExecutor executor(1, 4);
+    QSemaphore gate;
+    const auto running = executor.submit(
+        [&gate] {
+            gate.acquire();
+            return 0;
+        },
+        BoundedExecutor::Priority::Normal,
+        7,
+        1);
+    QVERIFY(running.accepted);
+    QTRY_COMPARE(executor.activeCount(), 1);
+
+    const auto older = executor.submit([] { return 1; }, BoundedExecutor::Priority::Normal, 7, 1);
+    const auto newer = executor.submit([] { return 2; }, BoundedExecutor::Priority::Normal, 7, 2);
+    const auto otherOwner =
+        executor.submit([] { return 3; }, BoundedExecutor::Priority::Normal, 8, 1);
+    QCOMPARE(executor.pendingCount(), 3);
+
+    executor.cancelPendingOlderThan(7, 2);
+    QCOMPARE(executor.pendingCount(), 2);
+    QVERIFY(older.future.isCanceled());
+    QVERIFY(!newer.future.isCanceled());
+    QVERIFY(!otherOwner.future.isCanceled());
+
+    gate.release();
     QTRY_COMPARE(executor.activeCount(), 0);
     QCOMPARE(executor.pendingCount(), 0);
 }

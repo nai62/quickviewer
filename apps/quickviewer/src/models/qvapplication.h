@@ -145,8 +145,22 @@ public:
     {
         m_dontEnlargeSmallImagesOnFitting = dontEnlargeSmallImagesOnFitting;
     }
+    /**
+     * Range the maximum texture size setting may take. The options dialog offers
+     * the same two numbers because Designer cannot read them from here.
+     */
+    static constexpr int TextureSizeSettingMin = 1024;
+    static constexpr int TextureSizeSettingMax = 16384;
+    /** Clamps a stored or computed maximum texture size into that range. */
+    static int clampTextureSizeSetting(int textureSize)
+    {
+        return qBound(TextureSizeSettingMin, textureSize, TextureSizeSettingMax);
+    }
     int MaxTextureSize() { return m_maxTextureSize; }
-    void setMaxTextureSize(int maxTextureSize) { m_maxTextureSize = maxTextureSize; }
+    void setMaxTextureSize(int maxTextureSize)
+    {
+        m_maxTextureSize = clampTextureSizeSetting(maxTextureSize);
+    }
     bool UseFastDCTForJPEG() { return m_useFastDCTForJPEG; }
     void setUseFastDCTForJPEG(bool useFastDCTForJPEG) { m_useFastDCTForJPEG = useFastDCTForJPEG; }
     qvEnums::SvgLoaderBackend SvgLoaderBackend() { return m_svgLoaderBackend; }

@@ -69,13 +69,22 @@ bool webpHasFeature(const QByteArray &bytes, unsigned char featureMask)
     return (static_cast<unsigned char>(data[20]) & featureMask) != 0;
 }
 
-bool pngHasChunk(const QByteArray &bytes, const char chunkType[5])
+/** The PNG chunks that decide whether this backend can serve the bytes. */
+struct PngChunks
+{
+    bool animated = false;
+    bool colourManaged = false;
+    bool srgb = false;
+};
+
+PngChunks readPngChunks(const QByteArray &bytes)
 {
     static constexpr unsigned char PngSignature[] = {0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A};
+    PngChunks chunks;
     const auto *data = reinterpret_cast<const unsigned char *>(bytes.constData());
     const qsizetype size = bytes.size();
     if (size < 8 || std::memcmp(data, PngSignature, sizeof(PngSignature)) != 0) {
-        return false;
+        return chunks;
     }
 
     qsizetype offset = 8;
@@ -85,24 +94,35 @@ bool pngHasChunk(const QByteArray &bytes, const char chunkType[5])
                                     (static_cast<quint32>(data[offset + 2]) << 8) |
                                     static_cast<quint32>(data[offset + 3]);
         if (static_cast<quint64>(chunkLength) > static_cast<quint64>(size - offset - 12)) {
-            return false;
+            return chunks;
         }
         const char *type = reinterpret_cast<const char *>(data + offset + 4);
-        if (std::memcmp(type, chunkType, 4) == 0) {
-            return true;
-        }
-        if (std::memcmp(type, "IEND", 4) == 0) {
+        if (std::memcmp(type, "acTL", 4) == 0) {
+            chunks.animated = true;
+        } else if (std::memcmp(type, "iCCP", 4) == 0 || std::memcmp(type, "gAMA", 4) == 0 ||
+                   std::memcmp(type, "cHRM", 4) == 0) {
+            chunks.colourManaged = true;
+        } else if (std::memcmp(type, "sRGB", 4) == 0) {
+            chunks.srgb = true;
+        } else if (std::memcmp(type, "IEND", 4) == 0) {
             break;
         }
         offset += static_cast<qsizetype>(chunkLength) + 12;
     }
-    return false;
+    return chunks;
 }
 
 bool tryDecodeSpng(const QByteArray &bytes, QImage &decoded, QSize &sourceSize)
 {
-    if (bytes.isEmpty() || pngHasChunk(bytes, "acTL") || pngHasChunk(bytes, "iCCP") ||
-        pngHasChunk(bytes, "gAMA") || pngHasChunk(bytes, "cHRM")) {
+    if (bytes.isEmpty()) {
+        return false;
+    }
+    const PngChunks chunks = readPngChunks(bytes);
+    // Animated PNGs and colour managed ones go to Qt: stepping frames needs a
+    // reader that keeps the animation, and iCCP/gAMA/cHRM would each need a
+    // colour transform this backend does not apply. An sRGB chunk does not,
+    // so those bytes are decoded here with the colour space set below.
+    if (chunks.animated || chunks.colourManaged) {
         return false;
     }
 
@@ -141,7 +161,7 @@ bool tryDecodeSpng(const QByteArray &bytes, QImage &decoded, QSize &sourceSize)
             context.get(), image.bits(), outputSize, SPNG_FMT_RGBA8, SPNG_DECODE_TRNS) != 0) {
         return false;
     }
-    if (pngHasChunk(bytes, "sRGB")) {
+    if (chunks.srgb) {
         image.setColorSpace(QColorSpace(QColorSpace::SRgb));
     }
 
@@ -469,6 +489,24 @@ bool tryDecodeWebP(const QByteArray &bytes,
 #endif
 }
 
+// True when reading the same bytes again could still succeed. Qt reports a data
+// or format error for corrupt or unsupported input, which no retry can fix. The
+// remaining errors are the ones a handler raises for reasons outside the bytes,
+// such as failing to allocate an image while other decodes hold memory.
+bool isRetriableReaderError(QImageReader::ImageReaderError error)
+{
+    switch (error) {
+    case QImageReader::FileNotFoundError:
+    case QImageReader::InvalidDataError:
+    case QImageReader::UnsupportedFormatError:
+        return false;
+    case QImageReader::DeviceError:
+    case QImageReader::UnknownError:
+        break;
+    }
+    return true;
+}
+
 } // namespace
 
 ImageDecoder::ImageDecoder(ImageDecodeSettings settings)
@@ -484,6 +522,8 @@ QSize ImageDecoder::constrainedDecodeSize(const QSize &sourceSize,
         return QSize();
     }
 
+    // UnlimitedTextureSize keeps the comparison below true, so the huge limit
+    // never reaches the scaling call.
     QSize limit(maxTextureSize, maxTextureSize);
     if (requestedSize.isValid() && !requestedSize.isEmpty()) {
         limit.setWidth(qMin(limit.width(), requestedSize.width()));
@@ -526,19 +566,30 @@ ImageDecodeOutput ImageDecoder::decodeSvg(const QByteArray &bytes, const QString
 
 QImage ImageDecoder::readWithQt(QImageReader &reader, const QString &logPath, bool bailOutOnFailure)
 {
-    constexpr int MaximumAttempts = 100;
+    // A retry only helps a failure that came from outside the bytes. A truncated
+    // file reaches this function with a parseable header, and the old 100
+    // attempts spent about 4.6 s on every one of them before giving up.
+    constexpr int MaximumAttempts = 3;
+    constexpr int RetryDelayMicroseconds = 40000;
     const int maximumAttempts = bailOutOnFailure ? 1 : MaximumAttempts;
-    QImage image;
+
     // QImage processing sometimes fails
     for (int count = 1;; count++) {
-        image = reader.read();
+        QImage image = reader.read();
         if (!image.isNull()) {
             return image;
         }
         qDebug() << "[0]" << logPath << image << count;
-        if (count >= maximumAttempts) {
+        if (count >= maximumAttempts || !isRetriableReaderError(reader.error())) {
             return QImage();
         }
-        QThread::currentThread()->usleep(40000);
+        // The handler left the device where it stopped, so rewind it to make the
+        // next attempt a real re-decode, then wait for other decodes to release
+        // the memory this one could not get.
+        QIODevice *device = reader.device();
+        if (device && !device->isSequential()) {
+            device->seek(0);
+        }
+        QThread::currentThread()->usleep(RetryDelayMicroseconds);
     }
 }

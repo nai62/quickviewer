@@ -4,6 +4,8 @@
 #include <QtCore>
 #include <QtGui>
 
+#include <limits>
+
 #include "qvenums.h"
 
 /**
@@ -12,7 +14,13 @@
  */
 struct ImageDecodeSettings
 {
-    int maxTextureSize = 0;
+    /**
+     * Largest edge a decode may keep when there is no limit. It is only compared
+     * or passed to qMin, so nothing scales or multiplies it.
+     */
+    static constexpr int UnlimitedTextureSize = std::numeric_limits<int>::max();
+    /** Largest edge a decode may keep; UnlimitedTextureSize means no limit. */
+    int maxTextureSize = UnlimitedTextureSize;
     bool fastDctForJpeg = false;
     QSize svgRasterMaximum;
     qvEnums::SvgLoaderBackend svgLoaderBackend = qvEnums::SvgLoaderBackend::Resvg;
@@ -65,8 +73,9 @@ public:
 
     /**
      * Reads an already configured Qt reader. Returns a null image when reading
-     * kept failing; bailOutOnFailure stops after the first failure instead of
-     * retrying.
+     * failed. Data and format errors give up at once because no retry can fix
+     * them; the failures that can come from outside the bytes are retried a few
+     * times. bailOutOnFailure stops after the first failure either way.
      */
     static QImage readWithQt(QImageReader &reader, const QString &logPath, bool bailOutOnFailure);
 

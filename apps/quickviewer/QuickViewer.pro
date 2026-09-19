@@ -150,6 +150,7 @@ SOURCES += \
     src/models/movie.cpp \
     src/models/volume.cpp \
     src/models/imagedecoder.cpp \
+    src/models/jpegorientation.cpp \
     src/models/volumeloader.cpp \
     src/models/volumelocation.cpp \
     src/models/storedvolumelocation.cpp \
@@ -219,6 +220,8 @@ HEADERS  += \
     src/models/movie.h \
     src/models/volume.h \
     src/models/imagedecoder.h \
+    src/models/jpegorientation.h \
+    src/models/decodemetricsscope.h \
     src/models/volumeloader.h \
     src/models/volumelocation.h \
     src/models/storedvolumelocation.h \

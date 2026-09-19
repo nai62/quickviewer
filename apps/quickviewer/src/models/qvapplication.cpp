@@ -488,10 +488,15 @@ void QVApplication::loadSettings()
     m_showSubfolders = m_settings->value("ShowSubfolders", false).toBool();
     m_slideShowWait = m_settings->value("SlideShowWait", 5000).toInt();
     QRect rec = QGuiApplication::primaryScreen()->geometry();
-    uint32_t desktop_width = rec.width();
-    uint32_t maxTextureSize = desktop_width < 2048 ? 4096 : (uint32_t)(desktop_width * 2.1);
+    const qint64 desktopWidth = rec.width();
+    // The default follows the display, because a page has to fit on it, and stops
+    // at the cap so that a very wide desktop cannot ask for a decode that would
+    // not fit in memory.
+    const int desktopTextureSize =
+        desktopWidth < 2048 ? 4096
+                            : int(qMin(qreal(TextureSizeSettingMax), qreal(desktopWidth) * 2.1));
     qDebug() << "desktop width:" << rec.width();
-    m_maxTextureSize = m_settings->value("MaxTextureSize", maxTextureSize).toInt();
+    setMaxTextureSize(m_settings->value("MaxTextureSize", desktopTextureSize).toInt());
 #ifdef Q_PROCESSOR_X86_64
     m_maxVolumesCache = m_settings->value("MaxVolumesCache", 5).toInt();
     m_maxImagesCache = m_settings->value("MaxImagesCache", 22).toInt();

@@ -168,6 +168,7 @@
                </widget>
               </item>
               <item row="4" column="1">
+               <!-- Keep this range in step with QVApplication::TextureSizeSettingMin/Max. -->
                <widget class="QSpinBox" name="spinMaxTextureSize">
                 <property name="toolTip">
                  <string>Increasing the value will degrade performance. Approximately twice the value of your display is appropriate.</string>
@@ -176,7 +177,7 @@
                  <number>1024</number>
                 </property>
                 <property name="maximum">
-                 <number>20000</number>
+                 <number>16384</number>
                 </property>
                 <property name="singleStep">
                  <number>1</number>
