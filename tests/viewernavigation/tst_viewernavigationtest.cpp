@@ -52,6 +52,69 @@ static QByteArray withAnimationChunk(const QByteArray &png)
     return result;
 }
 
+static void appendLittleEndian16(QByteArray &out, quint16 value)
+{
+    out.append(static_cast<char>(value & 0xFF));
+    out.append(static_cast<char>((value >> 8) & 0xFF));
+}
+
+static void appendLittleEndian32(QByteArray &out, quint32 value)
+{
+    appendLittleEndian16(out, static_cast<quint16>(value & 0xFFFF));
+    appendLittleEndian16(out, static_cast<quint16>((value >> 16) & 0xFFFF));
+}
+
+// Builds a JPEG that carries IFD0 with nothing but an EXIF Orientation tag.
+static QByteArray jpegWithOrientation(int orientation)
+{
+    QImage image(8, 4, QImage::Format_RGB32);
+    image.fill(Qt::yellow);
+    QByteArray bytes;
+    QBuffer buffer(&bytes);
+    if (!buffer.open(QIODevice::WriteOnly)) {
+        return QByteArray();
+    }
+    image.save(&buffer, "JPEG");
+    buffer.close();
+    if (bytes.size() < 2 || !bytes.startsWith("\xFF\xD8")) {
+        return QByteArray();
+    }
+
+    QByteArray payload;
+    payload.append("Exif\0\0", 6);
+    payload.append("II", 2);
+    appendLittleEndian16(payload, 0x2A);
+    appendLittleEndian32(payload, 8); // offset of IFD0
+    appendLittleEndian16(payload, 1); // one IFD0 entry
+    appendLittleEndian16(payload, 0x0112);
+    appendLittleEndian16(payload, 3); // SHORT
+    appendLittleEndian32(payload, 1);
+    appendLittleEndian16(payload, static_cast<quint16>(orientation));
+    appendLittleEndian16(payload, 0);
+    appendLittleEndian32(payload, 0); // no next IFD
+
+    QByteArray segment;
+    segment.append(static_cast<char>(0xFF));
+    segment.append(static_cast<char>(0xE1));
+    // JPEG marker segment lengths are big-endian, unlike the TIFF fields above.
+    const quint16 segmentLength = static_cast<quint16>(payload.size() + 2);
+    segment.append(static_cast<char>((segmentLength >> 8) & 0xFF));
+    segment.append(static_cast<char>(segmentLength & 0xFF));
+    segment.append(payload);
+
+    // JFIF keeps APP0 first, so the Exif segment goes right after it.
+    qsizetype insertAt = 2;
+    if (bytes.size() > 6 && static_cast<unsigned char>(bytes[2]) == 0xFF) {
+        const int firstSegmentLength = (static_cast<unsigned char>(bytes[4]) << 8) | static_cast<unsigned char>(bytes[5]);
+        if (firstSegmentLength >= 2) {
+            insertAt = 4 + firstSegmentLength;
+        }
+    }
+    QByteArray result = bytes;
+    result.insert(insertAt, segment);
+    return result;
+}
+
 class EmptyFileLoader final : public IFileLoader
 {
 public:
@@ -211,6 +274,26 @@ private slots:
         QVERIFY(content.hasDetailedMetadata);
         QCOMPARE(content.originalSize, QSize(40, 20));
         QVERIFY(!content.loadedImage.isNull());
+    }
+
+    void decodeImageBytesReadsExifForJpegContainerNames()
+    {
+        const QByteArray jpeg = jpegWithOrientation(6);
+        QVERIFY(!jpeg.isEmpty());
+
+        // The JIF/JFIF/JFI container names are JPEG, so the EXIF gate has to
+        // open for them exactly as it does for .jpg.
+        const QStringList paths{"rotated.jpg", "rotated.jfif", "rotated.jif", "rotated.jfi"};
+        for (const QString &path : paths) {
+            ImageDecodePolicy policy;
+            policy.jpeg = JpegDecoderPreference::Qt;
+
+            ImageDecodeMetrics metrics;
+            const ImageContent content = Volume::decodeImageBytes(path, jpeg, QSize(), QSize(), true, policy, &metrics);
+
+            QVERIFY(!content.loadedImage.isNull());
+            QCOMPARE(int(content.exifInfo.Orientation), 6);
+        }
     }
 
     void emptyViewerSessionOperationsAreSafe()
