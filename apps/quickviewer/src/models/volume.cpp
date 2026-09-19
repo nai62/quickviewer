@@ -394,7 +394,6 @@ void Volume::updatePrefetchCache(int anchorPageIndex, PrefetchMode mode, QSize v
 
                 if (cachedImage.resizedImage.size() != resized &&
                     !cachedImage.loadedImage.isNull()) {
-                    qDebug() << cachedImage.resizedImage.size() << resized;
                     const ImageLoadFuture future = scheduleResize(cachedImage, pageSize);
                     if (future.isValid()) {
                         cache.insert(cnt, future);
@@ -1021,15 +1020,8 @@ ImageContent Volume::futureLoadImageFromFileVolume(QSharedPointer<ImageLoadConte
                                                    QSize decodeTargetSize,
                                                    bool loadDetailedMetadata)
 {
-    QElapsedTimer et_load;
-    et_load.start();
-    ImageContent ic = futureLoadImageFromFileVolumeImpl(
+    return futureLoadImageFromFileVolumeImpl(
         context, path, pageSize, decodeTargetSize, loadDetailedMetadata);
-    qint64 t_load = et_load.elapsed();
-
-    qDebug() << "futureLoadImageFromFileVolume" << path << t_load
-             << "ms, resizedImage=" << !ic.resizedImage.isNull();
-    return ic;
 }
 
 ImageContent Volume::loadImageFromFile(QString path,
