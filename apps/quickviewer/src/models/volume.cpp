@@ -108,11 +108,18 @@ Volume::ImageLoadFuture Volume::scheduleImageLoad(const QString &path,
         context, path, pageSize, decodeTargetSize, loadDetailedMetadata));
 }
 
-Volume::ImageLoadFuture Volume::scheduleResize(ImageContent content, const QSize &pageSize)
+Volume::ImageLoadFuture Volume::scheduleResize(ImageContent content,
+                                               const QSize &pageSize,
+                                               int pageIndex,
+                                               quint64 generation)
 {
-    auto submission = imagePrefetchExecutor().submit([content, pageSize]() mutable {
-        return resizeImageForViewport(std::move(content), pageSize);
-    });
+    auto submission = imagePrefetchExecutor().submit(
+        [content, pageSize]() mutable {
+            return resizeImageForViewport(std::move(content), pageSize);
+        },
+        prefetchPriorityForPage(pageIndex, m_lastPrefetchAnchor),
+        m_prefetchOwnerId,
+        generation);
     if (submission.accepted) {
         return submission.future;
     }
@@ -346,7 +353,8 @@ void Volume::updatePrefetchCache(int anchorPageIndex, PrefetchMode mode, QSize v
 
                 if (cachedImage.resizedImage.size() != resized &&
                     !cachedImage.loadedImage.isNull()) {
-                    const ImageLoadFuture future = scheduleResize(cachedImage, pageSize);
+                    const ImageLoadFuture future =
+                        scheduleResize(cachedImage, pageSize, cnt, m_prefetchGeneration);
                     if (future.isValid()) {
                         cache.insert(cnt, future);
                     }

@@ -146,7 +146,8 @@ private:
                                       bool loadDetailedMetadata = true,
                                       int pageIndex = -1,
                                       quint64 generation = 0);
-    ImageLoadFuture scheduleResize(ImageContent content, const QSize &pageSize);
+    ImageLoadFuture
+    scheduleResize(ImageContent content, const QSize &pageSize, int pageIndex, quint64 generation);
     ImageLoadFuture
     scheduleMetadataLoad(ImageContent content, const QString &path, quint64 generation);
 
