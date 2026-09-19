@@ -124,18 +124,6 @@ void ViewerSession::setVolumeReady(VolumeHandle volume)
     }
 }
 
-void ViewerSession::configureVolume(Volume *volume)
-{
-    if (!volume) {
-        return;
-    }
-    connect(volume,
-            &Volume::pageListLoaded,
-            this,
-            &ViewerSession::handleVolumePageListLoaded,
-            Qt::UniqueConnection);
-}
-
 void ViewerSession::setViewportSize(QSize size)
 {
     m_viewportSize = size;
@@ -505,7 +493,6 @@ void ViewerSession::startContainingVolumeLoad(const QString &normalizedImagePath
                 openEntry(VolumeLocation{basePath, subfileName});
                 return;
             }
-            configureVolume(loadedVolume.get());
             emit volumeChanged("");
             m_volumeCache.markUsed(cacheKey);
             setVolumeReady(loadedVolume);
@@ -531,21 +518,6 @@ void ViewerSession::startContainingVolumeLoad(const QString &normalizedImagePath
             emit volumeChanged(volume->volumePath());
         },
         [](CachedVolumeLoadResult) {});
-}
-
-void ViewerSession::handleVolumePageListLoaded()
-{
-    if (auto *source = qobject_cast<Volume *>(sender())) {
-        if (source != activeVolume()) {
-            return;
-        }
-    }
-    Volume *volume = activeVolume();
-    if (!volume) {
-        return;
-    }
-    emit volumeChanged(volume->volumePath());
-    emit pageChanged();
 }
 
 void ViewerSession::handleSlideShowStarted()
@@ -762,7 +734,6 @@ CachedVolumeLoadResult ViewerSession::loadCachedVolume(const VolumeLocation &loc
         return result;
     }
 
-    configureVolume(result.volume.get());
     m_volumeCache.markUsed(key);
     if (onlyCover) {
         result.volume->prefetchCoverImages();

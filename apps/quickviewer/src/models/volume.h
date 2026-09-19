@@ -35,7 +35,6 @@ public:
     ~Volume();
     void loadPageList();
     bool isPageListLoaded() const { return m_pageListLoaded; }
-    ImageContent loadImageBeforePageList(QString subfileName);
     IFileLoader *fileLoader() { return m_loadContext ? m_loadContext->loader() : nullptr; }
     const IFileLoader *fileLoader() const
     {
@@ -134,12 +133,6 @@ public:
     }
     void moveToThread(QThread *targetThread);
 
-signals:
-    void pageListLoaded();
-
-public slots:
-    void handlePageListLoaded();
-
 private:
     /**
      * Loads the page list on demand and returns the loader when the volume has
@@ -166,22 +159,16 @@ private:
      * application setting.
      */
     qvEnums::ImageSortBy m_sortBy = qvEnums::ImageSortBy::SortByFileName;
-    ImageContent m_initialImage;
     mutable LruCache<int, ImageLoadFuture> m_imageLoadCache;
     LruCache<int, ImageLoadFuture> m_previewLoadCache;
 
     QSharedPointer<ImageLoadContext> m_loadContext;
     bool m_pageListLoaded;
     bool m_openedWithSpecifiedImageFile;
-    QString m_volumePath;
     quint64 m_prefetchOwnerId;
     quint64 m_prefetchGeneration;
     int m_lastPrefetchAnchor;
     PrefetchMode m_lastPrefetchMode;
-
-    // fast image loading
-    QString m_subfileName;
-    QFutureWatcher<void> m_watcher;
 
     friend class VolumeLoader;
 };

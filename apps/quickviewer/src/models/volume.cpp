@@ -53,10 +53,6 @@ Volume::Volume(QObject *parent, std::unique_ptr<IFileLoader> loader)
       m_lastPrefetchAnchor(-1),
       m_lastPrefetchMode(PrefetchMode::Normal)
 {
-    if (IFileLoader *loader = m_loadContext->loader()) {
-        m_volumePath = loader->volumePath();
-    }
-    connect(&m_watcher, SIGNAL(finished()), this, SLOT(handlePageListLoaded()));
 }
 
 Volume::~Volume()
@@ -150,24 +146,6 @@ void Volume::loadPageList()
     m_pageListLoaded = true;
     applyPageSort(qApp->ImageSortBy());
     StartupProfiler::mark("volume.page-list.end");
-}
-
-ImageContent Volume::loadImageBeforePageList(QString subfileName)
-{
-    m_subfileName = subfileName;
-    m_initialImage = Volume::futureLoadImageFromFileVolume(m_loadContext, subfileName, QSize());
-    loadPageList();
-    return m_initialImage;
-}
-
-void Volume::handlePageListLoaded()
-{
-    const int index = m_pageNames.indexOf(m_subfileName);
-    if (index >= 0) {
-        m_imageLoadCache.insert(index, readyImageFuture(m_initialImage));
-        updatePrefetchCache(index, PrefetchMode::Normal, QSize());
-    }
-    emit pageListLoaded();
 }
 
 static bool fileSizeLessThan(const ImageMetadata &m1, const ImageMetadata &m2)
@@ -423,8 +401,15 @@ void Volume::prefetchCoverImages(int anchorPageIndex)
     imagePrefetchExecutor().setMaximumConcurrency(recommendedPrefetchConcurrency(loader));
     for (int pageIndex :
          PrefetchPlanner::indexes(PrefetchMode::Normal, anchorPageIndex, m_pageNames.size(), 2)) {
+        // A page the viewer already scheduled keeps its load; replacing it would
+        // start a second decode, because eviction does not cancel the future.
+        const ImageLoadFuture *cached = m_imageLoadCache.find(pageIndex);
+        if (cached && !cached->isCanceled()) {
+            m_imageLoadCache.touch(pageIndex);
+            continue;
+        }
         const ImageLoadFuture future =
-            scheduleImageLoad(m_pageNames[pageIndex],
+            scheduleImageLoad(pageNameAt(pageIndex),
                               QSize(),
                               pageIndex == anchorPageIndex,
                               QSize(),
@@ -442,7 +427,7 @@ ImageContent Volume::loadThumbnailSourceImage()
     if (!loaderForPrefetch()) {
         return ImageContent();
     }
-    return futureLoadImageFromFileVolume(m_loadContext, m_pageNames[0], QSize());
+    return futureLoadImageFromFileVolume(m_loadContext, pageNameAt(0), QSize());
 }
 
 IFileLoader *Volume::loaderForPrefetch()
@@ -472,7 +457,6 @@ void Volume::moveToThread(QThread *targetThread)
         return;
     }
     QObject::moveToThread(targetThread);
-    m_watcher.moveToThread(targetThread);
 }
 
 static int parseJpegOrientation(const QByteArray &bytes)

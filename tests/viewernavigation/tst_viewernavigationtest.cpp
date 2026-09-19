@@ -184,7 +184,7 @@ public:
     InflateCacheMode getCacheMode() const override { return InflateNoCached; }
 };
 
-class MemoryFileLoader final : public IFileLoader
+class MemoryFileLoader : public IFileLoader
 {
 public:
     explicit MemoryFileLoader(int imageCount)
@@ -222,6 +222,21 @@ private:
     QStringList m_names;
     QHash<QString, QByteArray> m_images;
     QStringList m_requestedNames;
+};
+
+// Reports the pages as archive entries whose sizes fall with the page number, so
+// sorting by file size reverses the order the loader lists them in.
+class SizeSortedArchiveFileLoader final : public MemoryFileLoader
+{
+public:
+    using MemoryFileLoader::MemoryFileLoader;
+
+    bool isArchive() const override { return true; }
+    quint64 getFileSize(QString name) const override
+    {
+        const int pageIndex = name.section('-', 1, 1).section('.', 0, 0).toInt();
+        return quint64(100 - pageIndex);
+    }
 };
 
 class ViewerNavigationTest : public QObject
@@ -1561,15 +1576,12 @@ private slots:
     void emptyVolumeOperationsAreSafe()
     {
         Volume volume(nullptr, std::make_unique<EmptyFileLoader>());
-        QSignalSpy pageListLoadedSpy(&volume, &Volume::pageListLoaded);
 
         QCOMPARE(volume.pageNameAt(0), QString());
         QCOMPARE(volume.pageIndexForName("missing.png"), -1);
         QCOMPARE(volume.pagePathAt(0), QString());
         QVERIFY(!volume.imageLoadAt(0).isValid());
         volume.updatePrefetchCache(0, PrefetchMode::Normal, QSize(100, 100));
-        volume.handlePageListLoaded();
-        QCOMPARE(pageListLoadedSpy.count(), 1);
         volume.moveToThread(nullptr);
     }
 
@@ -1578,6 +1590,8 @@ private slots:
         auto coverLoader = std::make_unique<MemoryFileLoader>(3);
         MemoryFileLoader *coverLoaderPtr = coverLoader.get();
         Volume coverVolume(nullptr, std::move(coverLoader));
+        coverVolume.prefetchCoverImages(0);
+        // A repeated cover prefetch must not schedule the same pages twice.
         coverVolume.prefetchCoverImages(0);
 
         const Volume::ImageLoadFuture firstCoverLoad = coverVolume.imageLoadAt(0);
@@ -1600,6 +1614,29 @@ private slots:
         QCOMPARE(thumbnailSource.loadedImage.size(), QSize(16, 24));
         QVERIFY(thumbnailSource.resizedImage.isNull());
         QCOMPARE(thumbnailLoaderPtr->requestedNames(), QStringList({"page-0.bmp"}));
+    }
+
+    void coverPrefetchFollowsTheSortedPageOrder()
+    {
+        const qvEnums::ImageSortBy previousSort = qApp->ImageSortBy();
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileSize);
+
+        auto loader = std::make_unique<SizeSortedArchiveFileLoader>(3);
+        MemoryFileLoader *loaderPtr = loader.get();
+        Volume volume(nullptr, std::move(loader));
+        volume.loadPageList();
+
+        // The size sort reverses the order the loader lists the pages in, so the
+        // page at index 0 is not the first entry of the loader's own list.
+        QCOMPARE(volume.pageNameAt(0), QStringLiteral("page-2.bmp"));
+        QCOMPARE(volume.pageIndexForName(QStringLiteral("page-2.bmp")), 0);
+
+        volume.prefetchCoverImages(0);
+        QCOMPARE(volume.imageLoadAt(0).result().path, QStringLiteral("page-2.bmp"));
+        QCOMPARE(volume.loadThumbnailSourceImage().path, QStringLiteral("page-2.bmp"));
+        QVERIFY(loaderPtr->requestedNames().contains(QStringLiteral("page-2.bmp")));
+
+        qApp->setImageSortBy(previousSort);
     }
 
     void volumeHandleDestroysOnOwnerThread()

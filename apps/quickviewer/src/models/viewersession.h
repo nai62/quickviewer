@@ -192,7 +192,6 @@ signals:
     void initialImageDisplayFinished();
 
 public slots:
-    void handleVolumePageListLoaded();
     void handleSlideShowStarted();
     void handleSlideShowStopped();
 
@@ -207,7 +206,6 @@ private:
     VolumeHandle activeVolumeHandle() const;
     Volume *activeVolume() const;
     void setVolumeReady(VolumeHandle volume);
-    void configureVolume(Volume *volume);
     void rememberActivePagePosition();
     bool failActiveArchiveLoad(ArchiveOpenError error, const QString &path);
     void beginLoad(const QString &path, LoadTargetKind targetKind);
