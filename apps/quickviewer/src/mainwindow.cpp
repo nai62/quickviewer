@@ -421,6 +421,7 @@ void MainWindow::initializeStartup()
         }
         loadStartupVolume();
         if (!m_viewerSession.initialImagePaintPending()) {
+            initializeStartupPanel();
             revealStartupWindow();
             QTimer::singleShot(0, this, &MainWindow::completeDeferredStartupWork);
         }
@@ -1278,6 +1279,12 @@ bool MainWindow::changeFolderPath(QString path)
 
 void MainWindow::handleInitialImageDisplayFinished()
 {
+    // The panel belongs to the frame the reveal paints: create it while the
+    // window is still cloaked, so the folder list is already there when the
+    // window appears - showing a placeholder for any name whose font is still
+    // loading - instead of arriving a moment later. The menus stay deferred;
+    // they are the part of the startup work the first frame does not need.
+    initializeStartupPanel();
     revealStartupWindow();
     if (StartupProfiler::enabled()) {
         StartupProfiler::flush();
@@ -1290,7 +1297,16 @@ void MainWindow::handleInitialImageDisplayFinished()
 void MainWindow::completeDeferredStartupWork()
 {
     initializeDeferredMenus();
+    initializeStartupPanel();
+}
 
+/**
+ * Builds the panel the startup window shows, or points the panel that already
+ * exists at the startup path. Called before the window is revealed, so the
+ * folder list is part of the frame the reveal paints.
+ */
+void MainWindow::initializeStartupPanel()
+{
     if (m_folderWindow) {
         if (!m_pendingFolderPath.isEmpty()) {
             const QString path = m_pendingFolderPath;

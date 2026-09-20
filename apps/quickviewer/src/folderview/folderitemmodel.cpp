@@ -324,6 +324,11 @@ QStringList FolderItemModel::namesNeedingFallback() const
     return names;
 }
 
+bool FolderItemModel::fallbackFontLoadPending() const
+{
+    return !fallbackLoadInFlight().isEmpty();
+}
+
 void FolderItemModel::requestFallbackFonts()
 {
     if (m_glyphsToLoad.isEmpty() || !fallbackLoadInFlight().isEmpty()) {

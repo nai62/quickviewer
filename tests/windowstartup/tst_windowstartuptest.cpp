@@ -3,6 +3,7 @@
 #include "folderwindow.h"
 #include "mainwindow.h"
 #include "models/qvapplication.h"
+#include "models/thumbnailmanager.h"
 
 #define FILELOADER_DATAPATH WINDOWSTARTUP_SRCDIR "../fileloader/data/"
 
@@ -10,6 +11,9 @@ class StartupWindow : public ArchiveAwareMainWindow
 {
 public:
     QList<bool> cloakRequests;
+    /** Rows in the folder list, and its first entry, when the cloak was released. */
+    int panelRowsAtReveal = -1;
+    QString panelEntryAtReveal;
 
     FolderWindow *folderWindow() const { return m_folderWindow; }
     QSplitter *panelSplitter() const
@@ -23,7 +27,27 @@ protected:
     bool setStartupWindowCloaked(bool cloaked) override
     {
         cloakRequests.append(cloaked);
+        if (!cloaked) {
+            recordPanelAtReveal();
+        }
         return true;
+    }
+
+private:
+    void recordPanelAtReveal()
+    {
+        FolderWindow *panel = folderWindow();
+        if (!panel) {
+            return;
+        }
+        QTreeView *view = panel->findChild<QTreeView *>(QStringLiteral("folderView"));
+        if (!view || !view->model()) {
+            return;
+        }
+        panelRowsAtReveal = view->model()->rowCount();
+        if (panelRowsAtReveal > 0) {
+            panelEntryAtReveal = QFileInfo(panel->itemPath(view->model()->index(0, 0))).fileName();
+        }
     }
 };
 
@@ -120,6 +144,50 @@ private slots:
         QVERIFY(placeholder);
         QCOMPARE(viewer.panelSplitter()->indexOf(placeholder), 0);
         QCOMPARE(viewer.panelSplitter()->sizes().at(0), 275);
+    }
+
+    /**
+     * The reveal paints the frame the user sees first, so the folder panel has
+     * to be part of it. Building the panel after the cloak was released left
+     * that first frame with an empty panel: the window appeared with the image,
+     * and the list - placeholder and all - only arrived once the fallback font
+     * had been loaded.
+     */
+    void startupRevealsTheWindowWithItsFolderList()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const QString archivePath = directory.filePath(QStringLiteral("book.zip"));
+        QVERIFY(QFile::copy(QString(FILELOADER_DATAPATH "deflate-utf8.zip"), archivePath));
+
+        qApp->setAutoLoaded(true);
+        qApp->setLastViewPath(archivePath);
+        qApp->setShowOptionViewOnStartup(qvEnums::OptionViewOnStartup::FolderStartup);
+        qApp->setShowPanelSeparateWindow(false);
+
+        StartupWindow viewer;
+        viewer.resize(800, 600);
+        QTemporaryDir databaseDirectory;
+        QVERIFY(databaseDirectory.isValid());
+        ThumbnailManager manager(&viewer, databaseDirectory.filePath(QStringLiteral("catalog.db")));
+        viewer.setThumbnailManager(&manager);
+
+        viewer.initializeStartup();
+
+        // The startup volume is opened from the event loop, and the window stays
+        // cloaked until the image view reports the first paint of the decoded
+        // image. Report that paint whenever it is outstanding, so the test does
+        // not depend on the platform delivering one.
+        const auto revealAfterFirstPaint = [&viewer] {
+            if (viewer.viewerSession()->initialImagePaintPending()) {
+                viewer.viewerSession()->notifyInitialImagePainted();
+            }
+            return viewer.cloakRequests;
+        };
+        QTRY_COMPARE(revealAfterFirstPaint(), (QList<bool>{true, false}));
+
+        QCOMPARE(viewer.panelRowsAtReveal, 1);
+        QCOMPARE(viewer.panelEntryAtReveal, QStringLiteral("book.zip"));
     }
 
     void disabledWidthSavingUsesDefaultWithoutChangingSavedWidth()
@@ -380,6 +448,44 @@ private slots:
         view->grab();
         // ...and is completed once the fallback font has been loaded.
         QTRY_VERIFY(view->model()->index(0, 0).data().toString().contains(QChar(0xD83D)));
+    }
+
+    /**
+     * A paint of the list used to start the fallback font load itself, and the
+     * rows then waited about 200 ms on the font database before the panel could
+     * appear. The load is queued behind the paint: the row this paint draws is
+     * the placeholder, and the load only starts once the paint has returned.
+     */
+    void folderListPaintsWithoutWaitingForTheFallbackFont()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        // A glyph of its own, so the load this test watches cannot have been
+        // warmed by another test case.
+        const char32_t unicorn = 0x1F984;
+        const QString rareName =
+            QStringLiteral("book") + QString::fromUcs4(&unicorn, 1) + QStringLiteral(".zip");
+        QVERIFY(QFile::copy(QString(FILELOADER_DATAPATH "deflate-utf8.zip"),
+                            directory.filePath(rareName)));
+
+        StartupWindow viewer;
+        viewer.createFolderWindow(true, directory.path(), false);
+        QTreeView *view =
+            viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        auto *model = qobject_cast<FolderItemModel *>(view->model());
+        QVERIFY(model);
+        const QModelIndex row = model->index(0, 0);
+        QVERIFY(row.isValid());
+        QVERIFY(!row.data().toString().contains(QString::fromUcs4(&unicorn, 1)));
+
+        // The first frame of the list is a synchronous paint like this one.
+        view->grab();
+
+        QVERIFY2(!model->fallbackFontLoadPending(),
+                 "the list paint started the fallback font load it would have to wait for");
+        // The load runs after the paint and completes the row.
+        QTRY_VERIFY(row.data().toString().contains(QString::fromUcs4(&unicorn, 1)));
     }
 
     void folderListPlaceholdersNeverDescribeAnotherEntry()

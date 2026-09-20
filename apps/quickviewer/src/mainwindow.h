@@ -241,6 +241,7 @@ private:
     void loadStartupVolume();
     void revealStartupWindow();
     void completeDeferredStartupWork();
+    void initializeStartupPanel();
     void initializeDeferredMenus();
     void initializeConfiguredStartupPanel(const QString &folderPath = QString());
     void reserveConfiguredStartupPanelSpace();

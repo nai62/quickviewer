@@ -90,6 +90,12 @@ FolderWindow::~FolderWindow()
     delete ui;
 }
 
+void FolderWindow::requestListFallbackFonts()
+{
+    m_fallbackFontRequestPending = false;
+    m_itemModel.requestFallbackFonts();
+}
+
 void FolderWindow::setupHistoryButton(Ui::MainWindow *uiMain)
 {
     m_historyButton = new QToolButton(ui->frame);
@@ -127,7 +133,14 @@ bool FolderWindow::eventFilter(QObject *obj, QEvent *event)
     // shown with a placeholder and the font is loaded on a worker thread instead
     // of inside a paint of the list.
     if (event->type() == QEvent::Paint && obj == ui->folderView) {
-        m_itemModel.requestFallbackFonts();
+        // Queued, so the load starts once this paint is done. A load running
+        // while the list paints makes that paint wait for the font database -
+        // the first row of the list took about 200 ms that way - and the list is
+        // drawn with a placeholder until the load finishes anyway.
+        if (!m_fallbackFontRequestPending) {
+            m_fallbackFontRequestPending = true;
+            QTimer::singleShot(0, this, &FolderWindow::requestListFallbackFonts);
+        }
     }
     //    qDebug() << obj << event << event->type();
     //    QMouseEvent *mouseEvent = nullptr;

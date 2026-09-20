@@ -40,6 +40,12 @@ public:
      * to call: it does nothing when there is nothing to load.
      */
     void requestFallbackFonts();
+    /**
+     * True while a fallback font load this model started is still running. A
+     * load in flight is what makes a paint wait for the font database, so the
+     * caller queues the request behind the paint it started from.
+     */
+    bool fallbackFontLoadPending() const;
     QVariant data(const QModelIndex &index, int role) const override;
     int rowCount(const QModelIndex &parent) const override;
     int columnCount(const QModelIndex &) const override;
