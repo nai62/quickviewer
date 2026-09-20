@@ -30,6 +30,18 @@ public:
      * when it appears.
      */
     static void startIconLoad();
+    /**
+     * Shows a placeholder for characters the UI font cannot draw yet. Qt loads a
+     * fallback font for them on the GUI thread, which costs a few hundred
+     * milliseconds, so a list holding such a name can be shown immediately and
+     * completed once that font is available.
+     */
+    void setPlaceholderNames(bool enabled);
+    /**
+     * Names, in display order, that need a fallback font. The rows without one
+     * are empty entries.
+     */
+    QStringList namesNeedingFallback() const;
     QVariant data(const QModelIndex &index, int role) const override;
     int rowCount(const QModelIndex &parent) const override;
     int columnCount(const QModelIndex &) const override;
@@ -44,9 +56,12 @@ private:
     void handleIconLoadFinished();
     void applyIconImages(const FolderIconImages &images);
     void loadIconsFromProvider();
+    void updatePlaceholderNames();
 
     QList<FolderItem> *m_searchedVolumes;
     int m_currentVolumeRow;
+    QStringList m_placeholderNames;
+    bool m_placeholdersActive = false;
     QFutureWatcher<FolderIconImages> m_iconWatcher;
     QIcon m_folderIcon;
     QIcon m_archiveIcon;

@@ -354,6 +354,33 @@ private slots:
         view->grab();
     }
 
+    void folderListReplacesGlyphsTheFontCannotDraw()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        // U+1F600 is outside the coverage of the UI fonts this runs with, so the
+        // list cannot draw it before a fallback font has been loaded.
+        const char32_t emoji = 0x1F600;
+        const QString rareName =
+            QStringLiteral("book") + QString::fromUcs4(&emoji, 1) + QStringLiteral(".zip");
+        QVERIFY(QFile::copy(QString(FILELOADER_DATAPATH "deflate-utf8.zip"),
+                            directory.filePath(rareName)));
+
+        StartupWindow viewer;
+        viewer.createFolderWindow(true, directory.path(), false);
+        QTreeView *view =
+            viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        const QModelIndex row = view->model()->index(0, 0);
+        QVERIFY(row.isValid());
+        // The list starts with a placeholder...
+        QVERIFY(row.data().toString().contains(QLatin1Char('?')));
+
+        view->grab();
+        // ...and is completed once the fallback font has been loaded.
+        QTRY_VERIFY(view->model()->index(0, 0).data().toString().contains(QChar(0xD83D)));
+    }
+
     void folderViewConsumesWheelEventsAtScrollBoundary()
     {
         FolderWindow folder(nullptr, nullptr);

@@ -7,6 +7,49 @@
 #endif
 
 namespace {
+/**
+ * True when the UI font itself has a glyph for the character. Qt checks the
+ * whole fallback chain when it lays text out, and loading the font it picks for
+ * a missing glyph is what costs hundreds of milliseconds.
+ */
+bool primaryFontSupports(char32_t code)
+{
+    static const QRawFont raw = QRawFont::fromFont(QApplication::font());
+    return raw.isValid() && raw.supportsCharacter(code);
+}
+
+/**
+ * Replaces every character the UI font cannot draw with '?', or returns an empty
+ * string when the name needs no fallback.
+ */
+QString placeholderName(const QString &name)
+{
+    QString placeholder;
+    for (int index = 0; index < name.size(); ++index) {
+        const QChar character = name.at(index);
+        if (character.unicode() < 0x80) {
+            continue;
+        }
+        char32_t code = character.unicode();
+        int length = 1;
+        if (character.isHighSurrogate() && index + 1 < name.size() &&
+            name.at(index + 1).isLowSurrogate()) {
+            code = QChar::surrogateToUcs4(character, name.at(index + 1));
+            length = 2;
+        }
+        if (primaryFontSupports(code)) {
+            continue;
+        }
+        if (placeholder.isEmpty()) {
+            placeholder = name;
+        }
+        for (int unit = 0; unit < length; ++unit) {
+            placeholder[index + unit] = QLatin1Char('?');
+        }
+    }
+    return placeholder;
+}
+
 #ifdef Q_OS_WIN
 QImage shellIconImage(const wchar_t *path, DWORD attributes)
 {
@@ -134,6 +177,10 @@ QVariant FolderItemModel::data(const QModelIndex &index, int role) const
     const FolderItem &fi = m_searchedVolumes->at(row);
     switch (role) {
     case Qt::DisplayRole:
+        if (m_placeholdersActive && row < m_placeholderNames.size() &&
+            !m_placeholderNames.at(row).isEmpty()) {
+            return m_placeholderNames.at(row);
+        }
         return fi.name;
     case Qt::DecorationRole:
         switch (fi.type) {
@@ -188,7 +235,49 @@ void FolderItemModel::setVolumes(QList<FolderItem> *volumes)
     }
     emit beginResetModel();
     m_searchedVolumes = volumes;
+    updatePlaceholderNames();
     emit endResetModel();
+}
+
+void FolderItemModel::updatePlaceholderNames()
+{
+    m_placeholderNames.clear();
+    m_placeholdersActive = false;
+    if (!m_searchedVolumes) {
+        return;
+    }
+    for (const FolderItem &item : *m_searchedVolumes) {
+        const QString placeholder = placeholderName(item.name);
+        m_placeholderNames.append(placeholder);
+        if (!placeholder.isEmpty()) {
+            m_placeholdersActive = true;
+        }
+    }
+}
+
+QStringList FolderItemModel::namesNeedingFallback() const
+{
+    QStringList names;
+    if (!m_searchedVolumes) {
+        return names;
+    }
+    for (int row = 0; row < m_placeholderNames.size() && row < m_searchedVolumes->size(); ++row) {
+        if (!m_placeholderNames.at(row).isEmpty()) {
+            names.append(m_searchedVolumes->at(row).name);
+        }
+    }
+    return names;
+}
+
+void FolderItemModel::setPlaceholderNames(bool enabled)
+{
+    if (m_placeholdersActive == enabled) {
+        return;
+    }
+    m_placeholdersActive = enabled;
+    if (rowCount(QModelIndex()) > 0) {
+        emit dataChanged(index(0, 0), index(rowCount(QModelIndex()) - 1, 0), {Qt::DisplayRole});
+    }
 }
 
 void FolderItemModel::setCurrentVolumeRow(int row)

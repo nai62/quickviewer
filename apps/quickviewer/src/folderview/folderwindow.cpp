@@ -90,6 +90,34 @@ FolderWindow::~FolderWindow()
     delete ui;
 }
 
+/**
+ * Loads the fallback font the list needs, on a worker thread.
+ *
+ * Qt resolves a glyph its font does not have by loading a fallback font, and
+ * that load costs a few hundred milliseconds. It is cached per process and
+ * shared between threads, so shaping the names here keeps it off the GUI
+ * thread: the list is already on screen with a placeholder for those characters
+ * and is completed once this finishes.
+ */
+void FolderWindow::warmUpListFonts()
+{
+    const QStringList names = m_itemModel.namesNeedingFallback();
+    if (names.isEmpty()) {
+        return;
+    }
+    const QFont listFont = ui->folderView->font();
+    QThreadPool::globalInstance()->start([this, names, listFont] {
+        QImage scratch(4096, 128, QImage::Format_ARGB32_Premultiplied);
+        QPainter painter(&scratch);
+        painter.setFont(listFont);
+        for (const QString &name : names) {
+            painter.drawText(QPoint(0, 64), name);
+        }
+        QMetaObject::invokeMethod(
+            this, [this] { m_itemModel.setPlaceholderNames(false); }, Qt::QueuedConnection);
+    });
+}
+
 void FolderWindow::setupHistoryButton(Ui::MainWindow *uiMain)
 {
     m_historyButton = new QToolButton(ui->frame);
@@ -123,6 +151,12 @@ static QModelIndex selectedIdx;
 
 bool FolderWindow::eventFilter(QObject *obj, QEvent *event)
 {
+    // The list is on screen from here on; if a name needs a fallback font, load
+    // it on a worker thread instead of inside a paint of the list.
+    if (event->type() == QEvent::Paint && !m_fontWarmUpStarted && obj == ui->folderView) {
+        m_fontWarmUpStarted = true;
+        QTimer::singleShot(0, this, &FolderWindow::warmUpListFonts);
+    }
     //    qDebug() << obj << event << event->type();
     //    QMouseEvent *mouseEvent = nullptr;
     QContextMenuEvent *contextEvent = nullptr;
