@@ -108,6 +108,9 @@ private slots:
         qApp->setDontSavingHistory(false);
         qApp->clearHistory();
         qApp->setMaxVolumesCache(4);
+        // The suites share the settings file next to their binaries, so every
+        // setting a test depends on has to be set here.
+        qApp->setShowSubfolders(false);
         qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
     }
 
@@ -475,6 +478,34 @@ private slots:
         const QModelIndex currentFile = view->model()->index(0, 0);
         QCOMPARE(currentFile.data().toString(), QStringLiteral("current.png"));
         QVERIFY(currentFile.data(FolderItemModel::CurrentVolumeRole).toBool());
+    }
+
+    void folderViewHighlightsTheUnwrappedSubdirectory()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QDir root(directory.path());
+        QVERIFY(root.mkpath(QStringLiteral("inner")));
+        QImage image(2, 2, QImage::Format_RGB32);
+        image.fill(Qt::white);
+        const QString imagePath = root.filePath(QStringLiteral("inner/current.png"));
+        QVERIFY(image.save(imagePath));
+
+        StartupWindow viewer;
+        viewer.openPath(root.path());
+        QCOMPARE(
+            QDir::cleanPath(QDir::fromNativeSeparators(viewer.viewerSession()->currentPagePath())),
+            QDir::cleanPath(QDir::fromNativeSeparators(imagePath)));
+        viewer.createFolderWindow(true, root.path(), false);
+
+        QTreeView *view =
+            viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        // The folder holds nothing but the subdirectory, so the page lives in
+        // it and the panel marks that row rather than nothing at all.
+        const QModelIndex inner = view->model()->index(0, 0);
+        QCOMPARE(inner.data().toString(), QStringLiteral("inner"));
+        QVERIFY(inner.data(FolderItemModel::CurrentVolumeRole).toBool());
     }
 
     void folderListPaintsProgressWithoutAPageCount()

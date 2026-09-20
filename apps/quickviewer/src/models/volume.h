@@ -97,7 +97,9 @@ public:
         if (!loader || pageIndex < 0 || pageIndex >= m_pageNames.size()) {
             return "";
         }
-        return QDir(loader->volumePath()).absoluteFilePath(m_pageNames[pageIndex]);
+        // The pages live where the loader found them, which is not the volume
+        // path when it unwrapped a single subdirectory.
+        return QDir(loader->realVolumePath()).absoluteFilePath(m_pageNames[pageIndex]);
     }
     QString volumePath() const
     {

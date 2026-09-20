@@ -8,6 +8,13 @@
 class FileLoaderDirectory : public IFileLoader
 {
 public:
+    /**
+     * How many single-directory wrappers a listing unwraps before it stops.
+     * Deep enough for the wrapper folders this is for, and a bound no link
+     * cycle can grow past.
+     */
+    static constexpr int MaxUnwrappedDepth = 8;
+
     enum class TraversalMode {
         CurrentDirectory,
         Recursive,

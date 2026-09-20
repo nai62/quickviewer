@@ -386,6 +386,9 @@ private slots:
         qApp->setSeparatePagesWhenWideImage(true);
         qApp->setDualView(false);
         qApp->setFitting(true);
+        // The suites share the settings file next to their binaries, so every
+        // setting a test depends on has to be set here.
+        qApp->setShowSubfolders(false);
     }
 
     void constrainedDecodeSizeHonorsTextureAndTargetLimits()
@@ -1058,6 +1061,34 @@ private slots:
         QVERIFY(restoredSession.openContainer(directory.path()));
         QCOMPARE(restoredSession.currentPageIndex(), 2);
         QCOMPARE(restoredSession.currentPageName(), QString("page-2.bmp"));
+    }
+
+    void folderVolumeReportsTheUnwrappedPagePath()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QDir root(directory.path());
+        QVERIFY(root.mkpath(QStringLiteral("inner")));
+        for (int page = 0; page < 2; ++page) {
+            QImage image(16, 16, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 60, 255, 255));
+            QVERIFY(image.save(root.filePath(QStringLiteral("inner/page-%1.bmp").arg(page))));
+        }
+
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(root.path()));
+        QCOMPARE(session.currentPageName(), QStringLiteral("page-0.bmp"));
+
+        // The folder holds nothing but one subdirectory, so its pages live in
+        // it: everything that acts on the page needs that real path, not the
+        // folder the reader opened.
+        const QString pagePath = QDir(root.filePath(QStringLiteral("inner")))
+                                     .absoluteFilePath(QStringLiteral("page-0.bmp"));
+        QCOMPARE(QDir::cleanPath(QDir::fromNativeSeparators(session.currentPagePath())),
+                 QDir::cleanPath(QDir::fromNativeSeparators(pagePath)));
+        QVERIFY(QFileInfo::exists(session.currentPagePath()));
+        QCOMPARE(storeVolumeLocation(session.currentLocation()),
+                 QDir::fromNativeSeparators(pagePath));
     }
 
     void readProgressResumesTheStoredPageName()

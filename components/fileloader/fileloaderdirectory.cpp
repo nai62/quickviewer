@@ -33,17 +33,23 @@ void FileLoaderDirectory::initialize()
 
 void FileLoaderDirectory::initializeCurrentDirectory()
 {
+    // A directory holding nothing but another directory is a wrapper around it -
+    // a download or export folder, say - so the listing descends into that one.
+    // The limit keeps a link pointing back at one of its own ancestors from
+    // following itself for as long as the filesystem allows.
     QStringList files;
+    int depth = 0;
     do {
         files = m_directory.entryList(QDir::Files, QDir::Name);
         m_subArchiveList = m_directory.entryList(QDir::AllDirs | QDir::NoDotAndDotDot);
-        if (!files.isEmpty() || m_subArchiveList.isEmpty()) {
+        if (!files.isEmpty() || m_subArchiveList.isEmpty() || depth >= MaxUnwrappedDepth) {
             break;
         }
         if (m_subArchiveList.size() > 1) {
             return;
         }
         m_directory.setPath(m_directory.absoluteFilePath(m_subArchiveList.constFirst()));
+        ++depth;
     } while (true);
 
     for (const QString &name : files) {
