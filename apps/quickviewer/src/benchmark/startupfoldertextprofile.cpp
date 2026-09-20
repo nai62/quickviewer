@@ -21,7 +21,9 @@ void StartupFolderTextProfile::watch(QWidget *window, ModelLookup model)
         StartupProfiler::mark("folder-text.gui-heartbeat");
         FolderItemModel *itemModel = model ? model() : nullptr;
         if (itemModel) {
-            itemModel->requestTextImages();
+            // The list only asks for the rows it shows; the profile has to
+            // settle the whole folder to report a comparable number.
+            itemModel->requestAllTextImages();
         }
         if (itemModel && itemModel->textImagesPending() &&
             elapsed->elapsed() < TimeoutMilliseconds) {

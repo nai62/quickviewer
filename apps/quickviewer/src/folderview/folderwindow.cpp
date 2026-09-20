@@ -48,6 +48,10 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
         ui->folderView->font(), ui->folderView->palette(), ui->folderView->devicePixelRatioF());
     ui->folderView->setModel(&m_itemModel);
     ui->folderView->setItemDelegate(&m_itemDelegate);
+    connect(ui->folderView->verticalScrollBar(),
+            &QScrollBar::valueChanged,
+            this,
+            &FolderWindow::updateTextRowRange);
 
     // The item context menu is a plain menu; its action lives in the form.
     m_itemContextMenu = new QMenu(this);
@@ -125,11 +129,16 @@ static QModelIndex selectedIdx;
 
 bool FolderWindow::eventFilter(QObject *obj, QEvent *event)
 {
-    if (obj == ui->folderView &&
-        (event->type() == QEvent::FontChange || event->type() == QEvent::PaletteChange ||
-         event->type() == QEvent::DevicePixelRatioChange || event->type() == QEvent::Show)) {
-        m_itemModel.setTextStyle(
-            ui->folderView->font(), ui->folderView->palette(), ui->folderView->devicePixelRatioF());
+    if (obj == ui->folderView) {
+        if (event->type() == QEvent::FontChange || event->type() == QEvent::PaletteChange ||
+            event->type() == QEvent::DevicePixelRatioChange || event->type() == QEvent::Show) {
+            m_itemModel.setTextStyle(ui->folderView->font(),
+                                     ui->folderView->palette(),
+                                     ui->folderView->devicePixelRatioF());
+        }
+        if (event->type() == QEvent::Show || event->type() == QEvent::Resize) {
+            updateTextRowRange();
+        }
     }
     //    qDebug() << obj << event << event->type();
     //    QMouseEvent *mouseEvent = nullptr;
@@ -323,6 +332,7 @@ void FolderWindow::setFolderPath(QString path, bool showParent)
                                 QDateTime());
     }
     m_itemModel.setVolumes(&m_volumes);
+    updateTextRowRange();
     updateCurrentVolumeRow();
 
     if (showParent) {
@@ -333,13 +343,35 @@ void FolderWindow::setFolderPath(QString path, bool showParent)
 void FolderWindow::reset()
 {
     m_itemModel.setVolumes(&m_volumes);
+    updateTextRowRange();
 }
 
 void FolderWindow::resortVolumes()
 {
     sortVolumes();
     m_itemModel.setVolumes(&m_volumes);
+    updateTextRowRange();
     updateCurrentVolumeRow();
+}
+
+void FolderWindow::updateTextRowRange()
+{
+    constexpr int RowMargin = 8;
+    constexpr int MinimumRows = 16;
+    const int rows = m_itemModel.rowCount({});
+    if (rows <= 0) {
+        m_itemModel.setVisibleRowRange(0, -1);
+        return;
+    }
+    // The list asks for text images row by row, so it tells the model which
+    // rows it shows: a folder with thousands of names would otherwise have the
+    // helper rasterize every one of them.
+    const QRect viewport = ui->folderView->viewport()->rect();
+    const QModelIndex top = ui->folderView->indexAt(viewport.topLeft());
+    const QModelIndex bottom = ui->folderView->indexAt(viewport.bottomLeft());
+    const int first = top.isValid() ? top.row() : 0;
+    const int last = bottom.isValid() ? bottom.row() : qMin(rows - 1, first + MinimumRows);
+    m_itemModel.setVisibleRowRange(qMax(0, first - RowMargin), qMin(rows - 1, last + RowMargin));
 }
 
 void FolderWindow::sortVolumes()

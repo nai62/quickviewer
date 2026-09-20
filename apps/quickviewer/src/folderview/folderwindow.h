@@ -52,6 +52,7 @@ private:
     void openFolderItem(const QModelIndex &index);
     void sortVolumes();
     void setupHistoryButton(Ui::MainWindow *uiMain);
+    void updateTextRowRange();
     int currentVolumeRow() const;
     void updateCurrentVolumeRow();
 
