@@ -76,3 +76,22 @@ The viewer's mutable reading state belongs to `ViewerSession`. A `Volume`
 provides ordered content and loading facilities, and may be shared or cached
 without carrying a session's current-page state. Rendering state belongs to
 `RenderedPage`, outside both the volume and navigation model.
+
+### Folder text rendering
+
+FolderItemModel keeps disk names separate from safe display text and rasterized
+text. Characters missing from either weight of the view's primary font initially
+use a replacement; file operations always use the disk name. FolderTextCache is
+owned by the application, so destroying or replacing a panel cannot abandon a
+shared request. Results are keyed by the name, resolved font, palette and device
+pixel ratio, with both regular and current-row bold images in each result.
+
+The same executable runs a private `--folder-text-helper` mode to shape and
+rasterize missing-glyph names. A Qt worker thread would still contend with the
+GUI's font database mutex and would not populate its thread-local font engines.
+The helper has a separate font database, receives framed requests over standard
+input and returns images over standard output. The delegate never passes the
+resolved rare text back to GUI-side font shaping, including in size hints. Cache
+storage is bounded; a model also retains its current images across list resets.
+Failed requests leave safe display text and settle pending state rather than
+retrying on every paint. See Testing.md for the extended responsiveness profile.

@@ -244,6 +244,34 @@ start "" /wait "C:\build\quickviewer-msvc2022_64-release\bin\QuickViewer.exe" "C
 set "QV_PROFILE_FIRST_IMAGE="
 ```
 
+### Folder text responsiveness
+
+Set `QV_PROFILE_FOLDER_TEXT=1` together with `QV_PROFILE_FIRST_IMAGE` to keep
+profiling through the asynchronous folder text result and its final paint.
+`folder-text.gui-heartbeat` records event-loop service during that interval;
+`folder-text.profile-timeout` is a failure, not a completed render. The ordinary
+first-image profile still stops at reveal and does not establish responsiveness
+while folder text is loading.
+
+```bat
+set "QV_PROFILE_FIRST_IMAGE=C:\build\qv-folder-text.tsv"
+set "QV_PROFILE_FOLDER_TEXT=1"
+start "" /wait "C:\build\quickviewer-msvc2022_64-debug\bin\QuickViewer.exe" "C:\build\temp.zip"
+set "QV_PROFILE_FOLDER_TEXT="
+set "QV_PROFILE_FIRST_IMAGE="
+```
+
+Run `scripts\verify-windows.cmd debug --test windowstartup` for the deterministic
+model-lifetime, stale-result, failure, style-key and helper-transport regressions.
+Interactively on Windows, start a fresh process with the cursor over the window,
+check that `test摇.zip` initially uses a placeholder and then real text, open
+it and switch back to `temp.zip`, and close/reopen FolderView during loading.
+Also check scrolling, narrow-column elision, selected/current (bold) rows,
+normal/maximized/fullscreen startup, and moving between different-DPI screens.
+The text helper is the same executable in `--folder-text-helper` mode; it does
+not load viewer settings or open archives. Font work is isolated in that process
+and only raster images return to the GUI. No extra deployed executable is needed.
+
 ## C++ lint
 
 C++ formatting is enforced by the tracked pre-commit hook and by CI. See

@@ -1,3 +1,5 @@
+#include <QSqlDatabase>
+#include "foldertextcache.h"
 #include <QtTest>
 
 #include "folderwindow.h"
@@ -48,6 +50,45 @@ private:
         if (panelRowsAtReveal > 0) {
             panelEntryAtReveal = QFileInfo(panel->itemPath(view->model()->index(0, 0))).fileName();
         }
+    }
+};
+
+// No OS font cache or scheduling assumptions: the test decides exactly when a
+// request completes, including after its originating model has been destroyed.
+class DelayedFolderTextCache : public FolderTextCache
+{
+public:
+    QList<QByteArray> requests;
+    void finish(const QByteArray &key, bool success = true)
+    {
+        auto result = QSharedPointer<FolderTextImages>::create();
+        for (int i = 0; i < FolderTextImages::ImageCount; ++i) {
+            QImage image(20 + i, 16, QImage::Format_ARGB32_Premultiplied);
+            image.fill(Qt::black);
+            result->images.append(image);
+        }
+        complete(key, success ? result : FolderTextResult());
+    }
+
+protected:
+    void submit(const QByteArray &key) override { requests.append(key); }
+};
+
+class RecordingFolderStyle : public QProxyStyle
+{
+public:
+    mutable QStringList paintedText;
+    void drawControl(ControlElement element,
+                     const QStyleOption *option,
+                     QPainter *painter,
+                     const QWidget *widget = nullptr) const override
+    {
+        if (element == CE_ItemViewItem) {
+            if (const auto *item = qstyleoption_cast<const QStyleOptionViewItem *>(option)) {
+                paintedText.append(item->text);
+            }
+        }
+        QProxyStyle::drawControl(element, option, painter, widget);
     }
 };
 
@@ -165,10 +206,17 @@ private slots:
         qApp->setShowOptionViewOnStartup(qvEnums::OptionViewOnStartup::FolderStartup);
         qApp->setShowPanelSeparateWindow(false);
 
-        StartupWindow viewer;
-        viewer.resize(800, 600);
         QTemporaryDir databaseDirectory;
         QVERIFY(databaseDirectory.isValid());
+        const auto cleanup = qScopeGuard([&] {
+            // The manager's QSqlDatabase handle and the viewer must die before
+            // removing the registered connection and its temporary directory.
+            QSqlDatabase::removeDatabase(QSqlDatabase::defaultConnection);
+            QTRY_VERIFY_WITH_TIMEOUT(!QFile::exists(archivePath) || QFile::remove(archivePath),
+                                     5000);
+        });
+        StartupWindow viewer;
+        viewer.resize(800, 600);
         ThumbnailManager manager(&viewer, databaseDirectory.filePath(QStringLiteral("catalog.db")));
         viewer.setThumbnailManager(&manager);
 
@@ -188,6 +236,37 @@ private slots:
 
         QCOMPARE(viewer.panelRowsAtReveal, 1);
         QCOMPARE(viewer.panelEntryAtReveal, QStringLiteral("book.zip"));
+    }
+
+    void folderTextProfileFinishesWithoutAnInitialImage()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const QByteArray oldProfile = qgetenv("QV_PROFILE_FIRST_IMAGE");
+        const QByteArray oldFolderProfile = qgetenv("QV_PROFILE_FOLDER_TEXT");
+        const auto restore = qScopeGuard([&] {
+            if (oldProfile.isNull()) {
+                qunsetenv("QV_PROFILE_FIRST_IMAGE");
+            } else {
+                qputenv("QV_PROFILE_FIRST_IMAGE", oldProfile);
+            }
+            if (oldFolderProfile.isNull()) {
+                qunsetenv("QV_PROFILE_FOLDER_TEXT");
+            } else {
+                qputenv("QV_PROFILE_FOLDER_TEXT", oldFolderProfile);
+            }
+        });
+        const QString path = directory.filePath("profile.tsv");
+        qputenv("QV_PROFILE_FIRST_IMAGE", path.toLocal8Bit());
+        qputenv("QV_PROFILE_FOLDER_TEXT", "1");
+        StartupWindow viewer;
+        viewer.initializeStartup();
+        QTRY_VERIFY(QFile::exists(path));
+        QFile profile(path);
+        QVERIFY(profile.open(QIODevice::ReadOnly));
+        const QByteArray data = profile.readAll();
+        QVERIFY(data.contains("folder-text.final-paint.end"));
+        QVERIFY(!data.contains("folder-text.profile-timeout"));
     }
 
     void disabledWidthSavingUsesDefaultWithoutChangingSavedWidth()
@@ -422,6 +501,157 @@ private slots:
         view->grab();
     }
 
+    void folderTextSurvivesModelDestructionAndSharesCompletion()
+    {
+        DelayedFolderTextCache cache;
+        const char32_t missing = 0x10ffff;
+        const QString name = QStringLiteral("book") + QString::fromUcs4(&missing, 1) + ".zip";
+        QList<FolderItem> items{FolderItem(name, FolderItem::Archive, QDateTime())};
+        auto first = std::make_unique<FolderItemModel>(nullptr, &cache);
+        first->setVolumes(&items);
+        first->requestTextImages();
+        QCOMPARE(cache.requests.size(), 1);
+        const QByteArray key = cache.requests.first();
+        FolderItemModel second(nullptr, &cache);
+        second.setVolumes(&items);
+        second.requestTextImages();
+        QCOMPARE(cache.requests.size(), 1);
+        QVERIFY(second.data(second.index(0, 0), Qt::DisplayRole).toString() != name);
+        first.reset();
+        cache.finish(key);
+        QCOMPARE(second.data(second.index(0, 0), Qt::DisplayRole).toString(), name);
+        QVERIFY(!second.textImagesPending());
+        FolderItemModel reopened(nullptr, &cache);
+        reopened.setVolumes(&items);
+        QCOMPARE(reopened.data(reopened.index(0, 0), Qt::DisplayRole).toString(), name);
+        QCOMPARE(cache.requests.size(), 1);
+    }
+
+    void folderTextIgnoresOldFolderAndStyleCompletions()
+    {
+        DelayedFolderTextCache cache;
+        const char32_t missing = 0x10ffff;
+        const QString suffix = QString::fromUcs4(&missing, 1);
+        QList<FolderItem> first{FolderItem("a" + suffix, FolderItem::Archive, QDateTime())};
+        QList<FolderItem> next{FolderItem("b" + suffix, FolderItem::Archive, QDateTime())};
+        FolderItemModel model(nullptr, &cache);
+        model.setVolumes(&first);
+        model.requestTextImages();
+        const QByteArray oldKey = cache.requests.last();
+        model.setVolumes(&next);
+        model.requestTextImages();
+        const QByteArray nextKey = cache.requests.last();
+        QFont font = QApplication::font();
+        font.setPixelSize(24);
+        model.setTextStyle(font, QApplication::palette(), 2);
+        model.requestTextImages();
+        const QByteArray styledKey = cache.requests.last();
+        QVERIFY(oldKey != nextKey);
+        QVERIFY(nextKey != styledKey);
+        cache.finish(oldKey);
+        cache.finish(nextKey);
+        QVERIFY(model.data(model.index(0, 0), Qt::DisplayRole).toString() != next.first().name);
+        cache.finish(styledKey);
+        QCOMPARE(model.data(model.index(0, 0), Qt::DisplayRole).toString(), next.first().name);
+        const auto result = model.data(model.index(0, 0), FolderItemModel::TextImagesRole)
+                                .value<FolderTextResult>();
+        QVERIFY(result);
+        QCOMPARE(result->images.size(), FolderTextImages::ImageCount);
+    }
+
+    void folderTextFailureIsTerminalAndDoesNotBlockOtherRequests()
+    {
+        DelayedFolderTextCache cache;
+        const char32_t missing = 0x10ffff;
+        const QString suffix = QString::fromUcs4(&missing, 1);
+        QList<FolderItem> items{FolderItem("a" + suffix, FolderItem::Archive, QDateTime())};
+        FolderItemModel model(nullptr, &cache);
+        model.setVolumes(&items);
+        model.requestTextImages();
+        cache.finish(cache.requests.first(), false);
+        QVERIFY(!model.textImagesPending());
+        model.requestTextImages();
+        QCOMPARE(cache.requests.size(), 1);
+        items[0].name = "b" + suffix;
+        model.setVolumes(&items);
+        model.requestTextImages();
+        QCOMPARE(cache.requests.size(), 2);
+        cache.finish(cache.requests.last());
+        QCOMPARE(model.data(model.index(0, 0), Qt::DisplayRole).toString(), items.first().name);
+    }
+
+    void folderTextPaintNeverShapesTheOriginalMissingGlyph()
+    {
+        const bool progress = qApp->ShowReadProgress();
+        qApp->setShowReadProgress(false);
+        const auto restore = qScopeGuard([progress] { qApp->setShowReadProgress(progress); });
+        DelayedFolderTextCache cache;
+        const char32_t missing = 0x10ffff;
+        const QString name = "book" + QString::fromUcs4(&missing, 1);
+        QList<FolderItem> items{FolderItem(name, FolderItem::Archive, QDateTime())};
+        FolderItemModel model(nullptr, &cache);
+        QTreeView view;
+        FolderItemDelegate delegate(&view, nullptr);
+        auto *style = new RecordingFolderStyle;
+        style->setParent(&view);
+        view.setStyle(style);
+        view.setRootIsDecorated(false);
+        view.setModel(&model);
+        view.setItemDelegate(&delegate);
+        model.setVolumes(&items);
+        model.requestTextImages();
+        view.resize(300, 150);
+        view.grab();
+        QVERIFY(!style->paintedText.isEmpty());
+        QVERIFY(!style->paintedText.contains(name));
+        QVERIFY(model.textImagesPending());
+        // Completion is deliberately held until after the GUI has painted.
+        // Both the regular and current/bold paints must consume the images.
+        cache.finish(cache.requests.first());
+        QCOMPARE(model.data(model.index(0, 0), Qt::DisplayRole).toString(), name);
+        for (int current : {-1, 0}) {
+            model.setCurrentVolumeRow(current);
+            style->paintedText.clear();
+            view.grab();
+            QVERIFY(!style->paintedText.isEmpty());
+            for (const auto &text : style->paintedText) {
+                QVERIFY(text.isEmpty());
+            }
+        }
+        view.setItemDelegate(nullptr);
+        view.setModel(nullptr);
+    }
+
+    void folderTextCacheKeyIncludesRenderingConditions()
+    {
+        const QFont font = QApplication::font();
+        QPalette palette = QApplication::palette();
+        const auto base = FolderTextCache::key("name", font, palette, 1);
+        QVERIFY(base != FolderTextCache::key("name", font, palette, 2));
+        QFont bold = font;
+        bold.setBold(true);
+        QVERIFY(base != FolderTextCache::key("name", bold, palette, 1));
+        palette.setColor(QPalette::Text, Qt::magenta);
+        QVERIFY(base != FolderTextCache::key("name", font, palette, 1));
+    }
+
+    void folderTextHelperReturnsImagesAtTheRequestedScale()
+    {
+        FolderTextCache cache;
+        QFont font = QApplication::font();
+        const QByteArray key = FolderTextCache::key(
+            QString::fromUtf8("test摇.zip"), font, QApplication::palette(), 2);
+        cache.request(key);
+        QTRY_VERIFY_WITH_TIMEOUT(!cache.pending(key), 15000);
+        const auto result = cache.lookup(key);
+        QVERIFY(result);
+        QCOMPARE(result->images.size(), FolderTextImages::ImageCount);
+        for (const auto &image : result->images) {
+            QVERIFY(!image.isNull());
+            QCOMPARE(image.devicePixelRatio(), 2.0);
+        }
+    }
+
     void folderListReplacesGlyphsTheFontCannotDraw()
     {
         QTemporaryDir directory;
@@ -482,7 +712,7 @@ private slots:
         // The first frame of the list is a synchronous paint like this one.
         view->grab();
 
-        QVERIFY2(!model->fallbackFontLoadPending(),
+        QVERIFY2(!model->textImagesPending(),
                  "the list paint started the fallback font load it would have to wait for");
         // The load runs after the paint and completes the row.
         QTRY_VERIFY(row.data().toString().contains(QString::fromUcs4(&unicorn, 1)));
@@ -1233,6 +1463,10 @@ private slots:
         QVERIFY(
             QFile::setPermissions(archivePath, QFileDevice::ReadOwner | QFileDevice::WriteOwner));
 
+        const auto cleanup = qScopeGuard([&] {
+            QTRY_VERIFY_WITH_TIMEOUT(!QFile::exists(archivePath) || QFile::remove(archivePath),
+                                     5000);
+        });
         StartupWindow viewer;
         viewer.createFolderWindow(true, directory.path(), false);
         QTreeView *view =
@@ -1346,6 +1580,11 @@ private slots:
         QVERIFY(QFile::copy(QString(FILELOADER_DATAPATH "deflate-utf8.zip"), secondPath));
         QVERIFY(QFile::copy(QString(FILELOADER_DATAPATH "zip/encrypted.zip"), encryptedPath));
 
+        const auto cleanup = qScopeGuard([&] {
+            for (const auto &path : {firstPath, secondPath, encryptedPath}) {
+                QTRY_VERIFY_WITH_TIMEOUT(!QFile::exists(path) || QFile::remove(path), 5000);
+            }
+        });
         StartupWindow viewer;
 
         viewer.openPath(firstPath);
@@ -1361,6 +1600,10 @@ private slots:
 
 int main(int argc, char **argv)
 {
+    if (isFolderTextHelper(argc, argv)) {
+        return runFolderTextHelper(argc, argv);
+    }
+
     QStandardPaths::setTestModeEnabled(true);
     // Keep QtTest arguments out of the application's startup file loader.
     int applicationArgc = 1;

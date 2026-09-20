@@ -5,6 +5,7 @@
 #include <QtCore>
 
 #include "folderitem.h"
+#include "foldertextcache.h"
 
 /**
  * The three list icons as the shell renders them. Loaded off the GUI thread
@@ -21,31 +22,18 @@ class FolderItemModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    enum ItemRole { CurrentVolumeRole = Qt::UserRole };
+    enum ItemRole { CurrentVolumeRole = Qt::UserRole, SafeTextRole, TextImagesRole };
 
-    FolderItemModel(QObject *parent);
+    FolderItemModel(QObject *parent, FolderTextCache *textCache = nullptr);
     /**
      * Starts loading the list icons in the background. Called while the window
      * is still being created, so the panel does not have to wait for the shell
      * when it appears.
      */
     static void startIconLoad();
-    /**
-     * Names, in display order, that need a fallback font. The rows without one
-     * are empty entries.
-     */
-    QStringList namesNeedingFallback() const;
-    /**
-     * Loads the fallback fonts the current list needs, on a worker thread. Cheap
-     * to call: it does nothing when there is nothing to load.
-     */
-    void requestFallbackFonts();
-    /**
-     * True while a fallback font load this model started is still running. A
-     * load in flight is what makes a paint wait for the font database, so the
-     * caller queues the request behind the paint it started from.
-     */
-    bool fallbackFontLoadPending() const;
+    void setTextStyle(const QFont &font, const QPalette &palette, qreal devicePixelRatio);
+    void requestTextImages();
+    bool textImagesPending() const;
     QVariant data(const QModelIndex &index, int role) const override;
     int rowCount(const QModelIndex &parent) const override;
     int columnCount(const QModelIndex &) const override;
@@ -58,7 +46,6 @@ public:
 
 private:
     void handleIconLoadFinished();
-    void handleFallbackFontsLoaded();
     void applyIconImages(const FolderIconImages &images);
     void loadIconsFromProvider();
     void updatePlaceholderNames();
@@ -66,9 +53,12 @@ private:
     QList<FolderItem> *m_searchedVolumes;
     int m_currentVolumeRow;
     QStringList m_placeholderNames;
-    bool m_placeholdersActive = false;
-    QSet<char32_t> m_glyphsToLoad;
-    QFutureWatcher<void> m_fallbackFontWatcher;
+    FolderTextCache *m_textCache;
+    QFont m_textFont;
+    QPalette m_textPalette;
+    qreal m_textRatio = 1;
+    QList<QByteArray> m_textKeys;
+    QList<FolderTextResult> m_textImages;
     QFutureWatcher<FolderIconImages> m_iconWatcher;
     QIcon m_folderIcon;
     QIcon m_archiveIcon;

@@ -450,6 +450,37 @@ void MainWindow::revealStartupWindow()
     }
     m_revealInitialWindow = false;
     StartupProfiler::mark("startup.reveal.end");
+    if (StartupProfiler::enabled() && qEnvironmentVariableIsSet("QV_PROFILE_FOLDER_TEXT")) {
+        profileStartupFolderText();
+    }
+}
+
+void MainWindow::profileStartupFolderText()
+{
+    // Start at reveal, including failed/empty archives which never emit an
+    // initial-image completion. Observe the real post-reveal event loop.
+    auto *timer = new QTimer(this);
+    auto elapsed = QSharedPointer<QElapsedTimer>::create();
+    elapsed->start();
+    connect(timer, &QTimer::timeout, this, [this, timer, elapsed] {
+        StartupProfiler::mark("folder-text.gui-heartbeat");
+        auto *model = m_folderWindow ? m_folderWindow->findChild<FolderItemModel *>() : nullptr;
+        if (model) {
+            model->requestTextImages();
+        }
+        if (model && model->textImagesPending() && elapsed->elapsed() < 30000) {
+            return;
+        }
+        StartupProfiler::mark(elapsed->elapsed() >= 30000 ? "folder-text.profile-timeout"
+                                                          : "folder-text.final-paint.begin");
+        repaint();
+        StartupProfiler::mark("folder-text.final-paint.end");
+        timer->stop();
+        timer->deleteLater();
+        StartupProfiler::flush();
+        QCoreApplication::quit();
+    });
+    timer->start(16);
 }
 
 void MainWindow::loadStartupVolume()
@@ -1286,7 +1317,7 @@ void MainWindow::handleInitialImageDisplayFinished()
     // they are the part of the startup work the first frame does not need.
     initializeStartupPanel();
     revealStartupWindow();
-    if (StartupProfiler::enabled()) {
+    if (StartupProfiler::enabled() && !qEnvironmentVariableIsSet("QV_PROFILE_FOLDER_TEXT")) {
         StartupProfiler::flush();
         QTimer::singleShot(0, qApp, &QCoreApplication::quit);
         return;

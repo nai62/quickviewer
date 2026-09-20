@@ -1,3 +1,4 @@
+#include "foldertextcache.h"
 #include <QtTest>
 
 #include <utility>
@@ -372,6 +373,10 @@ private slots:
 
 int main(int argc, char **argv)
 {
+    if (isFolderTextHelper(argc, argv)) {
+        return runFolderTextHelper(argc, argv);
+    }
+
     QStandardPaths::setTestModeEnabled(true);
     int applicationArgc = 1;
     char *applicationArgv[] = {argv[0], nullptr};

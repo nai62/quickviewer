@@ -50,7 +50,6 @@ protected:
 
 private:
     void openFolderItem(const QModelIndex &index);
-    void requestListFallbackFonts();
     void sortVolumes();
     void setupHistoryButton(Ui::MainWindow *uiMain);
     int currentVolumeRow() const;
@@ -59,7 +58,6 @@ private:
     Ui::FolderWindow *ui;
     QMenu *m_itemContextMenu;
     QToolButton *m_historyButton;
-    bool m_fallbackFontRequestPending = false;
     QString m_currentPath;
     QString m_currentVolumePath;
     QList<FolderItem> m_volumes;

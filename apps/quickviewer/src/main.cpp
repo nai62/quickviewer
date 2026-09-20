@@ -1,3 +1,4 @@
+#include "foldertextcache.h"
 #include <QtCore>
 #include <QtWidgets>
 
@@ -111,6 +112,10 @@ int runEmptyWindowChild(int argc, char **argv)
 
 int main(int argc, char *argv[])
 {
+    if (isFolderTextHelper(argc, argv)) {
+        return runFolderTextHelper(argc, argv);
+    }
+
     StartupProfiler::start();
 #ifdef Q_OS_WIN
     {

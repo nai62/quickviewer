@@ -44,6 +44,8 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
     ui->folderView->installEventFilter(this);
 
     // folderView
+    m_itemModel.setTextStyle(
+        ui->folderView->font(), ui->folderView->palette(), ui->folderView->devicePixelRatioF());
     ui->folderView->setModel(&m_itemModel);
     ui->folderView->setItemDelegate(&m_itemDelegate);
 
@@ -90,12 +92,6 @@ FolderWindow::~FolderWindow()
     delete ui;
 }
 
-void FolderWindow::requestListFallbackFonts()
-{
-    m_fallbackFontRequestPending = false;
-    m_itemModel.requestFallbackFonts();
-}
-
 void FolderWindow::setupHistoryButton(Ui::MainWindow *uiMain)
 {
     m_historyButton = new QToolButton(ui->frame);
@@ -129,18 +125,11 @@ static QModelIndex selectedIdx;
 
 bool FolderWindow::eventFilter(QObject *obj, QEvent *event)
 {
-    // The list is on screen from here on; a name that needs a fallback font is
-    // shown with a placeholder and the font is loaded on a worker thread instead
-    // of inside a paint of the list.
-    if (event->type() == QEvent::Paint && obj == ui->folderView) {
-        // Queued, so the load starts once this paint is done. A load running
-        // while the list paints makes that paint wait for the font database -
-        // the first row of the list took about 200 ms that way - and the list is
-        // drawn with a placeholder until the load finishes anyway.
-        if (!m_fallbackFontRequestPending) {
-            m_fallbackFontRequestPending = true;
-            QTimer::singleShot(0, this, &FolderWindow::requestListFallbackFonts);
-        }
+    if (obj == ui->folderView &&
+        (event->type() == QEvent::FontChange || event->type() == QEvent::PaletteChange ||
+         event->type() == QEvent::DevicePixelRatioChange || event->type() == QEvent::Show)) {
+        m_itemModel.setTextStyle(
+            ui->folderView->font(), ui->folderView->palette(), ui->folderView->devicePixelRatioF());
     }
     //    qDebug() << obj << event << event->type();
     //    QMouseEvent *mouseEvent = nullptr;
