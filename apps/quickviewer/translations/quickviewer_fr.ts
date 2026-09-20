@@ -1500,7 +1500,7 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="168"/>
-        <location filename="../src/mainwindow.cpp" line="1728"/>
+        <location filename="../src/mainwindow.cpp" line="1731"/>
         <source>&amp;Fullscreen</source>
         <translation>&amp;Plein écran</translation>
     </message>
@@ -1638,7 +1638,7 @@
         <translation>EffacerSignets</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2474"/>
+        <location filename="../src/mainwindow.cpp" line="2477"/>
         <source>Bookmark saved.</source>
         <translation>Signet enregistré..</translation>
     </message>
@@ -2224,47 +2224,47 @@
         <translation type="vanished">Le fichier image n&apos;a pas été trouvé. Ne peut être ouvert.</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1679"/>
+        <location filename="../src/mainwindow.cpp" line="1682"/>
         <source>Loading...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1682"/>
+        <location filename="../src/mainwindow.cpp" line="1685"/>
         <source>No images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1684"/>
+        <location filename="../src/mainwindow.cpp" line="1687"/>
         <source>Unavailable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2042"/>
+        <location filename="../src/mainwindow.cpp" line="2045"/>
         <source>All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.heic *.heif);;Archives( *.zip *.7z *.rar)</source>
         <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2048"/>
+        <location filename="../src/mainwindow.cpp" line="2051"/>
         <source>Select an image or archive</source>
         <comment>Title of the dialog displayed when opening a file with OpenFileFolder</comment>
         <translation>Veuillez sélectionner l&apos;image ou l&apos;archive</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2289"/>
-        <location filename="../src/mainwindow.cpp" line="2333"/>
+        <location filename="../src/mainwindow.cpp" line="2292"/>
+        <location filename="../src/mainwindow.cpp" line="2336"/>
         <source>Confirmation</source>
         <comment>Confirm deleting image file on MessageBox title</comment>
         <translation>Confirmation</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2295"/>
+        <location filename="../src/mainwindow.cpp" line="2298"/>
         <source>Are you sure you want to move the image to Recycle Bin?</source>
         <comment>Confirm putting displayed file in Recycle Box Message Box body</comment>
         <translation>Êtes-vous sûr de vouloir déplacer l&apos;image dans la corbeille?</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2338"/>
+        <location filename="../src/mainwindow.cpp" line="2341"/>
         <source>Are you sure you want to delete this image?</source>
         <comment>Confirm deleting image file on Message Box body</comment>
         <translation>Êtes-vous sûr de vouloir supprimer cette image?</translation>
@@ -2952,67 +2952,67 @@
         <translation type="vanished">Dual View</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="267"/>
+        <location filename="../src/models/qvapplication.cpp" line="269"/>
         <source>File</source>
         <comment>File Action Group</comment>
         <translation>Fichier</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="274"/>
+        <location filename="../src/models/qvapplication.cpp" line="276"/>
         <source>Bookmark</source>
         <comment>Bookmark Action Group</comment>
         <translation>Signet</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="280"/>
+        <location filename="../src/models/qvapplication.cpp" line="282"/>
         <source>Navigation</source>
         <comment>Navigation Action Group</comment>
         <translation>Navigation</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="298"/>
+        <location filename="../src/models/qvapplication.cpp" line="300"/>
         <source>Folder</source>
         <comment>Folder Action Group</comment>
         <translation>Dossier</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="303"/>
+        <location filename="../src/models/qvapplication.cpp" line="305"/>
         <source>Catalog</source>
         <comment>Catalog Action Group</comment>
         <translation>Catalogue</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="313"/>
+        <location filename="../src/models/qvapplication.cpp" line="315"/>
         <source>Image</source>
         <comment>Image Action Group</comment>
         <translation>Image</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="327"/>
+        <location filename="../src/models/qvapplication.cpp" line="329"/>
         <source>Dual View</source>
         <comment>Dual View Action Group</comment>
         <translation>Dual View</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="338"/>
+        <location filename="../src/models/qvapplication.cpp" line="340"/>
         <source>View</source>
         <comment>View Action Group</comment>
         <translation>Vue</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="369"/>
+        <location filename="../src/models/qvapplication.cpp" line="371"/>
         <source>ContextMenu</source>
         <comment>ContextMenu Action Group</comment>
         <translation>Menu contextuel</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="381"/>
+        <location filename="../src/models/qvapplication.cpp" line="383"/>
         <source>Shader</source>
         <comment>Shader Action Group</comment>
         <translation>Shader</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="396"/>
+        <location filename="../src/models/qvapplication.cpp" line="398"/>
         <source>Help</source>
         <comment>Help Action Group</comment>
         <translation>Help</translation>
