@@ -32,6 +32,8 @@ private Q_SLOTS:
     void heifExtensionsAreImages();
     void heifPluginDecodesImage();
     void recursiveDirectoryTraversal();
+    void singleSubdirectoryIsUnwrapped();
+    void directoryLinkCycleStopsUnwrapping();
     void emptyDirectoryContentsAreStable();
     void sevenZipImages();
     void sevenZipSolidModes_data();
@@ -125,6 +127,16 @@ void FileLoaderTest::zipArchives()
     QCOMPARE(result.data.size(), 1080054);
     const QImage image = QImage::fromData(result.data, "bmp");
     QCOMPARE(image.size(), QSize(600, 600));
+}
+
+static bool writeEmptyFile(const QString &path)
+{
+    QFile file(path);
+    if (!file.open(QIODevice::WriteOnly)) {
+        return false;
+    }
+    file.close();
+    return true;
 }
 
 static void verifyRarArchive(const QString &archivePath, const QString &firstName)
@@ -324,6 +336,107 @@ void FileLoaderTest::recursiveDirectoryTraversal()
         normalized.append(QDir::fromNativeSeparators(path));
     }
     QCOMPARE(normalized, QStringList({"003.jpe", "chapter/002.jpe", "chapter/section/001.jpe"}));
+}
+
+void FileLoaderTest::singleSubdirectoryIsUnwrapped()
+{
+    QTemporaryDir temporaryDir;
+    QVERIFY(temporaryDir.isValid());
+    QDir root(temporaryDir.path());
+
+    // A folder holding nothing but one folder is a wrapper around it, so the
+    // listing descends into that one - and keeps descending through a chain of
+    // wrappers.
+    QVERIFY(root.mkpath("wrapper/inner"));
+    QVERIFY(writeEmptyFile(root.filePath("wrapper/inner/001.png")));
+    QVERIFY(writeEmptyFile(root.filePath("wrapper/inner/002.png")));
+    FileLoaderDirectory unwrapped(root.filePath("wrapper"));
+    QCOMPARE(unwrapped.contents(), QStringList({"001.png", "002.png"}));
+    QCOMPARE(QDir::cleanPath(unwrapped.realVolumePath()),
+             QDir::cleanPath(root.filePath("wrapper/inner")));
+
+    QVERIFY(root.mkpath("chain/a/b"));
+    QVERIFY(writeEmptyFile(root.filePath("chain/a/b/001.png")));
+    FileLoaderDirectory chain(root.filePath("chain"));
+    QCOMPARE(chain.contents(), QStringList({"001.png"}));
+    QCOMPARE(QDir::cleanPath(chain.realVolumePath()), QDir::cleanPath(root.filePath("chain/a/b")));
+
+    // Any file - an image or not - is a listing of its own, so the wrapper
+    // stays where it is.
+    QVERIFY(root.mkpath("withfile/sub"));
+    QVERIFY(writeEmptyFile(root.filePath("withfile/sub/001.png")));
+    QVERIFY(writeEmptyFile(root.filePath("withfile/notes.txt")));
+    FileLoaderDirectory withFile(root.filePath("withfile"));
+    QCOMPARE(withFile.contents(), QStringList());
+
+    // Two directories are a choice the listing shows instead of making.
+    QVERIFY(root.mkpath("siblings/one"));
+    QVERIFY(root.mkpath("siblings/two"));
+    QVERIFY(writeEmptyFile(root.filePath("siblings/one/001.png")));
+    FileLoaderDirectory siblings(root.filePath("siblings"));
+    QCOMPARE(siblings.contents(), QStringList());
+
+    // A chain deeper than the limit stops at the limit rather than following
+    // wrappers down for as long as the filesystem allows.
+    QString deep;
+    for (int level = 0; level < FileLoaderDirectory::MaxUnwrappedDepth + 4; ++level) {
+        deep += QStringLiteral("/d%1").arg(level);
+    }
+    QVERIFY(root.mkpath(QStringLiteral("deep") + deep));
+    QVERIFY(
+        writeEmptyFile(root.filePath(QStringLiteral("deep") + deep + QStringLiteral("/001.png"))));
+    FileLoaderDirectory deepLoader(root.filePath(QStringLiteral("deep")));
+    QCOMPARE(deepLoader.contents(), QStringList());
+}
+
+void FileLoaderTest::directoryLinkCycleStopsUnwrapping()
+{
+#ifndef Q_OS_WIN
+    QSKIP("Windows directory links are specific to Windows");
+#else
+    QTemporaryDir temporaryDir;
+    QVERIFY(temporaryDir.isValid());
+    QDir root(temporaryDir.path());
+    QVERIFY(root.mkpath("outer"));
+    QVERIFY(root.mkpath("target"));
+    QVERIFY(writeEmptyFile(root.filePath("target/001.png")));
+    QVERIFY(root.mkpath("wrapper"));
+
+    const auto linkDirectory = [&root](const QString &link, const QString &target) {
+        QProcess mklink;
+        mklink.start("cmd.exe",
+                     {"/c",
+                      "mklink",
+                      "/J",
+                      QDir::toNativeSeparators(root.filePath(link)),
+                      QDir::toNativeSeparators(root.filePath(target))});
+        return mklink.waitForFinished() && mklink.exitCode() == 0;
+    };
+
+    // A link back to the listing's own directory: the descent has to stop at
+    // the unwrap limit instead of following the link for as long as the
+    // filesystem allows.
+    QVERIFY2(linkDirectory(QStringLiteral("outer/self"), QStringLiteral("outer")),
+             "Cannot create the directory junction");
+    FileLoaderDirectory cycle(root.filePath("outer"));
+    QCOMPARE(cycle.contents(), QStringList());
+    const QString unwrapped = QDir(root.filePath("outer")).relativeFilePath(cycle.realVolumePath());
+    QVERIFY2(unwrapped.count(QLatin1Char('/')) + 1 <= FileLoaderDirectory::MaxUnwrappedDepth,
+             qPrintable(unwrapped));
+
+    // A link to another directory is not a cycle: it stays part of the listing.
+    QVERIFY2(linkDirectory(QStringLiteral("wrapper/link"), QStringLiteral("target")),
+             "Cannot create the directory junction");
+    FileLoaderDirectory linked(root.filePath("wrapper"));
+    QCOMPARE(linked.contents(), QStringList({"001.png"}));
+    FileLoaderDirectory recursiveLinked(root.filePath("wrapper"),
+                                        FileLoaderDirectory::TraversalMode::Recursive);
+    QCOMPARE(recursiveLinked.contents(),
+             QStringList({QDir::toNativeSeparators(QStringLiteral("link/001.png"))}));
+
+    QVERIFY(QDir(root.filePath("outer")).rmdir(QStringLiteral("self")));
+    QVERIFY(QDir(root.filePath("wrapper")).rmdir(QStringLiteral("link")));
+#endif
 }
 
 void FileLoaderTest::emptyDirectoryContentsAreStable()
