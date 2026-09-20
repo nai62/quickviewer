@@ -18,6 +18,16 @@ void FolderTreeView::selectionChanged(const QItemSelection &selection,
 
 void FolderTreeView::mousePressEvent(QMouseEvent *event)
 {
+    // The list opens a row with the left button and shows its menu with the
+    // right one; the other buttons belong to the window. Report them and leave
+    // the list out of it, so they cannot be read as a click on a row.
+    const Qt::MouseButtons unused = event->buttons() & ~(Qt::LeftButton | Qt::RightButton);
+    if (unused) {
+        emit unusedMouseButton(unused);
+        event->accept();
+        return;
+    }
+
     const QModelIndex pressed = indexAt(event->pos());
     const bool wasChosen = pressed.isValid() && pressed == currentIndex();
     QTreeView::mousePressEvent(event);

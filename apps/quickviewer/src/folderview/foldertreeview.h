@@ -11,6 +11,11 @@ public:
 
 signals:
     void selected(const QModelIndex &index);
+    /**
+     * A mouse button the list does not use. The window maps those to actions,
+     * like the keys the list does not use.
+     */
+    void unusedMouseButton(Qt::MouseButtons buttons);
 
 protected:
     void selectionChanged(const QItemSelection &selected,

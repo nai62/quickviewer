@@ -7,6 +7,7 @@
 #include "folderwindow.h"
 #include "models/volume.h"
 #include "models/qvapplication.h"
+#include "qmousesequence.h"
 #include "startupprofiler.h"
 
 namespace {
@@ -52,6 +53,10 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
             &QScrollBar::valueChanged,
             this,
             &FolderWindow::updateTextRowRange);
+    connect(ui->folderView,
+            &FolderTreeView::unusedMouseButton,
+            this,
+            &FolderWindow::handleUnusedMouseButton);
 
     // The item context menu is a plain menu; its action lives in the form.
     m_itemContextMenu = new QMenu(this);
@@ -154,6 +159,19 @@ bool FolderWindow::eventFilter(QObject *obj, QEvent *event)
         return true;
     }
     return QObject::eventFilter(obj, event);
+}
+
+/**
+ * The mouse buttons the list does not use behave like the keys it does not use:
+ * the window maps them to actions, and the back and forward buttons step a page
+ * by default.
+ */
+void FolderWindow::handleUnusedMouseButton(Qt::MouseButtons buttons)
+{
+    QMouseValue value(QKeySequence(qApp->keyboardModifiers()), buttons, 0);
+    if (QAction *action = qApp->mouseActions().getActionByValue(value)) {
+        action->trigger();
+    }
 }
 
 void FolderWindow::handleSetAsHomeFolderActionTriggered()

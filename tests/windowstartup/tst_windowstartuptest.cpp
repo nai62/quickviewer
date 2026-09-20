@@ -551,6 +551,44 @@ private slots:
             QDir::cleanPath(QDir::fromNativeSeparators(root.filePath(QStringLiteral("inner")))));
     }
 
+    void folderViewGivesTheSideButtonsToTheViewer()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 3; ++page) {
+            QImage image(16, 16, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 60, 255, 255));
+            QVERIFY(image.save(directory.filePath(QStringLiteral("page-%1.bmp").arg(page))));
+        }
+
+        StartupWindow viewer;
+        viewer.createFolderWindow(true, directory.path(), false);
+        viewer.openPath(directory.path());
+        QCOMPARE(viewer.viewerSession()->pageCount(), 3);
+        QVERIFY(viewer.viewerSession()->selectPage(2));
+        QCOMPARE(viewer.viewerSession()->currentPageIndex(), 2);
+
+        QTreeView *view =
+            viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        const QRect currentRect = view->visualRect(view->currentIndex());
+        QVERIFY(!currentRect.isEmpty());
+
+        QSignalSpy opened(viewer.folderWindow(), &FolderWindow::openVolume);
+        // The mouse's back button steps a page, like the key that does the same:
+        // it belongs to the viewer, not to the row it happens to be over.
+        QMouseEvent press(QEvent::MouseButtonPress,
+                          currentRect.center(),
+                          view->viewport()->mapToGlobal(currentRect.center()),
+                          Qt::BackButton,
+                          Qt::BackButton,
+                          Qt::NoModifier);
+        QApplication::sendEvent(view->viewport(), &press);
+
+        QCOMPARE(opened.size(), 0);
+        QCOMPARE(viewer.viewerSession()->currentPageIndex(), 1);
+    }
+
     void folderListPaintsProgressWithoutAPageCount()
     {
         QTemporaryDir directory;

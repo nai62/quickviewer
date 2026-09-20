@@ -53,6 +53,7 @@ private:
     void sortVolumes();
     void setupHistoryButton(Ui::MainWindow *uiMain);
     void updateTextRowRange();
+    void handleUnusedMouseButton(Qt::MouseButtons buttons);
     int currentVolumeRow() const;
     void updateCurrentVolumeRow();
 
