@@ -330,6 +330,30 @@ private slots:
         QVERIFY(currentFile.data(FolderItemModel::CurrentVolumeRole).toBool());
     }
 
+    void folderListPaintsProgressWithoutAPageCount()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const QString archivePath = directory.filePath(QStringLiteral("book.zip"));
+        QVERIFY(QFile::copy(QString(FILELOADER_DATAPATH "deflate-utf8.zip"), archivePath));
+
+        // A stored entry can carry no page count. Painting one used to divide by
+        // zero and kill the process.
+        const QString storedPath = QDir::fromNativeSeparators(archivePath);
+        qApp->setOpenVolumeWithProgress(true);
+        qApp->readProgressStore()->insertSessionOverride(
+            storedPath, {QFileInfo(storedPath).fileName(), storedPath, QString(), 0, 0, false});
+
+        StartupWindow viewer;
+        viewer.createFolderWindow(true, directory.path(), false);
+        QTreeView *view =
+            viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        QVERIFY(view->model()->rowCount() > 0);
+
+        view->grab();
+    }
+
     void folderViewConsumesWheelEventsAtScrollBoundary()
     {
         FolderWindow folder(nullptr, nullptr);

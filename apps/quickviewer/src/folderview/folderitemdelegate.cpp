@@ -50,9 +50,18 @@ void FolderItemDelegate::paint(QPainter *painter,
         QPoint begin(rect.left() + 30, rect.top() + ProgressHeight);
         //        painter->drawLine(begin, QPoint(begin.x()+100, begin.y()));
 
-        int progressWidth =
-            progress.completed ? ProgressWidth
-                               : progress.resumePageIndex * ProgressWidth / progress.totalPageCount;
+        // An entry can carry no page count: a progress file that was interrupted,
+        // edited, or written by a caller that only knows the page index. Dividing
+        // by it would crash the paint, so such an entry shows no progress.
+        int progressWidth = ProgressWidth;
+        if (!progress.completed) {
+            progressWidth =
+                progress.totalPageCount > 0
+                    ? qBound(0,
+                             progress.resumePageIndex * ProgressWidth / progress.totalPageCount,
+                             ProgressWidth)
+                    : 0;
+        }
         QBrush brRead(QColor::fromRgb(0x0, 0xff, 0x0, 0x40)),
             brUnread(QColor::fromRgb(0xff, 0x0, 0x0, 0x40));
         painter->save();
