@@ -288,6 +288,15 @@ Startup painting, fullscreen, OpenGL, input timing, and other visual behavior
 must also be checked interactively on Windows when affected. Headless
 automation does not establish visual correctness.
 
+A check that temporarily edits the portable `quickviewer.ini` next to the
+executable - it holds the history of opened volumes - must keep that file
+byte-exact: it is UTF-8, while PowerShell's `Get-Content` and `Set-Content` use
+the system ANSI code page by default, and one read/write round trip through
+them corrupts every name that code page cannot represent, which leaves those
+history entries unopenable. Copy the bytes with `[IO.File]::ReadAllBytes` and
+`WriteAllBytes`, and read and write text with `[IO.File]::ReadAllText` and
+`WriteAllText` plus `New-Object System.Text.UTF8Encoding($false)`.
+
 ## Traps when adding source files or tests
 
 ### A new or removed source needs `--qmake`
