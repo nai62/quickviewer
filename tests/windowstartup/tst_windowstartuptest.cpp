@@ -508,6 +508,49 @@ private slots:
         QVERIFY(inner.data(FolderItemModel::CurrentVolumeRole).toBool());
     }
 
+    void folderViewOpensTheEntryItAlreadyMarks()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QDir root(directory.path());
+        QVERIFY(root.mkpath(QStringLiteral("inner")));
+        QImage image(2, 2, QImage::Format_RGB32);
+        image.fill(Qt::white);
+        QVERIFY(image.save(root.filePath(QStringLiteral("inner/current.png"))));
+
+        StartupWindow viewer;
+        viewer.openPath(root.path());
+        viewer.createFolderWindow(true, root.path(), false);
+        FolderWindow *panel = viewer.folderWindow();
+        QTreeView *view = panel->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+
+        // The folder holds nothing but the subdirectory that has the page, so
+        // the panel marks that row and makes it the view's current entry.
+        const QModelIndex inner = view->model()->index(0, 0);
+        QCOMPARE(inner.data().toString(), QStringLiteral("inner"));
+        QVERIFY(inner.data(FolderItemModel::CurrentVolumeRole).toBool());
+        QCOMPARE(view->currentIndex(), inner);
+        const QRect innerRect = view->visualRect(inner);
+        QVERIFY(!innerRect.isEmpty());
+
+        QSignalSpy opened(panel, &FolderWindow::openVolume);
+        QTest::mouseClick(view->viewport(), Qt::LeftButton, Qt::NoModifier, innerRect.center());
+
+        QCOMPARE(opened.size(), 1);
+        const OpenTarget target = opened.first().first().value<OpenTarget>();
+        QCOMPARE(target.intent, OpenIntent::Container);
+        QCOMPARE(
+            QDir::cleanPath(QDir::fromNativeSeparators(target.location.containerPath)),
+            QDir::cleanPath(QDir::fromNativeSeparators(root.filePath(QStringLiteral("inner")))));
+
+        // And opening it moves the viewer and the panel into that subdirectory.
+        viewer.openTarget(target);
+        QCOMPARE(
+            QDir::cleanPath(QDir::fromNativeSeparators(panel->currentPath())),
+            QDir::cleanPath(QDir::fromNativeSeparators(root.filePath(QStringLiteral("inner")))));
+    }
+
     void folderListPaintsProgressWithoutAPageCount()
     {
         QTemporaryDir directory;
