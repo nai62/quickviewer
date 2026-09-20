@@ -1,6 +1,7 @@
 #ifndef FOLDERITEMMODEL_H
 #define FOLDERITEMMODEL_H
 
+#include <QRawFont>
 #include <QtWidgets>
 #include <QtCore>
 
@@ -32,7 +33,16 @@ public:
      */
     static void startIconLoad();
     void setTextStyle(const QFont &font, const QPalette &palette, qreal devicePixelRatio);
+    /**
+     * Rows the list currently shows, plus its margin. Only these ask for text
+     * images, so a folder with thousands of names renders what is on screen.
+     * A negative last row means the list has not reported a range yet.
+     */
+    void setVisibleRowRange(int first, int last);
+    /** Asks for the text of the rows in the visible range. */
     void requestTextImages();
+    /** Asks for every row; the folder-text profile settles the whole folder. */
+    void requestAllTextImages();
     bool textImagesPending() const;
     QVariant data(const QModelIndex &index, int role) const override;
     int rowCount(const QModelIndex &parent) const override;
@@ -48,6 +58,8 @@ private:
     void handleIconLoadFinished();
     void applyIconImages(const FolderIconImages &images);
     void loadIconsFromProvider();
+    void requestTextImagesInRange(int first, int last);
+    void updatePrimaryFontGlyphs();
     void updatePlaceholderNames();
 
     QList<FolderItem> *m_searchedVolumes;
@@ -57,6 +69,11 @@ private:
     QFont m_textFont;
     QPalette m_textPalette;
     qreal m_textRatio = 1;
+    QRawFont m_primaryNormal;
+    QRawFont m_primaryBold;
+    QChar m_replacement = QLatin1Char('?');
+    int m_firstVisibleRow = 0;
+    int m_lastVisibleRow = -1;
     QList<QByteArray> m_textKeys;
     QList<FolderTextResult> m_textImages;
     QFutureWatcher<FolderIconImages> m_iconWatcher;

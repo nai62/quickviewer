@@ -2,6 +2,31 @@
 #include "folderwindow.h"
 #include "qvapplication.h"
 
+namespace {
+/**
+ * The helper returns white coverage masks, so one result serves every palette
+ * colour. Tinting is cheap but the list repaints on every hover, so the recent
+ * results are kept.
+ */
+QImage tintedTextMask(const QImage &mask, const QColor &color)
+{
+    static QCache<QPair<qint64, QRgb>, QImage> cache(2 * 1024); // KiB
+    const QPair<qint64, QRgb> key(mask.cacheKey(), color.rgba());
+    if (const QImage *cached = cache.object(key)) {
+        return *cached;
+    }
+    QImage image(mask.size(), QImage::Format_ARGB32_Premultiplied);
+    image.setDevicePixelRatio(mask.devicePixelRatio());
+    image.fill(color);
+    QPainter painter(&image);
+    painter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+    painter.drawImage(QPoint(0, 0), mask);
+    painter.end();
+    cache.insert(key, new QImage(image), qMax(1, int(image.sizeInBytes() / 1024)));
+    return image;
+}
+} // namespace
+
 FolderItemDelegate::FolderItemDelegate(QWidget *parent, FolderWindow *folderWindow)
     : QStyledItemDelegate(parent),
       m_folderWindow(folderWindow)
@@ -55,18 +80,16 @@ void FolderItemDelegate::paint(QPainter *painter,
                                            : (opt.state & QStyle::State_Active)
                                                ? QPalette::Active
                                                : QPalette::Inactive;
-        const int color = (group == QPalette::Disabled   ? 4
-                           : group == QPalette::Inactive ? 2
-                                                         : 0) +
-                          int(selected);
-        const QImage &image =
-            text->images.at((isCurrentVolume ? FolderTextImages::ColorCount : 0) + color);
+        // The current row is drawn bold, which is the second mask.
+        const QImage image = tintedTextMask(
+            text->images.at(isCurrentVolume ? 1 : 0),
+            opt.palette.color(group, selected ? QPalette::HighlightedText : QPalette::Text));
         const QSizeF size = image.deviceIndependentSize();
         painter->save();
         painter->setClipRect(textRect, Qt::IntersectClip);
         const bool clipped = size.width() - 4 > textRect.width();
         QFontMetrics metrics(opt.font);
-        const QString ellipsis = QStringLiteral("...");
+        const QString ellipsis = QString(QChar(0x2026));
         const int endWidth = clipped ? metrics.horizontalAdvance(ellipsis) : 0;
         const bool rtl = opt.direction == Qt::RightToLeft;
         QRect imageRect = textRect;

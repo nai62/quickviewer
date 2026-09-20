@@ -559,7 +559,7 @@ private slots:
         QCOMPARE(result->images.size(), FolderTextImages::ImageCount);
     }
 
-    void folderTextFailureIsTerminalAndDoesNotBlockOtherRequests()
+    void folderTextFailureRetriesOnceAndDoesNotBlockOtherNames()
     {
         DelayedFolderTextCache cache;
         const char32_t missing = 0x10ffff;
@@ -568,14 +568,25 @@ private slots:
         FolderItemModel model(nullptr, &cache);
         model.setVolumes(&items);
         model.requestTextImages();
+        QCOMPARE(cache.requests.size(), 1);
+
+        // A failure settles the pending state, and the name gets one more try.
         cache.finish(cache.requests.first(), false);
         QVERIFY(!model.textImagesPending());
         model.requestTextImages();
-        QCOMPARE(cache.requests.size(), 1);
+        QCOMPARE(cache.requests.size(), FolderTextCache::MaxAttempts);
+
+        // Out of attempts: the name keeps its placeholder instead of asking on
+        // every paint.
+        cache.finish(cache.requests.last(), false);
+        model.requestTextImages();
+        QCOMPARE(cache.requests.size(), FolderTextCache::MaxAttempts);
+
+        // A different name is not held back by that.
         items[0].name = "b" + suffix;
         model.setVolumes(&items);
         model.requestTextImages();
-        QCOMPARE(cache.requests.size(), 2);
+        QCOMPARE(cache.requests.size(), FolderTextCache::MaxAttempts + 1);
         cache.finish(cache.requests.last());
         QCOMPARE(model.data(model.index(0, 0), Qt::DisplayRole).toString(), items.first().name);
     }
@@ -625,22 +636,21 @@ private slots:
     void folderTextCacheKeyIncludesRenderingConditions()
     {
         const QFont font = QApplication::font();
-        QPalette palette = QApplication::palette();
-        const auto base = FolderTextCache::key("name", font, palette, 1);
-        QVERIFY(base != FolderTextCache::key("name", font, palette, 2));
+        // The helper returns colourless masks, so the key carries only what
+        // changes the pixels it renders: the text, the font and the scale.
+        const auto base = FolderTextCache::key("name", font, 1);
+        QVERIFY(base != FolderTextCache::key("name", font, 2));
+        QVERIFY(base != FolderTextCache::key("other", font, 1));
         QFont bold = font;
         bold.setBold(true);
-        QVERIFY(base != FolderTextCache::key("name", bold, palette, 1));
-        palette.setColor(QPalette::Text, Qt::magenta);
-        QVERIFY(base != FolderTextCache::key("name", font, palette, 1));
+        QVERIFY(base != FolderTextCache::key("name", bold, 1));
     }
 
     void folderTextHelperReturnsImagesAtTheRequestedScale()
     {
         FolderTextCache cache;
         QFont font = QApplication::font();
-        const QByteArray key = FolderTextCache::key(
-            QString::fromUtf8("test摇.zip"), font, QApplication::palette(), 2);
+        const QByteArray key = FolderTextCache::key(QString::fromUtf8("test摇.zip"), font, 2);
         cache.request(key);
         QTRY_VERIFY_WITH_TIMEOUT(!cache.pending(key), 15000);
         const auto result = cache.lookup(key);
@@ -650,6 +660,56 @@ private slots:
             QVERIFY(!image.isNull());
             QCOMPARE(image.devicePixelRatio(), 2.0);
         }
+    }
+
+    void folderTextRequestsOnlyTheRowsTheListShows()
+    {
+        DelayedFolderTextCache cache;
+        const char32_t missing = 0x10ffff;
+        const QString suffix = QString::fromUcs4(&missing, 1);
+        QList<FolderItem> items;
+        for (int row = 0; row < 40; ++row) {
+            items.append(FolderItem(
+                QStringLiteral("book%1").arg(row) + suffix, FolderItem::Archive, QDateTime()));
+        }
+        FolderItemModel model(nullptr, &cache);
+        model.setVolumes(&items);
+        model.setVisibleRowRange(10, 12);
+        model.requestTextImages();
+        // Only the rows the list shows ask for text images.
+        QCOMPARE(cache.requests.size(), 3);
+
+        model.setVisibleRowRange(20, 21);
+        model.requestTextImages();
+        QCOMPARE(cache.requests.size(), 5);
+
+        // The profile settles the whole folder, still in the batches the cache
+        // accepts at once; the rest follows as results arrive.
+        model.requestAllTextImages();
+        QCOMPARE(cache.requests.size(), FolderTextCache::MaxOutstanding);
+        QVERIFY(model.textImagesPending());
+    }
+
+    void folderTextHelperLeavesWhenItIsIdle()
+    {
+        FolderTextCache cache;
+        cache.setIdleShutdownInterval(200);
+        const QFont font = QApplication::font();
+        const QByteArray first =
+            FolderTextCache::key(QString::fromUtf8("test\u6447.zip"), font, 1);
+        cache.request(first);
+        QTRY_VERIFY_WITH_TIMEOUT(!cache.pending(first), 15000);
+        QVERIFY(cache.helperRunning());
+
+        // Nothing is in flight: the helper leaves instead of staying resident...
+        QTRY_VERIFY_WITH_TIMEOUT(!cache.helperRunning(), 15000);
+
+        // ...and the next request starts it again.
+        const QByteArray second =
+            FolderTextCache::key(QString::fromUtf8("test\u6447 2.zip"), font, 1);
+        cache.request(second);
+        QTRY_VERIFY_WITH_TIMEOUT(!cache.pending(second), 15000);
+        QVERIFY(cache.lookup(second));
     }
 
     void folderListReplacesGlyphsTheFontCannotDraw()

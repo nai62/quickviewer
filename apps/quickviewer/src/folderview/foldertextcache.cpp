@@ -9,6 +9,7 @@
 
 namespace {
 constexpr quint32 MaxPacket = 32 * 1024 * 1024;
+constexpr int IdleShutdownMilliseconds = 10000;
 QByteArray packet(const QByteArray &payload)
 {
     QByteArray result;
@@ -22,16 +23,15 @@ FolderTextResult render(const QByteArray &key)
 {
     QString text;
     QFont font;
-    QList<QColor> colors;
     qreal ratio;
     QDataStream input(key);
-    input >> text >> font >> colors >> ratio;
-    if (input.status() != QDataStream::Ok || colors.size() != FolderTextImages::ColorCount ||
-        !qIsFinite(ratio) || ratio < 0.5 || ratio > 8 || text.size() > 32768) {
+    input >> text >> font >> ratio;
+    if (input.status() != QDataStream::Ok || !qIsFinite(ratio) || ratio < 0.5 || ratio > 8 ||
+        text.size() > 32768) {
         return {};
     }
     auto result = QSharedPointer<FolderTextImages>::create();
-    for (int bold = 0; bold < 2; ++bold) {
+    for (int bold = 0; bold < FolderTextImages::ImageCount; ++bold) {
         if (bold) {
             font.setBold(true);
         }
@@ -43,18 +43,17 @@ FolderTextResult render(const QByteArray &key)
         const QString visible = metrics.elidedText(text, Qt::ElideRight, 4096);
         const int width = qBound(1, metrics.horizontalAdvance(visible) + 4, 8192);
         const int height = qBound(1, metrics.height() + 4, 512);
-        for (const QColor &color : colors) {
-            QImage image(QSize(qCeil(width * ratio), qCeil(height * ratio)),
-                         QImage::Format_ARGB32_Premultiplied);
-            image.setDevicePixelRatio(ratio);
-            image.fill(Qt::transparent);
-            QPainter painter(&image);
-            painter.setFont(font);
-            painter.setPen(color);
-            painter.drawText(QPoint(2, 2 + metrics.ascent()), visible);
-            painter.end();
-            result->images.append(image);
-        }
+        QImage image(QSize(qCeil(width * ratio), qCeil(height * ratio)),
+                     QImage::Format_ARGB32_Premultiplied);
+        image.setDevicePixelRatio(ratio);
+        image.fill(Qt::transparent);
+        QPainter painter(&image);
+        painter.setFont(font);
+        // Coverage only: the GUI tints the mask with the colour the row needs.
+        painter.setPen(Qt::white);
+        painter.drawText(QPoint(2, 2 + metrics.ascent()), visible);
+        painter.end();
+        result->images.append(image);
     }
     return result;
 }
@@ -74,10 +73,13 @@ FolderTextCache::FolderTextCache(QObject *parent)
 #endif
     m_deadline.setSingleShot(true);
     m_deadline.setInterval(30000);
+    m_idle.setSingleShot(true);
+    m_idle.setInterval(IdleShutdownMilliseconds);
     connect(&m_deadline, &QTimer::timeout, this, [this] {
         m_process.kill();
         failRequests();
     });
+    connect(&m_idle, &QTimer::timeout, this, &FolderTextCache::stopIdleHelper);
     connect(&m_process, &QProcess::readyReadStandardOutput, this, &FolderTextCache::readResponse);
     connect(&m_process, &QProcess::errorOccurred, this, [this] { failRequests(); });
     connect(&m_process, &QProcess::finished, this, [this] { failRequests(); });
@@ -108,8 +110,7 @@ FolderTextCache *FolderTextCache::instance()
     return cache;
 }
 
-QByteArray
-FolderTextCache::key(const QString &text, const QFont &font, const QPalette &palette, qreal ratio)
+QByteArray FolderTextCache::key(const QString &text, const QFont &font, qreal ratio)
 {
     // Resolve point sizes on the GUI screen before handing them to the helper.
     QFont resolved = font;
@@ -118,14 +119,7 @@ FolderTextCache::key(const QString &text, const QFont &font, const QPalette &pal
     }
     QByteArray result;
     QDataStream stream(&result, QIODevice::WriteOnly);
-    stream << text << resolved
-           << QList<QColor>{palette.color(QPalette::Active, QPalette::Text),
-                            palette.color(QPalette::Active, QPalette::HighlightedText),
-                            palette.color(QPalette::Inactive, QPalette::Text),
-                            palette.color(QPalette::Inactive, QPalette::HighlightedText),
-                            palette.color(QPalette::Disabled, QPalette::Text),
-                            palette.color(QPalette::Disabled, QPalette::HighlightedText)}
-           << ratio;
+    stream << text << resolved << ratio;
     return result;
 }
 
@@ -140,9 +134,28 @@ bool FolderTextCache::pending(const QByteArray &key) const
     return m_pending.contains(key);
 }
 
+bool FolderTextCache::helperRunning() const
+{
+    return m_process.state() != QProcess::NotRunning;
+}
+
+void FolderTextCache::setIdleShutdownInterval(int milliseconds)
+{
+    m_idle.setInterval(milliseconds);
+}
+
 void FolderTextCache::request(const QByteArray &key)
 {
-    if (lookup(key) || m_pending.contains(key) || m_failed.contains(key)) {
+    if (key.isEmpty() || lookup(key) || m_pending.contains(key)) {
+        return;
+    }
+    if (m_failedAttempts.value(key) >= MaxAttempts) {
+        // Out of attempts: the caller keeps the placeholder for this name.
+        return;
+    }
+    if (m_pending.size() >= MaxOutstanding) {
+        // The caller asks again as results arrive, so a big folder is rendered
+        // in bounded batches instead of one burst.
         return;
     }
     m_pending.insert(key);
@@ -151,6 +164,7 @@ void FolderTextCache::request(const QByteArray &key)
 
 void FolderTextCache::submit(const QByteArray &key)
 {
+    m_idle.stop();
     if (m_process.state() == QProcess::NotRunning) {
         m_response.clear();
         m_process.start(QCoreApplication::applicationFilePath(),
@@ -174,13 +188,14 @@ void FolderTextCache::complete(const QByteArray &key, const FolderTextResult &re
                                    result->images.cend(),
                                    [](const QImage &image) { return !image.isNull(); });
     if (valid) {
+        m_failedAttempts.remove(key);
         qsizetype bytes = 0;
         for (const auto &image : result->images) {
             bytes += image.sizeInBytes();
         }
         m_results.insert(key, new FolderTextResult(result), qMax(1, int(bytes / 1024)));
     } else {
-        m_failed.insert(key);
+        m_failedAttempts[key] += 1;
     }
     StartupProfiler::mark(valid ? "folder-text.complete" : "folder-text.failed");
     emit finished(key, valid ? result : FolderTextResult());
@@ -206,18 +221,21 @@ void FolderTextCache::readResponse()
         input >> result->images;
         m_response.remove(0, 4 + size);
         const QByteArray key = m_queue.dequeue();
+        // The device pixel ratio is the last field of the request key; the
+        // helper's images carry no resolution of their own.
         QString name;
         QFont font;
-        QList<QColor> colors;
         qreal ratio = 1;
         QDataStream request(key);
-        request >> name >> font >> colors >> ratio;
+        request >> name >> font >> ratio;
         for (auto &image : result->images) {
             image.setDevicePixelRatio(ratio);
         }
         complete(key, input.status() == QDataStream::Ok ? result : FolderTextResult());
         if (m_queue.isEmpty()) {
             m_deadline.stop();
+            // Nothing is in flight: the helper may leave once it is not needed.
+            m_idle.start();
         } else {
             m_deadline.start();
         }
@@ -227,12 +245,23 @@ void FolderTextCache::readResponse()
 void FolderTextCache::failRequests()
 {
     m_deadline.stop();
+    m_idle.stop();
     const auto requests = m_queue;
     m_queue.clear();
     m_response.clear();
     for (const auto &key : requests) {
         complete(key, {});
     }
+}
+
+void FolderTextCache::stopIdleHelper()
+{
+    if (m_process.state() == QProcess::NotRunning) {
+        return;
+    }
+    // The helper leaves when its input ends; the next request starts it again.
+    StartupProfiler::mark("folder-text.idle-stop");
+    m_process.closeWriteChannel();
 }
 
 bool isFolderTextHelper(int argc, char **argv)

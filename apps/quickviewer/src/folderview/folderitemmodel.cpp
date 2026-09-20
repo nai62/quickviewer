@@ -7,30 +7,41 @@
 #endif
 
 namespace {
-// Check both weights the delegate uses. NoFontMerging forbids a lookup while
+// Check both weights the delegate draws. NoFontMerging forbids a lookup while
 // constructing the primary font, including for the replacement character.
-QString placeholderName(const QString &name, const QFont &font)
+bool supportsGlyph(const QRawFont &normal, const QRawFont &bold, char32_t code)
 {
-    QFont primary = font;
-    primary.setStyleStrategy(QFont::StyleStrategy(primary.styleStrategy() | QFont::NoFontMerging));
-    const QRawFont normal = QRawFont::fromFont(primary);
-    primary.setBold(true);
-    const QRawFont bold = QRawFont::fromFont(primary);
-    const auto supports = [&](char32_t code) {
-        return normal.isValid() && bold.isValid() && normal.supportsCharacter(code) &&
-               bold.supportsCharacter(code);
-    };
-    QChar replacement = QLatin1Char('?');
-    for (char32_t candidate : {char32_t(0x25a1), char32_t(0x00b7), U'?'}) {
-        if (supports(candidate)) {
-            replacement = QChar(candidate);
-            break;
+    return normal.isValid() && bold.isValid() && normal.supportsCharacter(code) &&
+           bold.supportsCharacter(code);
+}
+
+/** True when the name holds nothing a replacement could stand in for. */
+bool isAsciiOnly(const QString &name)
+{
+    for (const QChar &character : name) {
+        if (character.unicode() >= 0x80) {
+            return false;
         }
+    }
+    return true;
+}
+
+/**
+ * The name with every character the primary font cannot draw replaced, or an
+ * empty string when the name can be drawn as it is.
+ */
+QString placeholderName(const QString &name,
+                        const QRawFont &normal,
+                        const QRawFont &bold,
+                        QChar replacement)
+{
+    if (isAsciiOnly(name)) {
+        return QString();
     }
     QString result;
     bool replaced = false;
     for (char32_t code : name.toUcs4()) {
-        if (code < 0x80 || supports(code)) {
+        if (code < 0x80 || supportsGlyph(normal, bold, code)) {
             result += QString::fromUcs4(&code, 1);
         } else {
             result += replacement;
@@ -113,6 +124,7 @@ FolderItemModel::FolderItemModel(QObject *parent, FolderTextCache *textCache)
 #else
     loadIconsFromProvider();
 #endif
+    updatePrimaryFontGlyphs();
     connect(m_textCache,
             &FolderTextCache::finished,
             this,
@@ -124,7 +136,26 @@ FolderItemModel::FolderItemModel(QObject *parent, FolderTextCache *textCache)
                             index(row, 0), index(row, 0), {Qt::DisplayRole, TextImagesRole});
                     }
                 }
+                // A bounded number of requests is outstanding at a time, so the
+                // rest of the visible rows follow as the results arrive.
+                QTimer::singleShot(0, this, &FolderItemModel::requestTextImages);
             });
+}
+
+void FolderItemModel::updatePrimaryFontGlyphs()
+{
+    QFont primary = m_textFont;
+    primary.setStyleStrategy(QFont::StyleStrategy(primary.styleStrategy() | QFont::NoFontMerging));
+    m_primaryNormal = QRawFont::fromFont(primary);
+    primary.setBold(true);
+    m_primaryBold = QRawFont::fromFont(primary);
+    m_replacement = QLatin1Char('?');
+    for (char32_t candidate : {char32_t(0x25a1), char32_t(0x00b7), U'?'}) {
+        if (supportsGlyph(m_primaryNormal, m_primaryBold, candidate)) {
+            m_replacement = QChar(candidate);
+            break;
+        }
+    }
 }
 
 void FolderItemModel::handleIconLoadFinished()
@@ -261,6 +292,7 @@ void FolderItemModel::setTextStyle(const QFont &font, const QPalette &palette, q
     m_textFont = font;
     m_textPalette = palette;
     m_textRatio = ratio;
+    updatePrimaryFontGlyphs();
     updatePlaceholderNames();
     if (rowCount({}) > 0) {
         emit dataChanged(index(0, 0), index(rowCount({}) - 1, 0));
@@ -283,12 +315,12 @@ void FolderItemModel::updatePlaceholderNames()
         return;
     }
     for (const FolderItem &item : *m_searchedVolumes) {
-        const QString placeholder = placeholderName(item.name, m_textFont);
+        const QString placeholder =
+            placeholderName(item.name, m_primaryNormal, m_primaryBold, m_replacement);
         m_placeholderNames.append(placeholder);
-        const QByteArray key =
-            placeholder.isEmpty()
-                ? QByteArray()
-                : FolderTextCache::key(item.name, m_textFont, m_textPalette, m_textRatio);
+        const QByteArray key = placeholder.isEmpty()
+                                   ? QByteArray()
+                                   : FolderTextCache::key(item.name, m_textFont, m_textRatio);
         m_textKeys.append(key);
         m_textImages.append(retained.contains(key) ? retained.value(key)
                                                    : m_textCache->lookup(key));
@@ -305,9 +337,35 @@ bool FolderItemModel::textImagesPending() const
     return false;
 }
 
+void FolderItemModel::setVisibleRowRange(int first, int last)
+{
+    if (first == m_firstVisibleRow && last == m_lastVisibleRow) {
+        return;
+    }
+    m_firstVisibleRow = first;
+    m_lastVisibleRow = last;
+    QTimer::singleShot(0, this, &FolderItemModel::requestTextImages);
+}
+
 void FolderItemModel::requestTextImages()
 {
-    for (int row = 0; row < m_textKeys.size(); ++row) {
+    if (m_lastVisibleRow < 0) {
+        // A model without a view has no range to respect.
+        requestTextImagesInRange(0, m_textKeys.size() - 1);
+        return;
+    }
+    requestTextImagesInRange(qMax(0, m_firstVisibleRow),
+                             qMin(m_lastVisibleRow, m_textKeys.size() - 1));
+}
+
+void FolderItemModel::requestAllTextImages()
+{
+    requestTextImagesInRange(0, m_textKeys.size() - 1);
+}
+
+void FolderItemModel::requestTextImagesInRange(int first, int last)
+{
+    for (int row = qMax(0, first); row <= last && row < m_textKeys.size(); ++row) {
         if (!m_textKeys.at(row).isEmpty() && !m_textImages.at(row)) {
             m_textCache->request(m_textKeys.at(row));
         }
