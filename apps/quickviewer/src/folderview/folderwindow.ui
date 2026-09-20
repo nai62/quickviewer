@@ -186,7 +186,7 @@
     </widget>
    </item>
    <item>
-    <widget class="FolderTreeView" name="folderView">
+    <widget class="FolderListView" name="folderView">
      <property name="focusPolicy">
       <enum>Qt::WheelFocus</enum>
      </property>
@@ -198,9 +198,6 @@
      </property>
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
-     </property>
-     <property name="headerHidden">
-      <bool>true</bool>
      </property>
     </widget>
    </item>
@@ -257,11 +254,11 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>FolderTreeView</class>
-   <extends>QTreeView</extends>
-   <header location="global">foldertreeview.h</header>
+   <class>FolderListView</class>
+   <extends>QListView</extends>
+   <header location="global">folderlistview.h</header>
    <slots>
-    <signal>selected(QModelIndex)</signal>
+    <signal>openRequested(QModelIndex)</signal>
    </slots>
   </customwidget>
  </customwidgets>
@@ -276,7 +273,7 @@
  <connections>
   <connection>
    <sender>folderView</sender>
-   <signal>selected(QModelIndex)</signal>
+   <signal>openRequested(QModelIndex)</signal>
    <receiver>FolderWindow</receiver>
    <slot>handleFolderViewItemSelected(QModelIndex)</slot>
    <hints>

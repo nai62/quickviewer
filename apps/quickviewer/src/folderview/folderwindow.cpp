@@ -38,9 +38,6 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
 {
     ui->setupUi(this);
 
-    ui->folderView->setRootIsDecorated(false);
-    ui->folderView->setIndentation(0);
-    ui->folderView->setUniformRowHeights(true);
     ui->folderView->setMouseTracking(true);
     ui->folderView->installEventFilter(this);
 
@@ -54,7 +51,7 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
             this,
             &FolderWindow::updateTextRowRange);
     connect(ui->folderView,
-            &FolderTreeView::unusedMouseButton,
+            &FolderListView::unusedMouseButton,
             this,
             &FolderWindow::handleUnusedMouseButton);
 
@@ -466,25 +463,15 @@ void FolderWindow::updateCurrentVolumeRow()
     }
     // Mark the entry the way a file page is marked: the delegate paints the
     // model role and the current index keeps keyboard navigation on the entry.
-    // The signals are blocked because selecting an entry must not open it.
-    const QSignalBlocker blocker(ui->folderView);
     ui->folderView->setCurrentIndex(m_itemModel.index(row, 0));
 }
 
-const static QKeySequence seqReturn("Return");
-const static QKeySequence seqEnter("Num+Enter");
-const static QKeySequence seqBackspace("Backspace");
-
 void FolderWindow::keyPressEvent(QKeyEvent *event)
 {
-    QKeySequence seq(event->key() | event->modifiers());
-    qDebug() << seq;
-    if (seq == seqReturn || seq == seqEnter) {
+    // Enter is the one key the list leaves to the panel: it opens the entry the
+    // list has as current. Every other key belongs to the window.
+    if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
         handleCurrentFolderItemTriggered();
-        return;
-    }
-    if (seq == seqBackspace) {
-        handleParentButtonClicked();
         return;
     }
     QWidget::keyPressEvent(event);

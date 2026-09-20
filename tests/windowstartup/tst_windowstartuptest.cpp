@@ -42,7 +42,7 @@ private:
         if (!panel) {
             return;
         }
-        QTreeView *view = panel->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view = panel->findChild<QListView *>(QStringLiteral("folderView"));
         if (!view || !view->model()) {
             return;
         }
@@ -418,7 +418,7 @@ private slots:
         folder.setFolderPath(directory.path(), false);
         const QString originalPath = folder.currentPath();
         const QString childPath = QDir(originalPath).absoluteFilePath(QStringLiteral("child"));
-        QTreeView *view = folder.findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view = folder.findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         const QModelIndex child = view->model()->index(0, 0);
         QVERIFY(child.isValid());
@@ -442,7 +442,7 @@ private slots:
 
         FolderWindow folder(nullptr, nullptr);
         folder.setFolderPath(directory.path(), false);
-        QTreeView *view = folder.findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view = folder.findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         const QModelIndex child = view->model()->index(0, 0);
         QVERIFY(child.isValid());
@@ -472,8 +472,8 @@ private slots:
             QDir::cleanPath(QDir::fromNativeSeparators(imagePath)));
         viewer.createFolderWindow(true, directory.path(), false);
 
-        QTreeView *view =
-            viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view =
+            viewer.folderWindow()->findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         const QModelIndex currentFile = view->model()->index(0, 0);
         QCOMPARE(currentFile.data().toString(), QStringLiteral("current.png"));
@@ -498,8 +498,8 @@ private slots:
             QDir::cleanPath(QDir::fromNativeSeparators(imagePath)));
         viewer.createFolderWindow(true, root.path(), false);
 
-        QTreeView *view =
-            viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view =
+            viewer.folderWindow()->findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         // The folder holds nothing but the subdirectory, so the page lives in
         // it and the panel marks that row rather than nothing at all.
@@ -522,7 +522,7 @@ private slots:
         viewer.openPath(root.path());
         viewer.createFolderWindow(true, root.path(), false);
         FolderWindow *panel = viewer.folderWindow();
-        QTreeView *view = panel->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view = panel->findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
 
         // The folder holds nothing but the subdirectory that has the page, so
@@ -568,8 +568,8 @@ private slots:
         QVERIFY(viewer.viewerSession()->selectPage(2));
         QCOMPARE(viewer.viewerSession()->currentPageIndex(), 2);
 
-        QTreeView *view =
-            viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view =
+            viewer.folderWindow()->findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         const QRect currentRect = view->visualRect(view->currentIndex());
         QVERIFY(!currentRect.isEmpty());
@@ -589,6 +589,63 @@ private slots:
         QCOMPARE(viewer.viewerSession()->currentPageIndex(), 1);
     }
 
+    void folderViewOpensTheCurrentEntryWhenEnterIsPressed()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QDir root(directory.path());
+        QVERIFY(root.mkpath(QStringLiteral("inner")));
+        QImage image(2, 2, QImage::Format_RGB32);
+        image.fill(Qt::white);
+        QVERIFY(image.save(root.filePath(QStringLiteral("inner/current.png"))));
+
+        StartupWindow viewer;
+        viewer.openPath(root.path());
+        viewer.createFolderWindow(true, root.path(), false);
+        FolderWindow *panel = viewer.folderWindow();
+        QListView *view = panel->findChild<QListView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        view->setFocus();
+
+        // Enter is the one key the list leaves to the panel.
+        QSignalSpy opened(panel, &FolderWindow::openVolume);
+        QKeyEvent press(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier);
+        QApplication::sendEvent(view, &press);
+
+        QCOMPARE(opened.size(), 1);
+        const OpenTarget target = opened.first().first().value<OpenTarget>();
+        QCOMPARE(target.intent, OpenIntent::Container);
+        QCOMPARE(
+            QDir::cleanPath(QDir::fromNativeSeparators(target.location.containerPath)),
+            QDir::cleanPath(QDir::fromNativeSeparators(root.filePath(QStringLiteral("inner")))));
+    }
+
+    void folderViewLeavesTheKeysItDoesNotOwnToTheWindow()
+    {
+        FolderWindow folder(nullptr, nullptr);
+        QListView *view = folder.findChild<QListView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        view->setFocus();
+
+        // The window maps these keys, so the list must not take them for its own
+        // navigation: an arrow, a page key, home, end and space step the
+        // viewer's pages and volumes.
+        const QList<Qt::Key> keys{Qt::Key_Up,
+                                  Qt::Key_Down,
+                                  Qt::Key_Left,
+                                  Qt::Key_Right,
+                                  Qt::Key_PageUp,
+                                  Qt::Key_PageDown,
+                                  Qt::Key_Home,
+                                  Qt::Key_End,
+                                  Qt::Key_Space};
+        for (const Qt::Key key : keys) {
+            QKeyEvent press(QEvent::KeyPress, key, Qt::NoModifier);
+            QApplication::sendEvent(view, &press);
+            QVERIFY2(!press.isAccepted(), qPrintable(QKeySequence(key).toString()));
+        }
+    }
+
     void folderListPaintsProgressWithoutAPageCount()
     {
         QTemporaryDir directory;
@@ -605,8 +662,8 @@ private slots:
 
         StartupWindow viewer;
         viewer.createFolderWindow(true, directory.path(), false);
-        QTreeView *view =
-            viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view =
+            viewer.folderWindow()->findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         QVERIFY(view->model()->rowCount() > 0);
 
@@ -713,12 +770,11 @@ private slots:
         const QString name = "book" + QString::fromUcs4(&missing, 1);
         QList<FolderItem> items{FolderItem(name, FolderItem::Archive, QDateTime())};
         FolderItemModel model(nullptr, &cache);
-        QTreeView view;
+        QListView view;
         FolderItemDelegate delegate(&view, nullptr);
         auto *style = new RecordingFolderStyle;
         style->setParent(&view);
         view.setStyle(style);
-        view.setRootIsDecorated(false);
         view.setModel(&model);
         view.setItemDelegate(&delegate);
         model.setVolumes(&items);
@@ -837,8 +893,8 @@ private slots:
 
         StartupWindow viewer;
         viewer.createFolderWindow(true, directory.path(), false);
-        QTreeView *view =
-            viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view =
+            viewer.folderWindow()->findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         const QModelIndex row = view->model()->index(0, 0);
         QVERIFY(row.isValid());
@@ -871,8 +927,8 @@ private slots:
 
         StartupWindow viewer;
         viewer.createFolderWindow(true, directory.path(), false);
-        QTreeView *view =
-            viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view =
+            viewer.folderWindow()->findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         auto *model = qobject_cast<FolderItemModel *>(view->model());
         QVERIFY(model);
@@ -905,7 +961,7 @@ private slots:
         StartupWindow viewer;
         viewer.createFolderWindow(true, directory.path(), false);
         FolderWindow *panel = viewer.folderWindow();
-        QTreeView *view = panel->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view = panel->findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(panel);
         QVERIFY(view);
 
@@ -970,9 +1026,11 @@ private slots:
     void folderViewConsumesWheelEventsAtScrollBoundary()
     {
         FolderWindow folder(nullptr, nullptr);
-        QTreeView *view = folder.findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view = folder.findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
-        QVERIFY(view->uniformRowHeights());
+        // One entry per row, top to bottom, and never wrapped.
+        QCOMPARE(view->flow(), QListView::TopToBottom);
+        QVERIFY(!view->isWrapping());
 
         QWheelEvent event(QPointF(1, 1),
                           QPointF(1, 1),
@@ -1004,8 +1062,8 @@ private slots:
         viewer.resize(800, 600);
         viewer.show();
         viewer.createFolderWindow(true, QString(), true);
-        QTreeView *view =
-            viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view =
+            viewer.folderWindow()->findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         viewer.activateWindow();
         QCoreApplication::processEvents();
@@ -1033,7 +1091,7 @@ private slots:
         viewer.createFolderWindow(true, directory.path(), false);
         FolderWindow *folder = viewer.folderWindow();
         QVERIFY(folder);
-        QTreeView *view = folder->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view = folder->findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         QVERIFY(view->model()->rowCount() > 0);
 
@@ -1055,7 +1113,7 @@ private slots:
 
         auto *folder = new FolderWindow(nullptr, nullptr);
         folder->setFolderPath(directory.path(), false);
-        QTreeView *view = folder->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view = folder->findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         QAbstractItemDelegate *delegate = view->itemDelegate();
         QVERIFY(delegate);
@@ -1105,17 +1163,17 @@ private slots:
         QVERIFY(layout->itemAt(layout->count() - 2)->spacerItem() != nullptr);
     }
 
-    void folderViewHidesItsHeaderInBothModes()
+    void folderViewsSingleColumnHasNoTitle()
     {
         QTemporaryDir directory;
         QVERIFY(directory.isValid());
 
         StartupWindow viewer;
         viewer.createFolderWindow(true, directory.path(), false);
-        QTreeView *view =
-            viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view =
+            viewer.folderWindow()->findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
-        QVERIFY(view->isHeaderHidden());
+        // A list shows one column, and it has no title.
         QCOMPARE(view->model()->columnCount(), 1);
         // The single column has no title. Qt fills the section number in for a
         // model that does not name its header, so that is all the view can
@@ -1124,12 +1182,9 @@ private slots:
                  QStringLiteral("1"));
 
         viewer.createFolderWindow(false, directory.path(), false);
-        view = viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        view = viewer.folderWindow()->findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
-        QVERIFY(view->isHeaderHidden());
         QCOMPARE(view->model()->columnCount(), 1);
-        QCOMPARE(view->model()->headerData(0, Qt::Horizontal, Qt::DisplayRole).toString(),
-                 QStringLiteral("1"));
     }
 
     void folderButtonLayoutUsesCompactMargins()
@@ -1158,7 +1213,7 @@ private slots:
         viewer.createFolderWindow(true, directory.path(), false);
         FolderWindow *folder = viewer.folderWindow();
         QVERIFY(folder);
-        QTreeView *view = folder->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view = folder->findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         viewer.openPath(directory.path());
         QCOMPARE(view->model()->index(0, 0).data().toString(), QStringLiteral("a.bmp"));
@@ -1188,8 +1243,8 @@ private slots:
         StartupWindow viewer;
         viewer.createFolderWindow(false, directory.path(), false);
         QVERIFY(viewer.folderWindow());
-        QTreeView *view =
-            viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view =
+            viewer.folderWindow()->findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         QCOMPARE(view->model()->index(0, 0).data().toString(), QStringLiteral("a.bmp"));
 
@@ -1276,7 +1331,7 @@ private slots:
         viewer.createFolderWindow(true, directory.path(), false);
         FolderWindow *folder = viewer.folderWindow();
         QVERIFY(folder);
-        QTreeView *view = folder->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view = folder->findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         viewer.openPath(directory.path());
         QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("a-large.bmp"));
@@ -1326,7 +1381,7 @@ private slots:
         viewer.createFolderWindow(true, directory.path(), false);
         FolderWindow *folder = viewer.folderWindow();
         QVERIFY(folder);
-        QTreeView *view = folder->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view = folder->findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         viewer.openPath(directory.path());
         QCOMPARE(viewer.viewerSession()->pageCount(), 3);
@@ -1366,7 +1421,7 @@ private slots:
 
         FolderWindow folder(nullptr, nullptr);
         folder.setFolderPath(directory.path(), false);
-        QTreeView *view = folder.findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view = folder.findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         QCOMPARE(view->model()->rowCount(), 1);
 
@@ -1396,7 +1451,7 @@ private slots:
         viewer.createFolderWindow(true, directory.path(), false);
         FolderWindow *folder = viewer.folderWindow();
         QVERIFY(folder);
-        QTreeView *view = folder->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view = folder->findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         QCOMPARE(view->model()->rowCount(), 1);
 
@@ -1442,7 +1497,7 @@ private slots:
         qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
         FolderWindow folder(nullptr, nullptr);
         folder.setFolderPath(directory.path(), false);
-        QTreeView *view = folder.findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view = folder.findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
 
         QCOMPARE(view->model()->rowCount(), 3);
@@ -1478,7 +1533,7 @@ private slots:
             qApp->setImageSortBy(sortBy);
             FolderWindow folder(nullptr, nullptr);
             folder.setFolderPath(directory.path(), false);
-            QTreeView *view = folder.findChild<QTreeView *>(QStringLiteral("folderView"));
+            QListView *view = folder.findChild<QListView *>(QStringLiteral("folderView"));
             QVERIFY(view);
 
             QCOMPARE(view->model()->rowCount(), 3);
@@ -1512,7 +1567,7 @@ private slots:
         qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
         FolderWindow folder(nullptr, nullptr);
         folder.setFolderPath(directory.path(), false);
-        QTreeView *view = folder.findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view = folder.findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         QCOMPARE(view->model()->rowCount(), 2);
         QCOMPARE(view->model()->index(0, 0).data().toString(), QStringLiteral("page2.bmp"));
@@ -1596,8 +1651,8 @@ private slots:
 
         viewer.openPath(archivePath);
 
-        QTreeView *view =
-            viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view =
+            viewer.folderWindow()->findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         QModelIndex archiveIndex;
         for (int row = 0; row < view->model()->rowCount(); ++row) {
@@ -1640,8 +1695,8 @@ private slots:
         });
         StartupWindow viewer;
         viewer.createFolderWindow(true, directory.path(), false);
-        QTreeView *view =
-            viewer.folderWindow()->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QListView *view =
+            viewer.folderWindow()->findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
         const auto archiveIsCurrent = [view] {
             for (int row = 0; row < view->model()->rowCount(); ++row) {

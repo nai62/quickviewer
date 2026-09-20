@@ -120,7 +120,7 @@ SOURCES += \
     src/folderview/folderitemdelegate.cpp \
     src/folderview/folderitemmodel.cpp \
     src/folderview/foldertextcache.cpp \
-    src/folderview/foldertreeview.cpp \
+    src/folderview/folderlistview.cpp \
     src/folderview/folderwindow.cpp \
     src/imageview.cpp \
     src/main.cpp \
@@ -181,7 +181,7 @@ HEADERS  += \
     src/folderview/folderitem.h \
     src/folderview/folderitemmodel.h \
     src/folderview/foldertextcache.h \
-    src/folderview/foldertreeview.h \
+    src/folderview/folderlistview.h \
     src/folderview/folderwindow.h \
     src/imageview.h \
     src/mainwindow.h \
