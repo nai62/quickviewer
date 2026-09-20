@@ -240,7 +240,6 @@ private:
     void prefetchStartupTarget();
     void loadStartupVolume();
     void revealStartupWindow();
-    void profileStartupFolderText();
     void completeDeferredStartupWork();
     void initializeStartupPanel();
     void initializeDeferredMenus();

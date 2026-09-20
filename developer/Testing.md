@@ -253,6 +253,12 @@ profiling through the asynchronous folder text result and its final paint.
 first-image profile still stops at reveal and does not establish responsiveness
 while folder text is loading.
 
+The driver is `src/benchmark/startupfoldertextprofile.cpp`, started by
+`MainWindow::revealStartupWindow()` only under those two variables. It settles
+the whole folder (`requestAllTextImages()`), while the list itself only asks for
+the rows on screen, and `folder-text.idle-stop` marks the helper leaving after
+its idle period.
+
 ```bat
 set "QV_PROFILE_FIRST_IMAGE=C:\build\qv-folder-text.tsv"
 set "QV_PROFILE_FOLDER_TEXT=1"

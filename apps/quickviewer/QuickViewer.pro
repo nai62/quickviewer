@@ -111,6 +111,7 @@ macos {
 
 SOURCES += \
     src/benchmark/imagebenchmarkrunner.cpp \
+    src/benchmark/startupfoldertextprofile.cpp \
     src/catalog/catalogwindow.cpp \
     src/catalog/databasesettingdialog.cpp \
     src/catalog/managedatabasedialog.cpp \
@@ -170,6 +171,7 @@ SOURCES += \
 
 HEADERS  += \
     src/benchmark/imagebenchmarkrunner.h \
+    src/benchmark/startupfoldertextprofile.h \
     src/catalog/catalogwindow.h \
     src/catalog/databasesettingdialog.h \
     src/catalog/managedatabasedialog.h \
