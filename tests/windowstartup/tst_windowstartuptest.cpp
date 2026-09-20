@@ -695,8 +695,7 @@ private slots:
         FolderTextCache cache;
         cache.setIdleShutdownInterval(200);
         const QFont font = QApplication::font();
-        const QByteArray first =
-            FolderTextCache::key(QString::fromUtf8("test\u6447.zip"), font, 1);
+        const QByteArray first = FolderTextCache::key(QString::fromUtf8("test\u6447.zip"), font, 1);
         cache.request(first);
         QTRY_VERIFY_WITH_TIMEOUT(!cache.pending(first), 15000);
         QVERIFY(cache.helperRunning());
