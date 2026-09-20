@@ -230,6 +230,13 @@ printf 'Exit code: %s\n' "$build_status"
 For Release, replace the command with
 `scripts\verify-windows.cmd release`.
 
+`--qmake` regenerates the Makefiles with whatever path the script was invoked
+through. The `pushd` above maps a drive letter for the UNC path first, so it is
+safe; invoking `scripts\verify-windows.cmd ... --qmake` directly through
+`\\wsl.localhost\...` records UNC source paths instead, and the next build then
+fails with `Error: dependent '\\wsl.localhost\...' does not exist`. Use the
+`pushd` form or a mapped drive path (for example `Z:\...`).
+
 ## Performance benchmarks
 
 Image loading and decoder performance should be measured with a Release build.

@@ -29,6 +29,9 @@ build and test commands are in `developer/Testing.md`.
 - The tracked pre-commit hook formats staged first-party C++ files and stages
   those edits, so a commit can contain content that was not in the staged diff.
   Confirm with `git show` when the exact committed content matters.
+- Stage whole first-party C++ files. The hook refuses a staged file that also
+  has unstaged changes, so a partial (hunk-level) commit of such a file is not
+  available; split commits by file instead.
 - This execution policy does not relax test-coverage requirements. Logic or
   file-loading changes require the relevant automated tests to be added or
   updated, and crash fixes require the regression test described above whenever
