@@ -34,7 +34,7 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
       m_itemContextMenu(nullptr),
       m_historyButton(nullptr),
       m_itemModel(this),
-      m_itemDelegate(parent, this)
+      m_itemDelegate(parent)
 {
     ui->setupUi(this);
 
@@ -58,6 +58,21 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
             &QWidget::customContextMenuRequested,
             this,
             &FolderWindow::handleFolderViewContextMenuRequested);
+    if (ReadProgressStore *store = qApp->readProgressStore()) {
+        // The rows paint the progress the store holds, so a value the store
+        // gains repaints its row, and the store's own load repaints them all.
+        connect(store,
+                &ReadProgressStore::progressChanged,
+                this,
+                &FolderWindow::handleReadProgressChanged);
+        connect(
+            store, &ReadProgressStore::progressLoaded, this, &FolderWindow::refreshReadProgress);
+    }
+    if (uiMain) {
+        // The bars follow this switch, and no row changes with it.
+        connect(
+            uiMain->actionShowReadProgress, &QAction::toggled, this, &FolderWindow::repaintRows);
+    }
 
     // The item context menu is a plain menu; its action lives in the form.
     m_itemContextMenu = new QMenu(this);
@@ -354,8 +369,7 @@ void FolderWindow::setFolderPath(QString path, bool showParent)
                                 FolderItem::NoItems,
                                 QDateTime());
     }
-    m_itemModel.setVolumes(&m_volumes);
-    updateTextRowRange();
+    listVolumes();
     updateCurrentVolumeRow();
 
     if (showParent) {
@@ -365,16 +379,82 @@ void FolderWindow::setFolderPath(QString path, bool showParent)
 
 void FolderWindow::reset()
 {
-    m_itemModel.setVolumes(&m_volumes);
-    updateTextRowRange();
+    listVolumes();
 }
 
 void FolderWindow::resortVolumes()
 {
     sortVolumes();
-    m_itemModel.setVolumes(&m_volumes);
-    updateTextRowRange();
+    listVolumes();
     updateCurrentVolumeRow();
+}
+
+/**
+ * Shows the current set of entries and gives the rows the read progress the
+ * store already holds for them: a row paints its bar, so it has to be told
+ * rather than asking the store while it paints.
+ */
+void FolderWindow::listVolumes()
+{
+    m_itemModel.setVolumes(&m_volumes);
+    refreshReadProgress();
+    updateTextRowRange();
+}
+
+void FolderWindow::refreshReadProgress()
+{
+    ReadProgressStore *store = qApp->readProgressStore();
+    if (!store) {
+        return;
+    }
+    QHash<int, ReadProgress> progressByRow;
+    for (int row = 0; row < m_volumes.size(); ++row) {
+        const QString path = volumePathOfRow(row);
+        if (!path.isEmpty() && store->contains(path)) {
+            progressByRow.insert(row, store->at(path));
+        }
+    }
+    m_itemModel.setReadProgress(progressByRow);
+}
+
+void FolderWindow::handleReadProgressChanged(QString path)
+{
+    ReadProgressStore *store = qApp->readProgressStore();
+    if (!store) {
+        return;
+    }
+    const QString volume = QDir::fromNativeSeparators(path);
+    for (int row = 0; row < m_volumes.size(); ++row) {
+        if (volumePathOfRow(row) == volume) {
+            // The volume being read is this row's, so its bar moves as the
+            // reader advances: nothing else redraws a row the pointer is not
+            // over.
+            m_itemModel.updateReadProgress(row, store->at(volume));
+            return;
+        }
+    }
+}
+
+/**
+ * The path the store keys \a row's volume by, which is the entry's own path.
+ * Rows that are not volumes - an image inside the folder, or the placeholder of
+ * an empty folder - have none.
+ */
+QString FolderWindow::volumePathOfRow(int row) const
+{
+    if (row < 0 || row >= m_volumes.size()) {
+        return QString();
+    }
+    const FolderItem &item = m_volumes.at(row);
+    if (item.type == FolderItem::NoItems) {
+        return QString();
+    }
+    return QDir::fromNativeSeparators(QDir(m_currentPath).absoluteFilePath(item.name));
+}
+
+void FolderWindow::repaintRows()
+{
+    ui->folderView->viewport()->update();
 }
 
 void FolderWindow::updateTextRowRange()

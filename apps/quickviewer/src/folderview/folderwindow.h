@@ -36,6 +36,7 @@ public slots:
     void handleParentButtonClicked();
     void handleReloadButtonClicked();
     void handleViewerSessionVolumeChanged(QString);
+    void handleReadProgressChanged(QString path);
     void handleFolderViewItemSelected(const QModelIndex &index);
     void handleSetAsHomeFolderActionTriggered();
 
@@ -48,6 +49,10 @@ protected:
     void closeEvent(QCloseEvent *e);
 
 private:
+    void listVolumes();
+    void refreshReadProgress();
+    QString volumePathOfRow(int row) const;
+    void repaintRows();
     void openFolderItem(const QModelIndex &index);
     void sortVolumes();
     void setupHistoryButton(Ui::MainWindow *uiMain);

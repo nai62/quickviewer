@@ -777,6 +777,54 @@ private slots:
         QVERIFY(rowHeight < styled.height());
     }
 
+    void folderViewRepaintsTheRowTheStoreGainsProgressFor()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const QString archivePath = directory.filePath(QStringLiteral("book.zip"));
+        QVERIFY(QFile::copy(QString(FILELOADER_DATAPATH "deflate-utf8.zip"), archivePath));
+        const QString storedPath = QDir::fromNativeSeparators(archivePath);
+        const ReadProgress stored{
+            QFileInfo(storedPath).fileName(), storedPath, QString(), 4, 1, false};
+
+        // Progress the store holds when the panel lists the folder is on the row
+        // from the start.
+        qApp->readProgressStore()->insert(storedPath, stored);
+        StartupWindow viewer;
+        viewer.createFolderWindow(true, directory.path(), false);
+        FolderWindow *panel = viewer.folderWindow();
+        QListView *view = panel->findChild<QListView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        QAbstractItemModel *model = view->model();
+        QCOMPARE(model->rowCount(), 1);
+        QCOMPARE(model->index(0, 0)
+                     .data(FolderItemModel::ReadProgressRole)
+                     .value<ReadProgress>()
+                     .totalPageCount,
+                 4);
+
+        // Reading on is not a change in the model, so the row is told to repaint.
+        // Before, it kept the bar it first painted until a click or a hover
+        // happened to redraw it.
+        QSignalSpy repainted(model, &QAbstractItemModel::dataChanged);
+        qApp->readProgressStore()->insert(storedPath,
+                                          {stored.volumeTitle, storedPath, QString(), 4, 3, false});
+
+        int repaintedRow = -1;
+        for (const QList<QVariant> &call : repainted) {
+            const QList<int> roles = call.at(2).value<QList<int>>();
+            if (roles.contains(FolderItemModel::ReadProgressRole)) {
+                repaintedRow = call.at(0).value<QModelIndex>().row();
+            }
+        }
+        QCOMPARE(repaintedRow, 0);
+        QCOMPARE(model->index(0, 0)
+                     .data(FolderItemModel::ReadProgressRole)
+                     .value<ReadProgress>()
+                     .resumePageIndex,
+                 3);
+    }
+
     void folderListPaintsProgressWithoutAPageCount()
     {
         QTemporaryDir directory;
@@ -902,7 +950,7 @@ private slots:
         QList<FolderItem> items{FolderItem(name, FolderItem::Archive, QDateTime())};
         FolderItemModel model(nullptr, &cache);
         QListView view;
-        FolderItemDelegate delegate(&view, nullptr);
+        FolderItemDelegate delegate(&view);
         auto *style = new RecordingFolderStyle;
         style->setParent(&view);
         view.setStyle(style);

@@ -20,6 +20,8 @@ struct ReadProgress
     bool completed;
 };
 
+Q_DECLARE_METATYPE(ReadProgress)
+
 /**
  * Stores reading progress by volume path and persists it to progress.ini.
  */
@@ -47,15 +49,23 @@ public:
     void insert(QString path, const ReadProgress &value)
     {
         m_progressByVolumePath.insert(path, value);
+        emit progressChanged(path);
     }
     void insertSessionOverride(QString path, const ReadProgress &value)
     {
         m_sessionOverrides.insert(path, value);
+        emit progressChanged(path);
     }
     void moveToThread(QThread *targetThread);
 
 public slots:
     void handleInitializationFinished();
+
+signals:
+    /** The progress of the volume at \a path was inserted or replaced. */
+    void progressChanged(QString path);
+    /** The stored progress of every volume has been read from the settings. */
+    void progressLoaded();
 
 private:
     ReadProgressMap m_progressByVolumePath;

@@ -1,5 +1,5 @@
 #include "folderitemdelegate.h"
-#include "folderwindow.h"
+#include "folderitemmodel.h"
 #include "qvapplication.h"
 
 namespace {
@@ -27,9 +27,8 @@ QImage tintedTextMask(const QImage &mask, const QColor &color)
 }
 } // namespace
 
-FolderItemDelegate::FolderItemDelegate(QWidget *parent, FolderWindow *folderWindow)
-    : QStyledItemDelegate(parent),
-      m_folderWindow(folderWindow)
+FolderItemDelegate::FolderItemDelegate(QWidget *parent)
+    : QStyledItemDelegate(parent)
 {
 }
 constexpr int ProgressWidth = 100;
@@ -124,11 +123,11 @@ void FolderItemDelegate::paint(QPainter *painter,
         if (!qApp->ShowReadProgress() || index.column() != 0) {
             break;
         }
-        const QString path = QDir::fromNativeSeparators(m_folderWindow->itemPath(index));
-        if (!qApp->readProgressStore()->contains(path)) {
+        const QVariant progressValue = index.data(FolderItemModel::ReadProgressRole);
+        if (!progressValue.canConvert<ReadProgress>()) {
             break;
         }
-        const ReadProgress progress = qApp->readProgressStore()->at(path);
+        const ReadProgress progress = progressValue.value<ReadProgress>();
         QRect rect(option.rect);
         QPoint begin(rect.left() + 30, rect.top() + ProgressHeight);
         //        painter->drawLine(begin, QPoint(begin.x()+100, begin.y()));
