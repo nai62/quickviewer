@@ -107,7 +107,7 @@ public:
         // A folder volume can hold its pages in a subdirectory it unwrapped, so
         // the path a page really has on disk wins over the display text. Archive
         // entries have no filesystem path and keep the display text.
-        const QString pagePath = volume->pagePathForName(m_visiblePages.first().path);
+        const QString pagePath = volume->pagePathForName(m_visiblePages[0].path);
         if (!pagePath.isEmpty()) {
             return pagePath;
         }
@@ -129,9 +129,12 @@ public:
         }
         // A folder page is stored as the file itself, so a listing that found
         // its pages in an unwrapped subdirectory has to report where they are.
-        const QString pagePath = volume->pagePathForName(m_visiblePages.first().path);
+        const QString pagePath = volume->pagePathForName(m_visiblePages[0].path);
         if (!pagePath.isEmpty()) {
-            return {pagePath, QString()};
+            // Keep the documented container/entry form: the folder the page is
+            // in, and the name of the page inside it.
+            const QFileInfo pageInfo(pagePath);
+            return {pageInfo.absolutePath(), pageInfo.fileName()};
         }
         return {volume->volumePath(), m_visiblePages[0].path};
     }
