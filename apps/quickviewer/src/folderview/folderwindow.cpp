@@ -1,15 +1,11 @@
 #include <QtWidgets>
 #include <QCollator>
 
-#ifdef Q_OS_WIN
-#    include <windows.h>
-#    include <shellapi.h>
-#endif
-
 #include "ui_folderwindow.h"
 #include "ui_mainwindow.h"
 
 #include "folderwindow.h"
+#include "models/filemanager.h"
 #include "models/volume.h"
 #include "models/qvapplication.h"
 #include "qmousesequence.h"
@@ -32,39 +28,6 @@ QIcon clockIcon(const QPalette &palette)
     return QIcon(pixmap);
 }
 
-/**
- * Shows \a path in the platform's file manager. A folder is opened, and an
- * entry inside one is shown selected, which is what the image view's own "Open
- * in Explorer" does with the current file.
- */
-void openInExplorer(const QString &path)
-{
-    if (path.isEmpty()) {
-        return;
-    }
-    const QFileInfo info(path);
-    // Explorer opens somewhere else entirely for a path it cannot resolve, and
-    // an entry the panel lists can be gone by the time this is asked for.
-    const QString canonical = info.canonicalFilePath();
-    if (canonical.isEmpty()) {
-        return;
-    }
-#ifdef Q_OS_WIN
-    // Explorer selects the entry named after /select, and opens the folder
-    // itself when it is given one without it.
-    const QString argument = (info.isDir() ? QString() : QStringLiteral("/select,")) +
-                             QLatin1Char('"') + QDir::toNativeSeparators(canonical) +
-                             QLatin1Char('"');
-    ::ShellExecuteW(nullptr,
-                    L"open",
-                    L"explorer.exe",
-                    reinterpret_cast<const wchar_t *>(argument.utf16()),
-                    nullptr,
-                    SW_SHOWNORMAL);
-#else
-    QDesktopServices::openUrl(QUrl::fromLocalFile(info.isDir() ? canonical : info.absolutePath()));
-#endif
-}
 }
 
 FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
@@ -274,7 +237,7 @@ void FolderWindow::handleOpenFolderItemActionTriggered()
 
 void FolderWindow::handleOpenInExplorerActionTriggered()
 {
-    openInExplorer(m_contextMenuIndex.isValid() ? itemPath(m_contextMenuIndex) : m_currentPath);
+    showInFileManager(m_contextMenuIndex.isValid() ? itemPath(m_contextMenuIndex) : m_currentPath);
 }
 
 void FolderWindow::handleCopyItemPathActionTriggered()

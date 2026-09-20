@@ -126,6 +126,7 @@ SOURCES += \
     src/main.cpp \
     src/mainwindow.cpp \
     src/models/readprogressstore.cpp \
+    src/models/filemanager.cpp \
     src/models/boundedexecutor.cpp \
     src/models/imagecontent.cpp \
     src/models/pagedisplayformatter.cpp \
@@ -186,6 +187,7 @@ HEADERS  += \
     src/imageview.h \
     src/mainwindow.h \
     src/models/readprogressstore.h \
+    src/models/filemanager.h \
     src/models/boundedexecutor.h \
     src/models/cursorscrollmapping.h \
     src/models/lrucache.h \

@@ -4,6 +4,7 @@
 
 #include "folderwindow.h"
 #include "mainwindow.h"
+#include "models/filemanager.h"
 #include "models/qvapplication.h"
 #include "models/thumbnailmanager.h"
 
@@ -828,6 +829,34 @@ private slots:
         const int rowHeight = view->visualRect(row).height();
         QVERIFY(rowHeight >= view->fontMetrics().height());
         QVERIFY(rowHeight < styled.height());
+    }
+
+    void explorerArgumentOpensAFolderAndSelectsAnEntry()
+    {
+#ifdef Q_OS_WIN
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QDir root(directory.path());
+        QVERIFY(root.mkdir(QStringLiteral("child")));
+        const QString filePath = root.filePath(QStringLiteral("image.png"));
+        QImage image(2, 2, QImage::Format_RGB32);
+        image.fill(Qt::white);
+        QVERIFY(image.save(filePath));
+
+        // A folder is opened, and an entry inside one is selected in the folder
+        // that holds it. Explorer wants the quotes around the path alone.
+        const QString folder = QDir::toNativeSeparators(QFileInfo(root.path()).canonicalFilePath());
+        const QString file = QDir::toNativeSeparators(QFileInfo(filePath).canonicalFilePath());
+        QCOMPARE(explorerArgument(root.path()), QLatin1Char('"') + folder + QLatin1Char('"'));
+        QCOMPARE(explorerArgument(filePath),
+                 QStringLiteral("/select,") + QLatin1Char('"') + file + QLatin1Char('"'));
+
+        // Explorer would open somewhere else for a path it cannot resolve.
+        QVERIFY(explorerArgument(root.filePath(QStringLiteral("gone.png"))).isEmpty());
+        QVERIFY(explorerArgument(QString()).isEmpty());
+#else
+        QSKIP("Explorer is the file manager of Windows");
+#endif
     }
 
     void folderViewRepaintsTheRowTheStoreGainsProgressFor()

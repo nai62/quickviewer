@@ -4,6 +4,7 @@
 #endif
 
 #include "imageview.h"
+#include "models/filemanager.h"
 #include "models/cursorscrollmapping.h"
 #include "models/shadereffect.h"
 #include "qvapplication.h"
@@ -1017,42 +1018,13 @@ void ImageView::handleOpenFilerActionTriggered()
     if (!m_viewerSession) {
         return;
     }
+    // A folder volume stands for itself, and anything else is a page inside one
+    // whose own location is what the reader wants to see.
     QString path = m_viewerSession->volumePath();
     if (m_viewerSession->isFolder()) {
         path = m_viewerSession->currentPagePath();
     }
-#if defined(Q_OS_WIN)
-    const QString explorer = QLatin1String("explorer.exe ");
-    QFileInfo fi(path);
-
-    // canonicalFilePath returns empty if the file does not exist
-    if (!fi.canonicalFilePath().isEmpty()) {
-        QString nativeArgs;
-        if (!fi.isDir()) {
-            nativeArgs += QLatin1String("/select,");
-        }
-        nativeArgs += QLatin1Char('"');
-        nativeArgs += QDir::toNativeSeparators(fi.canonicalFilePath());
-        nativeArgs += QLatin1Char('"');
-
-        qDebug() << "OO Open explorer commandline:" << explorer << nativeArgs;
-        QProcess p;
-        // QProcess on Windows tries to wrap the whole argument/program string
-        // with quotes if it detects a space in it, but explorer wants the quotes
-        // only around the path. Use setNativeArguments to bypass this logic.
-        p.setNativeArguments(nativeArgs);
-        p.start(explorer);
-        p.waitForFinished(5000);
-    }
-#else
-    if (!QFileInfo(path).isDir()) {
-        QDir dir(path);
-        dir.cdUp();
-        path = dir.path();
-    }
-    QUrl url = QString("file:///%1").arg(path);
-    QDesktopServices::openUrl(url);
-#endif
+    showInFileManager(path);
 }
 
 void ImageView::handleCopyPageActionTriggered()
