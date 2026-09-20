@@ -412,10 +412,15 @@ private slots:
                 const QString display = index.data().toString();
                 const QString real = QFileInfo(panel->itemPath(index)).fileName();
                 if (real.contains(QChar(0xD83D))) {
-                    QVERIFY2(
-                        !display.contains(QChar(0xD83D)),
-                        qPrintable(QStringLiteral("expected a placeholder, got %1").arg(display)));
-                    QVERIFY(display != real);
+                    // Either the name itself, or the same name with the glyph the
+                    // font cannot draw replaced - never another entry's name. The
+                    // fallback font may already be loaded from an earlier test, so
+                    // both are valid here.
+                    const bool placeholder = display.startsWith(QStringLiteral("a")) &&
+                                             display.endsWith(QStringLiteral(".zip")) &&
+                                             !display.contains(QChar(0xD83D));
+                    QVERIFY2(display == real || placeholder,
+                             qPrintable(QStringLiteral("row %1 shows %2").arg(row).arg(display)));
                 } else {
                     QCOMPARE(display, real);
                 }
@@ -440,6 +445,15 @@ private slots:
             return false;
         };
         QTRY_VERIFY(rareNameIsShown());
+        for (int row = 0; row < view->model()->rowCount(); ++row) {
+            const QModelIndex index = view->model()->index(row, 0);
+            QCOMPARE(index.data().toString(), QFileInfo(panel->itemPath(index)).fileName());
+        }
+
+        // Rebuilding the list once the font has been loaded keeps the real names:
+        // the load is remembered per process, so opening another entry of the same
+        // folder (which re-lists it) must not fall back to the placeholder.
+        panel->setFolderPath(directory.path(), false);
         for (int row = 0; row < view->model()->rowCount(); ++row) {
             const QModelIndex index = view->model()->index(row, 0);
             QCOMPARE(index.data().toString(), QFileInfo(panel->itemPath(index)).fileName());

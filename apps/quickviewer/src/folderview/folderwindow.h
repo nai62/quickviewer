@@ -52,14 +52,12 @@ private:
     void openFolderItem(const QModelIndex &index);
     void sortVolumes();
     void setupHistoryButton(Ui::MainWindow *uiMain);
-    void warmUpListFonts();
     int currentVolumeRow() const;
     void updateCurrentVolumeRow();
 
     Ui::FolderWindow *ui;
     QMenu *m_itemContextMenu;
     QToolButton *m_historyButton;
-    bool m_fontWarmUpStarted = false;
     QString m_currentPath;
     QString m_currentVolumePath;
     QList<FolderItem> m_volumes;

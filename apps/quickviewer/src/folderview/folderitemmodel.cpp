@@ -44,10 +44,31 @@ QChar placeholderCharacter()
 }
 
 /**
- * Replaces every character the UI font cannot draw with the placeholder, or
- * returns an empty string when the name needs no fallback.
+ * Glyphs whose fallback font this process has already loaded. Loading one costs
+ * hundreds of milliseconds, so a list keeps using a placeholder only for glyphs
+ * it has not loaded yet; a later list that holds the same characters is drawn
+ * with the real names straight away.
  */
-QString placeholderName(const QString &name)
+QSet<char32_t> &warmedFallbackGlyphs()
+{
+    static QSet<char32_t> glyphs;
+    return glyphs;
+}
+
+/** Glyphs the running fallback-font load covers. */
+QSet<char32_t> &fallbackLoadInFlight()
+{
+    static QSet<char32_t> glyphs;
+    return glyphs;
+}
+
+/**
+ * Replaces every character the UI font cannot draw and that no fallback font has
+ * been loaded for with the placeholder, or returns an empty string when the name
+ * can be drawn as it is. The glyphs that would still need a load are reported
+ * through \a glyphsToLoad.
+ */
+QString placeholderName(const QString &name, QSet<char32_t> *glyphsToLoad)
 {
     QString placeholder;
     bool replaced = false;
@@ -64,10 +85,13 @@ QString placeholderName(const QString &name)
             code = QChar::surrogateToUcs4(character, name.at(index + 1));
             length = 2;
         }
-        if (primaryFontSupports(code)) {
+        if (primaryFontSupports(code) || warmedFallbackGlyphs().contains(code)) {
             placeholder.append(name.mid(index, length));
             index += length - 1;
             continue;
+        }
+        if (glyphsToLoad) {
+            glyphsToLoad->insert(code);
         }
         placeholder.append(placeholderCharacter());
         replaced = true;
@@ -137,6 +161,10 @@ FolderItemModel::FolderItemModel(QObject *parent)
             &QFutureWatcher<FolderIconImages>::finished,
             this,
             &FolderItemModel::handleIconLoadFinished);
+    connect(&m_fallbackFontWatcher,
+            &QFutureWatcher<void>::finished,
+            this,
+            &FolderItemModel::handleFallbackFontsLoaded);
     const QFuture<FolderIconImages> &future = iconLoadFuture();
     if (future.isFinished()) {
         applyIconImages(future.result());
@@ -268,12 +296,13 @@ void FolderItemModel::setVolumes(QList<FolderItem> *volumes)
 void FolderItemModel::updatePlaceholderNames()
 {
     m_placeholderNames.clear();
+    m_glyphsToLoad.clear();
     m_placeholdersActive = false;
     if (!m_searchedVolumes) {
         return;
     }
     for (const FolderItem &item : *m_searchedVolumes) {
-        const QString placeholder = placeholderName(item.name);
+        const QString placeholder = placeholderName(item.name, &m_glyphsToLoad);
         m_placeholderNames.append(placeholder);
         if (!placeholder.isEmpty()) {
             m_placeholdersActive = true;
@@ -295,15 +324,41 @@ QStringList FolderItemModel::namesNeedingFallback() const
     return names;
 }
 
-void FolderItemModel::setPlaceholderNames(bool enabled)
+void FolderItemModel::requestFallbackFonts()
 {
-    if (m_placeholdersActive == enabled) {
+    if (m_glyphsToLoad.isEmpty() || !fallbackLoadInFlight().isEmpty()) {
         return;
     }
-    m_placeholdersActive = enabled;
+    const QStringList names = namesNeedingFallback();
+    if (names.isEmpty()) {
+        return;
+    }
+    fallbackLoadInFlight() = m_glyphsToLoad;
+    const QFont listFont = QApplication::font();
+    m_fallbackFontWatcher.setFuture(QtConcurrent::run([names, listFont] {
+        // Shaping the names is what loads the fallback fonts; the load is cached
+        // per process and shared with the GUI thread, which therefore never
+        // blocks on it.
+        QImage scratch(4096, 128, QImage::Format_ARGB32_Premultiplied);
+        QPainter painter(&scratch);
+        painter.setFont(listFont);
+        for (const QString &name : names) {
+            painter.drawText(QPoint(0, 64), name);
+        }
+    }));
+}
+
+void FolderItemModel::handleFallbackFontsLoaded()
+{
+    warmedFallbackGlyphs().unite(fallbackLoadInFlight());
+    fallbackLoadInFlight().clear();
+    updatePlaceholderNames();
     if (rowCount(QModelIndex()) > 0) {
         emit dataChanged(index(0, 0), index(rowCount(QModelIndex()) - 1, 0), {Qt::DisplayRole});
     }
+    // A list that arrived while this load was running can still hold glyphs of
+    // its own.
+    requestFallbackFonts();
 }
 
 void FolderItemModel::setCurrentVolumeRow(int row)
