@@ -595,8 +595,11 @@ void QVApplication::loadSettings()
 
     // Folder
     m_settings->beginGroup("Folder");
-    // Asking the shell for the Pictures folder is the expensive part of this
-    // group, and the answer is only used when the setting has no value yet.
+    // Resolve the shell default only when the setting is absent: QSettings
+    // evaluates a default eagerly, and the answer is used for nothing else.
+    // Asking the shell is cheap for a local profile but tens to hundreds of
+    // milliseconds when the folder is redirected (67 ms for a OneDrive
+    // Pictures folder on the machine this was measured on).
     QString defaultPath;
     if (!m_settings->contains("HomeFolderPath")) {
         defaultPath = getDefaultPictureFolderPath();
