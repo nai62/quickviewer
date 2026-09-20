@@ -39,7 +39,7 @@ public slots:
     void handleFolderViewItemSelected(const QModelIndex &index);
     void handleSetAsHomeFolderActionTriggered();
     void handleOpenFolderItemActionTriggered();
-    void handleRevealInExplorerActionTriggered();
+    void handleOpenInExplorerActionTriggered();
     void handleCopyItemPathActionTriggered();
 
 signals:

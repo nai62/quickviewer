@@ -674,11 +674,11 @@ private slots:
         auto *setHome = folder.findChild<QAction *>(QStringLiteral("actionSetAsHomeFolder"));
         QVERIFY(setHome);
         auto *openItem = folder.findChild<QAction *>(QStringLiteral("actionOpenFolderItem"));
-        auto *reveal = folder.findChild<QAction *>(QStringLiteral("actionRevealInExplorer"));
+        auto *openInExplorer = folder.findChild<QAction *>(QStringLiteral("actionOpenInExplorer"));
         auto *copyPath = folder.findChild<QAction *>(QStringLiteral("actionCopyItemPath"));
         auto *reload = folder.findChild<QAction *>(QStringLiteral("actionReloadFolder"));
         QVERIFY(openItem);
-        QVERIFY(reveal);
+        QVERIFY(openInExplorer);
         QVERIFY(copyPath);
         QVERIFY(reload);
 
@@ -727,7 +727,7 @@ private slots:
         QVERIFY(shownMenu->actions().contains(openItem));
         QVERIFY(!shownMenu->actions().contains(reload));
         QVERIFY(setHome->isEnabled());
-        QVERIFY(reveal->isEnabled());
+        QVERIFY(openInExplorer->isEnabled());
         setHome->trigger();
         QCOMPARE(
             QDir::cleanPath(QDir::fromNativeSeparators(qApp->HomeFolderPath())),

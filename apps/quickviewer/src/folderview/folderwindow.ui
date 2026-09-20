@@ -256,9 +256,9 @@
     <string>Open</string>
    </property>
   </action>
-  <action name="actionRevealInExplorer">
+  <action name="actionOpenInExplorer">
    <property name="text">
-    <string>Show in Explorer</string>
+    <string extracomment="Menu that displays Explorer with the currently displayed image file selected">Open in &amp;Explorer</string>
    </property>
   </action>
   <action name="actionCopyItemPath">

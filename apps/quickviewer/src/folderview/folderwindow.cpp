@@ -33,19 +33,28 @@ QIcon clockIcon(const QPalette &palette)
 }
 
 /**
- * Shows \a path in the platform's file manager, with the entry itself selected
- * where the platform can.
+ * Shows \a path in the platform's file manager. A folder is opened, and an
+ * entry inside one is shown selected, which is what the image view's own "Open
+ * in Explorer" does with the current file.
  */
-void revealInExplorer(const QString &path)
+void openInExplorer(const QString &path)
 {
     if (path.isEmpty()) {
         return;
     }
+    const QFileInfo info(path);
+    // Explorer opens somewhere else entirely for a path it cannot resolve, and
+    // an entry the panel lists can be gone by the time this is asked for.
+    const QString canonical = info.canonicalFilePath();
+    if (canonical.isEmpty()) {
+        return;
+    }
 #ifdef Q_OS_WIN
-    // Explorer selects the entry given to it after /select, which is the same
-    // thing the shell's own "show in folder" does.
-    const QString native = QDir::toNativeSeparators(path);
-    const QString argument = QStringLiteral("/select,\"%1\"").arg(native);
+    // Explorer selects the entry named after /select, and opens the folder
+    // itself when it is given one without it.
+    const QString argument = (info.isDir() ? QString() : QStringLiteral("/select,")) +
+                             QLatin1Char('"') + QDir::toNativeSeparators(canonical) +
+                             QLatin1Char('"');
     ::ShellExecuteW(nullptr,
                     L"open",
                     L"explorer.exe",
@@ -53,8 +62,7 @@ void revealInExplorer(const QString &path)
                     nullptr,
                     SW_SHOWNORMAL);
 #else
-    const QFileInfo info(path);
-    QDesktopServices::openUrl(QUrl::fromLocalFile(info.isDir() ? path : info.absolutePath()));
+    QDesktopServices::openUrl(QUrl::fromLocalFile(info.isDir() ? canonical : info.absolutePath()));
 #endif
 }
 }
@@ -112,12 +120,12 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
     m_itemContextMenu = new QMenu(this);
     m_itemContextMenu->addAction(ui->actionOpenFolderItem);
     m_itemContextMenu->addSeparator();
-    m_itemContextMenu->addAction(ui->actionRevealInExplorer);
+    m_itemContextMenu->addAction(ui->actionOpenInExplorer);
     m_itemContextMenu->addAction(ui->actionCopyItemPath);
     m_itemContextMenu->addSeparator();
     m_itemContextMenu->addAction(ui->actionSetAsHomeFolder);
     m_folderContextMenu = new QMenu(this);
-    m_folderContextMenu->addAction(ui->actionRevealInExplorer);
+    m_folderContextMenu->addAction(ui->actionOpenInExplorer);
     m_folderContextMenu->addAction(ui->actionCopyItemPath);
     m_folderContextMenu->addSeparator();
     m_folderContextMenu->addAction(ui->actionReloadFolder);
@@ -125,10 +133,10 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
             &QAction::triggered,
             this,
             &FolderWindow::handleOpenFolderItemActionTriggered);
-    connect(ui->actionRevealInExplorer,
+    connect(ui->actionOpenInExplorer,
             &QAction::triggered,
             this,
-            &FolderWindow::handleRevealInExplorerActionTriggered);
+            &FolderWindow::handleOpenInExplorerActionTriggered);
     connect(ui->actionCopyItemPath,
             &QAction::triggered,
             this,
@@ -239,7 +247,7 @@ void FolderWindow::handleFolderViewContextMenuRequested(const QModelIndex &index
     ui->actionOpenFolderItem->setEnabled(hasEntry);
     ui->actionSetAsHomeFolder->setEnabled(hasEntry && item->type == FolderItem::Dir);
     const bool hasFolder = !m_currentPath.isEmpty();
-    ui->actionRevealInExplorer->setEnabled(hasEntry || hasFolder);
+    ui->actionOpenInExplorer->setEnabled(hasEntry || hasFolder);
     ui->actionCopyItemPath->setEnabled(hasEntry || hasFolder);
     ui->actionReloadFolder->setEnabled(hasFolder);
     QMenu *menu = hasEntry ? m_itemContextMenu : m_folderContextMenu;
@@ -264,9 +272,9 @@ void FolderWindow::handleOpenFolderItemActionTriggered()
     openFolderItem(m_contextMenuIndex);
 }
 
-void FolderWindow::handleRevealInExplorerActionTriggered()
+void FolderWindow::handleOpenInExplorerActionTriggered()
 {
-    revealInExplorer(m_contextMenuIndex.isValid() ? itemPath(m_contextMenuIndex) : m_currentPath);
+    openInExplorer(m_contextMenuIndex.isValid() ? itemPath(m_contextMenuIndex) : m_currentPath);
 }
 
 void FolderWindow::handleCopyItemPathActionTriggered()
