@@ -711,6 +711,37 @@ private slots:
         QVERIFY(!setHome->isEnabled());
     }
 
+    void folderViewOpensAPathDroppedOnIt()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const QString imagePath = directory.filePath(QStringLiteral("dropped.png"));
+        QImage image(2, 2, QImage::Format_RGB32);
+        image.fill(Qt::white);
+        QVERIFY(image.save(imagePath));
+
+        FolderWindow folder(nullptr, nullptr);
+        QSignalSpy opened(&folder, &FolderWindow::openVolume);
+
+        // The viewer opens what was dropped, so the panel follows it instead of
+        // listing a folder the viewer knows nothing about.
+        QMimeData mime;
+        mime.setUrls({QUrl::fromLocalFile(imagePath)});
+        // A drop only reaches a widget that accepted the drag first.
+        QDragEnterEvent enter(
+            QPoint(10, 10), Qt::CopyAction, &mime, Qt::LeftButton, Qt::NoModifier);
+        QApplication::sendEvent(&folder, &enter);
+        QVERIFY(enter.isAccepted());
+        QDropEvent drop(QPointF(10, 10), Qt::CopyAction, &mime, Qt::LeftButton, Qt::NoModifier);
+        QApplication::sendEvent(&folder, &drop);
+
+        QCOMPARE(opened.size(), 1);
+        const OpenTarget target = opened.first().first().value<OpenTarget>();
+        QCOMPARE(target.intent, OpenIntent::FileInContainer);
+        QCOMPARE(QDir::cleanPath(QDir::fromNativeSeparators(target.location.containerPath)),
+                 QDir::cleanPath(QDir::fromNativeSeparators(directory.path())));
+    }
+
     void folderListPaintsProgressWithoutAPageCount()
     {
         QTemporaryDir directory;

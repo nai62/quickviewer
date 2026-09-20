@@ -203,7 +203,11 @@ void FolderWindow::dropEvent(QDropEvent *e)
         QUrl url = urlList[i];
         QFileInfo info(url.toLocalFile());
         if (info.isDir() || info.isFile()) {
-            setFolderPath(info.absoluteFilePath(), false);
+            // The dropped path goes through the same open request a click
+            // sends, so the viewer moves to it and the panel follows the volume
+            // that ends up shown instead of listing a folder on its own.
+            emit openVolume(OpenTarget::forPath(info.absoluteFilePath()));
+            e->acceptProposedAction();
             break;
         }
     }
