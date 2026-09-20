@@ -1,12 +1,109 @@
 #include "folderitemmodel.h"
 #include "startupprofiler.h"
 
+#ifdef Q_OS_WIN
+#    include <windows.h>
+#    include <shellapi.h>
+#endif
+
+namespace {
+#ifdef Q_OS_WIN
+QImage shellIconImage(const wchar_t *path, DWORD attributes)
+{
+    SHFILEINFOW info = {};
+    if (!SHGetFileInfoW(path,
+                        attributes,
+                        &info,
+                        sizeof(info),
+                        SHGFI_ICON | SHGFI_SHELLICONSIZE | SHGFI_USEFILEATTRIBUTES)) {
+        return QImage();
+    }
+    const QImage image = QImage::fromHICON(info.hIcon);
+    DestroyIcon(info.hIcon);
+    return image;
+}
+
+FolderIconImages loadShellIcons()
+{
+    // The shell asks for an initialized COM apartment on the calling thread.
+    const HRESULT com = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+    FolderIconImages images;
+    images.folder = shellIconImage(L"C:\\folder", FILE_ATTRIBUTE_DIRECTORY);
+    images.archive = shellIconImage(L"archive.zip", FILE_ATTRIBUTE_NORMAL);
+    images.image = shellIconImage(L"image.png", FILE_ATTRIBUTE_NORMAL);
+    if (SUCCEEDED(com)) {
+        CoUninitialize();
+    }
+    return images;
+}
+
+QFuture<FolderIconImages> &iconLoadFuture()
+{
+    static QFuture<FolderIconImages> future;
+    if (!future.isValid()) {
+        future = QtConcurrent::run(loadShellIcons);
+    }
+    return future;
+}
+#endif
+} // namespace
+
+void FolderItemModel::startIconLoad()
+{
+#ifdef Q_OS_WIN
+    (void)iconLoadFuture();
+#endif
+}
+
 FolderItemModel::FolderItemModel(QObject *parent)
     : QAbstractItemModel(parent),
       m_searchedVolumes(nullptr),
       m_currentVolumeRow(-1)
 {
+#ifdef Q_OS_WIN
+    // The shell renders the icons on another thread; this thread only turns the
+    // finished images into pixmaps. Until they arrive the list draws without
+    // them, which is why the load starts while the window is still being built.
+    connect(&m_iconWatcher,
+            &QFutureWatcher<FolderIconImages>::finished,
+            this,
+            &FolderItemModel::handleIconLoadFinished);
+    const QFuture<FolderIconImages> &future = iconLoadFuture();
+    if (future.isFinished()) {
+        applyIconImages(future.result());
+    } else {
+        m_iconWatcher.setFuture(future);
+    }
+#else
+    loadIconsFromProvider();
+#endif
+}
+
+void FolderItemModel::handleIconLoadFinished()
+{
+    applyIconImages(m_iconWatcher.future().result());
+}
+
+void FolderItemModel::applyIconImages(const FolderIconImages &images)
+{
     StartupProfiler::mark("folder-item-icons.begin");
+    if (images.folder.isNull() || images.archive.isNull() || images.image.isNull()) {
+        // The shell did not answer for every icon (another platform, or a
+        // refusal): fall back to the provider, which is what this used to do.
+        loadIconsFromProvider();
+        return;
+    }
+    m_folderIcon = QIcon(QPixmap::fromImage(images.folder));
+    m_archiveIcon = QIcon(QPixmap::fromImage(images.archive));
+    m_imageIcon = QIcon(QPixmap::fromImage(images.image));
+    StartupProfiler::mark("folder-item-icons.end");
+    if (rowCount(QModelIndex()) > 0) {
+        emit dataChanged(index(0, 0), index(rowCount(QModelIndex()) - 1, 0), {Qt::DecorationRole});
+    }
+}
+
+void FolderItemModel::loadIconsFromProvider()
+{
     QFileIconProvider iconProvider;
     m_folderIcon = iconProvider.icon(QFileIconProvider::Folder);
     m_archiveIcon = iconProvider.icon(QFileInfo(QStringLiteral("archive.zip")));
@@ -23,6 +120,9 @@ FolderItemModel::FolderItemModel(QObject *parent)
         m_imageIcon = fileIcon;
     }
     StartupProfiler::mark("folder-item-icons.end");
+    if (rowCount(QModelIndex()) > 0) {
+        emit dataChanged(index(0, 0), index(rowCount(QModelIndex()) - 1, 0), {Qt::DecorationRole});
+    }
 }
 
 QVariant FolderItemModel::data(const QModelIndex &index, int role) const

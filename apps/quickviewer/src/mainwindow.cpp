@@ -342,6 +342,9 @@ void MainWindow::initializeStartup()
     // created. loadStartupVolume() opens the same target later, so this only
     // fills the volume cache and leaves the startup sequence unchanged.
     prefetchStartupTarget();
+    // The panel asks the shell for its list icons; warming them here keeps that
+    // work off the moment the window appears.
+    FolderItemModel::startIconLoad();
 
     // restoreGeometry() in the constructor can restore fullscreen even when
     // the explicit "Begin as fullscreen" option is disabled.
