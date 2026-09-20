@@ -253,37 +253,28 @@ set "QV_PROFILE_FIRST_IMAGE="
 
 ### Folder text responsiveness
 
-Set `QV_PROFILE_FOLDER_TEXT=1` together with `QV_PROFILE_FIRST_IMAGE` to keep
-profiling through the asynchronous folder text result and its final paint.
-`folder-text.gui-heartbeat` records event-loop service during that interval;
-`folder-text.profile-timeout` is a failure, not a completed render. The ordinary
-first-image profile still stops at reveal and does not establish responsiveness
-while folder text is loading.
-
-The driver is `src/benchmark/startupfoldertextprofile.cpp`, started by
-`MainWindow::revealStartupWindow()` only under those two variables. It settles
-the whole folder (`requestAllTextImages()`), while the list itself only asks for
-the rows on screen, and `folder-text.idle-stop` marks the helper leaving after
-its idle period.
+`QV_PROFILE_FOLDER_TEXT=1` extends `QV_PROFILE_FIRST_IMAGE` profiling past the
+reveal until the folder list has its text. It settles the whole folder, not only
+the rows on screen: `folder-text.gui-heartbeat` counts event-loop service while
+that happens, `folder-text.profile-timeout` means the run never settled, and
+`folder-text.idle-stop` marks the text helper exiting after its idle period.
 
 ```bat
 set "QV_PROFILE_FIRST_IMAGE=C:\build\qv-folder-text.tsv"
 set "QV_PROFILE_FOLDER_TEXT=1"
-start "" /wait "C:\build\quickviewer-msvc2022_64-debug\bin\QuickViewer.exe" "C:\build\temp.zip"
+start "" /wait "C:\build\quickviewer-msvc2022_64-release\bin\QuickViewer.exe" "C:\path\book.zip"
 set "QV_PROFILE_FOLDER_TEXT="
 set "QV_PROFILE_FIRST_IMAGE="
 ```
 
-Run `scripts\verify-windows.cmd debug --test windowstartup` for the deterministic
-model-lifetime, stale-result, failure, style-key and helper-transport regressions.
-Interactively on Windows, start a fresh process with the cursor over the window,
-check that `test摇.zip` initially uses a placeholder and then real text, open
-it and switch back to `temp.zip`, and close/reopen FolderView during loading.
-Also check scrolling, narrow-column elision, selected/current (bold) rows,
-normal/maximized/fullscreen startup, and moving between different-DPI screens.
-The text helper is the same executable in `--folder-text-helper` mode; it does
-not load viewer settings or open archives. Font work is isolated in that process
-and only raster images return to the GUI. No extra deployed executable is needed.
+The helper is the same executable in `--folder-text-helper` mode, so nothing
+extra is deployed. Check a folder holding a name the UI font cannot draw: it
+shows a placeholder first, then the real text once the helper answers. While it
+loads, close and reopen the panel, scroll and select rows, and try a narrow
+column, a fullscreen window and another screen DPI.
+
+`scripts\verify-windows.cmd debug --test windowstartup` covers the model, cache
+and transport cases.
 
 ## C++ lint
 
