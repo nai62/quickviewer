@@ -374,7 +374,8 @@ private slots:
         const QModelIndex row = view->model()->index(0, 0);
         QVERIFY(row.isValid());
         // The list starts with a placeholder...
-        QVERIFY(row.data().toString().contains(QLatin1Char('?')));
+        QVERIFY(!row.data().toString().contains(QChar(0xD83D)));
+        QVERIFY(row.data().toString() != rareName);
 
         view->grab();
         // ...and is completed once the fallback font has been loaded.

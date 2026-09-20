@@ -19,15 +19,42 @@ bool primaryFontSupports(char32_t code)
 }
 
 /**
- * Replaces every character the UI font cannot draw with '?', or returns an empty
- * string when the name needs no fallback.
+ * The character that stands in for a glyph the UI font cannot draw.
+ *
+ * '□' is what the platform itself draws for a missing glyph and reads as "no
+ * glyph here" in every language, but no character is guaranteed to exist in a
+ * font: of the twenty UI fonts this was measured against, one lacks it. The
+ * middle dot and '?' are wider spread, so they are the fallbacks, and asking for
+ * them is the cheap side of the check that keeps the placeholder from needing a
+ * fallback font of its own.
+ */
+QChar placeholderCharacter()
+{
+    static const QChar chosen = [] {
+        const QRawFont raw = QRawFont::fromFont(QApplication::font());
+        const char32_t candidates[] = {0x25A1, 0x00B7, U'?'};
+        for (const char32_t candidate : candidates) {
+            if (raw.isValid() && raw.supportsCharacter(candidate)) {
+                return QChar(candidate);
+            }
+        }
+        return QChar(QLatin1Char('?'));
+    }();
+    return chosen;
+}
+
+/**
+ * Replaces every character the UI font cannot draw with the placeholder, or
+ * returns an empty string when the name needs no fallback.
  */
 QString placeholderName(const QString &name)
 {
     QString placeholder;
+    bool replaced = false;
     for (int index = 0; index < name.size(); ++index) {
         const QChar character = name.at(index);
         if (character.unicode() < 0x80) {
+            placeholder.append(character);
             continue;
         }
         char32_t code = character.unicode();
@@ -38,16 +65,15 @@ QString placeholderName(const QString &name)
             length = 2;
         }
         if (primaryFontSupports(code)) {
+            placeholder.append(name.mid(index, length));
+            index += length - 1;
             continue;
         }
-        if (placeholder.isEmpty()) {
-            placeholder = name;
-        }
-        for (int unit = 0; unit < length; ++unit) {
-            placeholder[index + unit] = QLatin1Char('?');
-        }
+        placeholder.append(placeholderCharacter());
+        replaced = true;
+        index += length - 1;
     }
-    return placeholder;
+    return replaced ? placeholder : QString();
 }
 
 #ifdef Q_OS_WIN
