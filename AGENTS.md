@@ -36,6 +36,11 @@ build and test commands are in `developer/Testing.md`.
   file-loading changes require the relevant automated tests to be added or
   updated, and crash fixes require the regression test described above whenever
   the affected layer can be exercised deterministically.
+- Do not add tests for static specifications - constants, fixed sizes, and the
+  metrics or wording a widget happens to have under the current style. A test
+  that restates a constant pins it without checking any behaviour of ours, and
+  it fails on the machine whose figures differ instead of finding a defect. Test
+  what the code does with a value, not the value itself.
 - At handoff, separately report builds, automated tests, and interactive checks
   as not run when applicable, and provide the narrowest appropriate commands or
   manual checks from the runbook.
