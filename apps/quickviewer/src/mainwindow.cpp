@@ -400,15 +400,12 @@ void MainWindow::initializeStartup()
     StartupProfiler::mark("startup.panel-reserve.end");
     StartupProfiler::mark("startup.panel-ready");
 
-    // The deferred startup work activates the layout before it loads the
-    // volume, so the window does not need an extra event round trip here: it
-    // would only paint a cloaked frame that the image paint and the reveal
-    // replace. A fullscreen window still waits for the platform to observe its
-    // transition before anything else happens.
+    // Settle the initial geometry now, including any reserved panel width, and
+    // answer the messages Windows has queued: a window whose thread has not
+    // pumped for tens of milliseconds is treated as hung, and the cursor over it
+    // becomes the busy one.
     StartupProfiler::mark("startup.process-events.begin");
-    if (isFullScreen()) {
-        QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-    }
+    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
     StartupProfiler::mark("startup.process-events.end");
     StartupProfiler::mark("startup.initial-events-processed");
 
