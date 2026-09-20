@@ -111,6 +111,7 @@ macos {
 
 SOURCES += \
     src/benchmark/imagebenchmarkrunner.cpp \
+    src/benchmark/startupfoldertextprofile.cpp \
     src/catalog/catalogwindow.cpp \
     src/catalog/databasesettingdialog.cpp \
     src/catalog/managedatabasedialog.cpp \
@@ -118,6 +119,7 @@ SOURCES += \
     src/exifdialog.cpp \
     src/folderview/folderitemdelegate.cpp \
     src/folderview/folderitemmodel.cpp \
+    src/folderview/foldertextcache.cpp \
     src/folderview/foldertreeview.cpp \
     src/folderview/folderwindow.cpp \
     src/imageview.cpp \
@@ -169,6 +171,7 @@ SOURCES += \
 
 HEADERS  += \
     src/benchmark/imagebenchmarkrunner.h \
+    src/benchmark/startupfoldertextprofile.h \
     src/catalog/catalogwindow.h \
     src/catalog/databasesettingdialog.h \
     src/catalog/managedatabasedialog.h \
@@ -177,6 +180,7 @@ HEADERS  += \
     src/folderview/folderitemdelegate.h \
     src/folderview/folderitem.h \
     src/folderview/folderitemmodel.h \
+    src/folderview/foldertextcache.h \
     src/folderview/foldertreeview.h \
     src/folderview/folderwindow.h \
     src/imageview.h \

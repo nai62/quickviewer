@@ -40,8 +40,9 @@ uv run --script scripts/lint-cpp.py --all --fix
 - The hook reports the files it rewrote. Because it stages those edits, a commit
   can differ from the staged diff; check `git show` when that matters. A commit
   that staged only a formatting fix ends up empty.
-- If a staged C++ file also has unstaged changes, the hook aborts with exit 2.
-  Stage or stash the rest and retry.
+- Partial staging does not work for first-party C++: the hook formats and
+  re-stages a staged file, so if that file also has unstaged changes it aborts
+  with exit 2. Stage whole files and split a commit by file, not by hunk.
 - `uv` must be on `PATH`. Where the uv cache is read-only (sandboxes, agents),
   point `UV_CACHE_DIR` at a writable directory.
 - CI runs `--all` on pull requests, so the local hook does not excuse

@@ -1765,6 +1765,77 @@ private slots:
         qApp->setImageSortBy(previousSort);
     }
 
+    void initialDisplayPrefetchWaitsForTheFirstPage()
+    {
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
+        auto loader = std::make_unique<MemoryFileLoader>(4);
+        MemoryFileLoader *loaderPtr = loader.get();
+        Volume volume(nullptr, std::move(loader));
+
+        volume.prefetchInitialDisplayPage();
+
+        // The first display waits for this page, so the prefetch leaves it
+        // decoded. Later pages stay with the viewer's own prefetch.
+        const Volume::ImageLoadFuture firstLoad = volume.imageLoadAt(0);
+        QVERIFY(firstLoad.isValid());
+        QVERIFY(firstLoad.isFinished());
+        QVERIFY(!firstLoad.result().loadedImage.isNull());
+        QCOMPARE(loaderPtr->requestedNames(), QStringList({"page-0.bmp"}));
+        QVERIFY(!volume.imageLoadAt(1).isValid());
+    }
+
+    void startupPrefetchKeepsImageTargetsOnTheStandalonePath()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const QString imagePath = directory.filePath(QStringLiteral("preview.bmp"));
+        QImage image(640, 480, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        QVERIFY(image.save(imagePath));
+
+        qApp->setDualView(false);
+        ViewerSession session(nullptr);
+        // Warming a plain image must not put its folder into the volume cache:
+        // the direct image keeps the standalone preview path.
+        session.prefetchStartupVolume(imagePath);
+
+        QVERIFY(session.openFileInContainer(imagePath));
+        QTRY_COMPARE(session.stateKind(), ViewerStateKind::StandalonePreview);
+        QCOMPARE(QFileInfo(session.currentPageName()).fileName(), QString("preview.bmp"));
+    }
+
+    void startupPrefetchPublishesTheContainerForItsOpening()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 3; ++page) {
+            QImage image(16, 24, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 40, 255, 255));
+            QVERIFY(image.save(directory.filePath(QString("page-%1.bmp").arg(page))));
+        }
+
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
+        qApp->setDualView(false);
+        ViewerSession session(nullptr);
+        session.prefetchStartupVolume(directory.path());
+
+        // The prefetch runs in the background; opening the same container
+        // reuses it and keeps the document a cold open would have produced.
+        QVERIFY(session.openContainer(directory.path()));
+        QCOMPARE(session.stateKind(), ViewerStateKind::VolumeReady);
+        QCOMPARE(session.pageCount(), 3);
+        QCOMPARE(session.currentPageName(), QStringLiteral("page-0.bmp"));
+        QCOMPARE(session.visiblePageCount(), 1);
+        const VisiblePages pages = session.visiblePages();
+        QVERIFY(pages.first() != nullptr);
+        QVERIFY(!pages.first()->loadedImage.isNull());
+
+        // A container that cannot be read still reports its failure.
+        const QString missingArchive = directory.filePath(QStringLiteral("missing.rar"));
+        session.prefetchStartupVolume(missingArchive);
+        QVERIFY(!session.openContainer(missingArchive));
+    }
+
     void volumeHandleDestroysOnOwnerThread()
     {
         auto *volume = new Volume(nullptr, std::make_unique<EmptyFileLoader>());

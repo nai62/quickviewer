@@ -952,14 +952,14 @@
         <translation>ВерхняяПапка</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="63"/>
-        <location filename="../src/folderview/folderwindow.cpp" line="97"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="69"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="103"/>
         <source>History</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="64"/>
-        <location filename="../src/folderview/folderwindow.cpp" line="98"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="70"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="104"/>
         <source>Open history</source>
         <translation type="unfinished"></translation>
     </message>
@@ -990,8 +990,8 @@
         <translation type="vanished">Не найдено ни одной папки или архива</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="67"/>
-        <location filename="../src/folderview/folderwindow.cpp" line="312"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="73"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="329"/>
         <source>No folders or archives found.</source>
         <comment>Display when there is no display item in Folder Window</comment>
         <translation>Не найдено ни одной папки или архива</translation>
@@ -1455,8 +1455,8 @@
         <translation>&amp;Примерка</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="166"/>
-        <location filename="../src/mainwindow.cpp" line="1700"/>
+        <location filename="../src/mainwindow.cpp" line="170"/>
+        <location filename="../src/mainwindow.cpp" line="1751"/>
         <source>&amp;Fullscreen</source>
         <translation>&amp;Полноэкранный</translation>
     </message>
@@ -1594,7 +1594,7 @@
         <translation>ОчиститьЗакладки</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2446"/>
+        <location filename="../src/mainwindow.cpp" line="2497"/>
         <source>Bookmark saved.</source>
         <translation>Закладка сохранена.</translation>
     </message>
@@ -2172,47 +2172,47 @@
         <translation type="vanished">Файл изображения не найден. Не может быть открыт.</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1651"/>
+        <location filename="../src/mainwindow.cpp" line="1702"/>
         <source>Loading...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1654"/>
+        <location filename="../src/mainwindow.cpp" line="1705"/>
         <source>No images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1656"/>
+        <location filename="../src/mainwindow.cpp" line="1707"/>
         <source>Unavailable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2014"/>
+        <location filename="../src/mainwindow.cpp" line="2065"/>
         <source>All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.heic *.heif);;Archives( *.zip *.7z *.rar)</source>
         <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2020"/>
+        <location filename="../src/mainwindow.cpp" line="2071"/>
         <source>Select an image or archive</source>
         <comment>Title of the dialog displayed when opening a file with OpenFileFolder</comment>
         <translation>Пожалуйста, выберите изображение или архив</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2261"/>
-        <location filename="../src/mainwindow.cpp" line="2305"/>
+        <location filename="../src/mainwindow.cpp" line="2312"/>
+        <location filename="../src/mainwindow.cpp" line="2356"/>
         <source>Confirmation</source>
         <comment>Confirm deleting image file on MessageBox title</comment>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2267"/>
+        <location filename="../src/mainwindow.cpp" line="2318"/>
         <source>Are you sure you want to move the image to Recycle Bin?</source>
         <comment>Confirm putting displayed file in Recycle Box Message Box body</comment>
         <translation>Вы уверены, что хотите переместить изображение в корзину?</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2310"/>
+        <location filename="../src/mainwindow.cpp" line="2361"/>
         <source>Are you sure you want to delete this image?</source>
         <comment>Confirm deleting image file on Message Box body</comment>
         <translation>Вы уверены в том, что хотите удалить данное изображение?</translation>
@@ -2869,67 +2869,67 @@
         <translation type="vanished">Двойной просмотр</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="259"/>
+        <location filename="../src/models/qvapplication.cpp" line="269"/>
         <source>File</source>
         <comment>File Action Group</comment>
         <translation>Файл</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="266"/>
+        <location filename="../src/models/qvapplication.cpp" line="276"/>
         <source>Bookmark</source>
         <comment>Bookmark Action Group</comment>
         <translation>Закладка</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="272"/>
+        <location filename="../src/models/qvapplication.cpp" line="282"/>
         <source>Navigation</source>
         <comment>Navigation Action Group</comment>
         <translation>Навигация</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="290"/>
+        <location filename="../src/models/qvapplication.cpp" line="300"/>
         <source>Folder</source>
         <comment>Folder Action Group</comment>
         <translation>Папка</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="295"/>
+        <location filename="../src/models/qvapplication.cpp" line="305"/>
         <source>Catalog</source>
         <comment>Catalog Action Group</comment>
         <translation>Каталог</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="305"/>
+        <location filename="../src/models/qvapplication.cpp" line="315"/>
         <source>Image</source>
         <comment>Image Action Group</comment>
         <translation>Изображение</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="319"/>
+        <location filename="../src/models/qvapplication.cpp" line="329"/>
         <source>Dual View</source>
         <comment>Dual View Action Group</comment>
         <translation>Двойной просмотр</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="330"/>
+        <location filename="../src/models/qvapplication.cpp" line="340"/>
         <source>View</source>
         <comment>View Action Group</comment>
         <translation>Вид</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="361"/>
+        <location filename="../src/models/qvapplication.cpp" line="371"/>
         <source>ContextMenu</source>
         <comment>ContextMenu Action Group</comment>
         <translation>КонтекстноеМеню</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="373"/>
+        <location filename="../src/models/qvapplication.cpp" line="383"/>
         <source>Shader</source>
         <comment>Shader Action Group</comment>
         <translation>Шейдер</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="388"/>
+        <location filename="../src/models/qvapplication.cpp" line="398"/>
         <source>Help</source>
         <comment>Help Action Group</comment>
         <translation>Помощь</translation>

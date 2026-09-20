@@ -21,6 +21,8 @@
 #include "retouchwindow.h"
 #include "startupprofiler.h"
 #include "storedvolumelocation.h"
+#include "benchmark/startupfoldertextprofile.h"
+#include "folderitemmodel.h"
 
 #ifdef Q_OS_WIN
 #    include "fileassocdialog.h"
@@ -56,6 +58,7 @@ MainWindow::MainWindow(QWidget *parent)
       m_statusMessage(StatusMessage::NoVolume)
 {
     ui->setupUi(this);
+    StartupProfiler::mark("mainwindow.ui-setup");
     // Establish the final window size before further UI initialization can
     // expose child surfaces created with the designer geometry.
     if (!qApp->BeginAsFullscreen() && qApp->RestoreWindowState()) {
@@ -114,6 +117,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Mapping to Key-Action Table and Key Config Dialog
     qApp->registerActions(ui);
+    StartupProfiler::mark("mainwindow.actions-registered");
     resetShortcutKeys();
 
     // Context menus(independent from menuBar)
@@ -336,6 +340,14 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::initializeStartup()
 {
+    // Warm the volume the startup will open while the window is still being
+    // created. loadStartupVolume() opens the same target later, so this only
+    // fills the volume cache and leaves the startup sequence unchanged.
+    prefetchStartupTarget();
+    // The panel asks the shell for its list icons; warming them here keeps that
+    // work off the moment the window appears.
+    FolderItemModel::startIconLoad();
+
     // restoreGeometry() in the constructor can restore fullscreen even when
     // the explicit "Begin as fullscreen" option is disabled.
     const bool startFullscreen = qApp->BeginAsFullscreen() || isFullScreen();
@@ -390,7 +402,10 @@ void MainWindow::initializeStartup()
     StartupProfiler::mark("startup.panel-reserve.end");
     StartupProfiler::mark("startup.panel-ready");
 
-    // Settle the initial geometry now, including any reserved panel width.
+    // Settle the initial geometry now, including any reserved panel width, and
+    // answer the messages Windows has queued: a window whose thread has not
+    // pumped for tens of milliseconds is treated as hung, and the cursor over it
+    // becomes the busy one.
     StartupProfiler::mark("startup.process-events.begin");
     QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
     StartupProfiler::mark("startup.process-events.end");
@@ -408,6 +423,7 @@ void MainWindow::initializeStartup()
         }
         loadStartupVolume();
         if (!m_viewerSession.initialImagePaintPending()) {
+            initializeStartupPanel();
             revealStartupWindow();
             QTimer::singleShot(0, this, &MainWindow::completeDeferredStartupWork);
         }
@@ -436,6 +452,11 @@ void MainWindow::revealStartupWindow()
     }
     m_revealInitialWindow = false;
     StartupProfiler::mark("startup.reveal.end");
+    if (StartupProfiler::enabled() && qEnvironmentVariableIsSet("QV_PROFILE_FOLDER_TEXT")) {
+        StartupFolderTextProfile::watch(this, [this] {
+            return m_folderWindow ? m_folderWindow->findChild<FolderItemModel *>() : nullptr;
+        });
+    }
 }
 
 void MainWindow::loadStartupVolume()
@@ -451,6 +472,21 @@ void MainWindow::loadStartupVolume()
     if (qApp->AutoLoaded() && !qApp->LastViewPath().isEmpty()) {
         openStoredPath(qApp->LastViewPath(), true);
         makeBookmarkMenu();
+    }
+}
+
+void MainWindow::prefetchStartupTarget()
+{
+    // loadStartupVolume() opens the first argument when it is given, and the
+    // stored view otherwise. Both targets are classified the same way here, so
+    // the prefetch warms exactly the container that startup is going to open.
+    if (qApp->arguments().length() >= 2) {
+        m_viewerSession.prefetchStartupVolume(qApp->arguments().last());
+        return;
+    }
+    if (qApp->AutoLoaded() && !qApp->LastViewPath().isEmpty()) {
+        m_viewerSession.prefetchStartupVolume(
+            loadStoredVolumeLocation(qApp->LastViewPath()).containerPath);
     }
 }
 
@@ -1250,8 +1286,14 @@ bool MainWindow::changeFolderPath(QString path)
 
 void MainWindow::handleInitialImageDisplayFinished()
 {
+    // The panel belongs to the frame the reveal paints: create it while the
+    // window is still cloaked, so the folder list is already there when the
+    // window appears - showing a placeholder for any name whose font is still
+    // loading - instead of arriving a moment later. The menus stay deferred;
+    // they are the part of the startup work the first frame does not need.
+    initializeStartupPanel();
     revealStartupWindow();
-    if (StartupProfiler::enabled()) {
+    if (StartupProfiler::enabled() && !qEnvironmentVariableIsSet("QV_PROFILE_FOLDER_TEXT")) {
         StartupProfiler::flush();
         QTimer::singleShot(0, qApp, &QCoreApplication::quit);
         return;
@@ -1262,7 +1304,16 @@ void MainWindow::handleInitialImageDisplayFinished()
 void MainWindow::completeDeferredStartupWork()
 {
     initializeDeferredMenus();
+    initializeStartupPanel();
+}
 
+/**
+ * Builds the panel the startup window shows, or points the panel that already
+ * exists at the startup path. Called before the window is revealed, so the
+ * folder list is part of the frame the reveal paints.
+ */
+void MainWindow::initializeStartupPanel()
+{
     if (m_folderWindow) {
         if (!m_pendingFolderPath.isEmpty()) {
             const QString path = m_pendingFolderPath;

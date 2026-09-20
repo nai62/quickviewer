@@ -59,6 +59,13 @@ public:
      * the page that is displayed now.
      */
     void reloadContainer(const QString &containerPath);
+    /**
+     * Starts loading a container the startup will open, so opening its archive,
+     * reading its page list, and decoding its first page happen while the
+     * window is still being created. A plain image file keeps its own startup
+     * path and is not prefetched.
+     */
+    void prefetchStartupVolume(const QString &startupPath);
 
     // Pages
     bool advanceSpread();

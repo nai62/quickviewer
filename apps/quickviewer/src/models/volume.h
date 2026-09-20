@@ -123,6 +123,12 @@ public:
     int pageCount() const { return m_pageNames.size(); }
     void updatePrefetchCache(int anchorPageIndex, PrefetchMode mode, QSize viewportSize);
     void prefetchCoverImages(int anchorPageIndex = 0);
+    /**
+     * Loads the page the first display shows and waits for it, so a caller can
+     * publish a volume whose first paint needs no further extraction or
+     * decoding.
+     */
+    void prefetchInitialDisplayPage();
     ImageContent loadThumbnailSourceImage();
 
     ImageLoadFuture imageLoadAt(int pageIndex) const;

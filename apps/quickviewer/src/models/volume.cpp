@@ -419,6 +419,23 @@ ImageContent Volume::loadThumbnailSourceImage()
     return futureLoadImageFromFileVolume(m_loadContext, pageNameAt(0), QSize());
 }
 
+/**
+ * Warms the page the first display waits for. Unlike prefetchCoverImages(),
+ * this schedules that page alone, so warming a volume for startup never delays
+ * the first paint behind a page the viewer has not asked for yet.
+ */
+void Volume::prefetchInitialDisplayPage()
+{
+    if (!loaderForPrefetch()) {
+        return;
+    }
+    updatePrefetchCache(0, PrefetchMode::InitialDisplay, QSize());
+    const ImageLoadFuture initialLoad = imageLoadAt(0);
+    if (initialLoad.isValid()) {
+        initialLoad.result();
+    }
+}
+
 IFileLoader *Volume::loaderForPrefetch()
 {
     if (!m_pageListLoaded) {

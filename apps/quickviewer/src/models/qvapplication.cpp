@@ -6,10 +6,13 @@
 #include "svgloader.h"
 #include "qvenums.h"
 #include "shadereffect.h"
+#include "startupprofiler.h"
 #include "ui_mainwindow.h"
 
 #ifdef Q_OS_WIN
 #    include <shlobj.h>
+// After shlobj.h, which brings in the base definitions knownfolders.h needs.
+#    include <knownfolders.h>
 #endif
 
 namespace {
@@ -41,6 +44,9 @@ QVApplication::QVApplication(int &argc, char **argv)
       m_portable(true)
 #endif
 {
+    // Qt's own application setup is finished by now; everything after this
+    // marker is QuickViewer's settings, theme, and translation work.
+    StartupProfiler::mark("application.base-ready");
     setApplicationVersion(APP_VERSION);
     setApplicationName(APP_NAME);
     //    qDebug() << "TranslationsPath" << QLibraryInfo::location(QLibraryInfo::TranslationsPath);
@@ -87,6 +93,7 @@ QVApplication::QVApplication(int &argc, char **argv)
     //#endif
     m_settings = new QSettings(
         getFilePathOfApplicationSetting(settingsSubPath()), QSettings::IniFormat, this);
+    StartupProfiler::mark("application.settings-opened");
 
     m_languageSelector.initialize();
     m_qtbaseLanguageSelector.copyLanguages(m_languageSelector.Languages());
@@ -95,13 +102,16 @@ QVApplication::QVApplication(int &argc, char **argv)
             SIGNAL(languageChanged(QString)),
             &m_qtbaseLanguageSelector,
             SLOT(resetTranslator(QString)));
+    StartupProfiler::mark("application.languages-ready");
     registerDefaultKeyMap();
     registerDefaultMouseMap();
+    StartupProfiler::mark("application.keymap-ready");
     loadSettings();
 
     // Qt6 has a limit on loading large images, but this is inconvenient,
     // so we will relax this limit (and in the future make it a configurable value).
     QImageReader::setAllocationLimit(1024);
+    StartupProfiler::mark("application.settings-loaded");
 }
 
 QVApplication::~QVApplication()
@@ -429,22 +439,17 @@ QString QVApplication::getDefaultPictureFolderPath()
 {
     QString path = "./";
 #ifdef Q_OS_WIN
-    int nFolder = CSIDL_MYPICTURES;
-    HRESULT result;
-    LPITEMIDLIST pidl;
-    std::string str;
-    IMalloc *pMalloc;
-    WCHAR szPath[MAX_PATH + 1];
-
-    SHGetMalloc(&pMalloc);
-    result = ::SHGetSpecialFolderLocation(nullptr, nFolder, &pidl);
-
+    // The known folder API answers this without the legacy shell namespace
+    // work: on a machine whose Pictures folder is redirected to OneDrive it
+    // costs about 2 ms against the 67-72 ms SHGetSpecialFolderLocation took for
+    // the same folder.
+    PWSTR picturesPath = nullptr;
+    const HRESULT result =
+        SHGetKnownFolderPath(FOLDERID_Pictures, KF_FLAG_DEFAULT, nullptr, &picturesPath);
     if (SUCCEEDED(result)) {
-        ::SHGetPathFromIDList(pidl, szPath);
-        path = QString::fromWCharArray(szPath);
-        pMalloc->Free(pidl);
+        path = QString::fromWCharArray(picturesPath);
+        CoTaskMemFree(picturesPath);
     }
-    pMalloc->Release();
 #else
     path = "~/";
 #endif
@@ -453,7 +458,14 @@ QString QVApplication::getDefaultPictureFolderPath()
 
 void QVApplication::loadSettings()
 {
+    // Read the settings file here, so its own cost stays separate from the
+    // lookups below, which then answer from the parsed copy.
+    StartupProfiler::mark("application.ini-read.begin");
+    (void)m_settings->allKeys();
+    StartupProfiler::mark("application.ini-read.end");
+
     bool bRightSideBookDefault = QLocale::system().language() == QLocale::Japanese;
+    StartupProfiler::mark("application.locale-ready");
 
     // View
     m_settings->beginGroup("View");
@@ -488,6 +500,7 @@ void QVApplication::loadSettings()
     m_showSubfolders = m_settings->value("ShowSubfolders", false).toBool();
     m_slideShowWait = m_settings->value("SlideShowWait", 5000).toInt();
     QRect rec = QGuiApplication::primaryScreen()->geometry();
+    StartupProfiler::mark("application.screen-ready");
     const qint64 desktopWidth = rec.width();
     // The default follows the display, because a page has to fit on it, and stops
     // at the cap so that a very wide desktop cannot ask for a decode that would
@@ -582,8 +595,17 @@ void QVApplication::loadSettings()
 
     // Folder
     m_settings->beginGroup("Folder");
-    QString defaultPath = getDefaultPictureFolderPath();
+    // Resolve the shell default only when the setting is absent: QSettings
+    // evaluates a default eagerly, and the answer is used for nothing else.
+    // Asking the shell is cheap for a local profile but tens to hundreds of
+    // milliseconds when the folder is redirected (67 ms for a OneDrive
+    // Pictures folder on the machine this was measured on).
+    QString defaultPath;
+    if (!m_settings->contains("HomeFolderPath")) {
+        defaultPath = getDefaultPictureFolderPath();
+    }
     m_homeFolderPath = m_settings->value("HomeFolderPath", defaultPath).toString();
+    StartupProfiler::mark("application.pictures-folder-ready");
     m_openVolumeWithProgress = m_settings->value("OpenVolumeWithProgress", true).toBool();
     m_showReadProgress = m_settings->value("ShowReadProgress", true).toBool();
     m_saveReadProgress = m_settings->value("SaveReadProgress", true).toBool();
@@ -652,6 +674,9 @@ void QVApplication::loadSettings()
     m_confirmDeletePage = m_settings->value("ConfirmDeletePage", true).toBool();
     m_settings->endGroup();
 
+    // The ini has been read; what follows is the theme, which is the other half
+    // of the work this constructor does.
+    StartupProfiler::mark("application.settings-read");
     m_settings->beginGroup("Appearance");
     m_uiTheme = m_settings->value("UiTheme", "Default").toString();
     //QString themeFilePath = getApplicationFilePath(":/themes/"+m_uiTheme+".qss"); //Local files
@@ -660,6 +685,7 @@ void QVApplication::loadSettings()
     const QString styleSheet = File.open(QFile::ReadOnly) ? QString(File.readAll()) : QString();
     QApplication::setStyleSheet(styleSheet);
     m_settings->endGroup();
+    StartupProfiler::mark("application.theme-ready");
 
     m_readProgressStore = new ReadProgressStore(this);
 }

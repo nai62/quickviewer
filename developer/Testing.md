@@ -230,6 +230,13 @@ printf 'Exit code: %s\n' "$build_status"
 For Release, replace the command with
 `scripts\verify-windows.cmd release`.
 
+`--qmake` regenerates the Makefiles with whatever path the script was invoked
+through. The `pushd` above maps a drive letter for the UNC path first, so it is
+safe; invoking `scripts\verify-windows.cmd ... --qmake` directly through
+`\\wsl.localhost\...` records UNC source paths instead, and the next build then
+fails with `Error: dependent '\\wsl.localhost\...' does not exist`. Use the
+`pushd` form or a mapped drive path (for example `Z:\...`).
+
 ## Performance benchmarks
 
 Image loading and decoder performance should be measured with a Release build.
@@ -243,6 +250,31 @@ set "QV_PROFILE_FIRST_IMAGE=C:\build\qv-first-image.tsv"
 start "" /wait "C:\build\quickviewer-msvc2022_64-release\bin\QuickViewer.exe" "C:\path\book.rar"
 set "QV_PROFILE_FIRST_IMAGE="
 ```
+
+### Folder text responsiveness
+
+`QV_PROFILE_FOLDER_TEXT=1` extends `QV_PROFILE_FIRST_IMAGE` profiling past the
+reveal until the folder list has its text. It settles the whole folder, not only
+the rows on screen: `folder-text.gui-heartbeat` counts event-loop service while
+that happens, `folder-text.profile-timeout` means the run never settled, and
+`folder-text.idle-stop` marks the text helper exiting after its idle period.
+
+```bat
+set "QV_PROFILE_FIRST_IMAGE=C:\build\qv-folder-text.tsv"
+set "QV_PROFILE_FOLDER_TEXT=1"
+start "" /wait "C:\build\quickviewer-msvc2022_64-release\bin\QuickViewer.exe" "C:\path\book.zip"
+set "QV_PROFILE_FOLDER_TEXT="
+set "QV_PROFILE_FIRST_IMAGE="
+```
+
+The helper is the same executable in `--folder-text-helper` mode, so nothing
+extra is deployed. Check a folder holding a name the UI font cannot draw: it
+shows a placeholder first, then the real text once the helper answers. While it
+loads, close and reopen the panel, scroll and select rows, and try a narrow
+column, a fullscreen window and another screen DPI.
+
+`scripts\verify-windows.cmd debug --test windowstartup` covers the model, cache
+and transport cases.
 
 ## C++ lint
 

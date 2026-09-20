@@ -37,6 +37,8 @@ Supported suites:
 - `first-image`: opening an input through obtaining the selected decoded image.
   Rendering is excluded.
 - `first-paint`: fresh-process startup through the first actual image paint.
+- `empty-window`: fresh-process startup of a bare Qt window, for measuring the
+  platform baseline of `first-paint`. It takes no input.
 
 The old `--benchmark-mode`, format-specific decoder flags, and
 `decoder-compare` mode are not part of this interface.
@@ -219,6 +221,40 @@ Standard interpretation is process-cold with the operating-system filesystem
 cache potentially warm. The benchmark does not flush the Windows filesystem
 cache.
 
+### `empty-window`
+
+```bat
+QuickViewer.exe --benchmark empty-window --runs 10
+```
+
+`empty-window` launches a fresh process per run exactly like `first-paint`, but
+the child builds a plain `QApplication` and one empty 800x600 window instead of
+QuickViewer, and stops at that window's first paint. It takes no positional
+input and ignores the decoder, page, sort, and recursive options.
+
+The suite exists to separate platform cost from application cost: subtract its
+milestones from a `first-paint` row measured in the same session to see how much
+of that first paint belongs to Qt and Windows. It reuses the milestone labels
+for the steps both children share:
+
+- `application_construct_begin_at_us` to `application_construct_end_at_us` is
+  the plain `QApplication` constructor, without QuickViewer's settings, theme,
+  and key-map work.
+- `cloak_before_winid_at_us` to `cloak_after_winid_at_us` is the first `winId()`
+  call. The baseline window is never cloaked, so the column keeps its
+  `first-paint` meaning (creating the native window) rather than describing a
+  cloak request.
+- `show_begin_at_us` to `show_end_at_us`, `process_events_begin_at_us` to
+  `process_events_end_at_us`, and `first_image_painted_at_us` (the first paint of
+  the empty window) mark the same steps as their `first-paint` counterparts.
+
+Milestone columns for QuickViewer-only work, such as the MainWindow constructor,
+the volume load, and the startup volume prefetch, stay blank.
+
+The child stops itself if the empty window never paints. That run is recorded as
+a failure naming the reason instead of holding the benchmark for its full
+timeout, and each failed run is reported on stderr while the suite runs.
+
 ## CSV output
 
 Each measured row records at least:
@@ -280,6 +316,31 @@ is elapsed microseconds from the child process's internal `main.entry` marker,
 not a stage duration. Subtract adjacent milestone values to locate startup,
 volume loading, image preparation, and initial painting costs. A blank milestone
 means that marker was not reached or was not recorded during the run.
+
+Milestones inside the startup phases split the two blocks that dominate a cold
+process:
+
+- `application_base_ready_at_us` ends Qt's own application setup, so
+  `application_construct_begin_at_us` to `application_base_ready_at_us` is Qt
+  and `application_base_ready_at_us` to
+  `application_settings_loaded_at_us` is QuickViewer's settings, theme, and
+  key-map loading. Inside that second block,
+  `application_settings_opened_at_us`, `application_languages_ready_at_us`,
+  `application_keymap_ready_at_us`, `application_ini_read_begin_at_us`,
+  `application_ini_read_end_at_us`, `application_locale_ready_at_us`,
+  `application_screen_ready_at_us`, `application_pictures_folder_ready_at_us`,
+  `application_settings_read_at_us`, and `application_theme_ready_at_us`
+  separate the ini file, the language catalogue, the key maps, reading and
+  parsing the settings file, the system locale, the screen query, the shell's
+  Pictures folder, the ini values, and the theme stylesheet.
+- `mainwindow_ui_setup_at_us` ends `setupUi()` and
+  `mainwindow_actions_registered_at_us` ends the action registration inside the
+  MainWindow constructor.
+- `volume_prefetch_begin_at_us` and `volume_prefetch_page_ready_at_us` bracket
+  the startup volume prefetch that runs on a worker thread while the window is
+  still being created. When it finished before the startup load ran,
+  `volume_loader_begin_at_us` appears before `startup_volume_begin_at_us` and
+  `session_volume_built_at_us` follows `startup_volume_begin_at_us` closely.
 
 ## Reproducibility
 

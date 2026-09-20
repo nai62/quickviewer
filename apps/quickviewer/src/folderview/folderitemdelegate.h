@@ -14,6 +14,8 @@ public:
                const QStyleOptionViewItem &option,
                const QModelIndex &index) const override;
 
+    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+
 private:
     FolderWindow *m_folderWindow;
 };
