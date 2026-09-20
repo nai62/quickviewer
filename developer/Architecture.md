@@ -22,6 +22,13 @@ A `VolumeLoader` creates and initializes a volume from a path. It also supports
 the specialized loading paths used for a directly opened image, a cover, or a
 thumbnail source.
 
+A folder volume lists one directory, except when that directory holds nothing
+but one more directory: a download or export wrapper is then unwrapped into the
+directory it wraps, at most a few levels deep. The limit is what keeps a link
+that points back at one of its own ancestors from following itself for as long
+as the filesystem allows. Pages report the path they really have, which is
+inside the unwrapped directory rather than the path the reader opened.
+
 ### Volume cache
 
 A `VolumeCache` reuses completed or in-progress volume loads. Cache identity
