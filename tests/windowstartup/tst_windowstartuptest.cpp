@@ -815,20 +815,14 @@ private slots:
         const QModelIndex row = view->model()->index(0, 0);
         QVERIFY(row.isValid());
 
-        // The panel draws no icon, so a row is about its name. The style lays an
-        // item out for one that could carry an icon and the room around one,
-        // which left the rows a third taller than the names they hold.
-        QStyleOptionViewItem option;
-        option.initFrom(view);
-        option.text = row.data().toString();
-        option.fontMetrics = QFontMetrics(option.font);
-        const int iconSize = view->style()->pixelMetric(QStyle::PM_SmallIconSize, nullptr, view);
-        option.decorationSize = QSize(iconSize, iconSize);
-        const QSize styled =
-            view->style()->sizeFromContents(QStyle::CT_ItemViewItem, &option, QSize(), view);
+        // The panel draws no icon, so a row is about its name. Comparing it with
+        // the height the style lays out for an item would only hold on the style
+        // that reserves room for an icon - the one this was fixed for - so the
+        // row is held to the text it shows instead.
+        const int textHeight = view->fontMetrics().height();
         const int rowHeight = view->visualRect(row).height();
-        QVERIFY(rowHeight >= view->fontMetrics().height());
-        QVERIFY(rowHeight < styled.height());
+        QVERIFY(rowHeight >= textHeight);
+        QVERIFY(rowHeight <= textHeight + 8);
     }
 
     void explorerArgumentOpensAFolderAndSelectsAnEntry()
