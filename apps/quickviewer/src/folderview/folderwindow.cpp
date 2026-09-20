@@ -54,6 +54,10 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
             &FolderListView::unusedMouseButton,
             this,
             &FolderWindow::handleUnusedMouseButton);
+    connect(ui->folderView,
+            &QWidget::customContextMenuRequested,
+            this,
+            &FolderWindow::handleFolderViewContextMenuRequested);
 
     // The item context menu is a plain menu; its action lives in the form.
     m_itemContextMenu = new QMenu(this);
@@ -127,8 +131,6 @@ void FolderWindow::setupHistoryButton(Ui::MainWindow *uiMain)
     }
 }
 
-static QModelIndex selectedIdx;
-
 bool FolderWindow::eventFilter(QObject *obj, QEvent *event)
 {
     if (obj == ui->folderView) {
@@ -142,20 +144,22 @@ bool FolderWindow::eventFilter(QObject *obj, QEvent *event)
             updateTextRowRange();
         }
     }
-    //    qDebug() << obj << event << event->type();
-    //    QMouseEvent *mouseEvent = nullptr;
-    QContextMenuEvent *contextEvent = nullptr;
-    switch (event->type()) {
-    default:
-        break;
-    case QEvent::ContextMenu:
-        contextEvent = dynamic_cast<QContextMenuEvent *>(event);
-        QPoint inner = ui->folderView->mapFromGlobal(QCursor::pos());
-        selectedIdx = ui->folderView->indexAt(inner);
-        m_itemContextMenu->exec(QCursor::pos());
-        return true;
-    }
     return QObject::eventFilter(obj, event);
+}
+
+/**
+ * The menu belongs to the entry under the pointer, and showing it never opens
+ * that entry: the position is in the viewport's coordinates, which is what the
+ * list reads a row from.
+ */
+void FolderWindow::handleFolderViewContextMenuRequested(const QPoint &pos)
+{
+    m_contextMenuIndex = ui->folderView->indexAt(pos);
+    const bool isFolder = m_contextMenuIndex.isValid() &&
+                          m_contextMenuIndex.row() < m_volumes.size() &&
+                          m_volumes.at(m_contextMenuIndex.row()).type == FolderItem::Dir;
+    ui->actionSetAsHomeFolder->setEnabled(isFolder);
+    m_itemContextMenu->exec(ui->folderView->viewport()->mapToGlobal(pos));
 }
 
 /**
@@ -173,7 +177,7 @@ void FolderWindow::handleUnusedMouseButton(Qt::MouseButtons buttons)
 
 void FolderWindow::handleSetAsHomeFolderActionTriggered()
 {
-    int row = selectedIdx.row();
+    const int row = m_contextMenuIndex.row();
     if (row < 0 || row >= m_volumes.size()) {
         return;
     }

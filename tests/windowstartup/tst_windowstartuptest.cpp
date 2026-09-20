@@ -646,6 +646,71 @@ private slots:
         }
     }
 
+    void folderViewContextMenuBelongsToTheRowItIsOn()
+    {
+        const QString previousHome = qApp->HomeFolderPath();
+        const auto restoreHome =
+            qScopeGuard([previousHome] { qApp->setHomeFolderPath(previousHome); });
+
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QDir root(directory.path());
+        QVERIFY(root.mkdir(QStringLiteral("child")));
+        QImage image(2, 2, QImage::Format_RGB32);
+        image.fill(Qt::white);
+        QVERIFY(image.save(root.filePath(QStringLiteral("image.png"))));
+
+        FolderWindow folder(nullptr, nullptr);
+        folder.setFolderPath(root.path(), false);
+        QListView *view = folder.findChild<QListView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        auto *setHome = folder.findChild<QAction *>(QStringLiteral("actionSetAsHomeFolder"));
+        QVERIFY(setHome);
+
+        const auto rowFor = [view](const QString &name) {
+            for (int row = 0; row < view->model()->rowCount(); ++row) {
+                const QModelIndex index = view->model()->index(row, 0);
+                if (index.data().toString() == name) {
+                    return index;
+                }
+            }
+            return QModelIndex();
+        };
+        const QModelIndex child = rowFor(QStringLiteral("child"));
+        const QModelIndex file = rowFor(QStringLiteral("image.png"));
+        QVERIFY(child.isValid());
+        QVERIFY(file.isValid());
+
+        QSignalSpy opened(&folder, &FolderWindow::openVolume);
+        // Closing the menu from the event loop keeps a person out of the test.
+        const auto requestMenu = [&](const QModelIndex &index) {
+            const QRect rect = view->visualRect(index);
+            QVERIFY(!rect.isEmpty());
+            const QPoint pos = rect.center();
+            QTimer::singleShot(0, [] {
+                if (QWidget *popup = QApplication::activePopupWidget()) {
+                    popup->close();
+                }
+            });
+            QContextMenuEvent event(
+                QContextMenuEvent::Mouse, pos, view->viewport()->mapToGlobal(pos));
+            QApplication::sendEvent(view->viewport(), &event);
+        };
+
+        // The menu is the folder row's, and showing it does not open the row.
+        requestMenu(child);
+        QCOMPARE(opened.size(), 0);
+        QVERIFY(setHome->isEnabled());
+        setHome->trigger();
+        QCOMPARE(
+            QDir::cleanPath(QDir::fromNativeSeparators(qApp->HomeFolderPath())),
+            QDir::cleanPath(QDir::fromNativeSeparators(root.filePath(QStringLiteral("child")))));
+
+        // A file row has nothing to offer that action.
+        requestMenu(file);
+        QVERIFY(!setHome->isEnabled());
+    }
+
     void folderListPaintsProgressWithoutAPageCount()
     {
         QTemporaryDir directory;

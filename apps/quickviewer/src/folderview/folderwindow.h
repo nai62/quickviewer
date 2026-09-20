@@ -54,12 +54,14 @@ private:
     void setupHistoryButton(Ui::MainWindow *uiMain);
     void updateTextRowRange();
     void handleUnusedMouseButton(Qt::MouseButtons buttons);
+    void handleFolderViewContextMenuRequested(const QPoint &pos);
     int currentVolumeRow() const;
     void updateCurrentVolumeRow();
 
     Ui::FolderWindow *ui;
     QMenu *m_itemContextMenu;
     QToolButton *m_historyButton;
+    QPersistentModelIndex m_contextMenuIndex;
     QString m_currentPath;
     QString m_currentVolumePath;
     QList<FolderItem> m_volumes;
