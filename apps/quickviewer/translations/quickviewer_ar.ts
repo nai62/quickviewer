@@ -744,14 +744,14 @@
         <translation>المجلد العلوي</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="63"/>
-        <location filename="../src/folderview/folderwindow.cpp" line="97"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="69"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="103"/>
         <source>History</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="64"/>
-        <location filename="../src/folderview/folderwindow.cpp" line="98"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="70"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="104"/>
         <source>Open history</source>
         <translation type="unfinished"></translation>
     </message>
@@ -778,8 +778,8 @@
         <translation>تعيين هذا المجلد الى المجلد الرئيسي</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="67"/>
-        <location filename="../src/folderview/folderwindow.cpp" line="312"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="73"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="329"/>
         <source>No folders or archives found.</source>
         <comment>Display when there is no display item in Folder Window</comment>
         <translation>لم يتم العثور على اي مجلدات او محفوظات</translation>
@@ -1179,8 +1179,8 @@
         <translation>&amp;تركيب</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="168"/>
-        <location filename="../src/mainwindow.cpp" line="1731"/>
+        <location filename="../src/mainwindow.cpp" line="170"/>
+        <location filename="../src/mainwindow.cpp" line="1751"/>
         <source>&amp;Fullscreen</source>
         <translation>&amp;ملء الشاشة</translation>
     </message>
@@ -1318,7 +1318,7 @@
         <translation>مسح قوائم العناوين</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2477"/>
+        <location filename="../src/mainwindow.cpp" line="2497"/>
         <source>Bookmark saved.</source>
         <translation>قائمة العناوين حفظت</translation>
     </message>
@@ -1864,47 +1864,47 @@
         <translation type="vanished">لم يتم العثور على ملف الصورة. لا يمكن فتحه.</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1682"/>
+        <location filename="../src/mainwindow.cpp" line="1702"/>
         <source>Loading...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1685"/>
+        <location filename="../src/mainwindow.cpp" line="1705"/>
         <source>No images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1687"/>
+        <location filename="../src/mainwindow.cpp" line="1707"/>
         <source>Unavailable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2045"/>
+        <location filename="../src/mainwindow.cpp" line="2065"/>
         <source>All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.heic *.heif);;Archives( *.zip *.7z *.rar)</source>
         <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2051"/>
+        <location filename="../src/mainwindow.cpp" line="2071"/>
         <source>Select an image or archive</source>
         <comment>Title of the dialog displayed when opening a file with OpenFileFolder</comment>
         <translation>يرجى اختيار الصورة او الارشيف</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2292"/>
-        <location filename="../src/mainwindow.cpp" line="2336"/>
+        <location filename="../src/mainwindow.cpp" line="2312"/>
+        <location filename="../src/mainwindow.cpp" line="2356"/>
         <source>Confirmation</source>
         <comment>Confirm deleting image file on MessageBox title</comment>
         <translation>التاكيد</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2298"/>
+        <location filename="../src/mainwindow.cpp" line="2318"/>
         <source>Are you sure you want to move the image to Recycle Bin?</source>
         <comment>Confirm putting displayed file in Recycle Box Message Box body</comment>
         <translation>هل تريد بالتاكيد نقل الصورة الى سلة المحذوفات؟</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2341"/>
+        <location filename="../src/mainwindow.cpp" line="2361"/>
         <source>Are you sure you want to delete this image?</source>
         <comment>Confirm deleting image file on Message Box body</comment>
         <translation>هل انت متاكد انك تريد حذف هذه الصورة؟</translation>

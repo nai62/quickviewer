@@ -739,14 +739,14 @@
         <translation>Επαναφόρτωση</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="63"/>
-        <location filename="../src/folderview/folderwindow.cpp" line="97"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="69"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="103"/>
         <source>History</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="64"/>
-        <location filename="../src/folderview/folderwindow.cpp" line="98"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="70"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="104"/>
         <source>Open history</source>
         <translation type="unfinished"></translation>
     </message>
@@ -778,8 +778,8 @@
         <translation type="vanished">Αλλαγή μεθόδου ταξινόμησης</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="67"/>
-        <location filename="../src/folderview/folderwindow.cpp" line="312"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="73"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="329"/>
         <source>No folders or archives found.</source>
         <comment>Display when there is no display item in Folder Window</comment>
         <translation>Δεν βρέθηκαν φάκελοι ή αρχειοθήκες</translation>
@@ -1269,19 +1269,19 @@
         <translation>Πλήρης οθόνη</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="168"/>
-        <location filename="../src/mainwindow.cpp" line="1731"/>
+        <location filename="../src/mainwindow.cpp" line="170"/>
+        <location filename="../src/mainwindow.cpp" line="1751"/>
         <source>&amp;Fullscreen</source>
         <translation>Πλήρης οθόνη</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2045"/>
+        <location filename="../src/mainwindow.cpp" line="2065"/>
         <source>All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.heic *.heif);;Archives( *.zip *.7z *.rar)</source>
         <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2477"/>
+        <location filename="../src/mainwindow.cpp" line="2497"/>
         <source>Bookmark saved.</source>
         <translation>Ο σελιδοδείκτης αποθηκεύτηκε.</translation>
     </message>
@@ -1620,8 +1620,8 @@
         <translation>Επιβεβαίωση μετακίνησης εικόνας στον &amp;Κάδο ανακύκλωσης</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2292"/>
-        <location filename="../src/mainwindow.cpp" line="2336"/>
+        <location filename="../src/mainwindow.cpp" line="2312"/>
+        <location filename="../src/mainwindow.cpp" line="2356"/>
         <source>Confirmation</source>
         <comment>Confirm deleting image file on MessageBox title</comment>
         <translation>Επιβεβαίωση</translation>
@@ -1700,34 +1700,34 @@
         <translation type="vanished">Δεν είναι δυνατό το άνοιγμα γιατί δεν βρέθηκε το αρχείο εικόνας.</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1682"/>
+        <location filename="../src/mainwindow.cpp" line="1702"/>
         <source>Loading...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1685"/>
+        <location filename="../src/mainwindow.cpp" line="1705"/>
         <source>No images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1687"/>
+        <location filename="../src/mainwindow.cpp" line="1707"/>
         <source>Unavailable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2051"/>
+        <location filename="../src/mainwindow.cpp" line="2071"/>
         <source>Select an image or archive</source>
         <comment>Title of the dialog displayed when opening a file with OpenFileFolder</comment>
         <translation>Παρακαλώ επιλέξτε μια εικόνα ή αρχειοθήκη</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2298"/>
+        <location filename="../src/mainwindow.cpp" line="2318"/>
         <source>Are you sure you want to move the image to Recycle Bin?</source>
         <comment>Confirm putting displayed file in Recycle Box Message Box body</comment>
         <translation>Είστε βέβαιος ότι θέλετε να μετακινήσετε την εικόνα στον κάδο ανακύκλωσης;</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2341"/>
+        <location filename="../src/mainwindow.cpp" line="2361"/>
         <source>Are you sure you want to delete this image?</source>
         <comment>Confirm deleting image file on Message Box body</comment>
         <translation>Είστε βέβαιος ότι θέλετε τη διαγραφή αυτής της εικόνας;</translation>
