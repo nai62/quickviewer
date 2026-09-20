@@ -742,6 +742,39 @@ private slots:
                  QDir::cleanPath(QDir::fromNativeSeparators(directory.path())));
     }
 
+    void folderListRowsAreNoTallerThanTheirNames()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QImage image(2, 2, QImage::Format_RGB32);
+        image.fill(Qt::white);
+        for (int row = 0; row < 3; ++row) {
+            QVERIFY(image.save(directory.filePath(QStringLiteral("image%1.png").arg(row))));
+        }
+
+        FolderWindow folder(nullptr, nullptr);
+        folder.setFolderPath(directory.path(), false);
+        QListView *view = folder.findChild<QListView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        const QModelIndex row = view->model()->index(0, 0);
+        QVERIFY(row.isValid());
+
+        // The panel draws no icon, so a row is about its name. The style lays an
+        // item out for one that could carry an icon and the room around one,
+        // which left the rows a third taller than the names they hold.
+        QStyleOptionViewItem option;
+        option.initFrom(view);
+        option.text = row.data().toString();
+        option.fontMetrics = QFontMetrics(option.font);
+        const int iconSize = view->style()->pixelMetric(QStyle::PM_SmallIconSize, nullptr, view);
+        option.decorationSize = QSize(iconSize, iconSize);
+        const QSize styled =
+            view->style()->sizeFromContents(QStyle::CT_ItemViewItem, &option, QSize(), view);
+        const int rowHeight = view->visualRect(row).height();
+        QVERIFY(rowHeight >= view->fontMetrics().height());
+        QVERIFY(rowHeight < styled.height());
+    }
+
     void folderListPaintsProgressWithoutAPageCount()
     {
         QTemporaryDir directory;

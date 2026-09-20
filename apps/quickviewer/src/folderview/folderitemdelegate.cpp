@@ -34,6 +34,8 @@ FolderItemDelegate::FolderItemDelegate(QWidget *parent, FolderWindow *folderWind
 }
 constexpr int ProgressWidth = 100;
 constexpr int ProgressHeight = 10;
+/** Space above and below a row's name. */
+constexpr int RowTextMargin = 2;
 
 void FolderItemDelegate::paint(QPainter *painter,
                                const QStyleOptionViewItem &option,
@@ -170,6 +172,11 @@ QSize FolderItemDelegate::sizeHint(const QStyleOptionViewItem &option,
     const QWidget *widget = option.widget;
     QStyle *style = widget ? widget->style() : QApplication::style();
     QSize size = style->sizeFromContents(QStyle::CT_ItemViewItem, &opt, QSize(), widget);
+    // The panel holds one line of text per row. The style lays an item out as
+    // if it also carried an icon and the room around one, which leaves the row
+    // about a third taller than the name it shows, so keep the text and a small
+    // margin instead.
+    size.setHeight(opt.fontMetrics.height() + RowTextMargin * 2);
     const FolderTextResult text =
         index.data(FolderItemModel::TextImagesRole).value<FolderTextResult>();
     if (text && !text->images.isEmpty()) {
