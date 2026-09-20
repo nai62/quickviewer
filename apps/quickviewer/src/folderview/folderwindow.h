@@ -29,7 +29,6 @@ public:
     void resetPathLabel(int maxWidth);
     QString currentPath() { return m_currentPath; }
     QString itemPath(const QModelIndex &index) const;
-    void keyPressEvent(QKeyEvent *event);
     void handleCurrentFolderItemTriggered();
 
 public slots:

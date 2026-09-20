@@ -474,17 +474,6 @@ void FolderWindow::updateCurrentVolumeRow()
     ui->folderView->setCurrentIndex(m_itemModel.index(row, 0));
 }
 
-void FolderWindow::keyPressEvent(QKeyEvent *event)
-{
-    // Enter is the one key the list leaves to the panel: it opens the entry the
-    // list has as current. Every other key belongs to the window.
-    if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
-        handleCurrentFolderItemTriggered();
-        return;
-    }
-    QWidget::keyPressEvent(event);
-}
-
 void FolderWindow::handleHomeButtonClicked()
 {
     const QString path = qApp->HomeFolderPath();

@@ -33,9 +33,8 @@ void FolderListView::mousePressEvent(QMouseEvent *event)
 
 void FolderListView::keyPressEvent(QKeyEvent *event)
 {
-    // No key belongs to the list: Enter is the panel's - it opens the entry the
-    // list has as current - and the window maps the rest, exactly like the keys
-    // that reach it from the viewer.
+    // No key belongs to the list: the window maps every one of them, exactly
+    // like the keys that reach it from the viewer.
     event->ignore();
 }
 

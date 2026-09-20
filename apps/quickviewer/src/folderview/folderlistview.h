@@ -8,9 +8,9 @@
  *
  * It keeps three kinds of input to itself: the left button opens the entry it
  * is clicked on, the right button chooses the entry its menu is for, and the
- * wheel scrolls it. Everything else - the other mouse buttons and every key,
- * Enter included - is left to the window, which maps keys and mouse buttons to
- * actions the same way it does outside the panel.
+ * wheel scrolls it. Every other mouse button and every key, Enter included, is
+ * left to the window, which maps them to the same actions they have outside the
+ * panel.
  */
 class FolderListView : public QListView
 {

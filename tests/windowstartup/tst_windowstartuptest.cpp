@@ -589,7 +589,7 @@ private slots:
         QCOMPARE(viewer.viewerSession()->currentPageIndex(), 1);
     }
 
-    void folderViewOpensTheCurrentEntryWhenEnterIsPressed()
+    void folderViewLeavesEnterToTheWindow()
     {
         QTemporaryDir directory;
         QVERIFY(directory.isValid());
@@ -607,17 +607,16 @@ private slots:
         QVERIFY(view);
         view->setFocus();
 
-        // Enter is the one key the list leaves to the panel.
+        // The panel keeps no key, Enter included. The list has an entry marked,
+        // yet Enter belongs to the window, which maps it to the action it has
+        // outside the panel - maximizing the window by default - rather than
+        // opening that entry.
         QSignalSpy opened(panel, &FolderWindow::openVolume);
         QKeyEvent press(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier);
         QApplication::sendEvent(view, &press);
 
-        QCOMPARE(opened.size(), 1);
-        const OpenTarget target = opened.first().first().value<OpenTarget>();
-        QCOMPARE(target.intent, OpenIntent::Container);
-        QCOMPARE(
-            QDir::cleanPath(QDir::fromNativeSeparators(target.location.containerPath)),
-            QDir::cleanPath(QDir::fromNativeSeparators(root.filePath(QStringLiteral("inner")))));
+        QCOMPARE(opened.size(), 0);
+        QTRY_VERIFY(viewer.isMaximized());
     }
 
     void folderViewLeavesTheKeysItDoesNotOwnToTheWindow()
@@ -629,7 +628,8 @@ private slots:
 
         // The window maps these keys, so the list must not take them for its own
         // navigation: an arrow, a page key, home, end and space step the
-        // viewer's pages and volumes.
+        // viewer's pages and volumes, and Enter belongs to the window's key
+        // settings like every other key.
         const QList<Qt::Key> keys{Qt::Key_Up,
                                   Qt::Key_Down,
                                   Qt::Key_Left,
@@ -638,7 +638,9 @@ private slots:
                                   Qt::Key_PageDown,
                                   Qt::Key_Home,
                                   Qt::Key_End,
-                                  Qt::Key_Space};
+                                  Qt::Key_Space,
+                                  Qt::Key_Return,
+                                  Qt::Key_Enter};
         for (const Qt::Key key : keys) {
             QKeyEvent press(QEvent::KeyPress, key, Qt::NoModifier);
             QApplication::sendEvent(view, &press);
