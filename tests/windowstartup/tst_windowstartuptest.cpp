@@ -382,6 +382,70 @@ private slots:
         QTRY_VERIFY(view->model()->index(0, 0).data().toString().contains(QChar(0xD83D)));
     }
 
+    void folderListPlaceholdersNeverDescribeAnotherEntry()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const char32_t emoji = 0x1F600;
+        const QString rareName =
+            QStringLiteral("a") + QString::fromUcs4(&emoji, 1) + QStringLiteral(".zip");
+        const QString plainName = QStringLiteral("b.zip");
+        QVERIFY(QFile::copy(QString(FILELOADER_DATAPATH "deflate-utf8.zip"),
+                            directory.filePath(rareName)));
+        QVERIFY(QFile::copy(QString(FILELOADER_DATAPATH "deflate-utf8.zip"),
+                            directory.filePath(plainName)));
+
+        StartupWindow viewer;
+        viewer.createFolderWindow(true, directory.path(), false);
+        FolderWindow *panel = viewer.folderWindow();
+        QTreeView *view = panel->findChild<QTreeView *>(QStringLiteral("folderView"));
+        QVERIFY(panel);
+        QVERIFY(view);
+
+        // The display may hold a placeholder, but the path the panel acts on -
+        // opening, the read-progress lookup, and the volume cache key - is always
+        // the name on disk, and a row never shows another entry's text.
+        const auto checkRows = [&] {
+            QCOMPARE(view->model()->rowCount(), 2);
+            for (int row = 0; row < view->model()->rowCount(); ++row) {
+                const QModelIndex index = view->model()->index(row, 0);
+                const QString display = index.data().toString();
+                const QString real = QFileInfo(panel->itemPath(index)).fileName();
+                if (real.contains(QChar(0xD83D))) {
+                    QVERIFY2(
+                        !display.contains(QChar(0xD83D)),
+                        qPrintable(QStringLiteral("expected a placeholder, got %1").arg(display)));
+                    QVERIFY(display != real);
+                } else {
+                    QCOMPARE(display, real);
+                }
+            }
+        };
+        checkRows();
+
+        // Changing the sort while the placeholder is showing must not move the
+        // replacement onto another row.
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileNameDescending);
+        panel->resortVolumes();
+        checkRows();
+
+        // The real names arrive once the fallback font has been loaded.
+        view->grab();
+        const auto rareNameIsShown = [&] {
+            for (int row = 0; row < view->model()->rowCount(); ++row) {
+                if (view->model()->index(row, 0).data().toString().contains(QChar(0xD83D))) {
+                    return true;
+                }
+            }
+            return false;
+        };
+        QTRY_VERIFY(rareNameIsShown());
+        for (int row = 0; row < view->model()->rowCount(); ++row) {
+            const QModelIndex index = view->model()->index(row, 0);
+            QCOMPARE(index.data().toString(), QFileInfo(panel->itemPath(index)).fileName());
+        }
+    }
+
     void folderViewConsumesWheelEventsAtScrollBoundary()
     {
         FolderWindow folder(nullptr, nullptr);
