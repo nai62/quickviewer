@@ -666,8 +666,21 @@ private slots:
         folder.setFolderPath(root.path(), false);
         QListView *view = folder.findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
+        // The requests below land between rows only when the list has room.
+        folder.resize(400, 400);
+        folder.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&folder));
+        QVERIFY(view->viewport()->height() > 100);
         auto *setHome = folder.findChild<QAction *>(QStringLiteral("actionSetAsHomeFolder"));
         QVERIFY(setHome);
+        auto *openItem = folder.findChild<QAction *>(QStringLiteral("actionOpenFolderItem"));
+        auto *reveal = folder.findChild<QAction *>(QStringLiteral("actionRevealInExplorer"));
+        auto *copyPath = folder.findChild<QAction *>(QStringLiteral("actionCopyItemPath"));
+        auto *reload = folder.findChild<QAction *>(QStringLiteral("actionReloadFolder"));
+        QVERIFY(openItem);
+        QVERIFY(reveal);
+        QVERIFY(copyPath);
+        QVERIFY(reload);
 
         const auto rowFor = [view](const QString &name) {
             for (int row = 0; row < view->model()->rowCount(); ++row) {
@@ -684,33 +697,73 @@ private slots:
         QVERIFY(file.isValid());
 
         QSignalSpy opened(&folder, &FolderWindow::openVolume);
-        // Closing the menu from the event loop keeps a person out of the test.
-        const auto requestMenu = [&](const QModelIndex &index) {
-            const QRect rect = view->visualRect(index);
-            QVERIFY(!rect.isEmpty());
-            const QPoint pos = rect.center();
-            QTimer::singleShot(0, [] {
+        // Closing the menu from the event loop keeps a person out of the test,
+        // and the menu is kept to say which one the request opened.
+        QMenu *shownMenu = nullptr;
+        const auto requestMenu = [&](const QModelIndex &index, const QPoint &pos, bool keyboard) {
+            QTimer::singleShot(0, [&shownMenu] {
                 if (QWidget *popup = QApplication::activePopupWidget()) {
+                    shownMenu = qobject_cast<QMenu *>(popup);
                     popup->close();
                 }
             });
-            QContextMenuEvent event(
-                QContextMenuEvent::Mouse, pos, view->viewport()->mapToGlobal(pos));
+            const QContextMenuEvent::Reason reason =
+                keyboard ? QContextMenuEvent::Keyboard : QContextMenuEvent::Mouse;
+            QContextMenuEvent event(reason, pos, view->viewport()->mapToGlobal(pos));
             QApplication::sendEvent(view->viewport(), &event);
         };
+        const auto requestRowMenu = [&](const QModelIndex &index) {
+            const QRect rect = view->visualRect(index);
+            QVERIFY(!rect.isEmpty());
+            shownMenu = nullptr;
+            requestMenu(index, rect.center(), false);
+        };
 
-        // The menu is the folder row's, and showing it does not open the row.
-        requestMenu(child);
+        // The menu is the folder row's, it offers opening that row, and showing
+        // it does not open the row.
+        requestRowMenu(child);
         QCOMPARE(opened.size(), 0);
+        QVERIFY(shownMenu);
+        QVERIFY(shownMenu->actions().contains(openItem));
+        QVERIFY(!shownMenu->actions().contains(reload));
         QVERIFY(setHome->isEnabled());
+        QVERIFY(reveal->isEnabled());
         setHome->trigger();
         QCOMPARE(
             QDir::cleanPath(QDir::fromNativeSeparators(qApp->HomeFolderPath())),
             QDir::cleanPath(QDir::fromNativeSeparators(root.filePath(QStringLiteral("child")))));
 
-        // A file row has nothing to offer that action.
-        requestMenu(file);
+        // A file row has nothing to offer that action, but it opens and copies.
+        requestRowMenu(file);
         QVERIFY(!setHome->isEnabled());
+        QVERIFY(openItem->isEnabled());
+        QVERIFY(copyPath->isEnabled());
+        openItem->trigger();
+        QCOMPARE(opened.size(), 1);
+
+        // A request over no row - the empty part below the rows - is about the
+        // folder the panel shows.
+        const QRect lastRow =
+            view->visualRect(view->model()->index(view->model()->rowCount() - 1, 0));
+        const QPoint emptyAt(4, lastRow.bottom() + 6);
+        QVERIFY(emptyAt.y() < view->viewport()->height());
+        shownMenu = nullptr;
+        requestMenu(QModelIndex(), emptyAt, false);
+        QVERIFY(shownMenu);
+        QVERIFY(shownMenu->actions().contains(reload));
+        QVERIFY(!shownMenu->actions().contains(openItem));
+        copyPath->trigger();
+        QCOMPARE(QDir::cleanPath(QDir::fromNativeSeparators(QGuiApplication::clipboard()->text())),
+                 QDir::cleanPath(QDir::fromNativeSeparators(root.path())));
+
+        // A keyboard request has no pointer over a row, so it belongs to the row
+        // the list has as current even when it is aimed at another one.
+        view->setCurrentIndex(child);
+        shownMenu = nullptr;
+        requestMenu(child, view->visualRect(file).center(), true);
+        QVERIFY(shownMenu);
+        QVERIFY(setHome->isEnabled());
+        QVERIFY(shownMenu->actions().contains(openItem));
     }
 
     void folderViewOpensAPathDroppedOnIt()

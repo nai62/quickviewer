@@ -191,7 +191,7 @@
       <enum>Qt::WheelFocus</enum>
      </property>
      <property name="contextMenuPolicy">
-      <enum>Qt::CustomContextMenu</enum>
+      <enum>Qt::DefaultContextMenu</enum>
      </property>
      <property name="acceptDrops">
       <bool>true</bool>
@@ -249,6 +249,26 @@
   <action name="actionSetAsHomeFolder">
    <property name="text">
     <string>Set as home folder</string>
+   </property>
+  </action>
+  <action name="actionOpenFolderItem">
+   <property name="text">
+    <string>Open</string>
+   </property>
+  </action>
+  <action name="actionRevealInExplorer">
+   <property name="text">
+    <string>Show in Explorer</string>
+   </property>
+  </action>
+  <action name="actionCopyItemPath">
+   <property name="text">
+    <string>Copy path</string>
+   </property>
+  </action>
+  <action name="actionReloadFolder">
+   <property name="text">
+    <string>Reload</string>
    </property>
   </action>
  </widget>
@@ -358,6 +378,5 @@
   <slot>handleReloadButtonClicked()</slot>
   <slot>handleHomeButtonClicked()</slot>
   <slot>handleSetAsHomeFolderActionTriggered()</slot>
-  <slot>handleCurrentFolderItemTriggered()</slot>
  </slots>
 </ui>

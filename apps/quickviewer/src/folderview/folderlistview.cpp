@@ -58,3 +58,17 @@ void FolderListView::wheelEvent(QWheelEvent *event)
     // input whenever the pointer is over it, even when it cannot scroll.
     event->accept();
 }
+
+void FolderListView::contextMenuEvent(QContextMenuEvent *event)
+{
+    // The mouse asks about the row under the pointer. The keyboard has no
+    // pointer over a row, so it asks about the row the list has as current, and
+    // the menu opens at that row rather than wherever the request was aimed.
+    const bool fromMouse = event->reason() == QContextMenuEvent::Mouse;
+    const QModelIndex index = fromMouse ? indexAt(event->pos()) : currentIndex();
+    const QPoint pos = !fromMouse && index.isValid()
+                           ? viewport()->mapToGlobal(visualRect(index).bottomLeft())
+                           : event->globalPos();
+    emit contextMenuRequested(index, pos);
+    event->accept();
+}

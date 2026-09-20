@@ -23,12 +23,21 @@ signals:
     void openRequested(const QModelIndex &index);
     /** A mouse button the list does not use, for the window to map. */
     void unusedMouseButton(Qt::MouseButtons buttons);
+    /**
+     * A menu was asked for. \a index is the entry the menu is for, which the
+     * list reports from where the request points, or from the entry it has as
+     * current when the request comes from the keyboard, and is invalid when the
+     * request is for no entry at all. \a pos is where the menu belongs, in
+     * global coordinates.
+     */
+    void contextMenuRequested(const QModelIndex &index, const QPoint &pos);
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
     bool event(QEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
+    void contextMenuEvent(QContextMenuEvent *event) override;
 };
 
 #endif // FOLDERLISTVIEW_H

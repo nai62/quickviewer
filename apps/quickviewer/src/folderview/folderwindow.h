@@ -29,7 +29,6 @@ public:
     void resetPathLabel(int maxWidth);
     QString currentPath() { return m_currentPath; }
     QString itemPath(const QModelIndex &index) const;
-    void handleCurrentFolderItemTriggered();
 
 public slots:
     void handleHomeButtonClicked();
@@ -39,6 +38,9 @@ public slots:
     void handleReadProgressChanged(QString path);
     void handleFolderViewItemSelected(const QModelIndex &index);
     void handleSetAsHomeFolderActionTriggered();
+    void handleOpenFolderItemActionTriggered();
+    void handleRevealInExplorerActionTriggered();
+    void handleCopyItemPathActionTriggered();
 
 signals:
     void openVolume(const OpenTarget &target);
@@ -55,15 +57,17 @@ private:
     void repaintRows();
     void openFolderItem(const QModelIndex &index);
     void sortVolumes();
+    const FolderItem *itemAt(const QModelIndex &index) const;
     void setupHistoryButton(Ui::MainWindow *uiMain);
     void updateTextRowRange();
     void handleUnusedMouseButton(Qt::MouseButtons buttons);
-    void handleFolderViewContextMenuRequested(const QPoint &pos);
+    void handleFolderViewContextMenuRequested(const QModelIndex &index, const QPoint &pos);
     int currentVolumeRow() const;
     void updateCurrentVolumeRow();
 
     Ui::FolderWindow *ui;
     QMenu *m_itemContextMenu;
+    QMenu *m_folderContextMenu;
     QToolButton *m_historyButton;
     QPersistentModelIndex m_contextMenuIndex;
     QString m_currentPath;

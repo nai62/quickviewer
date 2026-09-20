@@ -1,6 +1,11 @@
 #include <QtWidgets>
 #include <QCollator>
 
+#ifdef Q_OS_WIN
+#    include <windows.h>
+#    include <shellapi.h>
+#endif
+
 #include "ui_folderwindow.h"
 #include "ui_mainwindow.h"
 
@@ -26,12 +31,39 @@ QIcon clockIcon(const QPalette &palette)
     painter.drawLine(QPointF(12.0, 12.0), QPointF(16.0, 14.0));
     return QIcon(pixmap);
 }
+
+/**
+ * Shows \a path in the platform's file manager, with the entry itself selected
+ * where the platform can.
+ */
+void revealInExplorer(const QString &path)
+{
+    if (path.isEmpty()) {
+        return;
+    }
+#ifdef Q_OS_WIN
+    // Explorer selects the entry given to it after /select, which is the same
+    // thing the shell's own "show in folder" does.
+    const QString native = QDir::toNativeSeparators(path);
+    const QString argument = QStringLiteral("/select,\"%1\"").arg(native);
+    ::ShellExecuteW(nullptr,
+                    L"open",
+                    L"explorer.exe",
+                    reinterpret_cast<const wchar_t *>(argument.utf16()),
+                    nullptr,
+                    SW_SHOWNORMAL);
+#else
+    const QFileInfo info(path);
+    QDesktopServices::openUrl(QUrl::fromLocalFile(info.isDir() ? path : info.absolutePath()));
+#endif
+}
 }
 
 FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
     : QWidget(parent),
       ui(new Ui::FolderWindow),
       m_itemContextMenu(nullptr),
+      m_folderContextMenu(nullptr),
       m_historyButton(nullptr),
       m_itemModel(this),
       m_itemDelegate(parent)
@@ -55,7 +87,7 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
             this,
             &FolderWindow::handleUnusedMouseButton);
     connect(ui->folderView,
-            &QWidget::customContextMenuRequested,
+            &FolderListView::contextMenuRequested,
             this,
             &FolderWindow::handleFolderViewContextMenuRequested);
     if (ReadProgressStore *store = qApp->readProgressStore()) {
@@ -74,9 +106,37 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
             uiMain->actionShowReadProgress, &QAction::toggled, this, &FolderWindow::repaintRows);
     }
 
-    // The item context menu is a plain menu; its action lives in the form.
+    // Two plain menus: one for an entry, one for the folder itself, which the
+    // right button over the empty part of the list asks for. The actions live in
+    // the form.
     m_itemContextMenu = new QMenu(this);
+    m_itemContextMenu->addAction(ui->actionOpenFolderItem);
+    m_itemContextMenu->addSeparator();
+    m_itemContextMenu->addAction(ui->actionRevealInExplorer);
+    m_itemContextMenu->addAction(ui->actionCopyItemPath);
+    m_itemContextMenu->addSeparator();
     m_itemContextMenu->addAction(ui->actionSetAsHomeFolder);
+    m_folderContextMenu = new QMenu(this);
+    m_folderContextMenu->addAction(ui->actionRevealInExplorer);
+    m_folderContextMenu->addAction(ui->actionCopyItemPath);
+    m_folderContextMenu->addSeparator();
+    m_folderContextMenu->addAction(ui->actionReloadFolder);
+    connect(ui->actionOpenFolderItem,
+            &QAction::triggered,
+            this,
+            &FolderWindow::handleOpenFolderItemActionTriggered);
+    connect(ui->actionRevealInExplorer,
+            &QAction::triggered,
+            this,
+            &FolderWindow::handleRevealInExplorerActionTriggered);
+    connect(ui->actionCopyItemPath,
+            &QAction::triggered,
+            this,
+            &FolderWindow::handleCopyItemPathActionTriggered);
+    connect(ui->actionReloadFolder,
+            &QAction::triggered,
+            this,
+            &FolderWindow::handleReloadButtonClicked);
 
     StartupProfiler::mark("folder-window.history-button.begin");
     setupHistoryButton(uiMain);
@@ -113,6 +173,9 @@ FolderWindow::~FolderWindow()
     delete ui->folderView;
     if (m_itemContextMenu) {
         delete m_itemContextMenu;
+    }
+    if (m_folderContextMenu) {
+        delete m_folderContextMenu;
     }
     delete ui;
 }
@@ -163,18 +226,56 @@ bool FolderWindow::eventFilter(QObject *obj, QEvent *event)
 }
 
 /**
- * The menu belongs to the entry under the pointer, and showing it never opens
- * that entry: the position is in the viewport's coordinates, which is what the
- * list reads a row from.
+ * The menu belongs to the entry the list reports, and showing it never opens
+ * that entry. A request that names no entry - the pointer over the empty part
+ * of the list, or an empty folder - is about the folder the panel shows.
  */
-void FolderWindow::handleFolderViewContextMenuRequested(const QPoint &pos)
+void FolderWindow::handleFolderViewContextMenuRequested(const QModelIndex &index, const QPoint &pos)
 {
-    m_contextMenuIndex = ui->folderView->indexAt(pos);
-    const bool isFolder = m_contextMenuIndex.isValid() &&
-                          m_contextMenuIndex.row() < m_volumes.size() &&
-                          m_volumes.at(m_contextMenuIndex.row()).type == FolderItem::Dir;
-    ui->actionSetAsHomeFolder->setEnabled(isFolder);
-    m_itemContextMenu->exec(ui->folderView->viewport()->mapToGlobal(pos));
+    const FolderItem *item = itemAt(index);
+    const bool hasEntry = item && item->type != FolderItem::NoItems;
+    // The placeholder of an empty folder is not an entry to act on.
+    m_contextMenuIndex = hasEntry ? index : QModelIndex();
+    ui->actionOpenFolderItem->setEnabled(hasEntry);
+    ui->actionSetAsHomeFolder->setEnabled(hasEntry && item->type == FolderItem::Dir);
+    const bool hasFolder = !m_currentPath.isEmpty();
+    ui->actionRevealInExplorer->setEnabled(hasEntry || hasFolder);
+    ui->actionCopyItemPath->setEnabled(hasEntry || hasFolder);
+    ui->actionReloadFolder->setEnabled(hasFolder);
+    QMenu *menu = hasEntry ? m_itemContextMenu : m_folderContextMenu;
+    menu->exec(pos);
+}
+
+/**
+ * The entry a menu index names, or nothing when it names no row of the folder
+ * the panel shows.
+ */
+const FolderItem *FolderWindow::itemAt(const QModelIndex &index) const
+{
+    const int row = index.row();
+    if (!index.isValid() || row < 0 || row >= m_volumes.size()) {
+        return nullptr;
+    }
+    return &m_volumes.at(row);
+}
+
+void FolderWindow::handleOpenFolderItemActionTriggered()
+{
+    openFolderItem(m_contextMenuIndex);
+}
+
+void FolderWindow::handleRevealInExplorerActionTriggered()
+{
+    revealInExplorer(m_contextMenuIndex.isValid() ? itemPath(m_contextMenuIndex) : m_currentPath);
+}
+
+void FolderWindow::handleCopyItemPathActionTriggered()
+{
+    const QString path =
+        m_contextMenuIndex.isValid() ? itemPath(m_contextMenuIndex) : m_currentPath;
+    if (!path.isEmpty()) {
+        QGuiApplication::clipboard()->setText(QDir::toNativeSeparators(path));
+    }
 }
 
 /**
@@ -613,11 +714,6 @@ void FolderWindow::openFolderItem(const QModelIndex &index)
 void FolderWindow::handleFolderViewItemSelected(const QModelIndex &index)
 {
     openFolderItem(index);
-}
-
-void FolderWindow::handleCurrentFolderItemTriggered()
-{
-    openFolderItem(ui->folderView->currentIndex());
 }
 
 void FolderWindow::closeEvent(QCloseEvent *e)
