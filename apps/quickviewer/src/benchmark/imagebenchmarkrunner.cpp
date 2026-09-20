@@ -127,6 +127,8 @@ const ProfileMilestone FirstPaintMilestones[] = {
     {"application.settings-opened", "application_settings_opened_at_us"},
     {"application.languages-ready", "application_languages_ready_at_us"},
     {"application.keymap-ready", "application_keymap_ready_at_us"},
+    {"application.ini-read.begin", "application_ini_read_begin_at_us"},
+    {"application.ini-read.end", "application_ini_read_end_at_us"},
     {"application.locale-ready", "application_locale_ready_at_us"},
     {"application.screen-ready", "application_screen_ready_at_us"},
     {"application.pictures-folder-ready", "application_pictures_folder_ready_at_us"},

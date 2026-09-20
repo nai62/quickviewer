@@ -326,12 +326,13 @@ process:
   `application_settings_loaded_at_us` is QuickViewer's settings, theme, and
   key-map loading. Inside that second block,
   `application_settings_opened_at_us`, `application_languages_ready_at_us`,
-  `application_keymap_ready_at_us`, `application_locale_ready_at_us`,
+  `application_keymap_ready_at_us`, `application_ini_read_begin_at_us`,
+  `application_ini_read_end_at_us`, `application_locale_ready_at_us`,
   `application_screen_ready_at_us`, `application_pictures_folder_ready_at_us`,
   `application_settings_read_at_us`, and `application_theme_ready_at_us`
-  separate the ini file, the language catalogue, the key maps, the system
-  locale, the screen query, the shell's Pictures folder, the ini values, and the
-  theme stylesheet.
+  separate the ini file, the language catalogue, the key maps, reading and
+  parsing the settings file, the system locale, the screen query, the shell's
+  Pictures folder, the ini values, and the theme stylesheet.
 - `mainwindow_ui_setup_at_us` ends `setupUi()` and
   `mainwindow_actions_registered_at_us` ends the action registration inside the
   MainWindow constructor.

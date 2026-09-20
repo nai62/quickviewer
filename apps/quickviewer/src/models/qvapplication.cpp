@@ -461,6 +461,12 @@ QString QVApplication::getDefaultPictureFolderPath()
 
 void QVApplication::loadSettings()
 {
+    // Read the settings file here, so its own cost stays separate from the
+    // lookups below, which then answer from the parsed copy.
+    StartupProfiler::mark("application.ini-read.begin");
+    (void)m_settings->allKeys();
+    StartupProfiler::mark("application.ini-read.end");
+
     bool bRightSideBookDefault = QLocale::system().language() == QLocale::Japanese;
     StartupProfiler::mark("application.locale-ready");
 
