@@ -6,7 +6,7 @@
 #include "mainwindow.h"
 #include "models/filemanager.h"
 #include "models/qvapplication.h"
-#include "models/thumbnailmanager.h"
+#include "catalogdatabase.h"
 
 #define FILELOADER_DATAPATH WINDOWSTARTUP_SRCDIR "../fileloader/data/"
 
@@ -222,8 +222,9 @@ private slots:
         });
         StartupWindow viewer;
         viewer.resize(800, 600);
-        ThumbnailManager manager(&viewer, databaseDirectory.filePath(QStringLiteral("catalog.db")));
-        viewer.setThumbnailManager(&manager);
+        CatalogDatabase catalogDatabase(&viewer,
+                                        databaseDirectory.filePath(QStringLiteral("catalog.db")));
+        viewer.setCatalogDatabase(&catalogDatabase);
 
         viewer.initializeStartup();
 

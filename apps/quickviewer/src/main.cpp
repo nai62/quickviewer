@@ -5,7 +5,7 @@
 #include "benchmark/imagebenchmarkrunner.h"
 
 #include "qvapplication.h"
-#include "thumbnailmanager.h"
+#include "catalogdatabase.h"
 #include "qnamedpipe.h"
 #include "startupprofiler.h"
 #include "volume.h"
@@ -184,10 +184,10 @@ int main(int argc, char *argv[])
         w.initializeStartup();
         StartupProfiler::mark("startup.initialized");
         QString dbpath = app.CatalogDatabasePath();
-        ThumbnailManager manager(&w, dbpath);
-        StartupProfiler::mark("thumbnail-manager.constructed");
-        w.setThumbnailManager(&manager);
-        StartupProfiler::mark("thumbnail-manager.attached");
+        CatalogDatabase catalogDatabase(&w, dbpath);
+        StartupProfiler::mark("catalog-database.constructed");
+        w.setCatalogDatabase(&catalogDatabase);
+        StartupProfiler::mark("catalog-database.attached");
         w.connect(&pipe, &QNamedPipe::received, &w, [&](QByteArray bytes) {
             if (bytes.size() == 1) {
                 w.setWindowTop(false);

@@ -2,7 +2,7 @@
 #define VOLUMEITEMMODEL_H
 
 #include <QtWidgets>
-#include "models/thumbnailmanager.h"
+#include "catalogdatabase.h"
 #include "qvenums.h"
 
 class VolumeItemModel : public QAbstractItemModel

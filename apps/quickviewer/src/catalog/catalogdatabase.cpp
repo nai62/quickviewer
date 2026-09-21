@@ -3,7 +3,7 @@
 #include <QDebug>
 #include <QApplication>
 
-#include "thumbnailmanager.h"
+#include "catalogdatabase.h"
 #include "volume.h"
 #include "volumeloader.h"
 
@@ -18,11 +18,11 @@ constexpr int ThumbnailWidth = 96;
 
 } // namespace
 
-QList<QByteArray> ThumbnailManager::st_supportedImageFormats;
-QStringList ThumbnailManager::st_jpegpegImageFormats;
-QStringList ThumbnailManager::st_heavyImageFormats;
+QList<QByteArray> CatalogDatabase::st_supportedImageFormats;
+QStringList CatalogDatabase::st_jpegpegImageFormats;
+QStringList CatalogDatabase::st_heavyImageFormats;
 
-bool ThumbnailManager::isImageFile(QString path)
+bool CatalogDatabase::isImageFile(QString path)
 {
     if (st_supportedImageFormats.size() == 0) {
         st_jpegpegImageFormats << "jpg" << "jpeg" << "jpe";
@@ -39,7 +39,7 @@ bool ThumbnailManager::isImageFile(QString path)
     return false;
 }
 
-bool ThumbnailManager::isJpegImageFile(QString path)
+bool CatalogDatabase::isJpegImageFile(QString path)
 {
     QString lower = path.toLower();
     for (const QString &e : st_jpegpegImageFormats) {
@@ -50,7 +50,7 @@ bool ThumbnailManager::isJpegImageFile(QString path)
     return false;
 }
 
-bool ThumbnailManager::isHeavyImageFile(QString path)
+bool CatalogDatabase::isHeavyImageFile(QString path)
 {
     QString lower = path.toLower();
     for (const QString &e : st_heavyImageFormats) {
@@ -61,16 +61,16 @@ bool ThumbnailManager::isHeavyImageFile(QString path)
     return false;
 }
 
-void ThumbnailManager::sortFiles(QStringList &filenames)
+void CatalogDatabase::sortFiles(QStringList &filenames)
 {
     std::sort(filenames.begin(), filenames.end(), caseInsensitiveLessThan);
 }
 
-QString ThumbnailManager::DateTimeToIsoString(QDateTime datetime)
+QString CatalogDatabase::DateTimeToIsoString(QDateTime datetime)
 {
     return datetime.toString(QStringLiteral("yyyy/MM/dd hh:mm:ss"));
 }
-QString ThumbnailManager::currentDateTimeAsString()
+QString CatalogDatabase::currentDateTimeAsString()
 {
     QDateTime current = QDateTime::currentDateTime();
     return DateTimeToIsoString(current);
@@ -79,31 +79,29 @@ QString ThumbnailManager::currentDateTimeAsString()
 #ifdef Q_OS_WIN
 // Windows Filename sorting is not usual caseInsensitive, so call Win32Api
 // to see https://msdn.microsoft.com/ja-jp/library/windows/desktop/bb759947(v=vs.85).aspx
-bool ThumbnailManager::caseInsensitiveLessThan(const QString &s1, const QString &s2)
+bool CatalogDatabase::caseInsensitiveLessThan(const QString &s1, const QString &s2)
 {
     std::wstring ss1(s1.toStdWString());
     std::wstring ss2(s2.toStdWString());
     return ::StrCmpLogicalW(ss1.c_str(), ss2.c_str()) < 0;
 }
 
-bool ThumbnailManager::caseInsensitiveLessThanWString(const std::wstring &s1,
-                                                      const std::wstring &s2)
+bool CatalogDatabase::caseInsensitiveLessThanWString(const std::wstring &s1, const std::wstring &s2)
 {
     return ::StrCmpLogicalW(s1.c_str(), s2.c_str()) < 0;
 }
 #else
-bool ThumbnailManager::caseInsensitiveLessThan(const QString &s1, const QString &s2)
+bool CatalogDatabase::caseInsensitiveLessThan(const QString &s1, const QString &s2)
 {
     return s1.toLower() < s2.toLower();
 }
-bool ThumbnailManager::caseInsensitiveLessThanWString(const std::wstring &s1,
-                                                      const std::wstring &s2)
+bool CatalogDatabase::caseInsensitiveLessThanWString(const std::wstring &s1, const std::wstring &s2)
 {
     return s1 < s2;
 }
 #endif
 
-ThumbnailManager::ThumbnailManager(QObject *parent, QString dbpath)
+CatalogDatabase::CatalogDatabase(QObject *parent, QString dbpath)
     : QObject(parent),
       m_db(QSqlDatabase::addDatabase("QSQLITE")),
       m_transaction(false),
@@ -121,7 +119,7 @@ ThumbnailManager::ThumbnailManager(QObject *parent, QString dbpath)
 
 constexpr int DefaultFilesCount = 30;
 
-int ThumbnailManager::createSubVolumes(QString dirpath, int catalog_id, int parent_id)
+int CatalogDatabase::createSubVolumes(QString dirpath, int catalog_id, int parent_id)
 {
     QDir dir(dirpath);
     if (!dir.exists()) {
@@ -170,7 +168,7 @@ int ThumbnailManager::createSubVolumes(QString dirpath, int catalog_id, int pare
 }
 
 VolumeWorker
-ThumbnailManager::createSubVolumesConcurrent(QString dirpath, int volume_id, int parent_id)
+CatalogDatabase::createSubVolumesConcurrent(QString dirpath, int volume_id, int parent_id)
 {
     VolumeWorker vw = {0};
     vw.frontPage.asc = -1;
@@ -220,7 +218,7 @@ ThumbnailManager::createSubVolumesConcurrent(QString dirpath, int volume_id, int
     return vw;
 }
 
-int ThumbnailManager::createVolumesFrontPageOnly(QString dirpath, int catalog_id)
+int CatalogDatabase::createVolumesFrontPageOnly(QString dirpath, int catalog_id)
 {
     int volume_id = createVolumeInternal(dirpath, catalog_id, -1);
     if (volume_id < 0) {
@@ -471,7 +469,7 @@ static TaggedName realname2BookTitle(QString realname)
     return result;
 }
 
-int ThumbnailManager::createVolumeInternal(QString dirpath, int catalog_id, int parent_id)
+int CatalogDatabase::createVolumeInternal(QString dirpath, int catalog_id, int parent_id)
 {
     QFileInfo info(dirpath);
     QString realname = info.fileName();
@@ -526,10 +524,10 @@ int ThumbnailManager::createVolumeInternal(QString dirpath, int catalog_id, int 
 
 static bool caseInsensitiveLessThanVolumeOrder(const VolumeOrder *s1, const VolumeOrder *s2)
 {
-    return ThumbnailManager::caseInsensitiveLessThanWString(s1->realname, s2->realname);
+    return CatalogDatabase::caseInsensitiveLessThanWString(s1->realname, s2->realname);
 }
 
-void ThumbnailManager::updateVolumeOrders()
+void CatalogDatabase::updateVolumeOrders()
 {
     QSqlQuery t_volumeorders(m_db);
     t_volumeorders.prepare("DELETE FROM t_volumeorders");
@@ -575,7 +573,7 @@ void ThumbnailManager::updateVolumeOrders()
     }
 }
 
-FileWorker ThumbnailManager::createFileRecord(QString filename, QString filepath, int filename_asc)
+FileWorker CatalogDatabase::createFileRecord(QString filename, QString filepath, int filename_asc)
 {
     FileWorker result;
     result.filename = filename;
@@ -604,9 +602,9 @@ FileWorker ThumbnailManager::createFileRecord(QString filename, QString filepath
     return result;
 }
 
-FileWorker ThumbnailManager::createFileRecordFromArchive(QString archivePath,
-                                                         ImageContent &ic,
-                                                         int filename_asc)
+FileWorker CatalogDatabase::createFileRecordFromArchive(QString archivePath,
+                                                        ImageContent &ic,
+                                                        int filename_asc)
 {
     FileWorker result;
     result.filename = ic.path;
@@ -634,7 +632,7 @@ FileWorker ThumbnailManager::createFileRecordFromArchive(QString archivePath,
     return result;
 }
 
-int ThumbnailManager::createVolumeContent(QString dirpath, int volume_id)
+int CatalogDatabase::createVolumeContent(QString dirpath, int volume_id)
 {
     QDir dir(dirpath);
     if (!dir.exists()) {
@@ -732,7 +730,7 @@ int ThumbnailManager::createVolumeContent(QString dirpath, int volume_id)
     return filename_asc;
 }
 
-CatalogRecord ThumbnailManager::createCatalog(QString name, QString path)
+CatalogRecord CatalogDatabase::createCatalog(QString name, QString path)
 {
     CatalogRecord catalog = {0};
     catalog.name = name;
@@ -778,7 +776,7 @@ CatalogRecord ThumbnailManager::createCatalog(QString name, QString path)
     return catalog;
 }
 
-QList<CatalogRecord> ThumbnailManager::callCreateCatalog(const QList<CatalogRecord> &newers)
+QList<CatalogRecord> CatalogDatabase::callCreateCatalog(const QList<CatalogRecord> &newers)
 {
     QList<CatalogRecord> result;
     for (const CatalogRecord &r : newers) {
@@ -797,7 +795,7 @@ QList<CatalogRecord> ThumbnailManager::callCreateCatalog(const QList<CatalogReco
 }
 
 QFutureWatcher<QList<CatalogRecord>> *
-ThumbnailManager::createCatalogAsync(QList<CatalogRecord> newers)
+CatalogDatabase::createCatalogAsync(QList<CatalogRecord> newers)
 {
     QFuture<QList<CatalogRecord>> future =
         QtConcurrent::run([&] { return callCreateCatalog(newers); });
@@ -805,7 +803,7 @@ ThumbnailManager::createCatalogAsync(QList<CatalogRecord> newers)
     return &m_catalogWatcher;
 }
 
-void ThumbnailManager::cancelCreateCatalogAsync()
+void CatalogDatabase::cancelCreateCatalogAsync()
 {
     if (!m_catalogWatcher.isRunning()) {
         return;
@@ -813,7 +811,7 @@ void ThumbnailManager::cancelCreateCatalogAsync()
     m_catalogWatcher.cancel();
 }
 
-QMap<int, CatalogRecord> ThumbnailManager::catalogs()
+QMap<int, CatalogRecord> CatalogDatabase::catalogs()
 {
     QMap<int, CatalogRecord> result;
     QSqlQuery t_catalogs(m_db);
@@ -834,7 +832,7 @@ QMap<int, CatalogRecord> ThumbnailManager::catalogs()
     return result;
 }
 
-QList<VolumeThumbRecord> ThumbnailManager::volumes()
+QList<VolumeThumbRecord> CatalogDatabase::volumes()
 {
     if (!m_volumesDurty) {
         return m_volumesCacne;
@@ -874,7 +872,7 @@ static VolumeThumbRecord thumbnail2Icon(VolumeThumbRecord vtr)
     return vtr;
 }
 
-QList<VolumeThumbRecord> ThumbnailManager::volumes2()
+QList<VolumeThumbRecord> CatalogDatabase::volumes2()
 {
     if (!m_volumesDurty) {
         return m_volumesCacne;
@@ -906,7 +904,7 @@ QList<VolumeThumbRecord> ThumbnailManager::volumes2()
     return m_volumesCacne = result;
 }
 
-void ThumbnailManager::loadTags()
+void CatalogDatabase::loadTags()
 {
     QSqlQuery t_tags(m_db);
     t_tags.exec("SELECT * FROM t_tags ORDER BY id");
@@ -935,7 +933,7 @@ void ThumbnailManager::loadTags()
     }
 }
 
-QMap<int, TagRecord *> ThumbnailManager::tagsByCount()
+QMap<int, TagRecord *> CatalogDatabase::tagsByCount()
 {
     QSqlQuery t_tags(m_db);
     t_tags.exec("SELECT t.id, t.name, t.type_id, v2.cnt FROM t_tags t INNER JOIN "
@@ -955,7 +953,7 @@ QMap<int, TagRecord *> ThumbnailManager::tagsByCount()
     return result;
 }
 
-QList<TagRecord> ThumbnailManager::getTagsFromVolumeId(int volume_id)
+QList<TagRecord> CatalogDatabase::getTagsFromVolumeId(int volume_id)
 {
     QList<TagRecord> result;
     QSqlQuery t_tags(m_db);
@@ -976,7 +974,7 @@ QList<TagRecord> ThumbnailManager::getTagsFromVolumeId(int volume_id)
     return result;
 }
 
-void ThumbnailManager::deleteCatalog(int id)
+void CatalogDatabase::deleteCatalog(int id)
 {
     QSqlQuery t_thumbs(m_db);
     t_thumbs.prepare("DELETE FROM t_thumbnails WHERE id IN (SELECT thumb_id FROM t_files WHERE "
@@ -1034,7 +1032,7 @@ void ThumbnailManager::deleteCatalog(int id)
     }
 }
 
-void ThumbnailManager::updateCatalogName(int id, QString name)
+void CatalogDatabase::updateCatalogName(int id, QString name)
 {
     QSqlQuery t_catalogs(m_db);
     t_catalogs.prepare("UPDATE t_catalogs SET name=:name WHERE id=:id");
@@ -1045,7 +1043,7 @@ void ThumbnailManager::updateCatalogName(int id, QString name)
     }
 }
 
-void ThumbnailManager::deleteAllCatalogs()
+void CatalogDatabase::deleteAllCatalogs()
 {
     transaction();
     QSqlQuery t_thumbs(m_db);
@@ -1083,7 +1081,7 @@ void ThumbnailManager::deleteAllCatalogs()
     rollback();
 }
 
-void ThumbnailManager::transaction()
+void CatalogDatabase::transaction()
 {
     if (m_transaction) {
         return;
@@ -1095,7 +1093,7 @@ void ThumbnailManager::transaction()
     m_transaction = true;
 }
 
-void ThumbnailManager::forceTransaction()
+void CatalogDatabase::forceTransaction()
 {
     if (m_transaction) {
         return;
@@ -1104,7 +1102,7 @@ void ThumbnailManager::forceTransaction()
     transaction();
 }
 
-void ThumbnailManager::commit()
+void CatalogDatabase::commit()
 {
     if (!m_transaction) {
         return;
@@ -1116,7 +1114,7 @@ void ThumbnailManager::commit()
     m_transaction = false;
 }
 
-void ThumbnailManager::rollback()
+void CatalogDatabase::rollback()
 {
     if (!m_transaction) {
         return;
@@ -1128,7 +1126,7 @@ void ThumbnailManager::rollback()
     m_transaction = false;
 }
 
-void ThumbnailManager::vacuum()
+void CatalogDatabase::vacuum()
 {
     QSqlQuery t_thumbs(m_db);
     do {
@@ -1140,12 +1138,12 @@ void ThumbnailManager::vacuum()
     qDebug() << " query failed: " << t_thumbs.lastError();
 }
 
-void ThumbnailManager::dispose()
+void CatalogDatabase::dispose()
 {
     m_db.close();
 }
 
-bool ThumbnailManager::execInsertQuery(QSqlQuery &query, const QString &tablename)
+bool CatalogDatabase::execInsertQuery(QSqlQuery &query, const QString &tablename)
 {
     if (!query.exec()) {
         qDebug() << tablename << " insert failed: " << query.lastError();

@@ -4,7 +4,7 @@
 #include <QtGui>
 #include <QMenu>
 #include <QMainWindow>
-#include "models/thumbnailmanager.h"
+#include "catalogdatabase.h"
 #include "models/volumelocation.h"
 #include "volumeitemmodel.h"
 
@@ -30,7 +30,7 @@ class CatalogWindow : public QWidget
 public:
     explicit CatalogWindow(QWidget *parent, Ui::MainWindow *uiMain);
     ~CatalogWindow();
-    void setThumbnailManager(ThumbnailManager *manager);
+    void setCatalogDatabase(CatalogDatabase *catalogDatabase);
     void resetViewMode();
     void setAsToplevelWindow();
     void setAsInnerWidget();
@@ -69,7 +69,7 @@ protected:
 
 private:
     Ui::CatalogWindow *ui;
-    ThumbnailManager *m_thumbManager;
+    CatalogDatabase *m_catalogDatabase;
     QMap<int, CatalogRecord> m_catalogs;
     QList<int> m_enabledCatalogs;
     QList<VolumeThumbRecord> m_volumes;

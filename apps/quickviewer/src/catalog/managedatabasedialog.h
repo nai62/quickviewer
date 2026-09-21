@@ -3,7 +3,7 @@
 
 #include <QtGui>
 #include <QDialog>
-#include "models/thumbnailmanager.h"
+#include "catalogdatabase.h"
 
 namespace Ui {
 class ManageDatabaseDialog;
@@ -17,7 +17,7 @@ public:
     ~ManageDatabaseDialog();
     void normalButtonStates();
     void progressButtonStates();
-    void setThumbnailManager(ThumbnailManager *manager);
+    void setCatalogDatabase(CatalogDatabase *catalogDatabase);
     void resetCatalogList();
     void dragEnterEvent(QDragEnterEvent *e);
     void dropEvent(QDropEvent *e);
@@ -44,7 +44,7 @@ private:
     Ui::ManageDatabaseDialog *ui;
     QMap<int, CatalogRecord> m_catalogs;
     QList<CatalogRecord> m_makeCatalogs;
-    ThumbnailManager *m_thumbManager;
+    CatalogDatabase *m_catalogDatabase;
 
     QFutureWatcher<QList<CatalogRecord>> *m_catalogWatcher;
 };

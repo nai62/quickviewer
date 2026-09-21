@@ -13,7 +13,7 @@ class MainWindow;
 }
 class FolderWindow;
 class CatalogWindow;
-class ThumbnailManager;
+class CatalogDatabase;
 class RetouchWindow;
 
 class MainWindow : public QMainWindow
@@ -66,7 +66,7 @@ public:
         }
     }
     void makeBookmarkMenu();
-    void setThumbnailManager(ThumbnailManager *manager);
+    void setCatalogDatabase(CatalogDatabase *catalogDatabase);
     void resetVolumeCaption();
     void resetShortCut(const QString name, const QString shortcuttext, bool removed);
 
@@ -269,7 +269,7 @@ protected:
     QList<QAction *> m_shaderMenuGroup;
     QList<QAction *> m_languageMenuGroup;
     QList<QAction *> m_sortByMenuGroup;
-    ThumbnailManager *m_thumbManager;
+    CatalogDatabase *m_catalogDatabase;
     QWidget *m_startupPanelPlaceholder;
     FolderWindow *m_folderWindow;
     QString m_pendingFolderPath;

@@ -142,6 +142,7 @@ macos {
 SOURCES += \
     src/benchmark/imagebenchmarkrunner.cpp \
     src/benchmark/startupfoldertextprofile.cpp \
+    src/catalog/catalogdatabase.cpp \
     src/catalog/catalogwindow.cpp \
     src/catalog/databasesettingdialog.cpp \
     src/catalog/managedatabasedialog.cpp \
@@ -170,7 +171,6 @@ SOURCES += \
     src/models/shadereffect.cpp \
     src/models/svgloader.cpp \
     src/startupprofiler.cpp \
-    src/models/thumbnailmanager.cpp \
     src/models/volumecache.cpp \
     src/models/volumehandle.cpp \
     src/optionsdialog.cpp \
@@ -203,6 +203,7 @@ SOURCES += \
 HEADERS  += \
     src/benchmark/imagebenchmarkrunner.h \
     src/benchmark/startupfoldertextprofile.h \
+    src/catalog/catalogdatabase.h \
     src/catalog/catalogwindow.h \
     src/catalog/databasesettingdialog.h \
     src/catalog/managedatabasedialog.h \
@@ -236,7 +237,6 @@ HEADERS  += \
     src/models/shadermanager.h \
     src/models/shadereffect.h \
     src/models/svgloader.h \
-    src/models/thumbnailmanager.h \
     src/models/volumecache.h \
     src/models/volumehandle.h \
     src/models/viewerstate.h \

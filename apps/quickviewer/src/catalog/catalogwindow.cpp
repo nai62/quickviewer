@@ -101,10 +101,10 @@ CatalogWindow::~CatalogWindow()
     delete ui;
 }
 
-void CatalogWindow::setThumbnailManager(ThumbnailManager *manager)
+void CatalogWindow::setCatalogDatabase(CatalogDatabase *catalogDatabase)
 {
-    m_thumbManager = manager;
-    m_volumes = m_thumbManager->volumes();
+    m_catalogDatabase = catalogDatabase;
+    m_volumes = m_catalogDatabase->volumes();
     initTagButtons();
 
     resetViewMode();
@@ -165,7 +165,7 @@ void CatalogWindow::initTagButtons()
 {
     QStringList buttons;
     if (qApp->ShowTagBar()) {
-        QMap<int, TagRecord *> tags = m_thumbManager->tagsByCount();
+        QMap<int, TagRecord *> tags = m_catalogDatabase->tagsByCount();
         if (tags.size() <= 1) {
             return;
         }
@@ -254,11 +254,11 @@ void CatalogWindow::dragEnterEvent(QDragEnterEvent *e)
 void CatalogWindow::dropEvent(QDropEvent *e)
 {
     ManageDatabaseDialog dialog(this);
-    dialog.setThumbnailManager(m_thumbManager);
+    dialog.setCatalogDatabase(m_catalogDatabase);
     dialog.dropEvent(e);
     dialog.exec();
 
-    m_volumes = m_thumbManager->volumes();
+    m_volumes = m_catalogDatabase->volumes();
     initTagButtons();
     searchByWord(true);
 
@@ -339,10 +339,10 @@ void CatalogWindow::handleFolderViewIconNoTextActionTriggered()
 void CatalogWindow::handleManageCatalogButtonClicked()
 {
     ManageDatabaseDialog dialog(this);
-    dialog.setThumbnailManager(m_thumbManager);
+    dialog.setCatalogDatabase(m_catalogDatabase);
     dialog.exec();
 
-    m_volumes = m_thumbManager->volumes();
+    m_volumes = m_catalogDatabase->volumes();
     initTagButtons();
     searchByWord(true);
 }
@@ -376,7 +376,7 @@ void CatalogWindow::handleVolumeListItemDoubleClicked(const QModelIndex &index)
     emit openVolume(OpenTarget::container(m_volumeSearch[row]->path));
 
     // reset tag buttons as current book
-    QList<TagRecord> tags = m_thumbManager->getTagsFromVolumeId(m_volumeSearch[row]->id);
+    QList<TagRecord> tags = m_catalogDatabase->getTagsFromVolumeId(m_volumeSearch[row]->id);
     QStringList tagtxt;
     for (const TagRecord &t : tags) {
         tagtxt << t.name;

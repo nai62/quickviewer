@@ -47,7 +47,7 @@ MainWindow::MainWindow(QWidget *parent)
       //    , contextMenu(this)
       ,
       m_viewerSession(this),
-      m_thumbManager(nullptr),
+      m_catalogDatabase(nullptr),
       m_startupPanelPlaceholder(nullptr),
       m_folderWindow(nullptr),
       m_catalogWindow(nullptr),
@@ -867,9 +867,9 @@ void MainWindow::makeBookmarkMenu()
     ui->menuLoadBookmark->addAction(ui->actionClearBookmarks);
 }
 
-void MainWindow::setThumbnailManager(ThumbnailManager *manager)
+void MainWindow::setCatalogDatabase(CatalogDatabase *catalogDatabase)
 {
-    m_thumbManager = manager;
+    m_catalogDatabase = catalogDatabase;
 
     const bool startupVolumeRequested =
         qApp->arguments().length() >= 2 || (qApp->AutoLoaded() && !qApp->LastViewPath().isEmpty());
@@ -880,7 +880,7 @@ void MainWindow::setThumbnailManager(ThumbnailManager *manager)
 
 void MainWindow::initializeConfiguredStartupPanel(const QString &folderPath)
 {
-    if (m_startupPanelInitialized || !m_thumbManager) {
+    if (m_startupPanelInitialized || !m_catalogDatabase) {
         return;
     }
     m_startupPanelInitialized = true;
@@ -1272,7 +1272,7 @@ bool MainWindow::changeFolderPath(QString path)
         return false;
     }
     if (!m_folderWindow) {
-        // An image passed on the command line is loaded before setThumbnailManager()
+        // An image passed on the command line is loaded before setCatalogDatabase()
         // creates the startup FolderWindow. Preserve its directory until then.
         m_pendingFolderPath = path;
         return false;
@@ -1380,7 +1380,7 @@ void MainWindow::createCatalogWindow(bool docked)
         closeAllDockedWindow();
         int lastwidth = qApp->CatalogViewWidth();
         m_catalogWindow = new CatalogWindow(nullptr, ui);
-        m_catalogWindow->setThumbnailManager(m_thumbManager);
+        m_catalogWindow->setCatalogDatabase(m_catalogDatabase);
         connect(
             m_catalogWindow, &CatalogWindow::closed, this, &MainWindow::handleCatalogWindowClosed);
         connect(m_catalogWindow,
@@ -1398,7 +1398,7 @@ void MainWindow::createCatalogWindow(bool docked)
         m_catalogWindow->setAsInnerWidget();
     } else {
         m_catalogWindow = new CatalogWindow(nullptr, ui);
-        m_catalogWindow->setThumbnailManager(m_thumbManager);
+        m_catalogWindow->setCatalogDatabase(m_catalogDatabase);
         connect(
             m_catalogWindow, &CatalogWindow::closed, this, &MainWindow::handleCatalogWindowClosed);
         connect(m_catalogWindow,

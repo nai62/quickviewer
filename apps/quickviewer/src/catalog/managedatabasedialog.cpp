@@ -37,10 +37,10 @@ ManageDatabaseDialog::~ManageDatabaseDialog()
     delete ui;
 }
 
-void ManageDatabaseDialog::setThumbnailManager(ThumbnailManager *manager)
+void ManageDatabaseDialog::setCatalogDatabase(CatalogDatabase *catalogDatabase)
 {
-    m_thumbManager = manager;
-    m_catalogs = m_thumbManager->catalogs();
+    m_catalogDatabase = catalogDatabase;
+    m_catalogs = m_catalogDatabase->catalogs();
     resetCatalogList();
     normalButtonStates();
 }
@@ -100,7 +100,7 @@ void ManageDatabaseDialog::resetCatalogList()
         const CatalogRecord &catalog = m_catalogs[id];
         QTreeWidgetItem *item = new QTreeWidgetItem;
         item->setText(0, catalog.name);
-        item->setText(1, ThumbnailManager::DateTimeToIsoString(catalog.created_at));
+        item->setText(1, CatalogDatabase::DateTimeToIsoString(catalog.created_at));
         item->setText(2, catalog.path);
         item->setData(0, Qt::UserRole, QVariant(catalog.id));
         ui->treeWidget->addTopLevelItem(item);
@@ -193,7 +193,7 @@ bool ManageDatabaseDialog::databaseSettingDialog(CatalogRecord &catalog, bool ed
 
 void ManageDatabaseDialog::createCatalog()
 {
-    if (!m_thumbManager) {
+    if (!m_catalogDatabase) {
         return;
     }
 }
@@ -223,8 +223,8 @@ void ManageDatabaseDialog::handleCatalogCreationFinished()
     if (!m_catalogWatcher) {
         return;
     }
-    disconnect(m_thumbManager,
-               &ThumbnailManager::catalogCreated,
+    disconnect(m_catalogDatabase,
+               &CatalogDatabase::catalogCreated,
                this,
                &ManageDatabaseDialog::handleCatalogCreated);
     disconnect(m_catalogWatcher,
@@ -263,15 +263,15 @@ void ManageDatabaseDialog::handleCatalogCreationFinished()
 
 void ManageDatabaseDialog::handleCancelButtonClicked()
 {
-    if (!m_thumbManager) {
+    if (!m_catalogDatabase) {
         return;
     }
     if (!m_catalogWatcher) {
-        connect(m_thumbManager,
-                &ThumbnailManager::catalogCreated,
+        connect(m_catalogDatabase,
+                &CatalogDatabase::catalogCreated,
                 this,
                 &ManageDatabaseDialog::handleCatalogCreated);
-        m_catalogWatcher = m_thumbManager->createCatalogAsync(m_makeCatalogs);
+        m_catalogWatcher = m_catalogDatabase->createCatalogAsync(m_makeCatalogs);
         connect(m_catalogWatcher,
                 &QFutureWatcher<QList<CatalogRecord>>::finished,
                 this,
@@ -291,8 +291,8 @@ void ManageDatabaseDialog::handleCancelButtonClicked()
 
         progressButtonStates();
     } else {
-        disconnect(m_thumbManager,
-                   &ThumbnailManager::catalogCreated,
+        disconnect(m_catalogDatabase,
+                   &CatalogDatabase::catalogCreated,
                    this,
                    &ManageDatabaseDialog::handleCatalogCreated);
         disconnect(m_catalogWatcher,
@@ -307,7 +307,7 @@ void ManageDatabaseDialog::handleCancelButtonClicked()
                    &QFutureWatcher<QList<CatalogRecord>>::progressValueChanged,
                    ui->progressBar,
                    &QProgressBar::setValue);
-        m_thumbManager->cancelCreateCatalogAsync();
+        m_catalogDatabase->cancelCreateCatalogAsync();
         m_catalogWatcher = nullptr;
 
         resetCatalogList();
@@ -325,12 +325,12 @@ void ManageDatabaseDialog::handleCancelButtonClicked()
 
 void ManageDatabaseDialog::closeEvent(QCloseEvent *)
 {
-    m_thumbManager->vacuum();
+    m_catalogDatabase->vacuum();
 }
 
 void ManageDatabaseDialog::handleEditButtonClicked()
 {
-    if (!m_thumbManager) {
+    if (!m_catalogDatabase) {
         return;
     }
     QTreeWidgetItem *current = ui->treeWidget->currentItem();
@@ -351,7 +351,7 @@ void ManageDatabaseDialog::handleEditButtonClicked()
     if (!databaseSettingDialog(catalog, editing)) {
         return;
     }
-    m_thumbManager->updateCatalogName(id, catalog.name);
+    m_catalogDatabase->updateCatalogName(id, catalog.name);
     m_catalogs[id] = catalog;
 
     resetCatalogList();
@@ -359,7 +359,7 @@ void ManageDatabaseDialog::handleEditButtonClicked()
 
 void ManageDatabaseDialog::handleDeleteButtonClicked()
 {
-    if (!m_thumbManager) {
+    if (!m_catalogDatabase) {
         return;
     }
     QTreeWidgetItem *current = ui->treeWidget->currentItem();
@@ -368,7 +368,7 @@ void ManageDatabaseDialog::handleDeleteButtonClicked()
     }
     int id = current->data(0, Qt::UserRole).toInt();
     if (id >= 0) {
-        m_thumbManager->deleteCatalog(id);
+        m_catalogDatabase->deleteCatalog(id);
         m_catalogs.remove(id);
     } else {
         id = -100 - id;
@@ -385,10 +385,10 @@ void ManageDatabaseDialog::handleUpdateButtonClicked() {}
 
 void ManageDatabaseDialog::handleDeleteAllButtonClicked()
 {
-    if (!m_thumbManager) {
+    if (!m_catalogDatabase) {
         return;
     }
-    m_thumbManager->deleteAllCatalogs();
+    m_catalogDatabase->deleteAllCatalogs();
     m_catalogs.clear();
     m_makeCatalogs.clear();
 

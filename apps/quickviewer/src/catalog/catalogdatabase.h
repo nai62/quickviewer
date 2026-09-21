@@ -1,5 +1,5 @@
-#ifndef THUMBNAILMANAGER_H
-#define THUMBNAILMANAGER_H
+#ifndef CATALOGDATABASE_H
+#define CATALOGDATABASE_H
 
 #include <QObject>
 #include <QSqlDatabase>
@@ -164,11 +164,11 @@ public:
     QStringList subpaths;
 };
 
-class ThumbnailManager : public QObject
+class CatalogDatabase : public QObject
 {
     Q_OBJECT
 public:
-    ThumbnailManager(QObject *parent, QString dbpath);
+    CatalogDatabase(QObject *parent, QString dbpath);
     void SetFrontPageOnly(bool only) { m_frontPageOnly = only; }
     void vacuum();
     void dispose();
@@ -262,4 +262,4 @@ private:
     QList<CatalogRecord> callCreateCatalog(const QList<CatalogRecord> &newers);
 };
 
-#endif // THUMBNAILMANAGER_H
+#endif // CATALOGDATABASE_H
