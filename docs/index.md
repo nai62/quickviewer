@@ -10,9 +10,9 @@ fulltitle: QuickViewer Project
 
 **QuickViewer** is a graphic image viewer for comfortable browsing of many images.
 
-This software performs reading of image data in advance.
-And drawing the imported image data on the screen with OpenGL.
-You can browse images with much smoother response than ever before.
+This software performs reading of image data in advance, and keeps the
+imported image data cached. You can browse images with much smoother response
+than ever before.
 
 **QuickViewer** is a free software lisenced under GPLv3. 
 
@@ -20,7 +20,7 @@ You can browse images with much smoother response than ever before.
 
 ## Summary
 
- - To show images very fast (using OpenGL)
+ - To show images very fast (with page pre-loading and caching)
  - Portable (without installers, registries, external libraries)
  - Tablet PC ready
  - 2 Page Spread viewing (two images once, for digital books/comics)
@@ -250,14 +250,11 @@ Thanks for reviewers! :)
     - Restore Window State on next run
     - Always start on fullscreen
     - Show/Hide title bar on fullscreen
-- [Shaders](shader) (quality of resize)
+- [Scaling filters](shader) (quality of resize)
     - Bilinear interpolation (normal)
     - Nearest Neighbor interpolation
-    - Bicubic interpolation by CPU (high quality)
-    - ~~Bicubic interpolation (by GPU, obsoleted since v0.9.3)~~
-    - ~~Lanczos interpolation (obsoleted since v0.9.3)~~
-    - Lanczos3 by CPU (since 1.0.9)
-    - Lanczos4 by CPU (since 1.0.9)
+    - Bicubic, Spline16 and Spline36 interpolation by CPU (high quality)
+    - Lanczos3 and Lanczos4 by CPU (since 1.0.9)
 - Keyboard/Mouse Config Setting
 
 ### Normal Viewing(One Page View)
@@ -292,9 +289,10 @@ You can see images as long as taken picture with digital camera.
 You can checkout EXIF Information of the current JPEG image which you have taken picture by a digital camera.
 Click right button on the image view, to be shown a context menu, select 'Exif Information' menu.
 
-### Shaders
+### Scaling filters
 
-Image rendering quality improves. For details, to see [Shader](shader).
+Changing the scaling filter changes the image rendering quality. For details,
+see [Scaling filters](shader).
 
 ![1 of compared](compared1.png)
 

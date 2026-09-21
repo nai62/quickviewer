@@ -26,7 +26,7 @@ An image/comic viewer for Windows, Mac, and Linux. It can show images very fast!
 
 ## Summary
 
- - Fast viewing (using OpenGL)
+ - Fast viewing (with page pre-loading and caching)
  - Cross-platform (Windows, macOS, Linux)
  - Portable (no installer needed, does not write to registries, does not need external libraries)
  - Double-page spread view (displaying of two images at once: handy for digital books/comics)
@@ -108,14 +108,11 @@ Hidden bars are displayed automatically upon hovering over the top or bottom of 
 - Exif Information (since v0.3.0)
 - Open location of the current image with Windows Explorer
 - Put the current image into your mailer
-- Shader Program Filters (since v0.5.1):
-    - Nearest Neighbor
-    - Bilinear
-    - ~~Bicubic by GPU~~ (obsolete since v0.9.3)
-    - ~~Lanczos~~ (obsolete since v0.9.3)
-    - Bicubic by CPU
-    - Lanczos3 by CPU (since 1.0.9)
-    - Lanczos4 by CPU (since 1.0.9)
+- Scaling Filters (since v0.5.1):
+    - Nearest Neighbor (fast but coarse)
+    - Bilinear (standard)
+    - Bicubic, Spline16 and Spline36 by CPU
+    - Lanczos3 and Lanczos4 by CPU (since 1.0.9)
 - Catalog (since v0.6.0)
     - Database for your digital books, can manage thousands of volumes: quick view and search
 - File Associations (since v0.8.3)
