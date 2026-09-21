@@ -527,7 +527,7 @@ QFrame.layout {
    <sender>actionManageCatalogs</sender>
    <signal>triggered()</signal>
    <receiver>CatalogWindow</receiver>
-   <slot>handleFolderViewIconNoTextActionTriggered()</slot>
+   <slot>handleManageCatalogButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
