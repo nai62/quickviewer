@@ -58,7 +58,6 @@ private:
 
     /* Basical */
     bool execQuery(QSqlQuery &query, const QString &statement);
-    bool isCatalogCreationCanceled() const { return m_catalogCanceled.loadAcquire() != 0; }
     void transaction();
     void commit();
     void rollback();
@@ -66,9 +65,14 @@ private:
     /* Volumes/Files */
     int createVolume(const QString &dirpath, int catalog_id, int parent_id);
     bool updateVolumeOrders();
-    int buildCatalogVolumes(const QString &dirpath, int catalog_id);
+    int buildCatalogVolumes(const QString &dirpath, int catalog_id, const QAtomicInt *canceled);
 
     /* Catalogs */
+    /**
+     * Creates one catalog for the batch that \a canceled belongs to, or for a
+     * caller that cannot cancel the build when it is nullptr.
+     */
+    CatalogRecord createCatalog(QString name, QString path, const QAtomicInt *canceled);
     QList<CatalogRecord> callCreateCatalog(const QList<CatalogRecord> &newers);
 };
 

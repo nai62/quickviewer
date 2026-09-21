@@ -42,6 +42,12 @@ public:
     bool baseFolder;
 };
 
+/** True once the batch \a canceled belongs to has been asked to stop. */
+bool isCanceled(const QAtomicInt *canceled)
+{
+    return canceled && canceled->loadAcquire() != 0;
+}
+
 } // namespace
 
 CatalogDatabase::CatalogDatabase(QObject *parent, QString dbpath)
@@ -73,7 +79,9 @@ CatalogDatabase::~CatalogDatabase()
     QSqlDatabase::removeDatabase(m_connectionName);
 }
 
-int CatalogDatabase::buildCatalogVolumes(const QString &dirpath, int catalog_id)
+int CatalogDatabase::buildCatalogVolumes(const QString &dirpath,
+                                         int catalog_id,
+                                         const QAtomicInt *canceled)
 {
     int volume_id = createVolume(dirpath, catalog_id, -1);
     if (volume_id < 0) {
@@ -117,7 +125,7 @@ int CatalogDatabase::buildCatalogVolumes(const QString &dirpath, int catalog_id)
 
         QList<CatalogFolderJob> subJobs;
         for (int i = 0; i < scans.size(); i++) {
-            if (isCatalogCreationCanceled()) {
+            if (isCanceled(canceled)) {
                 return -1;
             }
             const CatalogFolderJob job = jobs.at(i);
@@ -274,6 +282,11 @@ bool CatalogDatabase::updateVolumeOrders()
 
 CatalogRecord CatalogDatabase::createCatalog(QString name, QString path)
 {
+    return createCatalog(name, path, nullptr);
+}
+
+CatalogRecord CatalogDatabase::createCatalog(QString name, QString path, const QAtomicInt *canceled)
+{
     CatalogRecord catalog = {0};
     catalog.name = name;
     catalog.path = path;
@@ -294,7 +307,7 @@ CatalogRecord CatalogDatabase::createCatalog(QString name, QString path)
     }
 
     int catalog_id = catalog.id = t_catalogs.lastInsertId().toInt();
-    int basevolume_id = buildCatalogVolumes(path, catalog_id);
+    int basevolume_id = buildCatalogVolumes(path, catalog_id, canceled);
     if (basevolume_id > 0) {
         t_catalogs.prepare("UPDATE t_catalogs SET basevolume_id=:basevolume_id WHERE id=:id");
         t_catalogs.bindValue(":basevolume_id", basevolume_id);
@@ -309,7 +322,7 @@ CatalogRecord CatalogDatabase::createCatalog(QString name, QString path)
         return catalog;
     }
 
-    if (isCatalogCreationCanceled()) {
+    if (isCanceled(canceled)) {
         rollback();
         return catalog;
     }
@@ -331,18 +344,15 @@ QList<CatalogRecord> CatalogDatabase::callCreateCatalog(const QList<CatalogRecor
 {
     QList<CatalogRecord> result;
     for (const CatalogRecord &r : newers) {
-        if (isCatalogCreationCanceled()) {
+        if (isCanceled(&m_catalogCanceled)) {
             break;
         }
-        result << createCatalog(r.name, r.path);
-        if (isCatalogCreationCanceled()) {
+        result << createCatalog(r.name, r.path, &m_catalogCanceled);
+        if (isCanceled(&m_catalogCanceled)) {
             break;
         }
     }
 
-    // The next build starts from a clean slate, including a synchronous
-    // createCatalog() call after a cancelled build.
-    m_catalogCanceled.storeRelease(0);
     return result;
 }
 
