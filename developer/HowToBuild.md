@@ -139,7 +139,8 @@ The Windows scripts stage the runtime data listed in the next section.
 - **AppDir/QuickViewer.desktop**: desktop entry
 - **$HOME/.quickviewer/quickviewer.ini**: main configuration
 - **$HOME/.quickviewer/progress.ini**: saved read progress
-- **$HOME/.quickviewer/thumbnail.sqlite3.db**: catalog/thumbnail database
+- **$HOME/.quickviewer/thumbnail.sqlite3.db**: catalog database, kept under
+  its historical file name
 
 `AppDir/usr/bin/qt.conf` is currently not used.
 

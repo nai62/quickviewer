@@ -77,12 +77,43 @@ volume. `ReadProgressStore` indexes these records by volume path and persists
 them to `progress.ini`. Public C++ names do not define the file format; existing
 INI keys remain compatibility constraints.
 
+### Catalog
+
+A **catalog** is a folder registered in the catalog database. The catalog view
+lists its **volumes**: the folders and archives below that folder, each with a
+**cover**, which is the first image of the volume in display order, stored as a
+JPEG thumbnail. A folder that holds no image, or whose first image cannot be
+read, is stored without a cover, and the catalog view hides the volumes that
+have none.
+
+The catalog database file keeps its historical name (`thumbnail.sqlite3.db`):
+the settings default, the resource the application copies on first start and
+the packaging scripts all point at it, and the C++ names do not define it.
+
 ## Responsibility boundary
 
 The viewer's mutable reading state belongs to `ViewerSession`. A `Volume`
 provides ordered content and loading facilities, and may be shared or cached
 without carrying a session's current-page state. Rendering state belongs to
 `RenderedPage`, outside both the volume and navigation model.
+
+### Catalog building
+
+`CatalogBuilder` reads the file system: it lists the volumes of a folder, turns
+a volume name into the title and the tags a catalog stores, and encodes the
+cover. It holds no database, so a scan can run on a worker thread.
+`CatalogDatabase` owns the SQLite connection, the statements that fill a
+catalog and every query the catalog windows run. It walks one folder level at a
+time, starts one scan per folder of that level, and stores what the finished
+scans returned on the thread that owns the connection; progress, the current
+name and cancellation belong to the database, not to a worker thread.
+
+The folder a catalog is created from is a volume of its own and holds no cover,
+so the catalog lists the folders and archives below it. Two details of the
+stored catalog are historical rather than derived from the folders: archives
+are catalogued as volumes only in the folder the catalog was created from, and
+the recorded parent ids follow the traversal rather than the folder tree. The
+catalog view reads the flat list of volumes and does not walk those ids.
 
 ### Folder text rendering
 
