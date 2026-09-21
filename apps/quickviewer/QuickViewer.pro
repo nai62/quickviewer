@@ -6,6 +6,11 @@
 
 include(../../QVproject.pri)
 include(../../qmake/windows-target.pri)
+# A test project file points QV_APP_SOURCE at this directory before including
+# this file; only the application itself copies its icons into its build tree,
+# because the test projects build into the same directory in parallel.
+QV_ASSOC_ICONS_FOR_THIS_PROJECT = true
+!isEmpty(QV_APP_SOURCE): QV_ASSOC_ICONS_FOR_THIS_PROJECT = false
 isEmpty(QV_APP_SOURCE): QV_APP_SOURCE = $$PWD
 RESVG_SOURCE_ROOT = $$clean_path($$QV_APP_SOURCE/../../third_party/resvg)
 include(../../qmake/third_party/resvg/resvg.pri)
@@ -68,6 +73,20 @@ contains(DEFINES, QV_WITH_LUMINOR) {
     }
 }
 
+# The file type icons the association dialog registers next to the executable.
+QV_ASSOC_ICONS = \
+    ../../components/file-association/icons/qv_apng.ico \
+    ../../components/file-association/icons/qv_bmp.ico \
+    ../../components/file-association/icons/qv_dds.ico \
+    ../../components/file-association/icons/qv_gif.ico \
+    ../../components/file-association/icons/qv_icon.ico \
+    ../../components/file-association/icons/qv_jpeg.ico \
+    ../../components/file-association/icons/qv_png.ico \
+    ../../components/file-association/icons/qv_raw.ico \
+    ../../components/file-association/icons/qv_tga.ico \
+    ../../components/file-association/icons/qv_tiff.ico \
+    ../../components/file-association/icons/qv_webp.ico \
+
 win32 {
     win32-msvc* {
         QMAKE_CXXFLAGS += /wd4819
@@ -80,6 +99,24 @@ win32 {
 
     # copy official 7z.dll to build/bin/
     QMAKE_POST_LINK += $$QMAKE_COPY /B $$shell_quote($$shell_path($$PWD/../../third_party/7zip/windll/$${TARGET_ARCH}/7z.dll)) $$shell_path($${DESTDIR}) $$escape_expand(\n\t)
+
+    # The association dialog registers these icons next to the executable, so a
+    # build that is run before it is packaged needs them there as well. The last
+    # icon is the file the copy is keyed on: it is missing with the directory
+    # and older than any icon that changed.
+    contains(QV_ASSOC_ICONS_FOR_THIS_PROJECT, true) {
+        assoc_icons.target = $${DESTDIR}/iconengines/qv_webp.ico
+        assoc_icons.depends =
+        for(icon, QV_ASSOC_ICONS) {
+            assoc_icons.depends += $$PWD/$$icon
+        }
+        assoc_icons.commands = if not exist "$$shell_path($${DESTDIR}/iconengines)" $(MKDIR) "$$shell_path($${DESTDIR}/iconengines)" $$escape_expand(\n\t)
+        for(icon, QV_ASSOC_ICONS) {
+            assoc_icons.commands += $$QMAKE_COPY /B $$shell_quote($$shell_path($$PWD/$$icon)) $$shell_quote($$shell_path($${DESTDIR}/iconengines)) $$escape_expand(\n\t)
+        }
+        QMAKE_EXTRA_TARGETS += assoc_icons
+        PRE_TARGETDEPS += $$assoc_icons.target
+    }
 }
 linux {
     DEFINES += _UNIX
@@ -370,18 +407,7 @@ win32 : !CONFIG(debug, debug|release) {
         $$[QT_INSTALL_TRANSLATIONS]/qt_zh_CN.qm \
 
     install_assoc_icons.path = $${MY_DEFAULT_INSTALL}/iconengines
-    install_assoc_icons.files = \
-        ../../components/file-association/icons/qv_apng.ico \
-        ../../components/file-association/icons/qv_bmp.ico \
-        ../../components/file-association/icons/qv_dds.ico \
-        ../../components/file-association/icons/qv_gif.ico \
-        ../../components/file-association/icons/qv_icon.ico \
-        ../../components/file-association/icons/qv_jpeg.ico \
-        ../../components/file-association/icons/qv_png.ico \
-        ../../components/file-association/icons/qv_raw.ico \
-        ../../components/file-association/icons/qv_tga.ico \
-        ../../components/file-association/icons/qv_tiff.ico \
-        ../../components/file-association/icons/qv_webp.ico \
+    install_assoc_icons.files = $$QV_ASSOC_ICONS
 
     install_db.path = $${MY_DEFAULT_INSTALL}/database
     install_db.depends = install_install_assoc_icons
@@ -452,18 +478,7 @@ linux : !CONFIG(debug, debug|release) : contains(DEFINES, QV_PORTABLE) {
         $$[QT_INSTALL_TRANSLATIONS]/qt_zh_CN.qm \
 
     install_assoc_icons.path = $${MY_DEFAULT_INSTALL}/usr/shared/icons
-    install_assoc_icons.files = \
-        ../../components/file-association/icons/qv_apng.ico \
-        ../../components/file-association/icons/qv_bmp.ico \
-        ../../components/file-association/icons/qv_dds.ico \
-        ../../components/file-association/icons/qv_gif.ico \
-        ../../components/file-association/icons/qv_icon.ico \
-        ../../components/file-association/icons/qv_jpeg.ico \
-        ../../components/file-association/icons/qv_png.ico \
-        ../../components/file-association/icons/qv_raw.ico \
-        ../../components/file-association/icons/qv_tga.ico \
-        ../../components/file-association/icons/qv_tiff.ico \
-        ../../components/file-association/icons/qv_webp.ico \
+    install_assoc_icons.files = $$QV_ASSOC_ICONS
 
     install_appimage.path = $${MY_DEFAULT_INSTALL}/..
     install_appimage.files = $${APPIMAGE}
@@ -518,18 +533,7 @@ linux : !CONFIG(debug, debug|release) : !contains(DEFINES, QV_PORTABLE) {
         $${PWD}/translations/qt_el.qm
 
     install_assoc_icons.path = $${QV_SHARED_PATH}/QuickViewer/icons
-    install_assoc_icons.files = \
-        ../../components/file-association/icons/qv_apng.ico \
-        ../../components/file-association/icons/qv_bmp.ico \
-        ../../components/file-association/icons/qv_dds.ico \
-        ../../components/file-association/icons/qv_gif.ico \
-        ../../components/file-association/icons/qv_icon.ico \
-        ../../components/file-association/icons/qv_jpeg.ico \
-        ../../components/file-association/icons/qv_png.ico \
-        ../../components/file-association/icons/qv_raw.ico \
-        ../../components/file-association/icons/qv_tga.ico \
-        ../../components/file-association/icons/qv_tiff.ico \
-        ../../components/file-association/icons/qv_webp.ico \
+    install_assoc_icons.files = $$QV_ASSOC_ICONS
 
     INSTALLS += install_target install_libs install_deploy_files install_translations install_assoc_icons
 }
