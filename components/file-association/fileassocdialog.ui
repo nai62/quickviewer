@@ -14,8 +14,8 @@
    <string>Associate files with QuickViewer</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="resources.qrc">
-    <normaloff>:/icons2/app_icon2</normaloff>:/icons2/app_icon2</iconset>
+   <iconset resource="../../apps/quickviewer/toolbar.qrc">
+    <normaloff>:/icons/appicon</normaloff>:/icons/appicon</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -223,7 +223,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="resources.qrc"/>
+  <include location="../../apps/quickviewer/toolbar.qrc"/>
  </resources>
  <connections>
   <connection>
