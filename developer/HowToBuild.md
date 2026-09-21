@@ -14,9 +14,9 @@ Install the Qt SDK:
 
 https://www.qt.io/download-open-source/
 
-QuickViewer requires Qt 6.11 or later. Use the Qt version and MSVC kit listed
-in [Testing.md](Testing.md); the paths in the steps below assume that
-installation.
+QuickViewer requires Qt 6 or later; any Qt 6 release builds it. Use the Qt
+version and MSVC kit listed in [Testing.md](Testing.md) for the verified
+configuration, since the paths in the steps below assume that installation.
 
 ### Set up Rust
 

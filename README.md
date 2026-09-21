@@ -169,7 +169,7 @@ You can perform screen operations with the main menu, toolbar, mouse button, whe
     - Windows Server 2019 or newer
     - Linux Distributions (Ubuntu, Kubuntu, Fedora, etc.)
 - Building from source
-    - Qt 6.11 or newer and a C++17 compiler; see [developer/HowToBuild.md](developer/HowToBuild.md)
+    - Qt 6.0 or newer and a C++17 compiler; see [developer/HowToBuild.md](developer/HowToBuild.md)
 - CPU
     - minimum Dual Core (the more the better; with internal or external GPU)
     - strongly recommended an x64 architecture

@@ -383,7 +383,7 @@ You can do screen operations with the main menu, tool bar, mouse button, wheel, 
     - Windows Server 2019 or newer
     - Linux Desktops(need to build from source code )
 - Build requirements
-    - Qt 6.11 or newer and a C++17 compiler
+    - Qt 6.0 or newer and a C++17 compiler
 - CPU
     - minimum Dual Core(more better with internal GPU or external GPU)
     - strongly recommended on x64 architecture
