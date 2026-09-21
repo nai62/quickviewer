@@ -262,11 +262,21 @@ QString Volume::pageNameAt(int pageIndex) const
 
 int Volume::pageIndexForName(const QString &name) const
 {
-    const QString nativeName = QDir::toNativeSeparators(name);
-    if (!m_shuffledPageNames.isEmpty()) {
-        return m_shuffledPageNames.indexOf(nativeName);
+    const QList<QString> &names = m_shuffledPageNames.isEmpty() ? m_pageNames : m_shuffledPageNames;
+    const int exact = names.indexOf(name);
+    if (exact >= 0) {
+        return exact;
     }
-    return m_pageNames.indexOf(nativeName);
+    // Folder listings name their pages with the platform separator, while
+    // archive entries keep the '/' they carry inside the archive. Compare the
+    // spellings in one form so a name written by either side is found.
+    const QString normalizedName = QDir::fromNativeSeparators(name);
+    for (int index = 0; index < names.size(); ++index) {
+        if (QDir::fromNativeSeparators(names.at(index)) == normalizedName) {
+            return index;
+        }
+    }
+    return -1;
 }
 
 static int recommendedPrefetchConcurrency(const IFileLoader *loader)

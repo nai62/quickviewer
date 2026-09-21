@@ -610,9 +610,10 @@ private slots:
 
         StartupWindow viewer;
         viewer.openPath(archivePath);
-        // Use the flat entry: the fixture also holds one in a subdirectory,
-        // whose name lookup is a separate, pre-existing problem.
-        const QString entryName = QStringLiteral("yellow.png");
+        // Bookmark the page the fixture keeps in a subdirectory, so the load
+        // has to resolve its name and not just its index.
+        const QString entryName =
+            QStringLiteral("[sample＋folder] サンプル！　～フォルダ？～/red.jpg");
         int entryIndex = -1;
         for (int page = 0; page < viewer.viewerSession()->pageCount(); ++page) {
             if (viewer.viewerSession()->selectPage(page) &&
