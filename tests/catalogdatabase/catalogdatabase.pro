@@ -32,3 +32,5 @@ LIBS += -L../../lib
 win32: LIBS += -lshell32
 QMAKE_POST_LINK =
 INSTALLS =
+
+DEFINES += CATALOGDATABASE_SRCDIR=\\\"$$PWD/\\\"

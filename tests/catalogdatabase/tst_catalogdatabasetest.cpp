@@ -143,6 +143,7 @@ private Q_SLOTS:
     void keepsAnUnreadableCatalogDatabase();
     void refusesADatabaseWithoutTheCatalogSchema();
     void removesVolumesWhoseFoldersAreGone();
+    void catalogsAnArchiveOnItsOwn();
     void parsesVolumeNames_data();
     void parsesVolumeNames();
     void finishesAnEmptyCatalogRequest();
@@ -341,6 +342,25 @@ void CatalogDatabaseTest::removesVolumesWhoseFoldersAreGone()
     QCOMPARE(probe.count(QStringLiteral("t_thumbnails")), 1);
     QCOMPARE(probe.count(QStringLiteral("t_volumeorders")), 2);
     QCOMPARE(probe.count(QStringLiteral("t_fileorders")), 1);
+}
+
+void CatalogDatabaseTest::catalogsAnArchiveOnItsOwn()
+{
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    const QString archivePath = QDir(fixture.rootPath()).filePath(QStringLiteral("Book.zip"));
+    QVERIFY(QDir().mkpath(fixture.rootPath()));
+    QVERIFY(QFile::copy(
+        QStringLiteral(CATALOGDATABASE_SRCDIR "../fileloader/data/deflate-utf8.zip"), archivePath));
+
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    // A catalog whose folder is an archive holds that archive as its volume.
+    const CatalogRecord catalog = database.createCatalog(QStringLiteral("Book"), archivePath);
+    QVERIFY(catalog.created);
+    QCOMPARE(database.volumes().size(), 1);
+    const VolumeThumbRecord volume = database.volumes().first();
+    QCOMPARE(volume.realname, QStringLiteral("Book.zip"));
+    QVERIFY(!volume.thumbnail.isEmpty());
 }
 
 void CatalogDatabaseTest::parsesVolumeNames_data()
