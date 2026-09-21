@@ -106,6 +106,39 @@
         <comment>Text of the status bar showing how many volumes are listed</comment>
         <translation>%1 冊を表示中</translation>
     </message>
+    <message>
+        <source>Edit tags...</source>
+        <comment>Context menu entry of a book in the catalog list</comment>
+        <translation>タグを編集...</translation>
+    </message>
+</context>
+<context>
+    <name>VolumeTagDialog</name>
+    <message>
+        <source>Edit tags</source>
+        <translation>タグの編集</translation>
+    </message>
+    <message>
+        <source>Title:</source>
+        <translation>タイトル:</translation>
+    </message>
+    <message>
+        <source>Tags:</source>
+        <translation>タグ:</translation>
+    </message>
+    <message>
+        <source>New tag</source>
+        <translation>新しいタグ</translation>
+    </message>
+    <message>
+        <source>&amp;Add</source>
+        <translation>追加(&amp;A)</translation>
+    </message>
+    <message>
+        <source>Tags belong to this book only. The title is used when the list shows titles rather than folder names.</source>
+        <comment>Line under the tag list of the dialog that edits one catalog volume</comment>
+        <translation>タグはこの本だけに付きます。タイトルは、一覧がタイトルを表示する設定のときに使われます。</translation>
+    </message>
 </context>
 <context>
     <name>DatabaseSettingDialog</name>

@@ -5,6 +5,7 @@
 #include "catalogwindow.h"
 #include "managedatabasedialog.h"
 #include "qvapplication.h"
+#include "volumetagdialog.h"
 #include "flowlayout.h"
 
 #ifdef Q_OS_WIN
@@ -58,6 +59,11 @@ CatalogWindow::CatalogWindow(QWidget *parent, Ui::MainWindow *uiMain)
     // VolumeView
     m_itemModel.setViewMode(qApp->CatalogViewModeSetting());
     ui->volumeList->setModel(&m_itemModel);
+    ui->volumeList->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->volumeList,
+            &QListView::customContextMenuRequested,
+            this,
+            &CatalogWindow::handleVolumeListContextMenu);
 
     // SearchCombo
     connect(ui->searchCombo->lineEdit(),
@@ -421,6 +427,53 @@ void CatalogWindow::handleVolumeListItemDoubleClicked(const QModelIndex &index)
     }
 
     resetTagButtons(tagtxt, getTagWords());
+}
+
+void CatalogWindow::handleVolumeListContextMenu(const QPoint &position)
+{
+    const QModelIndex index = ui->volumeList->indexAt(position);
+    if (!index.isValid()) {
+        return;
+    }
+    QMenu menu;
+    QAction *edit =
+        menu.addAction(tr("Edit tags...", "Context menu entry of a book in the catalog list"));
+    if (menu.exec(ui->volumeList->viewport()->mapToGlobal(position)) != edit) {
+        return;
+    }
+    editVolumeTags(index.row());
+}
+
+void CatalogWindow::editVolumeTags(int row)
+{
+    if (!m_catalogDatabase || row < 0 || row >= m_volumeSearch.size()) {
+        return;
+    }
+    const VolumeThumbRecord *volume = m_volumeSearch.at(row);
+    const int volumeId = volume->id;
+
+    QStringList knownTags;
+    const QMap<int, TagRecord *> byCount = m_catalogDatabase->tagsByCount();
+    for (TagRecord *tag : byCount) {
+        knownTags << tag->name;
+    }
+    QStringList volumeTags;
+    for (const TagRecord &tag : m_catalogDatabase->getTagsFromVolumeId(volumeId)) {
+        volumeTags << tag.name;
+    }
+
+    VolumeTagDialog dialog(this);
+    dialog.setVolume(*volume, knownTags, volumeTags);
+    if (dialog.exec() != QDialog::Accepted) {
+        return;
+    }
+    m_catalogDatabase->setVolumeDisplayName(volumeId, dialog.displayName());
+    m_catalogDatabase->setVolumeTags(volumeId, dialog.tags());
+
+    // The tags and the titles the list shows both changed.
+    m_volumes = m_catalogDatabase->volumes();
+    initTagButtons();
+    searchByWord(true);
 }
 
 void CatalogWindow::handleSearchTitleWithOptionsActionTriggered(bool checked)

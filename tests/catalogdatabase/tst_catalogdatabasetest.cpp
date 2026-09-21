@@ -3,7 +3,10 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QImage>
+#include <QLineEdit>
+#include <QListWidget>
 #include <QMimeData>
+#include <QPushButton>
 #include <QTemporaryDir>
 #include <QTreeWidget>
 #include <QtSql>
@@ -13,6 +16,7 @@
 #include "catalogdatabase.h"
 #include "managedatabasedialog.h"
 #include "volumenameparser.h"
+#include "volumetagdialog.h"
 
 namespace {
 
@@ -151,6 +155,7 @@ private Q_SLOTS:
     void catalogsAnArchiveOnItsOwn();
     void registersADroppedArchiveAsItsOwnCatalog();
     void editsTheTitleAndTagsOfAVolume();
+    void offersTheTitleAndTagsOfAVolumeForEditing();
     void parsesVolumeNames_data();
     void parsesVolumeNames();
     void finishesAnEmptyCatalogRequest();
@@ -453,6 +458,46 @@ void CatalogDatabaseTest::editsTheTitleAndTagsOfAVolume()
     QVERIFY(database.setVolumeTags(alphaId, QStringList()));
     QVERIFY(database.getTagsFromVolumeId(alphaId).isEmpty());
     QVERIFY(database.tagsByCount().isEmpty());
+}
+
+void CatalogDatabaseTest::offersTheTitleAndTagsOfAVolumeForEditing()
+{
+    VolumeThumbRecord volume;
+    volume.id = 1;
+    volume.name = QStringLiteral("Stored Title");
+    volume.realname = QStringLiteral("Folder Name");
+
+    VolumeTagDialog dialog;
+    dialog.setVolume(
+        volume, {QStringLiteral("First"), QStringLiteral("Second")}, {QStringLiteral("Second")});
+    QCOMPARE(dialog.displayName(), QStringLiteral("Stored Title"));
+
+    // The tags the catalog knows are offered, and the ones the volume carries
+    // are ticked.
+    QListWidget *list = dialog.findChild<QListWidget *>(QStringLiteral("tagList"));
+    QVERIFY(list);
+    QCOMPARE(list->count(), 2);
+    QCOMPARE(dialog.tags(), QStringList({QStringLiteral("Second")}));
+
+    // The user types a tag the catalog does not know yet.
+    QLineEdit *newTag = dialog.findChild<QLineEdit *>(QStringLiteral("newTagEdit"));
+    QPushButton *addTag = dialog.findChild<QPushButton *>(QStringLiteral("addTagButton"));
+    QVERIFY(newTag);
+    QVERIFY(addTag);
+    newTag->setText(QStringLiteral("Third"));
+    addTag->click();
+    QCOMPARE(dialog.tags(), QStringList({QStringLiteral("Second"), QStringLiteral("Third")}));
+    QVERIFY(newTag->text().isEmpty());
+
+    // Taking a suggestion back is unticking it.
+    list->item(1)->setCheckState(Qt::Unchecked);
+    QCOMPARE(dialog.tags(), QStringList({QStringLiteral("Third")}));
+
+    // The title the catalog shows is editable as well.
+    QLineEdit *name = dialog.findChild<QLineEdit *>(QStringLiteral("nameEdit"));
+    QVERIFY(name);
+    name->setText(QStringLiteral("  Edited Title  "));
+    QCOMPARE(dialog.displayName(), QStringLiteral("Edited Title"));
 }
 
 void CatalogDatabaseTest::parsesVolumeNames_data()

@@ -149,6 +149,7 @@ SOURCES += \
     src/catalog/managedatabasedialog.cpp \
     src/catalog/volumeitemmodel.cpp \
     src/catalog/volumenameparser.cpp \
+    src/catalog/volumetagdialog.cpp \
     src/exifdialog.cpp \
     src/folderview/folderitemdelegate.cpp \
     src/folderview/folderitemmodel.cpp \
@@ -213,6 +214,7 @@ HEADERS  += \
     src/catalog/catalogrecords.h \
     src/catalog/volumeitemmodel.h \
     src/catalog/volumenameparser.h \
+    src/catalog/volumetagdialog.h \
     src/exifdialog.h \
     src/folderview/folderitemdelegate.h \
     src/folderview/folderitem.h \
@@ -294,6 +296,7 @@ FORMS    += \
     src/catalog/cataloglist.ui \
     src/catalog/catalogwindow.ui \
     src/catalog/createdb.ui \
+    src/catalog/volumetagdialog.ui \
     src/folderview/folderwindow.ui \
     src/optionsdialog.ui \
     src/renamedialog.ui \

@@ -56,6 +56,7 @@ public slots:
     void handleSearchComboBoxCurrentIndexChanged(QString search);
     void handleSearchLineEditEditingFinished();
     void handleVolumeListItemDoubleClicked(const QModelIndex &index);
+    void handleVolumeListContextMenu(const QPoint &position);
     void handleSearchTitleWithOptionsActionTriggered(bool checked);
     void handleCatalogTitleWithoutOptionsActionTriggered(bool checked);
     void handleTagButtonClicked();
@@ -68,6 +69,9 @@ protected:
     void closeEvent(QCloseEvent *e);
 
 private:
+    /** Opens the tag dialog for the volume at \a row of the shown list. */
+    void editVolumeTags(int row);
+
     int listableVolumeCount() const;
 
     Ui::CatalogWindow *ui;
