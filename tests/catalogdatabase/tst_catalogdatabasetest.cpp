@@ -401,41 +401,73 @@ void CatalogDatabaseTest::parsesVolumeNames_data()
 {
     QTest::addColumn<QString>("realname");
     QTest::addColumn<QString>("title");
-    QTest::addColumn<QString>("tag");
-    QTest::addColumn<int>("type");
+    QTest::addColumn<QStringList>("tags"); // "name(type)"
 
     QTest::newRow("plain") << QStringLiteral("Book Title") << QStringLiteral("Book Title")
-                           << QString() << -1;
-    QTest::newRow("year") << QStringLiteral("Sample Series (2017)")
-                          << QStringLiteral("Sample Series") << QStringLiteral("2017") << 0;
-    QTest::newRow("author") << QStringLiteral("[Author] Book Title")
-                            << QStringLiteral("[Author] Book Title") << QStringLiteral("Author")
-                            << 2;
-    // A word after a leading "#" is a tag, and the word stays whole: the parser
-    // buffers it without brackets, so neither end may be trimmed.
-    QTest::newRow("hashword") << QStringLiteral("#Series Book Title")
-                              << QStringLiteral("Series Book Title") << QStringLiteral("Series")
-                              << 2;
-    QTest::newRow("hashbrackets") << QStringLiteral("# [Author] Book Title")
-                                  << QStringLiteral("[Author] Book Title")
-                                  << QStringLiteral("Author") << 2;
+                           << QStringList();
+
+    // A parenthesized field is a tag and leaves the title.
+    QTest::newRow("trailing-field")
+        << QStringLiteral("Sample Series (2017)") << QStringLiteral("Sample Series")
+        << QStringList{QStringLiteral("2017(0)")};
+
+    QTest::newRow("bracketed-field")
+        << QStringLiteral("[Sample] Book Title") << QStringLiteral("Book Title")
+        << QStringList{QStringLiteral("Sample(0)")};
+
+    // The bracketed publisher and author are the one field that stays in the
+    // title, and it counts as three tags.
+    QTest::newRow("publisher-and-author") << QStringLiteral("[Publisher (Author)] Book Title")
+                                          << QStringLiteral("[Publisher (Author)] Book Title")
+                                          << QStringList{QStringLiteral("Publisher(2)"),
+                                                         QStringLiteral("Author(3)"),
+                                                         QStringLiteral("Publisher (Author)(1)")};
+
+    QTest::newRow("leading-and-trailing-fields")
+        << QStringLiteral("(First) [Publisher (Author)] Book Title (Last)")
+        << QStringLiteral("[Publisher (Author)] Book Title")
+        << QStringList{QStringLiteral("First(0)"),
+                       QStringLiteral("Publisher(2)"),
+                       QStringLiteral("Author(3)"),
+                       QStringLiteral("Publisher (Author)(1)"),
+                       QStringLiteral("Last(0)")};
+
+    // A word after a leading "#" is a tag and stays whole: the parser buffers
+    // it without brackets, so neither end may be trimmed.
+    QTest::newRow("hash-word") << QStringLiteral("#Series Book Title")
+                               << QStringLiteral("Book Title")
+                               << QStringList{QStringLiteral("Series(0)")};
+
+    QTest::newRow("hash-bracketed-field")
+        << QStringLiteral("# [Series] Book Title") << QStringLiteral("Book Title")
+        << QStringList{QStringLiteral("Series(0)")};
+
+    QTest::newRow("hash-with-every-field")
+        << QStringLiteral("# [First] [Second] [Publisher (Author)] Book Title (Last) [Third]")
+        << QStringLiteral("[Publisher (Author)] Book Title")
+        << QStringList{QStringLiteral("First(0)"),
+                       QStringLiteral("Second(0)"),
+                       QStringLiteral("Publisher(2)"),
+                       QStringLiteral("Author(3)"),
+                       QStringLiteral("Publisher (Author)(1)"),
+                       QStringLiteral("Last(0)"),
+                       QStringLiteral("Third(0)")};
 }
 
 void CatalogDatabaseTest::parsesVolumeNames()
 {
     QFETCH(QString, realname);
     QFETCH(QString, title);
-    QFETCH(QString, tag);
-    QFETCH(int, type);
+    QFETCH(QStringList, tags);
 
     const TaggedName parsed = parseVolumeName(realname);
+    QStringList parsedTags;
+    for (const TagRecord &tag : parsed.tags) {
+        parsedTags << QStringLiteral("%1(%2)").arg(tag.name).arg(tag.type_id);
+    }
     QCOMPARE(parsed.name, title);
     QCOMPARE(parsed.realname, realname);
-    QCOMPARE(parsed.tags.size(), tag.isEmpty() ? 0 : 1);
-    if (!tag.isEmpty()) {
-        QCOMPARE(parsed.tags.first().name, tag);
-        QCOMPARE(parsed.tags.first().type_id, type);
-    }
+    QCOMPARE(parsedTags, tags);
 }
 
 void CatalogDatabaseTest::finishesAnEmptyCatalogRequest()
