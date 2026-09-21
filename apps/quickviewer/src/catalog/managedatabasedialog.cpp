@@ -100,7 +100,7 @@ void ManageDatabaseDialog::resetCatalogList()
         const CatalogRecord &catalog = m_catalogs[id];
         QTreeWidgetItem *item = new QTreeWidgetItem;
         item->setText(0, catalog.name);
-        item->setText(1, CatalogDatabase::DateTimeToIsoString(catalog.created_at));
+        item->setText(1, catalog.created_at.toString(QStringLiteral("yyyy/MM/dd hh:mm:ss")));
         item->setText(2, catalog.path);
         item->setData(0, Qt::UserRole, QVariant(catalog.id));
         ui->treeWidget->addTopLevelItem(item);

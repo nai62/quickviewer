@@ -1,17 +1,12 @@
-#include <QtGui>
+#include <QtConcurrent>
 #include <QtSql>
 #include <QDebug>
-#include <QApplication>
 
+#include "catalogbuilder.h"
 #include "catalogdatabase.h"
 #include "fileloader.h"
-#include "volume.h"
-#include "volumeloader.h"
 
 namespace {
-
-// Width of the thumbnails stored in the catalog database.
-constexpr int ThumbnailWidth = 96;
 
 /** One volume of t_volumes, as far as the ordering pass needs it. */
 class VolumeOrder
@@ -37,12 +32,17 @@ QString connectionNameFor(const void *handle)
     return QStringLiteral("catalog-%1").arg(reinterpret_cast<quintptr>(handle), 0, 16);
 }
 
-} // namespace
-
-QString CatalogDatabase::DateTimeToIsoString(QDateTime datetime)
+/** One catalog folder waiting for its scan, and where the result is stored. */
+class CatalogFolderJob
 {
-    return datetime.toString(QStringLiteral("yyyy/MM/dd hh:mm:ss"));
-}
+public:
+    QString path;
+    int volumeId;
+    int subVolumeParentId;
+    bool baseFolder;
+};
+
+} // namespace
 
 CatalogDatabase::CatalogDatabase(QObject *parent, QString dbpath)
     : QObject(parent),
@@ -73,47 +73,9 @@ CatalogDatabase::~CatalogDatabase()
     QSqlDatabase::removeDatabase(m_connectionName);
 }
 
-VolumeWorker
-CatalogDatabase::createSubVolumesConcurrent(QString dirpath, int volume_id, int parent_id)
+int CatalogDatabase::buildCatalogVolumes(const QString &dirpath, int catalog_id)
 {
-    VolumeWorker vw = {0};
-    vw.frontPage.asc = -1;
-    vw.dirpath = dirpath;
-    vw.volume_id = volume_id;
-    vw.parent_id = parent_id;
-
-    if (IFileLoader::isArchiveFile(dirpath)) {
-        VolumeLoader volumeLoader(dirpath);
-        ImageContent thumbnailContent = volumeLoader.loadThumbnailSourceImage();
-        if (!thumbnailContent.loadedImage.isNull()) {
-            vw.frontPage = createFileRecordFromArchive(dirpath, thumbnailContent, 0);
-        }
-        return vw;
-    }
-
-    QDir dir(dirpath);
-    QStringList subdirs = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Unsorted);
-    IFileLoader::sortFiles(subdirs);
-    vw.subpaths = subdirs;
-
-    QStringList files = dir.entryList(QDir::Files, QDir::Unsorted);
-    IFileLoader::sortFiles(files);
-    for (const QString &filename : files) {
-        if (isCatalogCreationCanceled()) {
-            break;
-        }
-        if (!IFileLoader::isImageFile(filename)) {
-            continue;
-        }
-        vw.frontPage = createFileRecord(filename, dir.filePath(filename), 0);
-        break; // ONLY FRONT PAGE
-    }
-    return vw;
-}
-
-int CatalogDatabase::createVolumesFrontPageOnly(QString dirpath, int catalog_id)
-{
-    int volume_id = createVolumeInternal(dirpath, catalog_id, -1);
+    int volume_id = createVolume(dirpath, catalog_id, -1);
     if (volume_id < 0) {
         return -1;
     }
@@ -134,245 +96,100 @@ int CatalogDatabase::createVolumesFrontPageOnly(QString dirpath, int catalog_id)
     t_volumes.prepare(
         "UPDATE t_volumes SET frontpage_id=:frontpage_id, thumb_id=:thumb_id WHERE id=:id");
 
-    QList<VolumeWorker> parentworkers;
-    {
-        QDir dir(dirpath);
-        VolumeWorker root = {0};
-        root.dirpath = dirpath;
-        root.volume_id = volume_id;
-        root.catalog_id = catalog_id;
-        root.parent_id = -1;
-        root.subpaths = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Unsorted);
-        IFileLoader::sortFiles(root.subpaths);
-        QStringList files = dir.entryList(QDir::Files, QDir::Unsorted);
-        for (const QString &f : files) {
-            if (IFileLoader::isArchiveFile(f)) {
-                root.subpaths << f;
-            }
-        }
-        parentworkers << root;
-    }
-
+    // The base folder is a volume of its own, and the rows of its sub-volumes
+    // keep the parent id this traversal has always recorded for them.
+    QList<CatalogFolderJob> jobs;
+    jobs << CatalogFolderJob{dirpath, volume_id, -1, true};
     int scannedCount = 0;
-    int knownCount = 0;
-    QList<QFuture<VolumeWorker>> workers;
-    do {
-        for (const VolumeWorker &p : parentworkers) {
-            const QDir dir(p.dirpath);
-            for (const QString &sub : p.subpaths) {
-                if (isCatalogCreationCanceled()) {
-                    return -1;
-                }
-                const QString subpath = dir.filePath(sub);
-                const int sub_id = createVolumeInternal(subpath, catalog_id, p.parent_id);
-                if (sub_id < 0) {
-                    return -1;
-                }
-                // The scan runs on a worker thread, so it owns its arguments.
-                const int parentVolumeId = p.volume_id;
-                workers.append(QtConcurrent::run([subpath, sub_id, parentVolumeId] {
-                    return createSubVolumesConcurrent(subpath, sub_id, parentVolumeId);
-                }));
-                ++knownCount;
-            }
-        }
-        emit catalogProgressRangeChanged(0, knownCount);
-        parentworkers.clear();
+    int knownCount = jobs.size();
+    emit catalogProgressRangeChanged(0, knownCount);
 
-        for (const QFuture<VolumeWorker> &w : workers) {
+    while (!jobs.isEmpty()) {
+        QList<QFuture<CatalogFolderScan>> scans;
+        scans.reserve(jobs.size());
+        for (const CatalogFolderJob &job : jobs) {
+            // The scan runs on a worker thread, so it owns its arguments.
+            const QString path = job.path;
+            const bool baseFolder = job.baseFolder;
+            scans << QtConcurrent::run(
+                [path, baseFolder] { return CatalogBuilder::scanFolder(path, baseFolder); });
+        }
+
+        QList<CatalogFolderJob> subJobs;
+        for (int i = 0; i < scans.size(); i++) {
             if (isCatalogCreationCanceled()) {
                 return -1;
             }
-            const VolumeWorker &v = w.result();
-            emit catalogProgressValueChanged(++scannedCount);
-            if (v.volume_id < 0) {
-                continue;
+            const CatalogFolderJob job = jobs.at(i);
+            const CatalogFolderScan scan = scans.at(i).result();
+            const QDir dir(job.path);
+            for (const QString &name : scan.subVolumeNames) {
+                const QString path = dir.filePath(name);
+                const int subVolumeId = createVolume(path, catalog_id, job.subVolumeParentId);
+                if (subVolumeId < 0) {
+                    return -1;
+                }
+                // Kept from the traversal this replaces: a volume is recorded
+                // under the folder above the one that holds it.
+                subJobs << CatalogFolderJob{path, subVolumeId, job.volumeId, false};
             }
-            if (v.frontPage.asc >= 0) {
-                emit catalogProgressTextChanged(QFileInfo(v.dirpath).fileName());
 
-                t_thumbs.bindValue(":width", v.frontPage.thumb.width());
-                t_thumbs.bindValue(":height", v.frontPage.thumb.height());
-                t_thumbs.bindValue(":thumbnail", v.frontPage.thumbbytes);
+            if (!scan.cover.isEmpty()) {
+                emit catalogProgressTextChanged(QFileInfo(job.path).fileName());
+
+                t_thumbs.bindValue(":width", scan.cover.thumbnailSize.width());
+                t_thumbs.bindValue(":height", scan.cover.thumbnailSize.height());
+                t_thumbs.bindValue(":thumbnail", scan.cover.thumbnail);
                 t_thumbs.bindValue(":created_at", QDateTime::currentDateTime());
                 if (!execQuery(t_thumbs, "t_thumbs")) {
                     return -1;
                 }
 
-                t_files.bindValue(":volume_id", v.volume_id);
-                t_files.bindValue(":name", v.frontPage.filename);
-                t_files.bindValue(":size", v.frontPage.info.size());
-                t_files.bindValue(":width", v.frontPage.imagesize.width());
-                t_files.bindValue(":height", v.frontPage.imagesize.height());
+                t_files.bindValue(":volume_id", job.volumeId);
+                t_files.bindValue(":name", scan.cover.name);
+                t_files.bindValue(":size", scan.cover.size);
+                t_files.bindValue(":width", scan.cover.imageSize.width());
+                t_files.bindValue(":height", scan.cover.imageSize.height());
                 t_files.bindValue(":thumb_id", t_thumbs.lastInsertId());
-                //t_files.bindValue(":created_at", v.frontPage.info.created());
-                t_files.bindValue(":updated_at", v.frontPage.info.lastModified());
+                t_files.bindValue(":updated_at", scan.cover.updated);
                 if (!execQuery(t_files, "t_files")) {
                     return -1;
                 }
 
-                t_fileorders.bindValue(":volume_id", v.volume_id);
+                t_fileorders.bindValue(":volume_id", job.volumeId);
                 t_fileorders.bindValue(":id", t_files.lastInsertId());
-                t_fileorders.bindValue(":filename_asc", v.frontPage.asc);
+                t_fileorders.bindValue(":filename_asc", 0);
                 if (!execQuery(t_fileorders, "t_fileorders")) {
                     return -1;
                 }
 
                 t_volumes.bindValue(":frontpage_id", t_files.lastInsertId());
                 t_volumes.bindValue(":thumb_id", t_thumbs.lastInsertId());
-                t_volumes.bindValue(":id", v.volume_id);
+                t_volumes.bindValue(":id", job.volumeId);
                 if (!execQuery(t_volumes, "t_volumes")) {
                     return -1;
                 }
             }
 
-            if (v.subpaths.size() > 0) {
-                parentworkers << v;
-            }
+            emit catalogProgressValueChanged(++scannedCount);
         }
-        workers.clear();
-    } while (parentworkers.size() > 0);
+
+        knownCount += subJobs.size();
+        emit catalogProgressRangeChanged(0, knownCount);
+        jobs = subJobs;
+    }
 
     return volume_id;
 }
 
-static TaggedName realname2BookTitle(QString realname)
+int CatalogDatabase::createVolume(const QString &dirpath, int catalog_id, int parent_id)
 {
-    // Extract book title from folder name
-    // from: <<<(TAG1) [Publisher(Author)] book title (TAG2) (TAG3) ...>>>
-    //   to: <<<[Publisher(Author)] book title>>>
-    //
-    // e.g. 'Star Wars - Han Solo (2017) (Digital) (newcomic.info)'
-    //
-    // from: <<<# [TAG1] [TAG2] [Publisher(Author)] book title (TAG2) [TAG4] ...>>>
-    //   to: <<<[Publisher(Author)] book title>>>
-    //
-    // TAGs will save other fields
-
-    TaggedName result;
-    result.realname = realname;
-    QList<QChar> parenthesis;
-    parenthesis << '?';
-    QStringList clist;
-    QStringList tag;
-    int cnt = 0;
-    bool NumberSign = false;
-    bool authorExported = false;
-    int type_id = 0;
-    for (QChar c : realname) {
-        switch (c.unicode()) {
-        case '#':
-            if (cnt == 0) {
-                NumberSign = true;
-                parenthesis << c;
-            } else if (parenthesis.last() == '#') {
-                tag << c;
-            } else {
-                clist << c;
-            }
-            break;
-        case '[':
-            parenthesis << c;
-            if (tag.size()) {
-                if (tag[0] == "[") {
-                    QString publisher = tag.join("");
-                    result.tags << TagRecord(publisher.mid(1, publisher.length() - 2),
-                                             type_id); // Normal
-                } else {
-                    result.tags << TagRecord(tag.join(""), type_id);
-                }
-                tag.clear();
-            }
-            type_id = NumberSign ? 0 : 2;
-            tag << c;
-            break;
-        case ']':
-            if (parenthesis.size() == 1) {
-                break;
-            }
-            parenthesis.removeLast();
-            tag << c;
-            if (!NumberSign && !authorExported && tag.size()) {
-                clist << tag.join("");
-                QString pubauthor = tag.join("");
-                result.tags << TagRecord(pubauthor.mid(1, pubauthor.length() - 2),
-                                         type_id); // Publisher(Author)
-                type_id = 0;
-                tag.clear();
-                authorExported = true;
-            }
-            break;
-        case '(':
-            if (parenthesis.last() == '[' && tag.size() >= 2) {
-                QString publisher = tag.join("");
-                result.tags << TagRecord(publisher.mid(1), 2); // Publisher
-                type_id = 1;
-                tag << c;
-            } else {
-                tag.clear();
-                if (parenthesis.last() == '#') {
-                    parenthesis.removeLast();
-                    NumberSign = false;
-                }
-                parenthesis << c;
-            }
-            break;
-        case ')':
-            if (parenthesis.size() == 1) {
-                break;
-            }
-            if (parenthesis.last() == '[') {
-                QString author = tag.join("");
-                result.tags << TagRecord(author.mid(author.indexOf('(') + 1), 3); // Author
-                tag << c;
-            } else {
-                if (tag.size()) {
-                    result.tags << TagRecord(tag.join(""), 0); // Normal
-                    tag.clear();
-                }
-                parenthesis.removeLast();
-            }
-            break;
-        default:
-            if (parenthesis.last() == '[') {
-                tag << c;
-            } else {
-                if (parenthesis.last() == '#') {
-                    if (c != ' ') {
-                        tag << c;
-                    } else {
-                        parenthesis.removeLast();
-                    }
-                } else if (NumberSign && c != ' ' && tag.size()) {
-                    // last tag will be Publisher/Author
-                    QString pubauthor = tag.join("");
-                    result.tags << TagRecord(pubauthor.mid(1, pubauthor.length() - 2),
-                                             pubauthor.indexOf("(") > 0 ? 1
-                                                                        : 2); // Publisher(Author)
-                    clist << tag.join("") << " " << c;
-                    tag.clear();
-                    NumberSign = false;
-                } else if (parenthesis.last() == '(') {
-                    tag << c;
-                } else {
-                    clist << c;
-                }
-            }
-        }
-        cnt++;
-    }
-    result.name = clist.join("").trimmed();
-    return result;
-}
-
-int CatalogDatabase::createVolumeInternal(QString dirpath, int catalog_id, int parent_id)
-{
-    QFileInfo info(dirpath);
-    QString realname = info.fileName();
+    const QFileInfo info(dirpath);
+    const QString realname = info.fileName();
     qDebug() << "volume: " << realname;
     emit catalogProgressTextChanged(realname);
 
-    TaggedName tagged = realname2BookTitle(realname);
+    const TaggedName tagged = CatalogBuilder::parseVolumeName(realname);
 
     QSqlQuery t_volumes(m_db);
     t_volumes.prepare("INSERT INTO t_volumes (name, realname, path, catalog_id, parent_id) VALUES "
@@ -454,65 +271,6 @@ void CatalogDatabase::updateVolumeOrders()
     }
 }
 
-FileWorker CatalogDatabase::createFileRecord(QString filename, QString filepath, int filename_asc)
-{
-    FileWorker result;
-    result.filename = filename;
-    result.filepath = filepath;
-    result.info.setFile(filepath);
-    result.asc = filename_asc;
-    QImage img(filepath);
-    if (!img.width()) {
-        result.asc = -1;
-        return result;
-    }
-    result.imagesize = img.size();
-
-    QImage thumb = img.scaledToWidth(2 * ThumbnailWidth, Qt::FastTransformation);
-    thumb = thumb.scaledToWidth(ThumbnailWidth, Qt::SmoothTransformation);
-    QBuffer thumbdat;
-    thumbdat.open(QBuffer::ReadWrite);
-    if (!thumb.save(&thumbdat, "JPEG", 90)) {
-        result.asc = -1;
-        return result;
-    }
-    result.thumb = thumb;
-    result.thumbbytes = thumbdat.data();
-    result.created_at = QDateTime::currentDateTime();
-
-    return result;
-}
-
-FileWorker CatalogDatabase::createFileRecordFromArchive(QString archivePath,
-                                                        ImageContent &ic,
-                                                        int filename_asc)
-{
-    FileWorker result;
-    result.filename = ic.path;
-    result.filepath = ic.path;
-    result.info.setFile(archivePath);
-    result.asc = filename_asc;
-    QImage img = ic.loadedImage;
-    if (!img.width()) {
-        result.asc = -1;
-        return result;
-    }
-    result.imagesize = img.size();
-
-    QImage thumb = img.scaledToWidth(2 * ThumbnailWidth, Qt::FastTransformation);
-    thumb = thumb.scaledToWidth(ThumbnailWidth, Qt::SmoothTransformation);
-    QBuffer thumbdat;
-    thumbdat.open(QBuffer::ReadWrite);
-    if (!thumb.save(&thumbdat, "JPEG", 90)) {
-        result.asc = -1;
-        return result;
-    }
-    result.thumb = thumb;
-    result.thumbbytes = thumbdat.data();
-    result.created_at = QDateTime::currentDateTime();
-    return result;
-}
-
 CatalogRecord CatalogDatabase::createCatalog(QString name, QString path)
 {
     CatalogRecord catalog = {0};
@@ -535,7 +293,7 @@ CatalogRecord CatalogDatabase::createCatalog(QString name, QString path)
     }
 
     int catalog_id = catalog.id = t_catalogs.lastInsertId().toInt();
-    int basevolume_id = createVolumesFrontPageOnly(path, catalog_id);
+    int basevolume_id = buildCatalogVolumes(path, catalog_id);
     if (basevolume_id > 0) {
         t_catalogs.prepare("UPDATE t_catalogs SET basevolume_id=:basevolume_id WHERE id=:id");
         t_catalogs.bindValue(":basevolume_id", basevolume_id);

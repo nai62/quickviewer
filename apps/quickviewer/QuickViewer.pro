@@ -142,6 +142,7 @@ macos {
 SOURCES += \
     src/benchmark/imagebenchmarkrunner.cpp \
     src/benchmark/startupfoldertextprofile.cpp \
+    src/catalog/catalogbuilder.cpp \
     src/catalog/catalogdatabase.cpp \
     src/catalog/catalogwindow.cpp \
     src/catalog/databasesettingdialog.cpp \
@@ -203,10 +204,12 @@ SOURCES += \
 HEADERS  += \
     src/benchmark/imagebenchmarkrunner.h \
     src/benchmark/startupfoldertextprofile.h \
+    src/catalog/catalogbuilder.h \
     src/catalog/catalogdatabase.h \
     src/catalog/catalogwindow.h \
     src/catalog/databasesettingdialog.h \
     src/catalog/managedatabasedialog.h \
+    src/catalog/catalogrecords.h \
     src/catalog/volumeitemmodel.h \
     src/exifdialog.h \
     src/folderview/folderitemdelegate.h \
