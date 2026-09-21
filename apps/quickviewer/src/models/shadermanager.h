@@ -3,14 +3,12 @@
 
 #include <QtWidgets>
 #include "qvenums.h"
-#include "shadereffect.h"
-
-struct ImageContent;
 
 /**
  * @brief The ShaderManager class
- * customizing the shader effec oft QGraphicsPixmapItem,
- * which can use a fragment shader
+ * Tells the pixmap item of each page how to draw the image it holds: the
+ * effects the view scales ask for a smooth (or a fast) transformation, and the
+ * CPU effects keep the default, because their pages are already resized.
  */
 class ShaderManager : public QObject
 {
@@ -18,19 +16,14 @@ class ShaderManager : public QObject
 public:
     ShaderManager(QObject *parent = nullptr);
     /**
-     * @brief prepare shader for each page
-     * @param ic
+     * @brief prepare the transformation mode for one page
      */
-    void prepare(QGraphicsPixmapItem *item, const ImageContent &ic, QSize size);
+    void prepare(QGraphicsPixmapItem *item);
     /**
      * @brief prepareFinished must be called once after all prepare()
      */
     void prepareFinished();
-    void prepareInitialize()
-    {
-        m_oldEffect = qvEnums::ShaderEffect::UnPrepared;
-        pageCnt = 0;
-    }
+    void prepareInitialize() { m_oldEffect = qvEnums::ShaderEffect::UnPrepared; }
 
     static QString shaderEffectToString(qvEnums::ShaderEffect effect)
     {
@@ -45,17 +38,11 @@ public:
         if (!ok) {
             return qvEnums::ShaderEffect::Bilinear;
         }
-        const qvEnums::ShaderEffect parsed = static_cast<qvEnums::ShaderEffect>(value);
-        return shaderEffectAvailable(parsed) ? parsed : qvEnums::ShaderEffect::Bilinear;
+        return static_cast<qvEnums::ShaderEffect>(value);
     }
 
 private:
-    void loadShader(QByteArray &target, QString path);
-
     qvEnums::ShaderEffect m_oldEffect;
-    int pageCnt;
-    QByteArray m_bicubic;
-    QByteArray m_lanczos;
 };
 
 #endif // IMAGESHADEREFFECT_H

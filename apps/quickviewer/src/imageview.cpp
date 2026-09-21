@@ -56,7 +56,7 @@ ImageView::ImageView(QWidget *parent)
 #ifdef QV_WITHOUT_OPENGL
     setRenderer(Native);
 #else
-    if (usesGpuRendering(qApp->Effect())) {
+    if (scalesInView(qApp->Effect())) {
         setRenderer(OpenGL);
     }
 #endif
@@ -308,7 +308,7 @@ void ImageView::clearMessage()
 
 void ImageView::refreshRenderedPages()
 {
-    if (usesGpuRendering(qApp->Effect())) {
+    if (scalesInView(qApp->Effect())) {
         setRenderer(OpenGL);
     }
     const int renderedCount = renderedPageCount();
@@ -331,9 +331,8 @@ void ImageView::refreshRenderedPages()
                                          : QString());
         }
         const QRect sceneRect = m_renderedPages.layout(
-            request,
-            [this](QGraphicsPixmapItem *item, const ImageContent &content, QSize drawSize) {
-                m_shaderManager.prepare(item, content, drawSize);
+            request, [this](QGraphicsPixmapItem *item, const ImageContent &, QSize) {
+                m_shaderManager.prepare(item);
             });
         // if Size of Image overs Size of View, use Image's size
         updateSceneForContent(

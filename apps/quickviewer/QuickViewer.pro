@@ -286,11 +286,6 @@ RESOURCES += toolbar.qrc \
 RC_ICONS = icons/appicon.ico
 
 
-# Shaders will be installed into DIST_DIR/shaders
-SHADERS += \
-    shaders/bicubic.frag \
-    shaders/lanczos.frag \
-
 DBS += \
     database/schema.sql \
 
@@ -390,8 +385,6 @@ win32 : !CONFIG(debug, debug|release) {
         ../../components/file-association/icons/qv_tiff.ico \
         ../../components/file-association/icons/qv_webp.ico \
 
-    install_shaders.path = $${MY_DEFAULT_INSTALL}/shaders
-    install_shaders.files = $$SHADERS
     install_db.path = $${MY_DEFAULT_INSTALL}/database
     install_db.depends = install_install_assoc_icons
     install_db.files = \
@@ -407,10 +400,6 @@ win32 : !CONFIG(debug, debug|release) {
     #install_nsis.files = $${MY_DEFAULT_INSTALL}/../QuickViewer-Installer-$${VERSION}.exe
 
     INSTALLS += install_nsis
-
-    !contains(DEFINES, QV_WITHOUT_OPENGL) {
-        INSTALLS += install_shaders
-    }
 
     install_direct2d.path = $${MY_DEFAULT_INSTALL}/platforms
     install_direct2d.files = $$[QT_INSTALL_PLUGINS]/platforms/qdirect2d.dll
@@ -495,15 +484,10 @@ linux : !CONFIG(debug, debug|release) : contains(DEFINES, QV_PORTABLE) {
 #        install_apprun.depends = install_install_deploy_files
 #    }
 
-    install_shaders.path = $${MY_DEFAULT_INSTALL}/shared/shaders
-    install_shaders.files = $$SHADERS
     install_db.path = $${MY_DEFAULT_INSTALL}/var/database
     install_db.files = $$DBS $$DBBIN
 
     INSTALLS += install_db
-    !contains(DEFINES, QV_WITHOUT_OPENGL) {
-        INSTALLS += install_shaders
-    }
 }
 
 # not portable, install into /usr/local/bin
@@ -589,15 +573,8 @@ macos : !CONFIG(debug, debug|release) {
 
     INSTALLS += install_target install_libs install_desktop install_deploy_files install_translations install_db install_dmg install_rename_dmg
 
-    install_shaders.path = $${MY_DEFAULT_INSTALL}/shared/shaders
-    install_shaders.files = $${MY_DEFAULT_INSTALL}/Contents/Resources/shaders
     install_db.path = $${MY_DEFAULT_INSTALL}/Contents/Resources
     install_db.files = $$DBS $$DBBIN
 
     INSTALLS += install_db
-    !contains(DEFINES, QV_WITHOUT_OPENGL) {
-        INSTALLS += install_shaders
-    }
 }
-
-OTHER_FILES += SHADERS

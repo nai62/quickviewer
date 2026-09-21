@@ -383,10 +383,6 @@ void QVApplication::registerActions(Ui::MainWindow *ui)
     // Shader
     groupName = tr("Shader", "Shader Action Group");
     m_keyActions.registerAction("actionShaderBilinear", ui->actionShaderBilinear, groupName);
-    if (gpuShadersAvailable()) {
-        m_keyActions.registerAction("actionShaderBicubic", ui->actionShaderBicubic, groupName);
-        m_keyActions.registerAction("actionShaderLanczos", ui->actionShaderLanczos, groupName);
-    }
     m_keyActions.registerAction("actionShaderCpuBicubic", ui->actionShaderCpuBicubic, groupName);
     m_keyActions.registerAction("actionShaderCpuSpline16", ui->actionShaderCpuSpline16, groupName);
     m_keyActions.registerAction("actionShaderCpuSpline36", ui->actionShaderCpuSpline36, groupName);
@@ -665,8 +661,6 @@ void QVApplication::loadSettings()
     m_settings->beginGroup("Shader");
     QString effectstring = m_settings->value("Effect", "Bilinear").toString();
     m_effect = ShaderManager::stringToShaderEffect(effectstring);
-    m_bicubicShaderPath = m_settings->value("BicubicShaderPath", "shaders/bicubic.frag").toString();
-    m_lanczosShaderPath = m_settings->value("LanczosShaderPath", "shaders/lanczos.frag").toString();
     m_settings->endGroup();
 
     // Others
@@ -830,8 +824,6 @@ void QVApplication::saveSettings()
 
     m_settings->beginGroup("Shader");
     m_settings->setValue("Effect", ShaderManager::shaderEffectToString(m_effect));
-    m_settings->setValue("BicubicShaderPath", m_bicubicShaderPath);
-    m_settings->setValue("LanczosShaderPath", m_lanczosShaderPath);
     m_settings->endGroup();
 
     m_settings->beginGroup("Others");

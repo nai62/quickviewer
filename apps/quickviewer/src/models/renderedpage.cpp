@@ -346,7 +346,7 @@ void RenderedPage::applyResize(
         m_graphicsItem->setScale(m_content.resizedImage.isNull() ? retouchedScale : 1.0);
     }
     // only GPU resizing
-    if (usesGpuRendering(effect)) {
+    if (scalesInView(effect)) {
         initializePage(true);
         m_graphicsItem->setScale(retouchedScale);
     }
@@ -383,7 +383,7 @@ void RenderedPage::initializePage(bool resetResizedImage)
     }
     if (m_scene) {
         m_graphicsItem = m_scene->addPixmap(
-            QPixmap::fromImage(usesGpuRendering(qApp->Effect()) || m_content.resizedImage.isNull()
+            QPixmap::fromImage(scalesInView(qApp->Effect()) || m_content.resizedImage.isNull()
                                    ? imageWithRetouch()
                                    : m_content.resizedImage));
         m_graphicsItem->setRotation(m_rotationDegrees);

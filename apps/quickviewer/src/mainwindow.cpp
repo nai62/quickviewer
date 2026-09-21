@@ -269,10 +269,7 @@ MainWindow::MainWindow(QWidget *parent)
     StartupProfiler::mark("mainwindow.page-bar-sync.end");
 
     // Shader
-    ui->actionShaderBicubic->setVisible(gpuShadersAvailable());
-    ui->actionShaderLanczos->setVisible(gpuShadersAvailable());
     m_shaderMenuGroup << ui->actionShaderNearestNeighbor << ui->actionShaderBilinear
-                      << ui->actionShaderBicubic << ui->actionShaderLanczos
                       << ui->actionShaderCpuBicubic << ui->actionShaderCpuSpline16
                       << ui->actionShaderCpuSpline36 << ui->actionShaderCpuLanczos3
                       << ui->actionShaderCpuLanczos4;
@@ -282,12 +279,6 @@ MainWindow::MainWindow(QWidget *parent)
         break;
     case qvEnums::ShaderEffect::Bilinear:
         ui->actionShaderBilinear->setChecked(true);
-        break;
-    case qvEnums::ShaderEffect::Bicubic:
-        ui->actionShaderBicubic->setChecked(true);
-        break;
-    case qvEnums::ShaderEffect::Lanczos:
-        ui->actionShaderLanczos->setChecked(true);
         break;
     case qvEnums::ShaderEffect::CpuBicubic:
         ui->actionShaderCpuBicubic->setChecked(true);
@@ -2424,22 +2415,6 @@ void MainWindow::handleShaderBilinearActionTriggered()
     uncheckAllShaderMenus();
     ui->actionShaderBilinear->setChecked(true);
     qApp->setEffect(qvEnums::ShaderEffect::Bilinear);
-    ui->graphicsView->refreshRenderedPages();
-}
-
-void MainWindow::handleShaderBicubicActionTriggered()
-{
-    uncheckAllShaderMenus();
-    qApp->setEffect(qvEnums::ShaderEffect::Bicubic);
-    ui->actionShaderBicubic->setChecked(true);
-    ui->graphicsView->refreshRenderedPages();
-}
-
-void MainWindow::handleShaderLanczosActionTriggered()
-{
-    uncheckAllShaderMenus();
-    qApp->setEffect(qvEnums::ShaderEffect::Lanczos);
-    ui->actionShaderLanczos->setChecked(true);
     ui->graphicsView->refreshRenderedPages();
 }
 

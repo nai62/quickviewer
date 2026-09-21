@@ -95,8 +95,6 @@ class QVApplication : public QApplication
 
     // Shaders
     Q_PROPERTY(qvEnums::ShaderEffect Effect READ Effect WRITE setEffect)
-    Q_PROPERTY(QString BicubicShaderPath READ BicubicShaderPath WRITE setBicubicShaderPath)
-    Q_PROPERTY(QString LanczosShaderPath READ LanczosShaderPath WRITE setLanczosShaderPath)
 
     // Other
     Q_PROPERTY(QString UiLanguage READ UiLanguage WRITE setUiLanguage)
@@ -439,16 +437,6 @@ public:
     // ShaderEffect
     qvEnums::ShaderEffect Effect() { return m_effect; }
     void setEffect(qvEnums::ShaderEffect shaderEffect) { m_effect = shaderEffect; }
-    QString BicubicShaderPath() { return getApplicationFilePath(m_bicubicShaderPath); }
-    void setBicubicShaderPath(QString bicubicShaderPath)
-    {
-        m_bicubicShaderPath = bicubicShaderPath;
-    }
-    QString LanczosShaderPath() { return getApplicationFilePath(m_lanczosShaderPath); }
-    void setLanczosShaderPath(QString lanczosShaderPath)
-    {
-        m_lanczosShaderPath = lanczosShaderPath;
-    }
 
     // Others
     QString UiLanguage() { return m_uiLanguage; }
@@ -601,8 +589,6 @@ private:
 
     // Shader Effect
     qvEnums::ShaderEffect m_effect;
-    QString m_bicubicShaderPath;
-    QString m_lanczosShaderPath;
 
     // Others
     QString m_uiLanguage;

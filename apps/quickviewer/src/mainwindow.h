@@ -193,8 +193,6 @@ public slots:
     // Shaders
     void handleShaderNearestNeighborActionTriggered();
     void handleShaderBilinearActionTriggered();
-    void handleShaderBicubicActionTriggered();
-    void handleShaderLanczosActionTriggered();
     void handleShaderCpuBicubicActionTriggered();
     void handleShaderCpuSpline16ActionTriggered();
     void handleShaderCpuSpline36ActionTriggered();
