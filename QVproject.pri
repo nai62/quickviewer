@@ -1,3 +1,9 @@
+# QuickViewer builds only with Qt 6.11 or later.
+QV_QT_UNSUPPORTED =
+lessThan(QT_MAJOR_VERSION, 6): QV_QT_UNSUPPORTED = 1
+equals(QT_MAJOR_VERSION, 6):lessThan(QT_MINOR_VERSION, 11): QV_QT_UNSUPPORTED = 1
+!isEmpty(QV_QT_UNSUPPORTED): error("QuickViewer requires Qt 6.11 or later, but Qt $$QT_VERSION was found.")
+
 ## Comment out if you don't need to change brightness/contrast/gamma support
 DEFINES += QV_WITH_LUMINOR
 
