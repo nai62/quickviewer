@@ -26,15 +26,6 @@ public:
     bool isEmpty() const { return thumbnail.isEmpty(); }
 };
 
-/** A volume name split into the title a catalog shows and the tags it stores. */
-class TaggedName
-{
-public:
-    QString name;
-    QString realname;
-    QList<TagRecord> tags;
-};
-
 /** What one folder of a catalog holds. */
 class CatalogFolderScan
 {
@@ -60,9 +51,6 @@ public:
      * first image.
      */
     static CatalogFolderScan scanFolder(const QString &path, bool baseFolder);
-
-    /** Title and tags encoded in the name of a volume. */
-    static TaggedName parseVolumeName(const QString &realname);
 };
 
 #endif // CATALOGBUILDER_H

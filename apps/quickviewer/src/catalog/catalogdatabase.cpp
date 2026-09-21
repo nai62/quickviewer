@@ -5,6 +5,7 @@
 #include "catalogbuilder.h"
 #include "catalogdatabase.h"
 #include "fileloader.h"
+#include "volumenameparser.h"
 
 namespace {
 
@@ -312,7 +313,7 @@ int CatalogDatabase::createVolume(const QString &dirpath, int catalog_id, int pa
     qDebug() << "volume: " << realname;
     emit catalogProgressTextChanged(realname);
 
-    const TaggedName tagged = CatalogBuilder::parseVolumeName(realname);
+    const TaggedName tagged = parseVolumeName(realname);
 
     QSqlQuery t_volumes(m_db);
     t_volumes.prepare("INSERT INTO t_volumes (name, realname, path, catalog_id, parent_id) VALUES "

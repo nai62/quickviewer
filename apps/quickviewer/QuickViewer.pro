@@ -148,6 +148,7 @@ SOURCES += \
     src/catalog/databasesettingdialog.cpp \
     src/catalog/managedatabasedialog.cpp \
     src/catalog/volumeitemmodel.cpp \
+    src/catalog/volumenameparser.cpp \
     src/exifdialog.cpp \
     src/folderview/folderitemdelegate.cpp \
     src/folderview/folderitemmodel.cpp \
@@ -211,6 +212,7 @@ HEADERS  += \
     src/catalog/managedatabasedialog.h \
     src/catalog/catalogrecords.h \
     src/catalog/volumeitemmodel.h \
+    src/catalog/volumenameparser.h \
     src/exifdialog.h \
     src/folderview/folderitemdelegate.h \
     src/folderview/folderitem.h \

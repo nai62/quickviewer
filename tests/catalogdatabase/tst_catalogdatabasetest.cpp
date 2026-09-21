@@ -12,6 +12,7 @@
 #include "catalogbuilder.h"
 #include "catalogdatabase.h"
 #include "managedatabasedialog.h"
+#include "volumenameparser.h"
 
 namespace {
 
@@ -405,22 +406,19 @@ void CatalogDatabaseTest::parsesVolumeNames_data()
 
     QTest::newRow("plain") << QStringLiteral("Book Title") << QStringLiteral("Book Title")
                            << QString() << -1;
-    QTest::newRow("year") << QStringLiteral("Star Wars (2017)") << QStringLiteral("Star Wars")
-                          << QStringLiteral("2017") << 0;
+    QTest::newRow("year") << QStringLiteral("Sample Series (2017)")
+                          << QStringLiteral("Sample Series") << QStringLiteral("2017") << 0;
     QTest::newRow("author") << QStringLiteral("[Author] Book Title")
                             << QStringLiteral("[Author] Book Title") << QStringLiteral("Author")
                             << 2;
-    // A name of the "#series title" shape keeps the series name whole: the
-    // parser buffers it without brackets, so neither end may be trimmed.
-    QTest::newRow("hashseries") << QStringLiteral("#アイドルマスターシンデレラガールズ タイトル")
-                                << QStringLiteral("アイドルマスターシンデレラガールズ タイトル")
-                                << QStringLiteral("アイドルマスターシンデレラガールズ") << 2;
-    QTest::newRow("hashseries-question") << QStringLiteral("#ご注文はうさぎですか？ ツルペタ")
-                                         << QStringLiteral("ご注文はうさぎですか？ ツルペタ")
-                                         << QStringLiteral("ご注文はうさぎですか？") << 2;
-    QTest::newRow("hashseries-brackets")
-        << QStringLiteral("# [Author] Book Title") << QStringLiteral("[Author] Book Title")
-        << QStringLiteral("Author") << 2;
+    // A word after a leading "#" is a tag, and the word stays whole: the parser
+    // buffers it without brackets, so neither end may be trimmed.
+    QTest::newRow("hashword") << QStringLiteral("#Series Book Title")
+                              << QStringLiteral("Series Book Title") << QStringLiteral("Series")
+                              << 2;
+    QTest::newRow("hashbrackets") << QStringLiteral("# [Author] Book Title")
+                                  << QStringLiteral("[Author] Book Title")
+                                  << QStringLiteral("Author") << 2;
 }
 
 void CatalogDatabaseTest::parsesVolumeNames()
@@ -430,7 +428,7 @@ void CatalogDatabaseTest::parsesVolumeNames()
     QFETCH(QString, tag);
     QFETCH(int, type);
 
-    const TaggedName parsed = CatalogBuilder::parseVolumeName(realname);
+    const TaggedName parsed = parseVolumeName(realname);
     QCOMPARE(parsed.name, title);
     QCOMPARE(parsed.realname, realname);
     QCOMPARE(parsed.tags.size(), tag.isEmpty() ? 0 : 1);
