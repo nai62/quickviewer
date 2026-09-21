@@ -235,18 +235,18 @@ int CatalogDatabase::createVolume(const QString &dirpath, int catalog_id, int pa
     return volume_id;
 }
 
-void CatalogDatabase::updateVolumeOrders()
+bool CatalogDatabase::updateVolumeOrders()
 {
     QSqlQuery t_volumeorders(m_db);
     t_volumeorders.prepare("DELETE FROM t_volumeorders");
     if (!execQuery(t_volumeorders, "t_volumeorders")) {
-        return;
+        return false;
     }
 
     QSqlQuery t_volumes(m_db);
     t_volumes.prepare("SELECT id, parent_id, realname FROM t_volumes");
     if (!execQuery(t_volumes, "t_volumes")) {
-        return;
+        return false;
     }
 
     QList<VolumeOrder> volumes;
@@ -266,9 +266,10 @@ void CatalogDatabase::updateVolumeOrders()
         t_volumeorders.bindValue(":parent_id", volumes[i].parent_id);
         t_volumeorders.bindValue(":volumename_asc", i);
         if (!execQuery(t_volumeorders, "t_volumeorders")) {
-            return;
+            return false;
         }
     }
+    return true;
 }
 
 CatalogRecord CatalogDatabase::createCatalog(QString name, QString path)
@@ -312,6 +313,12 @@ CatalogRecord CatalogDatabase::createCatalog(QString name, QString path)
         rollback();
         return catalog;
     }
+    // The catalog view reads the volume order, so the catalog is complete only
+    // once the volumes it just built have one.
+    if (!updateVolumeOrders()) {
+        rollback();
+        return catalog;
+    }
     commit();
     catalog.created = true;
     m_volumesDirty = true;
@@ -331,11 +338,6 @@ QList<CatalogRecord> CatalogDatabase::callCreateCatalog(const QList<CatalogRecor
         if (isCatalogCreationCanceled()) {
             break;
         }
-    }
-    if (result.size() > 1 || (!result.isEmpty() && result.first().created)) {
-        transaction();
-        updateVolumeOrders();
-        commit();
     }
 
     // The next build starts from a clean slate, including a synchronous

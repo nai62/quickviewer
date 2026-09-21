@@ -65,7 +65,7 @@ private:
 
     /* Volumes/Files */
     int createVolume(const QString &dirpath, int catalog_id, int parent_id);
-    void updateVolumeOrders();
+    bool updateVolumeOrders();
     int buildCatalogVolumes(const QString &dirpath, int catalog_id);
 
     /* Catalogs */
