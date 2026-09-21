@@ -22,7 +22,6 @@ public:
     void dragEnterEvent(QDragEnterEvent *e);
     void dropEvent(QDropEvent *e);
     bool databaseSettingDialog(CatalogRecord &catalog, bool editing);
-    void createCatalog();
 
 protected:
     void closeEvent(QCloseEvent *e);

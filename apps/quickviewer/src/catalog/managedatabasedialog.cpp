@@ -191,13 +191,6 @@ bool ManageDatabaseDialog::databaseSettingDialog(CatalogRecord &catalog, bool ed
     return true;
 }
 
-void ManageDatabaseDialog::createCatalog()
-{
-    if (!m_catalogDatabase) {
-        return;
-    }
-}
-
 void ManageDatabaseDialog::handleCatalogCreated(const CatalogRecord cr)
 {
     if (!cr.created) {

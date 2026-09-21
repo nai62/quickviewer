@@ -9,17 +9,6 @@
 
 #include "volume.h"
 
-// t_thumbnails
-class ThumbnailRecord
-{
-public:
-    int id;
-    int width;
-    int height;
-    QByteArray thumbnail;
-    QDateTime created_at;
-};
-
 // t_catalogs
 class CatalogRecord
 {
@@ -35,20 +24,6 @@ public:
     bool operator==(const CatalogRecord &rhs) { return id == rhs.id; }
 };
 Q_DECLARE_METATYPE(CatalogRecord)
-
-// t_volumes
-class VolumeRecord
-{
-public:
-    int id;
-    QString name;
-    QString realname;
-    QString path;
-    int frontpage_id;
-    int thumb_id;
-    int parent_id;
-    int catalog_id;
-};
 
 class VolumeOrder
 {
@@ -72,7 +47,6 @@ public:
     int parent_id;
     int catalog_id;
     QByteArray thumbnail;
-    QIcon icon;
 };
 
 class TagRecord
@@ -115,30 +89,6 @@ public:
     QList<TagRecord> tags;
 };
 
-class VolumeTag
-{
-public:
-    int volume_id;
-    int tag_id;
-    int catalog_id;
-};
-
-// t_files
-class FileRecord
-{
-public:
-    int id;
-    int volume_id;
-    QString name;
-    int size;
-    int width;
-    int height;
-    int thumb_id;
-    QDateTime created_at;
-    QDateTime updated_at;
-    QByteArray thumbnail;
-};
-
 class FileWorker
 {
 public:
@@ -169,9 +119,7 @@ class CatalogDatabase : public QObject
     Q_OBJECT
 public:
     CatalogDatabase(QObject *parent, QString dbpath);
-    void SetFrontPageOnly(bool only) { m_frontPageOnly = only; }
     void vacuum();
-    void dispose();
 
     /* Catalogs */
     QMap<int, CatalogRecord> catalogs();
@@ -186,12 +134,9 @@ public:
 
     /* Volumes */
     QList<VolumeThumbRecord> volumes();
-    QList<QFuture<VolumeThumbRecord>> volumesAsync();
-    QList<VolumeThumbRecord> volumes2();
 
     /* Tags */
     void loadTags();
-    QMap<int, TagRecord *> tags() const { return m_tags2; }
     QMap<int, TagRecord *> tagsByCount();
     QList<TagRecord> getTagsFromVolumeId(int volume_id);
 
@@ -202,13 +147,6 @@ public:
      */
     static bool isImageFile(QString path);
     /**
-     * @brief isExifImageFile check the file will have exif
-     * @param path
-     * @return return true, if path of file maybe have exif
-     */
-    static bool isJpegImageFile(QString path);
-    static bool isHeavyImageFile(QString path);
-    /**
      * @brief fileSort sort the filenames as current sorting policy
      * @param filenames
      * @return
@@ -218,7 +156,6 @@ public:
     static bool caseInsensitiveLessThanWString(const std::wstring &s1, const std::wstring &s2);
 
     static QString DateTimeToIsoString(QDateTime datetime);
-    static QString currentDateTimeAsString();
 
 signals:
     void catalogCreated(CatalogRecord catalog);
@@ -229,27 +166,20 @@ private:
     QFutureWatcher<QList<CatalogRecord>> m_catalogWatcher;
     int m_catalogWorkProgress;
     int m_catalogWorkMax;
-    bool m_frontPageOnly;
     QList<VolumeThumbRecord> m_volumesCacne;
     bool m_volumesDurty;
     QMap<QString, TagRecord> m_tags; // key is 'type_id:lower(name)' e.g. "0:tagname"
     QMap<int, TagRecord *> m_tags2;
-    QMultiMap<int, int> m_volumetags;
 
     static QList<QByteArray> st_supportedImageFormats;
-    static QStringList st_jpegpegImageFormats;
-    static QStringList st_heavyImageFormats;
 
     /* Basical */
     bool execInsertQuery(QSqlQuery &query, const QString &tablename);
     void transaction();
-    void forceTransaction();
     void commit();
     void rollback();
 
     /* Volumes/Files */
-    int createSubVolumes(QString dirpath, int catalog_id, int parent_id = -1);
-    int createVolumeContent(QString dirpath, int parent_id = -1);
     int createVolumeInternal(QString dirpath, int catalog_id, int parent_id = -1);
     void updateVolumeOrders();
 
