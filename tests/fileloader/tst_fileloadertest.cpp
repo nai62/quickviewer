@@ -456,8 +456,7 @@ void FileLoaderTest::sevenZipImages()
     QVERIFY(archive.isValid());
     QVERIFY(archive.archiveOpenError() == ArchiveOpenError::None);
 
-    const QString unicodeName =
-        QString("[rootnuko＋H] てにおはっ！ ～女の子だってホントはえっちだよ？～/red.jpg");
+    const QString unicodeName = QString("[sample＋folder] サンプル！　～フォルダ？～/red.jpg");
     const QStringList files = archive.contents();
     QVERIFY(files.contains("red.jpg"));
     QVERIFY(files.contains("yellow.png"));
