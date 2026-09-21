@@ -1,11 +1,14 @@
 #ifndef CATALOGDATABASE_H
 #define CATALOGDATABASE_H
 
+#include <QAtomicInt>
+#include <QDateTime>
+#include <QFutureWatcher>
+#include <QList>
+#include <QMap>
 #include <QObject>
 #include <QSqlDatabase>
-#include <QDateTime>
-#include <QtConcurrent>
-#include <QImage>
+#include <QString>
 
 #include "volume.h"
 
@@ -24,14 +27,6 @@ public:
     bool operator==(const CatalogRecord &rhs) { return id == rhs.id; }
 };
 Q_DECLARE_METATYPE(CatalogRecord)
-
-class VolumeOrder
-{
-public:
-    int id;
-    int parent_id;
-    std::wstring realname;
-};
 
 class VolumeThumbRecord
 {
@@ -119,6 +114,7 @@ class CatalogDatabase : public QObject
     Q_OBJECT
 public:
     CatalogDatabase(QObject *parent, QString dbpath);
+    ~CatalogDatabase() override;
     void vacuum();
 
     /* Catalogs */
@@ -140,41 +136,29 @@ public:
     QMap<int, TagRecord *> tagsByCount();
     QList<TagRecord> getTagsFromVolumeId(int volume_id);
 
-    /**
-     * @brief isImageFile check the file will be a image file
-     * @param path
-     * @return return true, if path of file maybe a image file
-     */
-    static bool isImageFile(QString path);
-    /**
-     * @brief fileSort sort the filenames as current sorting policy
-     * @param filenames
-     * @return
-     */
-    static void sortFiles(QStringList &filenames);
-    static bool caseInsensitiveLessThan(const QString &s1, const QString &s2);
-    static bool caseInsensitiveLessThanWString(const std::wstring &s1, const std::wstring &s2);
-
+    /** Formatted the way the catalog list shows a date. */
     static QString DateTimeToIsoString(QDateTime datetime);
 
 signals:
     void catalogCreated(CatalogRecord catalog);
+    void catalogProgressRangeChanged(int minimum, int maximum);
+    void catalogProgressValueChanged(int value);
+    void catalogProgressTextChanged(const QString &text);
 
 private:
+    QString m_connectionName;
     QSqlDatabase m_db;
     bool m_transaction;
     QFutureWatcher<QList<CatalogRecord>> m_catalogWatcher;
-    int m_catalogWorkProgress;
-    int m_catalogWorkMax;
-    QList<VolumeThumbRecord> m_volumesCacne;
-    bool m_volumesDurty;
+    QAtomicInt m_catalogCanceled;
+    QList<VolumeThumbRecord> m_volumesCache;
+    bool m_volumesDirty;
     QMap<QString, TagRecord> m_tags; // key is 'type_id:lower(name)' e.g. "0:tagname"
     QMap<int, TagRecord *> m_tags2;
 
-    static QList<QByteArray> st_supportedImageFormats;
-
     /* Basical */
-    bool execInsertQuery(QSqlQuery &query, const QString &tablename);
+    bool execQuery(QSqlQuery &query, const QString &statement);
+    bool isCatalogCreationCanceled() const { return m_catalogCanceled.loadAcquire() != 0; }
     void transaction();
     void commit();
     void rollback();

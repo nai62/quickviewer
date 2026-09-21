@@ -4,86 +4,73 @@
 #include <QApplication>
 
 #include "catalogdatabase.h"
+#include "fileloader.h"
 #include "volume.h"
 #include "volumeloader.h"
 
-#ifdef Q_OS_WIN
-#    include <Shlwapi.h>
-#endif
-
 namespace {
 
-// Width of the thumbnails stored in the thumbnail database.
+// Width of the thumbnails stored in the catalog database.
 constexpr int ThumbnailWidth = 96;
 
+/** One volume of t_volumes, as far as the ordering pass needs it. */
+class VolumeOrder
+{
+public:
+    int id;
+    int parent_id;
+    QString realname;
+};
+
+bool volumeOrderLessThan(const VolumeOrder &s1, const VolumeOrder &s2)
+{
+    return IFileLoader::caseInsensitiveLessThan(s1.realname, s2.realname);
+}
+
+/**
+ * Name of the SQL connection one handle owns. A shared name would let a second
+ * handle take the connection over from the first one, which Qt reports only as
+ * a warning before the first handle stops working.
+ */
+QString connectionNameFor(const void *handle)
+{
+    return QStringLiteral("catalog-%1").arg(reinterpret_cast<quintptr>(handle), 0, 16);
+}
+
 } // namespace
-
-QList<QByteArray> CatalogDatabase::st_supportedImageFormats;
-
-bool CatalogDatabase::isImageFile(QString path)
-{
-    if (st_supportedImageFormats.size() == 0) {
-        st_supportedImageFormats = QImageReader::supportedImageFormats();
-        st_supportedImageFormats << "heic" << "heif";
-    }
-    QString lower = path.toLower();
-    for (const QString &e : st_supportedImageFormats) {
-        if (lower.endsWith(e)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-void CatalogDatabase::sortFiles(QStringList &filenames)
-{
-    std::sort(filenames.begin(), filenames.end(), caseInsensitiveLessThan);
-}
 
 QString CatalogDatabase::DateTimeToIsoString(QDateTime datetime)
 {
     return datetime.toString(QStringLiteral("yyyy/MM/dd hh:mm:ss"));
 }
 
-#ifdef Q_OS_WIN
-// Windows Filename sorting is not usual caseInsensitive, so call Win32Api
-// to see https://msdn.microsoft.com/ja-jp/library/windows/desktop/bb759947(v=vs.85).aspx
-bool CatalogDatabase::caseInsensitiveLessThan(const QString &s1, const QString &s2)
-{
-    std::wstring ss1(s1.toStdWString());
-    std::wstring ss2(s2.toStdWString());
-    return ::StrCmpLogicalW(ss1.c_str(), ss2.c_str()) < 0;
-}
-
-bool CatalogDatabase::caseInsensitiveLessThanWString(const std::wstring &s1, const std::wstring &s2)
-{
-    return ::StrCmpLogicalW(s1.c_str(), s2.c_str()) < 0;
-}
-#else
-bool CatalogDatabase::caseInsensitiveLessThan(const QString &s1, const QString &s2)
-{
-    return s1.toLower() < s2.toLower();
-}
-bool CatalogDatabase::caseInsensitiveLessThanWString(const std::wstring &s1, const std::wstring &s2)
-{
-    return s1 < s2;
-}
-#endif
-
 CatalogDatabase::CatalogDatabase(QObject *parent, QString dbpath)
     : QObject(parent),
-      m_db(QSqlDatabase::addDatabase("QSQLITE")),
+      m_connectionName(connectionNameFor(this)),
       m_transaction(false),
       m_catalogWatcher(this),
-      m_volumesDurty(true)
+      m_catalogCanceled(0),
+      m_volumesDirty(true)
 {
-
+    m_db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), m_connectionName);
     m_db.setDatabaseName(dbpath);
     if (!m_db.open()) {
         qDebug() << "Error: connection with database fail" << dbpath;
     } else {
         qDebug() << "Database: connection ok";
     }
+}
+
+CatalogDatabase::~CatalogDatabase()
+{
+    // A catalog build can still be running on a worker thread, and it talks to
+    // the connection that is unregistered here.
+    m_catalogCanceled.storeRelease(1);
+    m_catalogWatcher.cancel();
+    m_catalogWatcher.waitForFinished();
+    m_db.close();
+    m_db = QSqlDatabase();
+    QSqlDatabase::removeDatabase(m_connectionName);
 }
 
 VolumeWorker
@@ -101,38 +88,25 @@ CatalogDatabase::createSubVolumesConcurrent(QString dirpath, int volume_id, int 
         if (!thumbnailContent.loadedImage.isNull()) {
             vw.frontPage = createFileRecordFromArchive(dirpath, thumbnailContent, 0);
         }
-
-        if (m_catalogWatcher.isStarted()) {
-            emit m_catalogWatcher.progressValueChanged(m_catalogWorkProgress++);
-        }
         return vw;
     }
 
     QDir dir(dirpath);
     QStringList subdirs = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Unsorted);
-    sortFiles(subdirs);
-    if (m_catalogWatcher.isStarted() && subdirs.size() > 0) {
-        m_catalogWorkMax += subdirs.size();
-        emit m_catalogWatcher.progressRangeChanged(0, m_catalogWorkMax);
-    }
+    IFileLoader::sortFiles(subdirs);
     vw.subpaths = subdirs;
 
     QStringList files = dir.entryList(QDir::Files, QDir::Unsorted);
-    sortFiles(files);
-    for (int i = 0; i < files.size(); i++) {
-        if (m_catalogWatcher.isCanceled()) {
+    IFileLoader::sortFiles(files);
+    for (const QString &filename : files) {
+        if (isCatalogCreationCanceled()) {
             break;
         }
-        QString filename = files[i];
-        if (!isImageFile(filename)) {
+        if (!IFileLoader::isImageFile(filename)) {
             continue;
         }
-        QString filepath = dir.filePath(filename);
-        vw.frontPage = createFileRecord(filename, filepath, 0);
+        vw.frontPage = createFileRecord(filename, dir.filePath(filename), 0);
         break; // ONLY FRONT PAGE
-    }
-    if (m_catalogWatcher.isStarted()) {
-        emit m_catalogWatcher.progressValueChanged(m_catalogWorkProgress++);
     }
     return vw;
 }
@@ -169,7 +143,7 @@ int CatalogDatabase::createVolumesFrontPageOnly(QString dirpath, int catalog_id)
         root.catalog_id = catalog_id;
         root.parent_id = -1;
         root.subpaths = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Unsorted);
-        sortFiles(root.subpaths);
+        IFileLoader::sortFiles(root.subpaths);
         QStringList files = dir.entryList(QDir::Files, QDir::Unsorted);
         for (const QString &f : files) {
             if (IFileLoader::isArchiveFile(f)) {
@@ -178,51 +152,54 @@ int CatalogDatabase::createVolumesFrontPageOnly(QString dirpath, int catalog_id)
         }
         parentworkers << root;
     }
+
+    int scannedCount = 0;
+    int knownCount = 0;
     QList<QFuture<VolumeWorker>> workers;
     do {
         for (const VolumeWorker &p : parentworkers) {
-            QDir dir(p.dirpath);
-            QStringList subdirs = p.subpaths;
-            if (m_catalogWatcher.isStarted() && subdirs.size() > 0) {
-                m_catalogWorkMax += subdirs.size();
-                emit m_catalogWatcher.progressRangeChanged(0, m_catalogWorkMax);
-            }
-            for (const QString &sub : subdirs) {
-                QString subpath = dir.filePath(sub);
-                if (m_catalogWatcher.isCanceled()) {
+            const QDir dir(p.dirpath);
+            for (const QString &sub : p.subpaths) {
+                if (isCatalogCreationCanceled()) {
                     return -1;
                 }
-                int sub_id = createVolumeInternal(subpath, catalog_id, p.parent_id);
+                const QString subpath = dir.filePath(sub);
+                const int sub_id = createVolumeInternal(subpath, catalog_id, p.parent_id);
                 if (sub_id < 0) {
                     return -1;
                 }
-                workers.append(QtConcurrent::run(
-                    [&] { return createSubVolumesConcurrent(subpath, sub_id, p.volume_id); }));
+                // The scan runs on a worker thread, so it owns its arguments.
+                const int parentVolumeId = p.volume_id;
+                workers.append(QtConcurrent::run([subpath, sub_id, parentVolumeId] {
+                    return createSubVolumesConcurrent(subpath, sub_id, parentVolumeId);
+                }));
+                ++knownCount;
             }
         }
+        emit catalogProgressRangeChanged(0, knownCount);
         parentworkers.clear();
 
         for (const QFuture<VolumeWorker> &w : workers) {
-            const VolumeWorker &v = w.result();
-            if (m_catalogWatcher.isCanceled()) {
+            if (isCatalogCreationCanceled()) {
                 return -1;
             }
+            const VolumeWorker &v = w.result();
+            emit catalogProgressValueChanged(++scannedCount);
             if (v.volume_id < 0) {
                 continue;
             }
             if (v.frontPage.asc >= 0) {
-                QFileInfo info(v.dirpath);
-                emit m_catalogWatcher.progressTextChanged(info.fileName());
+                emit catalogProgressTextChanged(QFileInfo(v.dirpath).fileName());
 
                 t_thumbs.bindValue(":width", v.frontPage.thumb.width());
                 t_thumbs.bindValue(":height", v.frontPage.thumb.height());
                 t_thumbs.bindValue(":thumbnail", v.frontPage.thumbbytes);
                 t_thumbs.bindValue(":created_at", QDateTime::currentDateTime());
-                if (!execInsertQuery(t_thumbs, "t_thumbs")) {
+                if (!execQuery(t_thumbs, "t_thumbs")) {
                     return -1;
                 }
 
-                t_files.bindValue(":volume_id", volume_id);
+                t_files.bindValue(":volume_id", v.volume_id);
                 t_files.bindValue(":name", v.frontPage.filename);
                 t_files.bindValue(":size", v.frontPage.info.size());
                 t_files.bindValue(":width", v.frontPage.imagesize.width());
@@ -230,21 +207,21 @@ int CatalogDatabase::createVolumesFrontPageOnly(QString dirpath, int catalog_id)
                 t_files.bindValue(":thumb_id", t_thumbs.lastInsertId());
                 //t_files.bindValue(":created_at", v.frontPage.info.created());
                 t_files.bindValue(":updated_at", v.frontPage.info.lastModified());
-                if (!execInsertQuery(t_files, "t_files")) {
+                if (!execQuery(t_files, "t_files")) {
                     return -1;
                 }
 
-                t_fileorders.bindValue(":volume_id", volume_id);
+                t_fileorders.bindValue(":volume_id", v.volume_id);
                 t_fileorders.bindValue(":id", t_files.lastInsertId());
                 t_fileorders.bindValue(":filename_asc", v.frontPage.asc);
-                if (!execInsertQuery(t_fileorders, "t_fileorders")) {
+                if (!execQuery(t_fileorders, "t_fileorders")) {
                     return -1;
                 }
 
                 t_volumes.bindValue(":frontpage_id", t_files.lastInsertId());
                 t_volumes.bindValue(":thumb_id", t_thumbs.lastInsertId());
                 t_volumes.bindValue(":id", v.volume_id);
-                if (!execInsertQuery(t_volumes, "t_volumes")) {
+                if (!execQuery(t_volumes, "t_volumes")) {
                     return -1;
                 }
             }
@@ -393,7 +370,7 @@ int CatalogDatabase::createVolumeInternal(QString dirpath, int catalog_id, int p
     QFileInfo info(dirpath);
     QString realname = info.fileName();
     qDebug() << "volume: " << realname;
-    emit m_catalogWatcher.progressTextChanged(realname);
+    emit catalogProgressTextChanged(realname);
 
     TaggedName tagged = realname2BookTitle(realname);
 
@@ -405,7 +382,7 @@ int CatalogDatabase::createVolumeInternal(QString dirpath, int catalog_id, int p
     t_volumes.bindValue(":path", QDir::toNativeSeparators(dirpath));
     t_volumes.bindValue(":catalog_id", catalog_id);
     t_volumes.bindValue(":parent_id", parent_id);
-    if (!execInsertQuery(t_volumes, "t_volumes")) {
+    if (!execQuery(t_volumes, "t_volumes")) {
         return -1;
     }
     int volume_id = t_volumes.lastInsertId().toInt();
@@ -420,7 +397,7 @@ int CatalogDatabase::createVolumeInternal(QString dirpath, int catalog_id, int p
         if (!m_tags.contains(tagkey)) {
             t_tags.bindValue(":name", t.name);
             t_tags.bindValue(":type_id", t.type_id);
-            if (!execInsertQuery(t_tags, "t_tags")) {
+            if (!execQuery(t_tags, "t_tags")) {
                 return -1;
             }
             TagRecord newtag(t.name, t.type_id);
@@ -433,7 +410,7 @@ int CatalogDatabase::createVolumeInternal(QString dirpath, int catalog_id, int p
         t_tagentries.bindValue(":volume_id", volume_id);
         t_tagentries.bindValue(":tag_id", tag.id);
         t_tagentries.bindValue(":catalog_id", catalog_id);
-        if (!execInsertQuery(t_tagentries, "t_volumetags")) {
+        if (!execQuery(t_tagentries, "t_volumetags")) {
             return -1;
         }
     }
@@ -441,52 +418,37 @@ int CatalogDatabase::createVolumeInternal(QString dirpath, int catalog_id, int p
     return volume_id;
 }
 
-static bool caseInsensitiveLessThanVolumeOrder(const VolumeOrder *s1, const VolumeOrder *s2)
-{
-    return CatalogDatabase::caseInsensitiveLessThanWString(s1->realname, s2->realname);
-}
-
 void CatalogDatabase::updateVolumeOrders()
 {
     QSqlQuery t_volumeorders(m_db);
     t_volumeorders.prepare("DELETE FROM t_volumeorders");
-    if (!execInsertQuery(t_volumeorders, "t_volumeorders")) {
+    if (!execQuery(t_volumeorders, "t_volumeorders")) {
         return;
     }
 
     QSqlQuery t_volumes(m_db);
     t_volumes.prepare("SELECT id, parent_id, realname FROM t_volumes");
-    if (!execInsertQuery(t_volumes, "t_volumes")) {
+    if (!execQuery(t_volumes, "t_volumes")) {
         return;
     }
 
-    QVector<VolumeOrder> volumes;
-    {
-        QList<VolumeOrder> vollist;
-        while (t_volumes.next()) {
-            VolumeOrder vr = {0};
-            vr.id = t_volumes.value("id").toInt();
-            vr.parent_id = t_volumes.value("parent_id").toInt();
-            vr.realname = t_volumes.value("realname").toString().toLower().toStdWString();
-            vollist.append(vr);
-        }
-        volumes = vollist.toVector();
+    QList<VolumeOrder> volumes;
+    while (t_volumes.next()) {
+        VolumeOrder order;
+        order.id = t_volumes.value("id").toInt();
+        order.parent_id = t_volumes.value("parent_id").toInt();
+        order.realname = t_volumes.value("realname").toString().toLower();
+        volumes << order;
     }
-    QVector<VolumeOrder *> volumes_pt;
-    //int sz = t_volumes.numRowsAffected();
-    volumes_pt.resize(volumes.size());
-    for (int i = 0; i < volumes.size(); i++) {
-        volumes_pt[i] = &volumes[i];
-    }
+    std::sort(volumes.begin(), volumes.end(), volumeOrderLessThan);
 
-    std::sort(volumes_pt.begin(), volumes_pt.end(), caseInsensitiveLessThanVolumeOrder);
     t_volumeorders.prepare("INSERT INTO t_volumeorders (id,parent_id,volumename_asc)"
                            " VALUES (:id,:parent_id,:volumename_asc)");
-    for (int i = 0; i < volumes_pt.size(); i++) {
-        t_volumeorders.bindValue(":id", volumes_pt[i]->id);
-        t_volumeorders.bindValue(":parent_id", volumes_pt[i]->parent_id);
+    for (int i = 0; i < volumes.size(); i++) {
+        t_volumeorders.bindValue(":id", volumes[i].id);
+        t_volumeorders.bindValue(":parent_id", volumes[i].parent_id);
         t_volumeorders.bindValue(":volumename_asc", i);
-        if (!execInsertQuery(t_volumeorders, "t_volumeorders")) {
+        if (!execQuery(t_volumeorders, "t_volumeorders")) {
             return;
         }
     }
@@ -541,7 +503,7 @@ FileWorker CatalogDatabase::createFileRecordFromArchive(QString archivePath,
     thumb = thumb.scaledToWidth(ThumbnailWidth, Qt::SmoothTransformation);
     QBuffer thumbdat;
     thumbdat.open(QBuffer::ReadWrite);
-    if (!thumb.save(&thumbdat, "JPEG", 85)) {
+    if (!thumb.save(&thumbdat, "JPEG", 90)) {
         result.asc = -1;
         return result;
     }
@@ -567,30 +529,34 @@ CatalogRecord CatalogDatabase::createCatalog(QString name, QString path)
     t_catalogs.bindValue(":path", QDir::toNativeSeparators(path));
     t_catalogs.bindValue(":created_at", catalog.created_at);
     t_catalogs.bindValue(":updated_at", catalog.created_at);
-    if (!execInsertQuery(t_catalogs, "t_catalogs")) {
+    if (!execQuery(t_catalogs, "t_catalogs")) {
+        rollback();
         return catalog;
     }
 
-    m_catalogWorkProgress = 0;
-    m_catalogWorkMax = 0;
     int catalog_id = catalog.id = t_catalogs.lastInsertId().toInt();
     int basevolume_id = createVolumesFrontPageOnly(path, catalog_id);
     if (basevolume_id > 0) {
         t_catalogs.prepare("UPDATE t_catalogs SET basevolume_id=:basevolume_id WHERE id=:id");
         t_catalogs.bindValue(":basevolume_id", basevolume_id);
         t_catalogs.bindValue(":id", catalog_id);
-        if (!execInsertQuery(t_catalogs, "t_catalogs")) {
+        if (!execQuery(t_catalogs, "t_catalogs")) {
+            rollback();
             return catalog;
         }
+    } else {
+        // Nothing of the catalog was built, so none of it is stored.
+        rollback();
+        return catalog;
     }
 
-    if (m_catalogWatcher.isCanceled()) {
+    if (isCatalogCreationCanceled()) {
         rollback();
         return catalog;
     }
     commit();
     catalog.created = true;
-    m_volumesDurty = true;
+    m_volumesDirty = true;
     emit catalogCreated(catalog);
 
     return catalog;
@@ -600,34 +566,39 @@ QList<CatalogRecord> CatalogDatabase::callCreateCatalog(const QList<CatalogRecor
 {
     QList<CatalogRecord> result;
     for (const CatalogRecord &r : newers) {
+        if (isCatalogCreationCanceled()) {
+            break;
+        }
         result << createCatalog(r.name, r.path);
-        if (m_catalogWatcher.isCanceled()) {
+        if (isCatalogCreationCanceled()) {
             break;
         }
     }
-    if (result.size() > 1 || result[0].created) {
+    if (result.size() > 1 || (!result.isEmpty() && result.first().created)) {
         transaction();
         updateVolumeOrders();
         commit();
     }
 
+    // The next build starts from a clean slate, including a synchronous
+    // createCatalog() call after a cancelled build.
+    m_catalogCanceled.storeRelease(0);
     return result;
 }
 
 QFutureWatcher<QList<CatalogRecord>> *
 CatalogDatabase::createCatalogAsync(QList<CatalogRecord> newers)
 {
+    m_catalogCanceled.storeRelease(0);
     QFuture<QList<CatalogRecord>> future =
-        QtConcurrent::run([&] { return callCreateCatalog(newers); });
+        QtConcurrent::run([this, newers] { return callCreateCatalog(newers); });
     m_catalogWatcher.setFuture(future);
     return &m_catalogWatcher;
 }
 
 void CatalogDatabase::cancelCreateCatalogAsync()
 {
-    if (!m_catalogWatcher.isRunning()) {
-        return;
-    }
+    m_catalogCanceled.storeRelease(1);
     m_catalogWatcher.cancel();
 }
 
@@ -636,8 +607,8 @@ QMap<int, CatalogRecord> CatalogDatabase::catalogs()
     QMap<int, CatalogRecord> result;
     QSqlQuery t_catalogs(m_db);
     t_catalogs.prepare("SELECT * FROM t_catalogs");
-    if (!execInsertQuery(t_catalogs, "t_catalogs")) {
-        result;
+    if (!execQuery(t_catalogs, "t_catalogs")) {
+        return result;
     }
     while (t_catalogs.next()) {
         CatalogRecord cr;
@@ -654,14 +625,16 @@ QMap<int, CatalogRecord> CatalogDatabase::catalogs()
 
 QList<VolumeThumbRecord> CatalogDatabase::volumes()
 {
-    if (!m_volumesDurty) {
-        return m_volumesCacne;
+    if (!m_volumesDirty) {
+        return m_volumesCache;
     }
     QList<VolumeThumbRecord> result;
     QSqlQuery v_volumethm(m_db);
     v_volumethm.prepare("SELECT * FROM v_volumethm");
-    if (!execInsertQuery(v_volumethm, "v_volumethm")) {
-        result;
+    if (!execQuery(v_volumethm, "v_volumethm")) {
+        // The query failed, so the cache stays empty rather than remembering
+        // the failure as the contents of the catalog.
+        return result;
     }
     while (v_volumethm.next()) {
         VolumeThumbRecord vtr;
@@ -676,15 +649,18 @@ QList<VolumeThumbRecord> CatalogDatabase::volumes()
         vtr.thumbnail = v_volumethm.value("thumbnail").toByteArray();
         result.append(vtr);
     }
-    m_volumesDurty = false;
     loadTags();
-    return m_volumesCacne = result;
+    m_volumesDirty = false;
+    return m_volumesCache = result;
 }
 
 void CatalogDatabase::loadTags()
 {
     QSqlQuery t_tags(m_db);
-    t_tags.exec("SELECT * FROM t_tags ORDER BY id");
+    if (!t_tags.exec("SELECT * FROM t_tags ORDER BY id")) {
+        qDebug() << "t_tags query failed: " << t_tags.lastError();
+        return;
+    }
     m_tags.clear();
     m_tags2.clear();
     while (t_tags.next()) {
@@ -701,19 +677,25 @@ void CatalogDatabase::loadTags()
 QMap<int, TagRecord *> CatalogDatabase::tagsByCount()
 {
     QSqlQuery t_tags(m_db);
-    t_tags.exec("SELECT t.id, t.name, t.type_id, v2.cnt FROM t_tags t INNER JOIN "
-                "(SELECT COUNT(*) as cnt, v.tag_id FROM t_volumetags v GROUP BY v.tag_id) v2 "
-                "ON v2.tag_id = t.id "
-                "ORDER BY v2.cnt DESC");
+    const bool queried =
+        t_tags.exec("SELECT t.id, t.name, t.type_id, v2.cnt FROM t_tags t INNER JOIN "
+                    "(SELECT COUNT(*) as cnt, v.tag_id FROM t_volumetags v GROUP BY v.tag_id) v2 "
+                    "ON v2.tag_id = t.id "
+                    "ORDER BY v2.cnt DESC");
+    if (!queried) {
+        qDebug() << "t_tags by count query failed: " << t_tags.lastError();
+        return QMap<int, TagRecord *>();
+    }
     QMap<int, TagRecord *> result;
     int cnt = 0;
     while (t_tags.next()) {
-        TagRecord tag;
-        tag.id = t_tags.value("id").toInt();
-        tag.name = t_tags.value("name").toString();
-        tag.type_id = t_tags.value("type_id").toInt();
-        tag.count = t_tags.value("cnt").toInt();
-        result[cnt++] = m_tags2[tag.id];
+        const int tag_id = t_tags.value("id").toInt();
+        const auto tag = m_tags2.constFind(tag_id);
+        if (tag == m_tags2.constEnd() || !tag.value()) {
+            continue;
+        }
+        tag.value()->count = t_tags.value("cnt").toInt();
+        result[cnt++] = tag.value();
     }
     return result;
 }
@@ -725,7 +707,7 @@ QList<TagRecord> CatalogDatabase::getTagsFromVolumeId(int volume_id)
     t_tags.prepare("SELECT t.id, t.name, t.type_id FROM t_tags t "
                    "WHERE t.id IN (SELECT tag_id FROM t_volumetags WHERE volume_id=:volume_id)");
     t_tags.bindValue(":volume_id", volume_id);
-    if (!execInsertQuery(t_tags, "t_tags")) {
+    if (!execQuery(t_tags, "t_tags")) {
         return result;
     }
 
@@ -741,21 +723,23 @@ QList<TagRecord> CatalogDatabase::getTagsFromVolumeId(int volume_id)
 
 void CatalogDatabase::deleteCatalog(int id)
 {
+    transaction();
+
     QSqlQuery t_thumbs(m_db);
     t_thumbs.prepare("DELETE FROM t_thumbnails WHERE id IN (SELECT thumb_id FROM t_files WHERE "
                      "volume_id IN (SELECT id FROM t_volumes WHERE catalog_id=:catalog_id))");
     t_thumbs.bindValue(":catalog_id", id);
-    if (!execInsertQuery(t_thumbs, "t_thumbnails")) {
+    if (!execQuery(t_thumbs, "t_thumbnails")) {
+        rollback();
         return;
     }
-
-    m_volumesDurty = true;
 
     QSqlQuery t_files(m_db);
     t_files.prepare("DELETE FROM t_files WHERE volume_id IN (SELECT id FROM t_volumes WHERE "
                     "catalog_id=:catalog_id)");
     t_files.bindValue(":catalog_id", id);
-    if (!execInsertQuery(t_files, "t_files")) {
+    if (!execQuery(t_files, "t_files")) {
+        rollback();
         return;
     }
 
@@ -763,7 +747,8 @@ void CatalogDatabase::deleteCatalog(int id)
     t_fileorders.prepare("DELETE FROM t_fileorders WHERE volume_id IN (SELECT id FROM t_volumes "
                          "WHERE catalog_id=:catalog_id)");
     t_fileorders.bindValue(":catalog_id", id);
-    if (!execInsertQuery(t_fileorders, "t_fileorders")) {
+    if (!execQuery(t_fileorders, "t_fileorders")) {
+        rollback();
         return;
     }
 
@@ -771,79 +756,71 @@ void CatalogDatabase::deleteCatalog(int id)
     t_volumeorders.prepare("DELETE FROM t_volumeorders WHERE id IN (SELECT id FROM t_volumes WHERE "
                            "catalog_id=:catalog_id)");
     t_volumeorders.bindValue(":catalog_id", id);
-    if (!execInsertQuery(t_volumeorders, "t_volumeorders")) {
+    if (!execQuery(t_volumeorders, "t_volumeorders")) {
+        rollback();
         return;
     }
 
     QSqlQuery t_volumetags(m_db);
     t_volumetags.prepare("DELETE FROM t_volumetags WHERE catalog_id=:catalog_id");
     t_volumetags.bindValue(":catalog_id", id);
-    if (!execInsertQuery(t_volumetags, "t_volumetags")) {
+    if (!execQuery(t_volumetags, "t_volumetags")) {
+        rollback();
         return;
     }
 
     QSqlQuery t_volumes(m_db);
     t_volumes.prepare("DELETE FROM t_volumes WHERE catalog_id=:catalog_id");
     t_volumes.bindValue(":catalog_id", id);
-    if (!execInsertQuery(t_volumes, "t_volumes")) {
+    if (!execQuery(t_volumes, "t_volumes")) {
+        rollback();
         return;
     }
 
     QSqlQuery t_catalogs(m_db);
     t_catalogs.prepare("DELETE FROM t_catalogs WHERE id=:id");
     t_catalogs.bindValue(":id", id);
-    if (!execInsertQuery(t_catalogs, "t_catalogs")) {
+    if (!execQuery(t_catalogs, "t_catalogs")) {
+        rollback();
         return;
     }
+
+    commit();
+    m_volumesDirty = true;
 }
 
 void CatalogDatabase::updateCatalogName(int id, QString name)
 {
     QSqlQuery t_catalogs(m_db);
-    t_catalogs.prepare("UPDATE t_catalogs SET name=:name WHERE id=:id");
+    t_catalogs.prepare("UPDATE t_catalogs SET name=:name, updated_at=:updated_at WHERE id=:id");
     t_catalogs.bindValue(":id", id);
     t_catalogs.bindValue(":name", name);
-    if (!execInsertQuery(t_catalogs, "t_catalogs")) {
-        return;
-    }
+    t_catalogs.bindValue(":updated_at", QDateTime::currentDateTime());
+    execQuery(t_catalogs, "t_catalogs");
 }
 
 void CatalogDatabase::deleteAllCatalogs()
 {
     transaction();
-    QSqlQuery t_thumbs(m_db);
-    do {
-        if (!t_thumbs.exec("DELETE FROM t_thumbnails")) {
-            break;
+    static const char *const removals[] = {"t_thumbnails",
+                                           "t_fileorders",
+                                           "t_volumeorders",
+                                           "t_files",
+                                           "t_volumes",
+                                           "t_tags",
+                                           "t_volumetags",
+                                           "t_catalogs"};
+    for (const char *table : removals) {
+        QSqlQuery removal(m_db);
+        if (!removal.exec(QStringLiteral("DELETE FROM %1").arg(QLatin1String(table)))) {
+            qDebug() << table << " delete failed: " << removal.lastError();
+            rollback();
+            return;
         }
-        if (!t_thumbs.exec("DELETE FROM t_fileorders")) {
-            break;
-        }
-        if (!t_thumbs.exec("DELETE FROM t_volumeorders")) {
-            break;
-        }
-        if (!t_thumbs.exec("DELETE FROM t_files")) {
-            break;
-        }
-        if (!t_thumbs.exec("DELETE FROM t_volumes")) {
-            break;
-        }
-        if (!t_thumbs.exec("DELETE FROM t_tags")) {
-            break;
-        }
-        if (!t_thumbs.exec("DELETE FROM t_volumetags")) {
-            break;
-        }
-        if (!t_thumbs.exec("DELETE FROM t_catalogs")) {
-            break;
-        }
-        commit();
-        vacuum();
-        m_volumesDurty = true;
-        return;
-    } while (0);
-    qDebug() << " query failed: " << t_thumbs.lastError();
-    rollback();
+    }
+    commit();
+    m_volumesDirty = true;
+    vacuum();
 }
 
 void CatalogDatabase::transaction()
@@ -884,20 +861,16 @@ void CatalogDatabase::rollback()
 
 void CatalogDatabase::vacuum()
 {
-    QSqlQuery t_thumbs(m_db);
-    do {
-        if (!t_thumbs.exec("VACUUM")) {
-            break;
-        }
-        return;
-    } while (0);
-    qDebug() << " query failed: " << t_thumbs.lastError();
+    QSqlQuery vacuumQuery(m_db);
+    if (!vacuumQuery.exec("VACUUM")) {
+        qDebug() << "VACUUM failed: " << vacuumQuery.lastError();
+    }
 }
 
-bool CatalogDatabase::execInsertQuery(QSqlQuery &query, const QString &tablename)
+bool CatalogDatabase::execQuery(QSqlQuery &query, const QString &statement)
 {
     if (!query.exec()) {
-        qDebug() << tablename << " insert failed: " << query.lastError();
+        qDebug() << statement << " query failed: " << query.lastError();
         return false;
     }
     return true;

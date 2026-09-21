@@ -40,6 +40,8 @@ private slots:
     void handleCatalogCreationFinished();
 
 private:
+    void releaseCatalogWatcher();
+
     Ui::ManageDatabaseDialog *ui;
     QMap<int, CatalogRecord> m_catalogs;
     QList<CatalogRecord> m_makeCatalogs;

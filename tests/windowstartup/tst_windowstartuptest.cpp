@@ -1,4 +1,3 @@
-#include <QSqlDatabase>
 #include "foldertextcache.h"
 #include <QtTest>
 
@@ -214,9 +213,6 @@ private slots:
         QTemporaryDir databaseDirectory;
         QVERIFY(databaseDirectory.isValid());
         const auto cleanup = qScopeGuard([&] {
-            // The manager's QSqlDatabase handle and the viewer must die before
-            // removing the registered connection and its temporary directory.
-            QSqlDatabase::removeDatabase(QSqlDatabase::defaultConnection);
             QTRY_VERIFY_WITH_TIMEOUT(!QFile::exists(archivePath) || QFile::remove(archivePath),
                                      5000);
         });

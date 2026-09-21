@@ -216,29 +216,7 @@ void ManageDatabaseDialog::handleCatalogCreationFinished()
     if (!m_catalogWatcher) {
         return;
     }
-    disconnect(m_catalogDatabase,
-               &CatalogDatabase::catalogCreated,
-               this,
-               &ManageDatabaseDialog::handleCatalogCreated);
-    disconnect(m_catalogWatcher,
-               &QFutureWatcher<QList<CatalogRecord>>::finished,
-               this,
-               &ManageDatabaseDialog::handleCatalogCreationFinished);
-    disconnect(m_catalogWatcher,
-               &QFutureWatcher<QList<CatalogRecord>>::progressRangeChanged,
-               ui->progressBar,
-               &QProgressBar::setRange);
-    disconnect(m_catalogWatcher,
-               &QFutureWatcher<QList<CatalogRecord>>::progressValueChanged,
-               ui->progressBar,
-               &QProgressBar::setValue);
-    //  disconnect(m_catalogWatcher, SIGNAL(progressTextChanged(QString)), ui->progressBar, SLOT(setWindowTitle(QString)));
-    disconnect(m_catalogWatcher,
-               &QFutureWatcher<QList<CatalogRecord>>::progressTextChanged,
-               ui->volumeNameLabel,
-               &QLabel::setText);
-
-    m_catalogWatcher = nullptr;
+    releaseCatalogWatcher();
 
     resetCatalogList();
     normalButtonStates();
@@ -252,6 +230,35 @@ void ManageDatabaseDialog::handleCatalogCreationFinished()
 
     msgBox.setText(message);
     msgBox.exec();
+}
+
+void ManageDatabaseDialog::releaseCatalogWatcher()
+{
+    if (!m_catalogWatcher) {
+        return;
+    }
+    disconnect(m_catalogDatabase,
+               &CatalogDatabase::catalogCreated,
+               this,
+               &ManageDatabaseDialog::handleCatalogCreated);
+    disconnect(m_catalogWatcher,
+               &QFutureWatcher<QList<CatalogRecord>>::finished,
+               this,
+               &ManageDatabaseDialog::handleCatalogCreationFinished);
+    disconnect(m_catalogDatabase,
+               &CatalogDatabase::catalogProgressRangeChanged,
+               ui->progressBar,
+               &QProgressBar::setRange);
+    disconnect(m_catalogDatabase,
+               &CatalogDatabase::catalogProgressValueChanged,
+               ui->progressBar,
+               &QProgressBar::setValue);
+    disconnect(m_catalogDatabase,
+               &CatalogDatabase::catalogProgressTextChanged,
+               ui->volumeNameLabel,
+               &QLabel::setText);
+
+    m_catalogWatcher = nullptr;
 }
 
 void ManageDatabaseDialog::handleCancelButtonClicked()
@@ -269,39 +276,23 @@ void ManageDatabaseDialog::handleCancelButtonClicked()
                 &QFutureWatcher<QList<CatalogRecord>>::finished,
                 this,
                 &ManageDatabaseDialog::handleCatalogCreationFinished);
-        connect(m_catalogWatcher,
-                &QFutureWatcher<QList<CatalogRecord>>::progressRangeChanged,
+        connect(m_catalogDatabase,
+                &CatalogDatabase::catalogProgressRangeChanged,
                 ui->progressBar,
                 &QProgressBar::setRange);
-        connect(m_catalogWatcher,
-                &QFutureWatcher<QList<CatalogRecord>>::progressValueChanged,
+        connect(m_catalogDatabase,
+                &CatalogDatabase::catalogProgressValueChanged,
                 ui->progressBar,
                 &QProgressBar::setValue);
-        connect(m_catalogWatcher,
-                &QFutureWatcher<QList<CatalogRecord>>::progressTextChanged,
+        connect(m_catalogDatabase,
+                &CatalogDatabase::catalogProgressTextChanged,
                 ui->volumeNameLabel,
                 &QLabel::setText);
 
         progressButtonStates();
     } else {
-        disconnect(m_catalogDatabase,
-                   &CatalogDatabase::catalogCreated,
-                   this,
-                   &ManageDatabaseDialog::handleCatalogCreated);
-        disconnect(m_catalogWatcher,
-                   &QFutureWatcher<QList<CatalogRecord>>::finished,
-                   this,
-                   &ManageDatabaseDialog::handleCatalogCreationFinished);
-        disconnect(m_catalogWatcher,
-                   &QFutureWatcher<QList<CatalogRecord>>::progressRangeChanged,
-                   ui->progressBar,
-                   &QProgressBar::setRange);
-        disconnect(m_catalogWatcher,
-                   &QFutureWatcher<QList<CatalogRecord>>::progressValueChanged,
-                   ui->progressBar,
-                   &QProgressBar::setValue);
+        releaseCatalogWatcher();
         m_catalogDatabase->cancelCreateCatalogAsync();
-        m_catalogWatcher = nullptr;
 
         resetCatalogList();
         normalButtonStates();
@@ -318,6 +309,17 @@ void ManageDatabaseDialog::handleCancelButtonClicked()
 
 void ManageDatabaseDialog::closeEvent(QCloseEvent *)
 {
+    if (!m_catalogDatabase) {
+        return;
+    }
+    if (m_catalogWatcher) {
+        // A running build keeps writing to the database, which VACUUM cannot
+        // work on, so wait for it before reclaiming space.
+        QFutureWatcher<QList<CatalogRecord>> *watcher = m_catalogWatcher;
+        releaseCatalogWatcher();
+        m_catalogDatabase->cancelCreateCatalogAsync();
+        watcher->waitForFinished();
+    }
     m_catalogDatabase->vacuum();
 }
 
