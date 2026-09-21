@@ -22,6 +22,17 @@ namespace {
 constexpr QLatin1String DataDirectory(".quickviewer");
 #endif
 
+#if defined(Q_OS_WIN)
+// Where a Windows build keeps its data is a property of the package it was
+// built for: the portable package stores the files beside the executable, and
+// the build the installer lays down uses the user's data directory.
+#    ifdef QV_PORTABLE
+constexpr bool PortableBuild = true;
+#    else
+constexpr bool PortableBuild = false;
+#    endif
+#endif
+
 } // namespace
 
 QVApplication::QVApplication(int &argc, char **argv)
@@ -41,7 +52,7 @@ QVApplication::QVApplication(int &argc, char **argv)
       m_qtbaseLanguageSelector("qt_", getTranslationPath())
 #if defined(Q_OS_WIN)
       ,
-      m_portable(true)
+      m_portable(PortableBuild)
 #endif
 {
     // Qt's own application setup is finished by now; everything after this
@@ -51,14 +62,6 @@ QVApplication::QVApplication(int &argc, char **argv)
     setApplicationName(APP_NAME);
 
 #if defined(Q_OS_WIN)
-    // Since there is an evil implementation that forcibly installs QuickViewer in Windows "C:/Program Files", the specification is changed as follows.
-    // Once assuming that it is a Portable environment, if there is QuickViewer in "C:/Program Files", it corresponds by denying it.
-    QByteArray programFiles = qgetenv("ProgramFiles");
-    QString appdir = applicationDirPath();
-    if (QDir::toNativeSeparators(appdir).startsWith(programFiles)) {
-        m_portable = false;
-    }
-
     if (!m_portable)
 #endif
     {
