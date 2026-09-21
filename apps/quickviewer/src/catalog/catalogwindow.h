@@ -68,6 +68,8 @@ protected:
     void closeEvent(QCloseEvent *e);
 
 private:
+    int listableVolumeCount() const;
+
     Ui::CatalogWindow *ui;
     CatalogDatabase *m_catalogDatabase;
     QMap<int, CatalogRecord> m_catalogs;

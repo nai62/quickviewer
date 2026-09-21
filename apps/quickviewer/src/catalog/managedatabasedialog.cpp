@@ -82,8 +82,8 @@ void ManageDatabaseDialog::normalButtonStates()
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
     } else {
         ui->cancelButton->setVisible(true);
-        ui->cancelButton->setText(
-            tr("Start", "Button to start catalog creation for specified folder"));
+        ui->cancelButton->setText(tr(
+            "Start creating", "Button that builds the folders which were added to the list above"));
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
     }
     ui->progressBar->setVisible(false);
@@ -101,7 +101,7 @@ void ManageDatabaseDialog::progressButtonStates()
     ui->buttonBox->setEnabled(false);
 
     ui->progressBar->setVisible(true);
-    ui->cancelButton->setText(tr("Cancel", "Button to cancel the catalog being generated"));
+    ui->cancelButton->setText(tr("Stop creating", "Button that cancels the catalogs being built"));
     ui->cancelButton->setVisible(true);
     ui->volumeNameLabel->setVisible(true);
 }
@@ -126,7 +126,7 @@ void ManageDatabaseDialog::resetCatalogList()
             QTreeWidgetItem *item = new QTreeWidgetItem;
             item->setText(0, "* " + catalog.name);
             item->setText(1,
-                          tr("Pending",
+                          tr("Not created yet",
                              "Representation of time indicating that the catalog is not currently "
                              "created and will be generated from now"));
             item->setText(2, catalog.path);
@@ -337,6 +337,12 @@ void ManageDatabaseDialog::closeEvent(QCloseEvent *)
     if (!m_catalogDatabase) {
         return;
     }
+    stopBuilding();
+    m_catalogDatabase->vacuum();
+}
+
+void ManageDatabaseDialog::stopBuilding()
+{
     if (m_catalogWatcher) {
         // A running build keeps writing to the database, which VACUUM cannot
         // work on, so wait for it before reclaiming space.
@@ -345,7 +351,37 @@ void ManageDatabaseDialog::closeEvent(QCloseEvent *)
         m_catalogDatabase->cancelCreateCatalogAsync();
         watcher->waitForFinished();
     }
-    m_catalogDatabase->vacuum();
+}
+
+void ManageDatabaseDialog::reject()
+{
+    if (!m_catalogDatabase || m_catalogWatcher) {
+        // A running build is stopped the way closing the window stops it.
+        stopBuilding();
+        QDialog::reject();
+        return;
+    }
+    if (!m_makeCatalogs.isEmpty()) {
+        const QMessageBox::StandardButton answer =
+            QMessageBox::question(this,
+                                  tr("Close"),
+                                  tr("%1 added folder(s) are not created yet. Close and discard "
+                                     "them?")
+                                      .arg(m_makeCatalogs.size()),
+                                  QMessageBox::Yes | QMessageBox::No,
+                                  QMessageBox::No);
+        if (answer != QMessageBox::Yes) {
+            return;
+        }
+    }
+    QDialog::reject();
+}
+
+bool ManageDatabaseDialog::confirmRemoval(const QString &title, const QString &text)
+{
+    const QMessageBox::StandardButton answer = QMessageBox::question(
+        this, title, text, QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+    return answer == QMessageBox::Yes;
 }
 
 void ManageDatabaseDialog::handleEditButtonClicked()
@@ -391,6 +427,12 @@ void ManageDatabaseDialog::handleDeleteButtonClicked()
     }
     int id = current->data(0, Qt::UserRole).toInt();
     if (id >= 0) {
+        if (!confirmRemoval(
+                tr("Delete catalog"),
+                tr("Delete \"%1\" from the list of catalogs? The image files are not deleted.")
+                    .arg(m_catalogs[id].name))) {
+            return;
+        }
         m_catalogDatabase->deleteCatalog(id);
         m_catalogs.remove(id);
     } else {
@@ -409,6 +451,11 @@ void ManageDatabaseDialog::handleUpdateButtonClicked() {}
 void ManageDatabaseDialog::handleDeleteAllButtonClicked()
 {
     if (!m_catalogDatabase) {
+        return;
+    }
+    if (!confirmRemoval(
+            tr("Delete all catalogs"),
+            tr("Delete every catalog from the list? The image files are not deleted."))) {
         return;
     }
     m_catalogDatabase->deleteAllCatalogs();

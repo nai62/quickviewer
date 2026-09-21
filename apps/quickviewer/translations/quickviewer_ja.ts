@@ -94,7 +94,12 @@
         <location filename="../src/catalog/catalogwindow.cpp" line="209"/>
         <source>%1 of %2 volumes</source>
         <comment>Text of the status bar showing [the number of hits]/[total number] of Volume</comment>
-        <translation>(%1/%2)件 表示中。</translation>
+        <translation>%1/%2 冊を表示中</translation>
+    </message>
+    <message>
+        <source>(%1 without a cover are not shown)</source>
+        <comment>Status bar note about volumes the catalog holds but does not list</comment>
+        <translation>(表紙のない %1 冊は表示していません)</translation>
     </message>
 </context>
 <context>
@@ -1164,6 +1169,15 @@
 <context>
     <name>MainWindow</name>
     <message>
+        <source>Manage &amp;catalogs...</source>
+        <comment>Menu entry that opens the dialog which adds, edits and removes the folders registered as catalogs</comment>
+        <translation>カタログの管理(&amp;M)...</translation>
+    </message>
+    <message>
+        <source>Add, edit and remove the folders registered as catalogs</source>
+        <translation>カタログとして登録したフォルダの追加・編集・削除</translation>
+    </message>
+    <message>
         <location filename="../src/mainwindow.ui" line="252"/>
         <source>&amp;File</source>
         <translation>ファイル(&amp;F)</translation>
@@ -2072,6 +2086,56 @@
     <message>
         <source>Catalog(s) left unstored: %1</source>
         <translation>保存できなかったカタログ: %1 件</translation>
+    </message>
+    <message>
+        <source>Add &amp;folder...</source>
+        <comment>Button that registers another folder as a catalog</comment>
+        <translation>フォルダを追加(&amp;F)...</translation>
+    </message>
+    <message>
+        <source>Drop image folders here, or add them with "Add folder...". Press "Start creating" to build the catalogs.</source>
+        <comment>Line above the catalog list that explains how a folder is registered as a catalog and built</comment>
+        <translation>画像フォルダをここにドロップするか「フォルダを追加」で登録します。「作成開始」を押すとカタログを作成します。</translation>
+    </message>
+    <message>
+        <source>Not created yet</source>
+        <comment>Representation of time indicating that the catalog is not currently created and will be generated from now</comment>
+        <translation>未作成</translation>
+    </message>
+    <message>
+        <source>Start creating</source>
+        <comment>Button that builds the folders which were added to the list above</comment>
+        <translation>作成開始</translation>
+    </message>
+    <message>
+        <source>Stop creating</source>
+        <comment>Button that cancels the catalogs being built</comment>
+        <translation>作成中止</translation>
+    </message>
+    <message>
+        <source>Delete catalog</source>
+        <translation>カタログの削除</translation>
+    </message>
+    <message>
+        <source>Delete "%1" from the list of catalogs? The image files are not deleted.</source>
+        <translation>「%1」の登録を削除します。画像ファイルは削除されません。</translation>
+    </message>
+    <message>
+        <source>Delete all catalogs</source>
+        <translation>すべてのカタログの削除</translation>
+    </message>
+    <message>
+        <source>Delete every catalog from the list? The image files are not deleted.</source>
+        <translation>すべてのカタログの登録を削除します。画像ファイルは削除されません。</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <comment>Title of the message box that asks about folders that are not created yet</comment>
+        <translation>確認</translation>
+    </message>
+    <message>
+        <source>%1 added folder(s) are not created yet. Close and discard them?</source>
+        <translation>未作成のフォルダが %1 件あります。破棄して閉じますか？</translation>
     </message>
 </context>
 <context>

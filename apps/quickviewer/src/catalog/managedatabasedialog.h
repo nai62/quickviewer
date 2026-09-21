@@ -25,6 +25,7 @@ public:
 
 protected:
     void closeEvent(QCloseEvent *e);
+    void reject() override;
 
 public slots:
     void handleAddButtonClicked();
@@ -42,6 +43,8 @@ private slots:
 private:
     void releaseCatalogWatcher();
     void reportCatalogDatabaseProblem();
+    void stopBuilding();
+    bool confirmRemoval(const QString &title, const QString &text);
 
     Ui::ManageDatabaseDialog *ui;
     QMap<int, CatalogRecord> m_catalogs;

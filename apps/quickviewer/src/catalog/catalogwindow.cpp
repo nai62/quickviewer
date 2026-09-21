@@ -211,15 +211,36 @@ QStringList CatalogWindow::getTagWords()
 void CatalogWindow::resetVolumes()
 {
     m_itemModel.setVolumes(&m_volumeSearch);
-    if (!m_volumes.size()) {
+    if (m_volumes.isEmpty()) {
         return;
     }
+    // A volume without a cover cannot be shown, so it does not belong in the
+    // number the status bar compares against.
+    const int listable = listableVolumeCount();
     QString volumestxt =
         QString(tr("%1 of %2 volumes",
                    "Text of the status bar showing [the number of hits]/[total number] of Volume"))
             .arg(m_volumeSearch.size())
-            .arg(m_volumes.size());
+            .arg(listable);
+    const int hidden = int(m_volumes.size()) - listable;
+    if (hidden > 0) {
+        volumestxt += QStringLiteral(" ");
+        volumestxt += tr("(%1 without a cover are not shown)",
+                         "Status bar note about volumes the catalog holds but does not list")
+                          .arg(hidden);
+    }
     ui->statusLabel->setText(volumestxt);
+}
+
+int CatalogWindow::listableVolumeCount() const
+{
+    int count = 0;
+    for (const VolumeThumbRecord &volume : m_volumes) {
+        if (!volume.thumbnail.isEmpty()) {
+            ++count;
+        }
+    }
+    return count;
 }
 
 void CatalogWindow::searchByWord(bool doForce)
