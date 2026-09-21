@@ -8,6 +8,7 @@
 #include <Windows.h>
 #include <dwmapi.h>
 #include <mapi.h>
+#include <shobjidl.h>
 #include <Shellapi.h>
 
 MainWindowForWindows::MainWindowForWindows(QWidget *parent)
@@ -43,19 +44,39 @@ bool MainWindowForWindows::setStartupWindowCloaked(bool cloaked)
 
 bool MainWindowForWindows::moveToTrash(QString path)
 {
-    WCHAR from[MAX_PATH + 2048] = {0};
-    path.toWCharArray(from);
-    SHFILEOPSTRUCT fileop = {0};
-    fileop.wFunc = FO_DELETE;
-    fileop.pFrom = from;
-    fileop.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT;
-    int rv = SHFileOperation(&fileop);
-    if (0 != rv) {
-        qDebug() << rv << QString::number(rv).toInt(nullptr, 8);
+    // IFileOperation is the shell's file operation; the call it replaces,
+    // SHFileOperation, needed a fixed-size path buffer built by hand. Qt has
+    // already put COM in apartment-threaded mode on this thread.
+    IFileOperation *operation = nullptr;
+    HRESULT result =
+        ::CoCreateInstance(CLSID_FileOperation, nullptr, CLSCTX_ALL, IID_PPV_ARGS(&operation));
+    if (FAILED(result)) {
+        qWarning() << "Could not start a file operation:" << Qt::hex << result;
         return false;
     }
 
-    qDebug() << rv << path;
+    operation->SetOperationFlags(FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT);
+
+    const std::wstring nativePath = QDir::toNativeSeparators(path).toStdWString();
+    IShellItem *item = nullptr;
+    result = ::SHCreateItemFromParsingName(nativePath.c_str(), nullptr, IID_PPV_ARGS(&item));
+    if (SUCCEEDED(result)) {
+        result = operation->DeleteItem(item, nullptr);
+        item->Release();
+    }
+    BOOL aborted = FALSE;
+    if (SUCCEEDED(result)) {
+        result = operation->PerformOperations();
+    }
+    if (SUCCEEDED(result)) {
+        operation->GetAnyOperationsAborted(&aborted);
+    }
+    operation->Release();
+
+    if (FAILED(result) || aborted) {
+        qWarning() << "Could not move" << path << "to the Recycle Bin:" << Qt::hex << result;
+        return false;
+    }
     return true;
 }
 
