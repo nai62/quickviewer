@@ -17,24 +17,8 @@ MainWindowForWindows::MainWindowForWindows(QWidget *parent)
 
 bool MainWindowForWindows::setStartupWindowCloaked(bool cloaked)
 {
-    using DwmSetWindowAttributeFunction = HRESULT(WINAPI *)(HWND, DWORD, LPCVOID, DWORD);
-    using DwmFlushFunction = HRESULT(WINAPI *)();
     if (cloaked) {
         StartupProfiler::mark("startup.cloak.begin");
-    }
-    QLibrary dwmapi("dwmapi");
-    auto setWindowAttribute =
-        reinterpret_cast<DwmSetWindowAttributeFunction>(dwmapi.resolve("DwmSetWindowAttribute"));
-    auto flush = reinterpret_cast<DwmFlushFunction>(dwmapi.resolve("DwmFlush"));
-    if (!setWindowAttribute) {
-        qWarning() << "DwmSetWindowAttribute is unavailable";
-        if (cloaked) {
-            StartupProfiler::mark("startup.cloak.end");
-        }
-        return false;
-    }
-
-    if (cloaked) {
         StartupProfiler::mark("startup.cloak.before-winid");
     }
     const auto hwnd = reinterpret_cast<HWND>(winId());
@@ -42,10 +26,10 @@ bool MainWindowForWindows::setStartupWindowCloaked(bool cloaked)
         StartupProfiler::mark("startup.cloak.after-winid");
     }
     const BOOL value = cloaked ? TRUE : FALSE;
-    if (!cloaked && flush) {
-        flush();
+    if (!cloaked) {
+        ::DwmFlush();
     }
-    const HRESULT result = setWindowAttribute(hwnd, DWMWA_CLOAK, &value, sizeof(value));
+    const HRESULT result = ::DwmSetWindowAttribute(hwnd, DWMWA_CLOAK, &value, sizeof(value));
     if (cloaked) {
         StartupProfiler::mark("startup.cloak.end");
     }

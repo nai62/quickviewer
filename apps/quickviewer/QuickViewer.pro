@@ -83,7 +83,7 @@ win32 {
             QMAKE_LFLAGS += /LARGEADDRESSAWARE
         }
     }
-    LIBS += -luser32 -ladvapi32 -lShlwapi -loleaut32 -lole32 -luuid
+    LIBS += -luser32 -ladvapi32 -lShlwapi -loleaut32 -lole32 -luuid -ldwmapi
 
     # copy official 7z.dll to build/bin/
     QMAKE_POST_LINK += $$QMAKE_COPY /B $$shell_quote($$shell_path($$PWD/../../third_party/7zip/windll/$${TARGET_ARCH}/7z.dll)) $$shell_path($${DESTDIR}) $$escape_expand(\n\t)
