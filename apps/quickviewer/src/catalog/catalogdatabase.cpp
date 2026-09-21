@@ -553,6 +553,67 @@ QList<VolumeThumbRecord> CatalogDatabase::volumes()
     return m_volumesCache = result;
 }
 
+QStringList CatalogDatabase::missingVolumePaths()
+{
+    QStringList missing;
+    if (!ensureReady()) {
+        return missing;
+    }
+    QSqlQuery query(m_db);
+    if (!query.exec(QStringLiteral("SELECT path FROM t_volumes ORDER BY id"))) {
+        qDebug() << "t_volumes query failed: " << query.lastError();
+        return missing;
+    }
+    while (query.next()) {
+        const QString path = query.value(0).toString();
+        if (!QFileInfo::exists(path) && !missing.contains(path)) {
+            missing << path;
+        }
+    }
+    return missing;
+}
+
+int CatalogDatabase::removeMissingVolumes()
+{
+    const QStringList missing = missingVolumePaths();
+    if (missing.isEmpty() || !ensureReady()) {
+        return 0;
+    }
+
+    // Everything that hangs off a volume, then the volume itself. The
+    // statements run inside one transaction, so a failure leaves the catalog
+    // as it was.
+    static const char *const removals[] = {
+        "DELETE FROM t_thumbnails WHERE id IN (SELECT thumb_id FROM t_files WHERE volume_id IN "
+        "(SELECT id FROM t_volumes WHERE path = :path))",
+        "DELETE FROM t_files WHERE volume_id IN (SELECT id FROM t_volumes WHERE path = :path)",
+        "DELETE FROM t_fileorders WHERE volume_id IN (SELECT id FROM t_volumes WHERE path = :path)",
+        "DELETE FROM t_volumeorders WHERE id IN (SELECT id FROM t_volumes WHERE path = :path)",
+        "DELETE FROM t_volumetags WHERE volume_id IN (SELECT id FROM t_volumes WHERE path = :path)",
+        "DELETE FROM t_volumes WHERE path = :path",
+    };
+
+    transaction();
+    for (const char *statement : removals) {
+        for (const QString &path : missing) {
+            QSqlQuery query(m_db);
+            query.prepare(QString::fromLatin1(statement));
+            query.bindValue(":path", path);
+            if (!execQuery(query, "remove missing volumes")) {
+                rollback();
+                return 0;
+            }
+        }
+    }
+    if (!updateVolumeOrders()) {
+        rollback();
+        return 0;
+    }
+    commit();
+    m_volumesDirty = true;
+    return missing.size();
+}
+
 void CatalogDatabase::loadTags()
 {
     if (!ensureReady()) {

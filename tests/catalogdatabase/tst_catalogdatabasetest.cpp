@@ -142,6 +142,7 @@ private Q_SLOTS:
     void createsTheCatalogDatabaseOnFirstUse();
     void keepsAnUnreadableCatalogDatabase();
     void refusesADatabaseWithoutTheCatalogSchema();
+    void removesVolumesWhoseFoldersAreGone();
     void parsesVolumeNames_data();
     void parsesVolumeNames();
     void finishesAnEmptyCatalogRequest();
@@ -304,6 +305,42 @@ void CatalogDatabaseTest::refusesADatabaseWithoutTheCatalogSchema()
     QVERIFY(!database.ensureReady());
     QVERIFY(!database.errorMessage().isEmpty());
     QCOMPARE(database.catalogs().size(), 0);
+}
+
+void CatalogDatabaseTest::removesVolumesWhoseFoldersAreGone()
+{
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    QVERIFY(fixture.addImage(QStringLiteral("Alpha"), QStringLiteral("01.png"), QSize(60, 90)));
+    QVERIFY(fixture.addImage(QStringLiteral("Beta"), QStringLiteral("01.png"), QSize(60, 90)));
+
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    QVERIFY(database.createCatalog(QStringLiteral("Library"), fixture.rootPath()).created);
+    // The folder the catalog was created from and the two folders below it.
+    QCOMPARE(database.volumes().size(), 3);
+    QVERIFY(database.missingVolumePaths().isEmpty());
+
+    // One folder goes away, and the catalog still holds its volume.
+    const QString gone = fixture.folder(QStringLiteral("Beta"));
+    QVERIFY(QDir(gone).removeRecursively());
+    QCOMPARE(database.missingVolumePaths().size(), 1);
+    QCOMPARE(QFileInfo(database.missingVolumePaths().first()).fileName(), QStringLiteral("Beta"));
+    QCOMPARE(database.volumes().size(), 3);
+
+    QCOMPARE(database.removeMissingVolumes(), 1);
+    QVERIFY(database.missingVolumePaths().isEmpty());
+    QCOMPARE(database.volumes().size(), 2);
+    for (const VolumeThumbRecord &volume : database.volumes()) {
+        QVERIFY(volume.realname != QStringLiteral("Beta"));
+    }
+
+    CatalogProbe probe(fixture.databasePath(), QStringLiteral("catalog-probe"));
+    QVERIFY(probe.isOpen());
+    QCOMPARE(probe.count(QStringLiteral("t_volumes")), 2);
+    QCOMPARE(probe.count(QStringLiteral("t_files")), 1);
+    QCOMPARE(probe.count(QStringLiteral("t_thumbnails")), 1);
+    QCOMPARE(probe.count(QStringLiteral("t_volumeorders")), 2);
+    QCOMPARE(probe.count(QStringLiteral("t_fileorders")), 1);
 }
 
 void CatalogDatabaseTest::parsesVolumeNames_data()

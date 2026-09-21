@@ -119,6 +119,13 @@
         </property>
        </widget>
       </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="purgeMissingButton">
+        <property name="text">
+         <string extracomment="Button that removes the catalog entries whose folder is no longer there">Remove missing entries (%1)</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

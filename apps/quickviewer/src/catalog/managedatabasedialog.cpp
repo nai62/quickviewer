@@ -28,6 +28,10 @@ ManageDatabaseDialog::ManageDatabaseDialog(QWidget *parent)
     // Buttons
     ui->updateAllButton->setVisible(false);
     ui->updateButton->setVisible(false);
+    connect(ui->purgeMissingButton,
+            &QPushButton::clicked,
+            this,
+            &ManageDatabaseDialog::handlePurgeMissingButtonClicked);
 
     resetCatalogList();
 }
@@ -45,8 +49,41 @@ void ManageDatabaseDialog::setCatalogDatabase(CatalogDatabase *catalogDatabase)
         return;
     }
     m_catalogs = m_catalogDatabase->catalogs();
+    updatePurgeButton();
     resetCatalogList();
     normalButtonStates();
+}
+
+void ManageDatabaseDialog::updatePurgeButton()
+{
+    m_missingVolumes = m_catalogDatabase ? m_catalogDatabase->missingVolumePaths() : QStringList();
+    ui->purgeMissingButton->setText(
+        tr("Remove missing entries (%1)",
+           "Button that removes the catalog entries whose folder is no longer there")
+            .arg(m_missingVolumes.size()));
+    ui->purgeMissingButton->setEnabled(!m_missingVolumes.isEmpty());
+}
+
+void ManageDatabaseDialog::handlePurgeMissingButtonClicked()
+{
+    if (!m_catalogDatabase || m_missingVolumes.isEmpty()) {
+        return;
+    }
+    if (!confirmRemoval(
+            tr("Remove missing entries"),
+            tr("%1 registered folder(s) are no longer there. Remove them from the list? The "
+               "image files are not deleted.")
+                .arg(m_missingVolumes.size()))) {
+        return;
+    }
+    const int removed = m_catalogDatabase->removeMissingVolumes();
+    updatePurgeButton();
+    resetCatalogList();
+    normalButtonStates();
+    if (removed > 0) {
+        QMessageBox::information(
+            this, tr("Remove missing entries"), tr("Removed %1 entry(ies).").arg(removed));
+    }
 }
 
 void ManageDatabaseDialog::reportCatalogDatabaseProblem()
@@ -98,6 +135,7 @@ void ManageDatabaseDialog::progressButtonStates()
     ui->updateButton->setEnabled(false);
     ui->deleteAllButton->setEnabled(false);
     ui->updateAllButton->setEnabled(false);
+    ui->purgeMissingButton->setEnabled(false);
     ui->buttonBox->setEnabled(false);
 
     ui->progressBar->setVisible(true);

@@ -33,6 +33,7 @@ public slots:
     void handleEditButtonClicked();
     void handleUpdateButtonClicked();
     void handleDeleteAllButtonClicked();
+    void handlePurgeMissingButtonClicked();
     void handleUpdateAllButtonClicked();
     void handleCancelButtonClicked();
 
@@ -45,10 +46,12 @@ private:
     void reportCatalogDatabaseProblem();
     void stopBuilding();
     bool confirmRemoval(const QString &title, const QString &text);
+    void updatePurgeButton();
 
     Ui::ManageDatabaseDialog *ui;
     QMap<int, CatalogRecord> m_catalogs;
     QList<CatalogRecord> m_makeCatalogs;
+    QStringList m_missingVolumes;
     CatalogDatabase *m_catalogDatabase;
 
     QFutureWatcher<QList<CatalogRecord>> *m_catalogWatcher;

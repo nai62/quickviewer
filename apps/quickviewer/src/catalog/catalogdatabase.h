@@ -49,6 +49,18 @@ public:
 
     /* Volumes */
     QList<VolumeThumbRecord> volumes();
+    /**
+     * Paths of volumes whose folder or archive is no longer on disk. The
+     * catalog keeps them until the user removes them.
+     */
+    QStringList missingVolumePaths();
+    /**
+     * Removes every volume which missingVolumePaths() reports, with the rows
+     * that belong to it.
+     *
+     * @return how many paths were removed.
+     */
+    int removeMissingVolumes();
 
     /* Tags */
     void loadTags();

@@ -2137,6 +2137,23 @@
         <source>%1 added folder(s) are not created yet. Close and discard them?</source>
         <translation>未作成のフォルダが %1 件あります。破棄して閉じますか？</translation>
     </message>
+    <message>
+        <source>Remove missing entries (%1)</source>
+        <comment>Button that removes the catalog entries whose folder is no longer there</comment>
+        <translation>見つからない項目を削除 (%1)</translation>
+    </message>
+    <message>
+        <source>Remove missing entries</source>
+        <translation>見つからない項目の削除</translation>
+    </message>
+    <message>
+        <source>%1 registered folder(s) are no longer there. Remove them from the list? The image files are not deleted.</source>
+        <translation>登録フォルダ %1 件が見つかりません。一覧から削除しますか？画像ファイルは削除されません。</translation>
+    </message>
+    <message>
+        <source>Removed %1 entry(ies).</source>
+        <translation>%1 件を削除しました。</translation>
+    </message>
 </context>
 <context>
     <name>CatalogDatabase</name>
