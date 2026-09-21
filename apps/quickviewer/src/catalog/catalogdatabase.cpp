@@ -8,6 +8,11 @@
 
 namespace {
 
+/** Catalog schema the application knows how to read. */
+constexpr int SupportedCatalogSchema = 604;
+/** Name of the catalog database the application ships as a resource. */
+constexpr auto BundledCatalogDatabase = ":/databases/thumbnail_database";
+
 /** One volume of t_volumes, as far as the ordering pass needs it. */
 class VolumeOrder
 {
@@ -52,19 +57,15 @@ bool isCanceled(const QAtomicInt *canceled)
 
 CatalogDatabase::CatalogDatabase(QObject *parent, QString dbpath)
     : QObject(parent),
+      m_dbPath(dbpath),
       m_connectionName(connectionNameFor(this)),
+      m_connectionRegistered(false),
       m_transaction(false),
       m_catalogWatcher(this),
       m_catalogCanceled(0),
+      m_ready(false),
       m_volumesDirty(true)
 {
-    m_db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), m_connectionName);
-    m_db.setDatabaseName(dbpath);
-    if (!m_db.open()) {
-        qDebug() << "Error: connection with database fail" << dbpath;
-    } else {
-        qDebug() << "Database: connection ok";
-    }
 }
 
 CatalogDatabase::~CatalogDatabase()
@@ -74,9 +75,123 @@ CatalogDatabase::~CatalogDatabase()
     m_catalogCanceled.storeRelease(1);
     m_catalogWatcher.cancel();
     m_catalogWatcher.waitForFinished();
+    closeDatabase();
+}
+
+void CatalogDatabase::closeDatabase()
+{
+    if (!m_connectionRegistered) {
+        return;
+    }
     m_db.close();
     m_db = QSqlDatabase();
     QSqlDatabase::removeDatabase(m_connectionName);
+    m_connectionRegistered = false;
+}
+
+bool CatalogDatabase::ensureReady()
+{
+    if (m_ready) {
+        return true;
+    }
+    m_errorMessage.clear();
+
+    if (!m_connectionRegistered) {
+        m_db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), m_connectionName);
+        m_db.setDatabaseName(m_dbPath);
+        m_connectionRegistered = true;
+    }
+
+    const QFileInfo file(m_dbPath);
+    if (!file.exists()) {
+        if (!writeBundledDatabase(file)) {
+            m_errorMessage = tr("The catalog database could not be created: %1").arg(m_dbPath);
+            return false;
+        }
+    } else if (!file.isFile()) {
+        m_errorMessage = tr("The catalog database is not a file: %1").arg(m_dbPath);
+        return false;
+    }
+
+    if (!m_db.open()) {
+        m_errorMessage = tr("The catalog database could not be opened: %1 (%2)")
+                             .arg(m_dbPath, m_db.lastError().text());
+        return false;
+    }
+
+    QString problem;
+    if (!hasCatalogSchema(&problem)) {
+        m_errorMessage = tr("The catalog database cannot be used: %1 (%2)").arg(m_dbPath, problem);
+        return false;
+    }
+
+    qDebug() << "catalog database:" << m_dbPath;
+    m_ready = true;
+    return true;
+}
+
+bool CatalogDatabase::writeBundledDatabase(const QFileInfo &file)
+{
+    const QString path = file.absoluteFilePath();
+    if (!file.dir().exists() && !QDir().mkpath(file.dir().absolutePath())) {
+        return false;
+    }
+    QFile bundled(QString::fromLatin1(BundledCatalogDatabase));
+    if (!bundled.open(QIODevice::ReadOnly)) {
+        return false;
+    }
+    const QByteArray contents = bundled.readAll();
+
+    // Write beside the target and rename it into place: a half-written file
+    // never becomes the catalog database, and a second instance that created
+    // the file meanwhile wins instead of being overwritten.
+    const QString temporaryPath = path + QStringLiteral(".tmp");
+    QFile temporary(temporaryPath);
+    if (!temporary.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        return false;
+    }
+    const bool written = temporary.write(contents) == contents.size();
+    temporary.close();
+    if (!written) {
+        QFile::remove(temporaryPath);
+        return false;
+    }
+    if (!QFile::rename(temporaryPath, path)) {
+        QFile::remove(temporaryPath);
+        return QFile::exists(path);
+    }
+    return true;
+}
+
+bool CatalogDatabase::hasCatalogSchema(QString *problem)
+{
+    static const char *const tables[] = {"t_catalogs",
+                                         "t_volumes",
+                                         "t_files",
+                                         "t_thumbnails",
+                                         "t_volumeorders",
+                                         "t_fileorders",
+                                         "t_tags",
+                                         "t_volumetags"};
+    for (const char *table : tables) {
+        QSqlQuery query(m_db);
+        if (!query.exec(QStringLiteral("SELECT 1 FROM %1 LIMIT 1").arg(QLatin1String(table)))) {
+            *problem = tr("%1 is missing").arg(QLatin1String(table));
+            return false;
+        }
+    }
+    QSqlQuery viewQuery(m_db);
+    if (!viewQuery.exec(QStringLiteral("SELECT 1 FROM v_volumethm LIMIT 1"))) {
+        *problem = tr("the volume view is missing");
+        return false;
+    }
+    QSqlQuery versionQuery(m_db);
+    if (versionQuery.exec(QStringLiteral("SELECT MAX(version) FROM t_version")) &&
+        versionQuery.next() && versionQuery.value(0).toInt() > SupportedCatalogSchema) {
+        *problem = tr("the database comes from a newer QuickViewer");
+        return false;
+    }
+    return true;
 }
 
 int CatalogDatabase::buildCatalogVolumes(const QString &dirpath,
@@ -288,6 +403,9 @@ CatalogRecord CatalogDatabase::createCatalog(QString name, QString path)
 CatalogRecord CatalogDatabase::createCatalog(QString name, QString path, const QAtomicInt *canceled)
 {
     CatalogRecord catalog = {0};
+    if (!ensureReady()) {
+        return catalog;
+    }
     catalog.name = name;
     catalog.path = path;
     catalog.created_at = QDateTime::currentDateTime();
@@ -360,6 +478,11 @@ QFutureWatcher<QList<CatalogRecord>> *
 CatalogDatabase::createCatalogAsync(QList<CatalogRecord> newers)
 {
     m_catalogCanceled.storeRelease(0);
+    if (!ensureReady()) {
+        // Nothing can be stored; finish an empty batch so that the caller
+        // still hears that the build ended.
+        newers.clear();
+    }
     QFuture<QList<CatalogRecord>> future =
         QtConcurrent::run([this, newers] { return callCreateCatalog(newers); });
     m_catalogWatcher.setFuture(future);
@@ -375,6 +498,9 @@ void CatalogDatabase::cancelCreateCatalogAsync()
 QMap<int, CatalogRecord> CatalogDatabase::catalogs()
 {
     QMap<int, CatalogRecord> result;
+    if (!ensureReady()) {
+        return result;
+    }
     QSqlQuery t_catalogs(m_db);
     t_catalogs.prepare("SELECT * FROM t_catalogs");
     if (!execQuery(t_catalogs, "t_catalogs")) {
@@ -395,6 +521,9 @@ QMap<int, CatalogRecord> CatalogDatabase::catalogs()
 
 QList<VolumeThumbRecord> CatalogDatabase::volumes()
 {
+    if (!ensureReady()) {
+        return QList<VolumeThumbRecord>();
+    }
     if (!m_volumesDirty) {
         return m_volumesCache;
     }
@@ -426,6 +555,9 @@ QList<VolumeThumbRecord> CatalogDatabase::volumes()
 
 void CatalogDatabase::loadTags()
 {
+    if (!ensureReady()) {
+        return;
+    }
     QSqlQuery t_tags(m_db);
     if (!t_tags.exec("SELECT * FROM t_tags ORDER BY id")) {
         qDebug() << "t_tags query failed: " << t_tags.lastError();
@@ -446,6 +578,9 @@ void CatalogDatabase::loadTags()
 
 QMap<int, TagRecord *> CatalogDatabase::tagsByCount()
 {
+    if (!ensureReady()) {
+        return QMap<int, TagRecord *>();
+    }
     QSqlQuery t_tags(m_db);
     const bool queried =
         t_tags.exec("SELECT t.id, t.name, t.type_id, v2.cnt FROM t_tags t INNER JOIN "
@@ -473,6 +608,9 @@ QMap<int, TagRecord *> CatalogDatabase::tagsByCount()
 QList<TagRecord> CatalogDatabase::getTagsFromVolumeId(int volume_id)
 {
     QList<TagRecord> result;
+    if (!ensureReady()) {
+        return result;
+    }
     QSqlQuery t_tags(m_db);
     t_tags.prepare("SELECT t.id, t.name, t.type_id FROM t_tags t "
                    "WHERE t.id IN (SELECT tag_id FROM t_volumetags WHERE volume_id=:volume_id)");
@@ -493,6 +631,9 @@ QList<TagRecord> CatalogDatabase::getTagsFromVolumeId(int volume_id)
 
 void CatalogDatabase::deleteCatalog(int id)
 {
+    if (!ensureReady()) {
+        return;
+    }
     transaction();
 
     QSqlQuery t_thumbs(m_db);
@@ -561,6 +702,9 @@ void CatalogDatabase::deleteCatalog(int id)
 
 void CatalogDatabase::updateCatalogName(int id, QString name)
 {
+    if (!ensureReady()) {
+        return;
+    }
     QSqlQuery t_catalogs(m_db);
     t_catalogs.prepare("UPDATE t_catalogs SET name=:name, updated_at=:updated_at WHERE id=:id");
     t_catalogs.bindValue(":id", id);
@@ -571,6 +715,9 @@ void CatalogDatabase::updateCatalogName(int id, QString name)
 
 void CatalogDatabase::deleteAllCatalogs()
 {
+    if (!ensureReady()) {
+        return;
+    }
     transaction();
     static const char *const removals[] = {"t_thumbnails",
                                            "t_fileorders",
@@ -631,6 +778,9 @@ void CatalogDatabase::rollback()
 
 void CatalogDatabase::vacuum()
 {
+    if (!ensureReady()) {
+        return;
+    }
     QSqlQuery vacuumQuery(m_db);
     if (!vacuumQuery.exec("VACUUM")) {
         qDebug() << "VACUUM failed: " << vacuumQuery.lastError();

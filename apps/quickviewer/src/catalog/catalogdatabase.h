@@ -3,6 +3,7 @@
 
 #include <QAtomicInt>
 #include <QDateTime>
+#include <QFileInfo>
 #include <QFutureWatcher>
 #include <QList>
 #include <QMap>
@@ -18,6 +19,21 @@ class CatalogDatabase : public QObject
 public:
     CatalogDatabase(QObject *parent, QString dbpath);
     ~CatalogDatabase() override;
+
+    /**
+     * Opens the catalog database, creating it from the database the
+     * application bundles when the file does not exist yet. Only that missing
+     * file is written: a database that is already there is never replaced.
+     *
+     * @return true while the catalog schema is available.
+     */
+    bool ensureReady();
+    /**
+     * Why the catalog database is not usable, in one sentence. Empty while
+     * ensureReady() holds.
+     */
+    QString errorMessage() const { return m_errorMessage; }
+
     void vacuum();
 
     /* Catalogs */
@@ -46,11 +62,19 @@ signals:
     void catalogProgressTextChanged(const QString &text);
 
 private:
+    bool writeBundledDatabase(const QFileInfo &file);
+    bool hasCatalogSchema(QString *problem);
+    void closeDatabase();
+
+    QString m_dbPath;
     QString m_connectionName;
     QSqlDatabase m_db;
+    bool m_connectionRegistered;
     bool m_transaction;
     QFutureWatcher<QList<CatalogRecord>> m_catalogWatcher;
     QAtomicInt m_catalogCanceled;
+    bool m_ready;
+    QString m_errorMessage;
     QList<VolumeThumbRecord> m_volumesCache;
     bool m_volumesDirty;
     QMap<QString, TagRecord> m_tags; // key is 'type_id:lower(name)' e.g. "0:tagname"
