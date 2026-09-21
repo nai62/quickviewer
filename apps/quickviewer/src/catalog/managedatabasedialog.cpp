@@ -4,6 +4,7 @@
 #include "databasesettingdialog.h"
 #include "fileloader.h"
 #include "ui_cataloglist.h"
+#include "volumetagdialog.h"
 
 ManageDatabaseDialog::ManageDatabaseDialog(QWidget *parent)
     : QDialog(parent),
@@ -33,6 +34,19 @@ ManageDatabaseDialog::ManageDatabaseDialog(QWidget *parent)
             &QPushButton::clicked,
             this,
             &ManageDatabaseDialog::handlePurgeMissingButtonClicked);
+    connect(ui->treeWidget,
+            &QTreeWidget::currentItemChanged,
+            this,
+            &ManageDatabaseDialog::handleCatalogSelectionChanged);
+    connect(ui->editTagsButton,
+            &QPushButton::clicked,
+            this,
+            &ManageDatabaseDialog::handleEditTagsButtonClicked);
+    connect(ui->booksTree,
+            &QTreeWidget::itemDoubleClicked,
+            this,
+            &ManageDatabaseDialog::handleEditTagsButtonClicked);
+    ui->editTagsButton->setEnabled(false);
 
     resetCatalogList();
 }
@@ -177,6 +191,71 @@ void ManageDatabaseDialog::resetCatalogList()
             ui->treeWidget->addTopLevelItem(item);
         }
     }
+
+    handleCatalogSelectionChanged();
+}
+
+void ManageDatabaseDialog::handleCatalogSelectionChanged()
+{
+    ui->booksTree->clear();
+    ui->editTagsButton->setEnabled(false);
+    if (!m_catalogDatabase) {
+        return;
+    }
+    const QTreeWidgetItem *current = ui->treeWidget->currentItem();
+    if (!current) {
+        return;
+    }
+    // A catalog that is only waiting to be built holds no books yet.
+    const int catalogId = current->data(0, Qt::UserRole).toInt();
+    if (catalogId < 0) {
+        return;
+    }
+
+    const QList<QPair<VolumeThumbRecord, QStringList>> volumes =
+        m_catalogDatabase->catalogVolumes(catalogId);
+    for (const QPair<VolumeThumbRecord, QStringList> &entry : volumes) {
+        const VolumeThumbRecord &volume = entry.first;
+        QTreeWidgetItem *item = new QTreeWidgetItem;
+        item->setText(0, volume.name.isEmpty() ? volume.realname : volume.name);
+        item->setToolTip(0, volume.realname);
+        item->setText(1, entry.second.join(QStringLiteral(", ")));
+        item->setData(0, Qt::UserRole, volume.id);
+        ui->booksTree->addTopLevelItem(item);
+    }
+}
+
+void ManageDatabaseDialog::handleEditTagsButtonClicked()
+{
+    if (!m_catalogDatabase) {
+        return;
+    }
+    QTreeWidgetItem *current = ui->booksTree->currentItem();
+    if (!current) {
+        return;
+    }
+    const int volumeId = current->data(0, Qt::UserRole).toInt();
+
+    QStringList knownTags;
+    const QMap<int, TagRecord *> byCount = m_catalogDatabase->tagsByCount();
+    for (TagRecord *tag : byCount) {
+        knownTags << tag->name;
+    }
+    QStringList volumeTags;
+    for (const TagRecord &tag : m_catalogDatabase->getTagsFromVolumeId(volumeId)) {
+        volumeTags << tag.name;
+    }
+
+    VolumeTagDialog dialog(this);
+    dialog.setVolume(current->text(0), current->toolTip(0), knownTags, volumeTags);
+    if (dialog.exec() != QDialog::Accepted) {
+        return;
+    }
+    m_catalogDatabase->setVolumeDisplayName(volumeId, dialog.displayName());
+    m_catalogDatabase->setVolumeTags(volumeId, dialog.tags());
+
+    // Show the title and the tags the book carries now.
+    handleCatalogSelectionChanged();
 }
 
 void ManageDatabaseDialog::dragEnterEvent(QDragEnterEvent *e)

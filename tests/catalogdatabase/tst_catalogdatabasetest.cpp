@@ -156,6 +156,7 @@ private Q_SLOTS:
     void registersADroppedArchiveAsItsOwnCatalog();
     void editsTheTitleAndTagsOfAVolume();
     void offersTheTitleAndTagsOfAVolumeForEditing();
+    void showsTheBooksOfTheSelectedCatalog();
     void parsesVolumeNames_data();
     void parsesVolumeNames();
     void finishesAnEmptyCatalogRequest();
@@ -463,14 +464,11 @@ void CatalogDatabaseTest::editsTheTitleAndTagsOfAVolume()
 
 void CatalogDatabaseTest::offersTheTitleAndTagsOfAVolumeForEditing()
 {
-    VolumeThumbRecord volume;
-    volume.id = 1;
-    volume.name = QStringLiteral("Stored Title");
-    volume.realname = QStringLiteral("Folder Name");
-
     VolumeTagDialog dialog;
-    dialog.setVolume(
-        volume, {QStringLiteral("First"), QStringLiteral("Second")}, {QStringLiteral("Second")});
+    dialog.setVolume(QStringLiteral("Stored Title"),
+                     QStringLiteral("Folder Name"),
+                     {QStringLiteral("First"), QStringLiteral("Second")},
+                     {QStringLiteral("Second")});
     QCOMPARE(dialog.displayName(), QStringLiteral("Stored Title"));
 
     // The tags the catalog knows are offered, and the ones the volume carries
@@ -499,6 +497,49 @@ void CatalogDatabaseTest::offersTheTitleAndTagsOfAVolumeForEditing()
     QVERIFY(name);
     name->setText(QStringLiteral("  Edited Title  "));
     QCOMPARE(dialog.displayName(), QStringLiteral("Edited Title"));
+}
+
+void CatalogDatabaseTest::showsTheBooksOfTheSelectedCatalog()
+{
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    QVERIFY(fixture.addImage(QStringLiteral("Alpha"), QStringLiteral("01.png"), QSize(60, 90)));
+    QVERIFY(fixture.addImage(QStringLiteral("Beta"), QStringLiteral("01.png"), QSize(60, 90)));
+
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    QVERIFY(database.createCatalog(QStringLiteral("Library"), fixture.rootPath()).created);
+
+    // One of the books carries a tag of its own.
+    int alphaId = -1;
+    for (const VolumeThumbRecord &volume : database.volumes()) {
+        if (volume.realname == QStringLiteral("Alpha")) {
+            alphaId = volume.id;
+        }
+    }
+    QVERIFY(alphaId > 0);
+    QVERIFY(database.setVolumeTags(alphaId, {QStringLiteral("Sample")}));
+
+    ManageDatabaseDialog dialog;
+    dialog.setCatalogDatabase(&database);
+    QTreeWidget *catalogs = dialog.findChild<QTreeWidget *>(QStringLiteral("treeWidget"));
+    QTreeWidget *books = dialog.findChild<QTreeWidget *>(QStringLiteral("booksTree"));
+    QVERIFY(catalogs);
+    QVERIFY(books);
+    // Nothing is selected, so no book is shown yet.
+    QCOMPARE(books->topLevelItemCount(), 0);
+
+    catalogs->setCurrentItem(catalogs->topLevelItem(0));
+    // The folder the catalog was created from and the two folders below it.
+    QCOMPARE(books->topLevelItemCount(), 3);
+    bool found = false;
+    for (int row = 0; row < books->topLevelItemCount(); ++row) {
+        QTreeWidgetItem *item = books->topLevelItem(row);
+        if (item->text(0) == QStringLiteral("Alpha")) {
+            QCOMPARE(item->text(1), QStringLiteral("Sample"));
+            found = true;
+        }
+    }
+    QVERIFY(found);
 }
 
 void CatalogDatabaseTest::parsesVolumeNames_data()

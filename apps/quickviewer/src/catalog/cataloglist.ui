@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>623</width>
-    <height>515</height>
+    <height>700</height>
    </rect>
   </property>
   <property name="acceptDrops">
@@ -129,7 +129,7 @@
      </layout>
     </widget>
    </item>
-   <item row="1" column="0" colspan="2">
+   <item row="1" column="0">
     <widget class="QTreeWidget" name="treeWidget">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -170,6 +170,36 @@
        <string notr="true">3</string>
       </property>
      </column>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QGroupBox" name="booksGroup">
+     <property name="title">
+      <string extracomment="Frame holding the books of the catalog selected above, and the button that edits the tags of one of them">Books of the selected catalog</string>
+     </property>
+     <layout class="QGridLayout" name="booksLayout">
+      <item row="0" column="0">
+       <widget class="QTreeWidget" name="booksTree">
+        <column>
+         <property name="text">
+          <string extracomment="Column of the list of books that shows the title of a book">Title</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string extracomment="Column of the list of books that shows the tags of a book">Tags</string>
+         </property>
+        </column>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QPushButton" name="editTagsButton">
+        <property name="text">
+         <string extracomment="Button that opens the dialog which edits the title and tags of the selected book">&amp;Edit tags...</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
    <item row="3" column="0" colspan="2">

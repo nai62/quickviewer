@@ -465,7 +465,7 @@ void CatalogWindow::editVolumeTags(int row)
     }
 
     VolumeTagDialog dialog(this);
-    dialog.setVolume(*volume, knownTags, volumeTags);
+    dialog.setVolume(volume->name, volume->realname, knownTags, volumeTags);
     if (dialog.exec() != QDialog::Accepted) {
         return;
     }

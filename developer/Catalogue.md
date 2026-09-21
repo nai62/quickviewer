@@ -30,7 +30,7 @@ catalogues rather than thumbnails.
 | `catalogrecords.h` | the records the catalog UI passes around |
 | `CatalogWindow` | the list, the search box, the tag bar, and the tag editor of one book |
 | `VolumeTagDialog` | the title and the tags of one volume |
-| `ManageDatabaseDialog` | catalogues: adding and dropping folders, starting and stopping a build, deleting, removing entries whose folders are gone |
+| `ManageDatabaseDialog` | catalogues: adding and dropping folders, starting and stopping a build, deleting, removing entries whose folders are gone, and the books of one catalog with the tag editor for each |
 
 `CatalogBuilder` reads the file system and holds no database; the catalog
 walks one folder level at a time, one scan per folder on a worker thread, and
@@ -45,8 +45,9 @@ thing across catalogues. What the user should know:
 - A catalog stores the tags a volume name suggested when it created the
   volume. Nothing re-reads the name afterwards, so a name that suggests the
   wrong tags keeps them until the user edits them.
-- The user edits them: right-click a book in the catalog list and choose
-  **Edit tags...**. The dialog sets the title the catalogue shows for that
+- The user edits them from either list: right-click a book in the catalog list,
+  or pick a catalogue in "Manage catalogs" and use **Edit tags...** on one of
+  the books it lists. The dialog sets the title the catalogue shows for that
   book and the tags it carries, reusing a tag the catalog already knows
   whatever case is typed.
 - The tag bar above the list shows the tags of the books on the list, most

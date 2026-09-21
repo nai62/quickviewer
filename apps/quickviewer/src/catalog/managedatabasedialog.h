@@ -34,6 +34,8 @@ public slots:
     void handleUpdateButtonClicked();
     void handleDeleteAllButtonClicked();
     void handlePurgeMissingButtonClicked();
+    void handleCatalogSelectionChanged();
+    void handleEditTagsButtonClicked();
     void handleUpdateAllButtonClicked();
     void handleCancelButtonClicked();
 

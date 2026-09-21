@@ -554,6 +554,60 @@ QList<VolumeThumbRecord> CatalogDatabase::volumes()
     return m_volumesCache = result;
 }
 
+QList<QPair<VolumeThumbRecord, QStringList>> CatalogDatabase::catalogVolumes(int catalog_id)
+{
+    QList<QPair<VolumeThumbRecord, QStringList>> result;
+    if (!ensureReady()) {
+        return result;
+    }
+
+    QSqlQuery volumes(m_db);
+    volumes.prepare("SELECT t_volumes.id, t_volumes.name, t_volumes.realname, t_volumes.path, "
+                    "t_volumes.frontpage_id, t_volumes.parent_id, t_volumes.catalog_id, "
+                    "t_thumbnails.thumbnail FROM t_volumes "
+                    "LEFT OUTER JOIN t_thumbnails ON t_volumes.thumb_id = t_thumbnails.id "
+                    "WHERE t_volumes.catalog_id = :catalog_id ORDER BY t_volumes.realname");
+    volumes.bindValue(":catalog_id", catalog_id);
+    if (!volumes.exec()) {
+        qDebug() << "t_volumes of catalog query failed: " << volumes.lastError();
+        return result;
+    }
+    QMap<int, int> rowOfVolume;
+    while (volumes.next()) {
+        VolumeThumbRecord record;
+        record.id = volumes.value(0).toInt();
+        record.name = volumes.value(1).toString();
+        record.nameNoCase = record.name.toLower();
+        record.realname = volumes.value(2).toString();
+        record.realnameNoCase = record.realname.toLower();
+        record.path = volumes.value(3).toString();
+        record.frontpage_id = volumes.value(4).toInt();
+        record.parent_id = volumes.value(5).toInt();
+        record.catalog_id = volumes.value(6).toInt();
+        record.thumbnail = volumes.value(7).toByteArray();
+        rowOfVolume.insert(record.id, int(result.size()));
+        result.append({record, QStringList()});
+    }
+
+    QSqlQuery tags(m_db);
+    tags.prepare("SELECT t_volumetags.volume_id, t_tags.name FROM t_volumetags "
+                 "INNER JOIN t_tags ON t_tags.id = t_volumetags.tag_id "
+                 "WHERE t_volumetags.catalog_id = :catalog_id "
+                 "ORDER BY t_volumetags.volume_id, t_tags.name");
+    tags.bindValue(":catalog_id", catalog_id);
+    if (!tags.exec()) {
+        qDebug() << "t_volumetags of catalog query failed: " << tags.lastError();
+        return result;
+    }
+    while (tags.next()) {
+        const auto row = rowOfVolume.constFind(tags.value(0).toInt());
+        if (row != rowOfVolume.constEnd()) {
+            result[row.value()].second << tags.value(1).toString();
+        }
+    }
+    return result;
+}
+
 QStringList CatalogDatabase::missingVolumePaths()
 {
     QStringList missing;

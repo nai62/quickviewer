@@ -2192,6 +2192,26 @@
         <source>Removed %1 entry(ies).</source>
         <translation>%1 件を削除しました。</translation>
     </message>
+    <message>
+        <source>Books of the selected catalog</source>
+        <comment>Frame holding the books of the catalog selected above, and the button that edits the tags of one of them</comment>
+        <translation>選択したカタログの本</translation>
+    </message>
+    <message>
+        <source>Title</source>
+        <comment>Column of the list of books that shows the title of a book</comment>
+        <translation>タイトル</translation>
+    </message>
+    <message>
+        <source>Tags</source>
+        <comment>Column of the list of books that shows the tags of a book</comment>
+        <translation>タグ</translation>
+    </message>
+    <message>
+        <source>&amp;Edit tags...</source>
+        <comment>Button that opens the dialog which edits the title and tags of the selected book</comment>
+        <translation>タグを編集(&amp;E)...</translation>
+    </message>
 </context>
 <context>
     <name>CatalogDatabase</name>

@@ -8,6 +8,7 @@
 #include <QList>
 #include <QMap>
 #include <QObject>
+#include <QPair>
 #include <QSqlDatabase>
 #include <QString>
 
@@ -49,6 +50,12 @@ public:
 
     /* Volumes */
     QList<VolumeThumbRecord> volumes();
+    /**
+     * The volumes of one catalog, in the order the catalog lists them, with
+     * the tags each of them carries. The manager shows every volume this way,
+     * whether or not it has a cover to show in the catalog list.
+     */
+    QList<QPair<VolumeThumbRecord, QStringList>> catalogVolumes(int catalog_id);
     /**
      * Paths of volumes whose folder or archive is no longer on disk. The
      * catalog keeps them until the user removes them.

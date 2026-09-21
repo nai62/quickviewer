@@ -23,10 +23,12 @@ public:
     ~VolumeTagDialog() override;
 
     /**
-     * Fills the dialog for \a volume, offering the tag names \a knownTagNames
+     * Fills the dialog for the volume whose catalog title is \a title and
+     * whose folder name is \a realname, offering the tag names \a knownTagNames
      * to pick from and checking the ones in \a volumeTagNames.
      */
-    void setVolume(const VolumeThumbRecord &volume,
+    void setVolume(const QString &title,
+                   const QString &realname,
                    const QStringList &knownTagNames,
                    const QStringList &volumeTagNames);
 

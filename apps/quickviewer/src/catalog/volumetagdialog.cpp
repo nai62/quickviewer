@@ -21,12 +21,13 @@ VolumeTagDialog::~VolumeTagDialog()
     delete ui;
 }
 
-void VolumeTagDialog::setVolume(const VolumeThumbRecord &volume,
+void VolumeTagDialog::setVolume(const QString &title,
+                                const QString &realname,
                                 const QStringList &knownTagNames,
                                 const QStringList &volumeTagNames)
 {
-    ui->nameEdit->setText(volume.name);
-    ui->nameEdit->setPlaceholderText(volume.realname);
+    ui->nameEdit->setText(title);
+    ui->nameEdit->setPlaceholderText(realname);
 
     QStringList names = knownTagNames;
     for (const QString &name : volumeTagNames) {
