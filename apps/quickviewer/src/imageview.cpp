@@ -183,10 +183,10 @@ void ImageView::setViewerSession(ViewerSession *session)
     connect(
         session, &ViewerSession::visiblePagesChanged, this, &ImageView::handleVisiblePagesChanged);
     connect(session, &ViewerSession::loadStatusChanged, this, &ImageView::handleLoadStatusChanged);
-    connect(session, SIGNAL(readyForPaint()), this, SLOT(refreshRenderedPages()));
-    connect(session, SIGNAL(volumeChanged(QString)), this, SLOT(handleVolumeChanged(QString)));
-    connect(this, SIGNAL(slideShowStarted()), session, SLOT(handleSlideShowStarted()));
-    connect(this, SIGNAL(slideShowStopped()), session, SLOT(handleSlideShowStopped()));
+    connect(session, &ViewerSession::readyForPaint, this, &ImageView::refreshRenderedPages);
+    connect(session, &ViewerSession::volumeChanged, this, &ImageView::handleVolumeChanged);
+    connect(this, &ImageView::slideShowStarted, session, &ViewerSession::handleSlideShowStarted);
+    connect(this, &ImageView::slideShowStopped, session, &ViewerSession::handleSlideShowStopped);
     handleVisiblePagesChanged(session->visiblePages());
 }
 
@@ -203,7 +203,7 @@ void ImageView::toggleSlideShow()
     }
     emit slideShowStarted();
     m_slideshowTimer = new QTimer();
-    connect(m_slideshowTimer, SIGNAL(timeout()), this, SLOT(handleSlideShowTimerTimeout()));
+    connect(m_slideshowTimer, &QTimer::timeout, this, &ImageView::handleSlideShowTimerTimeout);
     m_slideshowTimer->start(qApp->SlideShowWait());
 }
 

@@ -61,9 +61,9 @@ CatalogWindow::CatalogWindow(QWidget *parent, Ui::MainWindow *uiMain)
 
     // SearchCombo
     connect(ui->searchCombo->lineEdit(),
-            SIGNAL(editingFinished()),
+            &QLineEdit::editingFinished,
             this,
-            SLOT(handleSearchLineEditEditingFinished()));
+            &CatalogWindow::handleSearchLineEditEditingFinished);
     ui->searchCombo->lineEdit()->setPlaceholderText(
         tr("Enter a search term and press Enter to search by title.",
            "Gray text that prompts a keyword search of Volume"));

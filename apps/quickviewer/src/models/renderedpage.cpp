@@ -448,8 +448,8 @@ void RenderedPage::ensureInitialized()
     // initializeAnimation() has loaded the first frame by now, but a page built
     // from content that skipped it must not dereference a missing reader.
     if (QMovie *movie = m_content.movie.data()) {
-        connect(movie, SIGNAL(finished()), SLOT(handleAnimationFinished()));
-        connect(movie, SIGNAL(frameChanged(int)), SLOT(handleAnimationFrameChanged(int)));
+        connect(movie, &QMovie::finished, this, &RenderedPage::handleAnimationFinished);
+        connect(movie, &QMovie::frameChanged, this, &RenderedPage::handleAnimationFrameChanged);
         movie->start();
     }
     m_initialized = true;

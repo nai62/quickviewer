@@ -60,13 +60,13 @@ signals:
     /**
      * @brief anchorHovered a signal when the mouse moved to one of 4 edges on this widget
      */
-    void anchorHovered(Qt::AnchorPoint anchor) const;
+    void anchorHovered(Qt::AnchorPoint anchor);
 
-    void fittingChanged(qvEnums::FitMode mode) const;
-    void scrollModeChanged(bool scrolling) const;
-    void zoomingChanged() const;
-    void slideShowStarted() const;
-    void slideShowStopped() const;
+    void fittingChanged(qvEnums::FitMode mode);
+    void scrollModeChanged(bool scrolling);
+    void zoomingChanged();
+    void slideShowStarted();
+    void slideShowStopped();
 
 protected:
     void paintEvent(QPaintEvent *event) override;

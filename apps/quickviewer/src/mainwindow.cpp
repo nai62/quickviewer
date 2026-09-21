@@ -168,10 +168,11 @@ MainWindow::MainWindow(QWidget *parent)
     m_fullscreenButton->setToolTip(tr("&Fullscreen"));
     m_fullscreenButton->setCheckable(true);
     m_fullscreenButton->setIcon(QIcon(":/icons/fullscreen"));
-    connect(
-        m_fullscreenButton, SIGNAL(clicked(bool)), this, SLOT(handleFullscreenActionTriggered()));
-    connect(
-        ui->actionFullscreen, SIGNAL(toggled(bool)), m_fullscreenButton, SLOT(setChecked(bool)));
+    connect(m_fullscreenButton,
+            &QToolButton::clicked,
+            this,
+            &MainWindow::handleFullscreenActionTriggered);
+    connect(ui->actionFullscreen, &QAction::toggled, m_fullscreenButton, &QToolButton::setChecked);
     ui->menuBar->setCornerWidget(m_fullscreenButton);
 
     ui->actionLargeToolbarIcons->setChecked(qApp->LargeToolbarIcons());
@@ -201,13 +202,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Languages
     connect(qApp->languageSelector(),
-            SIGNAL(languageChanged(QString)),
+            &LanguageManager::languageChanged,
             this,
-            SLOT(handleLanguageSelectorLanguageChanged(QString)));
+            &MainWindow::handleLanguageSelectorLanguageChanged);
     connect(qApp->languageSelector(),
-            SIGNAL(openTextEditorForLanguage(LanguageInfo)),
+            &LanguageManager::openTextEditorForLanguage,
             this,
-            SLOT(handleLanguageSelectorOpenTextEditorForLanguage(LanguageInfo)));
+            &MainWindow::handleLanguageSelectorOpenTextEditorForLanguage);
 
     // ToolBar/PageBar/StatusBar/MenuBar
     ui->actionShowToolBar->setChecked(qApp->ShowToolBar());
@@ -225,17 +226,14 @@ MainWindow::MainWindow(QWidget *parent)
     // so displaying the volume does not move the already rendered image.
 
     // History
-    connect(ui->menuHistory,
-            SIGNAL(triggered(QAction *)),
-            this,
-            SLOT(handleHistoryMenuTriggered(QAction *)));
+    connect(ui->menuHistory, &QMenu::triggered, this, &MainWindow::handleHistoryMenuTriggered);
 
     // Bookmarks
     ui->actionLoadBookmark->setMenu(ui->menuLoadBookmark);
     connect(ui->menuLoadBookmark,
-            SIGNAL(triggered(QAction *)),
+            &QMenu::triggered,
             this,
-            SLOT(handleLoadBookmarkMenuTriggered(QAction *)));
+            &MainWindow::handleLoadBookmarkMenuTriggered);
 
     // Folders
     ui->actionOpenVolumeWithProgress->setChecked(qApp->OpenVolumeWithProgress());
@@ -316,22 +314,28 @@ MainWindow::MainWindow(QWidget *parent)
     ui->mainToolBar->installEventFilter(this);
     ui->pageFrame->installEventFilter(this);
 
-    connect(&m_viewerSession, SIGNAL(pageChanged()), this, SLOT(handleViewerSessionPageChanged()));
     connect(&m_viewerSession,
-            SIGNAL(volumeChanged(QString)),
+            &ViewerSession::pageChanged,
             this,
-            SLOT(handleViewerSessionVolumeChanged(QString)));
+            &MainWindow::handleViewerSessionPageChanged);
+    connect(&m_viewerSession,
+            &ViewerSession::volumeChanged,
+            this,
+            &MainWindow::handleViewerSessionVolumeChanged);
     connect(ui->graphicsView,
-            SIGNAL(scrollModeChanged(bool)),
+            &ImageView::scrollModeChanged,
             this,
-            SLOT(handleScrollModeChanged(bool)));
+            &MainWindow::handleScrollModeChanged);
+    connect(ui->graphicsView,
+            &ImageView::zoomingChanged,
+            this,
+            &MainWindow::handleViewerSessionPageChanged);
+    connect(ui->graphicsView,
+            &ImageView::fittingChanged,
+            this,
+            &MainWindow::handleGraphicsViewFittingChanged);
     connect(
-        ui->graphicsView, SIGNAL(zoomingChanged()), this, SLOT(handleViewerSessionPageChanged()));
-    connect(ui->graphicsView,
-            SIGNAL(fittingChanged(qvEnums::FitMode)),
-            this,
-            SLOT(handleGraphicsViewFittingChanged(qvEnums::FitMode)));
-    connect(ui->graphicsView, SIGNAL(slideShowStopped()), this, SLOT(handleSlideShowStopped()));
+        ui->graphicsView, &ImageView::slideShowStopped, this, &MainWindow::handleSlideShowStopped);
 
     setWindowTitle(QString("%1 v%2").arg(qApp->applicationName()).arg(qApp->applicationVersion()));
 }
@@ -1017,7 +1021,7 @@ void MainWindow::handleGraphicsViewAnchorHovered(Qt::AnchorPoint anchor)
             }
             qApp->setInnerFrameShowing(false);
         });
-        connect(this, SIGNAL(changingFullscreen(bool)), innerFrame, SLOT(close()));
+        connect(this, &MainWindow::changingFullscreen, innerFrame, &InnerFrame::close);
         connect(innerFrame, &InnerFrame::closed, this, [=] { delete innerFrame; });
         innerFrame->showWithoutTitleBar();
     }
@@ -1036,7 +1040,7 @@ void MainWindow::handleGraphicsViewAnchorHovered(Qt::AnchorPoint anchor)
             ui->verticalViewPage->layout()->addWidget(ui->pageFrame);
             qApp->setInnerFrameShowing(false);
         });
-        connect(this, SIGNAL(changingFullscreen(bool)), innerFrame, SLOT(close()));
+        connect(this, &MainWindow::changingFullscreen, innerFrame, &InnerFrame::close);
         connect(innerFrame, &InnerFrame::closed, this, [=] { delete innerFrame; });
         innerFrame->showWithoutTitleBar();
     }
@@ -1197,9 +1201,9 @@ void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
         // Queued: the independent window emits this from its own closeEvent,
         // and deleting the widget there would use it after close() returns.
         connect(m_folderWindow,
-                SIGNAL(closed()),
+                &FolderWindow::closed,
                 this,
-                SLOT(handleFolderWindowClosed()),
+                &MainWindow::handleFolderWindowClosed,
                 Qt::QueuedConnection);
         connect(m_folderWindow,
                 &FolderWindow::openVolume,
@@ -1234,9 +1238,9 @@ void MainWindow::createFolderWindow(bool docked, QString path, bool deferLoad)
         // Queued: the independent window emits this from its own closeEvent,
         // and deleting the widget there would use it after close() returns.
         connect(m_folderWindow,
-                SIGNAL(closed()),
+                &FolderWindow::closed,
                 this,
-                SLOT(handleFolderWindowClosed()),
+                &MainWindow::handleFolderWindowClosed,
                 Qt::QueuedConnection);
         connect(m_folderWindow,
                 &FolderWindow::openVolume,
@@ -1381,7 +1385,8 @@ void MainWindow::createCatalogWindow(bool docked)
         int lastwidth = qApp->CatalogViewWidth();
         m_catalogWindow = new CatalogWindow(nullptr, ui);
         m_catalogWindow->setThumbnailManager(m_thumbManager);
-        connect(m_catalogWindow, SIGNAL(closed()), this, SLOT(handleCatalogWindowClosed()));
+        connect(
+            m_catalogWindow, &CatalogWindow::closed, this, &MainWindow::handleCatalogWindowClosed);
         connect(m_catalogWindow,
                 &CatalogWindow::openVolume,
                 this,
@@ -1398,7 +1403,8 @@ void MainWindow::createCatalogWindow(bool docked)
     } else {
         m_catalogWindow = new CatalogWindow(nullptr, ui);
         m_catalogWindow->setThumbnailManager(m_thumbManager);
-        connect(m_catalogWindow, SIGNAL(closed()), this, SLOT(handleCatalogWindowClosed()));
+        connect(
+            m_catalogWindow, &CatalogWindow::closed, this, &MainWindow::handleCatalogWindowClosed);
         connect(m_catalogWindow,
                 &CatalogWindow::openVolume,
                 this,
@@ -1498,7 +1504,7 @@ void MainWindow::handleOpenExifActionTriggered()
     m_exifDialog = new ExifDialog();
     ui->actionOpenExif->setChecked(true);
     m_exifDialog->setExif(*page);
-    connect(m_exifDialog, SIGNAL(closed()), this, SLOT(handleExifDialogClosed()));
+    connect(m_exifDialog, &ExifDialog::closed, this, &MainWindow::handleExifDialogClosed);
 
     ui->catalogSplitter->insertWidget(1, m_exifDialog);
     auto sizes = ui->catalogSplitter->sizes();

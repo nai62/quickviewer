@@ -100,9 +100,9 @@ QVApplication::QVApplication(int &argc, char **argv)
     m_languageSelector.initialize();
     m_qtbaseLanguageSelector.copyLanguages(m_languageSelector.Languages());
     connect(&m_languageSelector,
-            SIGNAL(languageChanged(QString)),
+            &LanguageManager::languageChanged,
             &m_qtbaseLanguageSelector,
-            SLOT(resetTranslator(QString)));
+            &LanguageManager::resetTranslator);
     StartupProfiler::mark("application.languages-ready");
     registerDefaultKeyMap();
     registerDefaultMouseMap();

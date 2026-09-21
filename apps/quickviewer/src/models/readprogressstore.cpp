@@ -5,7 +5,10 @@
 ReadProgressStore::ReadProgressStore(QObject *parent)
     : QObject(parent)
 {
-    connect(&m_initializeWatcher, SIGNAL(finished()), SLOT(handleInitializationFinished()));
+    connect(&m_initializeWatcher,
+            &QFutureWatcher<ReadProgressMap>::finished,
+            this,
+            &ReadProgressStore::handleInitializationFinished);
     QFuture<ReadProgressMap> future = QtConcurrent::run(&ReadProgressStore::initializeAsync);
     m_initializeWatcher.setFuture(future);
 }

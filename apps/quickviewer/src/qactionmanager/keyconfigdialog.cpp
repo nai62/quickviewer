@@ -176,21 +176,20 @@ KeyConfigDialog::KeyConfigDialog(KeyConfigDialog::KeyActionManager &keyActions, 
     ui->setupUi(this);
     ui->frameMouseOptions->setVisible(false);
     ui->addSequenceButton->setVisible(false);
-    connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
-    connect(ui->buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
-    connect(ui->buttonBox,
-            SIGNAL(clicked(QAbstractButton *)),
-            this,
-            SLOT(handleButtonBoxClicked(QAbstractButton *)));
+    connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &KeyConfigDialog::accept);
+    connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &KeyConfigDialog::reject);
+    connect(
+        ui->buttonBox, &QDialogButtonBox::clicked, this, &KeyConfigDialog::handleButtonBoxClicked);
     connect(ui->treeWidget,
-            SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
+            &QTreeWidget::currentItemChanged,
             this,
-            SLOT(handleTreeWidgetCurrentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)));
-    connect(ui->resetButton, SIGNAL(clicked()), this, SLOT(handleResetButtonClicked()));
+            &KeyConfigDialog::handleTreeWidgetCurrentItemChanged);
+    connect(
+        ui->resetButton, &QPushButton::clicked, this, &KeyConfigDialog::handleResetButtonClicked);
     connect(ui->shortcutEdit,
-            SIGNAL(textChanged(QString)),
+            &QLineEdit::textChanged,
             this,
-            SLOT(handleShortcutLineEditTextChanged(QString)));
+            &KeyConfigDialog::handleShortcutLineEditTextChanged);
 
     connect(ui->recordButton,
             &ShortcutButton::keySequenceChanged,
