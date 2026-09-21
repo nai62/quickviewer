@@ -42,7 +42,7 @@ void DatabaseSettingDialog::dragEnterEvent(QDragEnterEvent *e)
 }
 void DatabaseSettingDialog::dropEvent(QDropEvent *e)
 {
-    if (e->mimeData()->hasUrls()) {
+    if (!e->mimeData()->hasUrls()) {
         return;
     }
     QList<QUrl> urlList = e->mimeData()->urls();
