@@ -53,7 +53,10 @@ if not exist "%QV_HEIF_PLUGIN%" (
 )
 
 echo === Deploying Qt runtime for %QV_CONFIG% ===
-"%QV_QT_DIR%\bin\windeployqt.exe" %QV_DEPLOY_FLAG% --compiler-runtime "%QV_EXE%"
+rem The application draws through the platform's widget backend and asks for
+rem neither OpenGL nor the D3D shader compilers, so Qt's software OpenGL
+rem (opengl32sw.dll) and the system D3D compiler are not deployed.
+"%QV_QT_DIR%\bin\windeployqt.exe" %QV_DEPLOY_FLAG% --compiler-runtime --no-opengl-sw --no-system-d3d-compiler "%QV_EXE%"
 if errorlevel 1 exit /b 2
 
 echo === Staging HEIF support ===

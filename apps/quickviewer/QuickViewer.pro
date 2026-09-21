@@ -349,7 +349,10 @@ win32 : !CONFIG(debug, debug|release) {
         $${PWD}/../../README.md \
         $${PWD}/../../LICENSE
 
-    install_deploy_files.commands = $$shell_path($$[QT_INSTALL_BINS]/windeployqt) --release --compiler-runtime $$shell_path($${MY_DEFAULT_INSTALL}/QuickViewer.exe)
+    # The application draws through the platform's widget backend and asks for
+    # neither OpenGL nor the shader compilers of the D3D RHI backends, so the
+    # deployment leaves Qt's software OpenGL and the system D3D compiler out.
+    install_deploy_files.commands = $$shell_path($$[QT_INSTALL_BINS]/windeployqt) --release --compiler-runtime --no-opengl-sw --no-system-d3d-compiler $$shell_path($${MY_DEFAULT_INSTALL}/QuickViewer.exe)
 
     install_translations.path = $${MY_DEFAULT_INSTALL}/translations
     QM_FILES_INSTALL_PATH = $${install_translations.path}
