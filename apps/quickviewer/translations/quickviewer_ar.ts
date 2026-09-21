@@ -565,98 +565,98 @@
         <translation>اذا قمت بالضغط على الزر موافق ستقوم بكتابة تسجيل. الغاء اذا كان غير ضروري.</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="50"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="33"/>
         <source>JPEG Image</source>
         <comment>description of File format on Explorer(.jpeg)</comment>
         <translation>JPEG  صورة</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="56"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="39"/>
         <source>PNG File</source>
         <comment>description of File format on Explorer(.png)</comment>
         <translation>PNG ملف</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="62"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="45"/>
         <source>Truevision Graphics Adapter Format Image</source>
         <comment>description of File format on Explorer(.tga)</comment>
         <translation>Truevision Graphics Adapter Format Image</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="70"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="53"/>
         <source>Animated PNG File</source>
         <comment>description of File format on Explorer(.apng)</comment>
         <translation>المتحرك PNG ملف صور</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="77"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="60"/>
         <source>Bitmap File</source>
         <comment>description of File format on Explorer(.bmp)</comment>
         <translation>ملف صورة نقطية</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="84"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="67"/>
         <source>DirectDraw Surface Image</source>
         <comment>description of File format on Explorer(.dds)</comment>
         <translation>رسم مباشر صورة السطح</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="90"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="73"/>
         <source>GIF Image</source>
         <comment>description of File format on Explorer(.gif)</comment>
         <translation>GIF صورة</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="97"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="80"/>
         <source>Windows Icon File</source>
         <comment>description of File format on Explorer(.ico)</comment>
         <translation>ملف ايقونة الوندوز</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="103"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="86"/>
         <source>TIFF image</source>
         <comment>description of File format on Explorer(.tiff)</comment>
         <translation>Tiff  صورة</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="109"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="92"/>
         <source>WebP Image</source>
         <comment>description of File format on Explorer(.webp)</comment>
         <translation>صورة ويب</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="116"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="99"/>
         <source>HEIF Image</source>
         <comment>description of File format on Explorer(.heic, .heif)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="123"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="106"/>
         <source>Canon RAW format</source>
         <comment>description of File format on Explorer(.cr2)</comment>
         <translation>Canon Raw Format</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="130"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="113"/>
         <source>Adobe Digital Negative Format</source>
         <comment>description of File format on Explorer(.dng)</comment>
         <translation>Adobe Digital Negative Format</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="137"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="120"/>
         <source>Nikon RAW format</source>
         <comment>description of File format on Explorer(.nef)</comment>
         <translation>Nicon Raw Format</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="144"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="127"/>
         <source>Sony RAW format</source>
         <comment>description of File format on Explorer(.arw)</comment>
         <translation>Sony Raw Format</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="241"/>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="283"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="240"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="292"/>
         <source>&amp;View with QuickViewer</source>
         <comment>Menu displayed when right clicking on file in Explorer</comment>
         <translation>&amp;View with QuickViewer</translation>
@@ -679,7 +679,7 @@
     <name>FolderWindow</name>
     <message>
         <location filename="../src/folderview/folderwindow.ui" line="106"/>
-        <location filename="../src/folderview/folderwindow.ui" line="214"/>
+        <location filename="../src/folderview/folderwindow.ui" line="211"/>
         <source>Home</source>
         <extracomment>Button for returning to QuickViewer&apos;s home folder</extracomment>
         <translation>الانتقال للصفحة الرئيسية</translation>
@@ -696,7 +696,8 @@
     </message>
     <message>
         <location filename="../src/folderview/folderwindow.ui" line="155"/>
-        <location filename="../src/folderview/folderwindow.ui" line="232"/>
+        <location filename="../src/folderview/folderwindow.ui" line="229"/>
+        <location filename="../src/folderview/folderwindow.ui" line="271"/>
         <source>Reload</source>
         <translation>تحديث</translation>
     </message>
@@ -707,17 +708,33 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="237"/>
+        <location filename="../src/folderview/folderwindow.ui" line="234"/>
         <source>Name</source>
         <translation>الاسم</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="223"/>
+        <location filename="../src/folderview/folderwindow.ui" line="256"/>
+        <source>Open</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/folderview/folderwindow.ui" line="261"/>
+        <source>Open in &amp;Explorer</source>
+        <extracomment>Menu that displays Explorer with the currently displayed image file selected</extracomment>
+        <translation type="unfinished">فتح في &amp;مستكشف</translation>
+    </message>
+    <message>
+        <location filename="../src/folderview/folderwindow.ui" line="266"/>
+        <source>Copy path</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/folderview/folderwindow.ui" line="220"/>
         <source>Parent</source>
         <translation>الى الاصل</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="249"/>
+        <location filename="../src/folderview/folderwindow.ui" line="246"/>
         <source>Other</source>
         <translation>الاخرين</translation>
     </message>
@@ -744,14 +761,14 @@
         <translation>المجلد العلوي</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="69"/>
-        <location filename="../src/folderview/folderwindow.cpp" line="103"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="121"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="158"/>
         <source>History</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="70"/>
-        <location filename="../src/folderview/folderwindow.cpp" line="104"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="122"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="159"/>
         <source>Open history</source>
         <translation type="unfinished"></translation>
     </message>
@@ -773,13 +790,13 @@
         <translation type="vanished">تم الفرز حسب التاريخ</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="254"/>
+        <location filename="../src/folderview/folderwindow.ui" line="251"/>
         <source>Set as home folder</source>
         <translation>تعيين هذا المجلد الى المجلد الرئيسي</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="73"/>
-        <location filename="../src/folderview/folderwindow.cpp" line="329"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="125"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="439"/>
         <source>No folders or archives found.</source>
         <comment>Display when there is no display item in Folder Window</comment>
         <translation>لم يتم العثور على اي مجلدات او محفوظات</translation>
@@ -901,90 +918,90 @@
 <context>
     <name>ImageView</name>
     <message>
-        <location filename="../src/imageview.cpp" line="93"/>
+        <location filename="../src/imageview.cpp" line="94"/>
         <source>No Image Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="93"/>
+        <location filename="../src/imageview.cpp" line="94"/>
         <source>Open an image, folder, or archive to begin.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="105"/>
+        <location filename="../src/imageview.cpp" line="106"/>
         <source>No Viewable Images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="107"/>
+        <location filename="../src/imageview.cpp" line="108"/>
         <source>No supported images were found in this folder.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="108"/>
+        <location filename="../src/imageview.cpp" line="109"/>
         <source>No supported images were found in this archive.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="111"/>
+        <location filename="../src/imageview.cpp" line="112"/>
         <source>Cannot Find Item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="112"/>
+        <location filename="../src/imageview.cpp" line="113"/>
         <source>The selected file or folder does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="115"/>
+        <location filename="../src/imageview.cpp" line="116"/>
         <source>Permission Denied</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="116"/>
+        <location filename="../src/imageview.cpp" line="117"/>
         <source>The selected item cannot be read because access was denied.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="119"/>
+        <location filename="../src/imageview.cpp" line="120"/>
         <source>Cannot Display Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="120"/>
+        <location filename="../src/imageview.cpp" line="121"/>
         <source>The image could not be decoded.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="123"/>
-        <location filename="../src/imageview.cpp" line="127"/>
-        <location filename="../src/imageview.cpp" line="131"/>
-        <location filename="../src/imageview.cpp" line="135"/>
+        <location filename="../src/imageview.cpp" line="124"/>
+        <location filename="../src/imageview.cpp" line="128"/>
+        <location filename="../src/imageview.cpp" line="132"/>
+        <location filename="../src/imageview.cpp" line="136"/>
         <source>Cannot Open Archive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="124"/>
+        <location filename="../src/imageview.cpp" line="125"/>
         <source>This archive is password-protected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="128"/>
+        <location filename="../src/imageview.cpp" line="129"/>
         <source>This archive format is not supported.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="132"/>
+        <location filename="../src/imageview.cpp" line="133"/>
         <source>This archive is damaged or invalid.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="136"/>
+        <location filename="../src/imageview.cpp" line="137"/>
         <source>Cannot Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="137"/>
+        <location filename="../src/imageview.cpp" line="138"/>
         <source>The selected item could not be read.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1108,33 +1125,33 @@
         <translation>Meta</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="203"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="202"/>
         <source>Group</source>
         <comment>Group of the Action to be registered with the shortcut key</comment>
         <translation>مجموعه</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="205"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="204"/>
         <source>Description</source>
         <comment>Title of the column that displays the meaning of the action to be registered with the shortcut key</comment>
         <translation>وصف</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="210"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="209"/>
         <source>Current shortcut</source>
         <comment>Title of the column of the content of the shortcut key registered for Action</comment>
         <translation>الاختصار الحالي</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="287"/>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="328"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="286"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="327"/>
         <source>Invalid key sequence.</source>
         <comment>Message when rejecting input contents of inappropriate shortcut key</comment>
         <translation>مفتاح تسلسل باطل</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="292"/>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="310"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="291"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="309"/>
         <source>Key sequence has potential conflicts.</source>
         <comment>Text to be displayed when the entered shortcut key conflicts with another shortcut key</comment>
         <translation>مفتاح تسلسل له تعارضات محتملة.</translation>
@@ -1162,25 +1179,25 @@
         <translation>&amp;عرض</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="337"/>
+        <location filename="../src/mainwindow.ui" line="336"/>
         <source>&amp;Help</source>
         <translation>&amp;التعليمات</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="501"/>
+        <location filename="../src/mainwindow.ui" line="500"/>
         <source>E&amp;xit</source>
         <extracomment>End application</extracomment>
         <translation>خر&amp;وج</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="555"/>
+        <location filename="../src/mainwindow.ui" line="554"/>
         <source>&amp;Fit mode</source>
         <extracomment>Automatically resize the image according to the size of the window</extracomment>
         <translation>&amp;تركيب</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="170"/>
-        <location filename="../src/mainwindow.cpp" line="1751"/>
+        <location filename="../src/mainwindow.cpp" line="168"/>
+        <location filename="../src/mainwindow.cpp" line="1754"/>
         <source>&amp;Fullscreen</source>
         <translation>&amp;ملء الشاشة</translation>
     </message>
@@ -1190,7 +1207,7 @@
         <translation>عارض سريع</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="609"/>
+        <location filename="../src/mainwindow.ui" line="608"/>
         <source>&amp;Open...</source>
         <extracomment>Open an image or archive for viewing</extracomment>
         <translation>فتح(&amp;O)...</translation>
@@ -1201,218 +1218,218 @@
         <translation>&amp;التاريخ</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="596"/>
+        <location filename="../src/mainwindow.ui" line="595"/>
         <source>&amp;Reopen last viewed item</source>
         <extracomment>Opening the image automatically when opening the application the last time it was started</extracomment>
         <translation>&amp; اخر تحميل تلقائي</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="626"/>
+        <location filename="../src/mainwindow.ui" line="625"/>
         <source>&amp;Last page</source>
         <extracomment>Switch to the last image of Volume currently displayed button</extracomment>
         <translation>&amp;الصفحة الاخيرة</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="635"/>
+        <location filename="../src/mainwindow.ui" line="634"/>
         <source>&amp;First page</source>
         <extracomment>Switch to the first image of the currently displayed Volume button</extracomment>
         <translation>&amp;الصفحة الاولى</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="671"/>
+        <location filename="../src/mainwindow.ui" line="670"/>
         <source>EXIF &amp;information</source>
         <extracomment>Button to display JPEG EXIF information (if any)</extracomment>
         <translation>&amp;معلومات إكسيف</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1078"/>
+        <location filename="../src/mainwindow.ui" line="1077"/>
         <source>&amp;Keyboard Shortcuts...</source>
         <extracomment>Menu that displays a dialog for changing keyboard shortcuts</extracomment>
         <translation>&amp;تكوين المفتاح</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="588"/>
+        <location filename="../src/mainwindow.ui" line="587"/>
         <source>&amp;About QuickViewer</source>
         <extracomment>A menu for displaying a message box for displaying application information</extracomment>
         <translation>حول QuickViewer(&amp;A)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="685"/>
+        <location filename="../src/mainwindow.ui" line="684"/>
         <source>N&amp;ext volume</source>
         <extracomment>Switch to the next Volume in the same folder as the currently displayed Volume button</extracomment>
         <translation>الحجم التا&amp;لي</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="346"/>
+        <location filename="../src/mainwindow.ui" line="345"/>
         <source>&amp;Navigation</source>
         <translation>&amp;الملاحة</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="709"/>
+        <location filename="../src/mainwindow.ui" line="708"/>
         <source>Exit application or full screen</source>
         <extracomment>Function that cancels it while full screen is displayed and terminates the application otherwise</extracomment>
         <translation>انهاء التطبيق او ملء الشاشة</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="738"/>
+        <location filename="../src/mainwindow.ui" line="737"/>
         <source>&amp;Clear history</source>
         <extracomment>Menu for clearing the history of opening images</extracomment>
         <translation>&amp;تاريخ التنظيف</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="750"/>
+        <location filename="../src/mainwindow.ui" line="749"/>
         <source>Stay on &amp;top</source>
         <extracomment>When on it keeps the window always on top</extracomment>
         <translation>البقاء في &amp;الاعلى</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="969"/>
+        <location filename="../src/mainwindow.ui" line="968"/>
         <source>Sh&amp;ow/hide menu bar</source>
         <translation>اظ&amp;هار/اخفاء شريط القوائم الرئيسي</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="287"/>
-        <location filename="../src/mainwindow.ui" line="383"/>
+        <location filename="../src/mainwindow.ui" line="382"/>
         <source>&amp;Rendering</source>
         <translation>التصيير(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="797"/>
+        <location filename="../src/mainwindow.ui" line="796"/>
         <source>&amp;Maximize or Normal</source>
         <extracomment>Function to switch windows to maximize or normal display</extracomment>
         <translation>&amp;تكبير او عادي</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="814"/>
+        <location filename="../src/mainwindow.ui" line="813"/>
         <source>Skip forward 10 pages</source>
         <extracomment>Switch to 10 images in Volume button</extracomment>
         <translation>بسرعة للامام</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="823"/>
+        <location filename="../src/mainwindow.ui" line="822"/>
         <source>Skip back 10 pages</source>
         <extracomment>Switch to the previous 10 images in Volume button</extracomment>
         <translation>بسرعة للخلف</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="837"/>
+        <location filename="../src/mainwindow.ui" line="836"/>
         <source>&amp;Rotate</source>
         <extracomment>Button to rotate the currently displayed image 90 degrees clockwise</extracomment>
         <translation>&amp;تدوير</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="876"/>
+        <location filename="../src/mainwindow.ui" line="875"/>
         <source>Load bookmark</source>
         <extracomment>Button to restore saved image page from registered bookmark</extracomment>
         <translation>حمل قائمة العناوين</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="867"/>
+        <location filename="../src/mainwindow.ui" line="866"/>
         <source>Manage bookmarks</source>
         <translation>ادارة  قوائم العناوين</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="881"/>
+        <location filename="../src/mainwindow.ui" line="880"/>
         <source>Clear bookmarks</source>
         <extracomment>Button to delete all saved bookmarks</extracomment>
         <translation>مسح قوائم العناوين</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2497"/>
+        <location filename="../src/mainwindow.cpp" line="2493"/>
         <source>Bookmark saved.</source>
         <translation>قائمة العناوين حفظت</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="379"/>
-        <location filename="../src/mainwindow.ui" line="1096"/>
+        <location filename="../src/mainwindow.ui" line="378"/>
+        <location filename="../src/mainwindow.ui" line="1090"/>
         <source>ContextMenu</source>
         <translation>قائمة السياق</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="776"/>
+        <location filename="../src/mainwindow.ui" line="775"/>
         <source>Bi&amp;cubic interpolation (slow)</source>
         <extracomment>Menu for resizing image by bicubic interpolation by GPU</extracomment>
         <translation>الاس&amp;تيفاء ثنائي ومكعب (بطيء)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="784"/>
+        <location filename="../src/mainwindow.ui" line="783"/>
         <source>&amp;Lanczos interpolation (very slow)</source>
         <extracomment>Menu for resizing image by Lanczos interpolation by GPU</extracomment>
         <translation>الاستيفاء (بطيئة جدا) &amp;Lanczos</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="431"/>
+        <location filename="../src/mainwindow.ui" line="430"/>
         <source>&amp;Catalog</source>
         <translation>&amp;كتالوج</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="528"/>
+        <location filename="../src/mainwindow.ui" line="527"/>
         <source>Zoom &amp;in</source>
         <extracomment>Button for enlarging the currently displayed image</extracomment>
         <translation>ت&amp;كبير</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="531"/>
+        <location filename="../src/mainwindow.ui" line="530"/>
         <source>Zoom in</source>
         <translation>تكبير</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="540"/>
+        <location filename="../src/mainwindow.ui" line="539"/>
         <source>Zoom &amp;out</source>
         <extracomment>Reduce the image currently displayed button</extracomment>
         <translation>&amp;تصغير</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="543"/>
+        <location filename="../src/mainwindow.ui" line="542"/>
         <source>Zoom out</source>
         <translation>تصغير</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="909"/>
+        <location filename="../src/mainwindow.ui" line="908"/>
         <source>Remove parenthesized text from book title</source>
         <extracomment>Ability to remove and display (parenthesized) text from Volume title in the catalog</extracomment>
         <translation>ازالة (خيارات) من عنوان الكتاب</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="917"/>
+        <location filename="../src/mainwindow.ui" line="916"/>
         <source>Ignore parenthesized text when searching titles</source>
         <extracomment>Ability to search with the title removed (parenthesized) removed from the title of Volume in the catalog</extracomment>
         <translation>ازالة (خيارات) من عنوان الكتاب عند البحث</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="929"/>
-        <location filename="../src/mainwindow.ui" line="932"/>
+        <location filename="../src/mainwindow.ui" line="928"/>
+        <location filename="../src/mainwindow.ui" line="931"/>
         <source>Icons and titles</source>
         <extracomment>For Volume in the catalog, a mode to list up icons and titles vertically</extracomment>
         <translation>عرض ايقونة الكتالوج</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="953"/>
-        <location filename="../src/mainwindow.ui" line="956"/>
+        <location filename="../src/mainwindow.ui" line="952"/>
+        <location filename="../src/mainwindow.ui" line="955"/>
         <source>List</source>
         <extracomment>Mode to list volumes in the catalog with icons and titles arranged side by side</extracomment>
         <translation>عرض قائمة الكتالوج</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="964"/>
+        <location filename="../src/mainwindow.ui" line="963"/>
         <source>Show tag bar</source>
         <extracomment>Squeeze the Volume of the catalog Function to erase the bar displaying the tag button</extracomment>
         <translation>اظهار شريط العلامات</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="828"/>
+        <location filename="../src/mainwindow.ui" line="827"/>
         <source>Copy file to clipboard</source>
         <extracomment>Menu to copy currently displayed image file on Explorer</extracomment>
         <translation>نسخ الملف الى الحافظة</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="768"/>
+        <location filename="../src/mainwindow.ui" line="767"/>
         <source>&amp;Bilinear interpolation (fast)</source>
         <extracomment>Menu to resize the image by bilinear interpolation by GPU</extracomment>
         <translation>الاستكمال الخطي (سريع)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="447"/>
+        <location filename="../src/mainwindow.ui" line="446"/>
         <source>F&amp;older</source>
         <translation>الم&amp;جلد</translation>
     </message>
@@ -1422,206 +1439,206 @@
         <translation type="vanished">لا تقم بتكبير الصور الصغيرة عند التركيب</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1069"/>
+        <location filename="../src/mainwindow.ui" line="1068"/>
         <source>Show image information in full screen</source>
         <extracomment>Signage that displays the file name of the image at full screen display</extracomment>
         <translation>اظهار النصوص عند ملء الشاشة</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="510"/>
+        <location filename="../src/mainwindow.ui" line="509"/>
         <source>&amp;Next</source>
         <extracomment>Switch to the next image button</extracomment>
         <translation>&amp;لصورة التالية</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="519"/>
+        <location filename="../src/mainwindow.ui" line="518"/>
         <source>&amp;Previous</source>
         <extracomment>Switch to previous image button</extracomment>
         <translation>&amp;الصورة السابقة</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="567"/>
+        <location filename="../src/mainwindow.ui" line="566"/>
         <source>2-page &amp;spread</source>
         <extracomment>Arranging two images side by side like when opening a book</extracomment>
         <translation>2 صفحة &amp;انتشار</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="604"/>
+        <location filename="../src/mainwindow.ui" line="603"/>
         <source>&amp;Right-bound</source>
         <extracomment>Books written in vertical writing such as Japanese and Chinese read from right, so read from right page to left page</extracomment>
         <translation>منضم على الجانب الايمن</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="659"/>
+        <location filename="../src/mainwindow.ui" line="658"/>
         <source>Open in &amp;Explorer</source>
         <extracomment>Menu that displays Explorer with the currently displayed image file selected</extracomment>
         <translation>فتح في &amp;مستكشف</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="704"/>
+        <location filename="../src/mainwindow.ui" line="703"/>
         <source>Previous p&amp;age</source>
         <extracomment>Because there are times when the page is missing due to bookbinding convenience, digital books will fit the left and right pages with this operation</extracomment>
         <translation>السابق صفحة واحدة فقط</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="725"/>
+        <location filename="../src/mainwindow.ui" line="724"/>
         <source>Display &amp;first page alone</source>
         <extracomment>In the case of a digital book, since the first image is a cover page, only one image is displayed</extracomment>
         <translation>فتح الصور والمقامة دائما حتى مع صفحة واحدة فقط</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="792"/>
+        <location filename="../src/mainwindow.ui" line="791"/>
         <source>&amp;Nearest Neighbor interpolation (fast but coarse)</source>
         <extracomment>Menu to resize image by Nearest Neighbor interpolation by GPU</extracomment>
         <translation>&amp;اقرب الاستيفاء الجار (سريع ولكن خشنة)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="805"/>
+        <location filename="../src/mainwindow.ui" line="804"/>
         <source>&amp;Restore window display at next startup</source>
         <extracomment>When restarting the next time, restore the position size of the window at the time of the last termination</extracomment>
         <translation>&amp;استعادة عرض الاطار عند بدء التشغيل التالي</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="858"/>
+        <location filename="../src/mainwindow.ui" line="857"/>
         <source>Add bookmark</source>
         <extracomment>Button to add the currently displayed volume and page to bookmark</extracomment>
         <translation>اضافة قائمة العناوين</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="944"/>
+        <location filename="../src/mainwindow.ui" line="943"/>
         <source>Icons only</source>
         <extracomment>Mode to list Volume in the catalog with only the icons side by side</extracomment>
         <translation>عرض الايقونة فقط</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="974"/>
+        <location filename="../src/mainwindow.ui" line="973"/>
         <source>Send image by email...</source>
         <extracomment>Menu to attach the currently displayed image to the mail software and start up</extracomment>
         <translation>تنشيط برنامج البريد الالكتروني مرفق</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="982"/>
+        <location filename="../src/mainwindow.ui" line="981"/>
         <source>Larger &amp;grid for long titles</source>
         <extracomment>Functions to be used when the Volume title in the catalog is long</extracomment>
         <translation>اكبر &amp;شبكة لعرض عنوان طويل</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1002"/>
+        <location filename="../src/mainwindow.ui" line="1001"/>
         <source>Bicubic interpolation by CPU (quality)</source>
         <extracomment>Menu that performs bicubic interpolation with CPU when resizing image</extracomment>
         <translation>الاستيفاء ثنائي المكعب من قبل المعالج (الجودة)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1014"/>
+        <location filename="../src/mainwindow.ui" line="1013"/>
         <source>Include images in subfolders</source>
         <extracomment>When enumerating images, subfolders are also included in the range</extracomment>
         <translation>فتح مع مجلد فرعي صورة</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1022"/>
+        <location filename="../src/mainwindow.ui" line="1021"/>
         <source>Open at last-read page</source>
         <extracomment>A setting menu that allows you to advance the page to the point you read when you reopen Volume that you read a part way up again</extracomment>
         <translation>صفحة تم فتحها مسبقا في المعاينة</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1030"/>
+        <location filename="../src/mainwindow.ui" line="1029"/>
         <source>Show reading progress</source>
         <extracomment>Ability to display read information read in the middle in FolderWindow</extracomment>
         <translation>اظهار مدى القراءة</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1040"/>
+        <location filename="../src/mainwindow.ui" line="1039"/>
         <source>Rename</source>
         <extracomment>A menu for changing the file name of the currently displayed image</extracomment>
         <translation>اعاده تسميه</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="579"/>
+        <location filename="../src/mainwindow.ui" line="578"/>
         <source>Full screen</source>
         <extracomment>Button to switch the window display to full screen</extracomment>
         <translation>شاشة كاملة</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="617"/>
+        <location filename="../src/mainwindow.ui" line="616"/>
         <source>&amp;Keep wide images together in 2-page view</source>
         <extracomment>Automatically switch because it may spread 2 pages are combined into one image in the digital book</extracomment>
         <translation>&amp;دائما عرض صورة افقي واحد حتى في عرض صفحة 2</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="646"/>
+        <location filename="../src/mainwindow.ui" line="645"/>
         <source>Show status &amp;bar</source>
         <translation>شريط العرض</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="654"/>
+        <location filename="../src/mainwindow.ui" line="653"/>
         <source>Show &amp;page bar</source>
         <translation>اظهار &amp;شريط الصفحة</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="676"/>
+        <location filename="../src/mainwindow.ui" line="675"/>
         <source>Check for &amp;updates...</source>
         <extracomment>A menu to start up the browser to check whether the currently used QuickViewer is the latest version on the project web page</extracomment>
         <translation>تحقق &amp;الاصدار في المتصفح</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="694"/>
+        <location filename="../src/mainwindow.ui" line="693"/>
         <source>P&amp;revious volume</source>
         <extracomment>Switch to the previous Volume in the same folder as Volume currently being displayed Button</extracomment>
         <translation>الحج&amp;م السابق</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="699"/>
+        <location filename="../src/mainwindow.ui" line="698"/>
         <source>Next &amp;page</source>
         <extracomment>Because there are times when the page is missing due to bookbinding convenience, digital books will fit the left and right pages with this operation</extracomment>
         <translation>التالي &amp;صفحة واحدة فقط</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="717"/>
+        <location filename="../src/mainwindow.ui" line="716"/>
         <source>Show &amp;toolbar</source>
         <translation>اظهار شريط &amp;الادوات</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="733"/>
+        <location filename="../src/mainwindow.ui" line="732"/>
         <source>Show &amp;menu bar</source>
         <translation>اظهار &amp;شريط القائمة</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="755"/>
+        <location filename="../src/mainwindow.ui" line="754"/>
         <source>&amp;Copy image to clipboard</source>
         <extracomment>A menu for copying the bitmap of the currently displayed image to the clipboard</extracomment>
         <translation>&amp;نسخ الصورة الى الحافظة</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="760"/>
+        <location filename="../src/mainwindow.ui" line="759"/>
         <source>Move image to &amp;Recycle Bin</source>
         <extracomment>Menu that puts the currently displayed image in Recycle Bin</extracomment>
         <translation>نقل الصورة الى &amp;سلة المحذوفات</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="849"/>
+        <location filename="../src/mainwindow.ui" line="848"/>
         <source>&amp;Slideshow</source>
         <extracomment>Button to start displaying slideshow</extracomment>
         <translation>&amp;عرض الشرائح</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="886"/>
+        <location filename="../src/mainwindow.ui" line="885"/>
         <source>Project &amp;website</source>
         <extracomment>Button to display the web page of the project in the browser</extracomment>
         <translation>عرض الصفحة الرئيسية والصفحة في المتصفح</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="898"/>
+        <location filename="../src/mainwindow.ui" line="897"/>
         <source>Show &amp;Catalog</source>
         <extracomment>Button to display Catalog Window. Switch between internal display, independent display, and erase</extracomment>
         <translation>عرض &amp;الكتالوج</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="901"/>
+        <location filename="../src/mainwindow.ui" line="900"/>
         <source>Show Catalog</source>
         <translation>عرض الكتالوج</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="994"/>
+        <location filename="../src/mainwindow.ui" line="993"/>
         <source>Show &amp;Folder</source>
         <extracomment>Button to display FolderWindow. Switch between internal display, independent display, and erase</extracomment>
         <translation>عرض &amp;المجلد</translation>
@@ -1632,219 +1649,218 @@
         <translation type="vanished">(قياسي) Bicubic بعد GPU Bilinear وحدة المعالجة</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1035"/>
+        <location filename="../src/mainwindow.ui" line="1034"/>
         <source>&amp;Settings</source>
         <extracomment>Menu for displaying a dialog for changing the adjunct setting of the application</extracomment>
         <translation>&amp;الاعدادات</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1048"/>
+        <location filename="../src/mainwindow.ui" line="1047"/>
         <source>Don&apos;t upscale small images</source>
         <extracomment>Ability to display an image smaller than the window as it is when fit is displayed</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1061"/>
+        <location filename="../src/mainwindow.ui" line="1060"/>
         <source>Full screen on startup</source>
         <extracomment>Ability to always launch applications in full screen</extracomment>
         <translation>ملء الشاشة عند بدء التشغيل</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1086"/>
+        <location filename="../src/mainwindow.ui" line="1085"/>
         <source>Confirm moving image to &amp;Recycle Bin</source>
         <extracomment>A function to display a confirmation screen when moving the currently displayed image to Recycle Bin</extracomment>
         <translation>تاكيد نقل الصورة الى &amp; سلة المحذوفات</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1091"/>
         <source>File Associations... (administrator)</source>
         <extracomment>Ability to associate QuickViewer and image files on Explorer (Host Global)</extracomment>
-        <translation>ارتباطات الصور (يتطلب المشرف)</translation>
+        <translation type="vanished">ارتباطات الصور (يتطلب المشرف)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1101"/>
+        <location filename="../src/mainwindow.ui" line="1095"/>
         <source>&amp;Mouse Settings...</source>
         <translation>&amp;تكوين الماوس</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1106"/>
+        <location filename="../src/mainwindow.ui" line="1100"/>
         <source>Delete the image</source>
         <translation>احذف الصورة</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1111"/>
+        <location filename="../src/mainwindow.ui" line="1105"/>
         <source>File Associations... (current user)</source>
         <extracomment>Ability to associate QuickViewer and image files on Explorer (Host Global)</extracomment>
         <translation>ارتباطات الصور (انت فقط)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1119"/>
+        <location filename="../src/mainwindow.ui" line="1113"/>
         <source>Don&apos;t update history</source>
         <extracomment>Flag for prohibiting update of history</extracomment>
         <translation>لا تقم بتحديث السجل</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1131"/>
+        <location filename="../src/mainwindow.ui" line="1125"/>
         <source>Open panels in separate windows</source>
         <extracomment>Flag separating the catalog and folder windows into independent windows</extracomment>
         <translation>فتح في نافذة منفصلة</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="461"/>
+        <location filename="../src/mainwindow.ui" line="460"/>
         <source>&amp;Image</source>
         <translation>&amp;صورة</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1139"/>
+        <location filename="../src/mainwindow.ui" line="1133"/>
         <source>Large menu and toolbar</source>
         <translation>شريط قوائم كبير وشريط ادوات</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1144"/>
+        <location filename="../src/mainwindow.ui" line="1138"/>
         <source>Turn left page</source>
         <translation>اقلب الصفحة على اليسار</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1149"/>
+        <location filename="../src/mainwindow.ui" line="1143"/>
         <source>Turn right page</source>
         <translation>اقلب الصفحة على اليمين</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1157"/>
+        <location filename="../src/mainwindow.ui" line="1151"/>
         <source>Split wide images into two pages</source>
         <extracomment>Flag to display images on the left and right sides with a portrait display</extracomment>
         <translation>قسم الصورة العريضة الى صفحتين</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1169"/>
+        <location filename="../src/mainwindow.ui" line="1163"/>
         <source>Loupe</source>
         <translation>اداة العدسة</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1177"/>
+        <location filename="../src/mainwindow.ui" line="1171"/>
         <source>Pan with mouse movement when zoomed</source>
         <extracomment>Flag to scroll the image with moving the mouse pointer instead of displaying the scroll bar</extracomment>
         <translation>تمرير مع مؤشر الماوس عند التكبير</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1189"/>
+        <location filename="../src/mainwindow.ui" line="1183"/>
         <source>Fit to width</source>
         <translation>ملائمة للعرض</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="397"/>
+        <location filename="../src/mainwindow.ui" line="396"/>
         <source>Image actions</source>
         <translation>تحرير الصورة</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="409"/>
-        <location filename="../src/mainwindow.ui" line="465"/>
+        <location filename="../src/mainwindow.ui" line="408"/>
+        <location filename="../src/mainwindow.ui" line="464"/>
         <source>Fit mode</source>
         <translation>وضع الملائمة</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1201"/>
+        <location filename="../src/mainwindow.ui" line="1195"/>
         <source>Fit to window</source>
         <translation>ملائمة للنافذة</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1213"/>
+        <location filename="../src/mainwindow.ui" line="1207"/>
         <source>Image adjustments...</source>
         <extracomment>a menu test which show window changes brightness of the image</extracomment>
         <translation>تغيير قيمة السطوع والتباين او غاما</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1221"/>
+        <location filename="../src/mainwindow.ui" line="1215"/>
         <source>Spline16 interpolation by CPU</source>
         <extracomment>Menu that performs Spline16 interpolation with CPU when resizing image</extracomment>
         <translation>Spline16 interpolation by CPU</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1229"/>
+        <location filename="../src/mainwindow.ui" line="1223"/>
         <source>Spline36 interpolation by CPU</source>
         <extracomment>Menu that performs Spline36 interpolation with CPU when resizing image</extracomment>
         <translation>Spline36 interpolation by CPU</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1237"/>
+        <location filename="../src/mainwindow.ui" line="1231"/>
         <source>Lanczos3 interpolation by CPU</source>
         <extracomment>Menu that performs Lanczos3 interpolation with CPU when resizing image</extracomment>
         <translation>Lanczos3 interpolation by CPU</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1245"/>
+        <location filename="../src/mainwindow.ui" line="1239"/>
         <source>Lanczos4 interpolation by CPU</source>
         <extracomment>Menu that performs Lanczos4 interpolation with CPU when resizing image</extracomment>
         <translation>Lanczos4 interpolation by CPU</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1250"/>
+        <location filename="../src/mainwindow.ui" line="1244"/>
         <source>Next page or volume</source>
         <extracomment>Switch to next image, or to next volume if the page is first button</extracomment>
         <translation>الصفحة التالية او المجلد</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1255"/>
+        <location filename="../src/mainwindow.ui" line="1249"/>
         <source>Previous page or volume</source>
         <extracomment>Switch to previous image, or to previous volume if the page is last button</extracomment>
         <translation>الصفحة السابقة او المجلد</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1263"/>
+        <location filename="../src/mainwindow.ui" line="1257"/>
         <source>Remember catalog pane width</source>
         <extracomment>Flag to restore the width of Catalog view</extracomment>
         <translation>حفظ عرض مشاهدة الدليل</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1271"/>
+        <location filename="../src/mainwindow.ui" line="1265"/>
         <source>Remember folder pane width</source>
         <extracomment>Flag to restore the width of Folder view</extracomment>
         <translation>حفظ عرض عرض المجلد</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1279"/>
+        <location filename="../src/mainwindow.ui" line="1273"/>
         <source>Save reading progress</source>
         <extracomment>Flag to save progress.ini</extracomment>
         <translation>حفظ الى اي مدى الدرس</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1287"/>
+        <location filename="../src/mainwindow.ui" line="1281"/>
         <source>Hide mouse cursor in full screen</source>
         <translation>اخفاء مؤشر الماوس عند ملء الشاشة</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="274"/>
-        <location filename="../src/mainwindow.ui" line="1292"/>
+        <location filename="../src/mainwindow.ui" line="1286"/>
         <source>&amp;Sort by</source>
         <translation>&amp;فرز حسب</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1300"/>
+        <location filename="../src/mainwindow.ui" line="1294"/>
         <source>File name</source>
         <translation>اسم الملف</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1308"/>
+        <location filename="../src/mainwindow.ui" line="1302"/>
         <source>File name (descending)</source>
         <translation>اسم الملف (تنازلي)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1316"/>
+        <location filename="../src/mainwindow.ui" line="1310"/>
         <source>File size</source>
         <translation>حجم الملف</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1324"/>
+        <location filename="../src/mainwindow.ui" line="1318"/>
         <source>File size (descending)</source>
         <translation>حجم الملف (تنازلي)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1332"/>
+        <location filename="../src/mainwindow.ui" line="1326"/>
         <source>Modified time</source>
         <translation>وقت التعديل</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1340"/>
+        <location filename="../src/mainwindow.ui" line="1334"/>
         <source>Modified time (descending)</source>
         <translation>وقت التعديل (تنازلي)</translation>
     </message>
@@ -1864,47 +1880,47 @@
         <translation type="vanished">لم يتم العثور على ملف الصورة. لا يمكن فتحه.</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1702"/>
+        <location filename="../src/mainwindow.cpp" line="1705"/>
         <source>Loading...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1705"/>
+        <location filename="../src/mainwindow.cpp" line="1708"/>
         <source>No images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1707"/>
+        <location filename="../src/mainwindow.cpp" line="1710"/>
         <source>Unavailable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2065"/>
+        <location filename="../src/mainwindow.cpp" line="2061"/>
         <source>All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.heic *.heif);;Archives( *.zip *.7z *.rar)</source>
         <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2071"/>
+        <location filename="../src/mainwindow.cpp" line="2067"/>
         <source>Select an image or archive</source>
         <comment>Title of the dialog displayed when opening a file with OpenFileFolder</comment>
         <translation>يرجى اختيار الصورة او الارشيف</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2312"/>
-        <location filename="../src/mainwindow.cpp" line="2356"/>
+        <location filename="../src/mainwindow.cpp" line="2308"/>
+        <location filename="../src/mainwindow.cpp" line="2352"/>
         <source>Confirmation</source>
         <comment>Confirm deleting image file on MessageBox title</comment>
         <translation>التاكيد</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2318"/>
+        <location filename="../src/mainwindow.cpp" line="2314"/>
         <source>Are you sure you want to move the image to Recycle Bin?</source>
         <comment>Confirm putting displayed file in Recycle Box Message Box body</comment>
         <translation>هل تريد بالتاكيد نقل الصورة الى سلة المحذوفات؟</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2361"/>
+        <location filename="../src/mainwindow.cpp" line="2357"/>
         <source>Are you sure you want to delete this image?</source>
         <comment>Confirm deleting image file on Message Box body</comment>
         <translation>هل انت متاكد انك تريد حذف هذه الصورة؟</translation>
@@ -2020,25 +2036,25 @@
         <translation>تحرير الكتالوج</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="250"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="255"/>
         <source>Completed</source>
         <comment>Title of message box when catalog generation finished successfully</comment>
         <translation>لقد نجحنا!</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="252"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="257"/>
         <source>Catalog creation completed.</source>
         <comment>Body of message box when catalog generation finished successfully</comment>
         <translation>اكتمال انشاء الكتالوج</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="308"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="318"/>
         <source>Cancelled!</source>
         <comment>Title of message box when catalog generation was canceled</comment>
         <translation>الغيت!</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="309"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="319"/>
         <source>Catalog creation was cancelled.</source>
         <comment>Body of message box when catalog generation is canceled</comment>
         <translation>انشاء كتالوج تم الغاؤه</translation>
@@ -2082,26 +2098,26 @@
         <translation>الخيار</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="62"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="84"/>
         <source>Group</source>
         <comment>Group of the Action to be registered with the shortcut key</comment>
         <translation>مجموعه</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="64"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="86"/>
         <source>Description</source>
         <comment>Title of the column that displays the meaning of the action to be registered with the mouse sequence</comment>
         <translation>وصف</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="69"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="91"/>
         <source>Current mouse shortcut</source>
         <comment>Title of the column of the content of the mouse sequence registered for Action</comment>
         <translation>تسلسل الماوس الحالي</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="142"/>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="209"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="164"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="231"/>
         <source>Mouse sequence has potential conflicts.</source>
         <comment>Text to be displayed when the entered mouse sequence conflicts with another mouse sequence</comment>
         <translation>تسلسل الماوس له تعارضات محتملة.</translation>
@@ -2417,67 +2433,67 @@
 <context>
     <name>QVApplication</name>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="269"/>
+        <location filename="../src/models/qvapplication.cpp" line="270"/>
         <source>File</source>
         <comment>File Action Group</comment>
         <translation>ملف</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="276"/>
+        <location filename="../src/models/qvapplication.cpp" line="277"/>
         <source>Bookmark</source>
         <comment>Bookmark Action Group</comment>
         <translation>قائمة العناوين</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="282"/>
+        <location filename="../src/models/qvapplication.cpp" line="283"/>
         <source>Navigation</source>
         <comment>Navigation Action Group</comment>
         <translation>التنقل</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="300"/>
+        <location filename="../src/models/qvapplication.cpp" line="301"/>
         <source>Folder</source>
         <comment>Folder Action Group</comment>
         <translation>المجلد</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="305"/>
+        <location filename="../src/models/qvapplication.cpp" line="306"/>
         <source>Catalog</source>
         <comment>Catalog Action Group</comment>
         <translation>كتالوج</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="315"/>
+        <location filename="../src/models/qvapplication.cpp" line="316"/>
         <source>Image</source>
         <comment>Image Action Group</comment>
         <translation>صورة</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="329"/>
+        <location filename="../src/models/qvapplication.cpp" line="330"/>
         <source>Dual View</source>
         <comment>Dual View Action Group</comment>
         <translation>عرض مزدوج</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="340"/>
+        <location filename="../src/models/qvapplication.cpp" line="341"/>
         <source>View</source>
         <comment>View Action Group</comment>
         <translation>عرض</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="371"/>
+        <location filename="../src/models/qvapplication.cpp" line="372"/>
         <source>ContextMenu</source>
         <comment>ContextMenu Action Group</comment>
         <translation>قائمة السياق</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="383"/>
+        <location filename="../src/models/qvapplication.cpp" line="384"/>
         <source>Shader</source>
         <comment>Shader Action Group</comment>
         <translation>تظليل</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="398"/>
+        <location filename="../src/models/qvapplication.cpp" line="399"/>
         <source>Help</source>
         <comment>Help Action Group</comment>
         <translation>التعليمات</translation>
