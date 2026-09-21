@@ -61,6 +61,19 @@ public:
      * @return how many paths were removed.
      */
     int removeMissingVolumes();
+    /**
+     * Replaces the tags of \a volume_id with \a tags. A tag that is already
+     * known under another volume keeps its name and row; a new one is stored
+     * as a normal tag.
+     *
+     * @return true when the stored tags are the ones asked for.
+     */
+    bool setVolumeTags(int volume_id, const QStringList &tags);
+    /**
+     * Sets the title a catalog shows for \a volume_id. The volume keeps its
+     * real name: which of the two the list shows is a view option.
+     */
+    bool setVolumeDisplayName(int volume_id, const QString &name);
 
     /* Tags */
     void loadTags();
@@ -77,6 +90,8 @@ private:
     bool writeBundledDatabase(const QFileInfo &file);
     bool hasCatalogSchema(QString *problem);
     void closeDatabase();
+    /** Row of the tag \a name, which is created as a normal tag when missing. */
+    int findOrCreateTag(const QString &name);
 
     QString m_dbPath;
     QString m_connectionName;

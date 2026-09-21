@@ -150,6 +150,7 @@ private Q_SLOTS:
     void removesVolumesWhoseFoldersAreGone();
     void catalogsAnArchiveOnItsOwn();
     void registersADroppedArchiveAsItsOwnCatalog();
+    void editsTheTitleAndTagsOfAVolume();
     void parsesVolumeNames_data();
     void parsesVolumeNames();
     void finishesAnEmptyCatalogRequest();
@@ -395,6 +396,63 @@ void CatalogDatabaseTest::registersADroppedArchiveAsItsOwnCatalog()
     QVERIFY(item);
     QCOMPARE(item->text(0), QStringLiteral("* Book"));
     QCOMPARE(item->text(2), QDir::toNativeSeparators(archivePath));
+}
+
+void CatalogDatabaseTest::editsTheTitleAndTagsOfAVolume()
+{
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    QVERIFY(fixture.addImage(QStringLiteral("Alpha"), QStringLiteral("01.png"), QSize(60, 90)));
+
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    QVERIFY(database.createCatalog(QStringLiteral("Library"), fixture.rootPath()).created);
+
+    int alphaId = -1;
+    const QList<VolumeThumbRecord> created = database.volumes();
+    for (const VolumeThumbRecord &volume : created) {
+        if (volume.realname == QStringLiteral("Alpha")) {
+            alphaId = volume.id;
+        }
+    }
+    QVERIFY(alphaId > 0);
+
+    // The user gives the volume a title and two tags of their own.
+    QVERIFY(database.setVolumeDisplayName(alphaId, QStringLiteral("Edited Title")));
+    QVERIFY(database.setVolumeTags(alphaId, {QStringLiteral("First"), QStringLiteral("Second")}));
+
+    QString title;
+    for (const VolumeThumbRecord &volume : database.volumes()) {
+        if (volume.id == alphaId) {
+            title = volume.name;
+        }
+    }
+    QCOMPARE(title, QStringLiteral("Edited Title"));
+
+    QStringList names;
+    for (const TagRecord &tag : database.getTagsFromVolumeId(alphaId)) {
+        names << tag.name;
+    }
+    QCOMPARE(names, QStringList({QStringLiteral("First"), QStringLiteral("Second")}));
+    QCOMPARE(database.tagsByCount().size(), 2);
+
+    // Editing again reuses the tag the catalog already knows, whatever the
+    // case the user typed, and adds the new one.
+    QVERIFY(database.setVolumeTags(alphaId, {QStringLiteral("second"), QStringLiteral("Third")}));
+    names.clear();
+    for (const TagRecord &tag : database.getTagsFromVolumeId(alphaId)) {
+        names << tag.name;
+    }
+    QCOMPARE(names, QStringList({QStringLiteral("Second"), QStringLiteral("Third")}));
+
+    CatalogProbe probe(fixture.databasePath(), QStringLiteral("catalog-probe"));
+    QVERIFY(probe.isOpen());
+    QCOMPARE(probe.count(QStringLiteral("t_tags")), 3);
+    QCOMPARE(probe.count(QStringLiteral("t_volumetags")), 2);
+
+    // A volume with no tags left has none of them.
+    QVERIFY(database.setVolumeTags(alphaId, QStringList()));
+    QVERIFY(database.getTagsFromVolumeId(alphaId).isEmpty());
+    QVERIFY(database.tagsByCount().isEmpty());
 }
 
 void CatalogDatabaseTest::parsesVolumeNames_data()

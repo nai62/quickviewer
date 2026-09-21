@@ -615,6 +615,103 @@ int CatalogDatabase::removeMissingVolumes()
     return missing.size();
 }
 
+bool CatalogDatabase::setVolumeTags(int volume_id, const QStringList &tags)
+{
+    if (!ensureReady()) {
+        return false;
+    }
+
+    int catalog_id = -1;
+    {
+        QSqlQuery volume(m_db);
+        volume.prepare(QStringLiteral("SELECT catalog_id FROM t_volumes WHERE id = :id"));
+        volume.bindValue(":id", volume_id);
+        if (!volume.exec() || !volume.next()) {
+            qDebug() << "t_volumes lookup failed: " << volume.lastError();
+            return false;
+        }
+        catalog_id = volume.value(0).toInt();
+    }
+
+    // The names the user asked for, without blanks and without repeats.
+    QStringList wanted;
+    for (const QString &tag : tags) {
+        const QString name = tag.trimmed();
+        if (!name.isEmpty() && !wanted.contains(name, Qt::CaseInsensitive)) {
+            wanted << name;
+        }
+    }
+
+    transaction();
+    QSqlQuery removal(m_db);
+    removal.prepare(QStringLiteral("DELETE FROM t_volumetags WHERE volume_id = :volume_id"));
+    removal.bindValue(":volume_id", volume_id);
+    if (!execQuery(removal, "t_volumetags")) {
+        rollback();
+        return false;
+    }
+    for (const QString &name : wanted) {
+        const int tag_id = findOrCreateTag(name);
+        if (tag_id < 0) {
+            rollback();
+            return false;
+        }
+        QSqlQuery entry(m_db);
+        entry.prepare(QStringLiteral("INSERT INTO t_volumetags (volume_id, tag_id, catalog_id)"
+                                     " VALUES (:volume_id, :tag_id, :catalog_id)"));
+        entry.bindValue(":volume_id", volume_id);
+        entry.bindValue(":tag_id", tag_id);
+        entry.bindValue(":catalog_id", catalog_id);
+        if (!execQuery(entry, "t_volumetags")) {
+            rollback();
+            return false;
+        }
+    }
+    commit();
+
+    // The catalog and the tag bar read the tags from memory as well.
+    loadTags();
+    return true;
+}
+
+int CatalogDatabase::findOrCreateTag(const QString &name)
+{
+    QSqlQuery tags(m_db);
+    if (!tags.exec(QStringLiteral("SELECT id, name FROM t_tags"))) {
+        qDebug() << "t_tags query failed: " << tags.lastError();
+        return -1;
+    }
+    while (tags.next()) {
+        if (QString::compare(tags.value(1).toString(), name, Qt::CaseInsensitive) == 0) {
+            return tags.value(0).toInt();
+        }
+    }
+
+    QSqlQuery insert(m_db);
+    insert.prepare(QStringLiteral("INSERT INTO t_tags (name, type_id) VALUES (:name, 0)"));
+    insert.bindValue(":name", name);
+    if (!execQuery(insert, "t_tags")) {
+        return -1;
+    }
+    return insert.lastInsertId().toInt();
+}
+
+bool CatalogDatabase::setVolumeDisplayName(int volume_id, const QString &name)
+{
+    if (!ensureReady()) {
+        return false;
+    }
+    QSqlQuery volume(m_db);
+    volume.prepare(QStringLiteral("UPDATE t_volumes SET name = :name WHERE id = :id"));
+    volume.bindValue(":name", name);
+    volume.bindValue(":id", volume_id);
+    if (!execQuery(volume, "t_volumes")) {
+        return false;
+    }
+    m_volumesDirty = true;
+    return true;
+}
+
 void CatalogDatabase::loadTags()
 {
     if (!ensureReady()) {
