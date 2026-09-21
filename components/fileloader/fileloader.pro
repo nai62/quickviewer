@@ -4,6 +4,8 @@
 #
 #-------------------------------------------------
 
+include(../../qmake/windows-target.pri)
+
 QT       += core gui concurrent
 
 TARGET = fileloader
@@ -18,7 +20,6 @@ win32-msvc* {
 *clang* || *g++* {
     win32: CONFIG += staticlib
     QMAKE_LFLAGS += -Wl,-rpath,../lib
-    DEFINES += NTDDI_VERSION=NTDDI_VISTA
 }
 
 win32 {

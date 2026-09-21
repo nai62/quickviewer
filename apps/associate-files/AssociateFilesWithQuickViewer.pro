@@ -4,6 +4,8 @@
 #
 #-------------------------------------------------
 
+include(../../qmake/windows-target.pri)
+
 QT       += core gui widgets
 
 TARGET = AssociateFilesWithQuickViewer
@@ -23,7 +25,6 @@ QMAKE_TARGET_COPYRIGHT = (C) 2017 KATO Kanryu
 DEFINES += QT_DEPRECATED_WARNINGS EXECUTE_ON_UAC
 
 *g++* {
-    DEFINES += NTDDI_VERSION=NTDDI_VISTA
     QMAKE_MANIFEST = $${PWD}/AssociateFilesWithQuickViewer.exe.manifest
 }
 

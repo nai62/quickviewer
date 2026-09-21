@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 include(../../QVproject.pri)
+include(../../qmake/windows-target.pri)
 isEmpty(QV_APP_SOURCE): QV_APP_SOURCE = $$PWD
 RESVG_SOURCE_ROOT = $$clean_path($$QV_APP_SOURCE/../../third_party/resvg)
 include(../../qmake/third_party/resvg/resvg.pri)
@@ -246,8 +247,6 @@ win32 {
     INCLUDEPATH += ../../components/file-association
     SOURCES += src/mainwindowforwindows.cpp ../../components/file-association/fileassocdialog.cpp
     HEADERS += src/mainwindowforwindows.h ../../components/file-association/fileassocdialog.h
-    *g++*: DEFINES += NTDDI_VERSION=NTDDI_VISTA
-
 }
 
 

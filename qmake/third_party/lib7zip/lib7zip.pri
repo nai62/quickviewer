@@ -14,7 +14,6 @@ win32 {
 #    DEFINES += _7ZIP_LARGE_PAGES
 #    DEFINES += SUPPORT_DEVICE_FILE
     !CONFIG(debug, debug|release): DEFINES += NDEBUG
-#    *g++*: DEFINES += NTDDI_VERSION=NTDDI_VISTA
 
     INCLUDEPATH += \
         $$SEVENZIP_ROOT \
