@@ -85,10 +85,11 @@ CatalogFolderScan CatalogBuilder::scanFolder(const QString &path, bool baseFolde
                 subVolumeNames << file;
             }
         }
-    } else {
-        scan.cover = frontPageOfFolder(dir);
     }
     scan.subVolumeNames = subVolumeNames;
+    // A folder that holds images is a volume of its own, whether it is the
+    // folder the catalog was created from or a folder below it.
+    scan.cover = frontPageOfFolder(dir);
     return scan;
 }
 
