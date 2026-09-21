@@ -280,19 +280,23 @@ void CatalogDatabaseTest::cancelledBuildLeavesNoHalfBuiltCatalog()
     QFutureWatcher<QList<CatalogRecord>> *watcher = database.createCatalogAsync(requests);
     database.cancelCreateCatalogAsync();
     watcher->waitForFinished();
+    // A cancelled future keeps no result, so what the build stored is what
+    // shows what it did. The catalog is stored whole or not at all.
+    QVERIFY(watcher->isCanceled());
 
-    // Whichever side of the build the cancellation lands on, the catalog is
-    // stored whole or not at all.
-    const int created = watcher->result().size();
-    QCOMPARE(database.catalogs().size(), created);
     CatalogProbe probe(fixture.databasePath(), QStringLiteral("catalog-probe"));
     QVERIFY(probe.isOpen());
-    QCOMPARE(probe.count(QStringLiteral("t_catalogs")), created);
+    const int stored = probe.count(QStringLiteral("t_catalogs"));
+    QCOMPARE(database.catalogs().size(), stored);
+    QCOMPARE(probe.count(QStringLiteral("t_volumes")), 26 * stored);
+    QCOMPARE(probe.count(QStringLiteral("t_files")), 25 * stored);
 
-    // The connection is usable after the cancelled build.
+    // The database is usable after the cancelled build, and the catalog built
+    // next is complete.
     const CatalogRecord after = database.createCatalog(QStringLiteral("After"), fixture.rootPath());
     QVERIFY(after.created);
-    QCOMPARE(database.catalogs().size(), created + 1);
+    QCOMPARE(database.catalogs().size(), stored + 1);
+    QCOMPARE(database.volumes().size(), 26 * (stored + 1));
 }
 
 void CatalogDatabaseTest::failedCatalogBuildReleasesTheDatabase()
