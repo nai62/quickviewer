@@ -29,14 +29,10 @@
 #    define REGKEY_APPLICATION_INAPP REGKEY_CLASSES "\\Applications\\" APPLICATION_ID ".exe"
 #endif
 
-#if QT_VERSION_MAJOR >= 5
-#    ifdef WIN64
+#ifdef WIN64
 QSettings::Format FileAssocDialog::RegFormat = QSettings::Registry64Format;
-#    else
-QSettings::Format FileAssocDialog::RegFormat = QSettings::Registry32Format;
-#    endif
 #else
-QSettings::Format FileAssocDialog::RegFormat = QSettings::NativeFormat;
+QSettings::Format FileAssocDialog::RegFormat = QSettings::Registry32Format;
 #endif
 
 FileAssocDialog::FileAssocDialog(QWidget *parent)

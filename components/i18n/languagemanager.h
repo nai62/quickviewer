@@ -1,10 +1,7 @@
 #ifndef LANGUAGEMANAGER_H
 #define LANGUAGEMANAGER_H
 
-#include <QtGui>
-#if QT_VERSION_MAJOR >= 5
-#    include <QtWidgets>
-#endif
+#include <QtWidgets>
 
 #include "texttranslator.h"
 

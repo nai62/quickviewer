@@ -23,11 +23,7 @@ DEFINES += QV_PORTABLE
     QV_SHARED_PATH = /usr/local/shared
 }
 
-greaterThan(QT_MAJOR_VERSION, 4) {
-    TARGET_ARCH=$${QT_ARCH}
-} else {
-    TARGET_ARCH=$${QMAKE_HOST.arch}
-}
+TARGET_ARCH = $${QT_ARCH}
 
 win32 {
     contains(TARGET_ARCH, x86_64) {

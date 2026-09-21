@@ -286,11 +286,7 @@ QImage makeImageWithRetry(MakeImage &&makeImage)
         if (attempt >= MaximumImageAttempts) {
             return QImage();
         }
-#if QT_VERSION_MAJOR >= 5
         QThread::currentThread()->usleep(ImageRetryDelayMicroseconds);
-#else
-        QThread::currentThread()->wait(40);
-#endif
     }
 }
 
@@ -315,12 +311,10 @@ QImage QZimg::toPackedImage(const QImage &src, int stridePack)
     case QImage::Format_RGB666:
     case QImage::Format_RGB888:
     case QImage::Format_RGB444:
-#if QT_VERSION_MAJOR >= 5
     case QImage::Format_RGB30:
     case QImage::Format_BGR30:
     case QImage::Format_RGBX8888:
     case QImage::Format_Grayscale8:
-#endif
         return makeImageWithRetry([&src] { return src.convertToFormat(QImage::Format_RGB32); });
     default:
         return makeImageWithRetry([&src] { return src.convertToFormat(QImage::Format_ARGB32); });

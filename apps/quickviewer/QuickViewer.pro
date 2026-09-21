@@ -9,8 +9,7 @@ isEmpty(QV_APP_SOURCE): QV_APP_SOURCE = $$PWD
 RESVG_SOURCE_ROOT = $$clean_path($$QV_APP_SOURCE/../../third_party/resvg)
 include(../../qmake/third_party/resvg/resvg.pri)
 
-QT       += core gui concurrent sql svgwidgets
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT       += core gui concurrent sql svgwidgets widgets
 
 contains(DEFINES, QV_WITHOUT_OPENGL) {
     message(QuickViewer without OpenGL Support)
@@ -303,14 +302,6 @@ DBBIN += \
 
 DBDIR += database/
 
-!greaterThan(QT_MAJOR_VERSION, 4) {
-    defineReplace(shell_path) {
-        path = $$1
-        return($$replace(path, "/", "\\"))
-    }
-}
-
-
 # win32 depoying, please add 'jom install' into build setting on qt-creator
 win32 : !CONFIG(debug, debug|release) {
     mingw {
@@ -423,12 +414,10 @@ win32 : !CONFIG(debug, debug|release) {
     !contains(DEFINES, QV_WITHOUT_OPENGL) {
         INSTALLS += install_shaders
     }
-    greaterThan(QT_MAJOR_VERSION, 4):greaterThan(QT_MINOR_VERSION, 8):win32 {
-        install_direct2d.path = $${MY_DEFAULT_INSTALL}/platforms
-        install_direct2d.files = $$[QT_INSTALL_PLUGINS]/platforms/qdirect2d.dll
-        INSTALLS += install_direct2d
-    }
 
+    install_direct2d.path = $${MY_DEFAULT_INSTALL}/platforms
+    install_direct2d.files = $$[QT_INSTALL_PLUGINS]/platforms/qdirect2d.dll
+    INSTALLS += install_direct2d
 }
 
 # linuxdeployqt is required.

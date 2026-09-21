@@ -4,9 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT       += core gui widgets
 
 TARGET = AssociateFilesWithQuickViewer
 TEMPLATE = app
@@ -59,11 +57,7 @@ RC_ICONS = app_icon2.ico
     QMAKE_LFLAGS +=  /MANIFESTUAC:$$quote(\"level=\'requireAdministrator\' uiAccess=\'false\'\")
 }
 
-greaterThan(QT_MAJOR_VERSION, 4) {
-    TARGET_ARCH=$${QT_ARCH}
-} else {
-    TARGET_ARCH=$${QMAKE_HOST.arch}
-}
+TARGET_ARCH = $${QT_ARCH}
 contains(TARGET_ARCH, x86_64) {
     TARGET_ARCH = x64
 } else {
