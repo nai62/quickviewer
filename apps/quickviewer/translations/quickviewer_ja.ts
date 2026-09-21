@@ -519,44 +519,44 @@
         <translation>DirectDraw Surface形式 (*.dds)</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="62"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="45"/>
         <source>Truevision Graphics Adapter Format Image</source>
         <comment>description of File format on Explorer(.tga)</comment>
         <translation>Truevision Graphics Adapter イメージ</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="116"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="99"/>
         <source>HEIF Image</source>
         <comment>description of File format on Explorer(.heic, .heif)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="123"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="106"/>
         <source>Canon RAW format</source>
         <comment>description of File format on Explorer(.cr2)</comment>
         <translation>Canon Raw形式</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="130"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="113"/>
         <source>Adobe Digital Negative Format</source>
         <comment>description of File format on Explorer(.dng)</comment>
         <translation>Adobe Digital Negative形式</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="137"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="120"/>
         <source>Nikon RAW format</source>
         <comment>description of File format on Explorer(.nef)</comment>
         <translation>Nicon Raw形式</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="144"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="127"/>
         <source>Sony RAW format</source>
         <comment>description of File format on Explorer(.arw)</comment>
         <translation>Sony Raw形式</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="241"/>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="283"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="240"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="292"/>
         <source>&amp;View with QuickViewer</source>
         <comment>Menu displayed when right clicking on file in Explorer</comment>
         <translation>QuickViewerで開く(&amp;V)</translation>
@@ -603,55 +603,55 @@
         <translation type="vanished">JPEG イメージ (*.jpg, *.jpeg)</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="50"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="33"/>
         <source>JPEG Image</source>
         <comment>description of File format on Explorer(.jpeg)</comment>
         <translation>JPEG イメージ</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="56"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="39"/>
         <source>PNG File</source>
         <comment>description of File format on Explorer(.png)</comment>
         <translation>PNG ファイル</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="70"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="53"/>
         <source>Animated PNG File</source>
         <comment>description of File format on Explorer(.apng)</comment>
         <translation>アニメーション PNG ファイル</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="77"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="60"/>
         <source>Bitmap File</source>
         <comment>description of File format on Explorer(.bmp)</comment>
         <translation>ビットマップ形式</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="84"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="67"/>
         <source>DirectDraw Surface Image</source>
         <comment>description of File format on Explorer(.dds)</comment>
         <translation>DirectDraw Surfaceイメージ</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="90"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="73"/>
         <source>GIF Image</source>
         <comment>description of File format on Explorer(.gif)</comment>
         <translation>GIF イメージ</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="97"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="80"/>
         <source>Windows Icon File</source>
         <comment>description of File format on Explorer(.ico)</comment>
         <translation>Windows アイコンファイル</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="103"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="86"/>
         <source>TIFF image</source>
         <comment>description of File format on Explorer(.tiff)</comment>
         <translation>Tiff イメージ</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="109"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="92"/>
         <source>WebP Image</source>
         <comment>description of File format on Explorer(.webp)</comment>
         <translation>WebP イメージ</translation>
@@ -674,7 +674,7 @@
     <name>FolderWindow</name>
     <message>
         <location filename="../src/folderview/folderwindow.ui" line="106"/>
-        <location filename="../src/folderview/folderwindow.ui" line="214"/>
+        <location filename="../src/folderview/folderwindow.ui" line="211"/>
         <source>Home</source>
         <extracomment>Button for returning to QuickViewer&apos;s home folder</extracomment>
         <translation>ホームフォルダに移動</translation>
@@ -691,7 +691,8 @@
     </message>
     <message>
         <location filename="../src/folderview/folderwindow.ui" line="155"/>
-        <location filename="../src/folderview/folderwindow.ui" line="232"/>
+        <location filename="../src/folderview/folderwindow.ui" line="229"/>
+        <location filename="../src/folderview/folderwindow.ui" line="271"/>
         <source>Reload</source>
         <translation>更新</translation>
     </message>
@@ -702,17 +703,33 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="237"/>
+        <location filename="../src/folderview/folderwindow.ui" line="234"/>
         <source>Name</source>
         <translation>名前順</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="223"/>
+        <location filename="../src/folderview/folderwindow.ui" line="256"/>
+        <source>Open</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/folderview/folderwindow.ui" line="261"/>
+        <source>Open in &amp;Explorer</source>
+        <extracomment>Menu that displays Explorer with the currently displayed image file selected</extracomment>
+        <translation type="unfinished">エクスプローラで開く(&amp;E)</translation>
+    </message>
+    <message>
+        <location filename="../src/folderview/folderwindow.ui" line="266"/>
+        <source>Copy path</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/folderview/folderwindow.ui" line="220"/>
         <source>Parent</source>
         <translation>上のフォルダ</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="249"/>
+        <location filename="../src/folderview/folderwindow.ui" line="246"/>
         <source>Other</source>
         <translation>その他</translation>
     </message>
@@ -739,14 +756,14 @@
         <translation>上のフォルダ</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="69"/>
-        <location filename="../src/folderview/folderwindow.cpp" line="103"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="121"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="158"/>
         <source>History</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="70"/>
-        <location filename="../src/folderview/folderwindow.cpp" line="104"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="122"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="159"/>
         <source>Open history</source>
         <translation type="unfinished"></translation>
     </message>
@@ -768,13 +785,13 @@
         <translation type="vanished">更新日時で並べ替え</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="254"/>
+        <location filename="../src/folderview/folderwindow.ui" line="251"/>
         <source>Set as home folder</source>
         <translation>このフォルダをホームフォルダにする</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="73"/>
-        <location filename="../src/folderview/folderwindow.cpp" line="329"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="125"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="439"/>
         <source>No folders or archives found.</source>
         <comment>Display when there is no display item in Folder Window</comment>
         <translation>フォルダやアーカイブが見つかりません</translation>
@@ -896,90 +913,90 @@
 <context>
     <name>ImageView</name>
     <message>
-        <location filename="../src/imageview.cpp" line="93"/>
+        <location filename="../src/imageview.cpp" line="81"/>
         <source>No Image Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="93"/>
+        <location filename="../src/imageview.cpp" line="81"/>
         <source>Open an image, folder, or archive to begin.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="105"/>
+        <location filename="../src/imageview.cpp" line="93"/>
         <source>No Viewable Images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="107"/>
+        <location filename="../src/imageview.cpp" line="95"/>
         <source>No supported images were found in this folder.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="108"/>
+        <location filename="../src/imageview.cpp" line="96"/>
         <source>No supported images were found in this archive.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="111"/>
+        <location filename="../src/imageview.cpp" line="99"/>
         <source>Cannot Find Item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="112"/>
+        <location filename="../src/imageview.cpp" line="100"/>
         <source>The selected file or folder does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="115"/>
+        <location filename="../src/imageview.cpp" line="103"/>
         <source>Permission Denied</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="116"/>
+        <location filename="../src/imageview.cpp" line="104"/>
         <source>The selected item cannot be read because access was denied.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="119"/>
+        <location filename="../src/imageview.cpp" line="107"/>
         <source>Cannot Display Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="120"/>
+        <location filename="../src/imageview.cpp" line="108"/>
         <source>The image could not be decoded.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../src/imageview.cpp" line="111"/>
+        <location filename="../src/imageview.cpp" line="115"/>
+        <location filename="../src/imageview.cpp" line="119"/>
         <location filename="../src/imageview.cpp" line="123"/>
-        <location filename="../src/imageview.cpp" line="127"/>
-        <location filename="../src/imageview.cpp" line="131"/>
-        <location filename="../src/imageview.cpp" line="135"/>
         <source>Cannot Open Archive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="124"/>
+        <location filename="../src/imageview.cpp" line="112"/>
         <source>This archive is password-protected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="128"/>
+        <location filename="../src/imageview.cpp" line="116"/>
         <source>This archive format is not supported.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="132"/>
+        <location filename="../src/imageview.cpp" line="120"/>
         <source>This archive is damaged or invalid.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="136"/>
+        <location filename="../src/imageview.cpp" line="124"/>
         <source>Cannot Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="137"/>
+        <location filename="../src/imageview.cpp" line="125"/>
         <source>The selected item could not be read.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1031,27 +1048,27 @@
         <translation>リセット</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="287"/>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="328"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="286"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="327"/>
         <source>Invalid key sequence.</source>
         <comment>Message when rejecting input contents of inappropriate shortcut key</comment>
         <translation>不正なキー入力です。</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="292"/>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="310"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="291"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="309"/>
         <source>Key sequence has potential conflicts.</source>
         <comment>Text to be displayed when the entered shortcut key conflicts with another shortcut key</comment>
         <translation>他のショートカットキーと競合しています。</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="205"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="204"/>
         <source>Description</source>
         <comment>Title of the column that displays the meaning of the action to be registered with the shortcut key</comment>
         <translation>説明</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="210"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="209"/>
         <source>Current shortcut</source>
         <comment>Title of the column of the content of the shortcut key registered for Action</comment>
         <translation>現在のショートカット</translation>
@@ -1129,7 +1146,7 @@
         <translation>Command</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="203"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="202"/>
         <source>Group</source>
         <comment>Group of the Action to be registered with the shortcut key</comment>
         <translation>グループ</translation>
@@ -1157,25 +1174,25 @@
         <translation>表示(&amp;V)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="337"/>
+        <location filename="../src/mainwindow.ui" line="334"/>
         <source>&amp;Help</source>
         <translation>ヘルプ(&amp;H)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="501"/>
+        <location filename="../src/mainwindow.ui" line="496"/>
         <source>E&amp;xit</source>
         <extracomment>End application</extracomment>
         <translation>終了(&amp;X)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="555"/>
+        <location filename="../src/mainwindow.ui" line="550"/>
         <source>&amp;Fit mode</source>
         <extracomment>Automatically resize the image according to the size of the window</extracomment>
         <translation>フィット表示(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="170"/>
-        <location filename="../src/mainwindow.cpp" line="1751"/>
+        <location filename="../src/mainwindow.cpp" line="168"/>
+        <location filename="../src/mainwindow.cpp" line="1745"/>
         <source>&amp;Fullscreen</source>
         <translation>フルスクリーン(&amp;F)</translation>
     </message>
@@ -1185,7 +1202,7 @@
         <translation>QuickViewer</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="609"/>
+        <location filename="../src/mainwindow.ui" line="604"/>
         <source>&amp;Open...</source>
         <extracomment>Open an image or archive for viewing</extracomment>
         <translation>開く(&amp;O)...</translation>
@@ -1196,218 +1213,216 @@
         <translation>最近開いたフォルダまたはアーカイブ(&amp;H)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="596"/>
+        <location filename="../src/mainwindow.ui" line="591"/>
         <source>&amp;Reopen last viewed item</source>
         <extracomment>Opening the image automatically when opening the application the last time it was started</extracomment>
         <translation>起動時に前回終了時に復元(&amp;A)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="626"/>
+        <location filename="../src/mainwindow.ui" line="621"/>
         <source>&amp;Last page</source>
         <extracomment>Switch to the last image of Volume currently displayed button</extracomment>
         <translation>最後のページ(&amp;L)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="635"/>
+        <location filename="../src/mainwindow.ui" line="630"/>
         <source>&amp;First page</source>
         <extracomment>Switch to the first image of the currently displayed Volume button</extracomment>
         <translation>最初のページ(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="671"/>
+        <location filename="../src/mainwindow.ui" line="666"/>
         <source>EXIF &amp;information</source>
         <extracomment>Button to display JPEG EXIF information (if any)</extracomment>
         <translation>Exif情報を表示する(&amp;I)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1078"/>
+        <location filename="../src/mainwindow.ui" line="1057"/>
         <source>&amp;Keyboard Shortcuts...</source>
         <extracomment>Menu that displays a dialog for changing keyboard shortcuts</extracomment>
         <translation>キーボード入力設定(&amp;K)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="588"/>
+        <location filename="../src/mainwindow.ui" line="583"/>
         <source>&amp;About QuickViewer</source>
         <extracomment>A menu for displaying a message box for displaying application information</extracomment>
         <translation>QuickViewerについて(&amp;A)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="685"/>
+        <location filename="../src/mainwindow.ui" line="680"/>
         <source>N&amp;ext volume</source>
         <extracomment>Switch to the next Volume in the same folder as the currently displayed Volume button</extracomment>
         <translation>次のボリューム(&amp;E)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="346"/>
+        <location filename="../src/mainwindow.ui" line="343"/>
         <source>&amp;Navigation</source>
         <translation>ページ移動(&amp;N)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="709"/>
+        <location filename="../src/mainwindow.ui" line="704"/>
         <source>Exit application or full screen</source>
         <extracomment>Function that cancels it while full screen is displayed and terminates the application otherwise</extracomment>
         <translation>アプリ終了またはフルスクリーン解除</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="738"/>
+        <location filename="../src/mainwindow.ui" line="733"/>
         <source>&amp;Clear history</source>
         <extracomment>Menu for clearing the history of opening images</extracomment>
         <translation>履歴を削除(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="750"/>
+        <location filename="../src/mainwindow.ui" line="745"/>
         <source>Stay on &amp;top</source>
         <extracomment>When on it keeps the window always on top</extracomment>
         <translation>常に手前に表示(&amp;T)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="969"/>
+        <location filename="../src/mainwindow.ui" line="948"/>
         <source>Sh&amp;ow/hide menu bar</source>
         <translation>メインメニューの表示／非表示切り替え</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="287"/>
-        <location filename="../src/mainwindow.ui" line="383"/>
+        <location filename="../src/mainwindow.ui" line="380"/>
         <source>&amp;Rendering</source>
         <translation>レンダリング(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="797"/>
+        <location filename="../src/mainwindow.ui" line="776"/>
         <source>&amp;Maximize or Normal</source>
         <extracomment>Function to switch windows to maximize or normal display</extracomment>
         <translation>最大化または通常表示(&amp;M)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="814"/>
+        <location filename="../src/mainwindow.ui" line="793"/>
         <source>Skip forward 10 pages</source>
         <extracomment>Switch to 10 images in Volume button</extracomment>
         <translation>10ページ先へ</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="823"/>
+        <location filename="../src/mainwindow.ui" line="802"/>
         <source>Skip back 10 pages</source>
         <extracomment>Switch to the previous 10 images in Volume button</extracomment>
         <translation>10ページ前へ</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="837"/>
+        <location filename="../src/mainwindow.ui" line="816"/>
         <source>&amp;Rotate</source>
         <extracomment>Button to rotate the currently displayed image 90 degrees clockwise</extracomment>
         <translation>画像の回転(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="876"/>
+        <location filename="../src/mainwindow.ui" line="855"/>
         <source>Load bookmark</source>
         <extracomment>Button to restore saved image page from registered bookmark</extracomment>
         <translation>ブックマークを読み込む</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="867"/>
+        <location filename="../src/mainwindow.ui" line="846"/>
         <source>Manage bookmarks</source>
         <translation>ブックマークの管理</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="881"/>
+        <location filename="../src/mainwindow.ui" line="860"/>
         <source>Clear bookmarks</source>
         <extracomment>Button to delete all saved bookmarks</extracomment>
         <translation>ブックマークを全て消去</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2497"/>
+        <location filename="../src/mainwindow.cpp" line="2468"/>
         <source>Bookmark saved.</source>
         <translation>ブックマークが保存されました。</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="379"/>
-        <location filename="../src/mainwindow.ui" line="1096"/>
+        <location filename="../src/mainwindow.ui" line="376"/>
+        <location filename="../src/mainwindow.ui" line="1070"/>
         <source>ContextMenu</source>
         <translation>コンテキストメニュー</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="776"/>
         <source>Bi&amp;cubic interpolation (slow)</source>
         <extracomment>Menu for resizing image by bicubic interpolation by GPU</extracomment>
-        <translation>バイキュービック補間(&amp;B 遅い)</translation>
+        <translation type="vanished">バイキュービック補間(&amp;B 遅い)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="784"/>
         <source>&amp;Lanczos interpolation (very slow)</source>
         <extracomment>Menu for resizing image by Lanczos interpolation by GPU</extracomment>
-        <translation>Lanczos補間(&amp;L 非常に遅い)</translation>
+        <translation type="vanished">Lanczos補間(&amp;L 非常に遅い)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="431"/>
+        <location filename="../src/mainwindow.ui" line="426"/>
         <source>&amp;Catalog</source>
         <translation>カタログ(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="528"/>
+        <location filename="../src/mainwindow.ui" line="523"/>
         <source>Zoom &amp;in</source>
         <extracomment>Button for enlarging the currently displayed image</extracomment>
         <translation>拡大表示(&amp;I)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="531"/>
+        <location filename="../src/mainwindow.ui" line="526"/>
         <source>Zoom in</source>
         <translation>拡大表示</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="540"/>
+        <location filename="../src/mainwindow.ui" line="535"/>
         <source>Zoom &amp;out</source>
         <extracomment>Reduce the image currently displayed button</extracomment>
         <translation>縮小表示(&amp;O)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="543"/>
+        <location filename="../src/mainwindow.ui" line="538"/>
         <source>Zoom out</source>
         <translation>縮小表示</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="909"/>
+        <location filename="../src/mainwindow.ui" line="888"/>
         <source>Remove parenthesized text from book title</source>
         <extracomment>Ability to remove and display (parenthesized) text from Volume title in the catalog</extracomment>
         <translation>本のタイトルから(かっこ)に書かれたオプションを取り除く</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="917"/>
+        <location filename="../src/mainwindow.ui" line="896"/>
         <source>Ignore parenthesized text when searching titles</source>
         <extracomment>Ability to search with the title removed (parenthesized) removed from the title of Volume in the catalog</extracomment>
         <translation>本のタイトルを検索する際に(かっこ)で書かれたオプションを取り除く</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="929"/>
-        <location filename="../src/mainwindow.ui" line="932"/>
+        <location filename="../src/mainwindow.ui" line="908"/>
+        <location filename="../src/mainwindow.ui" line="911"/>
         <source>Icons and titles</source>
         <extracomment>For Volume in the catalog, a mode to list up icons and titles vertically</extracomment>
         <translation>並べて表示</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="953"/>
-        <location filename="../src/mainwindow.ui" line="956"/>
+        <location filename="../src/mainwindow.ui" line="932"/>
+        <location filename="../src/mainwindow.ui" line="935"/>
         <source>List</source>
         <extracomment>Mode to list volumes in the catalog with icons and titles arranged side by side</extracomment>
         <translation>一覧</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="964"/>
+        <location filename="../src/mainwindow.ui" line="943"/>
         <source>Show tag bar</source>
         <extracomment>Squeeze the Volume of the catalog Function to erase the bar displaying the tag button</extracomment>
         <translation>タグ検索バーを表示する</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="828"/>
+        <location filename="../src/mainwindow.ui" line="807"/>
         <source>Copy file to clipboard</source>
         <extracomment>Menu to copy currently displayed image file on Explorer</extracomment>
         <translation>ファイルをクリップボードにコピー</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="768"/>
+        <location filename="../src/mainwindow.ui" line="763"/>
         <source>&amp;Bilinear interpolation (fast)</source>
         <extracomment>Menu to resize the image by bilinear interpolation by GPU</extracomment>
         <translation>バイリニア補間(&amp;B 高速)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="447"/>
+        <location filename="../src/mainwindow.ui" line="442"/>
         <source>F&amp;older</source>
         <translation>フォルダ(&amp;O)</translation>
     </message>
@@ -1417,115 +1432,115 @@
         <translation type="vanished">フィット表示時、画面より小さな画像は拡大しない</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1069"/>
+        <location filename="../src/mainwindow.ui" line="1048"/>
         <source>Show image information in full screen</source>
         <extracomment>Signage that displays the file name of the image at full screen display</extracomment>
         <translation>フルスクリーン時にテキストを表示する</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="510"/>
+        <location filename="../src/mainwindow.ui" line="505"/>
         <source>&amp;Next</source>
         <extracomment>Switch to the next image button</extracomment>
         <translation>次へ(&amp;N)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="519"/>
+        <location filename="../src/mainwindow.ui" line="514"/>
         <source>&amp;Previous</source>
         <extracomment>Switch to previous image button</extracomment>
         <translation>前へ(&amp;P)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="567"/>
+        <location filename="../src/mainwindow.ui" line="562"/>
         <source>2-page &amp;spread</source>
         <extracomment>Arranging two images side by side like when opening a book</extracomment>
         <translation>見開き表示(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="604"/>
+        <location filename="../src/mainwindow.ui" line="599"/>
         <source>&amp;Right-bound</source>
         <extracomment>Books written in vertical writing such as Japanese and Chinese read from right, so read from right page to left page</extracomment>
         <translation>右開きで表示(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="659"/>
+        <location filename="../src/mainwindow.ui" line="654"/>
         <source>Open in &amp;Explorer</source>
         <extracomment>Menu that displays Explorer with the currently displayed image file selected</extracomment>
         <translation>エクスプローラで開く(&amp;E)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="704"/>
+        <location filename="../src/mainwindow.ui" line="699"/>
         <source>Previous p&amp;age</source>
         <extracomment>Because there are times when the page is missing due to bookbinding convenience, digital books will fit the left and right pages with this operation</extracomment>
         <translation>前のページ(&amp;A)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="725"/>
+        <location filename="../src/mainwindow.ui" line="720"/>
         <source>Display &amp;first page alone</source>
         <extracomment>In the case of a digital book, since the first image is a cover page, only one image is displayed</extracomment>
         <translation>最初(表紙)の画像は見開き表示でも1枚だけ表示する(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="792"/>
+        <location filename="../src/mainwindow.ui" line="771"/>
         <source>&amp;Nearest Neighbor interpolation (fast but coarse)</source>
         <extracomment>Menu to resize image by Nearest Neighbor interpolation by GPU</extracomment>
         <translation>最近傍補間(&amp;N 高速だが粗い)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="805"/>
+        <location filename="../src/mainwindow.ui" line="784"/>
         <source>&amp;Restore window display at next startup</source>
         <extracomment>When restarting the next time, restore the position size of the window at the time of the last termination</extracomment>
         <translation>ウィンドウの表示を次回起動時に復元する(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="858"/>
+        <location filename="../src/mainwindow.ui" line="837"/>
         <source>Add bookmark</source>
         <extracomment>Button to add the currently displayed volume and page to bookmark</extracomment>
         <translation>ブックマークに追加</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="944"/>
+        <location filename="../src/mainwindow.ui" line="923"/>
         <source>Icons only</source>
         <extracomment>Mode to list Volume in the catalog with only the icons side by side</extracomment>
         <translation>アイコンのみ</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="974"/>
+        <location filename="../src/mainwindow.ui" line="953"/>
         <source>Send image by email...</source>
         <extracomment>Menu to attach the currently displayed image to the mail software and start up</extracomment>
         <translation>添付ファイルにしてメールソフトを起動する</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="982"/>
+        <location filename="../src/mainwindow.ui" line="961"/>
         <source>Larger &amp;grid for long titles</source>
         <extracomment>Functions to be used when the Volume title in the catalog is long</extracomment>
         <translation>長いタイトルを表示するために枠を大きめにする(&amp;G)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1002"/>
+        <location filename="../src/mainwindow.ui" line="981"/>
         <source>Bicubic interpolation by CPU (quality)</source>
         <extracomment>Menu that performs bicubic interpolation with CPU when resizing image</extracomment>
         <translation>CPUによるバイキュービック補間 (高品質)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1014"/>
+        <location filename="../src/mainwindow.ui" line="993"/>
         <source>Include images in subfolders</source>
         <extracomment>When enumerating images, subfolders are also included in the range</extracomment>
         <translation>サブフォルダの画像も開く</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1022"/>
+        <location filename="../src/mainwindow.ui" line="1001"/>
         <source>Open at last-read page</source>
         <extracomment>A setting menu that allows you to advance the page to the point you read when you reopen Volume that you read a part way up again</extracomment>
         <translation>前に開いたページを開く</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1030"/>
+        <location filename="../src/mainwindow.ui" line="1009"/>
         <source>Show reading progress</source>
         <extracomment>Ability to display read information read in the middle in FolderWindow</extracomment>
         <translation>どこまで読んだかを表示する</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1040"/>
+        <location filename="../src/mainwindow.ui" line="1019"/>
         <source>Rename</source>
         <extracomment>A menu for changing the file name of the currently displayed image</extracomment>
         <translation>ファイル名を変更する</translation>
@@ -1546,98 +1561,98 @@
         <translation type="vanished">開くことができませんでした。画像ファイルが見つかりません。</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2071"/>
+        <location filename="../src/mainwindow.cpp" line="2058"/>
         <source>Select an image or archive</source>
         <comment>Title of the dialog displayed when opening a file with OpenFileFolder</comment>
         <translation>閲覧したい画像またはアーカイブを選択してください</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="579"/>
+        <location filename="../src/mainwindow.ui" line="574"/>
         <source>Full screen</source>
         <extracomment>Button to switch the window display to full screen</extracomment>
         <translation>フルスクリーン</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="617"/>
+        <location filename="../src/mainwindow.ui" line="612"/>
         <source>&amp;Keep wide images together in 2-page view</source>
         <extracomment>Automatically switch because it may spread 2 pages are combined into one image in the digital book</extracomment>
         <translation>横長の画像は見開き表示でも1枚だけ表示する(&amp;A)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="646"/>
+        <location filename="../src/mainwindow.ui" line="641"/>
         <source>Show status &amp;bar</source>
         <translation>ステータスバーを表示(&amp;B)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="654"/>
+        <location filename="../src/mainwindow.ui" line="649"/>
         <source>Show &amp;page bar</source>
         <translation>ページバーを表示(&amp;P)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="676"/>
+        <location filename="../src/mainwindow.ui" line="671"/>
         <source>Check for &amp;updates...</source>
         <extracomment>A menu to start up the browser to check whether the currently used QuickViewer is the latest version on the project web page</extracomment>
         <translation>ブラウザを開いてバージョンを確認する(&amp;V)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="694"/>
+        <location filename="../src/mainwindow.ui" line="689"/>
         <source>P&amp;revious volume</source>
         <extracomment>Switch to the previous Volume in the same folder as Volume currently being displayed Button</extracomment>
         <translation>前のボリューム(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="699"/>
+        <location filename="../src/mainwindow.ui" line="694"/>
         <source>Next &amp;page</source>
         <extracomment>Because there are times when the page is missing due to bookbinding convenience, digital books will fit the left and right pages with this operation</extracomment>
         <translation>次のページ(&amp;P)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="717"/>
+        <location filename="../src/mainwindow.ui" line="712"/>
         <source>Show &amp;toolbar</source>
         <translation>ツールバーを表示(&amp;T)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="733"/>
+        <location filename="../src/mainwindow.ui" line="728"/>
         <source>Show &amp;menu bar</source>
         <translation>メニューバーを表示する(&amp;M)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="755"/>
+        <location filename="../src/mainwindow.ui" line="750"/>
         <source>&amp;Copy image to clipboard</source>
         <extracomment>A menu for copying the bitmap of the currently displayed image to the clipboard</extracomment>
         <translation>画像をクリップボードにコピー(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="760"/>
+        <location filename="../src/mainwindow.ui" line="755"/>
         <source>Move image to &amp;Recycle Bin</source>
         <extracomment>Menu that puts the currently displayed image in Recycle Bin</extracomment>
         <translation>現在のページの画像をゴミ箱に入れる(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="849"/>
+        <location filename="../src/mainwindow.ui" line="828"/>
         <source>&amp;Slideshow</source>
         <extracomment>Button to start displaying slideshow</extracomment>
         <translation>スライドショー(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="886"/>
+        <location filename="../src/mainwindow.ui" line="865"/>
         <source>Project &amp;website</source>
         <extracomment>Button to display the web page of the project in the browser</extracomment>
         <translation>ホームページをブラウザで表示(&amp;P)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="898"/>
+        <location filename="../src/mainwindow.ui" line="877"/>
         <source>Show &amp;Catalog</source>
         <extracomment>Button to display Catalog Window. Switch between internal display, independent display, and erase</extracomment>
         <translation>カタログを表示する(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="901"/>
+        <location filename="../src/mainwindow.ui" line="880"/>
         <source>Show Catalog</source>
         <translation>カタログを表示する</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="994"/>
+        <location filename="../src/mainwindow.ui" line="973"/>
         <source>Show &amp;Folder</source>
         <extracomment>Button to display FolderWindow. Switch between internal display, independent display, and erase</extracomment>
         <translation>フォルダを表示(&amp;F)</translation>
@@ -1648,223 +1663,222 @@
         <translation type="vanished">GPUによるバイリニアの後、CPUによるバイキュービック(標準)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1035"/>
+        <location filename="../src/mainwindow.ui" line="1014"/>
         <source>&amp;Settings</source>
         <extracomment>Menu for displaying a dialog for changing the adjunct setting of the application</extracomment>
         <translation>設定(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1048"/>
+        <location filename="../src/mainwindow.ui" line="1027"/>
         <source>Don&apos;t upscale small images</source>
         <extracomment>Ability to display an image smaller than the window as it is when fit is displayed</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1061"/>
+        <location filename="../src/mainwindow.ui" line="1040"/>
         <source>Full screen on startup</source>
         <extracomment>Ability to always launch applications in full screen</extracomment>
         <translation>起動時はフルスクリーン固定</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1086"/>
+        <location filename="../src/mainwindow.ui" line="1065"/>
         <source>Confirm moving image to &amp;Recycle Bin</source>
         <extracomment>A function to display a confirmation screen when moving the currently displayed image to Recycle Bin</extracomment>
         <translation>ゴミ箱に移動する際に確認する(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1091"/>
         <source>File Associations... (administrator)</source>
         <extracomment>Ability to associate QuickViewer and image files on Explorer (Host Global)</extracomment>
-        <translation>画像の関連付け (管理者権限が必要)</translation>
+        <translation type="vanished">画像の関連付け (管理者権限が必要)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1101"/>
+        <location filename="../src/mainwindow.ui" line="1075"/>
         <source>&amp;Mouse Settings...</source>
         <translation>マウス入力設定(&amp;M)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1106"/>
+        <location filename="../src/mainwindow.ui" line="1080"/>
         <source>Delete the image</source>
         <translation>現在のページの画像ファイルを削除する</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2318"/>
+        <location filename="../src/mainwindow.cpp" line="2305"/>
         <source>Are you sure you want to move the image to Recycle Bin?</source>
         <comment>Confirm putting displayed file in Recycle Box Message Box body</comment>
         <translation>本当にこの画像をゴミ箱に入れますか？</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2312"/>
-        <location filename="../src/mainwindow.cpp" line="2356"/>
+        <location filename="../src/mainwindow.cpp" line="2299"/>
+        <location filename="../src/mainwindow.cpp" line="2343"/>
         <source>Confirmation</source>
         <comment>Confirm deleting image file on MessageBox title</comment>
         <translation>確認</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1702"/>
+        <location filename="../src/mainwindow.cpp" line="1696"/>
         <source>Loading...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1705"/>
+        <location filename="../src/mainwindow.cpp" line="1699"/>
         <source>No images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1707"/>
+        <location filename="../src/mainwindow.cpp" line="1701"/>
         <source>Unavailable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2065"/>
+        <location filename="../src/mainwindow.cpp" line="2052"/>
         <source>All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.heic *.heif);;Archives( *.zip *.7z *.rar)</source>
         <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2361"/>
+        <location filename="../src/mainwindow.cpp" line="2348"/>
         <source>Are you sure you want to delete this image?</source>
         <comment>Confirm deleting image file on Message Box body</comment>
         <translation>本当にこの画像を削除しますか？</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1111"/>
+        <location filename="../src/mainwindow.ui" line="1085"/>
         <source>File Associations... (current user)</source>
         <extracomment>Ability to associate QuickViewer and image files on Explorer (Host Global)</extracomment>
         <translation>画像の関連付け (あなたのみ)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1119"/>
+        <location filename="../src/mainwindow.ui" line="1093"/>
         <source>Don&apos;t update history</source>
         <extracomment>Flag for prohibiting update of history</extracomment>
         <translation>履歴を更新しない</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1131"/>
+        <location filename="../src/mainwindow.ui" line="1105"/>
         <source>Open panels in separate windows</source>
         <extracomment>Flag separating the catalog and folder windows into independent windows</extracomment>
         <translation>ツールウィンドウをアプリのウィンドウから分離する</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="461"/>
+        <location filename="../src/mainwindow.ui" line="456"/>
         <source>&amp;Image</source>
         <translation>画像(&amp;I)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1139"/>
+        <location filename="../src/mainwindow.ui" line="1113"/>
         <source>Large menu and toolbar</source>
         <translation>メニューバーとツールバーを大きくする</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1144"/>
+        <location filename="../src/mainwindow.ui" line="1118"/>
         <source>Turn left page</source>
         <translation>左側のページをめくる</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1149"/>
+        <location filename="../src/mainwindow.ui" line="1123"/>
         <source>Turn right page</source>
         <translation>右側のページをめくる</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1157"/>
+        <location filename="../src/mainwindow.ui" line="1131"/>
         <source>Split wide images into two pages</source>
         <extracomment>Flag to display images on the left and right sides with a portrait display</extracomment>
         <translation>横長の画像を2ページに分割する(縦画面のみ)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1169"/>
+        <location filename="../src/mainwindow.ui" line="1143"/>
         <source>Loupe</source>
         <translation>拡大ツール</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1177"/>
+        <location filename="../src/mainwindow.ui" line="1151"/>
         <source>Pan with mouse movement when zoomed</source>
         <extracomment>Flag to scroll the image with moving the mouse pointer instead of displaying the scroll bar</extracomment>
         <translation>拡大時にマウスカーソルの移動でスクロール</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1189"/>
+        <location filename="../src/mainwindow.ui" line="1163"/>
         <source>Fit to width</source>
         <translation>ウィンドウの幅に合わせる</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="397"/>
+        <location filename="../src/mainwindow.ui" line="392"/>
         <source>Image actions</source>
         <translation>画像の操作</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="409"/>
-        <location filename="../src/mainwindow.ui" line="465"/>
+        <location filename="../src/mainwindow.ui" line="404"/>
+        <location filename="../src/mainwindow.ui" line="460"/>
         <source>Fit mode</source>
         <translation>フィットさせる方法</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1201"/>
+        <location filename="../src/mainwindow.ui" line="1175"/>
         <source>Fit to window</source>
         <translation>ウィンドウにフィットさせる</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1213"/>
+        <location filename="../src/mainwindow.ui" line="1187"/>
         <source>Image adjustments...</source>
         <extracomment>a menu test which show window changes brightness of the image</extracomment>
         <translation>明るさ、コントラスト、ガンマ値を変更</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1221"/>
+        <location filename="../src/mainwindow.ui" line="1195"/>
         <source>Spline16 interpolation by CPU</source>
         <extracomment>Menu that performs Spline16 interpolation with CPU when resizing image</extracomment>
         <translation>CPUによるスプライン16補間</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1229"/>
+        <location filename="../src/mainwindow.ui" line="1203"/>
         <source>Spline36 interpolation by CPU</source>
         <extracomment>Menu that performs Spline36 interpolation with CPU when resizing image</extracomment>
         <translation>CPUによるスプライン36補間</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1237"/>
+        <location filename="../src/mainwindow.ui" line="1211"/>
         <source>Lanczos3 interpolation by CPU</source>
         <extracomment>Menu that performs Lanczos3 interpolation with CPU when resizing image</extracomment>
         <translation>CPUによるLanczos3補間</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1245"/>
+        <location filename="../src/mainwindow.ui" line="1219"/>
         <source>Lanczos4 interpolation by CPU</source>
         <extracomment>Menu that performs Lanczos4 interpolation with CPU when resizing image</extracomment>
         <translation>CPUによるLanczos4補間</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1250"/>
+        <location filename="../src/mainwindow.ui" line="1224"/>
         <source>Next page or volume</source>
         <extracomment>Switch to next image, or to next volume if the page is first button</extracomment>
         <translation>次の画像またはボリューム</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1255"/>
+        <location filename="../src/mainwindow.ui" line="1229"/>
         <source>Previous page or volume</source>
         <extracomment>Switch to previous image, or to previous volume if the page is last button</extracomment>
         <translation>前の画像またはボリューム</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1263"/>
+        <location filename="../src/mainwindow.ui" line="1237"/>
         <source>Remember catalog pane width</source>
         <extracomment>Flag to restore the width of Catalog view</extracomment>
         <translation>カタログ表示の幅を保存する</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1271"/>
+        <location filename="../src/mainwindow.ui" line="1245"/>
         <source>Remember folder pane width</source>
         <extracomment>Flag to restore the width of Folder view</extracomment>
         <translation>フォルダ表示の幅を保存する</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1279"/>
+        <location filename="../src/mainwindow.ui" line="1253"/>
         <source>Save reading progress</source>
         <extracomment>Flag to save progress.ini</extracomment>
         <translation>どこまで読んだかを保存する</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1287"/>
+        <location filename="../src/mainwindow.ui" line="1261"/>
         <source>Hide mouse cursor in full screen</source>
         <translation>フルスクリーン時にマウスカーソルを非表示にする</translation>
     </message>
@@ -1875,42 +1889,42 @@
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="274"/>
-        <location filename="../src/mainwindow.ui" line="1292"/>
+        <location filename="../src/mainwindow.ui" line="1266"/>
         <source>&amp;Sort by</source>
         <translation>並べ替え(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1300"/>
+        <location filename="../src/mainwindow.ui" line="1274"/>
         <source>File name</source>
         <translation>ファイル名(昇順)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1308"/>
+        <location filename="../src/mainwindow.ui" line="1282"/>
         <source>File name (descending)</source>
         <translation>ファイル名(降順)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1316"/>
+        <location filename="../src/mainwindow.ui" line="1290"/>
         <source>File size</source>
         <translation>ファイルサイズ(昇順)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1324"/>
+        <location filename="../src/mainwindow.ui" line="1298"/>
         <source>File size (descending)</source>
         <translation>ファイルサイズ(降順)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1332"/>
+        <location filename="../src/mainwindow.ui" line="1306"/>
         <source>Modified time</source>
         <translation>ファイル変更日時(昇順)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1340"/>
+        <location filename="../src/mainwindow.ui" line="1314"/>
         <source>Modified time (descending)</source>
         <translation>ファイル変更日時(降順)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="320"/>
+        <location filename="../src/mainwindow.ui" line="318"/>
         <source>&amp;Tools</source>
         <translation>ツール(&amp;T)</translation>
     </message>
@@ -1990,13 +2004,13 @@
         <translation>処理キャンセル</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="250"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="255"/>
         <source>Completed</source>
         <comment>Title of message box when catalog generation finished successfully</comment>
         <translation>完了!</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="308"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="318"/>
         <source>Cancelled!</source>
         <comment>Title of message box when catalog generation was canceled</comment>
         <translation>キャンセルされました!</translation>
@@ -2032,13 +2046,13 @@
         <translation>カタログを編集する</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="252"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="257"/>
         <source>Catalog creation completed.</source>
         <comment>Body of message box when catalog generation finished successfully</comment>
         <translation>カタログの作成が完了しました</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="309"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="319"/>
         <source>Catalog creation was cancelled.</source>
         <comment>Body of message box when catalog generation is canceled</comment>
         <translation>カタログの作成がキャンセルされました</translation>
@@ -2058,20 +2072,20 @@
         <translation type="vanished">下のチェックの組み合わせを選択し、『設定追加』ボタンを押してください</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="64"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="86"/>
         <source>Description</source>
         <comment>Title of the column that displays the meaning of the action to be registered with the mouse sequence</comment>
         <translation>説明</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="69"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="91"/>
         <source>Current mouse shortcut</source>
         <comment>Title of the column of the content of the mouse sequence registered for Action</comment>
         <translation>現在のマウス入力</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="142"/>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="209"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="164"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="231"/>
         <source>Mouse sequence has potential conflicts.</source>
         <comment>Text to be displayed when the entered mouse sequence conflicts with another mouse sequence</comment>
         <translation>他のマウス入力と競合しています。</translation>
@@ -2101,7 +2115,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="62"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="84"/>
         <source>Group</source>
         <comment>Group of the Action to be registered with the shortcut key</comment>
         <translation>グループ</translation>
@@ -2451,7 +2465,7 @@
         <translation>シェーダー</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="398"/>
+        <location filename="../src/models/qvapplication.cpp" line="394"/>
         <source>Help</source>
         <comment>Help Action Group</comment>
         <translation>ヘルプ</translation>

@@ -49,19 +49,19 @@ public:
     void resetVolume(Volume *newVolume);
     void uncheckAllShaderMenus()
     {
-        foreach (QAction *action, m_shaderMenuGroup) {
+        for (QAction *action : m_shaderMenuGroup) {
             action->setChecked(false);
         }
     }
     void uncheckAllLanguageMenus()
     {
-        foreach (QAction *action, m_languageMenuGroup) {
+        for (QAction *action : m_languageMenuGroup) {
             action->setChecked(false);
         }
     }
     void uncheckAllSortByMenus()
     {
-        foreach (QAction *action, m_sortByMenuGroup) {
+        for (QAction *action : m_sortByMenuGroup) {
             action->setChecked(false);
         }
     }
@@ -179,7 +179,6 @@ public slots:
     void handleLanguageSelectorLanguageChanged(QString language);
     void handleLanguageSelectorOpenTextEditorForLanguage(LanguageInfo info);
     void handleRegisterFileAssociationsActionTriggered();
-    void handleRegisterFileAssociationsAsAdministratorActionTriggered();
 
     // ContextMenus
     void handleContextMenuActionTriggered();
@@ -194,8 +193,6 @@ public slots:
     // Shaders
     void handleShaderNearestNeighborActionTriggered();
     void handleShaderBilinearActionTriggered();
-    void handleShaderBicubicActionTriggered();
-    void handleShaderLanczosActionTriggered();
     void handleShaderCpuBicubicActionTriggered();
     void handleShaderCpuSpline16ActionTriggered();
     void handleShaderCpuSpline36ActionTriggered();

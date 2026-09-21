@@ -1320,16 +1320,28 @@ private slots:
         QListView *view =
             viewer.folderWindow()->findChild<QListView *>(QStringLiteral("folderView"));
         QVERIFY(view);
-        viewer.activateWindow();
-        QCoreApplication::processEvents();
+
+        // A widget has keyboard focus only while its window is active, and the
+        // window system can refuse to activate a window while tests run. The
+        // viewer itself asks its window which widget it keeps as its focus, so
+        // the test asks the window the same question.
         view->setFocus(Qt::OtherFocusReason);
-        QTRY_VERIFY(view->hasFocus() || view->viewport()->hasFocus());
-        QWidget *focusTarget = QApplication::focusWidget();
-        QVERIFY(focusTarget);
-        QVERIFY(focusTarget == view || focusTarget == view->viewport());
+        const auto viewHoldsTheFocus = [&view, &viewer] {
+            for (QWidget *focused = viewer.focusWidget(); focused;
+                 focused = focused->focusWidget()) {
+                if (focused == view || focused == view->viewport()) {
+                    return true;
+                }
+            }
+            return false;
+        };
+        QTRY_VERIFY(viewHoldsTheFocus());
 
-        QTest::keyPress(focusTarget, Qt::Key_F4);
+        QTest::keyPress(view, Qt::Key_F4);
 
+        // The viewer defers an action that the folder view started, so the
+        // panel outlives the key event and closes on the next turn of the loop.
+        QVERIFY(viewer.folderWindow() != nullptr);
         QTRY_VERIFY(viewer.folderWindow() == nullptr);
     }
 

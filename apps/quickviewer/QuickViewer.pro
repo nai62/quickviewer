@@ -5,19 +5,12 @@
 #-------------------------------------------------
 
 include(../../QVproject.pri)
+include(../../qmake/windows-target.pri)
 isEmpty(QV_APP_SOURCE): QV_APP_SOURCE = $$PWD
 RESVG_SOURCE_ROOT = $$clean_path($$QV_APP_SOURCE/../../third_party/resvg)
 include(../../qmake/third_party/resvg/resvg.pri)
 
-QT       += core gui concurrent sql svgwidgets
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
-
-contains(DEFINES, QV_WITHOUT_OPENGL) {
-    message(QuickViewer without OpenGL Support)
-} else {
-    message(QuickViewer with OpenGL Support)
-    QT += opengl opengl-private
-}
+QT       += core gui concurrent sql svgwidgets widgets network
 
 VERSION = 2.0.0
 
@@ -83,7 +76,7 @@ win32 {
             QMAKE_LFLAGS += /LARGEADDRESSAWARE
         }
     }
-    LIBS += -luser32 -ladvapi32 -lShlwapi -loleaut32 -lole32 -luuid
+    LIBS += -luser32 -ladvapi32 -lshell32 -lShlwapi -loleaut32 -lole32 -luuid -ldwmapi
 
     # copy official 7z.dll to build/bin/
     QMAKE_POST_LINK += $$QMAKE_COPY /B $$shell_quote($$shell_path($$PWD/../../third_party/7zip/windll/$${TARGET_ARCH}/7z.dll)) $$shell_path($${DESTDIR}) $$escape_expand(\n\t)
@@ -247,8 +240,6 @@ win32 {
     INCLUDEPATH += ../../components/file-association
     SOURCES += src/mainwindowforwindows.cpp ../../components/file-association/fileassocdialog.cpp
     HEADERS += src/mainwindowforwindows.h ../../components/file-association/fileassocdialog.h
-    *g++*: DEFINES += NTDDI_VERSION=NTDDI_VISTA
-
 }
 
 
@@ -288,11 +279,6 @@ RESOURCES += toolbar.qrc \
 RC_ICONS = icons/appicon.ico
 
 
-# Shaders will be installed into DIST_DIR/shaders
-SHADERS += \
-    shaders/bicubic.frag \
-    shaders/lanczos.frag \
-
 DBS += \
     database/schema.sql \
 
@@ -303,20 +289,12 @@ DBBIN += \
 
 DBDIR += database/
 
-!greaterThan(QT_MAJOR_VERSION, 4) {
-    defineReplace(shell_path) {
-        path = $$1
-        return($$replace(path, "/", "\\"))
-    }
-}
-
-
 # win32 depoying, please add 'jom install' into build setting on qt-creator
 win32 : !CONFIG(debug, debug|release) {
     mingw {
         MY_DEFAULT_INSTALL = ../../../QuickViewer-$${VERSION}-mingw-$${TARGET_ARCH}
 
-        install_target.files = $${DESTDIR}/QuickViewer.exe $${DESTDIR}/AssociateFilesWithQuickViewer.exe $${LIBDIR}/fileloader.dll $$PWD/../../third_party/7zip/windll/$${TARGET_ARCH}/7z.dll
+        install_target.files = $${DESTDIR}/QuickViewer.exe $${LIBDIR}/fileloader.dll $$PWD/../../third_party/7zip/windll/$${TARGET_ARCH}/7z.dll
 
         INSTALLS += install_target install_deploy_files install_translations install_assoc_icons
     } else {
@@ -327,10 +305,8 @@ win32 : !CONFIG(debug, debug|release) {
         }
 
         install_target.path = $${MY_DEFAULT_INSTALL}
-        #   install_target.files += $${DESTDIR}/QuickViewer.exe $${DESTDIR}/AssociateFilesWithQuickViewer.exe $${LIBDIR}/fileloader.dll
         install_target.files = \
             $${DESTDIR}/QuickViewer.exe \
-            $${DESTDIR}/AssociateFilesWithQuickViewer.exe \
             $$PWD/../../third_party/7zip/windll/$${TARGET_ARCH}/7z.dll \
 
         install_qrawspeed.path = $${MY_DEFAULT_INSTALL}/imageformats
@@ -373,7 +349,12 @@ win32 : !CONFIG(debug, debug|release) {
         $${PWD}/../../README.md \
         $${PWD}/../../LICENSE
 
-    install_deploy_files.commands = $$shell_path($$[QT_INSTALL_BINS]/windeployqt) --release --compiler-runtime $$shell_path($${MY_DEFAULT_INSTALL}/QuickViewer.exe)
+    # The application draws through the platform's widget backend and asks for
+    # neither OpenGL nor the shader compilers of the D3D backends, so the
+    # deployment leaves Qt's software OpenGL and the D3D compilers out: the
+    # windeployqt flags cover the first two, and the D3D12 compilers that
+    # windeployqt copies despite them are removed afterwards.
+    install_deploy_files.commands = $$shell_path($$[QT_INSTALL_BINS]/windeployqt) --release --compiler-runtime --no-opengl-sw --no-system-d3d-compiler $$shell_path($${MY_DEFAULT_INSTALL}/QuickViewer.exe) $$escape_expand(\n\t) -$(DEL_FILE) $$shell_path($${MY_DEFAULT_INSTALL}/dxcompiler.dll) $$shell_path($${MY_DEFAULT_INSTALL}/dxil.dll)
 
     install_translations.path = $${MY_DEFAULT_INSTALL}/translations
     QM_FILES_INSTALL_PATH = $${install_translations.path}
@@ -390,20 +371,18 @@ win32 : !CONFIG(debug, debug|release) {
 
     install_assoc_icons.path = $${MY_DEFAULT_INSTALL}/iconengines
     install_assoc_icons.files = \
-        ../associate-files/icons/qv_apng.ico \
-        ../associate-files/icons/qv_bmp.ico \
-        ../associate-files/icons/qv_dds.ico \
-        ../associate-files/icons/qv_gif.ico \
-        ../associate-files/icons/qv_icon.ico \
-        ../associate-files/icons/qv_jpeg.ico \
-        ../associate-files/icons/qv_png.ico \
-        ../associate-files/icons/qv_raw.ico \
-        ../associate-files/icons/qv_tga.ico \
-        ../associate-files/icons/qv_tiff.ico \
-        ../associate-files/icons/qv_webp.ico \
+        ../../components/file-association/icons/qv_apng.ico \
+        ../../components/file-association/icons/qv_bmp.ico \
+        ../../components/file-association/icons/qv_dds.ico \
+        ../../components/file-association/icons/qv_gif.ico \
+        ../../components/file-association/icons/qv_icon.ico \
+        ../../components/file-association/icons/qv_jpeg.ico \
+        ../../components/file-association/icons/qv_png.ico \
+        ../../components/file-association/icons/qv_raw.ico \
+        ../../components/file-association/icons/qv_tga.ico \
+        ../../components/file-association/icons/qv_tiff.ico \
+        ../../components/file-association/icons/qv_webp.ico \
 
-    install_shaders.path = $${MY_DEFAULT_INSTALL}/shaders
-    install_shaders.files = $$SHADERS
     install_db.path = $${MY_DEFAULT_INSTALL}/database
     install_db.depends = install_install_assoc_icons
     install_db.files = \
@@ -420,15 +399,9 @@ win32 : !CONFIG(debug, debug|release) {
 
     INSTALLS += install_nsis
 
-    !contains(DEFINES, QV_WITHOUT_OPENGL) {
-        INSTALLS += install_shaders
-    }
-    greaterThan(QT_MAJOR_VERSION, 4):greaterThan(QT_MINOR_VERSION, 8):win32 {
-        install_direct2d.path = $${MY_DEFAULT_INSTALL}/platforms
-        install_direct2d.files = $$[QT_INSTALL_PLUGINS]/platforms/qdirect2d.dll
-        INSTALLS += install_direct2d
-    }
-
+    install_direct2d.path = $${MY_DEFAULT_INSTALL}/platforms
+    install_direct2d.files = $$[QT_INSTALL_PLUGINS]/platforms/qdirect2d.dll
+    INSTALLS += install_direct2d
 }
 
 # linuxdeployqt is required.
@@ -480,17 +453,17 @@ linux : !CONFIG(debug, debug|release) : contains(DEFINES, QV_PORTABLE) {
 
     install_assoc_icons.path = $${MY_DEFAULT_INSTALL}/usr/shared/icons
     install_assoc_icons.files = \
-        ../associate-files/icons/qv_apng.ico \
-        ../associate-files/icons/qv_bmp.ico \
-        ../associate-files/icons/qv_dds.ico \
-        ../associate-files/icons/qv_gif.ico \
-        ../associate-files/icons/qv_icon.ico \
-        ../associate-files/icons/qv_jpeg.ico \
-        ../associate-files/icons/qv_png.ico \
-        ../associate-files/icons/qv_raw.ico \
-        ../associate-files/icons/qv_tga.ico \
-        ../associate-files/icons/qv_tiff.ico \
-        ../associate-files/icons/qv_webp.ico \
+        ../../components/file-association/icons/qv_apng.ico \
+        ../../components/file-association/icons/qv_bmp.ico \
+        ../../components/file-association/icons/qv_dds.ico \
+        ../../components/file-association/icons/qv_gif.ico \
+        ../../components/file-association/icons/qv_icon.ico \
+        ../../components/file-association/icons/qv_jpeg.ico \
+        ../../components/file-association/icons/qv_png.ico \
+        ../../components/file-association/icons/qv_raw.ico \
+        ../../components/file-association/icons/qv_tga.ico \
+        ../../components/file-association/icons/qv_tiff.ico \
+        ../../components/file-association/icons/qv_webp.ico \
 
     install_appimage.path = $${MY_DEFAULT_INSTALL}/..
     install_appimage.files = $${APPIMAGE}
@@ -509,15 +482,10 @@ linux : !CONFIG(debug, debug|release) : contains(DEFINES, QV_PORTABLE) {
 #        install_apprun.depends = install_install_deploy_files
 #    }
 
-    install_shaders.path = $${MY_DEFAULT_INSTALL}/shared/shaders
-    install_shaders.files = $$SHADERS
     install_db.path = $${MY_DEFAULT_INSTALL}/var/database
     install_db.files = $$DBS $$DBBIN
 
     INSTALLS += install_db
-    !contains(DEFINES, QV_WITHOUT_OPENGL) {
-        INSTALLS += install_shaders
-    }
 }
 
 # not portable, install into /usr/local/bin
@@ -551,17 +519,17 @@ linux : !CONFIG(debug, debug|release) : !contains(DEFINES, QV_PORTABLE) {
 
     install_assoc_icons.path = $${QV_SHARED_PATH}/QuickViewer/icons
     install_assoc_icons.files = \
-        ../associate-files/icons/qv_apng.ico \
-        ../associate-files/icons/qv_bmp.ico \
-        ../associate-files/icons/qv_dds.ico \
-        ../associate-files/icons/qv_gif.ico \
-        ../associate-files/icons/qv_icon.ico \
-        ../associate-files/icons/qv_jpeg.ico \
-        ../associate-files/icons/qv_png.ico \
-        ../associate-files/icons/qv_raw.ico \
-        ../associate-files/icons/qv_tga.ico \
-        ../associate-files/icons/qv_tiff.ico \
-        ../associate-files/icons/qv_webp.ico \
+        ../../components/file-association/icons/qv_apng.ico \
+        ../../components/file-association/icons/qv_bmp.ico \
+        ../../components/file-association/icons/qv_dds.ico \
+        ../../components/file-association/icons/qv_gif.ico \
+        ../../components/file-association/icons/qv_icon.ico \
+        ../../components/file-association/icons/qv_jpeg.ico \
+        ../../components/file-association/icons/qv_png.ico \
+        ../../components/file-association/icons/qv_raw.ico \
+        ../../components/file-association/icons/qv_tga.ico \
+        ../../components/file-association/icons/qv_tiff.ico \
+        ../../components/file-association/icons/qv_webp.ico \
 
     INSTALLS += install_target install_libs install_deploy_files install_translations install_assoc_icons
 }
@@ -603,15 +571,8 @@ macos : !CONFIG(debug, debug|release) {
 
     INSTALLS += install_target install_libs install_desktop install_deploy_files install_translations install_db install_dmg install_rename_dmg
 
-    install_shaders.path = $${MY_DEFAULT_INSTALL}/shared/shaders
-    install_shaders.files = $${MY_DEFAULT_INSTALL}/Contents/Resources/shaders
     install_db.path = $${MY_DEFAULT_INSTALL}/Contents/Resources
     install_db.files = $$DBS $$DBBIN
 
     INSTALLS += install_db
-    !contains(DEFINES, QV_WITHOUT_OPENGL) {
-        INSTALLS += install_shaders
-    }
 }
-
-OTHER_FILES += SHADERS

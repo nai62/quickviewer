@@ -5,7 +5,10 @@
 ReadProgressStore::ReadProgressStore(QObject *parent)
     : QObject(parent)
 {
-    connect(&m_initializeWatcher, SIGNAL(finished()), SLOT(handleInitializationFinished()));
+    connect(&m_initializeWatcher,
+            &QFutureWatcher<ReadProgressMap>::finished,
+            this,
+            &ReadProgressStore::handleInitializationFinished);
     QFuture<ReadProgressMap> future = QtConcurrent::run(&ReadProgressStore::initializeAsync);
     m_initializeWatcher.setFuture(future);
 }
@@ -21,7 +24,7 @@ void ReadProgressStore::save()
     //settings.setIniCodec(QTextCodec::codecForName("UTF-8"));
 
     QStringList groupNames;
-    foreach (const ReadProgress &progress, m_progressByVolumePath.values()) {
+    for (const ReadProgress &progress : m_progressByVolumePath.values()) {
         QString group = QString("Volume_%1").arg(groupNames.size() + 1, 4, 10, QChar('0'));
         settings.beginGroup(group);
         settings.setValue("Title", progress.volumeTitle);
@@ -43,7 +46,7 @@ ReadProgressStore::ReadProgressMap ReadProgressStore::initializeAsync()
 
     ReadProgressMap result;
     QStringList groups = settings.childGroups();
-    foreach (const QString g, groups) {
+    for (const QString &g : groups) {
         settings.beginGroup(g);
         QString path = settings.value("Path", "").toString();
         if (path.isEmpty()) {

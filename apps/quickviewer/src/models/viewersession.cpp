@@ -562,7 +562,7 @@ bool ViewerSession::nextVolume()
     bool beforeMatch = true;
     bool loaded = false;
     int preloadCount = 0;
-    foreach (const QString &volumeName, m_volumeNames) {
+    for (const QString &volumeName : m_volumeNames) {
         if (beforeMatch) {
             if (volumeName == currentVolumeName) {
                 beforeMatch = false;

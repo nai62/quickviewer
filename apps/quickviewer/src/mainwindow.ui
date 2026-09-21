@@ -293,8 +293,6 @@
      <addaction name="separator"/>
      <addaction name="actionShaderCpuLanczos3"/>
      <addaction name="actionShaderNearestNeighbor"/>
-     <addaction name="actionShaderBicubic"/>
-     <addaction name="actionShaderLanczos"/>
     </widget>
     <addaction name="menu_Sort_by"/>
      <addaction name="separator"/>
@@ -330,7 +328,6 @@
     <addaction name="menuChange_Language"/>
     <addaction name="separator"/>
     <addaction name="actionRegisterFileAssociations"/>
-    <addaction name="actionRegisterFileAssociationsAsAdministrator"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -389,8 +386,6 @@
      <addaction name="separator"/>
      <addaction name="actionShaderCpuLanczos3"/>
      <addaction name="actionShaderNearestNeighbor"/>
-     <addaction name="actionShaderLanczos"/>
-     <addaction name="actionShaderBicubic"/>
     </widget>
     <widget class="QMenu" name="menuEdit_the_image">
      <property name="title">
@@ -768,22 +763,6 @@
     <string extracomment="Menu to resize the image by bilinear interpolation by GPU">&amp;Bilinear interpolation (fast)</string>
    </property>
   </action>
-  <action name="actionShaderBicubic">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string extracomment="Menu for resizing image by bicubic interpolation by GPU">Bi&amp;cubic interpolation (slow)</string>
-   </property>
-  </action>
-  <action name="actionShaderLanczos">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string extracomment="Menu for resizing image by Lanczos interpolation by GPU">&amp;Lanczos interpolation (very slow)</string>
-   </property>
-  </action>
   <action name="actionShaderNearestNeighbor">
    <property name="checkable">
     <bool>true</bool>
@@ -1084,11 +1063,6 @@
    </property>
    <property name="text">
     <string extracomment="A function to display a confirmation screen when moving the currently displayed image to Recycle Bin">Confirm moving image to &amp;Recycle Bin</string>
-   </property>
-  </action>
-  <action name="actionRegisterFileAssociationsAsAdministrator">
-   <property name="text">
-    <string extracomment="Ability to associate QuickViewer and image files on Explorer (Host Global)">File Associations... (administrator)</string>
    </property>
   </action>
   <action name="actionContextMenu">
@@ -1944,38 +1918,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionShaderBicubic</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>handleShaderBicubicActionTriggered()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>350</x>
-     <y>294</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionShaderLanczos</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>handleShaderLanczosActionTriggered()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>350</x>
-     <y>294</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>actionMaximizeOrNormal</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
@@ -2520,22 +2462,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionRegisterFileAssociationsAsAdministrator</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>handleRegisterFileAssociationsAsAdministratorActionTriggered()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>350</x>
-     <y>294</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>actionContextMenu</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
@@ -3056,8 +2982,6 @@
   <slot>handleDeletePageActionTriggered()</slot>
   <slot>handleShaderNearestNeighborActionTriggered()</slot>
   <slot>handleShaderBilinearActionTriggered()</slot>
-  <slot>handleShaderBicubicActionTriggered()</slot>
-  <slot>handleShaderLanczosActionTriggered()</slot>
   <slot>handleMaximizeOrNormalActionTriggered()</slot>
   <slot>handleRestoreWindowStateActionTriggered(bool)</slot>
   <slot>handleSlideShowActionTriggered()</slot>

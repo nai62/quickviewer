@@ -96,7 +96,7 @@ void ManageDatabaseDialog::resetCatalogList()
 {
     ui->treeWidget->clear();
     // Existing catalogs
-    foreach (int id, m_catalogs.keys()) {
+    for (int id : m_catalogs.keys()) {
         const CatalogRecord &catalog = m_catalogs[id];
         QTreeWidgetItem *item = new QTreeWidgetItem;
         item->setText(0, catalog.name);
@@ -108,7 +108,7 @@ void ManageDatabaseDialog::resetCatalogList()
     // Making catalogs
     {
         int cnt = -100;
-        foreach (const CatalogRecord &catalog, m_makeCatalogs) {
+        for (const CatalogRecord &catalog : m_makeCatalogs) {
             QTreeWidgetItem *item = new QTreeWidgetItem;
             item->setText(0, "* " + catalog.name);
             item->setText(1,
@@ -205,7 +205,7 @@ void ManageDatabaseDialog::handleCatalogCreated(const CatalogRecord cr)
     }
     m_catalogs[cr.id] = cr;
     int i = 0;
-    foreach (const CatalogRecord &c, m_makeCatalogs) {
+    for (const CatalogRecord &c : m_makeCatalogs) {
         if (cr.path == c.path) {
             break;
         }
@@ -224,21 +224,26 @@ void ManageDatabaseDialog::handleCatalogCreationFinished()
         return;
     }
     disconnect(m_thumbManager,
-               SIGNAL(catalogCreated(CatalogRecord)),
+               &ThumbnailManager::catalogCreated,
                this,
-               SLOT(handleCatalogCreated(CatalogRecord)));
-    disconnect(m_catalogWatcher, SIGNAL(finished()), this, SLOT(handleCatalogCreationFinished()));
+               &ManageDatabaseDialog::handleCatalogCreated);
     disconnect(m_catalogWatcher,
-               SIGNAL(progressRangeChanged(int, int)),
+               &QFutureWatcher<QList<CatalogRecord>>::finished,
+               this,
+               &ManageDatabaseDialog::handleCatalogCreationFinished);
+    disconnect(m_catalogWatcher,
+               &QFutureWatcher<QList<CatalogRecord>>::progressRangeChanged,
                ui->progressBar,
-               SLOT(setRange(int, int)));
-    disconnect(
-        m_catalogWatcher, SIGNAL(progressValueChanged(int)), ui->progressBar, SLOT(setValue(int)));
+               &QProgressBar::setRange);
+    disconnect(m_catalogWatcher,
+               &QFutureWatcher<QList<CatalogRecord>>::progressValueChanged,
+               ui->progressBar,
+               &QProgressBar::setValue);
     //  disconnect(m_catalogWatcher, SIGNAL(progressTextChanged(QString)), ui->progressBar, SLOT(setWindowTitle(QString)));
     disconnect(m_catalogWatcher,
-               SIGNAL(progressTextChanged(QString)),
+               &QFutureWatcher<QList<CatalogRecord>>::progressTextChanged,
                ui->volumeNameLabel,
-               SLOT(setText(QString)));
+               &QLabel::setText);
 
     m_catalogWatcher = nullptr;
 
@@ -263,40 +268,45 @@ void ManageDatabaseDialog::handleCancelButtonClicked()
     }
     if (!m_catalogWatcher) {
         connect(m_thumbManager,
-                SIGNAL(catalogCreated(CatalogRecord)),
+                &ThumbnailManager::catalogCreated,
                 this,
-                SLOT(handleCatalogCreated(CatalogRecord)));
+                &ManageDatabaseDialog::handleCatalogCreated);
         m_catalogWatcher = m_thumbManager->createCatalogAsync(m_makeCatalogs);
-        connect(m_catalogWatcher, SIGNAL(finished()), this, SLOT(handleCatalogCreationFinished()));
         connect(m_catalogWatcher,
-                SIGNAL(progressRangeChanged(int, int)),
+                &QFutureWatcher<QList<CatalogRecord>>::finished,
+                this,
+                &ManageDatabaseDialog::handleCatalogCreationFinished);
+        connect(m_catalogWatcher,
+                &QFutureWatcher<QList<CatalogRecord>>::progressRangeChanged,
                 ui->progressBar,
-                SLOT(setRange(int, int)));
+                &QProgressBar::setRange);
         connect(m_catalogWatcher,
-                SIGNAL(progressValueChanged(int)),
+                &QFutureWatcher<QList<CatalogRecord>>::progressValueChanged,
                 ui->progressBar,
-                SLOT(setValue(int)));
+                &QProgressBar::setValue);
         connect(m_catalogWatcher,
-                SIGNAL(progressTextChanged(QString)),
+                &QFutureWatcher<QList<CatalogRecord>>::progressTextChanged,
                 ui->volumeNameLabel,
-                SLOT(setText(QString)));
+                &QLabel::setText);
 
         progressButtonStates();
     } else {
         disconnect(m_thumbManager,
-                   SIGNAL(catalogCreated(CatalogRecord)),
+                   &ThumbnailManager::catalogCreated,
                    this,
-                   SLOT(handleCatalogCreated(CatalogRecord)));
-        disconnect(
-            m_catalogWatcher, SIGNAL(finished()), this, SLOT(handleCatalogCreationFinished()));
+                   &ManageDatabaseDialog::handleCatalogCreated);
         disconnect(m_catalogWatcher,
-                   SIGNAL(progressRangeChanged(int, int)),
-                   ui->progressBar,
-                   SLOT(setRange(int, int)));
+                   &QFutureWatcher<QList<CatalogRecord>>::finished,
+                   this,
+                   &ManageDatabaseDialog::handleCatalogCreationFinished);
         disconnect(m_catalogWatcher,
-                   SIGNAL(progressValueChanged(int)),
+                   &QFutureWatcher<QList<CatalogRecord>>::progressRangeChanged,
                    ui->progressBar,
-                   SLOT(setValue(int)));
+                   &QProgressBar::setRange);
+        disconnect(m_catalogWatcher,
+                   &QFutureWatcher<QList<CatalogRecord>>::progressValueChanged,
+                   ui->progressBar,
+                   &QProgressBar::setValue);
         m_thumbManager->cancelCreateCatalogAsync();
         m_catalogWatcher = nullptr;
 

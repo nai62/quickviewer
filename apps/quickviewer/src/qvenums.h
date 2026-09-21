@@ -20,9 +20,7 @@ enum class ShaderEffect {
     CpuLanczos4,
 
     NearestNeighbor,
-    Bilinear,
-    Bicubic,
-    Lanczos
+    Bilinear
 };
 Q_ENUM_NS(ShaderEffect)
 

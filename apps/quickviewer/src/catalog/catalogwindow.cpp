@@ -61,9 +61,9 @@ CatalogWindow::CatalogWindow(QWidget *parent, Ui::MainWindow *uiMain)
 
     // SearchCombo
     connect(ui->searchCombo->lineEdit(),
-            SIGNAL(editingFinished()),
+            &QLineEdit::editingFinished,
             this,
-            SLOT(handleSearchLineEditEditingFinished()));
+            &CatalogWindow::handleSearchLineEditEditingFinished);
     ui->searchCombo->lineEdit()->setPlaceholderText(
         tr("Enter a search term and press Enter to search by title.",
            "Gray text that prompts a keyword search of Volume"));
@@ -171,7 +171,7 @@ void CatalogWindow::initTagButtons()
         }
 
         int cnt = 0;
-        foreach (int i, tags.keys()) {
+        for (int i : tags.keys()) {
             buttons << tags[i]->name;
             if (cnt++ >= 7) {
                 break;
@@ -229,7 +229,7 @@ void CatalogWindow::searchByWord(bool doForce)
     //    int cnt = 0;
     m_volumeSearch.clear();
     SearchWords searchwords(search.toLower());
-    foreach (const VolumeThumbRecord &vtr, m_volumes) {
+    for (const VolumeThumbRecord &vtr : m_volumes) {
         if (vtr.thumbnail.isEmpty()) {
             continue;
         }
@@ -378,7 +378,7 @@ void CatalogWindow::handleVolumeListItemDoubleClicked(const QModelIndex &index)
     // reset tag buttons as current book
     QList<TagRecord> tags = m_thumbManager->getTagsFromVolumeId(m_volumeSearch[row]->id);
     QStringList tagtxt;
-    foreach (const TagRecord &t, tags) {
+    for (const TagRecord &t : tags) {
         tagtxt << t.name;
     }
 
@@ -427,7 +427,7 @@ SearchWords::SearchWords(const QString &searchNoCase)
         return;
     }
     isEmpty = false;
-    foreach (const QString &s, searchNoCase.trimmed().split(" ")) {
+    for (const QString &s : searchNoCase.trimmed().split(" ")) {
         if (s.isEmpty()) {
             continue;
         }
@@ -444,12 +444,12 @@ bool SearchWords::match(const QString &targetNoCase)
     if (isEmpty) {
         return true;
     }
-    foreach (const QString &s, matches) {
+    for (const QString &s : matches) {
         if (!targetNoCase.contains(s)) {
             return false;
         }
     }
-    foreach (const QString &s, nomatches) {
+    for (const QString &s : nomatches) {
         if (targetNoCase.contains(s)) {
             return false;
         }

@@ -1,8 +1,13 @@
+# QuickViewer builds only with Qt 6 or later.
+QV_QT_UNSUPPORTED =
+lessThan(QT_MAJOR_VERSION, 6): QV_QT_UNSUPPORTED = 1
+!isEmpty(QV_QT_UNSUPPORTED): error("QuickViewer requires Qt 6 or later, but Qt $$QT_VERSION was found.")
+
+## Qt 6 is built with C++17, and so is everything that links against it.
+CONFIG += c++17
+
 ## Comment out if you don't need to change brightness/contrast/gamma support
 DEFINES += QV_WITH_LUMINOR
-
-## Comment out if you need OpenGL support
-DEFINES += QV_WITHOUT_OPENGL
 
 ## Define when asking for portable operation.
 ## When off, the installation will be done by OS standard method
@@ -17,11 +22,7 @@ DEFINES += QV_PORTABLE
     QV_SHARED_PATH = /usr/local/shared
 }
 
-greaterThan(QT_MAJOR_VERSION, 4) {
-    TARGET_ARCH=$${QT_ARCH}
-} else {
-    TARGET_ARCH=$${QMAKE_HOST.arch}
-}
+TARGET_ARCH = $${QT_ARCH}
 
 win32 {
     contains(TARGET_ARCH, x86_64) {

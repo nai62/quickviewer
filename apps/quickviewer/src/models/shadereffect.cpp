@@ -13,32 +13,14 @@ ShaderEffectKind shaderEffectKind(qvEnums::ShaderEffect effect)
         return ShaderEffectKind::CpuOnly;
     case qvEnums::ShaderEffect::NearestNeighbor:
     case qvEnums::ShaderEffect::Bilinear:
-        return ShaderEffectKind::FixedShader;
-    case qvEnums::ShaderEffect::Bicubic:
-    case qvEnums::ShaderEffect::Lanczos:
-        return ShaderEffectKind::GlShader;
+        return ShaderEffectKind::ViewScaled;
     }
     return ShaderEffectKind::Unprepared;
 }
 
-bool gpuShadersAvailable()
+bool scalesInView(qvEnums::ShaderEffect effect)
 {
-#ifdef QV_WITHOUT_OPENGL
-    return false;
-#else
-    return true;
-#endif
-}
-
-bool shaderEffectAvailable(qvEnums::ShaderEffect effect)
-{
-    return shaderEffectKind(effect) != ShaderEffectKind::GlShader || gpuShadersAvailable();
-}
-
-bool usesGpuRendering(qvEnums::ShaderEffect effect)
-{
-    const ShaderEffectKind kind = shaderEffectKind(effect);
-    return kind == ShaderEffectKind::FixedShader || kind == ShaderEffectKind::GlShader;
+    return shaderEffectKind(effect) == ShaderEffectKind::ViewScaled;
 }
 
 bool resizesOnCpu(qvEnums::ShaderEffect effect)

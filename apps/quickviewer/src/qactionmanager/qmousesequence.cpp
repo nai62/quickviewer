@@ -16,7 +16,7 @@ QMouseValue::QMouseValue(const QString key)
     if (mouse.isEmpty()) {
         return;
     }
-    foreach (const QString &mkey, mouse.split("+")) {
+    for (const QString &mkey : mouse.split("+")) {
         if (mkey == "LeftButton") {
             Buttons |= Qt::LeftButton;
         } else if (mkey == "RightButton") {
@@ -84,7 +84,7 @@ QMouseSequence::QMouseSequence(const QString seq)
     QStringList seqs = seq.split(", ");
     std::sort(seqs.begin(), seqs.end());
     m_seq = seqs.join(", ");
-    foreach (const QString &s, seqs) {
+    for (const QString &s : seqs) {
         m_values.append(QMouseValue(s));
     }
 }
@@ -92,8 +92,8 @@ QMouseSequence::QMouseSequence(const QString seq)
 QKeySequence::SequenceMatch QMouseSequence::matches(const QMouseSequence &seq) const
 {
     int cnt = 0;
-    foreach (const QMouseValue &v1, m_values) {
-        foreach (const QMouseValue &v2, seq.m_values) {
+    for (const QMouseValue &v1 : m_values) {
+        for (const QMouseValue &v2 : seq.m_values) {
             if (v1 == v2) {
                 cnt++;
             }

@@ -1,5 +1,4 @@
 #include <QtGui>
-//#include <QtOpenGL>
 #include "fileloader7zarchive.h"
 
 #include "qvapplication.h"
@@ -22,6 +21,17 @@ namespace {
 constexpr QLatin1String DataDirectory(".quickviewer");
 #endif
 
+#if defined(Q_OS_WIN)
+// Where a Windows build keeps its data is a property of the package it was
+// built for: the portable package stores the files beside the executable, and
+// the build the installer lays down uses the user's data directory.
+#    ifdef QV_PORTABLE
+constexpr bool PortableBuild = true;
+#    else
+constexpr bool PortableBuild = false;
+#    endif
+#endif
+
 } // namespace
 
 QVApplication::QVApplication(int &argc, char **argv)
@@ -41,7 +51,7 @@ QVApplication::QVApplication(int &argc, char **argv)
       m_qtbaseLanguageSelector("qt_", getTranslationPath())
 #if defined(Q_OS_WIN)
       ,
-      m_portable(true)
+      m_portable(PortableBuild)
 #endif
 {
     // Qt's own application setup is finished by now; everything after this
@@ -49,17 +59,8 @@ QVApplication::QVApplication(int &argc, char **argv)
     StartupProfiler::mark("application.base-ready");
     setApplicationVersion(APP_VERSION);
     setApplicationName(APP_NAME);
-    //    qDebug() << "TranslationsPath" << QLibraryInfo::location(QLibraryInfo::TranslationsPath);
 
 #if defined(Q_OS_WIN)
-    // Since there is an evil implementation that forcibly installs QuickViewer in Windows "C:/Program Files", the specification is changed as follows.
-    // Once assuming that it is a Portable environment, if there is QuickViewer in "C:/Program Files", it corresponds by denying it.
-    QByteArray programFiles = qgetenv("ProgramFiles");
-    QString appdir = applicationDirPath();
-    if (QDir::toNativeSeparators(appdir).startsWith(programFiles)) {
-        m_portable = false;
-    }
-
     if (!m_portable)
 #endif
     {
@@ -97,11 +98,10 @@ QVApplication::QVApplication(int &argc, char **argv)
 
     m_languageSelector.initialize();
     m_qtbaseLanguageSelector.copyLanguages(m_languageSelector.Languages());
-    //m_settings->setIniCodec(QTextCodec::codecForName("UTF-8"));
     connect(&m_languageSelector,
-            SIGNAL(languageChanged(QString)),
+            &LanguageManager::languageChanged,
             &m_qtbaseLanguageSelector,
-            SLOT(resetTranslator(QString)));
+            &LanguageManager::resetTranslator);
     StartupProfiler::mark("application.languages-ready");
     registerDefaultKeyMap();
     registerDefaultMouseMap();
@@ -175,7 +175,7 @@ QString QVApplication::defaultStatusTextFormat()
 QString QVApplication::getTranslationPath()
 {
     // ATTENTION:
-    // default 'QLibraryInfo::location(TranslationsPath)' is "[QTDIR]/translations"
+    // default 'QLibraryInfo::path(TranslationsPath)' is "[QTDIR]/translations"
 #if defined(Q_OS_WIN) || defined(_DEBUG)
     // Windows packages and local out-of-source builds deploy QuickViewer's
     // own catalogs beside the executable. The Qt installation directory only
@@ -183,7 +183,7 @@ QString QVApplication::getTranslationPath()
     // the untranslated English UI.
     return getApplicationFilePath("translations");
 #else
-    return QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+    return QLibraryInfo::path(QLibraryInfo::TranslationsPath);
 #endif
 }
 
@@ -382,10 +382,6 @@ void QVApplication::registerActions(Ui::MainWindow *ui)
     // Shader
     groupName = tr("Shader", "Shader Action Group");
     m_keyActions.registerAction("actionShaderBilinear", ui->actionShaderBilinear, groupName);
-    if (gpuShadersAvailable()) {
-        m_keyActions.registerAction("actionShaderBicubic", ui->actionShaderBicubic, groupName);
-        m_keyActions.registerAction("actionShaderLanczos", ui->actionShaderLanczos, groupName);
-    }
     m_keyActions.registerAction("actionShaderCpuBicubic", ui->actionShaderCpuBicubic, groupName);
     m_keyActions.registerAction("actionShaderCpuSpline16", ui->actionShaderCpuSpline16, groupName);
     m_keyActions.registerAction("actionShaderCpuSpline36", ui->actionShaderCpuSpline36, groupName);
@@ -646,7 +642,7 @@ void QVApplication::loadSettings()
 
     // KeyConfig
     m_settings->beginGroup("KeyConfig");
-    foreach (const QString &action, m_settings->childKeys()) {
+    for (const QString &action : m_settings->childKeys()) {
         QString str = m_settings->value(action, "").toString();
         m_keyActions.updateKey(action, QKeySequence(str), true);
     }
@@ -654,7 +650,7 @@ void QVApplication::loadSettings()
 
     // MouseConfig
     m_settings->beginGroup("MouseConfig");
-    foreach (const QString &action, m_settings->childKeys()) {
+    for (const QString &action : m_settings->childKeys()) {
         QString str = m_settings->value(action, "").toString();
         m_mouseActions.updateKey(action, QMouseSequence(str), true);
     }
@@ -664,8 +660,6 @@ void QVApplication::loadSettings()
     m_settings->beginGroup("Shader");
     QString effectstring = m_settings->value("Effect", "Bilinear").toString();
     m_effect = ShaderManager::stringToShaderEffect(effectstring);
-    m_bicubicShaderPath = m_settings->value("BicubicShaderPath", "shaders/bicubic.frag").toString();
-    m_lanczosShaderPath = m_settings->value("LanczosShaderPath", "shaders/lanczos.frag").toString();
     m_settings->endGroup();
 
     // Others
@@ -814,14 +808,14 @@ void QVApplication::saveSettings()
     m_settings->endGroup();
 
     m_settings->beginGroup("KeyConfig");
-    foreach (const QString &action, m_keyActions.keyMaps().keys()) {
+    for (const QString &action : m_keyActions.keyMaps().keys()) {
         QKeySequence seqs = m_keyActions.keyMaps()[action];
         m_settings->setValue(action, seqs.toString());
     }
     m_settings->endGroup();
 
     m_settings->beginGroup("MouseConfig");
-    foreach (const QString &action, m_mouseActions.keyMaps().keys()) {
+    for (const QString &action : m_mouseActions.keyMaps().keys()) {
         QMouseSequence seqs = m_mouseActions.keyMaps()[action];
         m_settings->setValue(action, seqs.toString());
     }
@@ -829,8 +823,6 @@ void QVApplication::saveSettings()
 
     m_settings->beginGroup("Shader");
     m_settings->setValue("Effect", ShaderManager::shaderEffectToString(m_effect));
-    m_settings->setValue("BicubicShaderPath", m_bicubicShaderPath);
-    m_settings->setValue("LanczosShaderPath", m_lanczosShaderPath);
     m_settings->endGroup();
 
     m_settings->beginGroup("Others");

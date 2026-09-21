@@ -9,10 +9,7 @@ QT       -= core
 TARGET = easyexif
 TEMPLATE = lib
 CONFIG += staticlib
-
-*g++* {
-    QMAKE_CXXFLAGS += -std=c++11
-}
+CONFIG += c++17
 
 EASYEXIF_ROOT = $$clean_path($$PWD/../../../third_party/easyexif)
 

@@ -15,10 +15,10 @@ TextTranslator::TextTranslator(QObject *parent, QString path, TextTranslator *re
     // translate("Context", "Source Text") --> "Translated Text"
     //
     QStringList groups = settings.childGroups();
-    foreach (const QString g, groups) {
+    for (const QString &g : groups) {
         settings.beginGroup(g);
         InnerMap map;
-        foreach (const QString &key, settings.allKeys()) {
+        for (const QString &key : settings.allKeys()) {
             QString reversed = reverse != nullptr ? reverse->getString(g, key) : "";
             QString message = settings.value(key, reversed).toString();
             map.insert(reversed.isEmpty() ? key : reversed, message);

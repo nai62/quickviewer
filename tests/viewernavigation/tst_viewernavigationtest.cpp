@@ -928,7 +928,7 @@ private slots:
         QCOMPARE(PageDisplayFormatter::signageText({}, 4, 12), QString());
     }
 
-    void shaderEffectVocabularyIsBuildIndependent()
+    void shaderEffectVocabularyClassifiesEveryEffect()
     {
         struct EffectCase
         {
@@ -942,22 +942,15 @@ private slots:
             {qvEnums::ShaderEffect::CpuSpline36, ShaderEffectKind::CpuOnly},
             {qvEnums::ShaderEffect::CpuLanczos3, ShaderEffectKind::CpuOnly},
             {qvEnums::ShaderEffect::CpuLanczos4, ShaderEffectKind::CpuOnly},
-            {qvEnums::ShaderEffect::NearestNeighbor, ShaderEffectKind::FixedShader},
-            {qvEnums::ShaderEffect::Bilinear, ShaderEffectKind::FixedShader},
-            {qvEnums::ShaderEffect::Bicubic, ShaderEffectKind::GlShader},
-            {qvEnums::ShaderEffect::Lanczos, ShaderEffectKind::GlShader},
+            {qvEnums::ShaderEffect::NearestNeighbor, ShaderEffectKind::ViewScaled},
+            {qvEnums::ShaderEffect::Bilinear, ShaderEffectKind::ViewScaled},
         };
         for (const EffectCase &testCase : cases) {
             QCOMPARE(shaderEffectKind(testCase.effect), testCase.kind);
-            QCOMPARE(usesGpuRendering(testCase.effect),
-                     testCase.kind == ShaderEffectKind::FixedShader ||
-                         testCase.kind == ShaderEffectKind::GlShader);
+            QCOMPARE(scalesInView(testCase.effect), testCase.kind == ShaderEffectKind::ViewScaled);
             QCOMPARE(resizesOnCpu(testCase.effect),
                      testCase.kind == ShaderEffectKind::Unprepared ||
                          testCase.kind == ShaderEffectKind::CpuOnly);
-            // Only the fragment shader effects depend on the build.
-            QCOMPARE(shaderEffectAvailable(testCase.effect),
-                     testCase.kind != ShaderEffectKind::GlShader || gpuShadersAvailable());
         }
 
         QCOMPARE(cpuFilterMode(qvEnums::ShaderEffect::CpuBicubic), QZimg::ResizeBicubic);
@@ -968,7 +961,6 @@ private slots:
         // Effects that do not resize on the CPU keep the default filter.
         QCOMPARE(cpuFilterMode(qvEnums::ShaderEffect::UnPrepared), QZimg::ResizeBicubic);
         QCOMPARE(cpuFilterMode(qvEnums::ShaderEffect::Bilinear), QZimg::ResizeBicubic);
-        QCOMPARE(cpuFilterMode(qvEnums::ShaderEffect::Lanczos), QZimg::ResizeBicubic);
     }
 
     void shaderEffectStringsRoundTripThroughTheVocabulary()
@@ -982,18 +974,19 @@ private slots:
             qvEnums::ShaderEffect::CpuLanczos4,
             qvEnums::ShaderEffect::NearestNeighbor,
             qvEnums::ShaderEffect::Bilinear,
-            qvEnums::ShaderEffect::Bicubic,
-            qvEnums::ShaderEffect::Lanczos,
         };
         for (const qvEnums::ShaderEffect effect : effects) {
             const QString name = ShaderManager::shaderEffectToString(effect);
             QVERIFY(!name.isEmpty());
-            // An effect this build cannot render falls back to Bilinear.
-            const qvEnums::ShaderEffect expected =
-                shaderEffectAvailable(effect) ? effect : qvEnums::ShaderEffect::Bilinear;
-            QCOMPARE(ShaderManager::stringToShaderEffect(name), expected);
+            QCOMPARE(ShaderManager::stringToShaderEffect(name), effect);
         }
         QCOMPARE(ShaderManager::stringToShaderEffect(QStringLiteral("NoSuchEffect")),
+                 qvEnums::ShaderEffect::Bilinear);
+        // Settings files can still name the removed GPU effects, which have to
+        // fall back to the default rather than to an unknown value.
+        QCOMPARE(ShaderManager::stringToShaderEffect(QStringLiteral("Bicubic")),
+                 qvEnums::ShaderEffect::Bilinear);
+        QCOMPARE(ShaderManager::stringToShaderEffect(QStringLiteral("Lanczos")),
                  qvEnums::ShaderEffect::Bilinear);
     }
 

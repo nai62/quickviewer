@@ -172,7 +172,6 @@ int main(int argc, char *argv[])
             }
             return 0;
         }
-        pipe.waitAsync();
 
         StartupProfiler::mark("mainwindow.construct.begin");
 #ifdef Q_OS_WIN

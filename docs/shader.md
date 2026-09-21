@@ -2,13 +2,13 @@
 layout: default
 comments: true
 categories: jekyll disqus
-title: Shaders
+title: Scaling filters
 # other options
 ---
 
-# [](#header-1)Shaders
+# [](#header-1)Scaling filters
 
-Changing the options in the QuickViewer's Shader menu will change the look of your image.
+Changing the options in the QuickViewer's Rendering menu will change the look of your image.
 This is because the interpolation method to reduce the image is changed.
 
 On this page, we will explain the difference in each option.
@@ -17,7 +17,7 @@ On this page, we will explain the difference in each option.
 
 - Normally, in many cases **Bilinear interpolation** will be OK.
 - If you are hard to read a fine letter or you are reading Japanese comics please try **Bicubic interpolation by CPU**.
-- If you are dissatisfied with the above options, please try **Bicubic or Lanczos interpolation**.
+- If you are dissatisfied with the above options, please try **Spline36 or Lanczos interpolation by CPU**.
 
 ## About the sample image
 
@@ -36,25 +36,16 @@ It is a standard interpolation method of QuickViewer, and it is enough for many 
 ![1 Bilinear interpolation](shurink-1-bilinear.png)
 
 
-### 2. Bicubic and Lanczos interpolation
+### 2. Bicubic, Spline and Lanczos interpolation by CPU
 
-With these options, we try to draw higher quality by using Shader Program (Fragment Shader).
-For 50-100% magnification, it seems that it often shows better results than bilinear interpolation.
-
-These options do not work properly on some PCs, as the load on the GPU is higher than usual.
-
-![2.1 Bicubic interpolation](shurink-2-bicubic.png)
-![2.2 Lanczos interpolation](shurink-3-lanczos.png)
-
-
-### 3. Bicubic interpolation by CPU
-
-This option is shrunk by the CPU, not the GPU. It is usually the best quality. Especially in Japanese manga.
-Because it does not use the function of GPU, it will work normally on old PC.
+With these options the page is shrunk by the CPU instead of being scaled by the
+view while it draws. It is usually the best quality, especially in Japanese
+manga. Because they do not use the functions of the GPU, they work normally on
+an old PC.
 
 You may feel dissatisfied if drawing is not too fast, but we still do our best :)
 
-![4 Bicubic interpolation by CPU](shurink-4-bicubic-by-cpu.png)
+![2 Bicubic interpolation by CPU](shurink-4-bicubic-by-cpu.png)
 
 ## Comparison of reduction results
 

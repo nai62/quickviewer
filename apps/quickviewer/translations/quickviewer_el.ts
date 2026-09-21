@@ -475,25 +475,25 @@
         <translation>Εάν πατήσετε το κουμπί OK θα καταχωρηθεί στο μητρώο. Πατήστε Ακύρωση αν δεν χρειάζεται.</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="144"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="127"/>
         <source>Sony RAW format</source>
         <comment>description of File format on Explorer(.arw)</comment>
         <translation>Μορφή Sony Raw</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="137"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="120"/>
         <source>Nikon RAW format</source>
         <comment>description of File format on Explorer(.nef)</comment>
         <translation>Μορφή Nicon Raw</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="116"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="99"/>
         <source>HEIF Image</source>
         <comment>description of File format on Explorer(.heic, .heif)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="123"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="106"/>
         <source>Canon RAW format</source>
         <comment>description of File format on Explorer(.cr2)</comment>
         <translation>Μορφη Canon Raw</translation>
@@ -510,7 +510,7 @@
         <translation>Εικόνα WebP (*.webp)</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="130"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="113"/>
         <source>Adobe Digital Negative Format</source>
         <comment>description of File format on Explorer(.dng)</comment>
         <translation></translation>
@@ -530,8 +530,8 @@
         <translation>Μορφή Canon Raw (*.crw, *.cr2)</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="241"/>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="283"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="240"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="292"/>
         <source>&amp;View with QuickViewer</source>
         <comment>Menu displayed when right clicking on file in Explorer</comment>
         <translation>Πρ&amp;οβολή με το QuickViewer</translation>
@@ -572,7 +572,7 @@
         <translation>Μορφή Sony Raw (*.arw)</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="62"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="45"/>
         <source>Truevision Graphics Adapter Format Image</source>
         <comment>description of File format on Explorer(.tga)</comment>
         <translation>Εικόνα μορφής Truevision Graphics Adapter</translation>
@@ -608,55 +608,55 @@
         <translation>για Ricoh, Casio, Pentax, Nokia, Leica κλπ...</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="50"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="33"/>
         <source>JPEG Image</source>
         <comment>description of File format on Explorer(.jpeg)</comment>
         <translation>Εικόνα JPEG</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="56"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="39"/>
         <source>PNG File</source>
         <comment>description of File format on Explorer(.png)</comment>
         <translation>Αρχείο PNG</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="70"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="53"/>
         <source>Animated PNG File</source>
         <comment>description of File format on Explorer(.apng)</comment>
         <translation>Αρχεία κινούμενου PNG</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="77"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="60"/>
         <source>Bitmap File</source>
         <comment>description of File format on Explorer(.bmp)</comment>
         <translation>Αρχείο Bitmap</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="84"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="67"/>
         <source>DirectDraw Surface Image</source>
         <comment>description of File format on Explorer(.dds)</comment>
         <translation>Εικόνα DirectDraw Surface</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="90"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="73"/>
         <source>GIF Image</source>
         <comment>description of File format on Explorer(.gif)</comment>
         <translation>Εικόνα GIF</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="97"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="80"/>
         <source>Windows Icon File</source>
         <comment>description of File format on Explorer(.ico)</comment>
         <translation>Αρχείο εικονιδίου των Windows</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="103"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="86"/>
         <source>TIFF image</source>
         <comment>description of File format on Explorer(.tiff)</comment>
         <translation>Εικόνα Tiff</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="109"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="92"/>
         <source>WebP Image</source>
         <comment>description of File format on Explorer(.webp)</comment>
         <translation>Εικόνα WebP</translation>
@@ -679,15 +679,31 @@
     <name>FolderWindow</name>
     <message>
         <location filename="../src/folderview/folderwindow.ui" line="106"/>
-        <location filename="../src/folderview/folderwindow.ui" line="214"/>
+        <location filename="../src/folderview/folderwindow.ui" line="211"/>
         <source>Home</source>
         <extracomment>Button for returning to QuickViewer&apos;s home folder</extracomment>
         <translation>Αρχικός</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="237"/>
+        <location filename="../src/folderview/folderwindow.ui" line="234"/>
         <source>Name</source>
         <translation>Όνομα</translation>
+    </message>
+    <message>
+        <location filename="../src/folderview/folderwindow.ui" line="256"/>
+        <source>Open</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/folderview/folderwindow.ui" line="261"/>
+        <source>Open in &amp;Explorer</source>
+        <extracomment>Menu that displays Explorer with the currently displayed image file selected</extracomment>
+        <translation type="unfinished">Άνοιγμα στην &amp;εξερεύνηση</translation>
+    </message>
+    <message>
+        <location filename="../src/folderview/folderwindow.ui" line="266"/>
+        <source>Copy path</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Next</source>
@@ -716,7 +732,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="223"/>
+        <location filename="../src/folderview/folderwindow.ui" line="220"/>
         <source>Parent</source>
         <translation>Στον γονικό φάκελο</translation>
     </message>
@@ -728,25 +744,26 @@
         <translation>Κορυφαίος φάκελος</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="249"/>
+        <location filename="../src/folderview/folderwindow.ui" line="246"/>
         <source>Other</source>
         <translation>Άλλα</translation>
     </message>
     <message>
         <location filename="../src/folderview/folderwindow.ui" line="155"/>
-        <location filename="../src/folderview/folderwindow.ui" line="232"/>
+        <location filename="../src/folderview/folderwindow.ui" line="229"/>
+        <location filename="../src/folderview/folderwindow.ui" line="271"/>
         <source>Reload</source>
         <translation>Επαναφόρτωση</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="69"/>
-        <location filename="../src/folderview/folderwindow.cpp" line="103"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="121"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="158"/>
         <source>History</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="70"/>
-        <location filename="../src/folderview/folderwindow.cpp" line="104"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="122"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="159"/>
         <source>Open history</source>
         <translation type="unfinished"></translation>
     </message>
@@ -755,7 +772,7 @@
         <translation type="vanished">Τροποποίηση</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="254"/>
+        <location filename="../src/folderview/folderwindow.ui" line="251"/>
         <source>Set as home folder</source>
         <translation>Ορισμός αυτού του φακέλου ως αρχικού</translation>
     </message>
@@ -778,8 +795,8 @@
         <translation type="vanished">Αλλαγή μεθόδου ταξινόμησης</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.cpp" line="73"/>
-        <location filename="../src/folderview/folderwindow.cpp" line="329"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="125"/>
+        <location filename="../src/folderview/folderwindow.cpp" line="439"/>
         <source>No folders or archives found.</source>
         <comment>Display when there is no display item in Folder Window</comment>
         <translation>Δεν βρέθηκαν φάκελοι ή αρχειοθήκες</translation>
@@ -901,90 +918,90 @@
 <context>
     <name>ImageView</name>
     <message>
-        <location filename="../src/imageview.cpp" line="93"/>
+        <location filename="../src/imageview.cpp" line="81"/>
         <source>No Image Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="93"/>
+        <location filename="../src/imageview.cpp" line="81"/>
         <source>Open an image, folder, or archive to begin.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="105"/>
+        <location filename="../src/imageview.cpp" line="93"/>
         <source>No Viewable Images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="107"/>
+        <location filename="../src/imageview.cpp" line="95"/>
         <source>No supported images were found in this folder.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="108"/>
+        <location filename="../src/imageview.cpp" line="96"/>
         <source>No supported images were found in this archive.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="111"/>
+        <location filename="../src/imageview.cpp" line="99"/>
         <source>Cannot Find Item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="112"/>
+        <location filename="../src/imageview.cpp" line="100"/>
         <source>The selected file or folder does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="115"/>
+        <location filename="../src/imageview.cpp" line="103"/>
         <source>Permission Denied</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="116"/>
+        <location filename="../src/imageview.cpp" line="104"/>
         <source>The selected item cannot be read because access was denied.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="119"/>
+        <location filename="../src/imageview.cpp" line="107"/>
         <source>Cannot Display Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="120"/>
+        <location filename="../src/imageview.cpp" line="108"/>
         <source>The image could not be decoded.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../src/imageview.cpp" line="111"/>
+        <location filename="../src/imageview.cpp" line="115"/>
+        <location filename="../src/imageview.cpp" line="119"/>
         <location filename="../src/imageview.cpp" line="123"/>
-        <location filename="../src/imageview.cpp" line="127"/>
-        <location filename="../src/imageview.cpp" line="131"/>
-        <location filename="../src/imageview.cpp" line="135"/>
         <source>Cannot Open Archive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="124"/>
+        <location filename="../src/imageview.cpp" line="112"/>
         <source>This archive is password-protected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="128"/>
+        <location filename="../src/imageview.cpp" line="116"/>
         <source>This archive format is not supported.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="132"/>
+        <location filename="../src/imageview.cpp" line="120"/>
         <source>This archive is damaged or invalid.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="136"/>
+        <location filename="../src/imageview.cpp" line="124"/>
         <source>Cannot Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="137"/>
+        <location filename="../src/imageview.cpp" line="125"/>
         <source>The selected item could not be read.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1038,8 +1055,8 @@
         <translation>Τροχός</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="292"/>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="310"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="291"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="309"/>
         <source>Key sequence has potential conflicts.</source>
         <comment>Text to be displayed when the entered shortcut key conflicts with another shortcut key</comment>
         <translation>Η ακολουθία του πλήκτρου έχει πιθανές διενέξεις.</translation>
@@ -1050,8 +1067,8 @@
         <translation>Κύλιση κάτω</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="287"/>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="328"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="286"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="327"/>
         <source>Invalid key sequence.</source>
         <comment>Message when rejecting input contents of inappropriate shortcut key</comment>
         <translation>Μη έγκυρη ακολουθία πλήκτρων.</translation>
@@ -1122,19 +1139,19 @@
         <translation>Εντολή</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="205"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="204"/>
         <source>Description</source>
         <comment>Title of the column that displays the meaning of the action to be registered with the shortcut key</comment>
         <translation>Περιγραφή</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="210"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="209"/>
         <source>Current shortcut</source>
         <comment>Title of the column of the content of the shortcut key registered for Action</comment>
         <translation>Τρέχουσα συντόμευση</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="203"/>
+        <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="202"/>
         <source>Group</source>
         <comment>Group of the Action to be registered with the shortcut key</comment>
         <translation type="unfinished"></translation>
@@ -1157,7 +1174,7 @@
         <translation>&amp;Αρχείο</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="337"/>
+        <location filename="../src/mainwindow.ui" line="334"/>
         <source>&amp;Help</source>
         <translation>&amp;Βοήθεια</translation>
     </message>
@@ -1167,13 +1184,13 @@
         <translation>Πρ&amp;οβολή</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="501"/>
+        <location filename="../src/mainwindow.ui" line="496"/>
         <source>E&amp;xit</source>
         <extracomment>End application</extracomment>
         <translation>Έ&amp;ξοδος</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1022"/>
+        <location filename="../src/mainwindow.ui" line="1001"/>
         <source>Open at last-read page</source>
         <extracomment>A setting menu that allows you to advance the page to the point you read when you reopen Volume that you read a part way up again</extracomment>
         <translation>Άνοιγμα σελίδας που ανοίχθηκε στην προεπισκόπηση</translation>
@@ -1184,7 +1201,7 @@
         <translation>QuickViewer</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="704"/>
+        <location filename="../src/mainwindow.ui" line="699"/>
         <source>Previous p&amp;age</source>
         <extracomment>Because there are times when the page is missing due to bookbinding convenience, digital books will fit the left and right pages with this operation</extracomment>
         <translation>Προηγούμενη μόνο μί&amp;α σελίδα</translation>
@@ -1195,257 +1212,256 @@
         <translation type="vanished">Δικυβική CPU μετά τη διγραμμική GPU (κανονικό)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="717"/>
+        <location filename="../src/mainwindow.ui" line="712"/>
         <source>Show &amp;toolbar</source>
         <translation>Εμφάνιση γραμμής ερ&amp;γαλείων</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="528"/>
+        <location filename="../src/mainwindow.ui" line="523"/>
         <source>Zoom &amp;in</source>
         <extracomment>Button for enlarging the currently displayed image</extracomment>
         <translation>Μεγέ&amp;θυνση</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="543"/>
+        <location filename="../src/mainwindow.ui" line="538"/>
         <source>Zoom out</source>
         <translation>Σμίκρυνση</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="876"/>
+        <location filename="../src/mainwindow.ui" line="855"/>
         <source>Load bookmark</source>
         <extracomment>Button to restore saved image page from registered bookmark</extracomment>
         <translation>Φόρτωση σελιδοδείκτη</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="784"/>
         <source>&amp;Lanczos interpolation (very slow)</source>
         <extracomment>Menu for resizing image by Lanczos interpolation by GPU</extracomment>
-        <translation>&amp;Παρεμβολή Lanczos (πολύ αργό)</translation>
+        <translation type="vanished">&amp;Παρεμβολή Lanczos (πολύ αργό)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="750"/>
+        <location filename="../src/mainwindow.ui" line="745"/>
         <source>Stay on &amp;top</source>
         <extracomment>When on it keeps the window always on top</extracomment>
         <translation>Πάντα στην κορυ&amp;φή</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="755"/>
+        <location filename="../src/mainwindow.ui" line="750"/>
         <source>&amp;Copy image to clipboard</source>
         <extracomment>A menu for copying the bitmap of the currently displayed image to the clipboard</extracomment>
         <translation>Αντι&amp;γραφή εικόνας στο πρόχειρο</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="969"/>
+        <location filename="../src/mainwindow.ui" line="948"/>
         <source>Sh&amp;ow/hide menu bar</source>
         <translation>Εμφάνιση /Απόκρυψη βασικής γραμμής μενού</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="867"/>
+        <location filename="../src/mainwindow.ui" line="846"/>
         <source>Manage bookmarks</source>
         <translation>Διαχείριση σελιδοδεικτών</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="609"/>
+        <location filename="../src/mainwindow.ui" line="604"/>
         <source>&amp;Open...</source>
         <extracomment>Open an image or archive for viewing</extracomment>
         <translation>Άνοιγμα(&amp;O)...</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1014"/>
+        <location filename="../src/mainwindow.ui" line="993"/>
         <source>Include images in subfolders</source>
         <extracomment>When enumerating images, subfolders are also included in the range</extracomment>
         <translation>Άνοιγμα με υποφακέλους εικόνων</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="823"/>
+        <location filename="../src/mainwindow.ui" line="802"/>
         <source>Skip back 10 pages</source>
         <extracomment>Switch to the previous 10 images in Volume button</extracomment>
         <translation>Γρήγορη μετάβαση πίσω</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="579"/>
+        <location filename="../src/mainwindow.ui" line="574"/>
         <source>Full screen</source>
         <extracomment>Button to switch the window display to full screen</extracomment>
         <translation>Πλήρης οθόνη</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="170"/>
-        <location filename="../src/mainwindow.cpp" line="1751"/>
+        <location filename="../src/mainwindow.cpp" line="168"/>
+        <location filename="../src/mainwindow.cpp" line="1745"/>
         <source>&amp;Fullscreen</source>
         <translation>Πλήρης οθόνη</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2065"/>
+        <location filename="../src/mainwindow.cpp" line="2052"/>
         <source>All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.heic *.heif);;Archives( *.zip *.7z *.rar)</source>
         <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2497"/>
+        <location filename="../src/mainwindow.cpp" line="2468"/>
         <source>Bookmark saved.</source>
         <translation>Ο σελιδοδείκτης αποθηκεύτηκε.</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="768"/>
+        <location filename="../src/mainwindow.ui" line="763"/>
         <source>&amp;Bilinear interpolation (fast)</source>
         <extracomment>Menu to resize the image by bilinear interpolation by GPU</extracomment>
         <translation>Δι&amp;γραμμική παρεμβολή (γρήγορο)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="654"/>
+        <location filename="../src/mainwindow.ui" line="649"/>
         <source>Show &amp;page bar</source>
         <translation>Εμφάνιση γραμμής σε&amp;λίδας</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="676"/>
+        <location filename="../src/mainwindow.ui" line="671"/>
         <source>Check for &amp;updates...</source>
         <extracomment>A menu to start up the browser to check whether the currently used QuickViewer is the latest version on the project web page</extracomment>
         <translation>Έλεγχος &amp;ενημερώσεων</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="567"/>
+        <location filename="../src/mainwindow.ui" line="562"/>
         <source>2-page &amp;spread</source>
         <extracomment>Arranging two images side by side like when opening a book</extracomment>
         <translation>Προβολή σαν &amp;βιβλίο</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="974"/>
+        <location filename="../src/mainwindow.ui" line="953"/>
         <source>Send image by email...</source>
         <extracomment>Menu to attach the currently displayed image to the mail software and start up</extracomment>
         <translation>Αποστολή με email ως συνημμένο</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="858"/>
+        <location filename="../src/mainwindow.ui" line="837"/>
         <source>Add bookmark</source>
         <extracomment>Button to add the currently displayed volume and page to bookmark</extracomment>
         <translation>Προσθήκη σελιδοδείκτη</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="588"/>
+        <location filename="../src/mainwindow.ui" line="583"/>
         <source>&amp;About QuickViewer</source>
         <extracomment>A menu for displaying a message box for displaying application information</extracomment>
         <translation>&amp;Περί QuickViewer</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="725"/>
+        <location filename="../src/mainwindow.ui" line="720"/>
         <source>Display &amp;first page alone</source>
         <extracomment>In the case of a digital book, since the first image is a cover page, only one image is displayed</extracomment>
         <translation>Ά&amp;νοιγμα των πρώτων εικόνων πάντα μόνων τους (εξώφυλλο)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="646"/>
+        <location filename="../src/mainwindow.ui" line="641"/>
         <source>Show status &amp;bar</source>
         <translation>Εμφάνιση γραμμής &amp;κατάστασης</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1078"/>
+        <location filename="../src/mainwindow.ui" line="1057"/>
         <source>&amp;Keyboard Shortcuts...</source>
         <extracomment>Menu that displays a dialog for changing keyboard shortcuts</extracomment>
         <translation>Διαμόρφωση π&amp;λήκτρων</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="738"/>
+        <location filename="../src/mainwindow.ui" line="733"/>
         <source>&amp;Clear history</source>
         <extracomment>Menu for clearing the history of opening images</extracomment>
         <translation>&amp;Απαλοιφή ιστορικού</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="929"/>
-        <location filename="../src/mainwindow.ui" line="932"/>
+        <location filename="../src/mainwindow.ui" line="908"/>
+        <location filename="../src/mainwindow.ui" line="911"/>
         <source>Icons and titles</source>
         <extracomment>For Volume in the catalog, a mode to list up icons and titles vertically</extracomment>
         <translation>Προβολή εικονιδίου καταλόγου</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="953"/>
-        <location filename="../src/mainwindow.ui" line="956"/>
+        <location filename="../src/mainwindow.ui" line="932"/>
+        <location filename="../src/mainwindow.ui" line="935"/>
         <source>List</source>
         <extracomment>Mode to list volumes in the catalog with icons and titles arranged side by side</extracomment>
         <translation>Προβολή λίστας καταλόγου</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="699"/>
+        <location filename="../src/mainwindow.ui" line="694"/>
         <source>Next &amp;page</source>
         <extracomment>Because there are times when the page is missing due to bookbinding convenience, digital books will fit the left and right pages with this operation</extracomment>
         <translation>Επόμενη μόνο &amp;μία σελίδα</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="617"/>
+        <location filename="../src/mainwindow.ui" line="612"/>
         <source>&amp;Keep wide images together in 2-page view</source>
         <extracomment>Automatically switch because it may spread 2 pages are combined into one image in the digital book</extracomment>
         <translation>Εμφάνιση πάντα μιας &amp;οριζόντιας εικόνας ακόμα και σε προβολή 2 σελίδων</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1030"/>
+        <location filename="../src/mainwindow.ui" line="1009"/>
         <source>Show reading progress</source>
         <extracomment>Ability to display read information read in the middle in FolderWindow</extracomment>
         <translation>Εμφάνιση προόδου ανάγνωσης</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="531"/>
+        <location filename="../src/mainwindow.ui" line="526"/>
         <source>Zoom in</source>
         <translation>Μεγέθυνση</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="733"/>
+        <location filename="../src/mainwindow.ui" line="728"/>
         <source>Show &amp;menu bar</source>
         <translation>Εμφάνιση γραμμής &amp;μενού</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="540"/>
+        <location filename="../src/mainwindow.ui" line="535"/>
         <source>Zoom &amp;out</source>
         <extracomment>Reduce the image currently displayed button</extracomment>
         <translation>&amp;Σμίκρυνση</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="792"/>
+        <location filename="../src/mainwindow.ui" line="771"/>
         <source>&amp;Nearest Neighbor interpolation (fast but coarse)</source>
         <extracomment>Menu to resize image by Nearest Neighbor interpolation by GPU</extracomment>
         <translation>Παρεμβολή π&amp;λησιέστερου γειτονικού (γρήγορο αλλά χοντροκομένο)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="596"/>
+        <location filename="../src/mainwindow.ui" line="591"/>
         <source>&amp;Reopen last viewed item</source>
         <extracomment>Opening the image automatically when opening the application the last time it was started</extracomment>
         <translation>Αυτό&amp;μ. φόρτωση τελευταίας χρήσης</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="944"/>
+        <location filename="../src/mainwindow.ui" line="923"/>
         <source>Icons only</source>
         <extracomment>Mode to list Volume in the catalog with only the icons side by side</extracomment>
         <translation>Προβολή μόνο εικονίδιου</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1111"/>
+        <location filename="../src/mainwindow.ui" line="1085"/>
         <source>File Associations... (current user)</source>
         <extracomment>Ability to associate QuickViewer and image files on Explorer (Host Global)</extracomment>
         <translation>Συσχέτιση εικόνων (Χρήστης)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="626"/>
+        <location filename="../src/mainwindow.ui" line="621"/>
         <source>&amp;Last page</source>
         <extracomment>Switch to the last image of Volume currently displayed button</extracomment>
         <translation>&amp;Τελευταία σελίδα</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="881"/>
+        <location filename="../src/mainwindow.ui" line="860"/>
         <source>Clear bookmarks</source>
         <extracomment>Button to delete all saved bookmarks</extracomment>
         <translation>Απαλοιφή σελιδοδεικτών</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1069"/>
+        <location filename="../src/mainwindow.ui" line="1048"/>
         <source>Show image information in full screen</source>
         <extracomment>Signage that displays the file name of the image at full screen display</extracomment>
         <translation>Εμφάνιση κειμένων στην πλήρη οθόνη</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="447"/>
+        <location filename="../src/mainwindow.ui" line="442"/>
         <source>F&amp;older</source>
         <translation>&amp;Φάκελος</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1061"/>
+        <location filename="../src/mainwindow.ui" line="1040"/>
         <source>Full screen on startup</source>
         <extracomment>Ability to always launch applications in full screen</extracomment>
         <translation>Μεγιστοποίηση στην επόμενη εκτέλεση</translation>
@@ -1456,199 +1472,197 @@
         <translation type="vanished">Χωρίς μεγέθυνση μικρών εικόνων στην Προσαρμογή</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1101"/>
+        <location filename="../src/mainwindow.ui" line="1075"/>
         <source>&amp;Mouse Settings...</source>
         <translation>Διαμόρφωση π&amp;οντικιού</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="797"/>
+        <location filename="../src/mainwindow.ui" line="776"/>
         <source>&amp;Maximize or Normal</source>
         <extracomment>Function to switch windows to maximize or normal display</extracomment>
         <translation>Μεγιστοποίιηση ή κανονικά</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="431"/>
+        <location filename="../src/mainwindow.ui" line="426"/>
         <source>&amp;Catalog</source>
         <translation>&amp;Κατάλογος</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="685"/>
+        <location filename="../src/mainwindow.ui" line="680"/>
         <source>N&amp;ext volume</source>
         <extracomment>Switch to the next Volume in the same folder as the currently displayed Volume button</extracomment>
         <translation>Επόμε&amp;νος τόμος</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="635"/>
+        <location filename="../src/mainwindow.ui" line="630"/>
         <source>&amp;First page</source>
         <extracomment>Switch to the first image of the currently displayed Volume button</extracomment>
         <translation>Π&amp;ρώτη σελίδα</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="659"/>
+        <location filename="../src/mainwindow.ui" line="654"/>
         <source>Open in &amp;Explorer</source>
         <extracomment>Menu that displays Explorer with the currently displayed image file selected</extracomment>
         <translation>Άνοιγμα στην &amp;εξερεύνηση</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="901"/>
+        <location filename="../src/mainwindow.ui" line="880"/>
         <source>Show Catalog</source>
         <translation>Εμφάνιση καταλόγου</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="994"/>
+        <location filename="../src/mainwindow.ui" line="973"/>
         <source>Show &amp;Folder</source>
         <extracomment>Button to display FolderWindow. Switch between internal display, independent display, and erase</extracomment>
         <translation>Εμφάνιση &amp;φακέλου</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1106"/>
+        <location filename="../src/mainwindow.ui" line="1080"/>
         <source>Delete the image</source>
         <translation>Διαγραφή εικόνας</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="886"/>
+        <location filename="../src/mainwindow.ui" line="865"/>
         <source>Project &amp;website</source>
         <extracomment>Button to display the web page of the project in the browser</extracomment>
         <translation>Επίσκεψη &amp;ιστοσελίδας</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="760"/>
+        <location filename="../src/mainwindow.ui" line="755"/>
         <source>Move image to &amp;Recycle Bin</source>
         <extracomment>Menu that puts the currently displayed image in Recycle Bin</extracomment>
         <translation>Μετακίνηση εικόνας στον &amp;Κάδο ανακύκλωσης</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="837"/>
+        <location filename="../src/mainwindow.ui" line="816"/>
         <source>&amp;Rotate</source>
         <extracomment>Button to rotate the currently displayed image 90 degrees clockwise</extracomment>
         <translation>&amp;Περιστροφή</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1035"/>
+        <location filename="../src/mainwindow.ui" line="1014"/>
         <source>&amp;Settings</source>
         <extracomment>Menu for displaying a dialog for changing the adjunct setting of the application</extracomment>
         <translation>&amp;Ρυθμίσεις</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="287"/>
-        <location filename="../src/mainwindow.ui" line="383"/>
+        <location filename="../src/mainwindow.ui" line="380"/>
         <source>&amp;Rendering</source>
         <translation>Απόδοση(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="694"/>
+        <location filename="../src/mainwindow.ui" line="689"/>
         <source>P&amp;revious volume</source>
         <extracomment>Switch to the previous Volume in the same folder as Volume currently being displayed Button</extracomment>
         <translation>Προ&amp;ηγούμενος τόμος</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="519"/>
+        <location filename="../src/mainwindow.ui" line="514"/>
         <source>&amp;Previous</source>
         <extracomment>Switch to previous image button</extracomment>
         <translation>Προη&amp;γούμενη εικόνα</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="805"/>
+        <location filename="../src/mainwindow.ui" line="784"/>
         <source>&amp;Restore window display at next startup</source>
         <extracomment>When restarting the next time, restore the position size of the window at the time of the last termination</extracomment>
         <translation>&amp;Επαναφορά παραθύρου στην επόμενη εκτέλεση</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="671"/>
+        <location filename="../src/mainwindow.ui" line="666"/>
         <source>EXIF &amp;information</source>
         <extracomment>Button to display JPEG EXIF information (if any)</extracomment>
         <translation>&amp;Πληροφορίες EXIF</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="898"/>
+        <location filename="../src/mainwindow.ui" line="877"/>
         <source>Show &amp;Catalog</source>
         <extracomment>Button to display Catalog Window. Switch between internal display, independent display, and erase</extracomment>
         <translation>Εμφάνιση &amp;καταλόγου</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="828"/>
+        <location filename="../src/mainwindow.ui" line="807"/>
         <source>Copy file to clipboard</source>
         <extracomment>Menu to copy currently displayed image file on Explorer</extracomment>
         <translation>Αντιγραφή αρχείου στο πρόχειρο</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="964"/>
+        <location filename="../src/mainwindow.ui" line="943"/>
         <source>Show tag bar</source>
         <extracomment>Squeeze the Volume of the catalog Function to erase the bar displaying the tag button</extracomment>
         <translation>Εμφάνιση γραμμής ετικέτας</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="982"/>
+        <location filename="../src/mainwindow.ui" line="961"/>
         <source>Larger &amp;grid for long titles</source>
         <extracomment>Functions to be used when the Volume title in the catalog is long</extracomment>
         <translation>Μεγάλο &amp;πλέγμα για εμφάνιση μεγάλων τίτλων</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="379"/>
-        <location filename="../src/mainwindow.ui" line="1096"/>
+        <location filename="../src/mainwindow.ui" line="376"/>
+        <location filename="../src/mainwindow.ui" line="1070"/>
         <source>ContextMenu</source>
         <translation>Μενού περιβάλλοντος</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="909"/>
+        <location filename="../src/mainwindow.ui" line="888"/>
         <source>Remove parenthesized text from book title</source>
         <extracomment>Ability to remove and display (parenthesized) text from Volume title in the catalog</extracomment>
         <translation>Αφαίρεση (Επιλογές) από Τίτλο βιβλίου</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="510"/>
+        <location filename="../src/mainwindow.ui" line="505"/>
         <source>&amp;Next</source>
         <extracomment>Switch to the next image button</extracomment>
         <translation>&amp;Επόμενη σελίδα</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="555"/>
+        <location filename="../src/mainwindow.ui" line="550"/>
         <source>&amp;Fit mode</source>
         <extracomment>Automatically resize the image according to the size of the window</extracomment>
         <translation>Π&amp;ροσαρμογή</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="814"/>
+        <location filename="../src/mainwindow.ui" line="793"/>
         <source>Skip forward 10 pages</source>
         <extracomment>Switch to 10 images in Volume button</extracomment>
         <translation>Γρήγορη μετάβαση μπροστά</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1086"/>
+        <location filename="../src/mainwindow.ui" line="1065"/>
         <source>Confirm moving image to &amp;Recycle Bin</source>
         <extracomment>A function to display a confirmation screen when moving the currently displayed image to Recycle Bin</extracomment>
         <translation>Επιβεβαίωση μετακίνησης εικόνας στον &amp;Κάδο ανακύκλωσης</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2312"/>
-        <location filename="../src/mainwindow.cpp" line="2356"/>
+        <location filename="../src/mainwindow.cpp" line="2299"/>
+        <location filename="../src/mainwindow.cpp" line="2343"/>
         <source>Confirmation</source>
         <comment>Confirm deleting image file on MessageBox title</comment>
         <translation>Επιβεβαίωση</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="709"/>
+        <location filename="../src/mainwindow.ui" line="704"/>
         <source>Exit application or full screen</source>
         <extracomment>Function that cancels it while full screen is displayed and terminates the application otherwise</extracomment>
         <translation>Έξοδος εφαρμογής σε πλήρη οθόνη</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="776"/>
         <source>Bi&amp;cubic interpolation (slow)</source>
         <extracomment>Menu for resizing image by bicubic interpolation by GPU</extracomment>
-        <translation>Δι&amp;κυβική παρεμβολή (αργό)</translation>
+        <translation type="vanished">Δι&amp;κυβική παρεμβολή (αργό)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1002"/>
+        <location filename="../src/mainwindow.ui" line="981"/>
         <source>Bicubic interpolation by CPU (quality)</source>
         <extracomment>Menu that performs bicubic interpolation with CPU when resizing image</extracomment>
         <translation>Περεμβολή δικυβικής από CPU (ποιοτικό)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1091"/>
         <source>File Associations... (administrator)</source>
         <extracomment>Ability to associate QuickViewer and image files on Explorer (Host Global)</extracomment>
-        <translation>Συσχέτιση εικόνων (Διαχειριστής)</translation>
+        <translation type="vanished">Συσχέτιση εικόνων (Διαχειριστής)</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="256"/>
@@ -1656,31 +1670,31 @@
         <translation>&amp;Ιστορικό</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="917"/>
+        <location filename="../src/mainwindow.ui" line="896"/>
         <source>Ignore parenthesized text when searching titles</source>
         <extracomment>Ability to search with the title removed (parenthesized) removed from the title of Volume in the catalog</extracomment>
         <translation>Αφαίρεση (Επιλογές) από Τίτλο βιβλίου στην αναζήτηση</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1040"/>
+        <location filename="../src/mainwindow.ui" line="1019"/>
         <source>Rename</source>
         <extracomment>A menu for changing the file name of the currently displayed image</extracomment>
         <translation>Μετονομασία</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="849"/>
+        <location filename="../src/mainwindow.ui" line="828"/>
         <source>&amp;Slideshow</source>
         <extracomment>Button to start displaying slideshow</extracomment>
         <translation>Παρου&amp;σίαση</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="604"/>
+        <location filename="../src/mainwindow.ui" line="599"/>
         <source>&amp;Right-bound</source>
         <extracomment>Books written in vertical writing such as Japanese and Chinese read from right, so read from right page to left page</extracomment>
         <translation>Εμφάνιση στη δε&amp;ξιά πλευρά</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="346"/>
+        <location filename="../src/mainwindow.ui" line="343"/>
         <source>&amp;Navigation</source>
         <translation>&amp;Περιήγηση</translation>
     </message>
@@ -1700,217 +1714,217 @@
         <translation type="vanished">Δεν είναι δυνατό το άνοιγμα γιατί δεν βρέθηκε το αρχείο εικόνας.</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1702"/>
+        <location filename="../src/mainwindow.cpp" line="1696"/>
         <source>Loading...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1705"/>
+        <location filename="../src/mainwindow.cpp" line="1699"/>
         <source>No images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1707"/>
+        <location filename="../src/mainwindow.cpp" line="1701"/>
         <source>Unavailable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2071"/>
+        <location filename="../src/mainwindow.cpp" line="2058"/>
         <source>Select an image or archive</source>
         <comment>Title of the dialog displayed when opening a file with OpenFileFolder</comment>
         <translation>Παρακαλώ επιλέξτε μια εικόνα ή αρχειοθήκη</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2318"/>
+        <location filename="../src/mainwindow.cpp" line="2305"/>
         <source>Are you sure you want to move the image to Recycle Bin?</source>
         <comment>Confirm putting displayed file in Recycle Box Message Box body</comment>
         <translation>Είστε βέβαιος ότι θέλετε να μετακινήσετε την εικόνα στον κάδο ανακύκλωσης;</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2361"/>
+        <location filename="../src/mainwindow.cpp" line="2348"/>
         <source>Are you sure you want to delete this image?</source>
         <comment>Confirm deleting image file on Message Box body</comment>
         <translation>Είστε βέβαιος ότι θέλετε τη διαγραφή αυτής της εικόνας;</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1119"/>
+        <location filename="../src/mainwindow.ui" line="1093"/>
         <source>Don&apos;t update history</source>
         <extracomment>Flag for prohibiting update of history</extracomment>
         <translation>Να μην ενημερώνεται το ιστορικό</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1131"/>
+        <location filename="../src/mainwindow.ui" line="1105"/>
         <source>Open panels in separate windows</source>
         <extracomment>Flag separating the catalog and folder windows into independent windows</extracomment>
         <translation>Αποσύνδεση σε ξεχωριστό παράθυρο</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="461"/>
+        <location filename="../src/mainwindow.ui" line="456"/>
         <source>&amp;Image</source>
         <translation>&amp;Εικόνα</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1139"/>
+        <location filename="../src/mainwindow.ui" line="1113"/>
         <source>Large menu and toolbar</source>
         <translation>Μεγάλες γραμμές μενού και εργαλείων</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1144"/>
+        <location filename="../src/mainwindow.ui" line="1118"/>
         <source>Turn left page</source>
         <translation>Περιστροφή σελίδας αριστερόστροφα</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1149"/>
+        <location filename="../src/mainwindow.ui" line="1123"/>
         <source>Turn right page</source>
         <translation>Περιστροφή σελίδας δεξιόστροφα</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1157"/>
+        <location filename="../src/mainwindow.ui" line="1131"/>
         <source>Split wide images into two pages</source>
         <extracomment>Flag to display images on the left and right sides with a portrait display</extracomment>
         <translation>Διαίρεση ευρείας εικόνας σε 2 σελίδες</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1169"/>
+        <location filename="../src/mainwindow.ui" line="1143"/>
         <source>Loupe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1177"/>
+        <location filename="../src/mainwindow.ui" line="1151"/>
         <source>Pan with mouse movement when zoomed</source>
         <extracomment>Flag to scroll the image with moving the mouse pointer instead of displaying the scroll bar</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1189"/>
+        <location filename="../src/mainwindow.ui" line="1163"/>
         <source>Fit to width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="397"/>
+        <location filename="../src/mainwindow.ui" line="392"/>
         <source>Image actions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="409"/>
-        <location filename="../src/mainwindow.ui" line="465"/>
+        <location filename="../src/mainwindow.ui" line="404"/>
+        <location filename="../src/mainwindow.ui" line="460"/>
         <source>Fit mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1048"/>
+        <location filename="../src/mainwindow.ui" line="1027"/>
         <source>Don&apos;t upscale small images</source>
         <extracomment>Ability to display an image smaller than the window as it is when fit is displayed</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1201"/>
+        <location filename="../src/mainwindow.ui" line="1175"/>
         <source>Fit to window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1213"/>
+        <location filename="../src/mainwindow.ui" line="1187"/>
         <source>Image adjustments...</source>
         <extracomment>a menu test which show window changes brightness of the image</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1221"/>
+        <location filename="../src/mainwindow.ui" line="1195"/>
         <source>Spline16 interpolation by CPU</source>
         <extracomment>Menu that performs Spline16 interpolation with CPU when resizing image</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1229"/>
+        <location filename="../src/mainwindow.ui" line="1203"/>
         <source>Spline36 interpolation by CPU</source>
         <extracomment>Menu that performs Spline36 interpolation with CPU when resizing image</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1237"/>
+        <location filename="../src/mainwindow.ui" line="1211"/>
         <source>Lanczos3 interpolation by CPU</source>
         <extracomment>Menu that performs Lanczos3 interpolation with CPU when resizing image</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1245"/>
+        <location filename="../src/mainwindow.ui" line="1219"/>
         <source>Lanczos4 interpolation by CPU</source>
         <extracomment>Menu that performs Lanczos4 interpolation with CPU when resizing image</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1250"/>
+        <location filename="../src/mainwindow.ui" line="1224"/>
         <source>Next page or volume</source>
         <extracomment>Switch to next image, or to next volume if the page is first button</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1255"/>
+        <location filename="../src/mainwindow.ui" line="1229"/>
         <source>Previous page or volume</source>
         <extracomment>Switch to previous image, or to previous volume if the page is last button</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1263"/>
+        <location filename="../src/mainwindow.ui" line="1237"/>
         <source>Remember catalog pane width</source>
         <extracomment>Flag to restore the width of Catalog view</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1271"/>
+        <location filename="../src/mainwindow.ui" line="1245"/>
         <source>Remember folder pane width</source>
         <extracomment>Flag to restore the width of Folder view</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1279"/>
+        <location filename="../src/mainwindow.ui" line="1253"/>
         <source>Save reading progress</source>
         <extracomment>Flag to save progress.ini</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1287"/>
+        <location filename="../src/mainwindow.ui" line="1261"/>
         <source>Hide mouse cursor in full screen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="274"/>
-        <location filename="../src/mainwindow.ui" line="1292"/>
+        <location filename="../src/mainwindow.ui" line="1266"/>
         <source>&amp;Sort by</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1300"/>
+        <location filename="../src/mainwindow.ui" line="1274"/>
         <source>File name</source>
         <translation type="unfinished">Όνομα αρχείου</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1308"/>
+        <location filename="../src/mainwindow.ui" line="1282"/>
         <source>File name (descending)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1316"/>
+        <location filename="../src/mainwindow.ui" line="1290"/>
         <source>File size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1324"/>
+        <location filename="../src/mainwindow.ui" line="1298"/>
         <source>File size (descending)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1332"/>
+        <location filename="../src/mainwindow.ui" line="1306"/>
         <source>Modified time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1340"/>
+        <location filename="../src/mainwindow.ui" line="1314"/>
         <source>Modified time (descending)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="320"/>
+        <location filename="../src/mainwindow.ui" line="318"/>
         <source>&amp;Tools</source>
         <translation>Εργαλεία(&amp;T)</translation>
     </message>
@@ -1954,13 +1968,13 @@
         <translation>Έναρξη εργασίας</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="308"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="318"/>
         <source>Cancelled!</source>
         <comment>Title of message box when catalog generation was canceled</comment>
         <translation>Ακυρώθηκε!</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="250"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="255"/>
         <source>Completed</source>
         <comment>Title of message box when catalog generation finished successfully</comment>
         <translation>Ολοκληρώθηκε!</translation>
@@ -2032,13 +2046,13 @@
         <translation>Επεξεργασία ενός καταλόγου</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="252"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="257"/>
         <source>Catalog creation completed.</source>
         <comment>Body of message box when catalog generation finished successfully</comment>
         <translation>Η δημιουργία καταλόγου ολοκληρώθηκε</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="309"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="319"/>
         <source>Catalog creation was cancelled.</source>
         <comment>Body of message box when catalog generation is canceled</comment>
         <translation>Η δημιουργία καταλόγου ακυρώθηκε</translation>
@@ -2082,26 +2096,26 @@
         <translation>Επιλογή</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="64"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="86"/>
         <source>Description</source>
         <comment>Title of the column that displays the meaning of the action to be registered with the mouse sequence</comment>
         <translation>Περιγραφή</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="69"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="91"/>
         <source>Current mouse shortcut</source>
         <comment>Title of the column of the content of the mouse sequence registered for Action</comment>
         <translation>Τρέχουσα ακολουθία ποντικιού</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="142"/>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="209"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="164"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="231"/>
         <source>Mouse sequence has potential conflicts.</source>
         <comment>Text to be displayed when the entered mouse sequence conflicts with another mouse sequence</comment>
         <translation>Η ακολουθία του ποντικιού έχει πιθανές διενέξεις.</translation>
     </message>
     <message>
-        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="62"/>
+        <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="84"/>
         <source>Group</source>
         <comment>Group of the Action to be registered with the shortcut key</comment>
         <translation type="unfinished"></translation>
@@ -2457,7 +2471,7 @@
         <translation>Σκίαση</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="398"/>
+        <location filename="../src/models/qvapplication.cpp" line="394"/>
         <source>Help</source>
         <comment>Help Action Group</comment>
         <translation>Βοήθεια</translation>

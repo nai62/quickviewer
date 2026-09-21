@@ -27,31 +27,53 @@ MouseConfigDialog::MouseConfigDialog(MouseConfigDialog::MouseActionManager &mous
     ui->checkBoxAlt->setText(tr("Option", "caption of Option key"));
 #endif
 
-    connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
-    connect(ui->buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
+    connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &MouseConfigDialog::accept);
+    connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &MouseConfigDialog::reject);
     connect(ui->buttonBox,
-            SIGNAL(clicked(QAbstractButton *)),
+            &QDialogButtonBox::clicked,
             this,
-            SLOT(handleButtonBoxClicked(QAbstractButton *)));
+            &MouseConfigDialog::handleButtonBoxClicked);
     connect(ui->treeWidget,
-            SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
+            &QTreeWidget::currentItemChanged,
             this,
-            SLOT(handleTreeWidgetCurrentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)));
-    connect(ui->resetButton, SIGNAL(clicked()), this, SLOT(handleResetButtonClicked()));
-    connect(ui->addSequenceButton, SIGNAL(clicked()), this, SLOT(handleAddSequenceButtonClicked()));
+            &MouseConfigDialog::handleTreeWidgetCurrentItemChanged);
+    connect(
+        ui->resetButton, &QPushButton::clicked, this, &MouseConfigDialog::handleResetButtonClicked);
+    connect(ui->addSequenceButton,
+            &QPushButton::clicked,
+            this,
+            &MouseConfigDialog::handleAddSequenceButtonClicked);
     connect(ui->shortcutEdit,
-            SIGNAL(textChanged(QString)),
+            &QLineEdit::textChanged,
             this,
-            SLOT(handleShortcutLineEditTextChanged(QString)));
+            &MouseConfigDialog::handleShortcutLineEditTextChanged);
 
-    connect(ui->checkBoxLeft, SIGNAL(toggled(bool)), this, SLOT(handleInputOptionToggled()));
-    connect(ui->checkBoxRight, SIGNAL(toggled(bool)), this, SLOT(handleInputOptionToggled()));
-    connect(ui->checkBoxWheel, SIGNAL(toggled(bool)), this, SLOT(handleInputOptionToggled()));
-    connect(ui->checkBoxForward, SIGNAL(toggled(bool)), this, SLOT(handleInputOptionToggled()));
-    connect(ui->checkBoxBackward, SIGNAL(toggled(bool)), this, SLOT(handleInputOptionToggled()));
-    connect(ui->radioButtonDown, SIGNAL(toggled(bool)), this, SLOT(handleInputOptionToggled()));
-    connect(ui->radioButtonNone, SIGNAL(toggled(bool)), this, SLOT(handleInputOptionToggled()));
-    connect(ui->radioButtonUp, SIGNAL(toggled(bool)), this, SLOT(handleInputOptionToggled()));
+    connect(
+        ui->checkBoxLeft, &QCheckBox::toggled, this, &MouseConfigDialog::handleInputOptionToggled);
+    connect(
+        ui->checkBoxRight, &QCheckBox::toggled, this, &MouseConfigDialog::handleInputOptionToggled);
+    connect(
+        ui->checkBoxWheel, &QCheckBox::toggled, this, &MouseConfigDialog::handleInputOptionToggled);
+    connect(ui->checkBoxForward,
+            &QCheckBox::toggled,
+            this,
+            &MouseConfigDialog::handleInputOptionToggled);
+    connect(ui->checkBoxBackward,
+            &QCheckBox::toggled,
+            this,
+            &MouseConfigDialog::handleInputOptionToggled);
+    connect(ui->radioButtonDown,
+            &QRadioButton::toggled,
+            this,
+            &MouseConfigDialog::handleInputOptionToggled);
+    connect(ui->radioButtonNone,
+            &QRadioButton::toggled,
+            this,
+            &MouseConfigDialog::handleInputOptionToggled);
+    connect(ui->radioButtonUp,
+            &QRadioButton::toggled,
+            this,
+            &MouseConfigDialog::handleInputOptionToggled);
 
     //    connect(ui->recordButton, &ShortcutButton::keySequenceChanged,
     //            this, &MouseConfigDialog::handleRecordButtonKeySequenceChanged);
@@ -90,8 +112,8 @@ void MouseConfigDialog::resetView()
     //        ui->treeWidget->addTopLevelItem(item);
     //    }
     const QMultiMap<QString, QString> &nameByGroups = m_mouseActions.nameByGroups();
-    foreach (const QString &groupName, nameByGroups.uniqueKeys()) {
-        foreach (const QString &key, nameByGroups.values(groupName)) {
+    for (const QString &groupName : nameByGroups.uniqueKeys()) {
+        for (const QString &key : nameByGroups.values(groupName)) {
             QAction *action = actions[key];
             if (!action) {
                 continue;

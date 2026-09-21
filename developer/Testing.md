@@ -6,7 +6,9 @@ workflow for QuickViewer.
 ## Prerequisites
 
 Supported Windows verification uses 64-bit Windows with Qt 6.11.2 for MSVC
-2022. The script defaults are:
+2022. QuickViewer supports Windows 10 version 1809 (build 17763) and later,
+and the build asks the Windows headers for that version; the CI runners are
+newer than that floor. The script defaults are:
 
 | Setting | Default | Allowed value |
 | --- | --- | --- |
@@ -284,9 +286,9 @@ to check or apply formatting manually, and the environment requirements.
 
 ## Interactive checks
 
-Startup painting, fullscreen, OpenGL, input timing, and other visual behavior
-must also be checked interactively on Windows when affected. Headless
-automation does not establish visual correctness.
+Startup painting, fullscreen, input timing, and other visual behavior must also
+be checked interactively on Windows when affected. Headless automation does
+not establish visual correctness.
 
 A check that temporarily edits the portable `quickviewer.ini` next to the
 executable - it holds the history of opened volumes - must keep that file

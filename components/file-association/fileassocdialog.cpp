@@ -1,42 +1,25 @@
 #include "fileassocdialog.h"
 #include "ui_fileassocdialog.h"
+#include <QDesktopServices>
+#include <QOperatingSystemVersion>
 #include <windows.h>
-#include <shobjidl.h>
 
+// Registration is per user: Windows lets a program register the formats it can
+// handle without asking for elevation, and the machine-wide entries of the
+// installed package are written by its installer instead.
 #define APPLICATION_ID "QuickViewer"
-//#define REGKEYFORMAT_ASSOCFILE          "QuickViewer.AssocFile.%1"
 #define REGKEYFORMAT_ASSOCFILE APPLICATION_ID ".AssocFile.%1"
-//#define REGKEYFORMAT_ASSOCPATH          "HKEY_CLASSES_ROOT\\QuickViewer.AssocFile.%1"
-//#define REGKEY_QUICKVIEWER              "HKEY_LOCAL_MACHINE\\SOFTWARE\\QuickViewer"
-//#define REGKEY_REGISTEREDAPPLICATIONS   "HKEY_LOCAL_MACHINE\\SOFTWARE\\RegisteredApplications"
-//#define REGKEY_ROOT_QUICKVIEWER         "HKEY_CLASSES_ROOT\\Applications\\QuickViewer.exe"
+#define REGKEY_SOFTWARE "HKEY_CURRENT_USER\\Software"
+#define REGKEY_CLASSES REGKEY_SOFTWARE "\\Classes"
+#define REGKEYFORMAT_ASSOCPATH REGKEY_CLASSES "\\" APPLICATION_ID ".AssocFile.%1"
+#define REGKEY_REGISTEREDAPPLICATIONS REGKEY_SOFTWARE "\\RegisteredApplications"
+#define REGKEY_APPLICATION REGKEY_SOFTWARE "\\" APPLICATION_ID
+#define REGKEY_APPLICATION_INAPP REGKEY_CLASSES "\\Applications\\" APPLICATION_ID ".exe"
 
-#ifdef EXECUTE_ON_UAC
-#    define REGKEY_SOFTWARE "HKEY_LOCAL_MACHINE\\SOFTWARE"
-#    define REGKEY_CLASSES REGKEY_SOFTWARE "\\Classes"
-#    define REGKEYFORMAT_CLASSES REGKEY_SOFTWARE "\\Classes\\%1"
-#    define REGKEYFORMAT_ASSOCPATH REGKEY_CLASSES "\\" APPLICATION_ID ".AssocFile.%1"
-#    define REGKEY_REGISTEREDAPPLICATIONS REGKEY_SOFTWARE "\\RegisteredApplications"
-#    define REGKEY_APPLICATION REGKEY_SOFTWARE "\\" APPLICATION_ID
-#    define REGKEY_APPLICATION_INAPP REGKEY_CLASSES "\\Applications\\" APPLICATION_ID ".exe"
-#else
-#    define REGKEY_SOFTWARE "HKEY_CURRENT_USER\\Software"
-#    define REGKEY_CLASSES REGKEY_SOFTWARE "\\Classes"
-#    define REGKEYFORMAT_CLASSES REGKEY_SOFTWARE "\\Classes\\%1"
-#    define REGKEYFORMAT_ASSOCPATH REGKEY_CLASSES "\\" APPLICATION_ID ".AssocFile.%1"
-#    define REGKEY_REGISTEREDAPPLICATIONS REGKEY_SOFTWARE "\\RegisteredApplications"
-#    define REGKEY_APPLICATION REGKEY_SOFTWARE "\\" APPLICATION_ID
-#    define REGKEY_APPLICATION_INAPP REGKEY_CLASSES "\\Applications\\" APPLICATION_ID ".exe"
-#endif
-
-#if QT_VERSION_MAJOR >= 5
-#    ifdef WIN64
+#ifdef WIN64
 QSettings::Format FileAssocDialog::RegFormat = QSettings::Registry64Format;
-#    else
-QSettings::Format FileAssocDialog::RegFormat = QSettings::Registry32Format;
-#    endif
 #else
-QSettings::Format FileAssocDialog::RegFormat = QSettings::NativeFormat;
+QSettings::Format FileAssocDialog::RegFormat = QSettings::Registry32Format;
 #endif
 
 FileAssocDialog::FileAssocDialog(QWidget *parent)
@@ -147,7 +130,7 @@ FileAssocDialog::FileAssocDialog(QWidget *parent)
 
     {
         // check on if assoiation exists for each extension
-        foreach (const QString &fmt, m_assocOfActions.keys()) {
+        for (const QString &fmt : m_assocOfActions.keys()) {
             QSettings settings(REGKEY_CLASSES, RegFormat);
             settings.beginGroup(QString(REGKEYFORMAT_ASSOCFILE).arg(fmt));
             if (!settings.allKeys().isEmpty()) {
@@ -180,7 +163,7 @@ FileAssocDialog::~FileAssocDialog()
 QStringList FileAssocDialog::enumrateFormats()
 {
     QStringList result;
-    foreach (const QString &fmt, m_assocOfActions.keys()) {
+    for (const QString &fmt : m_assocOfActions.keys()) {
         QCheckBox *c = m_assocOfActions[fmt];
         if (c && c->isChecked()) {
             result << fmt;
@@ -192,7 +175,7 @@ QStringList FileAssocDialog::enumrateFormats()
 
 void FileAssocDialog::handleAllOnButtonClicked()
 {
-    foreach (QCheckBox *c, m_assocOfActions.values()) {
+    for (QCheckBox *c : m_assocOfActions.values()) {
         if (c) {
             c->setChecked(true);
         }
@@ -201,7 +184,7 @@ void FileAssocDialog::handleAllOnButtonClicked()
 
 void FileAssocDialog::handleAllOffButtonClicked()
 {
-    foreach (QCheckBox *c, m_assocOfActions.values()) {
+    for (QCheckBox *c : m_assocOfActions.values()) {
         if (c) {
             c->setChecked(false);
         }
@@ -222,43 +205,69 @@ void FileAssocDialog::handleButtonBoxAccepted()
 
 void FileAssocDialog::registerEntries(QStringList formats)
 {
-    //    qDebug() << "registerEntries()";
-    {
-        // assoiation for each extension
-        foreach (const QString &fmt, formats) {
-            //            qDebug() << QString(REGKEYFORMAT_ASSOCFILE).arg(fmt);
-            QSettings settings(REGKEY_CLASSES, RegFormat);
-            settings.beginGroup(QString(REGKEYFORMAT_ASSOCFILE).arg(fmt));
-            settings.setValue(".", m_assocs[fmt].Description);
-            if (!m_assocs[fmt].IconName.isEmpty()) {
-                settings.beginGroup("DefaultIcon");
-                settings.setValue(".", getIconPath(m_assocs[fmt].IconName));
-                settings.endGroup();
-            }
-            settings.beginGroup("shell");
-            settings.beginGroup("open");
-            settings.setValue(".",
-                              tr("&View with QuickViewer",
-                                 "Menu displayed when right clicking on file in Explorer"));
-            settings.beginGroup("command");
-            settings.setValue(".", getExecuteApplication());
-            settings.endGroup();
-            settings.endGroup();
-            settings.endGroup();
-            settings.endGroup();
-            settings.sync();
+    // The selection is the wanted state of the registration, so a format the
+    // user cleared is removed here instead of being left registered.
+    for (const QString &fmt : m_assocs.keys()) {
+        if (!formats.contains(fmt)) {
+            unregisterFormat(fmt);
         }
     }
+    for (const QString &fmt : formats) {
+        registerFormat(fmt);
+    }
+    writeCapabilities(formats);
+    openAssociationSettings();
+}
+
+void FileAssocDialog::registerFormat(const QString &fmt)
+{
+    const AssocInfo &info = m_assocs[fmt];
+
+    // Association for one extension: its ProgID carries the description, the
+    // icon and the command that Explorer shows.
+    QSettings settings(REGKEY_CLASSES, RegFormat);
+    settings.beginGroup(QString(REGKEYFORMAT_ASSOCFILE).arg(fmt));
+    settings.setValue(".", info.Description);
+    if (!info.IconName.isEmpty()) {
+        settings.beginGroup("DefaultIcon");
+        settings.setValue(".", getIconPath(info.IconName));
+        settings.endGroup();
+    }
+    settings.beginGroup("shell");
+    settings.beginGroup("open");
+    settings.setValue(
+        ".",
+        tr("&View with QuickViewer", "Menu displayed when right clicking on file in Explorer"));
+    settings.beginGroup("command");
+    settings.setValue(".", getExecuteApplication());
+    settings.endGroup();
+    settings.endGroup();
+    settings.endGroup();
+    settings.endGroup();
+    settings.sync();
+}
+
+void FileAssocDialog::unregisterFormat(const QString &fmt)
+{
+    QSettings settings(QString(REGKEYFORMAT_ASSOCPATH).arg(fmt), RegFormat);
+    settings.clear();
+    settings.sync();
+}
+
+void FileAssocDialog::writeCapabilities(const QStringList &formats)
+{
     {
-        // QuickViewer Capabilities
+        // QuickViewer Capabilities: the list of extensions is rebuilt, so the
+        // ones the user dropped stop being offered.
         QSettings settings(REGKEY_APPLICATION, RegFormat);
+        settings.remove("Capabilities");
         settings.beginGroup("Capabilities");
         settings.setValue("ApplicationDescription", "Ultra-fast image and comic viewer");
         settings.setValue("ApplicationName", APPLICATION_ID);
         settings.beginGroup("FileAssociations");
-        foreach (const QString &fmt, formats) {
-            foreach (const QString &assoc, m_assocs[fmt].Extensions) {
-                settings.setValue(assoc, QString(REGKEYFORMAT_ASSOCFILE).arg(fmt));
+        for (const QString &fmt : formats) {
+            for (const QString &ext : m_assocs[fmt].Extensions) {
+                settings.setValue(ext, QString(REGKEYFORMAT_ASSOCFILE).arg(fmt));
             }
         }
         settings.endGroup();
@@ -288,29 +297,12 @@ void FileAssocDialog::registerEntries(QStringList formats)
         settings.endGroup();
         settings.sync();
     }
-
-    IApplicationAssociationRegistrationUI *pAARUI = nullptr;
-    HRESULT hr = ::CoCreateInstance(CLSID_ApplicationAssociationRegistrationUI,
-                                    nullptr,
-                                    CLSCTX_INPROC,
-                                    __uuidof(IApplicationAssociationRegistrationUI),
-                                    reinterpret_cast<void **>(&pAARUI));
-
-    if (SUCCEEDED(hr) && pAARUI != nullptr) {
-        hr = pAARUI->LaunchAdvancedAssociationUI(L"QuickViewer");
-        pAARUI->Release();
-    }
 }
 
 void FileAssocDialog::unregisterEntries()
 {
-    {
-        // assoiation for each extension
-        foreach (const QString &fmt, m_assocs.keys()) {
-            QSettings settings(QString(REGKEYFORMAT_ASSOCPATH).arg(fmt), RegFormat);
-            settings.clear();
-            settings.sync();
-        }
+    for (const QString &fmt : m_assocs.keys()) {
+        unregisterFormat(fmt);
     }
     {
         // QuickViewer Capabilities
@@ -330,6 +322,20 @@ void FileAssocDialog::unregisterEntries()
         settings.clear();
         settings.sync();
     }
+}
+
+void FileAssocDialog::openAssociationSettings()
+{
+    // Windows 10 ignores the association UI that older builds opened and only
+    // lets the user change a format through Settings. Windows 11 can open the
+    // page of one registered application directly; the page itself works on
+    // both, so it is the fallback.
+    QString settings = QStringLiteral("ms-settings:defaultapps");
+    const QOperatingSystemVersion windows11(QOperatingSystemVersion::Windows, 10, 0, 22000);
+    if (QOperatingSystemVersion::current() >= windows11) {
+        settings += QStringLiteral("?registeredAppUser=" APPLICATION_ID);
+    }
+    QDesktopServices::openUrl(QUrl(settings));
 }
 
 QString FileAssocDialog::getExecuteApplication()

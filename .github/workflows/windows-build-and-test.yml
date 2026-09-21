@@ -63,12 +63,71 @@ jobs:
         working-directory: build-release
         run: jom /f Makefile
 
-      # Guard against accidentally linking the file-association entry point into
-      # QuickViewer.exe. The real application imports CreateNamedPipeW.
-      - name: Verify QuickViewer.exe entry point
+      # A console-only or mislinked binary would not pull in the widget module,
+      # so this catches a wrong TARGET or entry point before the release is
+      # staged.
+      - name: Verify QuickViewer.exe links the widget module
         shell: cmd
         working-directory: build-release
-        run: dumpbin /nologo /imports bin\QuickViewer.exe | findstr /C:"CreateNamedPipeW"
+        run: dumpbin /nologo /imports bin\QuickViewer.exe | findstr /C:"Qt6Widgets.dll"
+
+      # The installer and the portable archive ship what this deployment puts
+      # next to the application, so the deployment is checked for the runtimes
+      # the application needs and for the ones it must not carry.
+      - name: Stage the deployed runtime
+        shell: pwsh
+        run: |
+          $stage = Join-Path $env:RUNNER_TEMP "qv-runtime"
+          New-Item -ItemType Directory -Force $stage | Out-Null
+          Copy-Item .\build-release\bin\* $stage -Recurse
+
+          $windeployqt = (Get-Command windeployqt.exe).Source
+          & $windeployqt --release --compiler-runtime --no-opengl-sw --no-system-d3d-compiler "$stage\QuickViewer.exe"
+          if ($LASTEXITCODE -ne 0) {
+            throw "windeployqt failed with exit code $LASTEXITCODE"
+          }
+
+          # windeployqt copies the D3D12 shader compilers even with the flags
+          # above; the application never loads them.
+          Remove-Item (Join-Path $stage "dxcompiler.dll") -ErrorAction SilentlyContinue
+          Remove-Item (Join-Path $stage "dxil.dll") -ErrorAction SilentlyContinue
+
+          foreach ($unwanted in @("opengl32sw.dll", "d3dcompiler_47.dll",
+                                  "dxcompiler.dll", "dxil.dll")) {
+            if (Test-Path (Join-Path $stage $unwanted)) {
+              throw "The deployment still carries $unwanted"
+            }
+          }
+          foreach ($required in @("QuickViewer.exe", "7z.dll", "Qt6Core.dll", "Qt6Gui.dll",
+                                  "Qt6Widgets.dll", "Qt6Network.dll", "Qt6Sql.dll")) {
+            if (-not (Test-Path (Join-Path $stage $required))) {
+              throw "The deployment is missing $required"
+            }
+          }
+
+          Write-Host "Deployed files:"
+          Get-ChildItem $stage -File | Sort-Object Name | ForEach-Object { Write-Host "  $($_.Name)" }
+
+      # Starting the application from the staged directory proves that the
+      # deployment carries every runtime the application reaches, including the
+      # ones only used after startup.
+      - name: Run the deployed application
+        shell: pwsh
+        run: |
+          $stage = Join-Path $env:RUNNER_TEMP "qv-runtime"
+          # Qt has to come from the staged directory; a Qt on PATH would hide a
+          # runtime the deployment forgot.
+          $env:PATH = "$stage;$($env:SystemRoot)\system32;$($env:SystemRoot)"
+          $output = Join-Path $env:RUNNER_TEMP "qv-first-paint.csv"
+          # Start-Process waits for the application to exit; the call operator
+          # returns as soon as a GUI application has been started.
+          $application = Start-Process -FilePath "$stage\QuickViewer.exe" -NoNewWindow -Wait -PassThru `
+            -ArgumentList @("--benchmark", "first-paint", "--runs", "1", "--warmup", "0",
+                            "--output", $output, "docs\62086450_p3.jpg")
+          if ($application.ExitCode -ne 0) {
+            throw "The deployed application did not reach the first paint (exit code $($application.ExitCode))"
+          }
+          Write-Host "The deployed application reached the first paint."
 
   debug-build-and-tests:
     name: Debug build and tests (MSVC 2022)

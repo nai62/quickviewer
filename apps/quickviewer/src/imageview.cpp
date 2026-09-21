@@ -1,18 +1,12 @@
 #include <QtWidgets>
-#ifndef QV_WITHOUT_OPENGL
-#    include <QtOpenGL>
-#endif
 
 #include "imageview.h"
 #include "models/filemanager.h"
 #include "models/cursorscrollmapping.h"
-#include "models/shadereffect.h"
 #include "qvapplication.h"
 
 ImageView::ImageView(QWidget *parent)
     : QGraphicsView(parent),
-      m_renderer(Native),
-      m_rendererViewport(nullptr),
       m_hoverState(Qt::AnchorHorizontalCenter),
       m_loupeCursor(QCursor(QPixmap(":/icons/loupe_cursor"), 20, 23)),
       m_viewerSession(nullptr),
@@ -52,14 +46,7 @@ ImageView::ImageView(QWidget *parent)
     //    setDragMode(ScrollHandDrag);
     //    setViewportUpdateMode(FullViewportUpdate);
     setAcceptDrops(false);
-//    setDragMode(DragDropMode::InternalMove);
-#ifdef QV_WITHOUT_OPENGL
-    setRenderer(Native);
-#else
-    if (usesGpuRendering(qApp->Effect())) {
-        setRenderer(OpenGL);
-    }
-#endif
+    //    setDragMode(DragDropMode::InternalMove);
 
     setMouseTracking(true);
     resetBackgroundColor();
@@ -153,26 +140,6 @@ void ImageView::showMessage(const QString &title, const QString &body)
     viewport()->update();
 }
 
-void ImageView::setRenderer(RendererType type)
-{
-#ifdef QV_WITHOUT_OPENGL
-    type = RendererType::Native;
-#endif
-    m_renderer = type;
-    if (m_rendererViewport) {
-        return;
-    }
-#ifndef QV_WITHOUT_OPENGL
-    if (m_renderer == OpenGL) {
-        m_rendererViewport = new QGLWidget(QGLFormat(QGL::SampleBuffers));
-    } else
-#endif
-    {
-        m_rendererViewport = new QWidget;
-    }
-    setViewport(m_rendererViewport);
-}
-
 void ImageView::setViewerSession(ViewerSession *session)
 {
     if (!session) {
@@ -183,10 +150,10 @@ void ImageView::setViewerSession(ViewerSession *session)
     connect(
         session, &ViewerSession::visiblePagesChanged, this, &ImageView::handleVisiblePagesChanged);
     connect(session, &ViewerSession::loadStatusChanged, this, &ImageView::handleLoadStatusChanged);
-    connect(session, SIGNAL(readyForPaint()), this, SLOT(refreshRenderedPages()));
-    connect(session, SIGNAL(volumeChanged(QString)), this, SLOT(handleVolumeChanged(QString)));
-    connect(this, SIGNAL(slideShowStarted()), session, SLOT(handleSlideShowStarted()));
-    connect(this, SIGNAL(slideShowStopped()), session, SLOT(handleSlideShowStopped()));
+    connect(session, &ViewerSession::readyForPaint, this, &ImageView::refreshRenderedPages);
+    connect(session, &ViewerSession::volumeChanged, this, &ImageView::handleVolumeChanged);
+    connect(this, &ImageView::slideShowStarted, session, &ViewerSession::handleSlideShowStarted);
+    connect(this, &ImageView::slideShowStopped, session, &ViewerSession::handleSlideShowStopped);
     handleVisiblePagesChanged(session->visiblePages());
 }
 
@@ -203,7 +170,7 @@ void ImageView::toggleSlideShow()
     }
     emit slideShowStarted();
     m_slideshowTimer = new QTimer();
-    connect(m_slideshowTimer, SIGNAL(timeout()), this, SLOT(handleSlideShowTimerTimeout()));
+    connect(m_slideshowTimer, &QTimer::timeout, this, &ImageView::handleSlideShowTimerTimeout);
     m_slideshowTimer->start(qApp->SlideShowWait());
 }
 
@@ -308,9 +275,6 @@ void ImageView::clearMessage()
 
 void ImageView::refreshRenderedPages()
 {
-    if (usesGpuRendering(qApp->Effect())) {
-        setRenderer(OpenGL);
-    }
     const int renderedCount = renderedPageCount();
     if (renderedCount > 0 && m_viewerSession) {
         const int currentPage = m_viewerSession->currentPageIndex();
@@ -331,9 +295,8 @@ void ImageView::refreshRenderedPages()
                                          : QString());
         }
         const QRect sceneRect = m_renderedPages.layout(
-            request,
-            [this](QGraphicsPixmapItem *item, const ImageContent &content, QSize drawSize) {
-                m_shaderManager.prepare(item, content, drawSize);
+            request, [this](QGraphicsPixmapItem *item, const ImageContent &, QSize) {
+                m_shaderManager.prepare(item);
             });
         // if Size of Image overs Size of View, use Image's size
         updateSceneForContent(
