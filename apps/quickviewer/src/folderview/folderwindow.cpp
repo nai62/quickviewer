@@ -381,7 +381,7 @@ void FolderWindow::setFolderPath(QString path, bool showParent)
         {
             m_currentPath = "";
             QList<QFileInfo> drives = QDir::drives();
-            foreach (QFileInfo drive, drives) {
+            for (const QFileInfo &drive : drives) {
                 m_volumes << FolderItem(
                     drive.absoluteFilePath(), FolderItem::Dir, drive.lastModified());
             }
@@ -412,15 +412,15 @@ void FolderWindow::setFolderPath(QString path, bool showParent)
         {
             QStringList subfolders =
                 dir.entryList(QDir::NoDotAndDotDot | QDir::Dirs, QDir::Unsorted);
-            foreach (const QString &sf, subfolders) {
+            for (const QString &sf : subfolders) {
                 QFileInfo fi(dir.absoluteFilePath(sf));
                 m_volumes << FolderItem(sf, FolderItem::Dir, fi.lastModified());
             }
         }
 
         {
-            foreach (const QString name,
-                     dir.entryList(QDir::NoDotAndDotDot | QDir::Files, QDir::Unsorted)) {
+            for (const QString &name :
+                 dir.entryList(QDir::NoDotAndDotDot | QDir::Files, QDir::Unsorted)) {
                 const bool isArchive = IFileLoader::isArchiveFile(name);
                 const bool isImage = IFileLoader::isImageFile(name);
                 if (!isArchive && !isImage) {

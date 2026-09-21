@@ -49,19 +49,19 @@ public:
     void resetVolume(Volume *newVolume);
     void uncheckAllShaderMenus()
     {
-        foreach (QAction *action, m_shaderMenuGroup) {
+        for (QAction *action : m_shaderMenuGroup) {
             action->setChecked(false);
         }
     }
     void uncheckAllLanguageMenus()
     {
-        foreach (QAction *action, m_languageMenuGroup) {
+        for (QAction *action : m_languageMenuGroup) {
             action->setChecked(false);
         }
     }
     void uncheckAllSortByMenus()
     {
-        foreach (QAction *action, m_sortByMenuGroup) {
+        for (QAction *action : m_sortByMenuGroup) {
             action->setChecked(false);
         }
     }

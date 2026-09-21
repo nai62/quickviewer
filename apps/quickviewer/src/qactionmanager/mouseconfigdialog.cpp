@@ -90,8 +90,8 @@ void MouseConfigDialog::resetView()
     //        ui->treeWidget->addTopLevelItem(item);
     //    }
     const QMultiMap<QString, QString> &nameByGroups = m_mouseActions.nameByGroups();
-    foreach (const QString &groupName, nameByGroups.uniqueKeys()) {
-        foreach (const QString &key, nameByGroups.values(groupName)) {
+    for (const QString &groupName : nameByGroups.uniqueKeys()) {
+        for (const QString &key : nameByGroups.values(groupName)) {
             QAction *action = actions[key];
             if (!action) {
                 continue;

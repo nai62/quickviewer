@@ -96,7 +96,7 @@ void ManageDatabaseDialog::resetCatalogList()
 {
     ui->treeWidget->clear();
     // Existing catalogs
-    foreach (int id, m_catalogs.keys()) {
+    for (int id : m_catalogs.keys()) {
         const CatalogRecord &catalog = m_catalogs[id];
         QTreeWidgetItem *item = new QTreeWidgetItem;
         item->setText(0, catalog.name);
@@ -108,7 +108,7 @@ void ManageDatabaseDialog::resetCatalogList()
     // Making catalogs
     {
         int cnt = -100;
-        foreach (const CatalogRecord &catalog, m_makeCatalogs) {
+        for (const CatalogRecord &catalog : m_makeCatalogs) {
             QTreeWidgetItem *item = new QTreeWidgetItem;
             item->setText(0, "* " + catalog.name);
             item->setText(1,
@@ -205,7 +205,7 @@ void ManageDatabaseDialog::handleCatalogCreated(const CatalogRecord cr)
     }
     m_catalogs[cr.id] = cr;
     int i = 0;
-    foreach (const CatalogRecord &c, m_makeCatalogs) {
+    for (const CatalogRecord &c : m_makeCatalogs) {
         if (cr.path == c.path) {
             break;
         }

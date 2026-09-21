@@ -24,7 +24,7 @@ LanguageInfo LanguageManager::getLanguageInfo(QString languageId)
 LanguageInfo LanguageManager::getSystemLanguageInfo()
 {
     auto systemLocale = QLocale::system();
-    foreach (const QString &lang, m_languageList) {
+    for (const QString &lang : m_languageList) {
         LanguageInfo info = m_languages[lang];
         auto locale = QLocale(info.Code);
         if (locale.name() == systemLocale.name()) {
@@ -73,7 +73,7 @@ void LanguageManager::initialize(QString path)
     QSettings settings(inipath, QSettings::IniFormat, this);
 
     QStringList groups = settings.childGroups();
-    foreach (const QString g, groups) {
+    for (const QString &g : groups) {
         settings.beginGroup(g);
         if (g == "QLanguageSelector") {
             m_reverseFile = settings.value("ReverseFile", "").toString();
@@ -95,7 +95,7 @@ void LanguageManager::initialize(QString path)
 
 void LanguageManager::clearLanguageMenus()
 {
-    foreach (QAction *action, m_actions) {
+    for (QAction *action : m_actions) {
         action->setChecked(false);
     }
 }
@@ -104,7 +104,7 @@ void LanguageManager::initializeMenu(QMenu *parent)
 {
     auto self = this;
     bool useText = false;
-    foreach (const QString &lang, m_languageList) {
+    for (const QString &lang : m_languageList) {
         LanguageInfo info = m_languages[lang];
         if (!info.TextFile.isEmpty()) {
             useText = true;

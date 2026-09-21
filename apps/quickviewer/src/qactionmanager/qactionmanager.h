@@ -155,7 +155,7 @@ public:
     void resetByDefault()
     {
         clear();
-        foreach (const QString &name, m_keyByNameDefaults.keys()) {
+        for (const QString &name : m_keyByNameDefaults.keys()) {
             Key key = m_keyByNameDefaults[name];
             m_keyByName[name] = key;
             for (int i = 0; i < key.count(); i++) {

@@ -647,7 +647,7 @@ void QVApplication::loadSettings()
 
     // KeyConfig
     m_settings->beginGroup("KeyConfig");
-    foreach (const QString &action, m_settings->childKeys()) {
+    for (const QString &action : m_settings->childKeys()) {
         QString str = m_settings->value(action, "").toString();
         m_keyActions.updateKey(action, QKeySequence(str), true);
     }
@@ -655,7 +655,7 @@ void QVApplication::loadSettings()
 
     // MouseConfig
     m_settings->beginGroup("MouseConfig");
-    foreach (const QString &action, m_settings->childKeys()) {
+    for (const QString &action : m_settings->childKeys()) {
         QString str = m_settings->value(action, "").toString();
         m_mouseActions.updateKey(action, QMouseSequence(str), true);
     }
@@ -815,14 +815,14 @@ void QVApplication::saveSettings()
     m_settings->endGroup();
 
     m_settings->beginGroup("KeyConfig");
-    foreach (const QString &action, m_keyActions.keyMaps().keys()) {
+    for (const QString &action : m_keyActions.keyMaps().keys()) {
         QKeySequence seqs = m_keyActions.keyMaps()[action];
         m_settings->setValue(action, seqs.toString());
     }
     m_settings->endGroup();
 
     m_settings->beginGroup("MouseConfig");
-    foreach (const QString &action, m_mouseActions.keyMaps().keys()) {
+    for (const QString &action : m_mouseActions.keyMaps().keys()) {
         QMouseSequence seqs = m_mouseActions.keyMaps()[action];
         m_settings->setValue(action, seqs.toString());
     }

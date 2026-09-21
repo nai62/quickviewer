@@ -31,7 +31,7 @@ bool ThumbnailManager::isImageFile(QString path)
         st_supportedImageFormats << "heic" << "heif";
     }
     QString lower = path.toLower();
-    foreach (const QString &e, st_supportedImageFormats) {
+    for (const QString &e : st_supportedImageFormats) {
         if (lower.endsWith(e)) {
             return true;
         }
@@ -42,7 +42,7 @@ bool ThumbnailManager::isImageFile(QString path)
 bool ThumbnailManager::isJpegImageFile(QString path)
 {
     QString lower = path.toLower();
-    foreach (const QString &e, st_jpegpegImageFormats) {
+    for (const QString &e : st_jpegpegImageFormats) {
         if (lower.endsWith(e)) {
             return true;
         }
@@ -53,7 +53,7 @@ bool ThumbnailManager::isJpegImageFile(QString path)
 bool ThumbnailManager::isHeavyImageFile(QString path)
 {
     QString lower = path.toLower();
-    foreach (const QString &e, st_heavyImageFormats) {
+    for (const QString &e : st_heavyImageFormats) {
         if (lower.endsWith(e)) {
             return true;
         }
@@ -142,7 +142,7 @@ int ThumbnailManager::createSubVolumes(QString dirpath, int catalog_id, int pare
         emit m_catalogWatcher.progressRangeChanged(0, m_catalogWorkMax);
     }
     int volumeame_asc = 0;
-    foreach (QString sub, subdirs) {
+    for (const QString &sub : subdirs) {
         QString subpath = dir.filePath(sub);
         if (m_catalogWatcher.isCanceled()) {
             break;
@@ -254,7 +254,7 @@ int ThumbnailManager::createVolumesFrontPageOnly(QString dirpath, int catalog_id
         root.subpaths = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Unsorted);
         sortFiles(root.subpaths);
         QStringList files = dir.entryList(QDir::Files, QDir::Unsorted);
-        foreach (const QString &f, files) {
+        for (const QString &f : files) {
             if (IFileLoader::isArchiveFile(f)) {
                 root.subpaths << f;
             }
@@ -263,14 +263,14 @@ int ThumbnailManager::createVolumesFrontPageOnly(QString dirpath, int catalog_id
     }
     QList<QFuture<VolumeWorker>> workers;
     do {
-        foreach (const VolumeWorker &p, parentworkers) {
+        for (const VolumeWorker &p : parentworkers) {
             QDir dir(p.dirpath);
             QStringList subdirs = p.subpaths;
             if (m_catalogWatcher.isStarted() && subdirs.size() > 0) {
                 m_catalogWorkMax += subdirs.size();
                 emit m_catalogWatcher.progressRangeChanged(0, m_catalogWorkMax);
             }
-            foreach (QString sub, subdirs) {
+            for (const QString &sub : subdirs) {
                 QString subpath = dir.filePath(sub);
                 if (m_catalogWatcher.isCanceled()) {
                     return -1;
@@ -285,7 +285,7 @@ int ThumbnailManager::createVolumesFrontPageOnly(QString dirpath, int catalog_id
         }
         parentworkers.clear();
 
-        foreach (const QFuture<VolumeWorker> &w, workers) {
+        for (const QFuture<VolumeWorker> &w : workers) {
             const VolumeWorker &v = w.result();
             if (m_catalogWatcher.isCanceled()) {
                 return -1;
@@ -365,7 +365,7 @@ static TaggedName realname2BookTitle(QString realname)
     bool NumberSign = false;
     bool authorExported = false;
     int type_id = 0;
-    foreach (QChar c, realname) {
+    for (QChar c : realname) {
         switch (c.unicode()) {
         case '#':
             if (cnt == 0) {
@@ -498,7 +498,7 @@ int ThumbnailManager::createVolumeInternal(QString dirpath, int catalog_id, int 
     QSqlQuery t_tagentries(m_db);
     t_tagentries.prepare("INSERT INTO t_volumetags (volume_id, tag_id, catalog_id) VALUES "
                          "(:volume_id, :tag_id, :catalog_id)");
-    foreach (const TagRecord &t, tagged.tags) {
+    for (const TagRecord &t : tagged.tags) {
         QString tagkey = QString("%1:%2").arg(t.type_id).arg(t.name.toLower());
         if (!m_tags.contains(tagkey)) {
             t_tags.bindValue(":name", t.name);
@@ -677,7 +677,7 @@ int ThumbnailManager::createVolumeContent(QString dirpath, int volume_id)
         workers.append(QtConcurrent::run(
             [&] { return createFileRecord(filename, filepath, filename_asc++); }));
     }
-    foreach (auto worker, workers) {
+    for (const auto &worker : workers) {
         const FileWorker &w = worker.result();
         if (w.asc < 0) {
             filename_asc--;
@@ -781,7 +781,7 @@ CatalogRecord ThumbnailManager::createCatalog(QString name, QString path)
 QList<CatalogRecord> ThumbnailManager::callCreateCatalog(const QList<CatalogRecord> &newers)
 {
     QList<CatalogRecord> result;
-    foreach (const CatalogRecord &r, newers) {
+    for (const CatalogRecord &r : newers) {
         result << createCatalog(r.name, r.path);
         if (m_catalogWatcher.isCanceled()) {
             break;
@@ -899,7 +899,7 @@ QList<VolumeThumbRecord> ThumbnailManager::volumes2()
         vtr.thumbnail = v_volumethm.value("thumbnail").toByteArray();
         resultasync.append(QtConcurrent::run(thumbnail2Icon, vtr));
     }
-    foreach (auto a, resultasync) {
+    for (const auto &a : resultasync) {
         result.append(a.result());
     }
     m_volumesDurty = false;

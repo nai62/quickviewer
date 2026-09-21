@@ -514,7 +514,7 @@ void MainWindow::resetShortcutKeys()
 {
     QMap<QString, QAction *> &actions = qApp->keyActions().actions();
     QMap<QString, QKeySequence> &seqMap = qApp->keyActions().keyMaps();
-    foreach (const QString &name, actions.keys()) {
+    for (const QString &name : actions.keys()) {
         auto a = actions[name];
         QKeySequence seq = seqMap[name];
         //        a->setShortcut(seq);
@@ -1050,7 +1050,7 @@ void MainWindow::handleScrollModeChanged(bool scrolled)
 {
     QStringList cusors = {"Left", "Right", "Up", "Down"};
     // enable/disable cursor key shortcuts
-    foreach (const QString &c, cusors) {
+    for (const QString &c : cusors) {
         auto key = QKeySequence(c);
         QString name = qApp->keyActions().getNameByKey(key);
         if (!name.isEmpty()) {
@@ -2184,7 +2184,7 @@ template <typename MenuTypePtr>
 static void setMenuAndSubmenuFont(MenuTypePtr parent, QFont font)
 {
     parent->setFont(font);
-    foreach (QObject *obj, parent->children()) {
+    for (QObject *obj : parent->children()) {
         QMenu *menu = dynamic_cast<QMenu *>(obj);
         if (menu) {
             setMenuAndSubmenuFont(menu, font);

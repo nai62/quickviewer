@@ -130,7 +130,7 @@ FileAssocDialog::FileAssocDialog(QWidget *parent)
 
     {
         // check on if assoiation exists for each extension
-        foreach (const QString &fmt, m_assocOfActions.keys()) {
+        for (const QString &fmt : m_assocOfActions.keys()) {
             QSettings settings(REGKEY_CLASSES, RegFormat);
             settings.beginGroup(QString(REGKEYFORMAT_ASSOCFILE).arg(fmt));
             if (!settings.allKeys().isEmpty()) {
@@ -163,7 +163,7 @@ FileAssocDialog::~FileAssocDialog()
 QStringList FileAssocDialog::enumrateFormats()
 {
     QStringList result;
-    foreach (const QString &fmt, m_assocOfActions.keys()) {
+    for (const QString &fmt : m_assocOfActions.keys()) {
         QCheckBox *c = m_assocOfActions[fmt];
         if (c && c->isChecked()) {
             result << fmt;
@@ -175,7 +175,7 @@ QStringList FileAssocDialog::enumrateFormats()
 
 void FileAssocDialog::handleAllOnButtonClicked()
 {
-    foreach (QCheckBox *c, m_assocOfActions.values()) {
+    for (QCheckBox *c : m_assocOfActions.values()) {
         if (c) {
             c->setChecked(true);
         }
@@ -184,7 +184,7 @@ void FileAssocDialog::handleAllOnButtonClicked()
 
 void FileAssocDialog::handleAllOffButtonClicked()
 {
-    foreach (QCheckBox *c, m_assocOfActions.values()) {
+    for (QCheckBox *c : m_assocOfActions.values()) {
         if (c) {
             c->setChecked(false);
         }
@@ -265,8 +265,8 @@ void FileAssocDialog::writeCapabilities(const QStringList &formats)
         settings.setValue("ApplicationDescription", "Ultra-fast image and comic viewer");
         settings.setValue("ApplicationName", APPLICATION_ID);
         settings.beginGroup("FileAssociations");
-        foreach (const QString &fmt, formats) {
-            foreach (const QString &ext, m_assocs[fmt].Extensions) {
+        for (const QString &fmt : formats) {
+            for (const QString &ext : m_assocs[fmt].Extensions) {
                 settings.setValue(ext, QString(REGKEYFORMAT_ASSOCFILE).arg(fmt));
             }
         }
