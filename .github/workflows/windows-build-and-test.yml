@@ -87,7 +87,13 @@ jobs:
             throw "windeployqt failed with exit code $LASTEXITCODE"
           }
 
-          foreach ($unwanted in @("opengl32sw.dll", "d3dcompiler_47.dll")) {
+          # windeployqt copies the D3D12 shader compilers even with the flags
+          # above; the application never loads them.
+          Remove-Item (Join-Path $stage "dxcompiler.dll") -ErrorAction SilentlyContinue
+          Remove-Item (Join-Path $stage "dxil.dll") -ErrorAction SilentlyContinue
+
+          foreach ($unwanted in @("opengl32sw.dll", "d3dcompiler_47.dll",
+                                  "dxcompiler.dll", "dxil.dll")) {
             if (Test-Path (Join-Path $stage $unwanted)) {
               throw "The deployment still carries $unwanted"
             }
