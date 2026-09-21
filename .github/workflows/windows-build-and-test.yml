@@ -113,10 +113,13 @@ jobs:
           # runtime the deployment forgot.
           $env:PATH = "$stage;$($env:SystemRoot)\system32;$($env:SystemRoot)"
           $output = Join-Path $env:RUNNER_TEMP "qv-first-paint.csv"
-          & "$stage\QuickViewer.exe" --benchmark first-paint --runs 1 --warmup 0 `
-            --output $output "docs\62086450_p3.jpg"
-          if ($LASTEXITCODE -ne 0) {
-            throw "The deployed application did not reach the first paint (exit code $LASTEXITCODE)"
+          # Start-Process waits for the application to exit; the call operator
+          # returns as soon as a GUI application has been started.
+          $application = Start-Process -FilePath "$stage\QuickViewer.exe" -NoNewWindow -Wait -PassThru `
+            -ArgumentList @("--benchmark", "first-paint", "--runs", "1", "--warmup", "0",
+                            "--output", $output, "docs\62086450_p3.jpg")
+          if ($application.ExitCode -ne 0) {
+            throw "The deployed application did not reach the first paint (exit code $($application.ExitCode))"
           }
           Write-Host "The deployed application reached the first paint."
 
