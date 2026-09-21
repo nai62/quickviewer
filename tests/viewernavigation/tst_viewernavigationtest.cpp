@@ -1195,6 +1195,23 @@ private slots:
         QCOMPARE(session.currentPageName(), QStringLiteral("yellow.png"));
     }
 
+    void opensAnArchiveEntryInASubdirectory()
+    {
+        const QString archivePath =
+            QDir::fromNativeSeparators(QString(FILELOADER_DATAPATH "7z/image.7z"));
+        QVERIFY(QFileInfo::exists(archivePath));
+
+        // The archive keeps the '/' it carries in its entry names, while a
+        // folder listing uses the platform separator. A name written by the
+        // archive must resolve on Windows, where the spellings differ.
+        const QString entryName =
+            QStringLiteral("[sample＋folder] サンプル！　～フォルダ？～/red.jpg");
+        ViewerSession session(nullptr);
+        QVERIFY(session.openEntry(VolumeLocation{archivePath, entryName}));
+        QCOMPARE(session.pageCount(), 3);
+        QCOMPARE(session.currentPageName(), entryName);
+    }
+
     void readProgressKeepsLegacyIniKeys()
     {
         const QString volumePath = "read-progress-key-compatibility";

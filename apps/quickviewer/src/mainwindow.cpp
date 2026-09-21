@@ -830,10 +830,15 @@ void MainWindow::makeHistoryMenu()
     }
     static const QString shortcuts = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     ui->menuHistory->clear();
-    QStringList history = qApp->History();
+    const QStringList &history = qApp->History();
     for (int i = 0; i < history.size(); i++) {
-        QString text = QString("&%1: %2").arg(shortcuts.mid(i, 1)).arg(history.at(i));
-        ui->menuHistory->addAction(text);
+        const QString shortcut = shortcuts.mid(i, 1);
+        // Entries past the shortcut list show only their path, and every
+        // action carries the stored path so the handler never parses the text.
+        QAction *action = ui->menuHistory->addAction(
+            shortcut.isEmpty() ? history.at(i)
+                               : QString("&%1: %2").arg(shortcut).arg(history.at(i)));
+        action->setData(history.at(i));
     }
 }
 
@@ -1791,8 +1796,10 @@ void MainWindow::handleAutoLoadedActionTriggered(bool checked)
 
 void MainWindow::handleHistoryMenuTriggered(QAction *action)
 {
-    //qDebug() << action;
-    openPath(action->text().mid(4));
+    const QString path = action->data().toString();
+    if (!path.isEmpty()) {
+        openPath(path);
+    }
 }
 
 void MainWindow::resizeEvent(QResizeEvent *e)
@@ -2487,13 +2494,9 @@ void MainWindow::handleLoadBookmarkMenuTriggered(QAction *action)
     if (action == ui->actionClearBookmarks) {
         return;
     }
-    // Bookmarks store the page location in the application settings format.
-    const VolumeLocation location = loadStoredVolumeLocation(action->data().toString());
-    if (location.isContainer()) {
-        m_viewerSession.openContainer(location.containerPath);
-    } else {
-        m_viewerSession.openEntry(location);
-    }
+    // Bookmarks store the same page location as the last view path, so they
+    // load through the entry point that also moves the folder view.
+    openStoredPath(action->data().toString());
 }
 
 void MainWindow::handleSortByFileNameActionTriggered()
