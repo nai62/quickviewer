@@ -1,5 +1,6 @@
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QImage>
 #include <QTemporaryDir>
 #include <QtSql>
@@ -96,7 +97,14 @@ private:
 class CatalogFixture
 {
 public:
-    CatalogFixture() { m_ready = m_directory.isValid() && writeShippedDatabase(databasePath()); }
+    /**
+     * With \a seedDatabase false the catalog database is left missing, so a
+     * test can watch it being created on first use.
+     */
+    explicit CatalogFixture(bool seedDatabase = true)
+    {
+        m_ready = m_directory.isValid() && (!seedDatabase || writeShippedDatabase(databasePath()));
+    }
 
     bool isReady() const { return m_ready; }
     QString databasePath() const { return m_directory.filePath(QStringLiteral("catalog.db")); }
@@ -114,6 +122,12 @@ public:
         return writeImage(QDir(folder(folderName)).filePath(fileName), size);
     }
 
+    bool addRootImage(const QString &fileName, const QSize &size)
+    {
+        QDir().mkpath(rootPath());
+        return writeImage(QDir(rootPath()).filePath(fileName), size);
+    }
+
 private:
     QTemporaryDir m_directory;
     bool m_ready = false;
@@ -125,6 +139,9 @@ class CatalogDatabaseTest : public QObject
 
 private Q_SLOTS:
     void storesCoversUnderTheVolumeThatOwnsThem();
+    void createsTheCatalogDatabaseOnFirstUse();
+    void keepsAnUnreadableCatalogDatabase();
+    void refusesADatabaseWithoutTheCatalogSchema();
     void parsesVolumeNames_data();
     void parsesVolumeNames();
     void finishesAnEmptyCatalogRequest();
@@ -138,6 +155,9 @@ void CatalogDatabaseTest::storesCoversUnderTheVolumeThatOwnsThem()
 {
     CatalogFixture fixture;
     QVERIFY(fixture.isReady());
+    // The folder the catalog is created from holds an image of its own, so it
+    // is a volume like every folder below it.
+    QVERIFY(fixture.addRootImage(QStringLiteral("00.png"), QSize(180, 120)));
     QVERIFY(fixture.addImage(QStringLiteral("Alpha"), QStringLiteral("01.png"), QSize(200, 100)));
     QVERIFY(fixture.addImage(QStringLiteral("Alpha"), QStringLiteral("02.png"), QSize(80, 80)));
     QVERIFY(fixture.addImage(QStringLiteral("Beta"), QStringLiteral("cover.png"), QSize(50, 60)));
@@ -163,6 +183,12 @@ void CatalogDatabaseTest::storesCoversUnderTheVolumeThatOwnsThem()
                 QStringLiteral("SELECT realname FROM t_volumes WHERE id = %1").arg(baseVolumeId))
             .toString(),
         QStringLiteral("Library"));
+    QCOMPARE(
+        probe
+            .scalar(
+                QStringLiteral("SELECT name FROM t_files WHERE volume_id = %1").arg(baseVolumeId))
+            .toString(),
+        QStringLiteral("00.png"));
 
     const int alphaId =
         probe.scalar(QStringLiteral("SELECT id FROM t_volumes WHERE realname = 'Alpha'")).toInt();
@@ -182,7 +208,7 @@ void CatalogDatabaseTest::storesCoversUnderTheVolumeThatOwnsThem()
         probe.scalar(QStringLiteral("SELECT name FROM t_files WHERE volume_id = %1").arg(betaId))
             .toString(),
         QStringLiteral("cover.png"));
-    QCOMPARE(probe.count(QStringLiteral("t_files")), 2);
+    QCOMPARE(probe.count(QStringLiteral("t_files")), 3);
 
     // The stored thumbnail keeps the shape of the image it was made from.
     const int thumbnailWidth =
@@ -214,7 +240,70 @@ void CatalogDatabaseTest::storesCoversUnderTheVolumeThatOwnsThem()
             ++volumesWithCover;
         }
     }
-    QCOMPARE(volumesWithCover, 2);
+    QCOMPARE(volumesWithCover, 3);
+}
+
+void CatalogDatabaseTest::createsTheCatalogDatabaseOnFirstUse()
+{
+    CatalogFixture fixture(false);
+    QVERIFY(fixture.isReady());
+    QVERIFY(!QFileInfo::exists(fixture.databasePath()));
+    QVERIFY(fixture.addRootImage(QStringLiteral("01.png"), QSize(60, 90)));
+
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    const CatalogRecord catalog =
+        database.createCatalog(QStringLiteral("Library"), fixture.rootPath());
+    QVERIFY(catalog.created);
+    QVERIFY(QFileInfo::exists(fixture.databasePath()));
+    QCOMPARE(database.catalogs().size(), 1);
+    QCOMPARE(database.volumes().size(), 1);
+}
+
+void CatalogDatabaseTest::keepsAnUnreadableCatalogDatabase()
+{
+    CatalogFixture fixture(false);
+    QVERIFY(fixture.isReady());
+    const QByteArray contents("this file is not a catalog database");
+    {
+        QFile file(fixture.databasePath());
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        QVERIFY(file.write(contents) == contents.size());
+    }
+
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    QVERIFY(!database.ensureReady());
+    QVERIFY(!database.errorMessage().isEmpty());
+    QVERIFY(database.catalogs().isEmpty());
+    QVERIFY(!database.createCatalog(QStringLiteral("Library"), fixture.rootPath()).created);
+
+    // Whatever the file is, it is left where it is for the user to move aside.
+    QFile file(fixture.databasePath());
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    QCOMPARE(file.readAll(), contents);
+}
+
+void CatalogDatabaseTest::refusesADatabaseWithoutTheCatalogSchema()
+{
+    CatalogFixture fixture(false);
+    QVERIFY(fixture.isReady());
+    {
+        const QString connectionName = QStringLiteral("catalog-schema-probe");
+        QSqlDatabase other = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), connectionName);
+        other.setDatabaseName(fixture.databasePath());
+        QVERIFY(other.open());
+        {
+            QSqlQuery create(other);
+            QVERIFY(create.exec(QStringLiteral("CREATE TABLE unrelated (id INTEGER)")));
+        }
+        other.close();
+        other = QSqlDatabase();
+        QSqlDatabase::removeDatabase(connectionName);
+    }
+
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    QVERIFY(!database.ensureReady());
+    QVERIFY(!database.errorMessage().isEmpty());
+    QCOMPARE(database.catalogs().size(), 0);
 }
 
 void CatalogDatabaseTest::parsesVolumeNames_data()
