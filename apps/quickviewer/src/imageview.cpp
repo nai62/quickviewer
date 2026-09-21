@@ -1,18 +1,12 @@
 #include <QtWidgets>
-#ifndef QV_WITHOUT_OPENGL
-#    include <QtOpenGL>
-#endif
 
 #include "imageview.h"
 #include "models/filemanager.h"
 #include "models/cursorscrollmapping.h"
-#include "models/shadereffect.h"
 #include "qvapplication.h"
 
 ImageView::ImageView(QWidget *parent)
     : QGraphicsView(parent),
-      m_renderer(Native),
-      m_rendererViewport(nullptr),
       m_hoverState(Qt::AnchorHorizontalCenter),
       m_loupeCursor(QCursor(QPixmap(":/icons/loupe_cursor"), 20, 23)),
       m_viewerSession(nullptr),
@@ -52,14 +46,7 @@ ImageView::ImageView(QWidget *parent)
     //    setDragMode(ScrollHandDrag);
     //    setViewportUpdateMode(FullViewportUpdate);
     setAcceptDrops(false);
-//    setDragMode(DragDropMode::InternalMove);
-#ifdef QV_WITHOUT_OPENGL
-    setRenderer(Native);
-#else
-    if (scalesInView(qApp->Effect())) {
-        setRenderer(OpenGL);
-    }
-#endif
+    //    setDragMode(DragDropMode::InternalMove);
 
     setMouseTracking(true);
     resetBackgroundColor();
@@ -151,26 +138,6 @@ void ImageView::showMessage(const QString &title, const QString &body)
     m_messageTitle = title;
     m_messageBody = body;
     viewport()->update();
-}
-
-void ImageView::setRenderer(RendererType type)
-{
-#ifdef QV_WITHOUT_OPENGL
-    type = RendererType::Native;
-#endif
-    m_renderer = type;
-    if (m_rendererViewport) {
-        return;
-    }
-#ifndef QV_WITHOUT_OPENGL
-    if (m_renderer == OpenGL) {
-        m_rendererViewport = new QGLWidget(QGLFormat(QGL::SampleBuffers));
-    } else
-#endif
-    {
-        m_rendererViewport = new QWidget;
-    }
-    setViewport(m_rendererViewport);
 }
 
 void ImageView::setViewerSession(ViewerSession *session)
@@ -308,9 +275,6 @@ void ImageView::clearMessage()
 
 void ImageView::refreshRenderedPages()
 {
-    if (scalesInView(qApp->Effect())) {
-        setRenderer(OpenGL);
-    }
     const int renderedCount = renderedPageCount();
     if (renderedCount > 0 && m_viewerSession) {
         const int currentPage = m_viewerSession->currentPageIndex();

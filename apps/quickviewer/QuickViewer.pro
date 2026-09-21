@@ -12,13 +12,6 @@ include(../../qmake/third_party/resvg/resvg.pri)
 
 QT       += core gui concurrent sql svgwidgets widgets network
 
-contains(DEFINES, QV_WITHOUT_OPENGL) {
-    message(QuickViewer without OpenGL Support)
-} else {
-    message(QuickViewer with OpenGL Support)
-    QT += opengl opengl-private
-}
-
 VERSION = 2.0.0
 
 TARGET = QuickViewer

@@ -125,7 +125,6 @@ The Windows scripts stage the runtime data listed in the next section.
 ### Windows
 
 - **database**: SQLite database containing catalogs and thumbnails
-- **shaders**: fragment shaders for image resizing (obsolete)
 - **translations**: multi-language `.qm` files
 - **QuickViewer.exe**: main application
 - **quickviewer.ini**: main configuration including keyboard/mouse settings
@@ -149,16 +148,15 @@ The Windows scripts stage the runtime data listed in the next section.
 
 ## 6. Selection of rendering method
 
-QuickViewer renders images through one of:
+QuickViewer draws its pages with the standard rendering method of the platform
+(Windows GDI on Windows), or with Direct2D when that QPA plug-in is selected at
+startup.
 
-1. the standard rendering method of each OS (Windows GDI on Windows)
-2. OpenGL
-3. Direct2D
-
-To enable OpenGL, comment out `QV_WITHOUT_OPENGL` in `QVproject.pri`.
-
-GDI can be competitive for 2D bilinear drawing because it avoids transferring
-the image into a GPU texture.
+Resizing a page is a separate choice, made in the Rendering menu: either the
+view scales the page while it draws it (Bilinear, Nearest Neighbor) or the page
+is resized once by the CPU through zimg (Bicubic, Spline16, Spline36, Lanczos3,
+Lanczos4). GDI can be competitive for 2D bilinear drawing because it avoids
+transferring the image into a GPU texture.
 
 Direct2D is implemented as a QPA plug-in and is selected when that plug-in is
 enabled at startup.

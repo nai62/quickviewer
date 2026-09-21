@@ -14,17 +14,13 @@
 
 /**
  * @brief The ImageView class
- * It provides to show 1 or 2 images once, using OpenGL.
+ * It provides to show 1 or 2 images once.
  * It is made on QGraphicView, each images is used as QGraphicsItem
  */
 class ImageView : public QGraphicsView
 {
     Q_OBJECT
 public:
-    enum RendererType {
-        Native,
-        OpenGL,
-    };
     enum class AddRenderedPageResult {
         Rejected,
         AddedPortrait,
@@ -32,7 +28,6 @@ public:
     };
     typedef QPair<uint, uint> ZoomFraction;
     explicit ImageView(QWidget *parent = Q_NULLPTR);
-    void setRenderer(RendererType type = Native);
     void setViewerSession(ViewerSession *session);
     Qt::AnchorPoint hoverState() const { return m_hoverState; }
     void setResizeEventsSkipped(bool skipped) { m_skipResizeEvent = skipped; }
@@ -140,8 +135,6 @@ private:
     void updateZoomScrollFromCursor();
     void clearMessage();
 
-    RendererType m_renderer;
-    QPointer<QWidget> m_rendererViewport;
     RenderedPages m_renderedPages;
 
     Qt::AnchorPoint m_hoverState;

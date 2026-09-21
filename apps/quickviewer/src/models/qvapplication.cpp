@@ -1,5 +1,4 @@
 #include <QtGui>
-//#include <QtOpenGL>
 #include "fileloader7zarchive.h"
 
 #include "qvapplication.h"

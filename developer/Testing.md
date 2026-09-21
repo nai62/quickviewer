@@ -286,9 +286,9 @@ to check or apply formatting manually, and the environment requirements.
 
 ## Interactive checks
 
-Startup painting, fullscreen, OpenGL, input timing, and other visual behavior
-must also be checked interactively on Windows when affected. Headless
-automation does not establish visual correctness.
+Startup painting, fullscreen, input timing, and other visual behavior must also
+be checked interactively on Windows when affected. Headless automation does
+not establish visual correctness.
 
 A check that temporarily edits the portable `quickviewer.ini` next to the
 executable - it holds the history of opened volumes - must keep that file

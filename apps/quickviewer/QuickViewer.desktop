@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=QuickViewer
 Comment=A image viewer application for folders/archives, it can show images very fast
-Keywords=viewer;commic;manga;opengl;
+Keywords=viewer;commic;manga;
 Exec=usr/bin/QuickViewer %F
 Icon=quickviewer
 Terminal=false
