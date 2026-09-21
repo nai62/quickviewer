@@ -4,7 +4,9 @@
 !define AppDir "QuickViewer"
 #!define APPVERSION "1.2.6"
 !define COMPANYNAME "QuickViewer contributors"
-!define SrcDir "M:\Home\src\qt\QVproject\QuickViewer-portable-${APPVERSION}-x64"
+# The staged tree of a build made without QV_PORTABLE: that build keeps its
+# settings in the user's data directory, which is what an installed copy does.
+!define SrcDir "M:\Home\src\qt\QVproject\QuickViewer-${APPVERSION}\x64"
 
 # rtf or txt file - remember if it is txt, it must be in the DOS text format (\r\n)
 LicenseData "${SrcDir}\LICENSE"
@@ -19,6 +21,26 @@ InstallDir "$PROGRAMFILES64\${AppDir}"
  
 !include LogicLib.nsh
 
+# File associations. The application registers the same keys for the current
+# user when formats are chosen in its own dialog; a per-machine installation
+# registers them for every user, which the application cannot do without
+# elevation.
+!macro AssocProgId PROGID DESCRIPTION ICON
+  WriteRegStr HKLM "Software\Classes\${PROGID}" "" "${DESCRIPTION}"
+  !if "${ICON}" != ""
+    WriteRegStr HKLM "Software\Classes\${PROGID}\DefaultIcon" "" "$INSTDIR\iconengines\${ICON}"
+  !endif
+  WriteRegStr HKLM "Software\Classes\${PROGID}\shell\open\command" "" '"$INSTDIR\QuickViewer.exe" "%1"'
+!macroend
+
+!macro AssocExtension EXTENSION PROGID
+  WriteRegStr HKLM "Software\QuickViewer\Capabilities\FileAssociations" "${EXTENSION}" "${PROGID}"
+!macroend
+
+!macro DeleteAssocProgId PROGID
+  DeleteRegKey HKLM "Software\Classes\${PROGID}"
+!macroend
+
 # Just three pages - license agreement, install location, and installation
 page license
 page directory
@@ -30,7 +52,6 @@ Section
   SetOutPath "$INSTDIR"
   File "${SrcDir}\QuickViewer.exe"
   File "${SrcDir}\7z.dll"
-  File "${SrcDir}\AssociateFilesWithQuickViewer.exe"
   File "${SrcDir}\concrt140.dll"
   File "${SrcDir}\d3dcompiler_47.dll"
   File "${SrcDir}\dxcompiler.dll"
@@ -174,6 +195,64 @@ Section
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "Publisher" "${COMPANYNAME}"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "DisplayVersion" "${APPVERSION}"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "UninstallString" '"$INSTDIR\Uninstall.exe"'
+
+  # Register the formats every user can pick in Default Apps. The entries match
+  # the ones the application writes for a single user under HKEY_CURRENT_USER.
+  WriteRegStr HKLM "Software\QuickViewer\Capabilities" "ApplicationName" "${APPNAME}"
+  WriteRegStr HKLM "Software\QuickViewer\Capabilities" "ApplicationDescription" "Ultra-fast image and comic viewer"
+  WriteRegStr HKLM "Software\RegisteredApplications" "${APPNAME}" "Software\QuickViewer\Capabilities"
+  WriteRegStr HKLM "Software\Classes\Applications\QuickViewer.exe" "FriendlyAppName" "${APPNAME}"
+  WriteRegStr HKLM "Software\Classes\Applications\QuickViewer.exe\shell\open\command" "" '"$INSTDIR\QuickViewer.exe" "%1"'
+
+  !insertmacro AssocProgId "QuickViewer.AssocFile.Jpeg" "JPEG Image" "qv_jpeg.ico"
+  !insertmacro AssocExtension ".jpg" "QuickViewer.AssocFile.Jpeg"
+  !insertmacro AssocExtension ".jpeg" "QuickViewer.AssocFile.Jpeg"
+  !insertmacro AssocExtension ".jpe" "QuickViewer.AssocFile.Jpeg"
+
+  !insertmacro AssocProgId "QuickViewer.AssocFile.Png" "PNG File" "qv_png.ico"
+  !insertmacro AssocExtension ".png" "QuickViewer.AssocFile.Png"
+
+  !insertmacro AssocProgId "QuickViewer.AssocFile.Tga" "Truevision Graphics Adapter Format Image" "qv_tga.ico"
+  !insertmacro AssocExtension ".tga" "QuickViewer.AssocFile.Tga"
+
+  !insertmacro AssocProgId "QuickViewer.AssocFile.Apng" "Animated PNG File" "qv_apng.ico"
+  !insertmacro AssocExtension ".apng" "QuickViewer.AssocFile.Apng"
+
+  !insertmacro AssocProgId "QuickViewer.AssocFile.Bitmap" "Bitmap File" "qv_bmp.ico"
+  !insertmacro AssocExtension ".bmp" "QuickViewer.AssocFile.Bitmap"
+
+  !insertmacro AssocProgId "QuickViewer.AssocFile.Dds" "DirectDraw Surface Image" "qv_dds.ico"
+  !insertmacro AssocExtension ".dds" "QuickViewer.AssocFile.Dds"
+
+  !insertmacro AssocProgId "QuickViewer.AssocFile.Gif" "GIF Image" "qv_gif.ico"
+  !insertmacro AssocExtension ".gif" "QuickViewer.AssocFile.Gif"
+
+  !insertmacro AssocProgId "QuickViewer.AssocFile.Icon" "Windows Icon File" ""
+  !insertmacro AssocExtension ".ico" "QuickViewer.AssocFile.Icon"
+
+  !insertmacro AssocProgId "QuickViewer.AssocFile.Tiff" "TIFF image" "qv_tiff.ico"
+  !insertmacro AssocExtension ".tif" "QuickViewer.AssocFile.Tiff"
+  !insertmacro AssocExtension ".tiff" "QuickViewer.AssocFile.Tiff"
+
+  !insertmacro AssocProgId "QuickViewer.AssocFile.WebP" "WebP Image" "qv_webp.ico"
+  !insertmacro AssocExtension ".webp" "QuickViewer.AssocFile.WebP"
+
+  !insertmacro AssocProgId "QuickViewer.AssocFile.Heif" "HEIF Image" ""
+  !insertmacro AssocExtension ".heic" "QuickViewer.AssocFile.Heif"
+  !insertmacro AssocExtension ".heif" "QuickViewer.AssocFile.Heif"
+
+  !insertmacro AssocProgId "QuickViewer.AssocFile.RawCanon" "Canon RAW format" "qv_raw.ico"
+  !insertmacro AssocExtension ".crw" "QuickViewer.AssocFile.RawCanon"
+  !insertmacro AssocExtension ".cr2" "QuickViewer.AssocFile.RawCanon"
+
+  !insertmacro AssocProgId "QuickViewer.AssocFile.RawDng" "Adobe Digital Negative Format" "qv_raw.ico"
+  !insertmacro AssocExtension ".dng" "QuickViewer.AssocFile.RawDng"
+
+  !insertmacro AssocProgId "QuickViewer.AssocFile.RawNicon" "Nikon RAW format" "qv_raw.ico"
+  !insertmacro AssocExtension ".nef" "QuickViewer.AssocFile.RawNicon"
+
+  !insertmacro AssocProgId "QuickViewer.AssocFile.RawSony" "Sony RAW format" "qv_raw.ico"
+  !insertmacro AssocExtension ".arw" "QuickViewer.AssocFile.RawSony"
 SectionEnd
 
 
@@ -187,4 +266,23 @@ Section "Uninstall"
   RMDir "$SMPROGRAMS\${AppDir}"
   # remove registries
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}"
+  # remove the file associations written by the install section
+  DeleteRegValue HKLM "Software\RegisteredApplications" "${APPNAME}"
+  DeleteRegKey HKLM "Software\QuickViewer"
+  DeleteRegKey HKLM "Software\Classes\Applications\QuickViewer.exe"
+  !insertmacro DeleteAssocProgId "QuickViewer.AssocFile.Jpeg"
+  !insertmacro DeleteAssocProgId "QuickViewer.AssocFile.Png"
+  !insertmacro DeleteAssocProgId "QuickViewer.AssocFile.Tga"
+  !insertmacro DeleteAssocProgId "QuickViewer.AssocFile.Apng"
+  !insertmacro DeleteAssocProgId "QuickViewer.AssocFile.Bitmap"
+  !insertmacro DeleteAssocProgId "QuickViewer.AssocFile.Dds"
+  !insertmacro DeleteAssocProgId "QuickViewer.AssocFile.Gif"
+  !insertmacro DeleteAssocProgId "QuickViewer.AssocFile.Icon"
+  !insertmacro DeleteAssocProgId "QuickViewer.AssocFile.Tiff"
+  !insertmacro DeleteAssocProgId "QuickViewer.AssocFile.WebP"
+  !insertmacro DeleteAssocProgId "QuickViewer.AssocFile.Heif"
+  !insertmacro DeleteAssocProgId "QuickViewer.AssocFile.RawCanon"
+  !insertmacro DeleteAssocProgId "QuickViewer.AssocFile.RawDng"
+  !insertmacro DeleteAssocProgId "QuickViewer.AssocFile.RawNicon"
+  !insertmacro DeleteAssocProgId "QuickViewer.AssocFile.RawSony"
 SectionEnd

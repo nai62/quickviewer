@@ -53,10 +53,4 @@ contains(DEFINES, QV_WITH_LUMINOR) {
     languageswitchtest.depends += luminor
 }
 
-win32 {
-    SUBDIRS += AssociateFilesWithQuickViewer
-    AssociateFilesWithQuickViewer.file = apps/associate-files/AssociateFilesWithQuickViewer.pro
-}
-
-
 CODECFORSRC = UTF-8

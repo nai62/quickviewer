@@ -179,7 +179,6 @@ public slots:
     void handleLanguageSelectorLanguageChanged(QString language);
     void handleLanguageSelectorOpenTextEditorForLanguage(LanguageInfo info);
     void handleRegisterFileAssociationsActionTriggered();
-    void handleRegisterFileAssociationsAsAdministratorActionTriggered();
 
     // ContextMenus
     void handleContextMenuActionTriggered();

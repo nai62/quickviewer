@@ -330,7 +330,6 @@
     <addaction name="menuChange_Language"/>
     <addaction name="separator"/>
     <addaction name="actionRegisterFileAssociations"/>
-    <addaction name="actionRegisterFileAssociationsAsAdministrator"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -1084,11 +1083,6 @@
    </property>
    <property name="text">
     <string extracomment="A function to display a confirmation screen when moving the currently displayed image to Recycle Bin">Confirm moving image to &amp;Recycle Bin</string>
-   </property>
-  </action>
-  <action name="actionRegisterFileAssociationsAsAdministrator">
-   <property name="text">
-    <string extracomment="Ability to associate QuickViewer and image files on Explorer (Host Global)">File Associations... (administrator)</string>
    </property>
   </action>
   <action name="actionContextMenu">
@@ -2508,22 +2502,6 @@
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
    <slot>handleConfirmDeletePageActionTriggered(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>350</x>
-     <y>294</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionRegisterFileAssociationsAsAdministrator</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>handleRegisterFileAssociationsAsAdministratorActionTriggered()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>

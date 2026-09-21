@@ -306,7 +306,7 @@ win32 : !CONFIG(debug, debug|release) {
     mingw {
         MY_DEFAULT_INSTALL = ../../../QuickViewer-$${VERSION}-mingw-$${TARGET_ARCH}
 
-        install_target.files = $${DESTDIR}/QuickViewer.exe $${DESTDIR}/AssociateFilesWithQuickViewer.exe $${LIBDIR}/fileloader.dll $$PWD/../../third_party/7zip/windll/$${TARGET_ARCH}/7z.dll
+        install_target.files = $${DESTDIR}/QuickViewer.exe $${LIBDIR}/fileloader.dll $$PWD/../../third_party/7zip/windll/$${TARGET_ARCH}/7z.dll
 
         INSTALLS += install_target install_deploy_files install_translations install_assoc_icons
     } else {
@@ -317,10 +317,8 @@ win32 : !CONFIG(debug, debug|release) {
         }
 
         install_target.path = $${MY_DEFAULT_INSTALL}
-        #   install_target.files += $${DESTDIR}/QuickViewer.exe $${DESTDIR}/AssociateFilesWithQuickViewer.exe $${LIBDIR}/fileloader.dll
         install_target.files = \
             $${DESTDIR}/QuickViewer.exe \
-            $${DESTDIR}/AssociateFilesWithQuickViewer.exe \
             $$PWD/../../third_party/7zip/windll/$${TARGET_ARCH}/7z.dll \
 
         install_qrawspeed.path = $${MY_DEFAULT_INSTALL}/imageformats
@@ -380,17 +378,17 @@ win32 : !CONFIG(debug, debug|release) {
 
     install_assoc_icons.path = $${MY_DEFAULT_INSTALL}/iconengines
     install_assoc_icons.files = \
-        ../associate-files/icons/qv_apng.ico \
-        ../associate-files/icons/qv_bmp.ico \
-        ../associate-files/icons/qv_dds.ico \
-        ../associate-files/icons/qv_gif.ico \
-        ../associate-files/icons/qv_icon.ico \
-        ../associate-files/icons/qv_jpeg.ico \
-        ../associate-files/icons/qv_png.ico \
-        ../associate-files/icons/qv_raw.ico \
-        ../associate-files/icons/qv_tga.ico \
-        ../associate-files/icons/qv_tiff.ico \
-        ../associate-files/icons/qv_webp.ico \
+        ../../components/file-association/icons/qv_apng.ico \
+        ../../components/file-association/icons/qv_bmp.ico \
+        ../../components/file-association/icons/qv_dds.ico \
+        ../../components/file-association/icons/qv_gif.ico \
+        ../../components/file-association/icons/qv_icon.ico \
+        ../../components/file-association/icons/qv_jpeg.ico \
+        ../../components/file-association/icons/qv_png.ico \
+        ../../components/file-association/icons/qv_raw.ico \
+        ../../components/file-association/icons/qv_tga.ico \
+        ../../components/file-association/icons/qv_tiff.ico \
+        ../../components/file-association/icons/qv_webp.ico \
 
     install_shaders.path = $${MY_DEFAULT_INSTALL}/shaders
     install_shaders.files = $$SHADERS
@@ -468,17 +466,17 @@ linux : !CONFIG(debug, debug|release) : contains(DEFINES, QV_PORTABLE) {
 
     install_assoc_icons.path = $${MY_DEFAULT_INSTALL}/usr/shared/icons
     install_assoc_icons.files = \
-        ../associate-files/icons/qv_apng.ico \
-        ../associate-files/icons/qv_bmp.ico \
-        ../associate-files/icons/qv_dds.ico \
-        ../associate-files/icons/qv_gif.ico \
-        ../associate-files/icons/qv_icon.ico \
-        ../associate-files/icons/qv_jpeg.ico \
-        ../associate-files/icons/qv_png.ico \
-        ../associate-files/icons/qv_raw.ico \
-        ../associate-files/icons/qv_tga.ico \
-        ../associate-files/icons/qv_tiff.ico \
-        ../associate-files/icons/qv_webp.ico \
+        ../../components/file-association/icons/qv_apng.ico \
+        ../../components/file-association/icons/qv_bmp.ico \
+        ../../components/file-association/icons/qv_dds.ico \
+        ../../components/file-association/icons/qv_gif.ico \
+        ../../components/file-association/icons/qv_icon.ico \
+        ../../components/file-association/icons/qv_jpeg.ico \
+        ../../components/file-association/icons/qv_png.ico \
+        ../../components/file-association/icons/qv_raw.ico \
+        ../../components/file-association/icons/qv_tga.ico \
+        ../../components/file-association/icons/qv_tiff.ico \
+        ../../components/file-association/icons/qv_webp.ico \
 
     install_appimage.path = $${MY_DEFAULT_INSTALL}/..
     install_appimage.files = $${APPIMAGE}
@@ -539,17 +537,17 @@ linux : !CONFIG(debug, debug|release) : !contains(DEFINES, QV_PORTABLE) {
 
     install_assoc_icons.path = $${QV_SHARED_PATH}/QuickViewer/icons
     install_assoc_icons.files = \
-        ../associate-files/icons/qv_apng.ico \
-        ../associate-files/icons/qv_bmp.ico \
-        ../associate-files/icons/qv_dds.ico \
-        ../associate-files/icons/qv_gif.ico \
-        ../associate-files/icons/qv_icon.ico \
-        ../associate-files/icons/qv_jpeg.ico \
-        ../associate-files/icons/qv_png.ico \
-        ../associate-files/icons/qv_raw.ico \
-        ../associate-files/icons/qv_tga.ico \
-        ../associate-files/icons/qv_tiff.ico \
-        ../associate-files/icons/qv_webp.ico \
+        ../../components/file-association/icons/qv_apng.ico \
+        ../../components/file-association/icons/qv_bmp.ico \
+        ../../components/file-association/icons/qv_dds.ico \
+        ../../components/file-association/icons/qv_gif.ico \
+        ../../components/file-association/icons/qv_icon.ico \
+        ../../components/file-association/icons/qv_jpeg.ico \
+        ../../components/file-association/icons/qv_png.ico \
+        ../../components/file-association/icons/qv_raw.ico \
+        ../../components/file-association/icons/qv_tga.ico \
+        ../../components/file-association/icons/qv_tiff.ico \
+        ../../components/file-association/icons/qv_webp.ico \
 
     INSTALLS += install_target install_libs install_deploy_files install_translations install_assoc_icons
 }

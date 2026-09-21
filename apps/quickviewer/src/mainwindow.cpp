@@ -81,7 +81,6 @@ MainWindow::MainWindow(QWidget *parent)
                              [view = ui->graphicsView] { return view->renderedPageMetrics(); });
 
 #ifndef Q_OS_WIN
-    ui->actionRegisterFileAssociationsAsAdministrator->setVisible(false);
     ui->actionRegisterFileAssociations->setVisible(false);
 #endif
 
@@ -1782,13 +1781,6 @@ void MainWindow::handleRegisterFileAssociationsActionTriggered()
     FileAssocDialog dialog(this);
     dialog.exec();
 #endif
-}
-
-void MainWindow::handleRegisterFileAssociationsAsAdministratorActionTriggered()
-{
-    QProcess::startDetached(qApp->getApplicationFilePath("AssociateFilesWithQuickViewer.exe"),
-                            QStringList(),
-                            QDir::toNativeSeparators(qApp->applicationDirPath()));
 }
 
 void MainWindow::handleContextMenuActionTriggered()

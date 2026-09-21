@@ -128,7 +128,6 @@ The Windows scripts stage the runtime data listed in the next section.
 - **shaders**: fragment shaders for image resizing (obsolete)
 - **translations**: multi-language `.qm` files
 - **QuickViewer.exe**: main application
-- **AssociateFilesWithQuickViewer.exe**: configures image associations with UAC
 - **quickviewer.ini**: main configuration including keyboard/mouse settings
 - **progress.ini**: records the last displayed image in a volume
 
@@ -174,5 +173,17 @@ keep data files with the application; Linux AppImage builds use this mode.
 
 When it is not defined, QuickViewer follows platform installation conventions,
 such as `C:\Program Files` on Windows and `/usr/local/bin` on Linux.
+
+On Windows the define also decides where a running copy keeps its settings,
+progress and catalog files: a build with `QV_PORTABLE` writes them beside the
+executable and a build without it writes them into the user's data directory.
+The installation the NSIS installer lays down is therefore staged from a build
+made without `QV_PORTABLE`, and the portable archive from one made with it.
+
+File associations follow the same split. The application registers the
+selected formats for the current user under `HKEY_CURRENT_USER` and then opens
+the Windows Default Apps page, because Windows does not let a program pick the
+default application itself. The installer registers every format under
+`HKEY_LOCAL_MACHINE` for all users.
 
 Enjoy! :)
