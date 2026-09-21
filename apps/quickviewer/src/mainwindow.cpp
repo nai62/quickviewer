@@ -242,6 +242,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionSaveFolderViewWidth->setChecked(qApp->SaveFolderViewWidth());
 
     // Catalogs
+    connect(ui->actionManageCatalogs,
+            &QAction::triggered,
+            this,
+            &MainWindow::handleManageCatalogsActionTriggered);
     ui->actionCatalogIconLongText->setChecked(qApp->IconLongText());
     ui->actionSearchTitleWithOptions->setChecked(qApp->SearchTitleWithOptions());
     ui->actionCatalogTitleWithoutOptions->setChecked(qApp->TitleWithoutOptions());
@@ -1359,6 +1363,18 @@ void MainWindow::handleCatalogWindowClosed()
         if (!m_onWindowClosing) {
             qApp->setShowOptionViewOnStartup(qvEnums::OptionViewOnStartup::NoViewStartup);
         }
+    }
+}
+
+void MainWindow::handleManageCatalogsActionTriggered()
+{
+    // The dialog belongs to the catalog panel, and the panel reloads its list
+    // when the dialog closes, so open the panel first.
+    if (!m_catalogWindow) {
+        createCatalogWindow(!qApp->ShowPanelSeparateWindow());
+    }
+    if (m_catalogWindow) {
+        m_catalogWindow->handleManageCatalogButtonClicked();
     }
 }
 

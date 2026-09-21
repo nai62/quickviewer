@@ -121,6 +121,7 @@ public slots:
 
     // Catalog
     void handleShowCatalogActionTriggered();
+    void handleManageCatalogsActionTriggered();
     void handleCatalogWindowClosed();
     void handleCatalogWindowOpenVolume(const OpenTarget &target);
     void handleSearchTitleWithOptionsActionTriggered(bool checked);
