@@ -2487,13 +2487,9 @@ void MainWindow::handleLoadBookmarkMenuTriggered(QAction *action)
     if (action == ui->actionClearBookmarks) {
         return;
     }
-    // Bookmarks store the page location in the application settings format.
-    const VolumeLocation location = loadStoredVolumeLocation(action->data().toString());
-    if (location.isContainer()) {
-        m_viewerSession.openContainer(location.containerPath);
-    } else {
-        m_viewerSession.openEntry(location);
-    }
+    // Bookmarks store the same page location as the last view path, so they
+    // load through the entry point that also moves the folder view.
+    openStoredPath(action->data().toString());
 }
 
 void MainWindow::handleSortByFileNameActionTriggered()
