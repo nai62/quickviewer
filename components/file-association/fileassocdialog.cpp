@@ -331,7 +331,8 @@ void FileAssocDialog::openAssociationSettings()
     // page of one registered application directly; the page itself works on
     // both, so it is the fallback.
     QString settings = QStringLiteral("ms-settings:defaultapps");
-    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows11) {
+    const QOperatingSystemVersion windows11(QOperatingSystemVersion::Windows, 10, 0, 22000);
+    if (QOperatingSystemVersion::current() >= windows11) {
         settings += QStringLiteral("?registeredAppUser=" APPLICATION_ID);
     }
     QDesktopServices::openUrl(QUrl(settings));

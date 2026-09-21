@@ -6,6 +6,7 @@
 #include "startupprofiler.h"
 
 #include <Windows.h>
+#include <combaseapi.h>
 #include <dwmapi.h>
 #include <mapi.h>
 #include <shobjidl.h>
