@@ -41,6 +41,11 @@ signals:
     void closed();
 
 private:
+    void registerFormat(const QString &format);
+    void unregisterFormat(const QString &format);
+    void writeCapabilities(const QStringList &formats);
+    void openAssociationSettings();
+
     Ui::FileAssocDialog *ui;
     QMap<QString, AssocInfo> m_assocs;
     QMap<QString, QCheckBox *> m_assocOfActions;
