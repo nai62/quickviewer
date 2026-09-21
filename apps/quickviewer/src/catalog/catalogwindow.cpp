@@ -181,15 +181,15 @@ void CatalogWindow::initTagButtons()
     QStringList buttons;
     if (qApp->ShowTagBar()) {
         QMap<int, TagRecord *> tags = m_catalogDatabase->tagsByCount();
-        if (tags.size() <= 1) {
-            return;
-        }
-
-        int cnt = 0;
-        for (int i : tags.keys()) {
-            buttons << tags[i]->name;
-            if (cnt++ >= 7) {
-                break;
+        // One tag alone is not worth a bar, but the buttons of the state
+        // before still have to go: a tag can lose its last volume.
+        if (tags.size() > 1) {
+            int cnt = 0;
+            for (int i : tags.keys()) {
+                buttons << tags[i]->name;
+                if (cnt++ >= 7) {
+                    break;
+                }
             }
         }
     }
@@ -331,6 +331,10 @@ void CatalogWindow::handleFolderViewListActionTriggered()
     ui->actionFolderViewIconNoText->setChecked(false);
     m_itemModel.setViewMode(qvEnums::CatalogViewMode::List);
     ui->volumeList->setResizeMode(QListView::Adjust);
+    // A list lays its rows out top to bottom. Leaving the wrapping of the icon
+    // layout on makes the view hold one grid cell empty above the first row.
+    ui->volumeList->setFlow(QListView::TopToBottom);
+    ui->volumeList->setWrapping(false);
     if (qApp->IconLongText()) {
         ui->volumeList->setGridSize(QSize(300, 100));
         ui->volumeList->setTextElideMode(Qt::ElideRight);
@@ -352,6 +356,8 @@ void CatalogWindow::handleFolderViewIconActionTriggered()
     ui->actionFolderViewIconNoText->setChecked(false);
     m_itemModel.setViewMode(qvEnums::CatalogViewMode::Icon);
     ui->volumeList->setResizeMode(QListView::Adjust);
+    ui->volumeList->setFlow(QListView::LeftToRight);
+    ui->volumeList->setWrapping(true);
     if (qApp->IconLongText()) {
         ui->volumeList->setGridSize(QSize(150, 170));
         ui->volumeList->setTextElideMode(Qt::ElideRight);
@@ -372,6 +378,8 @@ void CatalogWindow::handleFolderViewIconNoTextActionTriggered()
     ui->actionFolderViewIcon->setChecked(false);
     ui->actionFolderViewIconNoText->setChecked(true);
     m_itemModel.setViewMode(qvEnums::CatalogViewMode::IconNoText);
+    ui->volumeList->setFlow(QListView::LeftToRight);
+    ui->volumeList->setWrapping(true);
     ui->volumeList->setResizeMode(QListView::Adjust);
     ui->volumeList->setViewMode(QListView::IconMode);
     ui->volumeList->setGridSize(QSize(100, 100));
@@ -397,12 +405,6 @@ void CatalogWindow::handleSearchComboBoxEditTextChanged(QString search)
     //    if(m_volumes.size() < qApp->MaxSearchByCharChanged())
     searchByWord();
     return;
-}
-
-void CatalogWindow::handleSearchComboBoxCurrentIndexChanged(QString search)
-{
-    qDebug() << "handleSearchComboBoxCurrentIndexChanged: " << search;
-    searchByWord();
 }
 
 void CatalogWindow::handleSearchLineEditEditingFinished()

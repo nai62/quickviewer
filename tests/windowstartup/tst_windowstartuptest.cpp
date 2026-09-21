@@ -1,6 +1,7 @@
 #include "foldertextcache.h"
 #include <QtTest>
 
+#include "catalogwindow.h"
 #include "folderwindow.h"
 #include "mainwindow.h"
 #include "models/filemanager.h"
@@ -97,6 +98,9 @@ class WindowStartupTest : public QObject
     Q_OBJECT
 
 private slots:
+    void catalogListStartsAtTheTopInListMode();
+    void catalogTagBarFollowsRemovedTags();
+
     void init()
     {
         qApp->setAutoLoaded(false);
@@ -2241,6 +2245,105 @@ private slots:
         QVERIFY(!qApp->History().contains(encryptedPath));
     }
 };
+
+/** A catalog of three books, one folder per book, each with a cover image. */
+static bool writeCatalogShelf(const QString &root, const QStringList &folderNames)
+{
+    for (const QString &name : folderNames) {
+        const QString folder = QDir(root).filePath(name);
+        if (!QDir().mkpath(folder)) {
+            return false;
+        }
+        QImage image(QSize(200, 300), QImage::Format_RGB32);
+        image.fill(Qt::red);
+        if (!image.save(QDir(folder).filePath(QStringLiteral("01.png")))) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void WindowStartupTest::catalogListStartsAtTheTopInListMode()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString root = directory.filePath(QStringLiteral("Shelf"));
+    QVERIFY(writeCatalogShelf(
+        root, {QStringLiteral("Book A"), QStringLiteral("Book B"), QStringLiteral("Book C")}));
+
+    QTemporaryDir databaseDirectory;
+    QVERIFY(databaseDirectory.isValid());
+    CatalogDatabase catalogDatabase(nullptr,
+                                    databaseDirectory.filePath(QStringLiteral("catalog.db")));
+    QVERIFY(catalogDatabase.createCatalog(QStringLiteral("Shelf"), root).created);
+
+    qApp->setCatalogViewModeSetting(qvEnums::CatalogViewMode::List);
+    StartupWindow viewer;
+    viewer.resize(400, 800);
+    viewer.setCatalogDatabase(&catalogDatabase);
+    viewer.show();
+    viewer.createCatalogWindow(true);
+    QApplication::processEvents();
+
+    QListView *list = viewer.findChild<QListView *>(QStringLiteral("volumeList"));
+    QVERIFY(list);
+    QCOMPARE(list->model()->rowCount(), 3);
+
+    // The first book sits at the top of the list, with the next right below it.
+    const QRect first = list->visualRect(list->model()->index(0, 0));
+    const QRect second = list->visualRect(list->model()->index(1, 0));
+    QCOMPARE(first.top(), 0);
+    QCOMPARE(second.top(), first.bottom() + 1);
+}
+
+void WindowStartupTest::catalogTagBarFollowsRemovedTags()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString root = directory.filePath(QStringLiteral("Shelf"));
+    // Each name suggests one tag, so the bar has two buttons to show.
+    QVERIFY(writeCatalogShelf(
+        root, {QStringLiteral("Sample (First)"), QStringLiteral("Sample (Second)")}));
+
+    QTemporaryDir databaseDirectory;
+    QVERIFY(databaseDirectory.isValid());
+    CatalogDatabase catalogDatabase(nullptr,
+                                    databaseDirectory.filePath(QStringLiteral("catalog.db")));
+    QVERIFY(catalogDatabase.createCatalog(QStringLiteral("Shelf"), root).created);
+
+    qApp->setShowTagBar(true);
+    StartupWindow viewer;
+    viewer.resize(400, 800);
+    viewer.setCatalogDatabase(&catalogDatabase);
+    viewer.show();
+    viewer.createCatalogWindow(true);
+    QApplication::processEvents();
+
+    CatalogWindow *window = viewer.findChild<CatalogWindow *>();
+    QVERIFY(window);
+    QFrame *tagFrame = window->findChild<QFrame *>(QStringLiteral("tagFrame"));
+    QVERIFY(tagFrame);
+    const auto tagButtonCount = [tagFrame] {
+        return tagFrame->findChildren<QPushButton *>().size();
+    };
+    QCOMPARE(tagButtonCount(), 2);
+
+    // The user takes one of the two tags away.
+    int secondVolumeId = -1;
+    for (const VolumeThumbRecord &volume : catalogDatabase.volumes()) {
+        if (volume.realname == QStringLiteral("Sample (Second)")) {
+            secondVolumeId = volume.id;
+        }
+    }
+    QVERIFY(secondVolumeId > 0);
+    QVERIFY(catalogDatabase.setVolumeTags(secondVolumeId, QStringList()));
+
+    // Asking the panel for its tag bar again must drop the button of the tag
+    // that no book carries any more.
+    window->handleShowTagBarActionTriggered(true);
+    QApplication::processEvents();
+    QCOMPARE(tagButtonCount(), 0);
+}
 
 int main(int argc, char **argv)
 {

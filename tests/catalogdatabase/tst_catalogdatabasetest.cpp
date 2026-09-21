@@ -451,7 +451,8 @@ void CatalogDatabaseTest::editsTheTitleAndTagsOfAVolume()
 
     CatalogProbe probe(fixture.databasePath(), QStringLiteral("catalog-probe"));
     QVERIFY(probe.isOpen());
-    QCOMPARE(probe.count(QStringLiteral("t_tags")), 3);
+    // The tag the volume no longer carries is gone with it.
+    QCOMPARE(probe.count(QStringLiteral("t_tags")), 2);
     QCOMPARE(probe.count(QStringLiteral("t_volumetags")), 2);
 
     // A volume with no tags left has none of them.

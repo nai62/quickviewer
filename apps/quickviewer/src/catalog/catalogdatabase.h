@@ -92,6 +92,8 @@ private:
     void closeDatabase();
     /** Row of the tag \a name, which is created as a normal tag when missing. */
     int findOrCreateTag(const QString &name);
+    /** Drops the tags that no volume carries any more. */
+    void removeUnusedTags();
 
     QString m_dbPath;
     QString m_connectionName;

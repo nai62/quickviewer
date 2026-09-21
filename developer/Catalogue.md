@@ -52,6 +52,8 @@ thing across catalogues. What the user should know:
 - The tag bar above the list shows the tags of the books on the list, most
   used first, up to eight of them, and only when more than one tag exists.
   Pressing one adds it to the search words; pressing it again removes it.
+- A tag that no book carries any more is dropped from the catalog as soon as
+  the book that had it loses it, or the book leaves the catalogue.
 - Which title the list shows (the catalog title or the folder name) is the
   view option "Remove parenthesized text from book title", not a property of
   the volume.

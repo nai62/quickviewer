@@ -492,22 +492,6 @@ QFrame.layout {
    </hints>
   </connection>
   <connection>
-   <sender>searchCombo</sender>
-   <signal>currentIndexChanged(QString)</signal>
-   <receiver>CatalogWindow</receiver>
-   <slot>handleSearchComboBoxCurrentIndexChanged(QString)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>388</x>
-     <y>45</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>356</x>
-     <y>341</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>actionCloseWindow</sender>
    <signal>triggered()</signal>
    <receiver>CatalogWindow</receiver>

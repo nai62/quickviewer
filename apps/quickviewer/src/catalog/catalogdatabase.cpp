@@ -611,6 +611,8 @@ int CatalogDatabase::removeMissingVolumes()
         return 0;
     }
     commit();
+    removeUnusedTags();
+    loadTags();
     m_volumesDirty = true;
     return missing.size();
 }
@@ -670,8 +672,18 @@ bool CatalogDatabase::setVolumeTags(int volume_id, const QStringList &tags)
     commit();
 
     // The catalog and the tag bar read the tags from memory as well.
+    removeUnusedTags();
     loadTags();
     return true;
+}
+
+void CatalogDatabase::removeUnusedTags()
+{
+    QSqlQuery unused(m_db);
+    if (!unused.exec(QStringLiteral(
+            "DELETE FROM t_tags WHERE id NOT IN (SELECT tag_id FROM t_volumetags)"))) {
+        qDebug() << "unused tag removal failed: " << unused.lastError();
+    }
 }
 
 int CatalogDatabase::findOrCreateTag(const QString &name)
@@ -856,6 +868,8 @@ void CatalogDatabase::deleteCatalog(int id)
     }
 
     commit();
+    removeUnusedTags();
+    loadTags();
     m_volumesDirty = true;
 }
 
