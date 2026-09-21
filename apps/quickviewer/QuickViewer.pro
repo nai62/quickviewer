@@ -120,12 +120,13 @@ SOURCES += \
     src/folderview/folderitemdelegate.cpp \
     src/folderview/folderitemmodel.cpp \
     src/folderview/foldertextcache.cpp \
-    src/folderview/foldertreeview.cpp \
+    src/folderview/folderlistview.cpp \
     src/folderview/folderwindow.cpp \
     src/imageview.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
     src/models/readprogressstore.cpp \
+    src/models/filemanager.cpp \
     src/models/boundedexecutor.cpp \
     src/models/imagecontent.cpp \
     src/models/pagedisplayformatter.cpp \
@@ -181,11 +182,12 @@ HEADERS  += \
     src/folderview/folderitem.h \
     src/folderview/folderitemmodel.h \
     src/folderview/foldertextcache.h \
-    src/folderview/foldertreeview.h \
+    src/folderview/folderlistview.h \
     src/folderview/folderwindow.h \
     src/imageview.h \
     src/mainwindow.h \
     src/models/readprogressstore.h \
+    src/models/filemanager.h \
     src/models/boundedexecutor.h \
     src/models/cursorscrollmapping.h \
     src/models/lrucache.h \

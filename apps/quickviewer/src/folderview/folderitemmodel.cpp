@@ -239,6 +239,10 @@ QVariant FolderItemModel::data(const QModelIndex &index, int role) const
         break;
     case CurrentVolumeRole:
         return row == m_currentVolumeRow;
+    case ReadProgressRole: {
+        const auto progress = m_readProgress.constFind(row);
+        return progress == m_readProgress.cend() ? QVariant() : QVariant::fromValue(*progress);
+    }
     }
     return QVariant();
 }
@@ -278,6 +282,9 @@ void FolderItemModel::setVolumes(QList<FolderItem> *volumes)
     }
     emit beginResetModel();
     m_searchedVolumes = volumes;
+    // A listing carries no progress of its own: the panel fills it in from the
+    // store once the rows are known.
+    m_readProgress.clear();
     updatePlaceholderNames();
     emit endResetModel();
     // Requests follow a reset even when only the viewport (not the frame) paints.
@@ -390,4 +397,24 @@ void FolderItemModel::setCurrentVolumeRow(int row)
         emit dataChanged(
             index(m_currentVolumeRow, 0), index(m_currentVolumeRow, 0), {CurrentVolumeRole});
     }
+}
+
+void FolderItemModel::setReadProgress(const QHash<int, ReadProgress> &progressByRow)
+{
+    if (m_readProgress.isEmpty() && progressByRow.isEmpty()) {
+        return;
+    }
+    m_readProgress = progressByRow;
+    if (rowCount({}) > 0) {
+        emit dataChanged(index(0, 0), index(rowCount({}) - 1, 0), {ReadProgressRole});
+    }
+}
+
+void FolderItemModel::updateReadProgress(int row, const ReadProgress &progress)
+{
+    if (row < 0 || row >= rowCount({})) {
+        return;
+    }
+    m_readProgress.insert(row, progress);
+    emit dataChanged(index(row, 0), index(row, 0), {ReadProgressRole});
 }

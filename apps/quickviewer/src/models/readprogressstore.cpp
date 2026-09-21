@@ -64,4 +64,5 @@ ReadProgressStore::ReadProgressMap ReadProgressStore::initializeAsync()
 void ReadProgressStore::handleInitializationFinished()
 {
     m_progressByVolumePath = m_initializeWatcher.result();
+    emit progressLoaded();
 }

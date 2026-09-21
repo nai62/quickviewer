@@ -186,21 +186,18 @@
     </widget>
    </item>
    <item>
-    <widget class="FolderTreeView" name="folderView">
+    <widget class="FolderListView" name="folderView">
      <property name="focusPolicy">
       <enum>Qt::WheelFocus</enum>
      </property>
      <property name="contextMenuPolicy">
-      <enum>Qt::ActionsContextMenu</enum>
+      <enum>Qt::DefaultContextMenu</enum>
      </property>
      <property name="acceptDrops">
       <bool>true</bool>
      </property>
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
-     </property>
-     <property name="headerHidden">
-      <bool>true</bool>
      </property>
     </widget>
    </item>
@@ -254,14 +251,34 @@
     <string>Set as home folder</string>
    </property>
   </action>
+  <action name="actionOpenFolderItem">
+   <property name="text">
+    <string>Open</string>
+   </property>
+  </action>
+  <action name="actionOpenInExplorer">
+   <property name="text">
+    <string extracomment="Menu that displays Explorer with the currently displayed image file selected">Open in &amp;Explorer</string>
+   </property>
+  </action>
+  <action name="actionCopyItemPath">
+   <property name="text">
+    <string>Copy path</string>
+   </property>
+  </action>
+  <action name="actionReloadFolder">
+   <property name="text">
+    <string>Reload</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>FolderTreeView</class>
-   <extends>QTreeView</extends>
-   <header location="global">foldertreeview.h</header>
+   <class>FolderListView</class>
+   <extends>QListView</extends>
+   <header location="global">folderlistview.h</header>
    <slots>
-    <signal>selected(QModelIndex)</signal>
+    <signal>openRequested(QModelIndex)</signal>
    </slots>
   </customwidget>
  </customwidgets>
@@ -276,7 +293,7 @@
  <connections>
   <connection>
    <sender>folderView</sender>
-   <signal>selected(QModelIndex)</signal>
+   <signal>openRequested(QModelIndex)</signal>
    <receiver>FolderWindow</receiver>
    <slot>handleFolderViewItemSelected(QModelIndex)</slot>
    <hints>
@@ -361,6 +378,5 @@
   <slot>handleReloadButtonClicked()</slot>
   <slot>handleHomeButtonClicked()</slot>
   <slot>handleSetAsHomeFolderActionTriggered()</slot>
-  <slot>handleCurrentFolderItemTriggered()</slot>
  </slots>
 </ui>

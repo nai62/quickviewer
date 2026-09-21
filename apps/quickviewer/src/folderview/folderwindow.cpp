@@ -5,8 +5,10 @@
 #include "ui_mainwindow.h"
 
 #include "folderwindow.h"
+#include "models/filemanager.h"
 #include "models/volume.h"
 #include "models/qvapplication.h"
+#include "qmousesequence.h"
 #include "startupprofiler.h"
 
 namespace {
@@ -25,21 +27,20 @@ QIcon clockIcon(const QPalette &palette)
     painter.drawLine(QPointF(12.0, 12.0), QPointF(16.0, 14.0));
     return QIcon(pixmap);
 }
+
 }
 
 FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
     : QWidget(parent),
       ui(new Ui::FolderWindow),
       m_itemContextMenu(nullptr),
+      m_folderContextMenu(nullptr),
       m_historyButton(nullptr),
       m_itemModel(this),
-      m_itemDelegate(parent, this)
+      m_itemDelegate(parent)
 {
     ui->setupUi(this);
 
-    ui->folderView->setRootIsDecorated(false);
-    ui->folderView->setIndentation(0);
-    ui->folderView->setUniformRowHeights(true);
     ui->folderView->setMouseTracking(true);
     ui->folderView->installEventFilter(this);
 
@@ -52,10 +53,61 @@ FolderWindow::FolderWindow(QWidget *parent, Ui::MainWindow *uiMain)
             &QScrollBar::valueChanged,
             this,
             &FolderWindow::updateTextRowRange);
+    connect(ui->folderView,
+            &FolderListView::unusedMouseButton,
+            this,
+            &FolderWindow::handleUnusedMouseButton);
+    connect(ui->folderView,
+            &FolderListView::contextMenuRequested,
+            this,
+            &FolderWindow::handleFolderViewContextMenuRequested);
+    if (ReadProgressStore *store = qApp->readProgressStore()) {
+        // The rows paint the progress the store holds, so a value the store
+        // gains repaints its row, and the store's own load repaints them all.
+        connect(store,
+                &ReadProgressStore::progressChanged,
+                this,
+                &FolderWindow::handleReadProgressChanged);
+        connect(
+            store, &ReadProgressStore::progressLoaded, this, &FolderWindow::refreshReadProgress);
+    }
+    if (uiMain) {
+        // The bars follow this switch, and no row changes with it.
+        connect(
+            uiMain->actionShowReadProgress, &QAction::toggled, this, &FolderWindow::repaintRows);
+    }
 
-    // The item context menu is a plain menu; its action lives in the form.
+    // Two plain menus: one for an entry, one for the folder itself, which the
+    // right button over the empty part of the list asks for. The actions live in
+    // the form.
     m_itemContextMenu = new QMenu(this);
+    m_itemContextMenu->addAction(ui->actionOpenFolderItem);
+    m_itemContextMenu->addSeparator();
+    m_itemContextMenu->addAction(ui->actionOpenInExplorer);
+    m_itemContextMenu->addAction(ui->actionCopyItemPath);
+    m_itemContextMenu->addSeparator();
     m_itemContextMenu->addAction(ui->actionSetAsHomeFolder);
+    m_folderContextMenu = new QMenu(this);
+    m_folderContextMenu->addAction(ui->actionOpenInExplorer);
+    m_folderContextMenu->addAction(ui->actionCopyItemPath);
+    m_folderContextMenu->addSeparator();
+    m_folderContextMenu->addAction(ui->actionReloadFolder);
+    connect(ui->actionOpenFolderItem,
+            &QAction::triggered,
+            this,
+            &FolderWindow::handleOpenFolderItemActionTriggered);
+    connect(ui->actionOpenInExplorer,
+            &QAction::triggered,
+            this,
+            &FolderWindow::handleOpenInExplorerActionTriggered);
+    connect(ui->actionCopyItemPath,
+            &QAction::triggered,
+            this,
+            &FolderWindow::handleCopyItemPathActionTriggered);
+    connect(ui->actionReloadFolder,
+            &QAction::triggered,
+            this,
+            &FolderWindow::handleReloadButtonClicked);
 
     StartupProfiler::mark("folder-window.history-button.begin");
     setupHistoryButton(uiMain);
@@ -93,6 +145,9 @@ FolderWindow::~FolderWindow()
     if (m_itemContextMenu) {
         delete m_itemContextMenu;
     }
+    if (m_folderContextMenu) {
+        delete m_folderContextMenu;
+    }
     delete ui;
 }
 
@@ -125,8 +180,6 @@ void FolderWindow::setupHistoryButton(Ui::MainWindow *uiMain)
     }
 }
 
-static QModelIndex selectedIdx;
-
 bool FolderWindow::eventFilter(QObject *obj, QEvent *event)
 {
     if (obj == ui->folderView) {
@@ -140,25 +193,78 @@ bool FolderWindow::eventFilter(QObject *obj, QEvent *event)
             updateTextRowRange();
         }
     }
-    //    qDebug() << obj << event << event->type();
-    //    QMouseEvent *mouseEvent = nullptr;
-    QContextMenuEvent *contextEvent = nullptr;
-    switch (event->type()) {
-    default:
-        break;
-    case QEvent::ContextMenu:
-        contextEvent = dynamic_cast<QContextMenuEvent *>(event);
-        QPoint inner = ui->folderView->mapFromGlobal(QCursor::pos());
-        selectedIdx = ui->folderView->indexAt(inner);
-        m_itemContextMenu->exec(QCursor::pos());
-        return true;
-    }
     return QObject::eventFilter(obj, event);
+}
+
+/**
+ * The menu belongs to the entry the list reports, and showing it never opens
+ * that entry. A request that names no entry - the pointer over the empty part
+ * of the list, or an empty folder - is about the folder the panel shows.
+ */
+void FolderWindow::handleFolderViewContextMenuRequested(const QModelIndex &index, const QPoint &pos)
+{
+    const FolderItem *item = itemAt(index);
+    const bool hasEntry = item && item->type != FolderItem::NoItems;
+    // The placeholder of an empty folder is not an entry to act on.
+    m_contextMenuIndex = hasEntry ? index : QModelIndex();
+    ui->actionOpenFolderItem->setEnabled(hasEntry);
+    ui->actionSetAsHomeFolder->setEnabled(hasEntry && item->type == FolderItem::Dir);
+    const bool hasFolder = !m_currentPath.isEmpty();
+    ui->actionOpenInExplorer->setEnabled(hasEntry || hasFolder);
+    ui->actionCopyItemPath->setEnabled(hasEntry || hasFolder);
+    ui->actionReloadFolder->setEnabled(hasFolder);
+    QMenu *menu = hasEntry ? m_itemContextMenu : m_folderContextMenu;
+    menu->exec(pos);
+}
+
+/**
+ * The entry a menu index names, or nothing when it names no row of the folder
+ * the panel shows.
+ */
+const FolderItem *FolderWindow::itemAt(const QModelIndex &index) const
+{
+    const int row = index.row();
+    if (!index.isValid() || row < 0 || row >= m_volumes.size()) {
+        return nullptr;
+    }
+    return &m_volumes.at(row);
+}
+
+void FolderWindow::handleOpenFolderItemActionTriggered()
+{
+    openFolderItem(m_contextMenuIndex);
+}
+
+void FolderWindow::handleOpenInExplorerActionTriggered()
+{
+    showInFileManager(m_contextMenuIndex.isValid() ? itemPath(m_contextMenuIndex) : m_currentPath);
+}
+
+void FolderWindow::handleCopyItemPathActionTriggered()
+{
+    const QString path =
+        m_contextMenuIndex.isValid() ? itemPath(m_contextMenuIndex) : m_currentPath;
+    if (!path.isEmpty()) {
+        QGuiApplication::clipboard()->setText(QDir::toNativeSeparators(path));
+    }
+}
+
+/**
+ * The mouse buttons the list does not use behave like the keys it does not use:
+ * the window maps them to actions, and the back and forward buttons step a page
+ * by default.
+ */
+void FolderWindow::handleUnusedMouseButton(Qt::MouseButtons buttons)
+{
+    QMouseValue value(QKeySequence(qApp->keyboardModifiers()), buttons, 0);
+    if (QAction *action = qApp->mouseActions().getActionByValue(value)) {
+        action->trigger();
+    }
 }
 
 void FolderWindow::handleSetAsHomeFolderActionTriggered()
 {
-    int row = selectedIdx.row();
+    const int row = m_contextMenuIndex.row();
     if (row < 0 || row >= m_volumes.size()) {
         return;
     }
@@ -184,7 +290,11 @@ void FolderWindow::dropEvent(QDropEvent *e)
         QUrl url = urlList[i];
         QFileInfo info(url.toLocalFile());
         if (info.isDir() || info.isFile()) {
-            setFolderPath(info.absoluteFilePath(), false);
+            // The dropped path goes through the same open request a click
+            // sends, so the viewer moves to it and the panel follows the volume
+            // that ends up shown instead of listing a folder on its own.
+            emit openVolume(OpenTarget::forPath(info.absoluteFilePath()));
+            e->acceptProposedAction();
             break;
         }
     }
@@ -331,8 +441,7 @@ void FolderWindow::setFolderPath(QString path, bool showParent)
                                 FolderItem::NoItems,
                                 QDateTime());
     }
-    m_itemModel.setVolumes(&m_volumes);
-    updateTextRowRange();
+    listVolumes();
     updateCurrentVolumeRow();
 
     if (showParent) {
@@ -342,16 +451,82 @@ void FolderWindow::setFolderPath(QString path, bool showParent)
 
 void FolderWindow::reset()
 {
-    m_itemModel.setVolumes(&m_volumes);
-    updateTextRowRange();
+    listVolumes();
 }
 
 void FolderWindow::resortVolumes()
 {
     sortVolumes();
-    m_itemModel.setVolumes(&m_volumes);
-    updateTextRowRange();
+    listVolumes();
     updateCurrentVolumeRow();
+}
+
+/**
+ * Shows the current set of entries and gives the rows the read progress the
+ * store already holds for them: a row paints its bar, so it has to be told
+ * rather than asking the store while it paints.
+ */
+void FolderWindow::listVolumes()
+{
+    m_itemModel.setVolumes(&m_volumes);
+    refreshReadProgress();
+    updateTextRowRange();
+}
+
+void FolderWindow::refreshReadProgress()
+{
+    ReadProgressStore *store = qApp->readProgressStore();
+    if (!store) {
+        return;
+    }
+    QHash<int, ReadProgress> progressByRow;
+    for (int row = 0; row < m_volumes.size(); ++row) {
+        const QString path = volumePathOfRow(row);
+        if (!path.isEmpty() && store->contains(path)) {
+            progressByRow.insert(row, store->at(path));
+        }
+    }
+    m_itemModel.setReadProgress(progressByRow);
+}
+
+void FolderWindow::handleReadProgressChanged(QString path)
+{
+    ReadProgressStore *store = qApp->readProgressStore();
+    if (!store) {
+        return;
+    }
+    const QString volume = QDir::fromNativeSeparators(path);
+    for (int row = 0; row < m_volumes.size(); ++row) {
+        if (volumePathOfRow(row) == volume) {
+            // The volume being read is this row's, so its bar moves as the
+            // reader advances: nothing else redraws a row the pointer is not
+            // over.
+            m_itemModel.updateReadProgress(row, store->at(volume));
+            return;
+        }
+    }
+}
+
+/**
+ * The path the store keys \a row's volume by, which is the entry's own path.
+ * Rows that are not volumes - an image inside the folder, or the placeholder of
+ * an empty folder - have none.
+ */
+QString FolderWindow::volumePathOfRow(int row) const
+{
+    if (row < 0 || row >= m_volumes.size()) {
+        return QString();
+    }
+    const FolderItem &item = m_volumes.at(row);
+    if (item.type == FolderItem::NoItems) {
+        return QString();
+    }
+    return QDir::fromNativeSeparators(QDir(m_currentPath).absoluteFilePath(item.name));
+}
+
+void FolderWindow::repaintRows()
+{
+    ui->folderView->viewport()->update();
 }
 
 void FolderWindow::updateTextRowRange()
@@ -448,28 +623,7 @@ void FolderWindow::updateCurrentVolumeRow()
     }
     // Mark the entry the way a file page is marked: the delegate paints the
     // model role and the current index keeps keyboard navigation on the entry.
-    // The signals are blocked because selecting an entry must not open it.
-    const QSignalBlocker blocker(ui->folderView);
     ui->folderView->setCurrentIndex(m_itemModel.index(row, 0));
-}
-
-const static QKeySequence seqReturn("Return");
-const static QKeySequence seqEnter("Num+Enter");
-const static QKeySequence seqBackspace("Backspace");
-
-void FolderWindow::keyPressEvent(QKeyEvent *event)
-{
-    QKeySequence seq(event->key() | event->modifiers());
-    qDebug() << seq;
-    if (seq == seqReturn || seq == seqEnter) {
-        handleCurrentFolderItemTriggered();
-        return;
-    }
-    if (seq == seqBackspace) {
-        handleParentButtonClicked();
-        return;
-    }
-    QWidget::keyPressEvent(event);
 }
 
 void FolderWindow::handleHomeButtonClicked()
@@ -531,11 +685,6 @@ void FolderWindow::openFolderItem(const QModelIndex &index)
 void FolderWindow::handleFolderViewItemSelected(const QModelIndex &index)
 {
     openFolderItem(index);
-}
-
-void FolderWindow::handleCurrentFolderItemTriggered()
-{
-    openFolderItem(ui->folderView->currentIndex());
 }
 
 void FolderWindow::closeEvent(QCloseEvent *e)

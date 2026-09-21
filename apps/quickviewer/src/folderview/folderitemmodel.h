@@ -7,6 +7,7 @@
 
 #include "folderitem.h"
 #include "foldertextcache.h"
+#include "models/readprogressstore.h"
 
 /**
  * The three list icons as the shell renders them. Loaded off the GUI thread
@@ -23,7 +24,12 @@ class FolderItemModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    enum ItemRole { CurrentVolumeRole = Qt::UserRole, SafeTextRole, TextImagesRole };
+    enum ItemRole {
+        CurrentVolumeRole = Qt::UserRole,
+        SafeTextRole,
+        TextImagesRole,
+        ReadProgressRole
+    };
 
     FolderItemModel(QObject *parent, FolderTextCache *textCache = nullptr);
     /**
@@ -53,6 +59,14 @@ public:
 
     void setVolumes(QList<FolderItem> *volumes);
     void setCurrentVolumeRow(int row);
+    /**
+     * Replaces every row's read progress; rows that are not listed have none.
+     * The store reads its settings in the background, so a listed panel is told
+     * again once they arrive.
+     */
+    void setReadProgress(const QHash<int, ReadProgress> &progressByRow);
+    /** Replaces one row's read progress and repaints that row. */
+    void updateReadProgress(int row, const ReadProgress &progress);
 
 private:
     void handleIconLoadFinished();
@@ -76,6 +90,7 @@ private:
     int m_lastVisibleRow = -1;
     QList<QByteArray> m_textKeys;
     QList<FolderTextResult> m_textImages;
+    QHash<int, ReadProgress> m_readProgress;
     QFutureWatcher<FolderIconImages> m_iconWatcher;
     QIcon m_folderIcon;
     QIcon m_archiveIcon;

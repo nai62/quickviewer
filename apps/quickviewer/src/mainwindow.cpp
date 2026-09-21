@@ -602,7 +602,6 @@ void MainWindow::wheelEvent(QWheelEvent *e)
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
     QKeySequence seq(event->key() | event->modifiers());
-    qDebug() << seq.toString() << focusWidget();
 
     if (ui->graphicsView->isScrollMode() && !qApp->ScrollWithCursorWhenZooming()) {
         if (seq.toString() == "Left") {
