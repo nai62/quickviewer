@@ -108,6 +108,7 @@ private slots:
         qApp->setShowSliderBar(true);
         qApp->setDontSavingHistory(false);
         qApp->clearHistory();
+        qApp->clearBookmarks();
         qApp->setMaxVolumesCache(4);
         // The suites share the settings file next to their binaries, so every
         // setting a test depends on has to be set here.
@@ -550,6 +551,113 @@ private slots:
         QCOMPARE(
             QDir::cleanPath(QDir::fromNativeSeparators(panel->currentPath())),
             QDir::cleanPath(QDir::fromNativeSeparators(root.filePath(QStringLiteral("inner")))));
+    }
+
+    void loadingFolderPageBookmarkFollowsThePanel()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 3; ++page) {
+            QImage image(16, 16, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 60, 255, 255));
+            QVERIFY(image.save(directory.filePath(QStringLiteral("page-%1.bmp").arg(page))));
+        }
+
+        StartupWindow viewer;
+        viewer.openPath(directory.path());
+        QVERIFY(viewer.viewerSession()->selectPage(1));
+        QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("page-1.bmp"));
+        viewer.handleSaveBookmarkActionTriggered();
+        QCOMPARE(qApp->Bookmarks().size(), 1);
+
+        // The panel starts somewhere else, so loading the bookmark has to move
+        // it to the page's folder and mark the page it names.
+        QTemporaryDir elsewhere;
+        QVERIFY(elsewhere.isValid());
+        viewer.createFolderWindow(true, elsewhere.path(), false);
+        FolderWindow *panel = viewer.folderWindow();
+        QVERIFY(panel);
+        QCOMPARE(QDir::cleanPath(QDir::fromNativeSeparators(panel->currentPath())),
+                 QDir::cleanPath(QDir::fromNativeSeparators(elsewhere.path())));
+
+        QAction action;
+        action.setData(qApp->Bookmarks().first());
+        viewer.handleLoadBookmarkMenuTriggered(&action);
+
+        QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("page-1.bmp"));
+        QCOMPARE(QDir::cleanPath(QDir::fromNativeSeparators(panel->currentPath())),
+                 QDir::cleanPath(QDir::fromNativeSeparators(directory.path())));
+        QListView *view = panel->findChild<QListView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        QModelIndex bookmarkedPage;
+        for (int row = 0; row < view->model()->rowCount(); ++row) {
+            const QModelIndex candidate = view->model()->index(row, 0);
+            if (candidate.data().toString() == QStringLiteral("page-1.bmp")) {
+                bookmarkedPage = candidate;
+                break;
+            }
+        }
+        QVERIFY(bookmarkedPage.isValid());
+        QVERIFY(bookmarkedPage.data(FolderItemModel::CurrentVolumeRole).toBool());
+    }
+
+    void loadingArchivePageBookmarkFollowsThePanel()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const QString archivePath = directory.filePath(QStringLiteral("book.7z"));
+        QVERIFY(QFile::copy(QString(FILELOADER_DATAPATH "7z/image.7z"), archivePath));
+
+        StartupWindow viewer;
+        viewer.openPath(archivePath);
+        // Use the flat entry: the fixture also holds one in a subdirectory,
+        // whose name lookup is a separate, pre-existing problem.
+        const QString entryName = QStringLiteral("yellow.png");
+        int entryIndex = -1;
+        for (int page = 0; page < viewer.viewerSession()->pageCount(); ++page) {
+            if (viewer.viewerSession()->selectPage(page) &&
+                viewer.viewerSession()->currentPageName() == entryName) {
+                entryIndex = page;
+                break;
+            }
+        }
+        QVERIFY(entryIndex >= 0);
+        viewer.handleSaveBookmarkActionTriggered();
+        QCOMPARE(qApp->Bookmarks().size(), 1);
+
+        QTemporaryDir elsewhere;
+        QVERIFY(elsewhere.isValid());
+        viewer.createFolderWindow(true, elsewhere.path(), false);
+        FolderWindow *panel = viewer.folderWindow();
+        QVERIFY(panel);
+        // Archives defer the folder work until the first paint, as they do on a
+        // normal open, so release the placeholder directory and wait for it.
+        viewer.viewerSession()->notifyInitialImagePainted();
+        QTRY_VERIFY(!viewer.viewerSession()->initialImagePaintPending());
+        QTRY_COMPARE(QDir::cleanPath(QDir::fromNativeSeparators(panel->currentPath())),
+                     QDir::cleanPath(QDir::fromNativeSeparators(elsewhere.path())));
+
+        QAction action;
+        action.setData(qApp->Bookmarks().first());
+        viewer.handleLoadBookmarkMenuTriggered(&action);
+
+        QCOMPARE(viewer.viewerSession()->currentPageName(), entryName);
+        viewer.viewerSession()->notifyInitialImagePainted();
+        QTRY_VERIFY(!viewer.viewerSession()->initialImagePaintPending());
+        QTRY_COMPARE(QDir::cleanPath(QDir::fromNativeSeparators(panel->currentPath())),
+                     QDir::cleanPath(QDir::fromNativeSeparators(directory.path())));
+        QListView *view = panel->findChild<QListView *>(QStringLiteral("folderView"));
+        QVERIFY(view);
+        QModelIndex archive;
+        for (int row = 0; row < view->model()->rowCount(); ++row) {
+            const QModelIndex candidate = view->model()->index(row, 0);
+            if (candidate.data().toString() == QStringLiteral("book.7z")) {
+                archive = candidate;
+                break;
+            }
+        }
+        QVERIFY(archive.isValid());
+        QTRY_VERIFY(archive.data(FolderItemModel::CurrentVolumeRole).toBool());
     }
 
     void folderViewGivesTheSideButtonsToTheViewer()
