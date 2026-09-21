@@ -1,7 +1,7 @@
 include("../../QVproject.pri")
 QT       += core gui
 
-CONFIG += c++11
+CONFIG += c++17
 
 TARGET = qluminor
 TEMPLATE = lib

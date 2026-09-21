@@ -11,13 +11,13 @@ TARGET = zimg
 TEMPLATE = lib
 CONFIG += staticlib
 CONFIG += warn_off
+CONFIG += c++17
 
 DEFINES += ZIMG_X86
 
 ZIMG_SOURCE_ROOT = $$clean_path($$PWD/../../third_party/zimg)
 
 win32-msvc* {
-    CONFIG += c++11
     QMAKE_CXXFLAGS += /wd4819 /wd4996
     !CONFIG(debug, debug|release) {
         QMAKE_CXXFLAGS += /GL /W3 /Gy /Gm- /Gd /Oi
@@ -25,15 +25,13 @@ win32-msvc* {
 }
 
 *clang* || *g++* {
-    CONFIG += c++17
-    QMAKE_CXXFLAGS += -O2 -MD -MP -std=c++17 -include $$PWD/StdAfx.h
+    QMAKE_CXXFLAGS += -O2 -MD -MP -include $$PWD/StdAfx.h
     !CONFIG(debug, debug|release) {
     }
 }
 
 macos {
-    CONFIG += c++11
-    QMAKE_CXXFLAGS += -O2 -MD -MP -std=c++11
+    QMAKE_CXXFLAGS += -O2 -MD -MP
     !CONFIG(debug, debug|release) {
     }
 }

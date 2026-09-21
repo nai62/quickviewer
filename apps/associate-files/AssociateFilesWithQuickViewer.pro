@@ -8,6 +8,7 @@ QT       += core gui widgets
 
 TARGET = AssociateFilesWithQuickViewer
 TEMPLATE = app
+CONFIG += c++17
 #CONFIG += console
 
 QMAKE_TARGET_COMPANY = KATO Kanryu(k.kanryu@gmail.com)
@@ -23,7 +24,6 @@ DEFINES += QT_DEPRECATED_WARNINGS EXECUTE_ON_UAC
 
 *g++* {
     DEFINES += NTDDI_VERSION=NTDDI_VISTA
-    QMAKE_CXXFLAGS += -std=c++11
     QMAKE_MANIFEST = $${PWD}/AssociateFilesWithQuickViewer.exe.manifest
 }
 

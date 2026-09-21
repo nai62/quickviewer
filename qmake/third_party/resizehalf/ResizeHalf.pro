@@ -10,12 +10,10 @@ TARGET = resizehalf
 TEMPLATE = lib
 CONFIG += staticlib
 CONFIG += warn_off
+CONFIG += c++17
 
 win32-msvc* {
     QMAKE_CXXFLAGS += /wd4819
-}
-*g++* {
-    QMAKE_CXXFLAGS += -std=c++11
 }
 
 RESIZEHALF_ROOT = $$clean_path($$PWD/../../../third_party/resizehalf)
