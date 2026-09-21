@@ -14,7 +14,6 @@
 #include "folderwindow.h"
 #include "renamedialog.h"
 #include "exifdialog.h"
-#include "qnamedpipe.h"
 #include "qmousesequence.h"
 #include "fileloader.h"
 #include "innerframe.h"

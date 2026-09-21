@@ -63,12 +63,13 @@ jobs:
         working-directory: build-release
         run: jom /f Makefile
 
-      # Guard against accidentally linking the file-association entry point into
-      # QuickViewer.exe. The real application imports CreateNamedPipeW.
-      - name: Verify QuickViewer.exe entry point
+      # A console-only or mislinked binary would not pull in the widget module,
+      # so this catches a wrong TARGET or entry point before the release is
+      # staged.
+      - name: Verify QuickViewer.exe links the widget module
         shell: cmd
         working-directory: build-release
-        run: dumpbin /nologo /imports bin\QuickViewer.exe | findstr /C:"CreateNamedPipeW"
+        run: dumpbin /nologo /imports bin\QuickViewer.exe | findstr /C:"Qt6Widgets.dll"
 
   debug-build-and-tests:
     name: Debug build and tests (MSVC 2022)

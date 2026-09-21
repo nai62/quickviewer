@@ -10,7 +10,7 @@ isEmpty(QV_APP_SOURCE): QV_APP_SOURCE = $$PWD
 RESVG_SOURCE_ROOT = $$clean_path($$QV_APP_SOURCE/../../third_party/resvg)
 include(../../qmake/third_party/resvg/resvg.pri)
 
-QT       += core gui concurrent sql svgwidgets widgets
+QT       += core gui concurrent sql svgwidgets widgets network
 
 contains(DEFINES, QV_WITHOUT_OPENGL) {
     message(QuickViewer without OpenGL Support)

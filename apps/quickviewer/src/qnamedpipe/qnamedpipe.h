@@ -2,23 +2,22 @@
 #define QNAMEDPIPE_H
 
 #include <QtCore>
-class QNamedPipePrivate;
+
+class QLocalServer;
 
 /**
  * @brief The QNamedPipe class
  * QNamedPipe provides simple interprocess communication in local.
  *
- * Your first running process should be a server
- * and the second and subsequent processes should be clients.
+ * The first running process becomes the server and every process started after
+ * it is a client: the server holds a local socket with the given name, and a
+ * client hands over one message and stops.
  *
- * QNamedPipe automatically creates a thread for the server and waits.
- * It can receive binary messages from other processes.
+ * Messages are sent unilaterally from the client, and the server emits
+ * received(bytes) without any reply.
  *
- * Messages are sent unilaterally from the client,
- * and the server will emit received(bytes) without any reply.
- *
- * In Microsoft Windows it is implemented with NamedPipe.
- * On Unix it is implemented by named pipe created on /tmp.
+ * The channel is a QLocalServer and QLocalSocket pair, which is a named pipe on
+ * Windows and a socket in the temporary directory elsewhere.
  */
 class QNamedPipe : public QObject
 {
@@ -26,49 +25,41 @@ class QNamedPipe : public QObject
 public:
     /**
      * @brief QNamedPipe
-     * @param name: of NamedPipe
-     * @param valid: If valid is false, QNamedPipe does not perform any operation and all operation results are true
+     * @param name: of the channel, which the account name keeps apart from
+     * other users' channels
+     * @param valid: If valid is false, QNamedPipe does not use a channel and
+     * every process is its own server
      * @param parent
      */
     explicit QNamedPipe(QString name, bool valid, QObject *parent = nullptr);
     ~QNamedPipe();
     /**
      * @brief send
-     * for sending bytes to the server side as a client
+     * Sends bytes to the server as a client. Sending from the server, and
+     * sending when no server answers, does nothing.
      */
     void send(QByteArray bytes);
     /**
      * @brief isServerMode
-     * @return if the instanse is a server
+     * @return if this process holds the channel and keeps running
      */
     bool isServerMode();
-    /**
-     * @brief waitAsync
-     * Run worker thread and make it stand by as a server.
-     * Control returns immediately after execution.
-     */
-    void waitAsync();
-    /**
-     * @brief isValid
-     * @return if the instance is valid
-     */
-    bool isValid();
-    /**
-     * @brief generatePipePath
-     * Returns the actual full path of the named pipe depending on the OS
-     */
-    virtual QString generatePipePath(QString name);
 
 signals:
     /**
      * @brief received
-     * SIGNAL which received a byte sequence from pipe.
-     * "0" is reserved(for dispose)
+     * Signal which received a byte sequence from a client.
      */
     void received(QByteArray bytes);
 
 private:
-    QNamedPipePrivate *d;
+    bool startListening();
+    void handleNewConnection();
+
+    QLocalServer *m_server;
+    QString m_name;
+    bool m_valid;
+    bool m_serverMode;
 };
 
 #endif // QNAMEDPIPE_H
