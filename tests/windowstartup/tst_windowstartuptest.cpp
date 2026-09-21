@@ -661,6 +661,51 @@ private slots:
         QTRY_VERIFY(archive.data(FolderItemModel::CurrentVolumeRole).toBool());
     }
 
+    void historyMenuKeepsThePathPastTheShortcutList()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QImage image(2, 2, QImage::Format_RGB32);
+        image.fill(Qt::white);
+        QVERIFY(image.save(directory.filePath(QStringLiteral("page.png"))));
+
+        const int previousMaxHistoryCount = qApp->MaxHistoryCount();
+        const auto restoreMaxHistoryCount =
+            qScopeGuard([&] { qApp->setMaxHistoryCount(previousMaxHistoryCount); });
+        qApp->setMaxHistoryCount(37);
+
+        // The shortcut list holds 36 entries, so the 37th entry has no shortcut
+        // and shows the path alone.
+        const QString oldestPath = QDir::fromNativeSeparators(directory.path());
+        qApp->clearHistory();
+        qApp->addHistory(oldestPath);
+        for (int i = 0; i < 36; ++i) {
+            qApp->addHistory(QStringLiteral("filler-%1").arg(i));
+        }
+        QCOMPARE(qApp->History().size(), 37);
+        QCOMPARE(qApp->History().last(), oldestPath);
+
+        StartupWindow viewer;
+        viewer.initializeStartup();
+        QMenu *historyMenu = viewer.findChild<QMenu *>(QStringLiteral("menuHistory"));
+        QVERIFY(historyMenu);
+        QTRY_COMPARE(historyMenu->actions().size(), 37);
+
+        QAction *shortcutEntry = historyMenu->actions().at(0);
+        QVERIFY(shortcutEntry->text().startsWith(QStringLiteral("&1: ")));
+        QCOMPARE(shortcutEntry->data().toString(), QStringLiteral("filler-35"));
+
+        QAction *bareEntry = historyMenu->actions().at(36);
+        QCOMPARE(bareEntry->text(), oldestPath);
+        QCOMPARE(bareEntry->data().toString(), oldestPath);
+
+        viewer.handleHistoryMenuTriggered(bareEntry);
+        QTRY_COMPARE(
+            QDir::cleanPath(QDir::fromNativeSeparators(viewer.viewerSession()->volumePath())),
+            QDir::cleanPath(oldestPath));
+        QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("page.png"));
+    }
+
     void folderViewGivesTheSideButtonsToTheViewer()
     {
         QTemporaryDir directory;
