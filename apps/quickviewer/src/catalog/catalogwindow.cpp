@@ -104,6 +104,15 @@ CatalogWindow::~CatalogWindow()
 void CatalogWindow::setCatalogDatabase(CatalogDatabase *catalogDatabase)
 {
     m_catalogDatabase = catalogDatabase;
+    if (!m_catalogDatabase->ensureReady()) {
+        // The window stays usable: the status bar carries the reason the list
+        // is empty, and the user can put a readable database in place.
+        m_volumes.clear();
+        m_volumeSearch.clear();
+        resetVolumes();
+        ui->statusLabel->setText(m_catalogDatabase->errorMessage());
+        return;
+    }
     m_volumes = m_catalogDatabase->volumes();
     initTagButtons();
 

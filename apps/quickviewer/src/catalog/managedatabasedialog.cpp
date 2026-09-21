@@ -40,9 +40,23 @@ ManageDatabaseDialog::~ManageDatabaseDialog()
 void ManageDatabaseDialog::setCatalogDatabase(CatalogDatabase *catalogDatabase)
 {
     m_catalogDatabase = catalogDatabase;
+    if (!m_catalogDatabase->ensureReady()) {
+        reportCatalogDatabaseProblem();
+        return;
+    }
     m_catalogs = m_catalogDatabase->catalogs();
     resetCatalogList();
     normalButtonStates();
+}
+
+void ManageDatabaseDialog::reportCatalogDatabaseProblem()
+{
+    QMessageBox msgBox(this);
+    msgBox.setIcon(QMessageBox::Warning);
+    msgBox.setWindowTitle(tr("Catalog database"));
+    msgBox.setText(m_catalogDatabase->errorMessage());
+    msgBox.setInformativeText(tr("Move or rename that file, then open the catalog again."));
+    msgBox.exec();
 }
 
 void ManageDatabaseDialog::normalButtonStates()
@@ -222,13 +236,20 @@ void ManageDatabaseDialog::handleCatalogCreationFinished()
     normalButtonStates();
 
     QMessageBox msgBox(this);
-    msgBox.setWindowTitle(
-        tr("Completed", "Title of message box when catalog generation finished successfully"));
-    QString message =
-        QString(tr("Catalog creation completed.",
-                   "Body of message box when catalog generation finished successfully"));
-
-    msgBox.setText(message);
+    if (m_makeCatalogs.isEmpty()) {
+        msgBox.setWindowTitle(
+            tr("Completed", "Title of message box when catalog generation finished successfully"));
+        msgBox.setText(tr("Catalog creation completed.",
+                          "Body of message box when catalog generation finished successfully"));
+    } else {
+        // The build ended without storing every catalog it was asked for.
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setWindowTitle(tr("Catalog creation incomplete"));
+        msgBox.setText(tr("Catalog(s) left unstored: %1",
+                          "Body of message box when some catalogs could not be stored")
+                           .arg(m_makeCatalogs.size()));
+        msgBox.setInformativeText(m_catalogDatabase->errorMessage());
+    }
     msgBox.exec();
 }
 
@@ -267,6 +288,10 @@ void ManageDatabaseDialog::handleCancelButtonClicked()
         return;
     }
     if (!m_catalogWatcher) {
+        if (!m_catalogDatabase->ensureReady()) {
+            reportCatalogDatabaseProblem();
+            return;
+        }
         connect(m_catalogDatabase,
                 &CatalogDatabase::catalogCreated,
                 this,
@@ -335,19 +360,22 @@ void ManageDatabaseDialog::handleEditButtonClicked()
 
     int id = current->data(0, Qt::UserRole).toInt();
     CatalogRecord catalog;
-    bool editing = false;
     if (id >= 0) {
         catalog = m_catalogs[id];
-        editing = true;
+        if (!databaseSettingDialog(catalog, true)) {
+            return;
+        }
+        m_catalogDatabase->updateCatalogName(id, catalog.name);
+        m_catalogs[id] = catalog;
     } else {
-        id = -100 - id;
-        catalog = m_makeCatalogs[id];
+        // A catalog that is only waiting to be built stays in the request.
+        const int pendingIndex = -100 - id;
+        catalog = m_makeCatalogs[pendingIndex];
+        if (!databaseSettingDialog(catalog, false)) {
+            return;
+        }
+        m_makeCatalogs[pendingIndex] = catalog;
     }
-    if (!databaseSettingDialog(catalog, editing)) {
-        return;
-    }
-    m_catalogDatabase->updateCatalogName(id, catalog.name);
-    m_catalogs[id] = catalog;
 
     resetCatalogList();
 }

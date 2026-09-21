@@ -2057,6 +2057,53 @@
         <comment>Body of message box when catalog generation is canceled</comment>
         <translation>カタログの作成がキャンセルされました</translation>
     </message>
+    <message>
+        <source>Catalog database</source>
+        <translation>カタログデータベース</translation>
+    </message>
+    <message>
+        <source>Move or rename that file, then open the catalog again.</source>
+        <translation>そのファイルを移動または名前変更してから、もう一度カタログを開いてください。</translation>
+    </message>
+    <message>
+        <source>Catalog creation incomplete</source>
+        <translation>カタログの作成が完了しませんでした</translation>
+    </message>
+    <message>
+        <source>Catalog(s) left unstored: %1</source>
+        <translation>保存できなかったカタログ: %1 件</translation>
+    </message>
+</context>
+<context>
+    <name>CatalogDatabase</name>
+    <message>
+        <source>The catalog database could not be created: %1</source>
+        <translation>カタログデータベースを作成できませんでした: %1</translation>
+    </message>
+    <message>
+        <source>The catalog database is not a file: %1</source>
+        <translation>カタログデータベースがファイルではありません: %1</translation>
+    </message>
+    <message>
+        <source>The catalog database could not be opened: %1 (%2)</source>
+        <translation>カタログデータベースを開けませんでした: %1 (%2)</translation>
+    </message>
+    <message>
+        <source>The catalog database cannot be used: %1 (%2)</source>
+        <translation>カタログデータベースを読み込めません: %1 (%2)</translation>
+    </message>
+    <message>
+        <source>%1 is missing</source>
+        <translation>%1 がありません</translation>
+    </message>
+    <message>
+        <source>the volume view is missing</source>
+        <translation>ボリュームのビューがありません</translation>
+    </message>
+    <message>
+        <source>the database comes from a newer QuickViewer</source>
+        <translation>このカタログデータベースは新しいバージョンの QuickViewer で作成されています</translation>
+    </message>
 </context>
 <context>
     <name>MouseConfigDialog</name>

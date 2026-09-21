@@ -41,6 +41,7 @@ private slots:
 
 private:
     void releaseCatalogWatcher();
+    void reportCatalogDatabaseProblem();
 
     Ui::ManageDatabaseDialog *ui;
     QMap<int, CatalogRecord> m_catalogs;
