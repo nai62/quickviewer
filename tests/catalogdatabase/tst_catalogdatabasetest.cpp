@@ -410,6 +410,17 @@ void CatalogDatabaseTest::parsesVolumeNames_data()
     QTest::newRow("author") << QStringLiteral("[Author] Book Title")
                             << QStringLiteral("[Author] Book Title") << QStringLiteral("Author")
                             << 2;
+    // A name of the "#series title" shape keeps the series name whole: the
+    // parser buffers it without brackets, so neither end may be trimmed.
+    QTest::newRow("hashseries") << QStringLiteral("#アイドルマスターシンデレラガールズ タイトル")
+                                << QStringLiteral("アイドルマスターシンデレラガールズ タイトル")
+                                << QStringLiteral("アイドルマスターシンデレラガールズ") << 2;
+    QTest::newRow("hashseries-question") << QStringLiteral("#ご注文はうさぎですか？ ツルペタ")
+                                         << QStringLiteral("ご注文はうさぎですか？ ツルペタ")
+                                         << QStringLiteral("ご注文はうさぎですか？") << 2;
+    QTest::newRow("hashseries-brackets")
+        << QStringLiteral("# [Author] Book Title") << QStringLiteral("[Author] Book Title")
+        << QStringLiteral("Author") << 2;
 }
 
 void CatalogDatabaseTest::parsesVolumeNames()

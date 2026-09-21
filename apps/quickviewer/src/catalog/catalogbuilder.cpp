@@ -60,6 +60,22 @@ CatalogCover frontPageOfFolder(const QDir &dir)
     return CatalogCover();
 }
 
+/**
+ * The text of a tag, without the brackets a folder name may wrap it in. The
+ * parser buffers the text it is reading, and only some of the forms it accepts
+ * include their delimiters, so both are trimmed only where they are there.
+ */
+QString unwrappedTag(QString text)
+{
+    if (text.startsWith(QLatin1Char('['))) {
+        text.remove(0, 1);
+    }
+    if (text.endsWith(QLatin1Char(']'))) {
+        text.chop(1);
+    }
+    return text;
+}
+
 } // namespace
 
 CatalogFolderScan CatalogBuilder::scanFolder(const QString &path, bool baseFolder)
@@ -133,8 +149,7 @@ TaggedName CatalogBuilder::parseVolumeName(const QString &realname)
             if (tag.size()) {
                 if (tag[0] == "[") {
                     QString publisher = tag.join("");
-                    result.tags << TagRecord(publisher.mid(1, publisher.length() - 2),
-                                             type_id); // Normal
+                    result.tags << TagRecord(unwrappedTag(publisher), type_id); // Normal
                 } else {
                     result.tags << TagRecord(tag.join(""), type_id);
                 }
@@ -152,8 +167,7 @@ TaggedName CatalogBuilder::parseVolumeName(const QString &realname)
             if (!NumberSign && !authorExported && tag.size()) {
                 clist << tag.join("");
                 QString pubauthor = tag.join("");
-                result.tags << TagRecord(pubauthor.mid(1, pubauthor.length() - 2),
-                                         type_id); // Publisher(Author)
+                result.tags << TagRecord(unwrappedTag(pubauthor), type_id); // Publisher(Author)
                 type_id = 0;
                 tag.clear();
                 authorExported = true;
@@ -162,7 +176,7 @@ TaggedName CatalogBuilder::parseVolumeName(const QString &realname)
         case '(':
             if (parenthesis.last() == '[' && tag.size() >= 2) {
                 QString publisher = tag.join("");
-                result.tags << TagRecord(publisher.mid(1), 2); // Publisher
+                result.tags << TagRecord(unwrappedTag(publisher), 2); // Publisher
                 type_id = 1;
                 tag << c;
             } else {
@@ -203,7 +217,7 @@ TaggedName CatalogBuilder::parseVolumeName(const QString &realname)
                 } else if (NumberSign && c != ' ' && tag.size()) {
                     // last tag will be Publisher/Author
                     QString pubauthor = tag.join("");
-                    result.tags << TagRecord(pubauthor.mid(1, pubauthor.length() - 2),
+                    result.tags << TagRecord(unwrappedTag(pubauthor),
                                              pubauthor.indexOf("(") > 0 ? 1
                                                                         : 2); // Publisher(Author)
                     clist << tag.join("") << " " << c;
