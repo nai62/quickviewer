@@ -2,6 +2,7 @@
 
 #include "managedatabasedialog.h"
 #include "databasesettingdialog.h"
+#include "fileloader.h"
 #include "ui_cataloglist.h"
 
 ManageDatabaseDialog::ManageDatabaseDialog(QWidget *parent)
@@ -208,13 +209,14 @@ void ManageDatabaseDialog::dropEvent(QDropEvent *e)
         QFileInfo info(url.toLocalFile());
         CatalogRecord catalog = {0};
         if (info.isDir()) {
-            //            createCatalog(info.fileName(), QDir::toNativeSeparators(info.absoluteFilePath()));
             catalog.name = info.fileName();
             catalog.path = QDir::toNativeSeparators(info.absoluteFilePath());
         } else if (info.isFile()) {
-            //            createCatalog(info.baseName(), QDir::toNativeSeparators(info.path()));
+            // A dropped book (archive) becomes a catalog of its own; any other
+            // file stands for the folder that holds it.
+            const bool book = IFileLoader::isArchiveFile(info.fileName());
             catalog.name = info.baseName();
-            catalog.path = QDir::toNativeSeparators(info.path());
+            catalog.path = QDir::toNativeSeparators(book ? info.absoluteFilePath() : info.path());
         }
         m_makeCatalogs << catalog;
     }

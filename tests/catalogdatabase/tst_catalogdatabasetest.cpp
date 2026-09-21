@@ -1,13 +1,17 @@
 #include <QDir>
+#include <QDropEvent>
 #include <QFile>
 #include <QFileInfo>
 #include <QImage>
+#include <QMimeData>
 #include <QTemporaryDir>
+#include <QTreeWidget>
 #include <QtSql>
 #include <QtTest>
 
 #include "catalogbuilder.h"
 #include "catalogdatabase.h"
+#include "managedatabasedialog.h"
 
 namespace {
 
@@ -144,6 +148,7 @@ private Q_SLOTS:
     void refusesADatabaseWithoutTheCatalogSchema();
     void removesVolumesWhoseFoldersAreGone();
     void catalogsAnArchiveOnItsOwn();
+    void registersADroppedArchiveAsItsOwnCatalog();
     void parsesVolumeNames_data();
     void parsesVolumeNames();
     void finishesAnEmptyCatalogRequest();
@@ -361,6 +366,34 @@ void CatalogDatabaseTest::catalogsAnArchiveOnItsOwn()
     const VolumeThumbRecord volume = database.volumes().first();
     QCOMPARE(volume.realname, QStringLiteral("Book.zip"));
     QVERIFY(!volume.thumbnail.isEmpty());
+}
+
+void CatalogDatabaseTest::registersADroppedArchiveAsItsOwnCatalog()
+{
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    const QString archivePath = QDir(fixture.rootPath()).filePath(QStringLiteral("Book.zip"));
+    QVERIFY(QDir().mkpath(fixture.rootPath()));
+    QVERIFY(QFile::copy(
+        QStringLiteral(CATALOGDATABASE_SRCDIR "../fileloader/data/deflate-utf8.zip"), archivePath));
+
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    ManageDatabaseDialog dialog;
+    dialog.setCatalogDatabase(&database);
+
+    // Dropping a book asks for that book, not for the folder that holds it.
+    QMimeData mimeData;
+    mimeData.setUrls({QUrl::fromLocalFile(archivePath)});
+    QDropEvent event(QPointF(0, 0), Qt::CopyAction, &mimeData, Qt::LeftButton, Qt::NoModifier);
+    dialog.dropEvent(&event);
+
+    QTreeWidget *tree = dialog.findChild<QTreeWidget *>(QStringLiteral("treeWidget"));
+    QVERIFY(tree);
+    QCOMPARE(tree->topLevelItemCount(), 1);
+    QTreeWidgetItem *item = tree->topLevelItem(0);
+    QVERIFY(item);
+    QCOMPARE(item->text(0), QStringLiteral("* Book"));
+    QCOMPARE(item->text(2), QDir::toNativeSeparators(archivePath));
 }
 
 void CatalogDatabaseTest::parsesVolumeNames_data()

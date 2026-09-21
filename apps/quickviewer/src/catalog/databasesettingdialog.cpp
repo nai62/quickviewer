@@ -1,4 +1,5 @@
 #include "databasesettingdialog.h"
+#include "fileloader.h"
 #include "ui_createdb.h"
 #include <QButtonGroup>
 #include <QFileDialog>
@@ -55,7 +56,11 @@ void DatabaseSettingDialog::dropEvent(QDropEvent *e)
                 ui->nameEdit->setText(info.fileName());
             }
         } else if (info.isFile()) {
-            ui->pathEdit->setText(QDir::toNativeSeparators(info.path()));
+            // A dropped book (archive) is registered as itself; any other file
+            // stands for the folder that holds it.
+            const bool book = IFileLoader::isArchiveFile(info.fileName());
+            ui->pathEdit->setText(
+                QDir::toNativeSeparators(book ? info.absoluteFilePath() : info.path()));
             if (ui->nameEdit->text().isEmpty()) {
                 ui->nameEdit->setText(info.baseName());
             }

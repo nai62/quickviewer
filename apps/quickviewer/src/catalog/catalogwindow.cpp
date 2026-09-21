@@ -217,11 +217,19 @@ void CatalogWindow::resetVolumes()
     // A volume without a cover cannot be shown, so it does not belong in the
     // number the status bar compares against.
     const int listable = listableVolumeCount();
-    QString volumestxt =
-        QString(tr("%1 of %2 volumes",
-                   "Text of the status bar showing [the number of hits]/[total number] of Volume"))
-            .arg(m_volumeSearch.size())
-            .arg(listable);
+    const int shown = int(m_volumeSearch.size());
+    QString volumestxt;
+    if (shown == listable) {
+        // Nothing is filtered out, so the count of the two is the same.
+        volumestxt = tr("%1 volumes", "Text of the status bar showing how many volumes are listed")
+                         .arg(listable);
+    } else {
+        volumestxt =
+            tr("%1 of %2 volumes",
+               "Text of the status bar showing [the number of hits]/[total number] of Volume")
+                .arg(shown)
+                .arg(listable);
+    }
     const int hidden = int(m_volumes.size()) - listable;
     if (hidden > 0) {
         volumestxt += QStringLiteral(" ");

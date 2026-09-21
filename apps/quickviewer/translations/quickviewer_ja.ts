@@ -101,6 +101,11 @@
         <comment>Status bar note about volumes the catalog holds but does not list</comment>
         <translation>(表紙のない %1 冊は表示していません)</translation>
     </message>
+    <message>
+        <source>%1 volumes</source>
+        <comment>Text of the status bar showing how many volumes are listed</comment>
+        <translation>%1 冊を表示中</translation>
+    </message>
 </context>
 <context>
     <name>DatabaseSettingDialog</name>
