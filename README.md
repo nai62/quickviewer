@@ -165,9 +165,11 @@ You can perform screen operations with the main menu, toolbar, mouse button, whe
 ## System Requirement
 
 - Operating System
-    - Windows Vista, 7 or newer
-    - Windows Sever 2008 or newer
+    - Windows 10 version 1809 (build 17763) or newer
+    - Windows Server 2019 or newer
     - Linux Distributions (Ubuntu, Kubuntu, Fedora, etc.)
+- Building from source
+    - Qt 6.11 or newer and a C++17 compiler; see [developer/HowToBuild.md](developer/HowToBuild.md)
 - CPU
     - minimum Dual Core (the more the better; with internal or external GPU)
     - strongly recommended an x64 architecture

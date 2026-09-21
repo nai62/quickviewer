@@ -6,7 +6,9 @@ workflow for QuickViewer.
 ## Prerequisites
 
 Supported Windows verification uses 64-bit Windows with Qt 6.11.2 for MSVC
-2022. The script defaults are:
+2022. QuickViewer supports Windows 10 version 1809 (build 17763) and later,
+and the build asks the Windows headers for that version; the CI runners are
+newer than that floor. The script defaults are:
 
 | Setting | Default | Allowed value |
 | --- | --- | --- |
