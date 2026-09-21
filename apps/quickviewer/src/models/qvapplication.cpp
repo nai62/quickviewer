@@ -49,7 +49,6 @@ QVApplication::QVApplication(int &argc, char **argv)
     StartupProfiler::mark("application.base-ready");
     setApplicationVersion(APP_VERSION);
     setApplicationName(APP_NAME);
-    //    qDebug() << "TranslationsPath" << QLibraryInfo::location(QLibraryInfo::TranslationsPath);
 
 #if defined(Q_OS_WIN)
     // Since there is an evil implementation that forcibly installs QuickViewer in Windows "C:/Program Files", the specification is changed as follows.
@@ -97,7 +96,6 @@ QVApplication::QVApplication(int &argc, char **argv)
 
     m_languageSelector.initialize();
     m_qtbaseLanguageSelector.copyLanguages(m_languageSelector.Languages());
-    //m_settings->setIniCodec(QTextCodec::codecForName("UTF-8"));
     connect(&m_languageSelector,
             SIGNAL(languageChanged(QString)),
             &m_qtbaseLanguageSelector,
@@ -175,7 +173,7 @@ QString QVApplication::defaultStatusTextFormat()
 QString QVApplication::getTranslationPath()
 {
     // ATTENTION:
-    // default 'QLibraryInfo::location(TranslationsPath)' is "[QTDIR]/translations"
+    // default 'QLibraryInfo::path(TranslationsPath)' is "[QTDIR]/translations"
 #if defined(Q_OS_WIN) || defined(_DEBUG)
     // Windows packages and local out-of-source builds deploy QuickViewer's
     // own catalogs beside the executable. The Qt installation directory only
@@ -183,7 +181,7 @@ QString QVApplication::getTranslationPath()
     // the untranslated English UI.
     return getApplicationFilePath("translations");
 #else
-    return QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+    return QLibraryInfo::path(QLibraryInfo::TranslationsPath);
 #endif
 }
 
