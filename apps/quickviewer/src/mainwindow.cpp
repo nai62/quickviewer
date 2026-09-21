@@ -1970,7 +1970,7 @@ void MainWindow::handleSearchTitleWithOptionsActionTriggered(bool checked)
 {
     qApp->setSearchTitleWithOptions(checked);
     if (m_catalogWindow) {
-        m_catalogWindow->resetVolumes();
+        m_catalogWindow->searchByWord(true);
     }
 }
 
@@ -1989,7 +1989,7 @@ void MainWindow::handleCatalogViewListActionTriggered()
     ui->actionCatalogViewIcon->setChecked(false);
     ui->actionCatalogViewIconNoText->setChecked(false);
     if (m_catalogWindow) {
-        m_catalogWindow->resetVolumes();
+        m_catalogWindow->resetViewMode();
     }
 }
 
@@ -2000,7 +2000,7 @@ void MainWindow::handleCatalogViewIconActionTriggered()
     ui->actionCatalogViewIcon->setChecked(true);
     ui->actionCatalogViewIconNoText->setChecked(false);
     if (m_catalogWindow) {
-        m_catalogWindow->resetVolumes();
+        m_catalogWindow->resetViewMode();
     }
 }
 
@@ -2011,7 +2011,7 @@ void MainWindow::handleCatalogViewIconNoTextActionTriggered()
     ui->actionCatalogViewIcon->setChecked(false);
     ui->actionCatalogViewIconNoText->setChecked(true);
     if (m_catalogWindow) {
-        m_catalogWindow->resetVolumes();
+        m_catalogWindow->resetViewMode();
     }
 }
 
