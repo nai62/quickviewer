@@ -9,6 +9,7 @@
 ManageDatabaseDialog::ManageDatabaseDialog(QWidget *parent)
     : QDialog(parent),
       ui(new Ui::ManageDatabaseDialog),
+      m_catalogDatabase(nullptr),
       m_catalogWatcher(nullptr)
 {
     ui->setupUi(this);
@@ -26,6 +27,14 @@ ManageDatabaseDialog::ManageDatabaseDialog(QWidget *parent)
     header->setText(
         2, tr("Path", "Title of the column in the list part of the folder registered as Catalog"));
     header->setHidden(false);
+    // The path is the column that tells the catalogs apart, so it is the one
+    // that takes the room the other two leave, and the two keep the width their
+    // own text needs.
+    QHeaderView *headerView = ui->treeWidget->header();
+    headerView->setSectionResizeMode(0, QHeaderView::Interactive);
+    headerView->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    headerView->setSectionResizeMode(2, QHeaderView::Stretch);
+    ui->treeWidget->setColumnWidth(0, 150);
 
     // Buttons
     ui->updateAllButton->setVisible(false);
@@ -174,6 +183,9 @@ void ManageDatabaseDialog::resetCatalogList()
         item->setText(0, catalog.name);
         item->setText(1, catalog.created_at.toString(QStringLiteral("yyyy/MM/dd hh:mm:ss")));
         item->setText(2, catalog.path);
+        // The column is as wide as the room the list has, so the whole path has
+        // to be readable another way too.
+        item->setToolTip(2, catalog.path);
         item->setData(0, Qt::UserRole, QVariant(catalog.id));
         ui->treeWidget->addTopLevelItem(item);
     }
@@ -188,6 +200,7 @@ void ManageDatabaseDialog::resetCatalogList()
                              "Representation of time indicating that the catalog is not currently "
                              "created and will be generated from now"));
             item->setText(2, catalog.path);
+            item->setToolTip(2, catalog.path);
             item->setData(0, Qt::UserRole, cnt--);
             item->setBackground(0, QBrush(QColor("lightgreen")));
             QFont font = item->font(0);

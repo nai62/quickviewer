@@ -1,3 +1,4 @@
+#include <QApplication>
 #include <QDir>
 #include <QDropEvent>
 #include <QFile>
@@ -157,6 +158,7 @@ private Q_SLOTS:
     void editsTheTitleAndTagsOfAVolume();
     void offersTheTitleAndTagsOfAVolumeForEditing();
     void showsTheBooksOfTheSelectedCatalog();
+    void listsTheFolderOfEachCatalog();
     void parsesVolumeNames_data();
     void parsesVolumeNames();
     void finishesAnEmptyCatalogRequest();
@@ -545,6 +547,34 @@ void CatalogDatabaseTest::showsTheBooksOfTheSelectedCatalog()
         }
     }
     QVERIFY(found);
+}
+
+void CatalogDatabaseTest::listsTheFolderOfEachCatalog()
+{
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    QVERIFY(fixture.addImage(QStringLiteral("Alpha"), QStringLiteral("01.png"), QSize(60, 90)));
+
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    QVERIFY(database.createCatalog(QStringLiteral("Library"), fixture.rootPath()).created);
+
+    ManageDatabaseDialog dialog;
+    dialog.setCatalogDatabase(&database);
+    dialog.show();
+    QApplication::processEvents();
+
+    QTreeWidget *catalogs = dialog.findChild<QTreeWidget *>(QStringLiteral("treeWidget"));
+    QVERIFY(catalogs);
+    QVERIFY(catalogs->topLevelItem(0));
+
+    // The folder the catalog was created from is in the list, with the whole
+    // path under the pointer for the width the column cannot show.
+    const QTreeWidgetItem *item = catalogs->topLevelItem(0);
+    QCOMPARE(item->text(2), QDir::toNativeSeparators(fixture.rootPath()));
+    QCOMPARE(item->toolTip(2), item->text(2));
+    // And the column is inside the room the list has rather than scrolled off
+    // the right edge of it.
+    QVERIFY(catalogs->columnViewportPosition(2) < catalogs->viewport()->width());
 }
 
 void CatalogDatabaseTest::parsesVolumeNames_data()
