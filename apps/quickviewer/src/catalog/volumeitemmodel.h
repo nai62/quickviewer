@@ -23,7 +23,7 @@ public:
      * the view shows it but as tall as the page it came from, so the view has
      * to say which shape a cell has.
      */
-    void setCoverBox(const QSize &size) { m_coverBox = size; }
+    void setCoverBox(const QSize &size);
 
 private:
     QPixmap coverPixmap(const VolumeThumbRecord &record) const;
@@ -31,6 +31,8 @@ private:
     QList<VolumeThumbRecord *> *m_volumeSearch;
     qvEnums::CatalogViewMode m_catalogViewMode;
     QSize m_coverBox;
+    /** The fitted cover of each volume, by the id of its stored thumbnail. */
+    mutable QCache<int, QPixmap> m_covers;
 };
 
 #endif // VOLUMEITEMMODEL_H

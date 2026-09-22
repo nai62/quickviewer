@@ -102,6 +102,7 @@ class WindowStartupTest : public QObject
 private slots:
     void catalogListStartsAtTheTopInListMode();
     void catalogCoverFillsAndCentresInTheIconBox();
+    void catalogCoverIsReadOnce();
     void catalogViewConsumesWheelEventsAtScrollBoundary();
     void catalogTagBarFollowsRemovedTags();
 
@@ -2344,6 +2345,59 @@ void WindowStartupTest::catalogCoverFillsAndCentresInTheIconBox()
     std::sort(shapes.begin(), shapes.end());
     QVERIFY(qAbs(shapes.at(0) - 2.0 / 3.0) < 0.05);
     QVERIFY(qAbs(shapes.at(1) - 2.5) < 0.05);
+}
+
+/** The list hands back the cover it read rather than reading the JPEG again. */
+void WindowStartupTest::catalogCoverIsReadOnce()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString root = directory.filePath(QStringLiteral("Shelf"));
+    QVERIFY(writeCatalogShelf(root, {QStringLiteral("Book A")}));
+    // A second page of the other shape, so a cover that came out of the wrong
+    // entry of the cache would show.
+    {
+        const QString folder = QDir(root).filePath(QStringLiteral("Book B"));
+        QVERIFY(QDir().mkpath(folder));
+        QImage wide(QSize(300, 120), QImage::Format_RGB32);
+        wide.fill(Qt::red);
+        QVERIFY(wide.save(QDir(folder).filePath(QStringLiteral("01.png"))));
+    }
+
+    QTemporaryDir databaseDirectory;
+    QVERIFY(databaseDirectory.isValid());
+    CatalogDatabase catalogDatabase(nullptr,
+                                    databaseDirectory.filePath(QStringLiteral("catalog.db")));
+    QVERIFY(catalogDatabase.createCatalog(QStringLiteral("Shelf"), root).created);
+
+    qApp->setCatalogViewModeSetting(qvEnums::CatalogViewMode::IconNoText);
+    StartupWindow viewer;
+    viewer.setCatalogDatabase(&catalogDatabase);
+    viewer.show();
+    viewer.createCatalogWindow(true);
+    QApplication::processEvents();
+
+    QListView *list = viewer.findChild<QListView *>(QStringLiteral("volumeList"));
+    QVERIFY(list);
+    QCOMPARE(list->model()->rowCount(), 2);
+    const auto coverAt = [list](int row) {
+        return list->model()
+            ->data(list->model()->index(row, 0), Qt::DecorationRole)
+            .value<QPixmap>();
+    };
+
+    // The same row answers with the cover that was read the first time: reading
+    // it again would have decoded the JPEG into a pixmap of its own.
+    const QPixmap first = coverAt(0);
+    QVERIFY(!first.isNull());
+    QCOMPARE(coverAt(0).cacheKey(), first.cacheKey());
+
+    // Each row keeps its own cover: the tall page stays tall, the wide one wide.
+    const QPixmap other = coverAt(1);
+    QVERIFY(!other.isNull());
+    QCOMPARE(coverAt(1).cacheKey(), other.cacheKey());
+    QVERIFY(coverInkBox(first).height() > coverInkBox(first).width());
+    QVERIFY(coverInkBox(other).width() > coverInkBox(other).height());
 }
 
 void WindowStartupTest::catalogListStartsAtTheTopInListMode()
