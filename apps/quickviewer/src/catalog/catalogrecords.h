@@ -26,16 +26,18 @@ Q_DECLARE_METATYPE(CatalogRecord)
 class VolumeThumbRecord
 {
 public:
-    int id;
+    // Every field starts at a value: a record is built by filling in the
+    // columns a query returns, and a caller must not read what it did not fill.
+    int id = 0;
     QString name;
     QString nameNoCase;
     QString realname;
     QString realnameNoCase;
     QString path;
-    int frontpage_id;
-    int thumb_id;
-    int parent_id;
-    int catalog_id;
+    int frontpage_id = 0;
+    int thumb_id = 0;
+    int parent_id = 0;
+    int catalog_id = 0;
     QByteArray thumbnail;
 };
 

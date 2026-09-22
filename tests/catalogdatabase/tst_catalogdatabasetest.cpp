@@ -264,6 +264,16 @@ void CatalogDatabaseTest::storesCoversUnderTheVolumeThatOwnsThem()
     for (const VolumeThumbRecord &volume : volumes) {
         if (!volume.thumbnail.isEmpty()) {
             ++volumesWithCover;
+            // The record names the row that holds its cover: that is what the
+            // catalog list keys the cover it has already read on.
+            QVERIFY(volume.thumb_id > 0);
+            QCOMPARE(probe
+                         .scalar(QStringLiteral("SELECT COUNT(*) FROM t_thumbnails WHERE id = %1")
+                                     .arg(volume.thumb_id))
+                         .toInt(),
+                     1);
+        } else {
+            QCOMPARE(volume.thumb_id, 0);
         }
     }
     QCOMPARE(volumesWithCover, 3);

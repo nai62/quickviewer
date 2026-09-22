@@ -530,7 +530,10 @@ QList<VolumeThumbRecord> CatalogDatabase::volumes()
     }
     QList<VolumeThumbRecord> result;
     QSqlQuery v_volumethm(m_db);
-    v_volumethm.prepare("SELECT * FROM v_volumethm");
+    // The view carries the cover itself but not the row it came from, and the
+    // cover of a volume is read and fitted once per row of the catalog list.
+    v_volumethm.prepare("SELECT v_volumethm.*, t_volumes.thumb_id AS thumb_id FROM v_volumethm "
+                        "LEFT OUTER JOIN t_volumes ON t_volumes.id = v_volumethm.id");
     if (!execQuery(v_volumethm, "v_volumethm")) {
         // The query failed, so the cache stays empty rather than remembering
         // the failure as the contents of the catalog.
@@ -546,6 +549,7 @@ QList<VolumeThumbRecord> CatalogDatabase::volumes()
         vtr.path = v_volumethm.value("path").toString();
         vtr.frontpage_id = v_volumethm.value("frontpage_id").toInt();
         vtr.parent_id = v_volumethm.value("parent_id").toInt();
+        vtr.thumb_id = v_volumethm.value("thumb_id").toInt();
         vtr.thumbnail = v_volumethm.value("thumbnail").toByteArray();
         result.append(vtr);
     }
@@ -564,7 +568,7 @@ QList<QPair<VolumeThumbRecord, QStringList>> CatalogDatabase::catalogVolumes(int
     QSqlQuery volumes(m_db);
     volumes.prepare("SELECT t_volumes.id, t_volumes.name, t_volumes.realname, t_volumes.path, "
                     "t_volumes.frontpage_id, t_volumes.parent_id, t_volumes.catalog_id, "
-                    "t_thumbnails.thumbnail FROM t_volumes "
+                    "t_volumes.thumb_id, t_thumbnails.thumbnail FROM t_volumes "
                     "LEFT OUTER JOIN t_thumbnails ON t_volumes.thumb_id = t_thumbnails.id "
                     "WHERE t_volumes.catalog_id = :catalog_id ORDER BY t_volumes.realname");
     volumes.bindValue(":catalog_id", catalog_id);
@@ -584,7 +588,8 @@ QList<QPair<VolumeThumbRecord, QStringList>> CatalogDatabase::catalogVolumes(int
         record.frontpage_id = volumes.value(4).toInt();
         record.parent_id = volumes.value(5).toInt();
         record.catalog_id = volumes.value(6).toInt();
-        record.thumbnail = volumes.value(7).toByteArray();
+        record.thumb_id = volumes.value(7).toInt();
+        record.thumbnail = volumes.value(8).toByteArray();
         rowOfVolume.insert(record.id, int(result.size()));
         result.append({record, QStringList()});
     }
