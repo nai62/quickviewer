@@ -63,8 +63,6 @@ private:
     void selectPendingCatalog(int requestId);
     /** Shows the cover of the book the list has selected, or a placeholder. */
     void updateCover();
-    /** Draws the cover kept by updateCover() into the room the label has. */
-    void applyCover();
     void releaseCatalogWatcher();
     void reportCatalogDatabaseProblem();
     void stopBuilding();
@@ -77,7 +75,6 @@ private:
     int m_nextRequestId = -1;
     QStringList m_missingVolumes;
     CatalogDatabase *m_catalogDatabase;
-    QImage m_cover;
     QFutureWatcher<QStringList> m_missingWatcher;
 
     QFutureWatcher<QList<CatalogRecord>> *m_catalogWatcher;

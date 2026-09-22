@@ -880,7 +880,7 @@ void CatalogDatabaseTest::showsTheCoverOfTheSelectedBook()
 
     QTreeWidget *catalogs = dialog.findChild<QTreeWidget *>(QStringLiteral("treeWidget"));
     QTreeWidget *books = dialog.findChild<QTreeWidget *>(QStringLiteral("booksTree"));
-    QLabel *cover = dialog.findChild<QLabel *>(QStringLiteral("coverLabel"));
+    QLabel *cover = dialog.findChild<QLabel *>(QStringLiteral("coverPane"));
     QAction *openInExplorer = dialog.findChild<QAction *>(QStringLiteral("openInExplorerAction"));
     QVERIFY(catalogs);
     QVERIFY(books);

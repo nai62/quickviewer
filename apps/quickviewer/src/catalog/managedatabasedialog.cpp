@@ -101,9 +101,6 @@ ManageDatabaseDialog::ManageDatabaseDialog(QWidget *parent)
             updateCover();
         });
     ui->editTagsButton->setEnabled(false);
-    // The cover changes size with the label, not only with the selection.
-    ui->coverLabel->installEventFilter(this);
-
     resetCatalogList();
     normalButtonStates();
 }
@@ -409,30 +406,17 @@ void ManageDatabaseDialog::updateCover()
 {
     // One cover at a time: the list holds the books, and the database holds
     // the covers of a catalog that can be far larger than the screen.
-    QByteArray stored;
-    if (const QTreeWidgetItem *current = ui->booksTree->currentItem()) {
-        if (m_catalogDatabase) {
-            stored = m_catalogDatabase->volumeThumbnail(current->data(0, Qt::UserRole).toInt());
-        }
-    }
-    m_cover = QImage::fromData(stored, IFileLoader::jpegQtFormatName());
-    applyCover();
-}
-
-void ManageDatabaseDialog::applyCover()
-{
-    QLabel *label = ui->coverLabel;
-    if (m_cover.isNull()) {
-        // A book the catalog stored without a cover, or no book at all.
-        label->setPixmap(QPixmap());
-        label->setText(ui->booksTree->currentItem()
-                           ? tr("No cover", "Text shown where a cover would be")
-                           : QString());
+    const QTreeWidgetItem *current = ui->booksTree->currentItem();
+    if (!current) {
+        ui->coverPane->clearCover();
         return;
     }
-    label->setText(QString());
-    label->setPixmap(QPixmap::fromImage(
-        m_cover.scaled(label->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation)));
+    if (!m_catalogDatabase) {
+        ui->coverPane->setStoredCover(QByteArray());
+    } else {
+        ui->coverPane->setStoredCover(
+            m_catalogDatabase->volumeThumbnail(current->data(0, Qt::UserRole).toInt()));
+    }
 }
 
 bool ManageDatabaseDialog::eventFilter(QObject *watched, QEvent *event)
@@ -443,9 +427,6 @@ bool ManageDatabaseDialog::eventFilter(QObject *watched, QEvent *event)
             handleCatalogContextMenu(ui->treeWidget->visualItemRect(current).center());
         }
         return true;
-    }
-    if (watched == ui->coverLabel && event->type() == QEvent::Resize) {
-        applyCover();
     }
     return QDialog::eventFilter(watched, event);
 }
