@@ -143,6 +143,7 @@ SOURCES += \
     src/benchmark/imagebenchmarkrunner.cpp \
     src/benchmark/startupfoldertextprofile.cpp \
     src/catalog/catalogbuilder.cpp \
+    src/catalog/catalogbuildqueue.cpp \
     src/catalog/catalogdatabase.cpp \
     src/catalog/catalogvolumelistview.cpp \
     src/catalog/catalogwindow.cpp \
@@ -210,6 +211,7 @@ HEADERS  += \
     src/benchmark/imagebenchmarkrunner.h \
     src/benchmark/startupfoldertextprofile.h \
     src/catalog/catalogbuilder.h \
+    src/catalog/catalogbuildqueue.h \
     src/catalog/catalogdatabase.h \
     src/catalog/catalogvolumelistview.h \
     src/catalog/catalogwindow.h \

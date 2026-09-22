@@ -3,6 +3,7 @@
 
 #include <QtGui>
 #include <QDialog>
+#include "catalogbuildqueue.h"
 #include "catalogdatabase.h"
 
 namespace Ui {
@@ -40,44 +41,32 @@ public slots:
     void handleCatalogContextMenu(const QPoint &position);
 
 private slots:
-    void handleCatalogCreated(const CatalogRecord cr);
-    void handleCatalogCreationFinished();
+    void handleCatalogStored(const CatalogRecord catalog);
+    void handleBuildFinished(bool canceled);
+    void handleBuildStateChanged();
     void handleMissingVolumesChecked();
 
 private:
-    /**
-     * How far a build is, as far as the button that starts and stops one has
-     * to know: it carries the count of the folders waiting, or the verb that
-     * applies to the state the build is in.
-     */
-    enum class BuildState { Idle, Building, Stopping };
-    void updateStartButton(BuildState state);
+    /** Writes the button that starts and stops a build from the queue. */
+    void updateStartButton();
     /** Asks the worker which of the registered paths are no longer there. */
     void startMissingVolumeCheck();
     /** Writes the purge action from the paths the last check reported. */
     void updatePurgeAction();
     /** Enables actions only for a selected catalog while no build is running. */
     void updateCatalogActions();
-    /** The row of the request \a requestId in the pending list, or -1. */
-    int pendingRequestIndex(int requestId) const;
     void selectPendingCatalog(int requestId);
     /** Shows the cover of the book the list has selected, or a placeholder. */
     void updateCover();
-    void releaseCatalogWatcher();
     void reportCatalogDatabaseProblem();
-    void stopBuilding();
     bool confirmRemoval(const QString &title, const QString &text);
 
     Ui::ManageDatabaseDialog *ui;
     QMap<int, CatalogRecord> m_catalogs;
-    QList<CatalogRecord> m_makeCatalogs;
-    /** Id of the next folder added for building; never a catalog's own. */
-    int m_nextRequestId = -1;
     QStringList m_missingVolumes;
     CatalogDatabase *m_catalogDatabase;
+    CatalogBuildQueue *m_buildQueue;
     QFutureWatcher<QStringList> m_missingWatcher;
-
-    QFutureWatcher<QList<CatalogRecord>> *m_catalogWatcher;
 };
 
 #endif // MANAGEDATABASEDIALOG_H

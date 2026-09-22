@@ -14,7 +14,7 @@ ManageDatabaseDialog::ManageDatabaseDialog(QWidget *parent)
     : QDialog(parent),
       ui(new Ui::ManageDatabaseDialog),
       m_catalogDatabase(nullptr),
-      m_catalogWatcher(nullptr)
+      m_buildQueue(new CatalogBuildQueue(this))
 {
     ui->setupUi(this);
     ui->progressWidget->setVisible(false);
@@ -101,23 +101,63 @@ ManageDatabaseDialog::ManageDatabaseDialog(QWidget *parent)
             updateCover();
         });
     ui->editTagsButton->setEnabled(false);
+
+    // The queue owns the folders waiting to be built and the build itself; the
+    // dialog only shows what it reports.
+    connect(
+        m_buildQueue, &CatalogBuildQueue::changed, this, &ManageDatabaseDialog::resetCatalogList);
+    connect(m_buildQueue,
+            &CatalogBuildQueue::changed,
+            this,
+            &ManageDatabaseDialog::handleBuildStateChanged);
+    connect(m_buildQueue,
+            &CatalogBuildQueue::catalogStored,
+            this,
+            &ManageDatabaseDialog::handleCatalogStored);
+    connect(m_buildQueue,
+            &CatalogBuildQueue::buildFinished,
+            this,
+            &ManageDatabaseDialog::handleBuildFinished);
+
     resetCatalogList();
     normalButtonStates();
 }
 
 ManageDatabaseDialog::~ManageDatabaseDialog()
 {
-    stopBuilding();
+    // A build that is still running is asked to stop, and the worker rolls it
+    // back on its own thread: the catalog that opened this dialog reads the
+    // result when the database says the build is over. Leave the connections
+    // first, so nothing reaches the widgets on the way out.
+    disconnect(m_buildQueue, nullptr, this, nullptr);
+    m_buildQueue->stop();
     delete ui;
 }
 
 void ManageDatabaseDialog::setCatalogDatabase(CatalogDatabase *catalogDatabase)
 {
     m_catalogDatabase = catalogDatabase;
+    m_buildQueue->setCatalogDatabase(catalogDatabase);
     if (!m_catalogDatabase->ensureReady()) {
         reportCatalogDatabaseProblem();
         return;
     }
+    // A build reports its progress through the database while it runs.
+    connect(m_catalogDatabase,
+            &CatalogDatabase::catalogProgressRangeChanged,
+            ui->progressBar,
+            &QProgressBar::setRange,
+            Qt::UniqueConnection);
+    connect(m_catalogDatabase,
+            &CatalogDatabase::catalogProgressValueChanged,
+            ui->progressBar,
+            &QProgressBar::setValue,
+            Qt::UniqueConnection);
+    connect(m_catalogDatabase,
+            &CatalogDatabase::catalogProgressTextChanged,
+            ui->volumeNameLabel,
+            &QLabel::setText,
+            Qt::UniqueConnection);
     m_catalogs = m_catalogDatabase->catalogs();
     resetCatalogList();
     normalButtonStates();
@@ -205,32 +245,39 @@ void ManageDatabaseDialog::normalButtonStates()
     ui->buttonBox->setEnabled(true);
     startMissingVolumeCheck();
     updateCatalogActions();
-    updateStartButton(BuildState::Idle);
+    updateStartButton();
     ui->progressWidget->setVisible(false);
 }
 
-void ManageDatabaseDialog::updateStartButton(BuildState state)
+void ManageDatabaseDialog::updateStartButton()
 {
-    const int pending = int(m_makeCatalogs.size());
-    switch (state) {
-    case BuildState::Idle:
-        ui->cancelButton->setEnabled(pending > 0);
-        ui->cancelButton->setText(
-            pending > 0 ? tr("Start creating (%1)").arg(pending)
-                        : tr("Start creating",
-                             "Button that builds the folders which were added to the list above"));
-        break;
-    case BuildState::Building:
-        ui->cancelButton->setEnabled(true);
-        ui->cancelButton->setText(
-            tr("Stop creating", "Button that cancels the catalogs being built"));
-        break;
-    case BuildState::Stopping:
+    const int pending = int(m_buildQueue->requests().size());
+    if (m_buildQueue->isStopping()) {
         // The worker is rolling back; starting again must not reset its
         // cancellation flag, so the button waits for it.
         ui->cancelButton->setEnabled(false);
         ui->cancelButton->setText(tr("Stopping..."));
-        break;
+        return;
+    }
+    if (m_buildQueue->isBuilding()) {
+        ui->cancelButton->setEnabled(true);
+        ui->cancelButton->setText(
+            tr("Stop creating", "Button that cancels the catalogs being built"));
+        return;
+    }
+    ui->cancelButton->setEnabled(pending > 0);
+    ui->cancelButton->setText(
+        pending > 0 ? tr("Start creating (%1)").arg(pending)
+                    : tr("Start creating",
+                         "Button that builds the folders which were added to the list above"));
+}
+
+void ManageDatabaseDialog::handleBuildStateChanged()
+{
+    if (m_buildQueue->isBuilding() || m_buildQueue->isStopping()) {
+        progressButtonStates();
+    } else {
+        normalButtonStates();
     }
 }
 
@@ -249,7 +296,7 @@ void ManageDatabaseDialog::progressButtonStates()
     ui->volumeNameLabel->clear();
     ui->progressBar->setRange(0, 0);
     ui->progressWidget->setVisible(true);
-    updateStartButton(BuildState::Building);
+    updateStartButton();
 }
 
 void ManageDatabaseDialog::resetCatalogList()
@@ -272,7 +319,7 @@ void ManageDatabaseDialog::resetCatalogList()
         ui->treeWidget->addTopLevelItem(item);
     }
     // Making catalogs
-    for (const CatalogRecord &catalog : m_makeCatalogs) {
+    for (const CatalogRecord &catalog : m_buildQueue->requests()) {
         QTreeWidgetItem *item = new QTreeWidgetItem;
         item->setText(0, "* " + catalog.name);
         item->setText(1,
@@ -307,16 +354,6 @@ void ManageDatabaseDialog::resetCatalogList()
     handleCatalogSelectionChanged();
 }
 
-int ManageDatabaseDialog::pendingRequestIndex(int requestId) const
-{
-    for (int index = 0; index < m_makeCatalogs.size(); ++index) {
-        if (m_makeCatalogs.at(index).id == requestId) {
-            return index;
-        }
-    }
-    return -1;
-}
-
 void ManageDatabaseDialog::selectPendingCatalog(int requestId)
 {
     for (int row = 0; row < ui->treeWidget->topLevelItemCount(); ++row) {
@@ -338,7 +375,7 @@ void ManageDatabaseDialog::handleCatalogSelectionChanged()
     updateCatalogActions();
     // The cover that was shown belonged to the catalog that was selected.
     updateCover();
-    if (!m_catalogDatabase || m_catalogWatcher) {
+    if (!m_catalogDatabase || m_buildQueue->isBuilding()) {
         return;
     }
     const QTreeWidgetItem *current = ui->treeWidget->currentItem();
@@ -376,17 +413,17 @@ void ManageDatabaseDialog::handleCatalogSelectionChanged()
 void ManageDatabaseDialog::updateCatalogActions()
 {
     const QTreeWidgetItem *selected = ui->treeWidget->currentItem();
-    const bool enabled = selected && !m_catalogWatcher;
+    const bool enabled = selected && !m_buildQueue->isBuilding();
     ui->editAction->setEnabled(enabled);
     ui->deleteAction->setEnabled(enabled);
     ui->openInExplorerAction->setEnabled(enabled && !selected->text(2).isEmpty());
-    ui->deleteAllAction->setEnabled(!m_catalogWatcher &&
-                                    (!m_catalogs.isEmpty() || !m_makeCatalogs.isEmpty()));
+    ui->deleteAllAction->setEnabled(!m_buildQueue->isBuilding() &&
+                                    (!m_catalogs.isEmpty() || !m_buildQueue->isEmpty()));
 }
 
 void ManageDatabaseDialog::handleCatalogContextMenu(const QPoint &position)
 {
-    if (m_catalogWatcher) {
+    if (m_buildQueue->isBuilding()) {
         return;
     }
     QTreeWidgetItem *item = ui->treeWidget->itemAt(position);
@@ -496,18 +533,14 @@ void ManageDatabaseDialog::handleAddButtonClicked()
     if (!databaseSettingDialog(catalog, false)) {
         return;
     }
-    catalog.id = m_nextRequestId--;
-    m_makeCatalogs << catalog;
     ui->statusLabel->clear();
-
-    resetCatalogList();
-    selectPendingCatalog(catalog.id);
-    normalButtonStates();
+    // The queue announces the request it took, and the list follows it.
+    selectPendingCatalog(m_buildQueue->add(catalog));
 }
 
 void ManageDatabaseDialog::dropEvent(QDropEvent *e)
 {
-    if (m_catalogWatcher || !e->mimeData()->hasUrls()) {
+    if (m_buildQueue->isBuilding() || !e->mimeData()->hasUrls()) {
         return;
     }
     QList<QUrl> urlList = e->mimeData()->urls();
@@ -532,15 +565,11 @@ void ManageDatabaseDialog::dropEvent(QDropEvent *e)
         if (catalog.path.isEmpty()) {
             continue;
         }
-        catalog.id = m_nextRequestId--;
-        lastRequestId = catalog.id;
-        m_makeCatalogs << catalog;
+        lastRequestId = m_buildQueue->add(catalog);
     }
 
     ui->statusLabel->clear();
-    resetCatalogList();
     selectPendingCatalog(lastRequestId);
-    normalButtonStates();
 }
 
 bool ManageDatabaseDialog::databaseSettingDialog(CatalogRecord &catalog, bool editing)
@@ -563,38 +592,19 @@ bool ManageDatabaseDialog::databaseSettingDialog(CatalogRecord &catalog, bool ed
     return true;
 }
 
-void ManageDatabaseDialog::handleCatalogCreated(const CatalogRecord cr)
+void ManageDatabaseDialog::handleCatalogStored(const CatalogRecord catalog)
 {
-    if (!m_catalogWatcher || !cr.created) {
-        return;
-    }
-    m_catalogs[cr.id] = cr;
-    // The result names the request it answers, so the row that goes is the one
-    // that was built, whatever paths the requests were added with.
-    const int index = pendingRequestIndex(cr.requestId);
-    if (index >= 0) {
-        m_makeCatalogs.removeAt(index);
-    }
-
-    resetCatalogList();
+    m_catalogs[catalog.id] = catalog;
 }
 
-void ManageDatabaseDialog::handleCatalogCreationFinished()
+void ManageDatabaseDialog::handleBuildFinished(bool canceled)
 {
-    if (!m_catalogWatcher) {
-        return;
-    }
-    const bool canceled = m_catalogWatcher->isCanceled();
-    releaseCatalogWatcher();
     m_catalogs = m_catalogDatabase->catalogs();
-
-    resetCatalogList();
-    normalButtonStates();
 
     if (canceled) {
         ui->statusLabel->setText(tr("Catalog creation was cancelled.",
                                     "Body of message box when catalog generation is canceled"));
-    } else if (m_makeCatalogs.isEmpty()) {
+    } else if (m_buildQueue->isEmpty()) {
         ui->statusLabel->setText(
             tr("Catalog creation completed.",
                "Body of message box when catalog generation finished successfully"));
@@ -604,39 +614,10 @@ void ManageDatabaseDialog::handleCatalogCreationFinished()
         msgBox.setWindowTitle(tr("Catalog creation incomplete"));
         msgBox.setText(tr("Catalog(s) left unstored: %1",
                           "Body of message box when some catalogs could not be stored")
-                           .arg(m_makeCatalogs.size()));
+                           .arg(m_buildQueue->requests().size()));
         msgBox.setInformativeText(m_catalogDatabase->errorMessage());
         msgBox.exec();
     }
-}
-
-void ManageDatabaseDialog::releaseCatalogWatcher()
-{
-    if (!m_catalogWatcher) {
-        return;
-    }
-    disconnect(m_catalogDatabase,
-               &CatalogDatabase::catalogCreated,
-               this,
-               &ManageDatabaseDialog::handleCatalogCreated);
-    disconnect(m_catalogWatcher,
-               &QFutureWatcher<QList<CatalogRecord>>::finished,
-               this,
-               &ManageDatabaseDialog::handleCatalogCreationFinished);
-    disconnect(m_catalogDatabase,
-               &CatalogDatabase::catalogProgressRangeChanged,
-               ui->progressBar,
-               &QProgressBar::setRange);
-    disconnect(m_catalogDatabase,
-               &CatalogDatabase::catalogProgressValueChanged,
-               ui->progressBar,
-               &QProgressBar::setValue);
-    disconnect(m_catalogDatabase,
-               &CatalogDatabase::catalogProgressTextChanged,
-               ui->volumeNameLabel,
-               &QLabel::setText);
-
-    m_catalogWatcher = nullptr;
 }
 
 void ManageDatabaseDialog::handleCancelButtonClicked()
@@ -644,70 +625,36 @@ void ManageDatabaseDialog::handleCancelButtonClicked()
     if (!m_catalogDatabase) {
         return;
     }
-    if (!m_catalogWatcher) {
-        if (m_makeCatalogs.isEmpty()) {
-            return;
-        }
-        if (!m_catalogDatabase->ensureReady()) {
-            reportCatalogDatabaseProblem();
-            return;
-        }
-        connect(m_catalogDatabase,
-                &CatalogDatabase::catalogCreated,
-                this,
-                &ManageDatabaseDialog::handleCatalogCreated);
-        m_catalogWatcher = m_catalogDatabase->catalogWatcher();
-        connect(m_catalogWatcher,
-                &QFutureWatcher<QList<CatalogRecord>>::finished,
-                this,
-                &ManageDatabaseDialog::handleCatalogCreationFinished);
-        connect(m_catalogDatabase,
-                &CatalogDatabase::catalogProgressRangeChanged,
-                ui->progressBar,
-                &QProgressBar::setRange);
-        connect(m_catalogDatabase,
-                &CatalogDatabase::catalogProgressValueChanged,
-                ui->progressBar,
-                &QProgressBar::setValue);
-        connect(m_catalogDatabase,
-                &CatalogDatabase::catalogProgressTextChanged,
-                ui->volumeNameLabel,
-                &QLabel::setText);
-
-        progressButtonStates();
-        m_catalogDatabase->createCatalogAsync(m_makeCatalogs);
-    } else {
-        m_catalogDatabase->cancelCreateCatalogAsync();
-        updateStartButton(BuildState::Stopping);
+    if (m_buildQueue->isBuilding()) {
+        m_buildQueue->stop();
+        return;
     }
-}
-
-void ManageDatabaseDialog::stopBuilding()
-{
-    if (m_catalogWatcher) {
-        // Ask the worker to stop and return: it rolls back and closes its own
-        // connection on its thread, and the catalog the dialog was opened from
-        // reads the result when the database says the build is over.
-        releaseCatalogWatcher();
-        m_catalogDatabase->cancelCreateCatalogAsync();
+    if (m_buildQueue->isEmpty()) {
+        return;
     }
+    if (!m_catalogDatabase->ensureReady()) {
+        reportCatalogDatabaseProblem();
+        return;
+    }
+    m_buildQueue->start();
 }
 
 void ManageDatabaseDialog::reject()
 {
-    if (!m_catalogDatabase || m_catalogWatcher) {
-        // A running build is stopped the way closing the window stops it.
-        stopBuilding();
+    if (!m_catalogDatabase || m_buildQueue->isBuilding() || m_buildQueue->isStopping()) {
+        // A running build is asked to stop and the dialog closes: the worker
+        // rolls it back, and the panel reads the catalog when it is done.
+        m_buildQueue->stop();
         QDialog::reject();
         return;
     }
-    if (!m_makeCatalogs.isEmpty()) {
+    if (!m_buildQueue->isEmpty()) {
         const QMessageBox::StandardButton answer =
             QMessageBox::question(this,
                                   tr("Close"),
                                   tr("%1 added folder(s) are not created yet. Close and discard "
                                      "them?")
-                                      .arg(m_makeCatalogs.size()),
+                                      .arg(m_buildQueue->requests().size()),
                                   QMessageBox::Yes | QMessageBox::No,
                                   QMessageBox::No);
         if (answer != QMessageBox::Yes) {
@@ -748,20 +695,14 @@ void ManageDatabaseDialog::handleEditActionTriggered()
         m_catalogs[id] = catalog;
     } else {
         // A catalog that is only waiting to be built stays in the request.
-        const int pendingIndex = pendingRequestIndex(id);
-        if (pendingIndex < 0) {
+        catalog = m_buildQueue->request(id);
+        if (catalog.name.isEmpty()) {
             return;
         }
-        catalog = m_makeCatalogs[pendingIndex];
         if (!databaseSettingDialog(catalog, false)) {
             return;
         }
-        m_makeCatalogs[pendingIndex] = catalog;
-    }
-
-    resetCatalogList();
-    if (id < 0) {
-        selectPendingCatalog(id);
+        m_buildQueue->update(id, catalog);
     }
 }
 
@@ -788,14 +729,8 @@ void ManageDatabaseDialog::handleDeleteActionTriggered()
         }
         m_catalogs.remove(id);
     } else {
-        const int pendingIndex = pendingRequestIndex(id);
-        if (pendingIndex >= 0) {
-            m_makeCatalogs.removeAt(pendingIndex);
-        }
+        m_buildQueue->remove(id);
     }
-
-    resetCatalogList();
-    normalButtonStates();
 }
 
 void ManageDatabaseDialog::handleDeleteAllActionTriggered()
@@ -813,8 +748,5 @@ void ManageDatabaseDialog::handleDeleteAllActionTriggered()
         return;
     }
     m_catalogs.clear();
-    m_makeCatalogs.clear();
-
-    resetCatalogList();
-    normalButtonStates();
+    m_buildQueue->clear();
 }

@@ -29,6 +29,7 @@ catalogues rather than thumbnails.
 | `VolumeNameParser` (`volumenameparser.{h,cpp}`) | the title and the tags a volume name suggests |
 | `SearchWords` (`searchwords.{h,cpp}`) | which titles one search of the catalog list asks for |
 | `VolumeCoverPane` (`volumecoverpane.{h,cpp}`) | showing the cover of the book a catalog view has selected |
+| `CatalogBuildQueue` (`catalogbuildqueue.{h,cpp}`) | the folders waiting to be built, their ids, and the build that turns them into catalogues |
 | `catalogrecords.h` | the records the catalog UI passes around |
 | `CatalogWindow` | the list, the search box, the tag bar, and the tag editor of one book |
 | `VolumeTagDialog` | the title and the tags of one volume |
