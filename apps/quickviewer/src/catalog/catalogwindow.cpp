@@ -31,6 +31,9 @@ static void clearLayout(QLayout *layout)
     }
 }
 
+/** How many tags the bar offers at once: the rest are still searchable. */
+constexpr int TagBarButtonCount = 8;
+
 /** The magnifier of the search field, drawn from the palette of \a owner. */
 static QIcon searchFieldIcon(const QWidget &owner)
 {
@@ -240,16 +243,13 @@ void CatalogWindow::initTagButtons()
     const QStringList checked = getTagWords();
     QStringList buttons;
     if (qApp->ShowTagBar()) {
-        QMap<int, TagRecord *> tags = m_catalogDatabase->tagsByCount();
+        const QList<TagRecord> tags = m_catalogDatabase->tagsByCount();
         // One tag alone is not worth a bar, but the buttons of the state
         // before still have to go: a tag can lose its last volume.
         if (tags.size() > 1) {
-            int cnt = 0;
-            for (int i : tags.keys()) {
-                buttons << tags[i]->name;
-                if (cnt++ >= 7) {
-                    break;
-                }
+            const int shown = qMin(TagBarButtonCount, int(tags.size()));
+            for (int i = 0; i < shown; ++i) {
+                buttons << tags.at(i).name;
             }
         }
     }
@@ -517,9 +517,8 @@ void CatalogWindow::editVolumeTags(int row)
     const int volumeId = volume->id;
 
     QStringList knownTags;
-    const QMap<int, TagRecord *> byCount = m_catalogDatabase->tagsByCount();
-    for (TagRecord *tag : byCount) {
-        knownTags << tag->name;
+    for (const TagRecord &tag : m_catalogDatabase->tagsByCount()) {
+        knownTags << tag.name;
     }
     QStringList volumeTags;
     for (const TagRecord &tag : m_catalogDatabase->getTagsFromVolumeId(volumeId)) {

@@ -480,9 +480,8 @@ void ManageDatabaseDialog::handleEditTagsButtonClicked()
     const int volumeId = current->data(0, Qt::UserRole).toInt();
 
     QStringList knownTags;
-    const QMap<int, TagRecord *> byCount = m_catalogDatabase->tagsByCount();
-    for (TagRecord *tag : byCount) {
-        knownTags << tag->name;
+    for (const TagRecord &tag : m_catalogDatabase->tagsByCount()) {
+        knownTags << tag.name;
     }
     QStringList volumeTags;
     for (const TagRecord &tag : m_catalogDatabase->getTagsFromVolumeId(volumeId)) {

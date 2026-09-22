@@ -89,7 +89,12 @@ public:
 
     /* Tags */
     void loadTags();
-    QMap<int, TagRecord *> tagsByCount();
+    /**
+     * The tags the catalog knows, most used first, for the tag bar and for the
+     * tag editor to offer. The records come by value: they are a copy of what
+     * the catalog holds, not a view into the cache it keeps for itself.
+     */
+    QList<TagRecord> tagsByCount();
     QList<TagRecord> getTagsFromVolumeId(int volume_id);
 
 signals:
@@ -108,6 +113,27 @@ private:
     bool writeBundledDatabase(const QFileInfo &file);
     bool hasCatalogSchema(QString *problem);
     void closeDatabase();
+
+    /**
+     * One write transaction. Unless commit() is called, what it covered is
+     * rolled back as it leaves its scope, so a failure path that returns early
+     * cannot leave one open.
+     */
+    class Transaction
+    {
+    public:
+        explicit Transaction(CatalogDatabase &database);
+        ~Transaction();
+        Transaction(const Transaction &) = delete;
+        Transaction &operator=(const Transaction &) = delete;
+
+        bool isOpen() const { return m_open; }
+        bool commit();
+
+    private:
+        CatalogDatabase &m_database;
+        bool m_open;
+    };
     /** Row of the tag \a name, which is created as a normal tag when missing. */
     int findOrCreateTag(const QString &name);
     /** Drops the tags that no volume carries any more. */
@@ -126,7 +152,6 @@ private:
     QList<VolumeThumbRecord> m_volumesCache;
     bool m_volumesDirty;
     QMap<QString, TagRecord> m_tags; // key is 'type_id:lower(name)' e.g. "0:tagname"
-    QMap<int, TagRecord *> m_tags2;
 
     /* Basical */
     bool execQuery(QSqlQuery &query, const QString &statement);

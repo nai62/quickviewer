@@ -387,7 +387,6 @@ int CatalogDatabase::createVolume(const QString &dirpath, int catalog_id, int pa
             newtag.id = t_tags.lastInsertId().toInt();
             newtag.nameNoCase = t.name.toLower();
             m_tags[tagkey] = newtag;
-            m_tags2[newtag.id] = &m_tags[tagkey];
         }
         TagRecord &tag = m_tags[tagkey];
         if (storedTags.contains(tag.id)) {
@@ -468,7 +467,8 @@ CatalogRecord CatalogDatabase::createCatalog(QString name,
     catalog.path = path;
     catalog.created_at = QDateTime::currentDateTime();
 
-    if (!transaction()) {
+    Transaction transaction(*this);
+    if (!transaction.isOpen()) {
         return catalog;
     }
 
@@ -480,7 +480,6 @@ CatalogRecord CatalogDatabase::createCatalog(QString name,
     t_catalogs.bindValue(":created_at", catalog.created_at);
     t_catalogs.bindValue(":updated_at", catalog.created_at);
     if (!execQuery(t_catalogs, "t_catalogs")) {
-        rollback();
         return catalog;
     }
 
@@ -491,26 +490,22 @@ CatalogRecord CatalogDatabase::createCatalog(QString name,
         t_catalogs.bindValue(":basevolume_id", basevolume_id);
         t_catalogs.bindValue(":id", catalog_id);
         if (!execQuery(t_catalogs, "t_catalogs")) {
-            rollback();
             return catalog;
         }
     } else {
         // Nothing of the catalog was built, so none of it is stored.
-        rollback();
         return catalog;
     }
 
     if (isCanceled(canceled)) {
-        rollback();
         return catalog;
     }
     // The catalog view reads the volume order, so the catalog is complete only
     // once the volumes it just built have one.
     if (!updateVolumeOrders()) {
-        rollback();
         return catalog;
     }
-    if (!commit()) {
+    if (!transaction.commit()) {
         return catalog;
     }
     catalog.basevolume_id = basevolume_id;
@@ -767,7 +762,8 @@ int CatalogDatabase::removeVolumes(const QStringList &paths)
         "DELETE FROM t_volumes WHERE path = :path",
     };
 
-    if (!transaction()) {
+    Transaction transaction(*this);
+    if (!transaction.isOpen()) {
         return 0;
     }
     for (const char *statement : removals) {
@@ -776,20 +772,17 @@ int CatalogDatabase::removeVolumes(const QStringList &paths)
             query.prepare(QString::fromLatin1(statement));
             query.bindValue(":path", path);
             if (!execQuery(query, "remove volumes")) {
-                rollback();
                 return 0;
             }
         }
     }
     if (!updateVolumeOrders()) {
-        rollback();
         return 0;
     }
     if (!removeUnusedTags()) {
-        rollback();
         return 0;
     }
-    if (!commit()) {
+    if (!transaction.commit()) {
         return 0;
     }
     loadTags();
@@ -829,20 +822,19 @@ bool CatalogDatabase::editVolume(int volume_id, const QString &name, const QStri
         }
     }
 
-    if (!transaction()) {
+    Transaction transaction(*this);
+    if (!transaction.isOpen()) {
         return false;
     }
     QSqlQuery removal(m_db);
     removal.prepare(QStringLiteral("DELETE FROM t_volumetags WHERE volume_id = :volume_id"));
     removal.bindValue(":volume_id", volume_id);
     if (!execQuery(removal, "t_volumetags")) {
-        rollback();
         return false;
     }
     for (const QString &name : wanted) {
         const int tag_id = findOrCreateTag(name);
         if (tag_id < 0) {
-            rollback();
             return false;
         }
         QSqlQuery entry(m_db);
@@ -852,15 +844,13 @@ bool CatalogDatabase::editVolume(int volume_id, const QString &name, const QStri
         entry.bindValue(":tag_id", tag_id);
         entry.bindValue(":catalog_id", catalog_id);
         if (!execQuery(entry, "t_volumetags")) {
-            rollback();
             return false;
         }
     }
     if (!setVolumeDisplayName(volume_id, name) || !removeUnusedTags()) {
-        rollback();
         return false;
     }
-    if (!commit()) {
+    if (!transaction.commit()) {
         return false;
     }
 
@@ -927,7 +917,6 @@ void CatalogDatabase::loadTags()
         return;
     }
     m_tags.clear();
-    m_tags2.clear();
     while (t_tags.next()) {
         TagRecord tag;
         tag.id = t_tags.value("id").toInt();
@@ -935,34 +924,31 @@ void CatalogDatabase::loadTags()
         tag.type_id = t_tags.value("type_id").toInt();
         QString tagkey = QString("%1:%2").arg(tag.type_id).arg(tag.name.toLower());
         m_tags[tagkey] = tag;
-        m_tags2[tag.id] = &m_tags[tagkey];
     }
 }
 
-QMap<int, TagRecord *> CatalogDatabase::tagsByCount()
+QList<TagRecord> CatalogDatabase::tagsByCount()
 {
+    QList<TagRecord> result;
     if (!ensureReady()) {
-        return QMap<int, TagRecord *>();
+        return result;
     }
     QSqlQuery t_tags(m_db);
     const bool queried =
-        t_tags.exec("SELECT t.id, t.name, t.type_id, v2.cnt FROM t_tags t INNER JOIN "
-                    "(SELECT COUNT(*) as cnt, v.tag_id FROM t_volumetags v GROUP BY v.tag_id) v2 "
-                    "ON v2.tag_id = t.id "
-                    "ORDER BY v2.cnt DESC");
+        t_tags.exec("SELECT t.id, t.name, t.type_id, COUNT(*) AS cnt FROM t_tags t "
+                    "JOIN t_volumetags v ON v.tag_id = t.id "
+                    "GROUP BY t.id, t.name, t.type_id ORDER BY cnt DESC, t.id");
     if (!queried) {
         qDebug() << "t_tags by count query failed: " << t_tags.lastError();
-        return QMap<int, TagRecord *>();
+        return result;
     }
-    QMap<int, TagRecord *> result;
-    int cnt = 0;
     while (t_tags.next()) {
-        const int tag_id = t_tags.value("id").toInt();
-        const auto tag = m_tags2.constFind(tag_id);
-        if (tag == m_tags2.constEnd() || !tag.value()) {
-            continue;
-        }
-        result[cnt++] = tag.value();
+        TagRecord tag;
+        tag.id = t_tags.value("id").toInt();
+        tag.name = t_tags.value("name").toString();
+        tag.nameNoCase = tag.name.toLower();
+        tag.type_id = t_tags.value("type_id").toInt();
+        result << tag;
     }
     return result;
 }
@@ -996,7 +982,8 @@ bool CatalogDatabase::deleteCatalog(int id)
     if (!ensureReady()) {
         return false;
     }
-    if (!transaction()) {
+    Transaction transaction(*this);
+    if (!transaction.isOpen()) {
         return false;
     }
 
@@ -1005,7 +992,6 @@ bool CatalogDatabase::deleteCatalog(int id)
                      "volume_id IN (SELECT id FROM t_volumes WHERE catalog_id=:catalog_id))");
     t_thumbs.bindValue(":catalog_id", id);
     if (!execQuery(t_thumbs, "t_thumbnails")) {
-        rollback();
         return false;
     }
 
@@ -1014,7 +1000,6 @@ bool CatalogDatabase::deleteCatalog(int id)
                     "catalog_id=:catalog_id)");
     t_files.bindValue(":catalog_id", id);
     if (!execQuery(t_files, "t_files")) {
-        rollback();
         return false;
     }
 
@@ -1023,7 +1008,6 @@ bool CatalogDatabase::deleteCatalog(int id)
                          "WHERE catalog_id=:catalog_id)");
     t_fileorders.bindValue(":catalog_id", id);
     if (!execQuery(t_fileorders, "t_fileorders")) {
-        rollback();
         return false;
     }
 
@@ -1032,7 +1016,6 @@ bool CatalogDatabase::deleteCatalog(int id)
                            "catalog_id=:catalog_id)");
     t_volumeorders.bindValue(":catalog_id", id);
     if (!execQuery(t_volumeorders, "t_volumeorders")) {
-        rollback();
         return false;
     }
 
@@ -1040,7 +1023,6 @@ bool CatalogDatabase::deleteCatalog(int id)
     t_volumetags.prepare("DELETE FROM t_volumetags WHERE catalog_id=:catalog_id");
     t_volumetags.bindValue(":catalog_id", id);
     if (!execQuery(t_volumetags, "t_volumetags")) {
-        rollback();
         return false;
     }
 
@@ -1048,7 +1030,6 @@ bool CatalogDatabase::deleteCatalog(int id)
     t_volumes.prepare("DELETE FROM t_volumes WHERE catalog_id=:catalog_id");
     t_volumes.bindValue(":catalog_id", id);
     if (!execQuery(t_volumes, "t_volumes")) {
-        rollback();
         return false;
     }
 
@@ -1056,15 +1037,13 @@ bool CatalogDatabase::deleteCatalog(int id)
     t_catalogs.prepare("DELETE FROM t_catalogs WHERE id=:id");
     t_catalogs.bindValue(":id", id);
     if (!execQuery(t_catalogs, "t_catalogs")) {
-        rollback();
         return false;
     }
 
     if (!removeUnusedTags()) {
-        rollback();
         return false;
     }
-    if (!commit()) {
+    if (!transaction.commit()) {
         return false;
     }
     loadTags();
@@ -1090,7 +1069,8 @@ bool CatalogDatabase::deleteAllCatalogs()
     if (!ensureReady()) {
         return false;
     }
-    if (!transaction()) {
+    Transaction transaction(*this);
+    if (!transaction.isOpen()) {
         return false;
     }
     static const char *const removals[] = {"t_thumbnails",
@@ -1106,11 +1086,10 @@ bool CatalogDatabase::deleteAllCatalogs()
         if (!removal.exec(QStringLiteral("DELETE FROM %1").arg(QLatin1String(table)))) {
             m_errorMessage = removal.lastError().text();
             qDebug() << table << " delete failed: " << removal.lastError();
-            rollback();
             return false;
         }
     }
-    if (!commit()) {
+    if (!transaction.commit()) {
         return false;
     }
     m_volumesDirty = true;
@@ -1133,6 +1112,27 @@ bool CatalogDatabase::transaction()
     m_errorMessage.clear();
     m_transaction = true;
     return true;
+}
+
+CatalogDatabase::Transaction::Transaction(CatalogDatabase &database)
+    : m_database(database),
+      m_open(database.transaction())
+{
+}
+
+CatalogDatabase::Transaction::~Transaction()
+{
+    if (m_open) {
+        m_database.rollback();
+    }
+}
+
+bool CatalogDatabase::Transaction::commit()
+{
+    // commit() closes the transaction either way: on failure it rolls back.
+    const bool committed = m_database.commit();
+    m_open = false;
+    return committed;
 }
 
 bool CatalogDatabase::commit()

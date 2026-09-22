@@ -1456,9 +1456,9 @@ void CatalogDatabaseTest::orphanVolumeTagsDoNotBreakTagQueries()
                            .arg(catalog.id)));
 
     database.loadTags();
-    const QMap<int, TagRecord *> byCount = database.tagsByCount();
+    const QList<TagRecord> byCount = database.tagsByCount();
     QCOMPARE(byCount.size(), 1);
-    QCOMPARE(byCount.constBegin().value()->name, QStringLiteral("2017"));
+    QCOMPARE(byCount.first().name, QStringLiteral("2017"));
 
     const QList<TagRecord> tags = database.getTagsFromVolumeId(volumeId);
     QCOMPARE(tags.size(), 1);
