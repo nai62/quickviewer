@@ -137,9 +137,21 @@ with the tag editor.
 - Right-clicking a book edits its title and tags. "Manage catalogs" does the
   same for the books of the catalogue selected there, and lists every volume,
   cover or not.
-- "Manage catalogs" also lists each catalogue with its name, the time it was
-  built and the folder it was created from, and **Open in Explorer** shows that
-  folder where the platform lists files.
+- "Manage catalogs" lists each catalogue with its name, the time it was built
+  and the folder it was created from. **Add folder** and **Start creating** are
+  together above the list. Start stays visible, is enabled when folders are
+  waiting, and shows the pending count; during a build it becomes **Stop creating**.
+- Right-click a catalogue for **Edit**, **Open in Explorer**, or **Delete**.
+  The clicked row becomes the selection before the menu opens. The menu is
+  also available from the keyboard, with F2 and Delete as direct shortcuts.
+- **More** holds **Remove missing entries** and, after a separator, **Delete all
+  catalogs**. Destructive database operations retain their confirmation dialogs.
+  The manager has one **Close** button; closing with it, Escape, or the title-bar
+  close button asks before discarding unbuilt requests.
+- The catalogue list and the book pane have a draggable divider. Opening the
+  manager selects a catalogue; adding a folder selects its pending row. Refreshing
+  the list or editing a book retains the current selection when it still exists.
+  Completion and cancellation are shown inline; failures still open a message.
 - Choosing a catalogue there starts on its first book, so the cover pane beside
   the list of books has something to show. Choosing another book shows that
   book's cover, and a book the catalog stored without one says so.
@@ -148,7 +160,7 @@ with the tag editor.
 
 | Target | Covers |
 | --- | --- |
-| `tests/catalogdatabase` | the catalog database: opening and creating the file, refusing an unreadable one, preserving existing temporary files, building a catalogue from folders and archives, covers, the volume name rules, editing titles and tags, worker connections, cancellation, folder cycles, transaction failures, tag-cache rollback, removing a catalogue, removing entries whose folders are gone, and what the catalogue manager lists and shows for a selection |
+| `tests/catalogdatabase` | the catalog database: opening and creating the file, refusing an unreadable one, preserving existing temporary files, building a catalogue from folders and archives, covers, the volume name rules, editing titles and tags, worker connections, cancellation, folder cycles, transaction failures, tag-cache rollback, removing a catalogue, removing entries whose folders are gone, and what the catalogue manager lists and shows for a selection, context menu targeting, closing with pending requests, and build-button state transitions |
 | `tests/windowstartup` | catalog model index validity, stored-tag filtering, empty-list status, search, cover caching and placement, wheel handling and panel lifetime |
 
 Run the catalog tests on Windows with
@@ -171,8 +183,7 @@ with `scripts\verify-windows.cmd debug --tests-only`; see
 
 ## Review items requiring product decisions
 
-- The update buttons are hidden and their handlers are empty. There is no
-  incremental rescan; recreating a catalogue loses manually edited titles and
+- There is no incremental rescan; recreating a catalogue loses manually edited titles and
   tags. A future rescan needs rules for retaining edits and recognizing moves.
 - Archives below the first folder level are deliberately not discovered.
   Changing this would expand existing catalogues and needs a traversal policy.

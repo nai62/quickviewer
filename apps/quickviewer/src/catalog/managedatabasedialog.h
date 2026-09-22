@@ -24,7 +24,6 @@ public:
     bool databaseSettingDialog(CatalogRecord &catalog, bool editing);
 
 protected:
-    void closeEvent(QCloseEvent *e);
     void reject() override;
     bool eventFilter(QObject *watched, QEvent *event) override;
 
@@ -32,22 +31,22 @@ public slots:
     void handleAddButtonClicked();
     void handleDeleteButtonClicked();
     void handleEditButtonClicked();
-    void handleUpdateButtonClicked();
     void handleDeleteAllButtonClicked();
     void handlePurgeMissingButtonClicked();
     void handleCatalogSelectionChanged();
     void handleEditTagsButtonClicked();
-    void handleUpdateAllButtonClicked();
     void handleCancelButtonClicked();
     void handleOpenInExplorerClicked();
+    void handleCatalogContextMenu(const QPoint &position);
 
 private slots:
     void handleCatalogCreated(const CatalogRecord cr);
     void handleCatalogCreationFinished();
 
 private:
-    /** Enables the explorer button for the catalog the list has selected. */
-    void updateExplorerButton();
+    /** Enables actions only for a selected catalog while no build is running. */
+    void updateCatalogActions();
+    void selectPendingCatalog(int index);
     /** Shows the cover of the book the list has selected, or a placeholder. */
     void updateCover();
     /** Draws the cover kept by updateCover() into the room the label has. */

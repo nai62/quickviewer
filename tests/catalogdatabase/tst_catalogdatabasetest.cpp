@@ -1,4 +1,9 @@
 #include <QApplication>
+#include <QAction>
+#include <QMenu>
+#include <QMessageBox>
+#include <QTimer>
+#include <QToolButton>
 #include <QDir>
 #include <QDropEvent>
 #include <QFile>
@@ -189,6 +194,11 @@ private Q_SLOTS:
     void finishesAnEmptyCatalogRequest();
     void buildsCatalogsOnAWorkerConnection();
     void keepsTheManagerLockedUntilCancellationFinishes();
+    void managerBuildsPendingCatalogsWithoutACompletionDialog();
+    void managerContextMenuTargetsTheClickedCatalog();
+    void managerKeepsTheSelectedBookAfterEditing();
+    void closingManagerCanKeepPendingCatalogs();
+    void deletingAllCatalogsCanBeCancelled();
     void cancelledBuildLeavesNoHalfBuiltCatalog();
     void failedCatalogBuildReleasesTheDatabase();
     void failedCatalogRemovalKeepsTheStoredRows();
@@ -792,11 +802,8 @@ void CatalogDatabaseTest::showsTheBooksOfTheSelectedCatalog()
     QVERIFY(catalogs);
     QVERIFY(books);
     QVERIFY(editTags);
-    // Nothing is selected, so no book is shown yet.
-    QCOMPARE(books->topLevelItemCount(), 0);
-    QVERIFY(!editTags->isEnabled());
-
-    catalogs->setCurrentItem(catalogs->topLevelItem(0));
+    // Opening the manager selects a catalog and shows its books immediately.
+    QVERIFY(catalogs->currentItem());
     // The folder the catalog was created from and the two folders below it.
     QCOMPARE(books->topLevelItemCount(), 3);
     // The editor is one press away as soon as a book is in the list.
@@ -859,14 +866,14 @@ void CatalogDatabaseTest::showsTheCoverOfTheSelectedBook()
     QTreeWidget *catalogs = dialog.findChild<QTreeWidget *>(QStringLiteral("treeWidget"));
     QTreeWidget *books = dialog.findChild<QTreeWidget *>(QStringLiteral("booksTree"));
     QLabel *cover = dialog.findChild<QLabel *>(QStringLiteral("coverLabel"));
-    QPushButton *openInExplorer =
-        dialog.findChild<QPushButton *>(QStringLiteral("openInExplorerButton"));
+    QAction *openInExplorer = dialog.findChild<QAction *>(QStringLiteral("openInExplorerAction"));
     QVERIFY(catalogs);
     QVERIFY(books);
     QVERIFY(cover);
     QVERIFY(openInExplorer);
 
-    // Nothing is selected, so there is no cover to show and no folder to open.
+    // Clearing selection also clears the cover and disables folder actions.
+    catalogs->setCurrentItem(nullptr);
     QCOMPARE(shownCoverShape(cover), 0.0);
     QVERIFY(!openInExplorer->isEnabled());
 
@@ -983,6 +990,187 @@ void CatalogDatabaseTest::parsesVolumeNames()
     QCOMPARE(parsed.name, title);
     QCOMPARE(parsed.realname, realname);
     QCOMPARE(parsedTags, tags);
+}
+
+void CatalogDatabaseTest::managerBuildsPendingCatalogsWithoutACompletionDialog()
+{
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    QVERIFY(fixture.addImage(QStringLiteral("Book"), QStringLiteral("01.png"), QSize(60, 90)));
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    ManageDatabaseDialog dialog;
+    dialog.setCatalogDatabase(&database);
+    auto *start = dialog.findChild<QPushButton *>(QStringLiteral("cancelButton"));
+    auto *catalogs = dialog.findChild<QTreeWidget *>(QStringLiteral("treeWidget"));
+    auto *close = dialog.findChild<QDialogButtonBox *>()->button(QDialogButtonBox::Close);
+    QVERIFY(start && catalogs && close);
+    QVERIFY(!start->isEnabled());
+    QMimeData mime;
+    mime.setUrls({QUrl::fromLocalFile(fixture.rootPath())});
+    QDropEvent drop(QPointF(), Qt::CopyAction, &mime, Qt::LeftButton, Qt::NoModifier);
+    dialog.dropEvent(&drop);
+    QVERIFY(start->isEnabled());
+    QVERIFY(close->isEnabled());
+    QVERIFY(catalogs->currentItem());
+    QVERIFY(catalogs->currentItem()->data(0, Qt::UserRole).toInt() < 0);
+    start->click();
+    QVERIFY(!close->isEnabled());
+    // A surprise modal completion dialog must fail the test instead of hanging it.
+    QTimer dismiss;
+    bool showedMessage = false;
+    connect(&dismiss, &QTimer::timeout, &dialog, [&] {
+        if (auto *message = qobject_cast<QMessageBox *>(QApplication::activeModalWidget())) {
+            showedMessage = true;
+            message->accept();
+        }
+    });
+    dismiss.start(10);
+    QTRY_VERIFY(close->isEnabled());
+    QVERIFY(!showedMessage);
+    QCOMPARE(database.catalogs().size(), 1);
+    QVERIFY(!start->isEnabled());
+    QVERIFY(catalogs->currentItem()->data(0, Qt::UserRole).toInt() > 0);
+    QVERIFY(!dialog.findChild<QLabel *>(QStringLiteral("statusLabel"))->text().isEmpty());
+}
+
+void CatalogDatabaseTest::managerContextMenuTargetsTheClickedCatalog()
+{
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    const QString first = fixture.folder(QStringLiteral("First"));
+    const QString second = fixture.folder(QStringLiteral("Second"));
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    ManageDatabaseDialog dialog;
+    dialog.setCatalogDatabase(&database);
+    QMimeData mime;
+    mime.setUrls({QUrl::fromLocalFile(first), QUrl::fromLocalFile(second)});
+    QDropEvent drop(QPointF(), Qt::CopyAction, &mime, Qt::LeftButton, Qt::NoModifier);
+    dialog.dropEvent(&drop);
+    dialog.show();
+    QApplication::processEvents();
+    auto *catalogs = dialog.findChild<QTreeWidget *>(QStringLiteral("treeWidget"));
+    QVERIFY(catalogs->currentItem());
+    QCOMPARE(catalogs->currentItem()->text(2), QDir::toNativeSeparators(second));
+    auto *target = catalogs->topLevelItem(0) == catalogs->currentItem() ? catalogs->topLevelItem(1)
+                                                                        : catalogs->topLevelItem(0);
+    const QString targetPath = target->text(2);
+    bool menuShown = false;
+    QTimer::singleShot(0, &dialog, [&] {
+        auto *menu = qobject_cast<QMenu *>(QApplication::activePopupWidget());
+        QVERIFY(menu);
+        menuShown = true;
+        QCOMPARE(catalogs->currentItem()->text(2), targetPath);
+        auto *remove = dialog.findChild<QAction *>(QStringLiteral("deleteAction"));
+        QVERIFY(menu->actions().contains(remove));
+        QVERIFY(remove->isEnabled());
+        // Removing an unbuilt request only removes that row.
+        menu->close();
+        remove->trigger();
+    });
+    dialog.handleCatalogContextMenu(catalogs->visualItemRect(target).center());
+    QVERIFY(menuShown);
+    QCOMPARE(catalogs->topLevelItemCount(), 1);
+    QVERIFY(catalogs->currentItem()->text(2) != targetPath);
+    bool keyboardMenuShown = false;
+    QTimer::singleShot(0, &dialog, [&] {
+        auto *menu = qobject_cast<QMenu *>(QApplication::activePopupWidget());
+        QVERIFY(menu);
+        keyboardMenuShown = true;
+        menu->close();
+    });
+    QContextMenuEvent keyboardMenu(QContextMenuEvent::Keyboard, QPoint(-1, -1), QPoint(-1, -1));
+    QApplication::sendEvent(catalogs, &keyboardMenu);
+    QVERIFY(keyboardMenuShown);
+    dialog.findChild<QAction *>(QStringLiteral("deleteAction"))->trigger();
+    QCOMPARE(catalogs->topLevelItemCount(), 0);
+    QVERIFY(!dialog.findChild<QAction *>(QStringLiteral("editAction"))->isEnabled());
+    QVERIFY(!dialog.findChild<QPushButton *>(QStringLiteral("cancelButton"))->isEnabled());
+}
+
+void CatalogDatabaseTest::managerKeepsTheSelectedBookAfterEditing()
+{
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    QVERIFY(fixture.addImage(QStringLiteral("Alpha"), QStringLiteral("01.png"), QSize(60, 90)));
+    QVERIFY(fixture.addImage(QStringLiteral("Beta"), QStringLiteral("01.png"), QSize(90, 60)));
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    const auto catalog = database.createCatalog(QStringLiteral("Library"), fixture.rootPath());
+    QVERIFY(catalog.created);
+    ManageDatabaseDialog dialog;
+    dialog.setCatalogDatabase(&database);
+    auto *books = dialog.findChild<QTreeWidget *>(QStringLiteral("booksTree"));
+    for (int row = 0; row < books->topLevelItemCount(); ++row) {
+        if (books->topLevelItem(row)->text(0) == QStringLiteral("Beta")) {
+            books->setCurrentItem(books->topLevelItem(row));
+        }
+    }
+    QVERIFY(books->currentItem());
+    const int bookId = books->currentItem()->data(0, Qt::UserRole).toInt();
+    QTimer::singleShot(0, &dialog, [&] {
+        auto *editor = dialog.findChild<VolumeTagDialog *>();
+        QVERIFY(editor);
+        editor->findChild<QLineEdit *>(QStringLiteral("nameEdit"))
+            ->setText(QStringLiteral("Edited"));
+        editor->accept();
+    });
+    dialog.handleEditTagsButtonClicked();
+    QCOMPARE(books->currentItem()->data(0, Qt::UserRole).toInt(), bookId);
+    QCOMPARE(books->currentItem()->text(0), QStringLiteral("Edited"));
+    dialog.resetCatalogList();
+    QCOMPARE(books->currentItem()->data(0, Qt::UserRole).toInt(), bookId);
+}
+
+void CatalogDatabaseTest::closingManagerCanKeepPendingCatalogs()
+{
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    fixture.folder(QStringLiteral("Book"));
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    ManageDatabaseDialog dialog;
+    dialog.setCatalogDatabase(&database);
+    QMimeData mime;
+    mime.setUrls({QUrl::fromLocalFile(fixture.rootPath())});
+    QDropEvent drop(QPointF(), Qt::CopyAction, &mime, Qt::LeftButton, Qt::NoModifier);
+    dialog.dropEvent(&drop);
+    dialog.show();
+    QApplication::processEvents();
+    auto answer = [&dialog](QMessageBox::StandardButton button) {
+        QTimer::singleShot(0, &dialog, [&dialog, button] {
+            auto *message = dialog.findChild<QMessageBox *>();
+            QVERIFY(message);
+            message->button(button)->click();
+        });
+    };
+    answer(QMessageBox::No);
+    dialog.close();
+    QVERIFY(dialog.isVisible());
+    QCOMPARE(dialog.findChild<QTreeWidget *>(QStringLiteral("treeWidget"))->topLevelItemCount(), 1);
+    answer(QMessageBox::Yes);
+    dialog.findChild<QDialogButtonBox *>()->button(QDialogButtonBox::Close)->click();
+    QVERIFY(!dialog.isVisible());
+    QVERIFY(database.catalogs().isEmpty());
+}
+
+void CatalogDatabaseTest::deletingAllCatalogsCanBeCancelled()
+{
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    fixture.folder(QStringLiteral("Book"));
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    QVERIFY(database.createCatalog(QStringLiteral("Library"), fixture.rootPath()).created);
+    ManageDatabaseDialog dialog;
+    dialog.setCatalogDatabase(&database);
+    auto *menu = dialog.findChild<QToolButton *>(QStringLiteral("moreButton"))->menu();
+    auto *remove = dialog.findChild<QAction *>(QStringLiteral("deleteAllAction"));
+    QVERIFY(menu->actions().contains(remove));
+    QTimer::singleShot(0, &dialog, [&] {
+        auto *message = dialog.findChild<QMessageBox *>();
+        QVERIFY(message);
+        message->button(QMessageBox::No)->click();
+    });
+    remove->trigger();
+    QCOMPARE(database.catalogs().size(), 1);
+    QCOMPARE(dialog.findChild<QTreeWidget *>(QStringLiteral("treeWidget"))->topLevelItemCount(), 1);
 }
 
 void CatalogDatabaseTest::keepsTheManagerLockedUntilCancellationFinishes()

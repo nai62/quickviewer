@@ -2006,6 +2006,40 @@
 <context>
     <name>ManageDatabaseDialog</name>
     <message>
+        <source>Close</source>
+        <comment>Button that closes the catalog manager</comment>
+        <translation>閉じる</translation>
+    </message>
+    <message>
+        <source>Delete all catalogs...</source>
+        <translation>すべてのカタログを削除...</translation>
+    </message>
+    <message>
+        <source>More</source>
+        <translation>その他</translation>
+    </message>
+    <message>
+        <source>Start creating (%1)</source>
+        <translation>作成開始 (%1)</translation>
+    </message>
+    <message>
+        <source>Stopping...</source>
+        <translation>中止しています...</translation>
+    </message>
+    <message>
+        <source>Open in Explorer</source>
+        <translation>エクスプローラーで開く</translation>
+    </message>
+    <message>
+        <source>No cover</source>
+        <comment>Text shown where a cover would be</comment>
+        <translation>表紙なし</translation>
+    </message>
+    <message>
+        <source>Right-click a catalog to edit, delete, or open its folder.</source>
+        <translation>カタログを右クリックすると、編集・削除・フォルダーを開く操作ができます。</translation>
+    </message>
+    <message>
         <location filename="../src/catalog/cataloglist.ui" line="17"/>
         <source>Manage catalogs</source>
         <translation>カタログの管理</translation>

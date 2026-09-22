@@ -1,4 +1,6 @@
 #include <QMessageBox>
+#include <QMenu>
+#include <QSignalBlocker>
 
 #include "managedatabasedialog.h"
 #include "databasesettingdialog.h"
@@ -14,7 +16,7 @@ ManageDatabaseDialog::ManageDatabaseDialog(QWidget *parent)
       m_catalogWatcher(nullptr)
 {
     ui->setupUi(this);
-    ui->progressBar->setVisible(false);
+    ui->progressWidget->setVisible(false);
     qRegisterMetaType<CatalogRecord>("CatalogRecord");
 
     // CatalogTree
@@ -37,19 +39,44 @@ ManageDatabaseDialog::ManageDatabaseDialog(QWidget *parent)
     headerView->setSectionResizeMode(2, QHeaderView::Stretch);
     ui->treeWidget->setColumnWidth(0, 150);
 
-    // Buttons
-    ui->updateAllButton->setVisible(false);
-    ui->updateButton->setVisible(false);
-    connect(ui->purgeMissingButton,
-            &QPushButton::clicked,
+    // Daily actions stay beside the list. Maintenance lives in the overflow menu.
+    auto *maintenance = new QMenu(ui->moreButton);
+    maintenance->addAction(ui->purgeMissingAction);
+    maintenance->addSeparator();
+    maintenance->addAction(ui->deleteAllAction);
+    ui->moreButton->setMenu(maintenance);
+    ui->buttonBox->button(QDialogButtonBox::Close)->setAutoDefault(false);
+    ui->buttonBox->button(QDialogButtonBox::Close)
+        ->setText(tr("Close", "Button that closes the catalog manager"));
+    ui->dialogLayout->setStretchFactor(ui->catalogSplitter, 1);
+    ui->catalogSplitter->setStretchFactor(0, 1);
+    ui->catalogSplitter->setStretchFactor(1, 1);
+    ui->catalogSplitter->setSizes({width() / 2, width() / 2});
+    ui->booksTree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+    ui->booksTree->header()->setSectionResizeMode(1, QHeaderView::Stretch);
+
+    ui->treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->treeWidget->installEventFilter(this);
+    connect(ui->treeWidget,
+            &QWidget::customContextMenuRequested,
+            this,
+            &ManageDatabaseDialog::handleCatalogContextMenu);
+    ui->editAction->setShortcut(QKeySequence(Qt::Key_F2));
+    ui->deleteAction->setShortcut(QKeySequence(Qt::Key_Delete));
+    for (QAction *action : {ui->editAction, ui->deleteAction, ui->openInExplorerAction}) {
+        action->setShortcutContext(Qt::WidgetShortcut);
+        ui->treeWidget->addAction(action);
+    }
+    connect(ui->purgeMissingAction,
+            &QAction::triggered,
             this,
             &ManageDatabaseDialog::handlePurgeMissingButtonClicked);
     connect(ui->treeWidget,
             &QTreeWidget::currentItemChanged,
             this,
             &ManageDatabaseDialog::handleCatalogSelectionChanged);
-    connect(ui->openInExplorerButton,
-            &QPushButton::clicked,
+    connect(ui->openInExplorerAction,
+            &QAction::triggered,
             this,
             &ManageDatabaseDialog::handleOpenInExplorerClicked);
     connect(ui->editTagsButton,
@@ -71,6 +98,7 @@ ManageDatabaseDialog::ManageDatabaseDialog(QWidget *parent)
     ui->coverLabel->installEventFilter(this);
 
     resetCatalogList();
+    normalButtonStates();
 }
 
 ManageDatabaseDialog::~ManageDatabaseDialog()
@@ -95,11 +123,11 @@ void ManageDatabaseDialog::setCatalogDatabase(CatalogDatabase *catalogDatabase)
 void ManageDatabaseDialog::updatePurgeButton()
 {
     m_missingVolumes = m_catalogDatabase ? m_catalogDatabase->missingVolumePaths() : QStringList();
-    ui->purgeMissingButton->setText(
+    ui->purgeMissingAction->setText(
         tr("Remove missing entries (%1)",
            "Button that removes the catalog entries whose folder is no longer there")
             .arg(m_missingVolumes.size()));
-    ui->purgeMissingButton->setEnabled(!m_missingVolumes.isEmpty());
+    ui->purgeMissingAction->setEnabled(!m_missingVolumes.isEmpty());
 }
 
 void ManageDatabaseDialog::handlePurgeMissingButtonClicked()
@@ -139,36 +167,20 @@ void ManageDatabaseDialog::normalButtonStates()
     setAcceptDrops(true);
     ui->treeWidget->setEnabled(true);
     ui->booksTree->setEnabled(true);
-    ui->cancelButton->setEnabled(true);
-    updatePurgeButton();
+    ui->editTagsButton->setEnabled(ui->booksTree->currentItem() != nullptr);
     ui->addButton->setEnabled(true);
-    updateExplorerButton();
-    if (m_catalogs.isEmpty() && m_makeCatalogs.isEmpty()) {
-        ui->editButton->setEnabled(false);
-        ui->deleteButton->setEnabled(false);
-        ui->updateButton->setEnabled(false);
-        ui->deleteAllButton->setEnabled(false);
-        ui->updateAllButton->setEnabled(false);
-    } else {
-        ui->editButton->setEnabled(true);
-        ui->deleteButton->setEnabled(true);
-        ui->updateButton->setEnabled(true);
-        ui->deleteAllButton->setEnabled(true);
-        ui->updateAllButton->setEnabled(true);
-    }
+    ui->moreButton->setEnabled(true);
     ui->buttonBox->setEnabled(true);
+    updatePurgeButton();
+    updateCatalogActions();
 
-    if (m_makeCatalogs.size() == 0) {
-        ui->cancelButton->setVisible(false);
-        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
-    } else {
-        ui->cancelButton->setVisible(true);
-        ui->cancelButton->setText(tr(
-            "Start creating", "Button that builds the folders which were added to the list above"));
-        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
-    }
-    ui->progressBar->setVisible(false);
-    ui->volumeNameLabel->setVisible(false);
+    const int pending = int(m_makeCatalogs.size());
+    ui->cancelButton->setEnabled(pending > 0);
+    ui->cancelButton->setText(
+        pending > 0 ? tr("Start creating (%1)").arg(pending)
+                    : tr("Start creating",
+                         "Button that builds the folders which were added to the list above"));
+    ui->progressWidget->setVisible(false);
 }
 
 void ManageDatabaseDialog::progressButtonStates()
@@ -178,23 +190,24 @@ void ManageDatabaseDialog::progressButtonStates()
     ui->booksTree->setEnabled(false);
     ui->editTagsButton->setEnabled(false);
     ui->addButton->setEnabled(false);
-    ui->editButton->setEnabled(false);
-    ui->deleteButton->setEnabled(false);
-    ui->updateButton->setEnabled(false);
-    ui->deleteAllButton->setEnabled(false);
-    ui->updateAllButton->setEnabled(false);
-    ui->purgeMissingButton->setEnabled(false);
-    ui->openInExplorerButton->setEnabled(false);
+    ui->moreButton->setEnabled(false);
+    ui->purgeMissingAction->setEnabled(false);
     ui->buttonBox->setEnabled(false);
+    updateCatalogActions();
 
-    ui->progressBar->setVisible(true);
+    ui->statusLabel->clear();
+    ui->volumeNameLabel->clear();
+    ui->progressBar->setRange(0, 0);
+    ui->progressWidget->setVisible(true);
     ui->cancelButton->setText(tr("Stop creating", "Button that cancels the catalogs being built"));
-    ui->cancelButton->setVisible(true);
-    ui->volumeNameLabel->setVisible(true);
 }
 
 void ManageDatabaseDialog::resetCatalogList()
 {
+    const QTreeWidgetItem *previous = ui->treeWidget->currentItem();
+    const int previousId = previous ? previous->data(0, Qt::UserRole).toInt() : 0;
+    const QString previousPath = previous ? previous->text(2) : QString();
+    const QSignalBlocker blocker(ui->treeWidget);
     ui->treeWidget->clear();
     // Existing catalogs
     for (int id : m_catalogs.keys()) {
@@ -222,7 +235,6 @@ void ManageDatabaseDialog::resetCatalogList()
             item->setText(2, catalog.path);
             item->setToolTip(2, catalog.path);
             item->setData(0, Qt::UserRole, cnt--);
-            item->setBackground(0, QBrush(QColor("lightgreen")));
             QFont font = item->font(0);
             font.setItalic(true);
             item->setFont(0, font);
@@ -230,18 +242,49 @@ void ManageDatabaseDialog::resetCatalogList()
         }
     }
 
+    QTreeWidgetItem *selected = nullptr;
+    for (int row = 0; row < ui->treeWidget->topLevelItemCount(); ++row) {
+        QTreeWidgetItem *item = ui->treeWidget->topLevelItem(row);
+        const int id = item->data(0, Qt::UserRole).toInt();
+        if ((previousId > 0 && id == previousId) ||
+            (previousId < 0 && item->text(2) == previousPath)) {
+            selected = item;
+            break;
+        }
+    }
+    if (!selected && ui->treeWidget->topLevelItemCount() > 0) {
+        selected = ui->treeWidget->topLevelItem(0);
+    }
+    ui->treeWidget->setCurrentItem(selected);
     handleCatalogSelectionChanged();
+}
+
+void ManageDatabaseDialog::selectPendingCatalog(int index)
+{
+    if (index < 0) {
+        return;
+    }
+    for (int row = 0; row < ui->treeWidget->topLevelItemCount(); ++row) {
+        auto *item = ui->treeWidget->topLevelItem(row);
+        if (item->data(0, Qt::UserRole).toInt() == -100 - index) {
+            ui->treeWidget->setCurrentItem(item);
+            ui->treeWidget->scrollToItem(item);
+            break;
+        }
+    }
 }
 
 void ManageDatabaseDialog::handleCatalogSelectionChanged()
 {
+    const auto *previous = ui->booksTree->currentItem();
+    const int previousId = previous ? previous->data(0, Qt::UserRole).toInt() : 0;
     ui->booksTree->clear();
     m_bookCovers.clear();
     ui->editTagsButton->setEnabled(false);
-    updateExplorerButton();
+    updateCatalogActions();
     // The cover that was shown belonged to the catalog that was selected.
     updateCover();
-    if (!m_catalogDatabase) {
+    if (!m_catalogDatabase || m_catalogWatcher) {
         return;
     }
     const QTreeWidgetItem *current = ui->treeWidget->currentItem();
@@ -256,6 +299,7 @@ void ManageDatabaseDialog::handleCatalogSelectionChanged()
 
     const QList<QPair<VolumeThumbRecord, QStringList>> volumes =
         m_catalogDatabase->catalogVolumes(catalogId);
+    QTreeWidgetItem *selected = nullptr;
     for (const QPair<VolumeThumbRecord, QStringList> &entry : volumes) {
         const VolumeThumbRecord &volume = entry.first;
         QTreeWidgetItem *item = new QTreeWidgetItem;
@@ -265,20 +309,44 @@ void ManageDatabaseDialog::handleCatalogSelectionChanged()
         item->setData(0, Qt::UserRole, volume.id);
         ui->booksTree->addTopLevelItem(item);
         m_bookCovers.insert(volume.id, volume.thumbnail);
+        if (volume.id == previousId) {
+            selected = item;
+        }
     }
     if (ui->booksTree->topLevelItemCount() > 0) {
         // Start on the first book so that the editor is one press away.
-        ui->booksTree->setCurrentItem(ui->booksTree->topLevelItem(0));
+        ui->booksTree->setCurrentItem(selected ? selected : ui->booksTree->topLevelItem(0));
     }
     updateCover();
 }
 
-void ManageDatabaseDialog::updateExplorerButton()
+void ManageDatabaseDialog::updateCatalogActions()
 {
-    // There is a folder to show as soon as the list has a catalog to show it
-    // for, whether or not it has been built yet.
     const QTreeWidgetItem *selected = ui->treeWidget->currentItem();
-    ui->openInExplorerButton->setEnabled(selected != nullptr && !selected->text(2).isEmpty());
+    const bool enabled = selected && !m_catalogWatcher;
+    ui->editAction->setEnabled(enabled);
+    ui->deleteAction->setEnabled(enabled);
+    ui->openInExplorerAction->setEnabled(enabled && !selected->text(2).isEmpty());
+    ui->deleteAllAction->setEnabled(!m_catalogWatcher &&
+                                    (!m_catalogs.isEmpty() || !m_makeCatalogs.isEmpty()));
+}
+
+void ManageDatabaseDialog::handleCatalogContextMenu(const QPoint &position)
+{
+    if (m_catalogWatcher) {
+        return;
+    }
+    QTreeWidgetItem *item = ui->treeWidget->itemAt(position);
+    if (!item) {
+        return;
+    }
+    ui->treeWidget->setCurrentItem(item);
+    QMenu menu(this);
+    menu.addAction(ui->editAction);
+    menu.addAction(ui->openInExplorerAction);
+    menu.addSeparator();
+    menu.addAction(ui->deleteAction);
+    menu.exec(ui->treeWidget->viewport()->mapToGlobal(position));
 }
 
 void ManageDatabaseDialog::updateCover()
@@ -298,7 +366,9 @@ void ManageDatabaseDialog::applyCover()
     if (m_cover.isNull()) {
         // A book the catalog stored without a cover, or no book at all.
         label->setPixmap(QPixmap());
-        label->setText(tr("No cover", "Text shown where a cover would be"));
+        label->setText(ui->booksTree->currentItem()
+                           ? tr("No cover", "Text shown where a cover would be")
+                           : QString());
         return;
     }
     label->setText(QString());
@@ -308,6 +378,13 @@ void ManageDatabaseDialog::applyCover()
 
 bool ManageDatabaseDialog::eventFilter(QObject *watched, QEvent *event)
 {
+    if (watched == ui->treeWidget && event->type() == QEvent::ContextMenu &&
+        static_cast<QContextMenuEvent *>(event)->reason() == QContextMenuEvent::Keyboard) {
+        if (auto *current = ui->treeWidget->currentItem()) {
+            handleCatalogContextMenu(ui->treeWidget->visualItemRect(current).center());
+        }
+        return true;
+    }
     if (watched == ui->coverLabel && event->type() == QEvent::Resize) {
         applyCover();
     }
@@ -381,8 +458,10 @@ void ManageDatabaseDialog::handleAddButtonClicked()
         return;
     }
     m_makeCatalogs << catalog;
+    ui->statusLabel->clear();
 
     resetCatalogList();
+    selectPendingCatalog(int(m_makeCatalogs.size()) - 1);
     normalButtonStates();
 }
 
@@ -415,7 +494,9 @@ void ManageDatabaseDialog::dropEvent(QDropEvent *e)
         m_makeCatalogs << catalog;
     }
 
+    ui->statusLabel->clear();
     resetCatalogList();
+    selectPendingCatalog(int(m_makeCatalogs.size()) - 1);
     normalButtonStates();
 }
 
@@ -447,7 +528,8 @@ void ManageDatabaseDialog::handleCatalogCreated(const CatalogRecord cr)
     m_catalogs[cr.id] = cr;
     int i = 0;
     for (const CatalogRecord &c : m_makeCatalogs) {
-        if (cr.path == c.path) {
+        if (QDir::cleanPath(QFileInfo(cr.path).absoluteFilePath()) ==
+            QDir::cleanPath(QFileInfo(c.path).absoluteFilePath())) {
             break;
         }
         i++;
@@ -471,27 +553,23 @@ void ManageDatabaseDialog::handleCatalogCreationFinished()
     resetCatalogList();
     normalButtonStates();
 
-    QMessageBox msgBox(this);
     if (canceled) {
-        msgBox.setWindowTitle(
-            tr("Cancelled!", "Title of message box when catalog generation was canceled"));
-        msgBox.setText(tr("Catalog creation was cancelled.",
-                          "Body of message box when catalog generation is canceled"));
+        ui->statusLabel->setText(tr("Catalog creation was cancelled.",
+                                    "Body of message box when catalog generation is canceled"));
     } else if (m_makeCatalogs.isEmpty()) {
-        msgBox.setWindowTitle(
-            tr("Completed", "Title of message box when catalog generation finished successfully"));
-        msgBox.setText(tr("Catalog creation completed.",
-                          "Body of message box when catalog generation finished successfully"));
+        ui->statusLabel->setText(
+            tr("Catalog creation completed.",
+               "Body of message box when catalog generation finished successfully"));
     } else {
-        // The build ended without storing every catalog it was asked for.
+        QMessageBox msgBox(this);
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.setWindowTitle(tr("Catalog creation incomplete"));
         msgBox.setText(tr("Catalog(s) left unstored: %1",
                           "Body of message box when some catalogs could not be stored")
                            .arg(m_makeCatalogs.size()));
         msgBox.setInformativeText(m_catalogDatabase->errorMessage());
+        msgBox.exec();
     }
-    msgBox.exec();
 }
 
 void ManageDatabaseDialog::releaseCatalogWatcher()
@@ -529,6 +607,9 @@ void ManageDatabaseDialog::handleCancelButtonClicked()
         return;
     }
     if (!m_catalogWatcher) {
+        if (m_makeCatalogs.isEmpty()) {
+            return;
+        }
         if (!m_catalogDatabase->ensureReady()) {
             reportCatalogDatabaseProblem();
             return;
@@ -562,23 +643,15 @@ void ManageDatabaseDialog::handleCancelButtonClicked()
         // Keep the dialog locked until the worker has rolled back and closed
         // its connection. A second start must not reset its cancellation flag.
         ui->cancelButton->setEnabled(false);
+        ui->cancelButton->setText(tr("Stopping..."));
     }
-}
-
-void ManageDatabaseDialog::closeEvent(QCloseEvent *)
-{
-    if (!m_catalogDatabase) {
-        return;
-    }
-    stopBuilding();
-    m_catalogDatabase->vacuum();
 }
 
 void ManageDatabaseDialog::stopBuilding()
 {
     if (m_catalogWatcher) {
-        // A running build keeps writing to the database, which VACUUM cannot
-        // work on, so wait for it before reclaiming space.
+        // The caller reloads the catalog when the dialog closes. Finish the
+        // rollback before returning control to it.
         QFutureWatcher<QList<CatalogRecord>> *watcher = m_catalogWatcher;
         releaseCatalogWatcher();
         m_catalogDatabase->cancelCreateCatalogAsync();
@@ -650,6 +723,9 @@ void ManageDatabaseDialog::handleEditButtonClicked()
     }
 
     resetCatalogList();
+    if (id < 0) {
+        selectPendingCatalog(-100 - id);
+    }
 }
 
 void ManageDatabaseDialog::handleDeleteButtonClicked()
@@ -685,8 +761,6 @@ void ManageDatabaseDialog::handleDeleteButtonClicked()
     normalButtonStates();
 }
 
-void ManageDatabaseDialog::handleUpdateButtonClicked() {}
-
 void ManageDatabaseDialog::handleDeleteAllButtonClicked()
 {
     if (!m_catalogDatabase) {
@@ -707,5 +781,3 @@ void ManageDatabaseDialog::handleDeleteAllButtonClicked()
     resetCatalogList();
     normalButtonStates();
 }
-
-void ManageDatabaseDialog::handleUpdateAllButtonClicked() {}
