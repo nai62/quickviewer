@@ -1020,7 +1020,10 @@ void CatalogDatabaseTest::managerBuildsPendingCatalogsWithoutACompletionDialog()
     QVERIFY(catalogs->currentItem());
     QVERIFY(catalogs->currentItem()->data(0, Qt::UserRole).toInt() < 0);
     start->click();
-    QVERIFY(!close->isEnabled());
+    // The dialog stays usable while the build runs: Close is the way out of a
+    // build, and the button that started it is the one that stops it.
+    QVERIFY(close->isEnabled());
+    QVERIFY(start->isEnabled());
     // A surprise modal completion dialog must fail the test instead of hanging it.
     QTimer dismiss;
     bool showedMessage = false;
@@ -1031,7 +1034,7 @@ void CatalogDatabaseTest::managerBuildsPendingCatalogsWithoutACompletionDialog()
         }
     });
     dismiss.start(10);
-    QTRY_VERIFY(close->isEnabled());
+    QTRY_VERIFY(!database.isBuilding());
     QVERIFY(!showedMessage);
     QCOMPARE(database.catalogs().size(), 1);
     QVERIFY(!start->isEnabled());
@@ -1198,9 +1201,12 @@ void CatalogDatabaseTest::keepsTheManagerLockedUntilCancellationFinishes()
         QVERIFY(!dialog.findChild<QPushButton *>(QStringLiteral("cancelButton"))->isEnabled());
         QVERIFY(!dialog.findChild<QTreeWidget *>(QStringLiteral("treeWidget"))->isEnabled());
         QVERIFY(!dialog.acceptDrops());
-        // Destruction also waits for the worker; it cannot outlive the dialog.
+        // Closing the dialog asks the worker to stop and leaves it to roll the
+        // build back on its own thread.
     }
-    QVERIFY(database.catalogWatcher()->isFinished());
+    QTRY_VERIFY(database.catalogWatcher()->isFinished());
+    QVERIFY(database.catalogs().isEmpty());
+    QVERIFY(database.volumes().isEmpty());
     QVERIFY(database.createCatalog(QStringLiteral("After"), fixture.rootPath()).created);
 }
 
@@ -1217,10 +1223,12 @@ void CatalogDatabaseTest::buildsCatalogsOnAWorkerConnection()
     CatalogDatabase database(nullptr, fixture.databasePath());
     QCOMPARE(database.volumes().size(), 2);
     QSignalSpy created(&database, &CatalogDatabase::catalogCreated);
+    QSignalSpy buildFinished(&database, &CatalogDatabase::buildFinished);
     auto *watcher = database.catalogWatcher();
     QSignalSpy finished(watcher, &QFutureWatcher<QList<CatalogRecord>>::finished);
     database.createCatalogAsync({catalogRequest(QStringLiteral("Second"), fixture.rootPath())});
     QTRY_COMPARE(finished.size(), 1);
+    QCOMPARE(buildFinished.size(), 1);
     QCOMPARE(watcher->result().size(), 1);
     QVERIFY(watcher->result().first().created);
     QCOMPARE(created.size(), 1);

@@ -149,6 +149,13 @@ CatalogWindow::~CatalogWindow()
 void CatalogWindow::setCatalogDatabase(CatalogDatabase *catalogDatabase)
 {
     m_catalogDatabase = catalogDatabase;
+    // A build the manager leaves running ends later, and the list reads the
+    // catalog again when it does.
+    connect(m_catalogDatabase,
+            &CatalogDatabase::buildFinished,
+            this,
+            &CatalogWindow::refreshCatalog,
+            Qt::UniqueConnection);
     if (!m_catalogDatabase->ensureReady()) {
         // The window stays usable: the status bar carries the reason the list
         // is empty, and the user can put a readable database in place.
@@ -165,6 +172,12 @@ void CatalogWindow::setCatalogDatabase(CatalogDatabase *catalogDatabase)
 
 void CatalogWindow::refreshCatalog()
 {
+    // A build still running holds the catalog database: read it when the build
+    // says it is over, so the list never shows half of a build or an empty
+    // answer from a database that was busy.
+    if (!m_catalogDatabase || m_catalogDatabase->isBuilding()) {
+        return;
+    }
     m_volumes = m_catalogDatabase->volumes();
     initTagButtons();
     searchByWord(true);

@@ -99,6 +99,12 @@ CatalogDatabase::CatalogDatabase(QObject *parent, QString dbpath)
       m_ready(false),
       m_volumesDirty(true)
 {
+    // The build runs on a worker, so what ends it is the worker's own
+    // connection closing rather than anything the caller can see.
+    connect(&m_catalogWatcher,
+            &QFutureWatcher<QList<CatalogRecord>>::finished,
+            this,
+            &CatalogDatabase::buildFinished);
 }
 
 CatalogDatabase::~CatalogDatabase()

@@ -43,6 +43,11 @@ public:
     QFutureWatcher<QList<CatalogRecord>> *createCatalogAsync(QList<CatalogRecord> newers);
     void cancelCreateCatalogAsync();
     QFutureWatcher<QList<CatalogRecord>> *catalogWatcher() { return &m_catalogWatcher; }
+    /**
+     * True while an asynchronous build is still running, including the
+     * rollback of one that was cancelled.
+     */
+    bool isBuilding() const { return m_catalogWatcher.isRunning(); }
 
     bool deleteCatalog(int id);
     bool updateCatalogName(int id, QString name);
@@ -83,6 +88,12 @@ public:
 
 signals:
     void catalogCreated(CatalogRecord catalog);
+    /**
+     * An asynchronous build is over: every catalog it stored is committed, or
+     * a cancelled or failed build has been rolled back. Emitted on the thread
+     * that owns this connection, after the worker has closed its own.
+     */
+    void buildFinished();
     void catalogProgressRangeChanged(int minimum, int maximum);
     void catalogProgressValueChanged(int value);
     void catalogProgressTextChanged(const QString &text);

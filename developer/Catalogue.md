@@ -38,7 +38,9 @@ walks one folder level at a time, one scan per folder on a worker thread, and
 stores what the finished scans returned on the thread that owns the
 connection. An asynchronous build opens its own connection on its worker
 thread and closes it there. The manager keeps editing and new builds disabled
-until a cancelled build has finished rolling back.
+while one is running. Closing it asks the build to stop and leaves the rollback
+to the worker thread; the panel that opened it reads the catalog again when the
+database says the build is over.
 
 ## Tags
 
@@ -144,7 +146,9 @@ with the tag editor.
 - "Manage catalogs" lists each catalogue with its name, the time it was built
   and the folder it was created from. **Add folder** and **Start creating** are
   together above the list. Start stays visible, is enabled when folders are
-  waiting, and shows the pending count; during a build it becomes **Stop creating**.
+  waiting, and shows the pending count; during a build it becomes **Stop
+  creating**. Close stays enabled: closing during a build stops it and leaves
+  the rollback to the worker instead of holding the window.
 - Right-click a catalogue for **Edit**, **Open in Explorer**, or **Delete**.
   The clicked row becomes the selection before the menu opens. The menu is
   also available from the keyboard, with F2 and Delete as direct shortcuts.

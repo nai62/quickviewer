@@ -192,7 +192,6 @@ void ManageDatabaseDialog::progressButtonStates()
     ui->addButton->setEnabled(false);
     ui->moreButton->setEnabled(false);
     ui->purgeMissingAction->setEnabled(false);
-    ui->buttonBox->setEnabled(false);
     updateCatalogActions();
 
     ui->statusLabel->clear();
@@ -651,12 +650,11 @@ void ManageDatabaseDialog::handleCancelButtonClicked()
 void ManageDatabaseDialog::stopBuilding()
 {
     if (m_catalogWatcher) {
-        // The caller reloads the catalog when the dialog closes. Finish the
-        // rollback before returning control to it.
-        QFutureWatcher<QList<CatalogRecord>> *watcher = m_catalogWatcher;
+        // Ask the worker to stop and return: it rolls back and closes its own
+        // connection on its thread, and the catalog the dialog was opened from
+        // reads the result when the database says the build is over.
         releaseCatalogWatcher();
         m_catalogDatabase->cancelCreateCatalogAsync();
-        watcher->waitForFinished();
     }
 }
 

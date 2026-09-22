@@ -105,6 +105,7 @@ private slots:
     void separatePanelClosesWithTheMainWindow();
     void catalogListStartsAtTheTopInListMode();
     void catalogSearchFieldNarrowsTheList();
+    void catalogWindowShowsACatalogBuiltWhileItIsOpen();
     void catalogTagButtonsMatchStoredTags();
     void catalogModelRejectsInvalidIndexes();
     void catalogCoverFillsAndCentresInTheIconBox();
@@ -2575,6 +2576,42 @@ void WindowStartupTest::catalogSearchFieldNarrowsTheList()
     search->clear();
     QApplication::processEvents();
     QCOMPARE(list->model()->rowCount(), 2);
+}
+
+/** A build that ends while the window is open shows up in its list. */
+void WindowStartupTest::catalogWindowShowsACatalogBuiltWhileItIsOpen()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString root = directory.filePath(QStringLiteral("Shelf"));
+    QVERIFY(writeCatalogShelf(root, {QStringLiteral("Alpha")}));
+    const QString secondRoot = directory.filePath(QStringLiteral("Shelf Two"));
+    QVERIFY(writeCatalogShelf(secondRoot, {QStringLiteral("Beta")}));
+
+    QTemporaryDir databaseDirectory;
+    QVERIFY(databaseDirectory.isValid());
+    CatalogDatabase catalogDatabase(nullptr,
+                                    databaseDirectory.filePath(QStringLiteral("catalog.db")));
+    QVERIFY(catalogDatabase.createCatalog(QStringLiteral("Shelf"), root).created);
+
+    qApp->setCatalogViewModeSetting(qvEnums::CatalogViewMode::IconNoText);
+    StartupWindow viewer;
+    viewer.setCatalogDatabase(&catalogDatabase);
+    viewer.show();
+    viewer.createCatalogWindow(true);
+    QApplication::processEvents();
+
+    QListView *list = viewer.findChild<QListView *>(QStringLiteral("volumeList"));
+    QVERIFY(list);
+    QCOMPARE(list->model()->rowCount(), 1);
+
+    // The manager builds on a worker. The window is not read in the middle of
+    // that: it reads the catalog when the database says the build is over.
+    CatalogRecord request;
+    request.name = QStringLiteral("Shelf Two");
+    request.path = secondRoot;
+    catalogDatabase.createCatalogAsync({request});
+    QTRY_COMPARE(list->model()->rowCount(), 2);
 }
 
 void WindowStartupTest::catalogListStartsAtTheTopInListMode()
