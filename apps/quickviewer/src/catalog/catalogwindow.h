@@ -40,7 +40,6 @@ public:
     void dropEvent(QDropEvent *e);
     void resizeEvent(QResizeEvent *event);
     bool isCatalogSearching();
-    void clearTagFrame();
     void initTagButtons();
     void resetTagButtons(QStringList buttons, QStringList checks);
     QStringList getTagWords();
@@ -75,8 +74,6 @@ private:
 
     Ui::CatalogWindow *ui;
     CatalogDatabase *m_catalogDatabase = nullptr;
-    QMap<int, CatalogRecord> m_catalogs;
-    QList<int> m_enabledCatalogs;
     QList<VolumeThumbRecord> m_volumes;
     QList<VolumeThumbRecord *> m_volumeSearch;
     QMenu m_folderViewMenu;

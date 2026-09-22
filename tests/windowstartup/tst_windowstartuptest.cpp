@@ -2475,9 +2475,10 @@ void WindowStartupTest::catalogTagButtonsMatchStoredTags()
     QVERIFY(database.createCatalog(QStringLiteral("Shelf"), root).created);
     for (const auto &volume : database.volumes()) {
         if (volume.realname == QStringLiteral("Alpha")) {
-            QVERIFY(database.setVolumeTags(volume.id, {QStringLiteral("Space Opera")}));
+            QVERIFY(
+                database.setVolumeDetails(volume.id, volume.name, {QStringLiteral("Space Opera")}));
         } else if (volume.realname == QStringLiteral("Beta")) {
-            QVERIFY(database.setVolumeTags(volume.id, {QStringLiteral("Other")}));
+            QVERIFY(database.setVolumeDetails(volume.id, volume.name, {QStringLiteral("Other")}));
         }
     }
     qApp->setCatalogViewModeSetting(qvEnums::CatalogViewMode::Icon);
@@ -2661,13 +2662,15 @@ void WindowStartupTest::catalogTagBarFollowsRemovedTags()
 
     // The user takes one of the two tags away.
     int secondVolumeId = -1;
+    QString secondVolumeName;
     for (const VolumeThumbRecord &volume : catalogDatabase.volumes()) {
         if (volume.realname == QStringLiteral("Sample (Second)")) {
             secondVolumeId = volume.id;
+            secondVolumeName = volume.name;
         }
     }
     QVERIFY(secondVolumeId > 0);
-    QVERIFY(catalogDatabase.setVolumeTags(secondVolumeId, QStringList()));
+    QVERIFY(catalogDatabase.setVolumeDetails(secondVolumeId, secondVolumeName, QStringList()));
 
     // Asking the panel for its tag bar again must drop the button of the tag
     // that no book carries any more.

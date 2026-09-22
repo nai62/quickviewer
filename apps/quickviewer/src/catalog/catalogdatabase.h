@@ -69,14 +69,6 @@ public:
      */
     int removeMissingVolumes();
     /**
-     * Replaces the tags of \a volume_id with \a tags. A tag that is already
-     * known under another volume keeps its name and row; a new one is stored
-     * as a normal tag.
-     *
-     * @return true when the stored tags are the ones asked for.
-     */
-    bool setVolumeTags(int volume_id, const QStringList &tags);
-    /**
      * Sets the title a catalog shows for \a volume_id. The volume keeps its
      * real name: which of the two the list shows is a view option.
      */
@@ -103,7 +95,7 @@ private:
     int findOrCreateTag(const QString &name);
     /** Drops the tags that no volume carries any more. */
     bool removeUnusedTags();
-    bool editVolume(int volume_id, const QStringList &tags, const QString *name);
+    bool editVolume(int volume_id, const QString &name, const QStringList &tags);
 
     QString m_dbPath;
     QString m_connectionName;

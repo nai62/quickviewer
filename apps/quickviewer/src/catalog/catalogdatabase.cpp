@@ -615,8 +615,7 @@ QList<VolumeThumbRecord> CatalogDatabase::volumes()
     QSqlQuery v_volumethm(m_db);
     // The view carries the cover itself but not the row it came from, and the
     // cover of a volume is read and fitted once per row of the catalog list.
-    v_volumethm.prepare("SELECT v_volumethm.*, t_volumes.thumb_id AS thumb_id, "
-                        "t_volumes.catalog_id AS catalog_id FROM v_volumethm "
+    v_volumethm.prepare("SELECT v_volumethm.*, t_volumes.thumb_id AS thumb_id FROM v_volumethm "
                         "LEFT OUTER JOIN t_volumes ON t_volumes.id = v_volumethm.id ORDER BY "
                         "v_volumethm.realname_asc");
     if (!execQuery(v_volumethm, "v_volumethm")) {
@@ -633,11 +632,8 @@ QList<VolumeThumbRecord> CatalogDatabase::volumes()
         vtr.realname = v_volumethm.value("realname").toString();
         vtr.realnameNoCase = vtr.realname.toLower();
         vtr.path = v_volumethm.value("path").toString();
-        vtr.frontpage_id = v_volumethm.value("frontpage_id").toInt();
-        vtr.parent_id = v_volumethm.value("parent_id").toInt();
         vtr.thumb_id = v_volumethm.value("thumb_id").toInt();
         vtr.thumbnail = v_volumethm.value("thumbnail").toByteArray();
-        vtr.catalog_id = v_volumethm.value("catalog_id").toInt();
         rowOfVolume.insert(vtr.id, int(result.size()));
         result.append(vtr);
     }
@@ -667,7 +663,6 @@ QList<QPair<VolumeThumbRecord, QStringList>> CatalogDatabase::catalogVolumes(int
 
     QSqlQuery volumes(m_db);
     volumes.prepare("SELECT t_volumes.id, t_volumes.name, t_volumes.realname, t_volumes.path, "
-                    "t_volumes.frontpage_id, t_volumes.parent_id, t_volumes.catalog_id, "
                     "t_volumes.thumb_id, t_thumbnails.thumbnail FROM t_volumes "
                     "LEFT OUTER JOIN t_thumbnails ON t_volumes.thumb_id = t_thumbnails.id "
                     "WHERE t_volumes.catalog_id = :catalog_id ORDER BY t_volumes.realname");
@@ -685,11 +680,8 @@ QList<QPair<VolumeThumbRecord, QStringList>> CatalogDatabase::catalogVolumes(int
         record.realname = volumes.value(2).toString();
         record.realnameNoCase = record.realname.toLower();
         record.path = volumes.value(3).toString();
-        record.frontpage_id = volumes.value(4).toInt();
-        record.parent_id = volumes.value(5).toInt();
-        record.catalog_id = volumes.value(6).toInt();
-        record.thumb_id = volumes.value(7).toInt();
-        record.thumbnail = volumes.value(8).toByteArray();
+        record.thumb_id = volumes.value(4).toInt();
+        record.thumbnail = volumes.value(5).toByteArray();
         rowOfVolume.insert(record.id, int(result.size()));
         result.append({record, QStringList()});
     }
@@ -783,17 +775,12 @@ int CatalogDatabase::removeMissingVolumes()
     return missing.size();
 }
 
-bool CatalogDatabase::setVolumeTags(int volume_id, const QStringList &tags)
-{
-    return editVolume(volume_id, tags, nullptr);
-}
-
 bool CatalogDatabase::setVolumeDetails(int volume_id, const QString &name, const QStringList &tags)
 {
-    return editVolume(volume_id, tags, &name);
+    return editVolume(volume_id, name, tags);
 }
 
-bool CatalogDatabase::editVolume(int volume_id, const QStringList &tags, const QString *name)
+bool CatalogDatabase::editVolume(int volume_id, const QString &name, const QStringList &tags)
 {
     if (!ensureReady()) {
         return false;
@@ -847,7 +834,7 @@ bool CatalogDatabase::editVolume(int volume_id, const QStringList &tags, const Q
             return false;
         }
     }
-    if ((name && !setVolumeDisplayName(volume_id, *name)) || !removeUnusedTags()) {
+    if (!setVolumeDisplayName(volume_id, name) || !removeUnusedTags()) {
         rollback();
         return false;
     }
@@ -953,7 +940,6 @@ QMap<int, TagRecord *> CatalogDatabase::tagsByCount()
         if (tag == m_tags2.constEnd() || !tag.value()) {
             continue;
         }
-        tag.value()->count = t_tags.value("cnt").toInt();
         result[cnt++] = tag.value();
     }
     return result;

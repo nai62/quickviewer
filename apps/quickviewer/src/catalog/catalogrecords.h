@@ -14,7 +14,6 @@ public:
     int id = 0;
     int basevolume_id = 0;
     QString name;
-    QString description;
     QString path;
     QDateTime created_at;
     QDateTime updated_at;
@@ -35,10 +34,7 @@ public:
     QString realname;
     QString realnameNoCase;
     QString path;
-    int frontpage_id = 0;
     int thumb_id = 0;
-    int parent_id = 0;
-    int catalog_id = 0;
     QByteArray thumbnail;
     QStringList tags;
 };
@@ -51,18 +47,15 @@ public:
     QString name;
     QString nameNoCase;
     int type_id; // (0:Normal, 1:Publisher(Author), 2:Publisher, 3:Author, 4:Rate)
-    int count;
     TagRecord()
         : id(-1),
-          type_id(0),
-          count(0)
+          type_id(0)
     {
     }
     TagRecord(QString nm, int tpid)
         : id(-1),
           name(nm),
-          type_id(tpid),
-          count(0)
+          type_id(tpid)
     {
     }
     inline const TagRecord &operator=(const TagRecord &rhs)
@@ -71,7 +64,6 @@ public:
         name = rhs.name;
         nameNoCase = rhs.nameNoCase;
         type_id = rhs.type_id;
-        count = rhs.count;
         return rhs;
     }
 };

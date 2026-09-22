@@ -675,7 +675,9 @@ void CatalogDatabaseTest::editsTheTitleAndTagsOfAVolume()
 
     // The user gives the volume a title and two tags of their own.
     QVERIFY(database.setVolumeDisplayName(alphaId, QStringLiteral("Edited Title")));
-    QVERIFY(database.setVolumeTags(alphaId, {QStringLiteral("First"), QStringLiteral("Second")}));
+    QVERIFY(database.setVolumeDetails(alphaId,
+                                      QStringLiteral("Edited Title"),
+                                      {QStringLiteral("First"), QStringLiteral("Second")}));
 
     QString title;
     for (const VolumeThumbRecord &volume : database.volumes()) {
@@ -694,7 +696,9 @@ void CatalogDatabaseTest::editsTheTitleAndTagsOfAVolume()
 
     // Editing again reuses the tag the catalog already knows, whatever the
     // case the user typed, and adds the new one.
-    QVERIFY(database.setVolumeTags(alphaId, {QStringLiteral("second"), QStringLiteral("Third")}));
+    QVERIFY(database.setVolumeDetails(alphaId,
+                                      QStringLiteral("Edited Title"),
+                                      {QStringLiteral("second"), QStringLiteral("Third")}));
     names.clear();
     for (const TagRecord &tag : database.getTagsFromVolumeId(alphaId)) {
         names << tag.name;
@@ -708,7 +712,7 @@ void CatalogDatabaseTest::editsTheTitleAndTagsOfAVolume()
     QCOMPARE(probe.count(QStringLiteral("t_volumetags")), 2);
 
     // A volume with no tags left has none of them.
-    QVERIFY(database.setVolumeTags(alphaId, QStringList()));
+    QVERIFY(database.setVolumeDetails(alphaId, QStringLiteral("Edited Title"), QStringList()));
     QVERIFY(database.getTagsFromVolumeId(alphaId).isEmpty());
     QVERIFY(database.tagsByCount().isEmpty());
 }
@@ -792,7 +796,8 @@ void CatalogDatabaseTest::showsTheBooksOfTheSelectedCatalog()
         }
     }
     QVERIFY(alphaId > 0);
-    QVERIFY(database.setVolumeTags(alphaId, {QStringLiteral("Sample")}));
+    QVERIFY(
+        database.setVolumeDetails(alphaId, QStringLiteral("Alpha"), {QStringLiteral("Sample")}));
 
     ManageDatabaseDialog dialog;
     dialog.setCatalogDatabase(&database);

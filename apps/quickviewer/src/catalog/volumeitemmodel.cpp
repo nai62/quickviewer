@@ -119,8 +119,9 @@ void VolumeItemModel::setVolumes(QList<VolumeThumbRecord *> *volumes)
 
 void VolumeItemModel::setViewMode(qvEnums::CatalogViewMode viewMode)
 {
+    // The list is reset right after the mode changes, and that reset is what
+    // tells the view that its cells now hold something else.
     m_catalogViewMode = viewMode;
-    emit submit();
 }
 
 void VolumeItemModel::setCoverBox(const QSize &size)
