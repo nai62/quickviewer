@@ -668,10 +668,10 @@ QList<QPair<VolumeThumbRecord, QStringList>> CatalogDatabase::catalogVolumes(int
     }
 
     QSqlQuery volumes(m_db);
-    volumes.prepare("SELECT t_volumes.id, t_volumes.name, t_volumes.realname, t_volumes.path, "
-                    "t_volumes.thumb_id, t_thumbnails.thumbnail FROM t_volumes "
-                    "LEFT OUTER JOIN t_thumbnails ON t_volumes.thumb_id = t_thumbnails.id "
-                    "WHERE t_volumes.catalog_id = :catalog_id ORDER BY t_volumes.realname");
+    // The covers are not read with the list: one catalog can hold thousands of
+    // books, and the manager shows the cover of the one that is selected.
+    volumes.prepare("SELECT id, name, realname, path, thumb_id FROM t_volumes "
+                    "WHERE catalog_id = :catalog_id ORDER BY realname");
     volumes.bindValue(":catalog_id", catalog_id);
     if (!volumes.exec()) {
         qDebug() << "t_volumes of catalog query failed: " << volumes.lastError();
@@ -687,7 +687,6 @@ QList<QPair<VolumeThumbRecord, QStringList>> CatalogDatabase::catalogVolumes(int
         record.realnameNoCase = record.realname.toLower();
         record.path = volumes.value(3).toString();
         record.thumb_id = volumes.value(4).toInt();
-        record.thumbnail = volumes.value(5).toByteArray();
         rowOfVolume.insert(record.id, int(result.size()));
         result.append({record, QStringList()});
     }
@@ -711,30 +710,42 @@ QList<QPair<VolumeThumbRecord, QStringList>> CatalogDatabase::catalogVolumes(int
     return result;
 }
 
-QStringList CatalogDatabase::missingVolumePaths()
+QByteArray CatalogDatabase::volumeThumbnail(int volume_id)
 {
-    QStringList missing;
     if (!ensureReady()) {
-        return missing;
+        return QByteArray();
+    }
+    QSqlQuery query(m_db);
+    query.prepare(QStringLiteral("SELECT t_thumbnails.thumbnail FROM t_volumes LEFT OUTER JOIN "
+                                 "t_thumbnails ON t_volumes.thumb_id = t_thumbnails.id "
+                                 "WHERE t_volumes.id = :id"));
+    query.bindValue(":id", volume_id);
+    if (!query.exec() || !query.next()) {
+        return QByteArray();
+    }
+    return query.value(0).toByteArray();
+}
+
+QStringList CatalogDatabase::volumePaths()
+{
+    QStringList paths;
+    if (!ensureReady()) {
+        return paths;
     }
     QSqlQuery query(m_db);
     if (!query.exec(QStringLiteral("SELECT path FROM t_volumes ORDER BY id"))) {
         qDebug() << "t_volumes query failed: " << query.lastError();
-        return missing;
+        return paths;
     }
     while (query.next()) {
-        const QString path = query.value(0).toString();
-        if (!QFileInfo::exists(path) && !missing.contains(path)) {
-            missing << path;
-        }
+        paths << query.value(0).toString();
     }
-    return missing;
+    return paths;
 }
 
-int CatalogDatabase::removeMissingVolumes()
+int CatalogDatabase::removeVolumes(const QStringList &paths)
 {
-    const QStringList missing = missingVolumePaths();
-    if (missing.isEmpty() || !ensureReady()) {
+    if (paths.isEmpty() || !ensureReady()) {
         return 0;
     }
 
@@ -755,11 +766,11 @@ int CatalogDatabase::removeMissingVolumes()
         return 0;
     }
     for (const char *statement : removals) {
-        for (const QString &path : missing) {
+        for (const QString &path : paths) {
             QSqlQuery query(m_db);
             query.prepare(QString::fromLatin1(statement));
             query.bindValue(":path", path);
-            if (!execQuery(query, "remove missing volumes")) {
+            if (!execQuery(query, "remove volumes")) {
                 rollback();
                 return 0;
             }
@@ -778,7 +789,7 @@ int CatalogDatabase::removeMissingVolumes()
     }
     loadTags();
     m_volumesDirty = true;
-    return missing.size();
+    return paths.size();
 }
 
 bool CatalogDatabase::setVolumeDetails(int volume_id, const QString &name, const QStringList &tags)

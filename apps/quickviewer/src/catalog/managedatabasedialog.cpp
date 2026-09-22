@@ -1,6 +1,7 @@
 #include <QMessageBox>
 #include <QMenu>
 #include <QSignalBlocker>
+#include <QtConcurrent>
 
 #include "managedatabasedialog.h"
 #include "databasesettingdialog.h"
@@ -70,7 +71,13 @@ ManageDatabaseDialog::ManageDatabaseDialog(QWidget *parent)
     connect(ui->purgeMissingAction,
             &QAction::triggered,
             this,
-            &ManageDatabaseDialog::handlePurgeMissingButtonClicked);
+            &ManageDatabaseDialog::handlePurgeMissingActionTriggered);
+    // Telling a slow path from a gone one belongs on a worker: a catalog can
+    // hold thousands of volumes on slow drives.
+    connect(&m_missingWatcher,
+            &QFutureWatcher<QStringList>::finished,
+            this,
+            &ManageDatabaseDialog::handleMissingVolumesChecked);
     connect(ui->treeWidget,
             &QTreeWidget::currentItemChanged,
             this,
@@ -115,22 +122,50 @@ void ManageDatabaseDialog::setCatalogDatabase(CatalogDatabase *catalogDatabase)
         return;
     }
     m_catalogs = m_catalogDatabase->catalogs();
-    updatePurgeButton();
     resetCatalogList();
     normalButtonStates();
 }
 
-void ManageDatabaseDialog::updatePurgeButton()
+void ManageDatabaseDialog::startMissingVolumeCheck()
 {
-    m_missingVolumes = m_catalogDatabase ? m_catalogDatabase->missingVolumePaths() : QStringList();
+    if (!m_catalogDatabase || m_missingWatcher.isRunning()) {
+        return;
+    }
+    // Nothing is known until the check answers: offer nothing to remove rather
+    // than the count of the state before.
+    m_missingVolumes.clear();
+    updatePurgeAction();
+    const QStringList paths = m_catalogDatabase->volumePaths();
+    m_missingWatcher.setFuture(QtConcurrent::run([paths] {
+        QStringList missing;
+        for (const QString &path : paths) {
+            if (!QFileInfo::exists(path) && !missing.contains(path)) {
+                missing << path;
+            }
+        }
+        return missing;
+    }));
+}
+
+void ManageDatabaseDialog::handleMissingVolumesChecked()
+{
+    m_missingVolumes = m_missingWatcher.result();
+    updatePurgeAction();
+}
+
+void ManageDatabaseDialog::updatePurgeAction()
+{
     ui->purgeMissingAction->setText(
-        tr("Remove missing entries (%1)",
-           "Button that removes the catalog entries whose folder is no longer there")
-            .arg(m_missingVolumes.size()));
+        m_missingVolumes.isEmpty()
+            ? tr("Remove missing entries",
+                 "Button that removes the catalog entries whose folder is no longer there")
+            : tr("Remove missing entries (%1)",
+                 "Button that removes the catalog entries whose folder is no longer there")
+                  .arg(m_missingVolumes.size()));
     ui->purgeMissingAction->setEnabled(!m_missingVolumes.isEmpty());
 }
 
-void ManageDatabaseDialog::handlePurgeMissingButtonClicked()
+void ManageDatabaseDialog::handlePurgeMissingActionTriggered()
 {
     if (!m_catalogDatabase || m_missingVolumes.isEmpty()) {
         return;
@@ -142,8 +177,8 @@ void ManageDatabaseDialog::handlePurgeMissingButtonClicked()
                 .arg(m_missingVolumes.size()))) {
         return;
     }
-    const int removed = m_catalogDatabase->removeMissingVolumes();
-    updatePurgeButton();
+    const int removed = m_catalogDatabase->removeVolumes(m_missingVolumes);
+    startMissingVolumeCheck();
     resetCatalogList();
     normalButtonStates();
     if (removed > 0) {
@@ -171,7 +206,7 @@ void ManageDatabaseDialog::normalButtonStates()
     ui->addButton->setEnabled(true);
     ui->moreButton->setEnabled(true);
     ui->buttonBox->setEnabled(true);
-    updatePurgeButton();
+    startMissingVolumeCheck();
     updateCatalogActions();
 
     const int pending = int(m_makeCatalogs.size());
@@ -279,7 +314,6 @@ void ManageDatabaseDialog::handleCatalogSelectionChanged()
     const auto *previous = ui->booksTree->currentItem();
     const int previousId = previous ? previous->data(0, Qt::UserRole).toInt() : 0;
     ui->booksTree->clear();
-    m_bookCovers.clear();
     ui->editTagsButton->setEnabled(false);
     updateCatalogActions();
     // The cover that was shown belonged to the catalog that was selected.
@@ -308,7 +342,6 @@ void ManageDatabaseDialog::handleCatalogSelectionChanged()
         item->setText(1, entry.second.join(QStringLiteral(", ")));
         item->setData(0, Qt::UserRole, volume.id);
         ui->booksTree->addTopLevelItem(item);
-        m_bookCovers.insert(volume.id, volume.thumbnail);
         if (volume.id == previousId) {
             selected = item;
         }
@@ -351,12 +384,15 @@ void ManageDatabaseDialog::handleCatalogContextMenu(const QPoint &position)
 
 void ManageDatabaseDialog::updateCover()
 {
-    const QTreeWidgetItem *current = ui->booksTree->currentItem();
-    const auto stored = current ? m_bookCovers.constFind(current->data(0, Qt::UserRole).toInt())
-                                : m_bookCovers.constEnd();
-    m_cover = stored == m_bookCovers.constEnd()
-                  ? QImage()
-                  : QImage::fromData(*stored, IFileLoader::jpegQtFormatName());
+    // One cover at a time: the list holds the books, and the database holds
+    // the covers of a catalog that can be far larger than the screen.
+    QByteArray stored;
+    if (const QTreeWidgetItem *current = ui->booksTree->currentItem()) {
+        if (m_catalogDatabase) {
+            stored = m_catalogDatabase->volumeThumbnail(current->data(0, Qt::UserRole).toInt());
+        }
+    }
+    m_cover = QImage::fromData(stored, IFileLoader::jpegQtFormatName());
     applyCover();
 }
 

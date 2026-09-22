@@ -32,7 +32,7 @@ public slots:
     void handleDeleteButtonClicked();
     void handleEditButtonClicked();
     void handleDeleteAllButtonClicked();
-    void handlePurgeMissingButtonClicked();
+    void handlePurgeMissingActionTriggered();
     void handleCatalogSelectionChanged();
     void handleEditTagsButtonClicked();
     void handleCancelButtonClicked();
@@ -42,8 +42,13 @@ public slots:
 private slots:
     void handleCatalogCreated(const CatalogRecord cr);
     void handleCatalogCreationFinished();
+    void handleMissingVolumesChecked();
 
 private:
+    /** Asks the worker which of the registered paths are no longer there. */
+    void startMissingVolumeCheck();
+    /** Writes the purge action from the paths the last check reported. */
+    void updatePurgeAction();
     /** Enables actions only for a selected catalog while no build is running. */
     void updateCatalogActions();
     void selectPendingCatalog(int index);
@@ -55,16 +60,14 @@ private:
     void reportCatalogDatabaseProblem();
     void stopBuilding();
     bool confirmRemoval(const QString &title, const QString &text);
-    void updatePurgeButton();
 
     Ui::ManageDatabaseDialog *ui;
     QMap<int, CatalogRecord> m_catalogs;
     QList<CatalogRecord> m_makeCatalogs;
     QStringList m_missingVolumes;
     CatalogDatabase *m_catalogDatabase;
-    /** The stored cover of each book of the selected catalog, by volume id. */
-    QMap<int, QByteArray> m_bookCovers;
     QImage m_cover;
+    QFutureWatcher<QStringList> m_missingWatcher;
 
     QFutureWatcher<QList<CatalogRecord>> *m_catalogWatcher;
 };

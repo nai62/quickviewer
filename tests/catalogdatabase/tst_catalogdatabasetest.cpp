@@ -197,6 +197,7 @@ private Q_SLOTS:
     void keepsTheManagerLockedUntilCancellationFinishes();
     void managerBuildsPendingCatalogsWithoutACompletionDialog();
     void managerContextMenuTargetsTheClickedCatalog();
+    void managerOffersToRemoveMissingEntries();
     void managerKeepsTheSelectedBookAfterEditing();
     void closingManagerCanKeepPendingCatalogs();
     void deletingAllCatalogsCanBeCancelled();
@@ -584,17 +585,24 @@ void CatalogDatabaseTest::removesVolumesWhoseFoldersAreGone()
     QVERIFY(database.createCatalog(QStringLiteral("Library"), fixture.rootPath()).created);
     // The folder the catalog was created from and the two folders below it.
     QCOMPARE(database.volumes().size(), 3);
-    QVERIFY(database.missingVolumePaths().isEmpty());
+    QCOMPARE(database.volumePaths().size(), 3);
 
     // One folder goes away, and the catalog still holds its volume.
     const QString gone = fixture.folder(QStringLiteral("Beta"));
     QVERIFY(QDir(gone).removeRecursively());
-    QCOMPARE(database.missingVolumePaths().size(), 1);
-    QCOMPARE(QFileInfo(database.missingVolumePaths().first()).fileName(), QStringLiteral("Beta"));
+    QStringList missing;
+    for (const QString &path : database.volumePaths()) {
+        if (!QFileInfo::exists(path)) {
+            missing << path;
+        }
+    }
+    QCOMPARE(missing.size(), 1);
+    QCOMPARE(QFileInfo(missing.first()).fileName(), QStringLiteral("Beta"));
     QCOMPARE(database.volumes().size(), 3);
 
-    QCOMPARE(database.removeMissingVolumes(), 1);
-    QVERIFY(database.missingVolumePaths().isEmpty());
+    // Which of the registered paths are gone is the caller's question; the
+    // database removes the ones it is handed.
+    QCOMPARE(database.removeVolumes(missing), 1);
     QCOMPARE(database.volumes().size(), 2);
     for (const VolumeThumbRecord &volume : database.volumes()) {
         QVERIFY(volume.realname != QStringLiteral("Beta"));
@@ -1094,6 +1102,46 @@ void CatalogDatabaseTest::managerContextMenuTargetsTheClickedCatalog()
     QCOMPARE(catalogs->topLevelItemCount(), 0);
     QVERIFY(!dialog.findChild<QAction *>(QStringLiteral("editAction"))->isEnabled());
     QVERIFY(!dialog.findChild<QPushButton *>(QStringLiteral("cancelButton"))->isEnabled());
+}
+
+void CatalogDatabaseTest::managerOffersToRemoveMissingEntries()
+{
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    QVERIFY(fixture.addImage(QStringLiteral("Alpha"), QStringLiteral("01.png"), QSize(60, 90)));
+    QVERIFY(fixture.addImage(QStringLiteral("Beta"), QStringLiteral("01.png"), QSize(60, 90)));
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    QVERIFY(database.createCatalog(QStringLiteral("Library"), fixture.rootPath()).created);
+    QVERIFY(QDir(fixture.folder(QStringLiteral("Beta"))).removeRecursively());
+
+    ManageDatabaseDialog dialog;
+    dialog.setCatalogDatabase(&database);
+    auto *purge = dialog.findChild<QAction *>(QStringLiteral("purgeMissingAction"));
+    QVERIFY(purge);
+
+    // Which volumes are gone is asked of a worker, so the manager opens at
+    // once and the action waits for the answer instead of the window doing so.
+    QTRY_VERIFY(purge->isEnabled());
+    QVERIFY(purge->text().contains(QStringLiteral("(1)")));
+
+    // Answering the question it asks takes the volume away.
+    QTimer dismiss;
+    connect(&dismiss, &QTimer::timeout, &dialog, [&] {
+        auto *box = qobject_cast<QMessageBox *>(QApplication::activeModalWidget());
+        if (!box) {
+            return;
+        }
+        if (QAbstractButton *yes = box->button(QMessageBox::Yes)) {
+            yes->click();
+        } else {
+            box->accept();
+        }
+    });
+    dismiss.start(10);
+    purge->trigger();
+
+    QTRY_COMPARE(database.volumes().size(), 2);
+    QVERIFY(!purge->isEnabled());
 }
 
 void CatalogDatabaseTest::managerKeepsTheSelectedBookAfterEditing()

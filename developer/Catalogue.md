@@ -153,7 +153,9 @@ with the tag editor.
   The clicked row becomes the selection before the menu opens. The menu is
   also available from the keyboard, with F2 and Delete as direct shortcuts.
 - **More** holds **Remove missing entries** and, after a separator, **Delete all
-  catalogs**. Destructive database operations retain their confirmation dialogs.
+  catalogs**. Whether a registered folder is still there is asked of a worker,
+  so the manager opens at once and the count appears when the answer does.
+  Destructive database operations retain their confirmation dialogs.
   The manager has one **Close** button; closing with it, Escape, or the title-bar
   close button asks before discarding unbuilt requests.
 - The catalogue list and the book pane have a draggable divider. Opening the
@@ -162,7 +164,9 @@ with the tag editor.
   Completion and cancellation are shown inline; failures still open a message.
 - Choosing a catalogue there starts on its first book, so the cover pane beside
   the list of books has something to show. Choosing another book shows that
-  book's cover, and a book the catalog stored without one says so.
+  book's cover, and a book the catalog stored without one says so. The cover of
+  the selected book is read from the database then: the list of a large
+  catalogue never carries every cover with it.
 
 ## Tests
 
@@ -185,8 +189,10 @@ with `scripts\verify-windows.cmd debug --tests-only`; see
 - The catalog database holds one cover per volume, not a file list. Reading a
   volume's pages belongs to the viewer, and listing a folder belongs to the
   folder view.
-- `volumes()` reads every volume with its thumbnail, and creating catalogues
-  rewrites the whole volume order, so a very large catalogue answers slowly.
+- The catalog list reads every volume with its thumbnail when it loads, and
+  creating catalogues rewrites the whole volume order, so a very large
+  catalogue answers slowly. The manager reads the cover of the book it shows
+  rather than every cover of the catalogue it lists.
 
 
 ## Review items requiring product decisions
@@ -204,10 +210,11 @@ with `scripts\verify-windows.cmd debug --tests-only`; see
 - Tag types are stored but not exposed in the editor. Equal names with different
   types collapse to one choice on save; preserving or retiring those types
   needs a data-model decision. Existing duplicate tag rows are not migrated.
-- Large catalogues still load every cover into memory and queue a scan for every
-  folder at the current level. The fitted-pixmap cache is bounded, but those
-  inputs are not. Lazy covers and bounded scan submission need workload-based
-  measurements before choosing limits.
+- Large catalogues still load every cover into memory for the catalog list, and
+  the build queues a scan for every folder at the current level. The
+  fitted-pixmap cache is bounded, but those inputs are not. Lazy covers for the
+  list and bounded scan submission need workload-based measurements before
+  choosing limits.
 
 Interactive Windows checks after catalog changes: create and cancel a catalogue,
 try editing while cancellation is pending, close the manager during a build,

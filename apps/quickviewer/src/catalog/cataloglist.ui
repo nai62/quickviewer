@@ -294,7 +294,7 @@
   </action>
   <action name="purgeMissingAction">
    <property name="text">
-    <string extracomment="Button that removes the catalog entries whose folder is no longer there">Remove missing entries (%1)</string>
+    <string extracomment="Button that removes the catalog entries whose folder is no longer there">Remove missing entries</string>
    </property>
   </action>
   <action name="deleteAllAction">

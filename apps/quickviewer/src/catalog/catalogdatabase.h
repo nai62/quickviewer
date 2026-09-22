@@ -58,21 +58,27 @@ public:
     /**
      * The volumes of one catalog, in the order the catalog lists them, with
      * the tags each of them carries. The manager shows every volume this way,
-     * whether or not it has a cover to show in the catalog list.
+     * whether or not it has a cover to show in the catalog list; the cover
+     * itself is read for the one volume the user selects.
      */
     QList<QPair<VolumeThumbRecord, QStringList>> catalogVolumes(int catalog_id);
     /**
-     * Paths of volumes whose folder or archive is no longer on disk. The
-     * catalog keeps them until the user removes them.
+     * The cover stored for \a volume_id, as the JPEG the catalog keeps. Empty
+     * for a volume the catalog stored without one.
      */
-    QStringList missingVolumePaths();
+    QByteArray volumeThumbnail(int volume_id);
     /**
-     * Removes every volume which missingVolumePaths() reports, with the rows
-     * that belong to it.
+     * Every path a volume is registered under, in the order the catalog holds
+     * them. Whether a path is still on disk is not asked here: telling a slow
+     * path from a gone one is the caller's to do off the window's thread.
+     */
+    QStringList volumePaths();
+    /**
+     * Removes the volumes at \a paths, with the rows that belong to them.
      *
      * @return how many paths were removed.
      */
-    int removeMissingVolumes();
+    int removeVolumes(const QStringList &paths);
     /**
      * Sets the title a catalog shows for \a volume_id. The volume keeps its
      * real name: which of the two the list shows is a view option.
