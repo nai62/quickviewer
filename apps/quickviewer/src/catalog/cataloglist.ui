@@ -64,6 +64,9 @@
      </item>
      <item>
       <widget class="QToolButton" name="moreButton">
+       <property name="styleSheet">
+        <string notr="true">QToolButton#moreButton { padding-right: 8px; }</string>
+       </property>
        <property name="text">
         <string>More</string>
        </property>

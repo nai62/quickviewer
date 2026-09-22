@@ -235,6 +235,7 @@ void ManageDatabaseDialog::resetCatalogList()
             item->setText(2, catalog.path);
             item->setToolTip(2, catalog.path);
             item->setData(0, Qt::UserRole, cnt--);
+            item->setBackground(0, QBrush(QColor("lightgreen")));
             QFont font = item->font(0);
             font.setItalic(true);
             item->setFont(0, font);
