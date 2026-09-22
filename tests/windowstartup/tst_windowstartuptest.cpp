@@ -103,6 +103,7 @@ class WindowStartupTest : public QObject
 private slots:
     void separatePanelClosesWithTheMainWindow();
     void catalogListStartsAtTheTopInListMode();
+    void catalogSearchFieldNarrowsTheList();
     void catalogCoverFillsAndCentresInTheIconBox();
     void catalogCoverIsReadOnce();
     void catalogViewConsumesWheelEventsAtScrollBoundary();
@@ -2437,6 +2438,47 @@ void WindowStartupTest::catalogCoverIsReadOnce()
     QCOMPARE(coverAt(1).cacheKey(), other.cacheKey());
     QVERIFY(coverInkBox(first).height() > coverInkBox(first).width());
     QVERIFY(coverInkBox(other).width() > coverInkBox(other).height());
+}
+
+/** Typing in the catalog's search field narrows the list it shows. */
+void WindowStartupTest::catalogSearchFieldNarrowsTheList()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString root = directory.filePath(QStringLiteral("Shelf"));
+    QVERIFY(writeCatalogShelf(root, {QStringLiteral("Alpha"), QStringLiteral("Beta")}));
+
+    QTemporaryDir databaseDirectory;
+    QVERIFY(databaseDirectory.isValid());
+    CatalogDatabase catalogDatabase(nullptr,
+                                    databaseDirectory.filePath(QStringLiteral("catalog.db")));
+    QVERIFY(catalogDatabase.createCatalog(QStringLiteral("Shelf"), root).created);
+
+    // The list shows the titles, so the search has something to narrow.
+    qApp->setCatalogViewModeSetting(qvEnums::CatalogViewMode::Icon);
+    StartupWindow viewer;
+    viewer.setCatalogDatabase(&catalogDatabase);
+    viewer.show();
+    viewer.createCatalogWindow(true);
+    QApplication::processEvents();
+
+    QListView *list = viewer.findChild<QListView *>(QStringLiteral("volumeList"));
+    QLineEdit *search = viewer.findChild<QLineEdit *>(QStringLiteral("searchEdit"));
+    QVERIFY(list);
+    QVERIFY(search);
+    QCOMPARE(list->model()->rowCount(), 2);
+
+    // The field searches as the user types, so one of the two books is left.
+    search->setText(QStringLiteral("Beta"));
+    QApplication::processEvents();
+    QCOMPARE(list->model()->rowCount(), 1);
+    QCOMPARE(list->model()->data(list->model()->index(0, 0), Qt::DisplayRole).toString(),
+             QStringLiteral("Beta"));
+
+    // Emptying it brings the other book back.
+    search->clear();
+    QApplication::processEvents();
+    QCOMPARE(list->model()->rowCount(), 2);
 }
 
 void WindowStartupTest::catalogListStartsAtTheTopInListMode()

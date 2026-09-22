@@ -52,7 +52,7 @@ public slots:
     void handleFolderViewIconActionTriggered();
     void handleFolderViewIconNoTextActionTriggered();
     void handleManageCatalogButtonClicked();
-    void handleSearchComboBoxEditTextChanged(QString search);
+    void handleSearchEditTextChanged(QString text);
     void handleSearchLineEditEditingFinished();
     void handleVolumeListItemDoubleClicked(const QModelIndex &index);
     void handleVolumeListContextMenu(const QPoint &position);

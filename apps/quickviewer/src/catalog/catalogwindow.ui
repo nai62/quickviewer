@@ -140,15 +140,12 @@
        </size>
       </property>
      </widget>
-     <widget class="QComboBox" name="searchCombo">
+     <widget class="QLineEdit" name="searchEdit">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
-      </property>
-      <property name="editable">
-       <bool>true</bool>
       </property>
      </widget>
     </widget>
@@ -389,10 +386,10 @@ QFrame.layout {
    </hints>
   </connection>
   <connection>
-   <sender>searchCombo</sender>
-   <signal>editTextChanged(QString)</signal>
+   <sender>searchEdit</sender>
+   <signal>textChanged(QString)</signal>
    <receiver>CatalogWindow</receiver>
-   <slot>handleSearchComboBoxEditTextChanged(QString)</slot>
+   <slot>handleSearchEditTextChanged(QString)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>589</x>
@@ -519,7 +516,7 @@ QFrame.layout {
  </connections>
  <slots>
   <slot>handleFolderViewButtonClicked()</slot>
-  <slot>handleSearchComboBoxEditTextChanged(QString)</slot>
+  <slot>handleSearchEditTextChanged(QString)</slot>
   <slot>handleFolderViewListActionTriggered()</slot>
   <slot>handleFolderViewIconActionTriggered()</slot>
   <slot>handleFolderViewIconNoTextActionTriggered()</slot>

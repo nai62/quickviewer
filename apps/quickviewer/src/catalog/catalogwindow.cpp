@@ -68,11 +68,11 @@ CatalogWindow::CatalogWindow(QWidget *parent, Ui::MainWindow *uiMain)
     connect(
         qApp->languageSelector(), &LanguageManager::languageChanged, this, [this](const QString &) {
             ui->retranslateUi(this);
-            ui->searchCombo->lineEdit()->setPlaceholderText(
+            ui->searchEdit->setPlaceholderText(
                 tr("Search titles", "Gray text that prompts a keyword search of Volume"));
-            ui->searchCombo->setToolTip(
-                tr("Type part of a title and press Enter to search.",
-                   "Tooltip of the field that searches the titles of the catalog"));
+            ui->searchEdit->setToolTip(tr("Type part of a title and press Enter to search.",
+                                          "Tooltip of the field that searches the titles of the "
+                                          "catalog"));
             if (m_volumes.isEmpty()) {
                 ui->statusLabel->setText(
                     tr("Drop an image folder here to create a catalog.",
@@ -98,23 +98,19 @@ CatalogWindow::CatalogWindow(QWidget *parent, Ui::MainWindow *uiMain)
             this,
             &CatalogWindow::handleVolumeListContextMenu);
 
-    // SearchCombo
-    connect(ui->searchCombo->lineEdit(),
+    // SearchEdit
+    connect(ui->searchEdit,
             &QLineEdit::editingFinished,
             this,
             &CatalogWindow::handleSearchLineEditEditingFinished);
-    ui->searchCombo->lineEdit()->setPlaceholderText(
+    ui->searchEdit->setPlaceholderText(
         tr("Search titles", "Gray text that prompts a keyword search of Volume"));
     // A search field should look like one: a magnifier, a hint of what it
     // searches, and a way to clear what was typed.
-    ui->searchCombo->lineEdit()->addAction(searchFieldIcon(*ui->searchCombo->lineEdit()),
-                                           QLineEdit::LeadingPosition);
-    ui->searchCombo->lineEdit()->setClearButtonEnabled(true);
-    // The field searches; it has no list to drop down.
-    ui->searchCombo->setStyleSheet(
-        QStringLiteral("QComboBox::drop-down { border: none; width: 0px; }"));
-    ui->searchCombo->setToolTip(tr("Type part of a title and press Enter to search.",
-                                   "Tooltip of the field that searches the titles of the catalog"));
+    ui->searchEdit->addAction(searchFieldIcon(*ui->searchEdit), QLineEdit::LeadingPosition);
+    ui->searchEdit->setClearButtonEnabled(true);
+    ui->searchEdit->setToolTip(tr("Type part of a title and press Enter to search.",
+                                  "Tooltip of the field that searches the titles of the catalog"));
 
     // TagFrame
     if (!qApp->ShowTagBar()) {
@@ -193,12 +189,12 @@ void CatalogWindow::setAsInnerWidget()
 {
     ui->menuBar->setVisible(false);
     ui->statusLabel->setWordWrap(true);
-    ui->searchCombo->setFocus();
+    ui->searchEdit->setFocus();
 }
 
 bool CatalogWindow::isCatalogSearching()
 {
-    return ui->searchCombo->hasFocus();
+    return ui->searchEdit->hasFocus();
 }
 
 void CatalogWindow::resetTagButtons(QStringList buttons, QStringList checks)
@@ -301,7 +297,7 @@ int CatalogWindow::listableVolumeCount() const
 
 void CatalogWindow::searchByWord(bool doForce)
 {
-    QString search = ui->searchCombo->currentText();
+    QString search = ui->searchEdit->text();
 
     // Tag Buttons as search words
     search += " " + getTagWords().join(" ");
@@ -441,17 +437,14 @@ void CatalogWindow::handleManageCatalogButtonClicked()
     searchByWord(true);
 }
 
-void CatalogWindow::handleSearchComboBoxEditTextChanged(QString search)
+void CatalogWindow::handleSearchEditTextChanged(QString)
 {
-    qDebug() << search;
     //    if(m_volumes.size() < qApp->MaxSearchByCharChanged())
     searchByWord();
-    return;
 }
 
 void CatalogWindow::handleSearchLineEditEditingFinished()
 {
-    qDebug() << "handleSearchLineEditEditingFinished:";
     searchByWord();
 }
 

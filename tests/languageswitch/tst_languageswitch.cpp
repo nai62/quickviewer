@@ -267,7 +267,7 @@ private slots:
 
         auto *folderLabel = folder.findChild<QLabel *>(QStringLiteral("pathLabel"));
         auto *folderHome = folder.findChild<QAbstractButton *>(QStringLiteral("homeButton"));
-        auto *catalogSearch = catalog.findChild<QComboBox *>(QStringLiteral("searchCombo"));
+        auto *catalogSearch = catalog.findChild<QLineEdit *>(QStringLiteral("searchEdit"));
         auto *catalogStatus = catalog.findChild<QLabel *>(QStringLiteral("statusLabel"));
         auto *catalogViewMenu = catalog.findChild<QMenu *>(QStringLiteral("menu_View"));
         auto *exifClipboard = exif.findChild<QAbstractButton *>(QStringLiteral("btnClipboard"));
@@ -277,7 +277,6 @@ private slots:
         QVERIFY(folderLabel != nullptr);
         QVERIFY(folderHome != nullptr);
         QVERIFY(catalogSearch != nullptr);
-        QVERIFY(catalogSearch->lineEdit() != nullptr);
         QVERIFY(catalogStatus != nullptr);
         QVERIFY(catalogViewMenu != nullptr);
         QVERIFY(exifClipboard != nullptr);
@@ -313,8 +312,7 @@ private slots:
 
         QCOMPARE(catalog.windowTitle(), marker(QStringLiteral("Catalog")));
         QCOMPARE(catalogViewMenu->title(), marker(QStringLiteral("&View")));
-        QCOMPARE(catalogSearch->lineEdit()->placeholderText(),
-                 marker(QStringLiteral("Enter a search term and press Enter to search by title.")));
+        QCOMPARE(catalogSearch->placeholderText(), marker(QStringLiteral("Search titles")));
         QCOMPARE(catalogStatus->text(),
                  marker(QStringLiteral("Drop an image folder here to create a catalog.")));
 
