@@ -45,10 +45,9 @@ public:
      * Scans one folder of a catalog.
      *
      * \a baseFolder marks the folder the catalog was created from. That folder
-     * is the catalog's base volume: it holds no front page of its own and
-     * lists the archives next to its subfolders as volumes. The folders below
-     * it contribute their subfolders and take their front page from their
-     * first image.
+     * is the catalog's base volume and lists the archives next to its
+     * subfolders as volumes. Every folder takes its front page from its
+     * first image; the folders below the base contribute only subfolders.
      */
     static CatalogFolderScan scanFolder(const QString &path, bool baseFolder);
 };

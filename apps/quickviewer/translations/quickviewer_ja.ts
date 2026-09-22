@@ -4,6 +4,10 @@
 <context>
     <name>CatalogWindow</name>
     <message>
+        <source>Catalog database</source>
+        <translation>カタログデータベース</translation>
+    </message>
+    <message>
         <location filename="../src/catalog/catalogwindow.ui" line="50"/>
         <source>&amp;View</source>
         <translation>表示(&amp;V)</translation>
@@ -2225,6 +2229,14 @@
 </context>
 <context>
     <name>CatalogDatabase</name>
+    <message>
+        <source>A catalog transaction is already running.</source>
+        <translation>カタログの保存処理がすでに実行中です。</translation>
+    </message>
+    <message>
+        <source>The catalog source is not a folder or archive: %1</source>
+        <translation>カタログの登録元がフォルダーまたはアーカイブではありません: %1</translation>
+    </message>
     <message>
         <source>The catalog database could not be created: %1</source>
         <translation>カタログデータベースを作成できませんでした: %1</translation>

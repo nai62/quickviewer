@@ -30,8 +30,7 @@ public:
      */
     bool ensureReady();
     /**
-     * Why the catalog database is not usable, in one sentence. Empty while
-     * ensureReady() holds.
+     * Why opening the catalog database or its most recent write failed.
      */
     QString errorMessage() const { return m_errorMessage; }
 

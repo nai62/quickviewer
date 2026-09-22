@@ -5,7 +5,7 @@ follows. The viewer itself is described in [Architecture.md](Architecture.md).
 
 ## What a catalogue holds
 
-- A **catalogue** is a folder the user registered in the catalog database.
+- A **catalogue** is a folder or archive the user registered in the catalog database.
 - A **volume** is one folder or archive below it that holds images. The folder
   the catalogue was created from is a volume of its own.
 - A **cover** is the first image of a volume in display order, stored as a
@@ -35,7 +35,9 @@ catalogues rather than thumbnails.
 `CatalogBuilder` reads the file system and holds no database; the catalog
 walks one folder level at a time, one scan per folder on a worker thread, and
 stores what the finished scans returned on the thread that owns the
-connection.
+connection. An asynchronous build opens its own connection on its worker
+thread and closes it there. The manager keeps editing and new builds disabled
+until a cancelled build has finished rolling back.
 
 ## Tags
 
@@ -49,10 +51,14 @@ thing across catalogues. What the user should know:
   or pick a catalogue in "Manage catalogs" and use **Edit tags...** on one of
   the books it lists. The dialog sets the title the catalogue shows for that
   book and the tags it carries, reusing a tag the catalog already knows
-  whatever case is typed.
-- The tag bar above the list shows the tags of the books on the list, most
-  used first, up to eight of them, and only when more than one tag exists.
-  Pressing one adds it to the search words; pressing it again removes it.
+  whatever case is typed. The title and tags are saved in one transaction;
+  a failed save leaves both unchanged. Enter in the new-tag field adds a tag
+  and keeps the editor open.
+- The tag bar initially shows the most-used tags across all catalogues, up to
+  eight of them, and only when more than one tag exists. Opening a book replaces
+  the bar with that book's tags. A pressed button requires that stored tag on
+  each result, independently of the title search. Multiple selected tags must
+  all match; a tag containing spaces stays one tag.
 - A tag that no book carries any more is dropped from the catalog as soon as
   the book that had it loses it, or the book leaves the catalogue.
 - Which title the list shows (the catalog title or the folder name) is the
@@ -82,7 +88,8 @@ field holding `publisher (author)` is the one field that stays in the title,
 and it yields the publisher, the author and the pair as one tag each; any
 other bracketed field is a tag; the word after a leading `#` is a tag; tag
 texts are trimmed, and the title does not keep the empty space a dropped field
-leaves behind.
+leaves behind. An unfinished bracketed or parenthesized field stays literal
+title text.
 
 Tags are only what the name suggests. The rules exist to fill a new catalogue,
 not to model anybody's naming scheme, and the user is expected to correct them
@@ -92,9 +99,11 @@ with the tag editor.
 
 - The catalogue walks one folder level at a time and scans each folder on a
   worker thread.
-- The folder the catalogue was created from is a volume of its own, and it
-  holds no front page of its own; the folders below it take their cover from
-  their first image.
+- The folder the catalogue was created from is a volume of its own. It and
+  the folders below it take their cover from their first image.
+- Invalid or missing source paths are rejected. A folder named with an archive
+  extension is still a folder. Symlinks and Windows junctions are followed
+  unless they lead back to an ancestor.
 - Archive files are catalogued as volumes in the folder the catalogue was
   created from. Deeper archives are not listed as volumes.
 - The recorded parent ids follow the traversal rather than the folder tree.
@@ -118,7 +127,9 @@ with the tag editor.
 - The list of books keeps wheel input to itself, the way the folder panel
   does: scrolling it at its end never turns a page in the viewer.
 - Its search field looks like one - a magnifier, a hint of what it searches
-  and a clear button - and searches the titles the list shows.
+  and a clear button. The "Ignore parenthesized text when searching titles"
+  option chooses between the catalog title and the original folder name,
+  independently of the option controlling which title the list displays.
 - The list reads a cover from the database once and keeps what it fitted, so
   repainting a row does not decode its JPEG again. The cache is bounded, and
   its keys are the rows the covers are stored in, which the database never
@@ -137,7 +148,8 @@ with the tag editor.
 
 | Target | Covers |
 | --- | --- |
-| `tests/catalogdatabase` | the catalog database: opening and creating the file, refusing an unreadable one, building a catalogue from folders and archives, covers, the volume name rules, editing titles and tags, cancelling and failing a build, removing a catalogue, removing entries whose folders are gone, and what the catalogue manager lists and shows for a selection |
+| `tests/catalogdatabase` | the catalog database: opening and creating the file, refusing an unreadable one, preserving existing temporary files, building a catalogue from folders and archives, covers, the volume name rules, editing titles and tags, worker connections, cancellation, folder cycles, transaction failures, tag-cache rollback, removing a catalogue, removing entries whose folders are gone, and what the catalogue manager lists and shows for a selection |
+| `tests/windowstartup` | catalog model index validity, stored-tag filtering, empty-list status, search, cover caching and placement, wheel handling and panel lifetime |
 
 Run the catalog tests on Windows with
 `scripts\verify-windows.cmd debug --test catalogdatabase`, and the whole suite
@@ -155,3 +167,32 @@ with `scripts\verify-windows.cmd debug --tests-only`; see
   folder view.
 - `volumes()` reads every volume with its thumbnail, and creating catalogues
   rewrites the whole volume order, so a very large catalogue answers slowly.
+
+
+## Review items requiring product decisions
+
+- The update buttons are hidden and their handlers are empty. There is no
+  incremental rescan; recreating a catalogue loses manually edited titles and
+  tags. A future rescan needs rules for retaining edits and recognizing moves.
+- Archives below the first folder level are deliberately not discovered.
+  Changing this would expand existing catalogues and needs a traversal policy.
+- Overlapping registrations are allowed, while the main list has no catalogue
+  filter or path tooltip. A grouping or filtering UI could distinguish books
+  with the same title without forbidding intentional duplicate catalogues.
+- Coverless books are hidden from the main list, including unreadable books.
+  Whether to show placeholder entries, and how to distinguish a missing image
+  from a decode failure, remains a UI decision.
+- Tag types are stored but not exposed in the editor. Equal names with different
+  types collapse to one choice on save; preserving or retiring those types
+  needs a data-model decision. Existing duplicate tag rows are not migrated.
+- Large catalogues still load every cover into memory and queue a scan for every
+  folder at the current level. The fitted-pixmap cache is bounded, but those
+  inputs are not. Lazy covers and bounded scan submission need workload-based
+  measurements before choosing limits.
+
+Interactive Windows checks after catalog changes: create and cancel a catalogue,
+try editing while cancellation is pending, close the manager during a build,
+filter using a manually added multiword tag, add tags with Enter, clear the last
+catalogue, and inspect list/icon modes and the manager at different DPI settings.
+Run `scripts\verify-windows.cmd debug --test windowstartup` for the automated
+UI regressions; it does not replace those visual checks.
