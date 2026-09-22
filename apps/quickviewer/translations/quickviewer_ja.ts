@@ -2,8 +2,57 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="ja_JP">
 <context>
+    <name>CatalogDatabase</name>
+    <message>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="1117"/>
+        <source>A catalog transaction is already running.</source>
+        <translation>カタログの保存処理がすでに実行中です。</translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="453"/>
+        <source>The catalog source is not a folder or archive: %1</source>
+        <translation>カタログの登録元がフォルダーまたはアーカイブではありません: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="140"/>
+        <source>The catalog database could not be created: %1</source>
+        <translation>カタログデータベースを作成できませんでした: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="144"/>
+        <source>The catalog database is not a file: %1</source>
+        <translation>カタログデータベースがファイルではありません: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="149"/>
+        <source>The catalog database could not be opened: %1 (%2)</source>
+        <translation>カタログデータベースを開けませんでした: %1 (%2)</translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="156"/>
+        <source>The catalog database cannot be used: %1 (%2)</source>
+        <translation>カタログデータベースを読み込めません: %1 (%2)</translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="208"/>
+        <source>%1 is missing</source>
+        <translation>%1 がありません</translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="214"/>
+        <source>the volume view is missing</source>
+        <translation>ボリュームのビューがありません</translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="220"/>
+        <source>the database comes from a newer QuickViewer</source>
+        <translation>このカタログデータベースは新しいバージョンの QuickViewer で作成されています</translation>
+    </message>
+</context>
+<context>
     <name>CatalogWindow</name>
     <message>
+        <location filename="../src/catalog/catalogwindow.cpp" line="519"/>
         <source>Catalog database</source>
         <translation>カタログデータベース</translation>
     </message>
@@ -18,22 +67,22 @@
         <translation>ファイル(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.ui" line="296"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="270"/>
         <source>Previous</source>
         <translation>前へ</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.ui" line="305"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="279"/>
         <source>Next</source>
         <translation>次へ</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.ui" line="373"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="347"/>
         <source>&amp;Close</source>
         <translation>ウィンドウを閉じる(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.ui" line="389"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="363"/>
         <source>Ignore parenthesized text when searching titles</source>
         <extracomment>Ability to search with the title removed (parenthesized) removed from the title of Volume in the catalog</extracomment>
         <translation>本のタイトルを検索する際に(かっこ)で書かれたオプションを取り除く</translation>
@@ -46,112 +95,90 @@
     <message>
         <location filename="../src/catalog/catalogwindow.ui" line="82"/>
         <location filename="../src/catalog/catalogwindow.ui" line="88"/>
-        <location filename="../src/catalog/catalogwindow.ui" line="353"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="327"/>
         <source>Switch display format</source>
         <translation>表示方法の切り替え</translation>
     </message>
     <message>
         <location filename="../src/catalog/catalogwindow.ui" line="118"/>
-        <location filename="../src/catalog/catalogwindow.ui" line="362"/>
-        <location filename="../src/catalog/catalogwindow.ui" line="365"/>
-        <location filename="../src/catalog/catalogwindow.ui" line="368"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="336"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="339"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="342"/>
         <source>Manage catalogs</source>
         <translation>カタログの管理</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.ui" line="317"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="291"/>
         <source>List</source>
         <translation>一覧</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.ui" line="329"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="303"/>
         <source>Icons and titles</source>
         <translation>並べて表示</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.ui" line="341"/>
-        <location filename="../src/catalog/catalogwindow.ui" line="344"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="315"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="318"/>
         <source>Icons only</source>
         <translation>アイコンのみ</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.ui" line="381"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="355"/>
         <source>Remove parenthesized text from book title</source>
         <extracomment>Ability to remove and display (parenthesized) text from Volume title in the catalog</extracomment>
         <translation>本のタイトルから(かっこ)に書かれたオプションを取り除く</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="43"/>
-        <location filename="../src/catalog/catalogwindow.cpp" line="68"/>
         <source>Enter a search term and press Enter to search by title.</source>
         <comment>Gray text that prompts a keyword search of Volume</comment>
-        <translation>タイトルで検索するには、この欄に検索語を入力してEnterキーを押してください。</translation>
+        <translation type="vanished">タイトルで検索するには、この欄に検索語を入力してEnterキーを押してください。</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="47"/>
-        <location filename="../src/catalog/catalogwindow.cpp" line="86"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="78"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="130"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="259"/>
         <source>Drop an image folder here to create a catalog.</source>
         <comment>Status bar text briefly explaining how to use CatalogWindow</comment>
         <translation>画像フォルダをドロップしてカタログを作成しましょう。</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="209"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="274"/>
         <source>%1 of %2 volumes</source>
         <comment>Text of the status bar showing [the number of hits]/[total number] of Volume</comment>
         <translation>%1/%2 冊を表示中</translation>
     </message>
     <message>
+        <location filename="../src/catalog/catalogwindow.cpp" line="282"/>
         <source>(%1 without a cover are not shown)</source>
         <comment>Status bar note about volumes the catalog holds but does not list</comment>
         <translation>(表紙のない %1 冊は表示していません)</translation>
     </message>
     <message>
+        <location filename="../src/catalog/catalogwindow.cpp" line="270"/>
         <source>%1 volumes</source>
         <comment>Text of the status bar showing how many volumes are listed</comment>
         <translation>%1 冊を表示中</translation>
     </message>
     <message>
+        <location filename="../src/catalog/catalogwindow.cpp" line="488"/>
         <source>Edit tags...</source>
         <comment>Context menu entry of a book in the catalog list</comment>
         <translation>タグを編集...</translation>
     </message>
     <message>
+        <location filename="../src/catalog/catalogwindow.cpp" line="72"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="107"/>
         <source>Search titles</source>
         <comment>Gray text that prompts a keyword search of Volume</comment>
         <translation>タイトルで検索</translation>
     </message>
     <message>
+        <location filename="../src/catalog/catalogwindow.cpp" line="73"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="112"/>
         <source>Type part of a title and press Enter to search.</source>
         <comment>Tooltip of the field that searches the titles of the catalog</comment>
         <translation>タイトルの一部を入力して Enter を押すと検索します。</translation>
-    </message>
-</context>
-<context>
-    <name>VolumeTagDialog</name>
-    <message>
-        <source>Edit tags</source>
-        <translation>タグの編集</translation>
-    </message>
-    <message>
-        <source>Title:</source>
-        <translation>タイトル:</translation>
-    </message>
-    <message>
-        <source>Tags:</source>
-        <translation>タグ:</translation>
-    </message>
-    <message>
-        <source>New tag</source>
-        <translation>新しいタグ</translation>
-    </message>
-    <message>
-        <source>&amp;Add</source>
-        <translation>追加(&amp;A)</translation>
-    </message>
-    <message>
-        <source>Tags belong to this book only. The title is used when the list shows titles rather than folder names.</source>
-        <comment>Line under the tag list of the dialog that edits one catalog volume</comment>
-        <translation>タグはこの本だけに付きます。タイトルは、一覧がタイトルを表示する設定のときに使われます。</translation>
     </message>
 </context>
 <context>
@@ -178,7 +205,7 @@
         <translation>各カタログはサブフォルダやアーカイブを含んだ形で作成できます</translation>
     </message>
     <message>
-        <location filename="../src/catalog/databasesettingdialog.cpp" line="92"/>
+        <location filename="../src/catalog/databasesettingdialog.cpp" line="103"/>
         <source>Select a folder containing images or archives</source>
         <comment>Caption of FolderSelectDialog urging selection of folders containing Images and Archives</comment>
         <translation>画像やアーカイブを含んだフォルダを選択してください</translation>
@@ -1223,9 +1250,10 @@
     <message>
         <source>Manage &amp;catalogs...</source>
         <comment>Menu entry that opens the dialog which adds, edits and removes the folders registered as catalogs</comment>
-        <translation>カタログの管理(&amp;M)...</translation>
+        <translation type="vanished">カタログの管理(&amp;M)...</translation>
     </message>
     <message>
+        <location filename="../src/mainwindow.ui" line="889"/>
         <source>Add, edit and remove the folders registered as catalogs</source>
         <translation>カタログとして登録したフォルダの追加・編集・削除</translation>
     </message>
@@ -1245,20 +1273,20 @@
         <translation>ヘルプ(&amp;H)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="496"/>
+        <location filename="../src/mainwindow.ui" line="497"/>
         <source>E&amp;xit</source>
         <extracomment>End application</extracomment>
         <translation>終了(&amp;X)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="550"/>
+        <location filename="../src/mainwindow.ui" line="551"/>
         <source>&amp;Fit mode</source>
         <extracomment>Automatically resize the image according to the size of the window</extracomment>
         <translation>フィット表示(&amp;F)</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="168"/>
-        <location filename="../src/mainwindow.cpp" line="1745"/>
+        <location filename="../src/mainwindow.cpp" line="1785"/>
         <source>&amp;Fullscreen</source>
         <translation>フルスクリーン(&amp;F)</translation>
     </message>
@@ -1268,7 +1296,7 @@
         <translation>QuickViewer</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="604"/>
+        <location filename="../src/mainwindow.ui" line="605"/>
         <source>&amp;Open...</source>
         <extracomment>Open an image or archive for viewing</extracomment>
         <translation>開く(&amp;O)...</translation>
@@ -1279,43 +1307,43 @@
         <translation>最近開いたフォルダまたはアーカイブ(&amp;H)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="591"/>
+        <location filename="../src/mainwindow.ui" line="592"/>
         <source>&amp;Reopen last viewed item</source>
         <extracomment>Opening the image automatically when opening the application the last time it was started</extracomment>
         <translation>起動時に前回終了時に復元(&amp;A)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="621"/>
+        <location filename="../src/mainwindow.ui" line="622"/>
         <source>&amp;Last page</source>
         <extracomment>Switch to the last image of Volume currently displayed button</extracomment>
         <translation>最後のページ(&amp;L)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="630"/>
+        <location filename="../src/mainwindow.ui" line="631"/>
         <source>&amp;First page</source>
         <extracomment>Switch to the first image of the currently displayed Volume button</extracomment>
         <translation>最初のページ(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="666"/>
+        <location filename="../src/mainwindow.ui" line="667"/>
         <source>EXIF &amp;information</source>
         <extracomment>Button to display JPEG EXIF information (if any)</extracomment>
         <translation>Exif情報を表示する(&amp;I)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1057"/>
+        <location filename="../src/mainwindow.ui" line="1066"/>
         <source>&amp;Keyboard Shortcuts...</source>
         <extracomment>Menu that displays a dialog for changing keyboard shortcuts</extracomment>
         <translation>キーボード入力設定(&amp;K)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="583"/>
+        <location filename="../src/mainwindow.ui" line="584"/>
         <source>&amp;About QuickViewer</source>
         <extracomment>A menu for displaying a message box for displaying application information</extracomment>
         <translation>QuickViewerについて(&amp;A)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="680"/>
+        <location filename="../src/mainwindow.ui" line="681"/>
         <source>N&amp;ext volume</source>
         <extracomment>Switch to the next Volume in the same folder as the currently displayed Volume button</extracomment>
         <translation>次のボリューム(&amp;E)</translation>
@@ -1326,25 +1354,25 @@
         <translation>ページ移動(&amp;N)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="704"/>
+        <location filename="../src/mainwindow.ui" line="705"/>
         <source>Exit application or full screen</source>
         <extracomment>Function that cancels it while full screen is displayed and terminates the application otherwise</extracomment>
         <translation>アプリ終了またはフルスクリーン解除</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="733"/>
+        <location filename="../src/mainwindow.ui" line="734"/>
         <source>&amp;Clear history</source>
         <extracomment>Menu for clearing the history of opening images</extracomment>
         <translation>履歴を削除(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="745"/>
+        <location filename="../src/mainwindow.ui" line="746"/>
         <source>Stay on &amp;top</source>
         <extracomment>When on it keeps the window always on top</extracomment>
         <translation>常に手前に表示(&amp;T)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="948"/>
+        <location filename="../src/mainwindow.ui" line="957"/>
         <source>Sh&amp;ow/hide menu bar</source>
         <translation>メインメニューの表示／非表示切り替え</translation>
     </message>
@@ -1355,54 +1383,54 @@
         <translation>レンダリング(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="776"/>
+        <location filename="../src/mainwindow.ui" line="777"/>
         <source>&amp;Maximize or Normal</source>
         <extracomment>Function to switch windows to maximize or normal display</extracomment>
         <translation>最大化または通常表示(&amp;M)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="793"/>
+        <location filename="../src/mainwindow.ui" line="794"/>
         <source>Skip forward 10 pages</source>
         <extracomment>Switch to 10 images in Volume button</extracomment>
         <translation>10ページ先へ</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="802"/>
+        <location filename="../src/mainwindow.ui" line="803"/>
         <source>Skip back 10 pages</source>
         <extracomment>Switch to the previous 10 images in Volume button</extracomment>
         <translation>10ページ前へ</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="816"/>
+        <location filename="../src/mainwindow.ui" line="817"/>
         <source>&amp;Rotate</source>
         <extracomment>Button to rotate the currently displayed image 90 degrees clockwise</extracomment>
         <translation>画像の回転(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="855"/>
+        <location filename="../src/mainwindow.ui" line="856"/>
         <source>Load bookmark</source>
         <extracomment>Button to restore saved image page from registered bookmark</extracomment>
         <translation>ブックマークを読み込む</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="846"/>
+        <location filename="../src/mainwindow.ui" line="847"/>
         <source>Manage bookmarks</source>
         <translation>ブックマークの管理</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="860"/>
+        <location filename="../src/mainwindow.ui" line="861"/>
         <source>Clear bookmarks</source>
         <extracomment>Button to delete all saved bookmarks</extracomment>
         <translation>ブックマークを全て消去</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2468"/>
+        <location filename="../src/mainwindow.cpp" line="2510"/>
         <source>Bookmark saved.</source>
         <translation>ブックマークが保存されました。</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="376"/>
-        <location filename="../src/mainwindow.ui" line="1070"/>
+        <location filename="../src/mainwindow.ui" line="1079"/>
         <source>ContextMenu</source>
         <translation>コンテキストメニュー</translation>
     </message>
@@ -1422,73 +1450,73 @@
         <translation>カタログ(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="523"/>
+        <location filename="../src/mainwindow.ui" line="524"/>
         <source>Zoom &amp;in</source>
         <extracomment>Button for enlarging the currently displayed image</extracomment>
         <translation>拡大表示(&amp;I)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="526"/>
+        <location filename="../src/mainwindow.ui" line="527"/>
         <source>Zoom in</source>
         <translation>拡大表示</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="535"/>
+        <location filename="../src/mainwindow.ui" line="536"/>
         <source>Zoom &amp;out</source>
         <extracomment>Reduce the image currently displayed button</extracomment>
         <translation>縮小表示(&amp;O)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="538"/>
+        <location filename="../src/mainwindow.ui" line="539"/>
         <source>Zoom out</source>
         <translation>縮小表示</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="888"/>
+        <location filename="../src/mainwindow.ui" line="897"/>
         <source>Remove parenthesized text from book title</source>
         <extracomment>Ability to remove and display (parenthesized) text from Volume title in the catalog</extracomment>
         <translation>本のタイトルから(かっこ)に書かれたオプションを取り除く</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="896"/>
+        <location filename="../src/mainwindow.ui" line="905"/>
         <source>Ignore parenthesized text when searching titles</source>
         <extracomment>Ability to search with the title removed (parenthesized) removed from the title of Volume in the catalog</extracomment>
         <translation>本のタイトルを検索する際に(かっこ)で書かれたオプションを取り除く</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="908"/>
-        <location filename="../src/mainwindow.ui" line="911"/>
+        <location filename="../src/mainwindow.ui" line="917"/>
+        <location filename="../src/mainwindow.ui" line="920"/>
         <source>Icons and titles</source>
         <extracomment>For Volume in the catalog, a mode to list up icons and titles vertically</extracomment>
         <translation>並べて表示</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="932"/>
-        <location filename="../src/mainwindow.ui" line="935"/>
+        <location filename="../src/mainwindow.ui" line="941"/>
+        <location filename="../src/mainwindow.ui" line="944"/>
         <source>List</source>
         <extracomment>Mode to list volumes in the catalog with icons and titles arranged side by side</extracomment>
         <translation>一覧</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="943"/>
+        <location filename="../src/mainwindow.ui" line="952"/>
         <source>Show tag bar</source>
         <extracomment>Squeeze the Volume of the catalog Function to erase the bar displaying the tag button</extracomment>
         <translation>タグ検索バーを表示する</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="807"/>
+        <location filename="../src/mainwindow.ui" line="808"/>
         <source>Copy file to clipboard</source>
         <extracomment>Menu to copy currently displayed image file on Explorer</extracomment>
         <translation>ファイルをクリップボードにコピー</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="763"/>
+        <location filename="../src/mainwindow.ui" line="764"/>
         <source>&amp;Bilinear interpolation (fast)</source>
         <extracomment>Menu to resize the image by bilinear interpolation by GPU</extracomment>
         <translation>バイリニア補間(&amp;B 高速)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="442"/>
+        <location filename="../src/mainwindow.ui" line="443"/>
         <source>F&amp;older</source>
         <translation>フォルダ(&amp;O)</translation>
     </message>
@@ -1498,115 +1526,121 @@
         <translation type="vanished">フィット表示時、画面より小さな画像は拡大しない</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1048"/>
+        <location filename="../src/mainwindow.ui" line="1057"/>
         <source>Show image information in full screen</source>
         <extracomment>Signage that displays the file name of the image at full screen display</extracomment>
         <translation>フルスクリーン時にテキストを表示する</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="505"/>
+        <location filename="../src/mainwindow.ui" line="506"/>
         <source>&amp;Next</source>
         <extracomment>Switch to the next image button</extracomment>
         <translation>次へ(&amp;N)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="514"/>
+        <location filename="../src/mainwindow.ui" line="515"/>
         <source>&amp;Previous</source>
         <extracomment>Switch to previous image button</extracomment>
         <translation>前へ(&amp;P)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="562"/>
+        <location filename="../src/mainwindow.ui" line="563"/>
         <source>2-page &amp;spread</source>
         <extracomment>Arranging two images side by side like when opening a book</extracomment>
         <translation>見開き表示(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="599"/>
+        <location filename="../src/mainwindow.ui" line="600"/>
         <source>&amp;Right-bound</source>
         <extracomment>Books written in vertical writing such as Japanese and Chinese read from right, so read from right page to left page</extracomment>
         <translation>右開きで表示(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="654"/>
+        <location filename="../src/mainwindow.ui" line="655"/>
         <source>Open in &amp;Explorer</source>
         <extracomment>Menu that displays Explorer with the currently displayed image file selected</extracomment>
         <translation>エクスプローラで開く(&amp;E)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="699"/>
+        <location filename="../src/mainwindow.ui" line="700"/>
         <source>Previous p&amp;age</source>
         <extracomment>Because there are times when the page is missing due to bookbinding convenience, digital books will fit the left and right pages with this operation</extracomment>
         <translation>前のページ(&amp;A)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="720"/>
+        <location filename="../src/mainwindow.ui" line="721"/>
         <source>Display &amp;first page alone</source>
         <extracomment>In the case of a digital book, since the first image is a cover page, only one image is displayed</extracomment>
         <translation>最初(表紙)の画像は見開き表示でも1枚だけ表示する(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="771"/>
+        <location filename="../src/mainwindow.ui" line="772"/>
         <source>&amp;Nearest Neighbor interpolation (fast but coarse)</source>
         <extracomment>Menu to resize image by Nearest Neighbor interpolation by GPU</extracomment>
         <translation>最近傍補間(&amp;N 高速だが粗い)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="784"/>
+        <location filename="../src/mainwindow.ui" line="785"/>
         <source>&amp;Restore window display at next startup</source>
         <extracomment>When restarting the next time, restore the position size of the window at the time of the last termination</extracomment>
         <translation>ウィンドウの表示を次回起動時に復元する(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="837"/>
+        <location filename="../src/mainwindow.ui" line="838"/>
         <source>Add bookmark</source>
         <extracomment>Button to add the currently displayed volume and page to bookmark</extracomment>
         <translation>ブックマークに追加</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="923"/>
+        <location filename="../src/mainwindow.ui" line="886"/>
+        <source>Manage &amp;catalogs...</source>
+        <extracomment>Menu entry that opens the dialog which adds, edits and removes the folders registered as catalogs</extracomment>
+        <translation type="unfinished">カタログの管理(&amp;M)...</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.ui" line="932"/>
         <source>Icons only</source>
         <extracomment>Mode to list Volume in the catalog with only the icons side by side</extracomment>
         <translation>アイコンのみ</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="953"/>
+        <location filename="../src/mainwindow.ui" line="962"/>
         <source>Send image by email...</source>
         <extracomment>Menu to attach the currently displayed image to the mail software and start up</extracomment>
         <translation>添付ファイルにしてメールソフトを起動する</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="961"/>
+        <location filename="../src/mainwindow.ui" line="970"/>
         <source>Larger &amp;grid for long titles</source>
         <extracomment>Functions to be used when the Volume title in the catalog is long</extracomment>
         <translation>長いタイトルを表示するために枠を大きめにする(&amp;G)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="981"/>
+        <location filename="../src/mainwindow.ui" line="990"/>
         <source>Bicubic interpolation by CPU (quality)</source>
         <extracomment>Menu that performs bicubic interpolation with CPU when resizing image</extracomment>
         <translation>CPUによるバイキュービック補間 (高品質)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="993"/>
+        <location filename="../src/mainwindow.ui" line="1002"/>
         <source>Include images in subfolders</source>
         <extracomment>When enumerating images, subfolders are also included in the range</extracomment>
         <translation>サブフォルダの画像も開く</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1001"/>
+        <location filename="../src/mainwindow.ui" line="1010"/>
         <source>Open at last-read page</source>
         <extracomment>A setting menu that allows you to advance the page to the point you read when you reopen Volume that you read a part way up again</extracomment>
         <translation>前に開いたページを開く</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1009"/>
+        <location filename="../src/mainwindow.ui" line="1018"/>
         <source>Show reading progress</source>
         <extracomment>Ability to display read information read in the middle in FolderWindow</extracomment>
         <translation>どこまで読んだかを表示する</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1019"/>
+        <location filename="../src/mainwindow.ui" line="1028"/>
         <source>Rename</source>
         <extracomment>A menu for changing the file name of the currently displayed image</extracomment>
         <translation>ファイル名を変更する</translation>
@@ -1627,98 +1661,98 @@
         <translation type="vanished">開くことができませんでした。画像ファイルが見つかりません。</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2058"/>
+        <location filename="../src/mainwindow.cpp" line="2100"/>
         <source>Select an image or archive</source>
         <comment>Title of the dialog displayed when opening a file with OpenFileFolder</comment>
         <translation>閲覧したい画像またはアーカイブを選択してください</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="574"/>
+        <location filename="../src/mainwindow.ui" line="575"/>
         <source>Full screen</source>
         <extracomment>Button to switch the window display to full screen</extracomment>
         <translation>フルスクリーン</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="612"/>
+        <location filename="../src/mainwindow.ui" line="613"/>
         <source>&amp;Keep wide images together in 2-page view</source>
         <extracomment>Automatically switch because it may spread 2 pages are combined into one image in the digital book</extracomment>
         <translation>横長の画像は見開き表示でも1枚だけ表示する(&amp;A)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="641"/>
+        <location filename="../src/mainwindow.ui" line="642"/>
         <source>Show status &amp;bar</source>
         <translation>ステータスバーを表示(&amp;B)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="649"/>
+        <location filename="../src/mainwindow.ui" line="650"/>
         <source>Show &amp;page bar</source>
         <translation>ページバーを表示(&amp;P)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="671"/>
+        <location filename="../src/mainwindow.ui" line="672"/>
         <source>Check for &amp;updates...</source>
         <extracomment>A menu to start up the browser to check whether the currently used QuickViewer is the latest version on the project web page</extracomment>
         <translation>ブラウザを開いてバージョンを確認する(&amp;V)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="689"/>
+        <location filename="../src/mainwindow.ui" line="690"/>
         <source>P&amp;revious volume</source>
         <extracomment>Switch to the previous Volume in the same folder as Volume currently being displayed Button</extracomment>
         <translation>前のボリューム(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="694"/>
+        <location filename="../src/mainwindow.ui" line="695"/>
         <source>Next &amp;page</source>
         <extracomment>Because there are times when the page is missing due to bookbinding convenience, digital books will fit the left and right pages with this operation</extracomment>
         <translation>次のページ(&amp;P)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="712"/>
+        <location filename="../src/mainwindow.ui" line="713"/>
         <source>Show &amp;toolbar</source>
         <translation>ツールバーを表示(&amp;T)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="728"/>
+        <location filename="../src/mainwindow.ui" line="729"/>
         <source>Show &amp;menu bar</source>
         <translation>メニューバーを表示する(&amp;M)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="750"/>
+        <location filename="../src/mainwindow.ui" line="751"/>
         <source>&amp;Copy image to clipboard</source>
         <extracomment>A menu for copying the bitmap of the currently displayed image to the clipboard</extracomment>
         <translation>画像をクリップボードにコピー(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="755"/>
+        <location filename="../src/mainwindow.ui" line="756"/>
         <source>Move image to &amp;Recycle Bin</source>
         <extracomment>Menu that puts the currently displayed image in Recycle Bin</extracomment>
         <translation>現在のページの画像をゴミ箱に入れる(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="828"/>
+        <location filename="../src/mainwindow.ui" line="829"/>
         <source>&amp;Slideshow</source>
         <extracomment>Button to start displaying slideshow</extracomment>
         <translation>スライドショー(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="865"/>
+        <location filename="../src/mainwindow.ui" line="866"/>
         <source>Project &amp;website</source>
         <extracomment>Button to display the web page of the project in the browser</extracomment>
         <translation>ホームページをブラウザで表示(&amp;P)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="877"/>
+        <location filename="../src/mainwindow.ui" line="878"/>
         <source>Show &amp;Catalog</source>
         <extracomment>Button to display Catalog Window. Switch between internal display, independent display, and erase</extracomment>
         <translation>カタログを表示する(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="880"/>
+        <location filename="../src/mainwindow.ui" line="881"/>
         <source>Show Catalog</source>
         <translation>カタログを表示する</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="973"/>
+        <location filename="../src/mainwindow.ui" line="982"/>
         <source>Show &amp;Folder</source>
         <extracomment>Button to display FolderWindow. Switch between internal display, independent display, and erase</extracomment>
         <translation>フォルダを表示(&amp;F)</translation>
@@ -1729,25 +1763,25 @@
         <translation type="vanished">GPUによるバイリニアの後、CPUによるバイキュービック(標準)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1014"/>
+        <location filename="../src/mainwindow.ui" line="1023"/>
         <source>&amp;Settings</source>
         <extracomment>Menu for displaying a dialog for changing the adjunct setting of the application</extracomment>
         <translation>設定(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1027"/>
+        <location filename="../src/mainwindow.ui" line="1036"/>
         <source>Don&apos;t upscale small images</source>
         <extracomment>Ability to display an image smaller than the window as it is when fit is displayed</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1040"/>
+        <location filename="../src/mainwindow.ui" line="1049"/>
         <source>Full screen on startup</source>
         <extracomment>Ability to always launch applications in full screen</extracomment>
         <translation>起動時はフルスクリーン固定</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1065"/>
+        <location filename="../src/mainwindow.ui" line="1074"/>
         <source>Confirm moving image to &amp;Recycle Bin</source>
         <extracomment>A function to display a confirmation screen when moving the currently displayed image to Recycle Bin</extracomment>
         <translation>ゴミ箱に移動する際に確認する(&amp;R)</translation>
@@ -1758,112 +1792,112 @@
         <translation type="vanished">画像の関連付け (管理者権限が必要)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1075"/>
+        <location filename="../src/mainwindow.ui" line="1084"/>
         <source>&amp;Mouse Settings...</source>
         <translation>マウス入力設定(&amp;M)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1080"/>
+        <location filename="../src/mainwindow.ui" line="1089"/>
         <source>Delete the image</source>
         <translation>現在のページの画像ファイルを削除する</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2305"/>
+        <location filename="../src/mainwindow.cpp" line="2347"/>
         <source>Are you sure you want to move the image to Recycle Bin?</source>
         <comment>Confirm putting displayed file in Recycle Box Message Box body</comment>
         <translation>本当にこの画像をゴミ箱に入れますか？</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2299"/>
-        <location filename="../src/mainwindow.cpp" line="2343"/>
+        <location filename="../src/mainwindow.cpp" line="2341"/>
+        <location filename="../src/mainwindow.cpp" line="2385"/>
         <source>Confirmation</source>
         <comment>Confirm deleting image file on MessageBox title</comment>
         <translation>確認</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1696"/>
+        <location filename="../src/mainwindow.cpp" line="1736"/>
         <source>Loading...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1699"/>
+        <location filename="../src/mainwindow.cpp" line="1739"/>
         <source>No images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1701"/>
+        <location filename="../src/mainwindow.cpp" line="1741"/>
         <source>Unavailable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2052"/>
+        <location filename="../src/mainwindow.cpp" line="2094"/>
         <source>All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.heic *.heif);;Archives( *.zip *.7z *.rar)</source>
         <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2348"/>
+        <location filename="../src/mainwindow.cpp" line="2390"/>
         <source>Are you sure you want to delete this image?</source>
         <comment>Confirm deleting image file on Message Box body</comment>
         <translation>本当にこの画像を削除しますか？</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1085"/>
+        <location filename="../src/mainwindow.ui" line="1094"/>
         <source>File Associations... (current user)</source>
         <extracomment>Ability to associate QuickViewer and image files on Explorer (Host Global)</extracomment>
         <translation>画像の関連付け (あなたのみ)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1093"/>
+        <location filename="../src/mainwindow.ui" line="1102"/>
         <source>Don&apos;t update history</source>
         <extracomment>Flag for prohibiting update of history</extracomment>
         <translation>履歴を更新しない</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1105"/>
+        <location filename="../src/mainwindow.ui" line="1114"/>
         <source>Open panels in separate windows</source>
         <extracomment>Flag separating the catalog and folder windows into independent windows</extracomment>
         <translation>ツールウィンドウをアプリのウィンドウから分離する</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="456"/>
+        <location filename="../src/mainwindow.ui" line="457"/>
         <source>&amp;Image</source>
         <translation>画像(&amp;I)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1113"/>
+        <location filename="../src/mainwindow.ui" line="1122"/>
         <source>Large menu and toolbar</source>
         <translation>メニューバーとツールバーを大きくする</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1118"/>
+        <location filename="../src/mainwindow.ui" line="1127"/>
         <source>Turn left page</source>
         <translation>左側のページをめくる</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1123"/>
+        <location filename="../src/mainwindow.ui" line="1132"/>
         <source>Turn right page</source>
         <translation>右側のページをめくる</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1131"/>
+        <location filename="../src/mainwindow.ui" line="1140"/>
         <source>Split wide images into two pages</source>
         <extracomment>Flag to display images on the left and right sides with a portrait display</extracomment>
         <translation>横長の画像を2ページに分割する(縦画面のみ)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1143"/>
+        <location filename="../src/mainwindow.ui" line="1152"/>
         <source>Loupe</source>
         <translation>拡大ツール</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1151"/>
+        <location filename="../src/mainwindow.ui" line="1160"/>
         <source>Pan with mouse movement when zoomed</source>
         <extracomment>Flag to scroll the image with moving the mouse pointer instead of displaying the scroll bar</extracomment>
         <translation>拡大時にマウスカーソルの移動でスクロール</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1163"/>
+        <location filename="../src/mainwindow.ui" line="1172"/>
         <source>Fit to width</source>
         <translation>ウィンドウの幅に合わせる</translation>
     </message>
@@ -1874,77 +1908,77 @@
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="404"/>
-        <location filename="../src/mainwindow.ui" line="460"/>
+        <location filename="../src/mainwindow.ui" line="461"/>
         <source>Fit mode</source>
         <translation>フィットさせる方法</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1175"/>
+        <location filename="../src/mainwindow.ui" line="1184"/>
         <source>Fit to window</source>
         <translation>ウィンドウにフィットさせる</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1187"/>
+        <location filename="../src/mainwindow.ui" line="1196"/>
         <source>Image adjustments...</source>
         <extracomment>a menu test which show window changes brightness of the image</extracomment>
         <translation>明るさ、コントラスト、ガンマ値を変更</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1195"/>
+        <location filename="../src/mainwindow.ui" line="1204"/>
         <source>Spline16 interpolation by CPU</source>
         <extracomment>Menu that performs Spline16 interpolation with CPU when resizing image</extracomment>
         <translation>CPUによるスプライン16補間</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1203"/>
+        <location filename="../src/mainwindow.ui" line="1212"/>
         <source>Spline36 interpolation by CPU</source>
         <extracomment>Menu that performs Spline36 interpolation with CPU when resizing image</extracomment>
         <translation>CPUによるスプライン36補間</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1211"/>
+        <location filename="../src/mainwindow.ui" line="1220"/>
         <source>Lanczos3 interpolation by CPU</source>
         <extracomment>Menu that performs Lanczos3 interpolation with CPU when resizing image</extracomment>
         <translation>CPUによるLanczos3補間</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1219"/>
+        <location filename="../src/mainwindow.ui" line="1228"/>
         <source>Lanczos4 interpolation by CPU</source>
         <extracomment>Menu that performs Lanczos4 interpolation with CPU when resizing image</extracomment>
         <translation>CPUによるLanczos4補間</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1224"/>
+        <location filename="../src/mainwindow.ui" line="1233"/>
         <source>Next page or volume</source>
         <extracomment>Switch to next image, or to next volume if the page is first button</extracomment>
         <translation>次の画像またはボリューム</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1229"/>
+        <location filename="../src/mainwindow.ui" line="1238"/>
         <source>Previous page or volume</source>
         <extracomment>Switch to previous image, or to previous volume if the page is last button</extracomment>
         <translation>前の画像またはボリューム</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1237"/>
+        <location filename="../src/mainwindow.ui" line="1246"/>
         <source>Remember catalog pane width</source>
         <extracomment>Flag to restore the width of Catalog view</extracomment>
         <translation>カタログ表示の幅を保存する</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1245"/>
+        <location filename="../src/mainwindow.ui" line="1254"/>
         <source>Remember folder pane width</source>
         <extracomment>Flag to restore the width of Folder view</extracomment>
         <translation>フォルダ表示の幅を保存する</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1253"/>
+        <location filename="../src/mainwindow.ui" line="1262"/>
         <source>Save reading progress</source>
         <extracomment>Flag to save progress.ini</extracomment>
         <translation>どこまで読んだかを保存する</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1261"/>
+        <location filename="../src/mainwindow.ui" line="1270"/>
         <source>Hide mouse cursor in full screen</source>
         <translation>フルスクリーン時にマウスカーソルを非表示にする</translation>
     </message>
@@ -1955,37 +1989,37 @@
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="274"/>
-        <location filename="../src/mainwindow.ui" line="1266"/>
+        <location filename="../src/mainwindow.ui" line="1275"/>
         <source>&amp;Sort by</source>
         <translation>並べ替え(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1274"/>
+        <location filename="../src/mainwindow.ui" line="1283"/>
         <source>File name</source>
         <translation>ファイル名(昇順)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1282"/>
+        <location filename="../src/mainwindow.ui" line="1291"/>
         <source>File name (descending)</source>
         <translation>ファイル名(降順)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1290"/>
+        <location filename="../src/mainwindow.ui" line="1299"/>
         <source>File size</source>
         <translation>ファイルサイズ(昇順)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1298"/>
+        <location filename="../src/mainwindow.ui" line="1307"/>
         <source>File size (descending)</source>
         <translation>ファイルサイズ(降順)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1306"/>
+        <location filename="../src/mainwindow.ui" line="1315"/>
         <source>Modified time</source>
         <translation>ファイル変更日時(昇順)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1314"/>
+        <location filename="../src/mainwindow.ui" line="1323"/>
         <source>Modified time (descending)</source>
         <translation>ファイル変更日時(降順)</translation>
     </message>
@@ -2006,36 +2040,98 @@
 <context>
     <name>ManageDatabaseDialog</name>
     <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="50"/>
         <source>Close</source>
         <comment>Button that closes the catalog manager</comment>
         <translation>閉じる</translation>
     </message>
     <message>
+        <location filename="../src/catalog/cataloglist.ui" line="26"/>
+        <source>Drop image folders here, or add them with &quot;Add folder...&quot;. Press &quot;Start creating&quot; to build the catalogs.</source>
+        <extracomment>Line above the catalog list that explains how a folder is registered as a catalog and built</extracomment>
+        <translation type="unfinished">画像フォルダをここにドロップするか「フォルダを追加」で登録します。「作成開始」を押すとカタログを作成します。</translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/cataloglist.ui" line="38"/>
+        <source>Add &amp;folder...</source>
+        <extracomment>Button that registers another folder as a catalog</extracomment>
+        <translation type="unfinished">フォルダを追加(&amp;F)...</translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/cataloglist.ui" line="51"/>
+        <source>Start creating</source>
+        <translation type="unfinished">作成開始</translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/cataloglist.ui" line="178"/>
+        <source>Books of the selected catalog</source>
+        <extracomment>Frame holding the books of the catalog selected above, and the button that edits the tags of one of them</extracomment>
+        <translation type="unfinished">選択したカタログの本</translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/cataloglist.ui" line="185"/>
+        <source>Title</source>
+        <extracomment>Column of the list of books that shows the title of a book</extracomment>
+        <translation type="unfinished">タイトル</translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/cataloglist.ui" line="190"/>
+        <source>Tags</source>
+        <extracomment>Column of the list of books that shows the tags of a book</extracomment>
+        <translation type="unfinished">タグ</translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/cataloglist.ui" line="210"/>
+        <source>&amp;Edit tags...</source>
+        <extracomment>Button that opens the dialog which edits the title and tags of the selected book</extracomment>
+        <translation type="unfinished">タグを編集(&amp;E)...</translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/cataloglist.ui" line="238"/>
+        <source>Cover of the selected book</source>
+        <extracomment>Tooltip of the picture that shows the cover of the book selected in the list</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/cataloglist.ui" line="294"/>
+        <source>Remove missing entries (%1)</source>
+        <extracomment>Button that removes the catalog entries whose folder is no longer there</extracomment>
+        <translation type="unfinished">見つからない項目を削除 (%1)</translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/cataloglist.ui" line="299"/>
         <source>Delete all catalogs...</source>
         <translation>すべてのカタログを削除...</translation>
     </message>
     <message>
+        <location filename="../src/catalog/cataloglist.ui" line="68"/>
         <source>More</source>
         <translation>その他</translation>
     </message>
     <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="180"/>
         <source>Start creating (%1)</source>
         <translation>作成開始 (%1)</translation>
     </message>
     <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="646"/>
         <source>Stopping...</source>
         <translation>中止しています...</translation>
     </message>
     <message>
+        <location filename="../src/catalog/cataloglist.ui" line="289"/>
         <source>Open in Explorer</source>
+        <extracomment>Button that shows the folder of the selected catalog where the platform lists files</extracomment>
         <translation>エクスプローラーで開く</translation>
     </message>
     <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="370"/>
         <source>No cover</source>
         <comment>Text shown where a cover would be</comment>
         <translation>表紙なし</translation>
     </message>
     <message>
+        <location filename="../src/catalog/cataloglist.ui" line="173"/>
         <source>Right-click a catalog to edit, delete, or open its folder.</source>
         <translation>カタログを右クリックすると、編集・削除・フォルダーを開く操作ができます。</translation>
     </message>
@@ -2045,259 +2141,240 @@
         <translation>カタログの管理</translation>
     </message>
     <message>
-        <location filename="../src/catalog/cataloglist.ui" line="46"/>
         <source>&amp;Add</source>
         <extracomment>Button to add a new catalog</extracomment>
-        <translation>新規(&amp;A)</translation>
+        <translation type="vanished">新規(&amp;A)</translation>
     </message>
     <message>
-        <location filename="../src/catalog/cataloglist.ui" line="56"/>
         <source>Update catalog</source>
         <extracomment>Button for updating the contents of registered catalog</extracomment>
-        <translation>更新</translation>
+        <translation type="vanished">更新</translation>
     </message>
     <message>
-        <location filename="../src/catalog/cataloglist.ui" line="63"/>
+        <location filename="../src/catalog/cataloglist.ui" line="284"/>
         <source>&amp;Delete</source>
         <extracomment>Button to delete information of registered catalog</extracomment>
         <translation>削除(&amp;D)</translation>
     </message>
     <message>
-        <location filename="../src/catalog/cataloglist.ui" line="70"/>
+        <location filename="../src/catalog/cataloglist.ui" line="279"/>
         <source>&amp;Edit</source>
         <extracomment>Button to edit information on registered catalog</extracomment>
         <translation>編集(&amp;E)</translation>
     </message>
     <message>
-        <location filename="../src/catalog/cataloglist.ui" line="101"/>
         <source>Delete all</source>
-        <translation>全て削除</translation>
+        <translation type="vanished">全て削除</translation>
     </message>
     <message>
-        <location filename="../src/catalog/cataloglist.ui" line="108"/>
         <source>Update all</source>
         <extracomment>登録済みのカタログの内容を更新するボタン</extracomment>
-        <translation>全て更新</translation>
+        <translation type="vanished">全て更新</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="20"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="26"/>
         <source>Name</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>名前</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="25"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="31"/>
         <source>Path</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>フォルダ</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="72"/>
         <source>Start</source>
         <comment>Button to start catalog creation for specified folder</comment>
-        <translation>処理開始</translation>
+        <translation type="vanished">処理開始</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="90"/>
         <source>Cancel</source>
         <comment>Button to cancel the catalog being generated</comment>
-        <translation>処理キャンセル</translation>
+        <translation type="vanished">処理キャンセル</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="255"/>
         <source>Completed</source>
         <comment>Title of message box when catalog generation finished successfully</comment>
-        <translation>完了!</translation>
+        <translation type="vanished">完了!</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="318"/>
         <source>Cancelled!</source>
         <comment>Title of message box when catalog generation was canceled</comment>
-        <translation>キャンセルされました!</translation>
+        <translation type="vanished">キャンセルされました!</translation>
     </message>
     <message>
-        <location filename="../src/catalog/cataloglist.ui" line="40"/>
         <source>Selected Catalog</source>
         <extracomment>Name of the frame in which buttons for operating one catalog are arranged</extracomment>
-        <translation>選択したカタログ</translation>
+        <translation type="vanished">選択したカタログ</translation>
     </message>
     <message>
-        <location filename="../src/catalog/cataloglist.ui" line="86"/>
         <source>All Catalogs</source>
         <extracomment>Name of the frame in which buttons for operating all catalogs are arranged</extracomment>
-        <translation>全てのカタログ</translation>
+        <translation type="vanished">全てのカタログ</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="23"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="29"/>
         <source>Created</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>作成日時</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="115"/>
         <source>Pending</source>
         <comment>Representation of time indicating that the catalog is not currently created and will be generated from now</comment>
-        <translation>これから</translation>
+        <translation type="vanished">これから</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="182"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="511"/>
         <source>Edit Catalog</source>
         <comment>Button for editing contents of already created catalog</comment>
         <translation>カタログを編集する</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="257"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="561"/>
         <source>Catalog creation completed.</source>
         <comment>Body of message box when catalog generation finished successfully</comment>
         <translation>カタログの作成が完了しました</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="319"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="557"/>
         <source>Catalog creation was cancelled.</source>
         <comment>Body of message box when catalog generation is canceled</comment>
         <translation>カタログの作成がキャンセルされました</translation>
     </message>
     <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="159"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="439"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="711"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="749"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="775"/>
         <source>Catalog database</source>
         <translation>カタログデータベース</translation>
     </message>
     <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="161"/>
         <source>Move or rename that file, then open the catalog again.</source>
         <translation>そのファイルを移動または名前変更してから、もう一度カタログを開いてください。</translation>
     </message>
     <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="566"/>
         <source>Catalog creation incomplete</source>
         <translation>カタログの作成が完了しませんでした</translation>
     </message>
     <message>
         <source>Catalog(s) left unstored: %1</source>
-        <translation>保存できなかったカタログ: %1 件</translation>
+        <translation type="vanished">保存できなかったカタログ: %1 件</translation>
     </message>
     <message>
         <source>Add &amp;folder...</source>
         <comment>Button that registers another folder as a catalog</comment>
-        <translation>フォルダを追加(&amp;F)...</translation>
+        <translation type="vanished">フォルダを追加(&amp;F)...</translation>
     </message>
     <message>
-        <source>Drop image folders here, or add them with "Add folder...". Press "Start creating" to build the catalogs.</source>
+        <source>Drop image folders here, or add them with &quot;Add folder...&quot;. Press &quot;Start creating&quot; to build the catalogs.</source>
         <comment>Line above the catalog list that explains how a folder is registered as a catalog and built</comment>
-        <translation>画像フォルダをここにドロップするか「フォルダを追加」で登録します。「作成開始」を押すとカタログを作成します。</translation>
+        <translation type="vanished">画像フォルダをここにドロップするか「フォルダを追加」で登録します。「作成開始」を押すとカタログを作成します。</translation>
     </message>
     <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="232"/>
         <source>Not created yet</source>
         <comment>Representation of time indicating that the catalog is not currently created and will be generated from now</comment>
         <translation>未作成</translation>
     </message>
     <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="181"/>
         <source>Start creating</source>
         <comment>Button that builds the folders which were added to the list above</comment>
         <translation>作成開始</translation>
     </message>
     <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="202"/>
         <source>Stop creating</source>
         <comment>Button that cancels the catalogs being built</comment>
         <translation>作成中止</translation>
     </message>
     <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="567"/>
+        <source>Catalog(s) left unstored: %1</source>
+        <comment>Body of message box when some catalogs could not be stored</comment>
+        <translation type="unfinished">保存できなかったカタログ: %1 件</translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="673"/>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="743"/>
         <source>Delete catalog</source>
         <translation>カタログの削除</translation>
     </message>
     <message>
-        <source>Delete "%1" from the list of catalogs? The image files are not deleted.</source>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="744"/>
+        <source>Delete &quot;%1&quot; from the list of catalogs? The image files are not deleted.</source>
         <translation>「%1」の登録を削除します。画像ファイルは削除されません。</translation>
     </message>
     <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="770"/>
         <source>Delete all catalogs</source>
         <translation>すべてのカタログの削除</translation>
     </message>
     <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="771"/>
         <source>Delete every catalog from the list? The image files are not deleted.</source>
         <translation>すべてのカタログの登録を削除します。画像ファイルは削除されません。</translation>
     </message>
     <message>
         <source>Close</source>
         <comment>Title of the message box that asks about folders that are not created yet</comment>
-        <translation>確認</translation>
+        <translation type="vanished">確認</translation>
     </message>
     <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="674"/>
         <source>%1 added folder(s) are not created yet. Close and discard them?</source>
         <translation>未作成のフォルダが %1 件あります。破棄して閉じますか？</translation>
     </message>
     <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="127"/>
         <source>Remove missing entries (%1)</source>
         <comment>Button that removes the catalog entries whose folder is no longer there</comment>
         <translation>見つからない項目を削除 (%1)</translation>
     </message>
     <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="139"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="151"/>
         <source>Remove missing entries</source>
         <translation>見つからない項目の削除</translation>
     </message>
     <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="140"/>
         <source>%1 registered folder(s) are no longer there. Remove them from the list? The image files are not deleted.</source>
         <translation>登録フォルダ %1 件が見つかりません。一覧から削除しますか？画像ファイルは削除されません。</translation>
     </message>
     <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="151"/>
         <source>Removed %1 entry(ies).</source>
         <translation>%1 件を削除しました。</translation>
     </message>
     <message>
         <source>Books of the selected catalog</source>
         <comment>Frame holding the books of the catalog selected above, and the button that edits the tags of one of them</comment>
-        <translation>選択したカタログの本</translation>
+        <translation type="vanished">選択したカタログの本</translation>
     </message>
     <message>
         <source>Title</source>
         <comment>Column of the list of books that shows the title of a book</comment>
-        <translation>タイトル</translation>
+        <translation type="vanished">タイトル</translation>
     </message>
     <message>
         <source>Tags</source>
         <comment>Column of the list of books that shows the tags of a book</comment>
-        <translation>タグ</translation>
+        <translation type="vanished">タグ</translation>
     </message>
     <message>
         <source>&amp;Edit tags...</source>
         <comment>Button that opens the dialog which edits the title and tags of the selected book</comment>
-        <translation>タグを編集(&amp;E)...</translation>
-    </message>
-</context>
-<context>
-    <name>CatalogDatabase</name>
-    <message>
-        <source>A catalog transaction is already running.</source>
-        <translation>カタログの保存処理がすでに実行中です。</translation>
-    </message>
-    <message>
-        <source>The catalog source is not a folder or archive: %1</source>
-        <translation>カタログの登録元がフォルダーまたはアーカイブではありません: %1</translation>
-    </message>
-    <message>
-        <source>The catalog database could not be created: %1</source>
-        <translation>カタログデータベースを作成できませんでした: %1</translation>
-    </message>
-    <message>
-        <source>The catalog database is not a file: %1</source>
-        <translation>カタログデータベースがファイルではありません: %1</translation>
-    </message>
-    <message>
-        <source>The catalog database could not be opened: %1 (%2)</source>
-        <translation>カタログデータベースを開けませんでした: %1 (%2)</translation>
-    </message>
-    <message>
-        <source>The catalog database cannot be used: %1 (%2)</source>
-        <translation>カタログデータベースを読み込めません: %1 (%2)</translation>
-    </message>
-    <message>
-        <source>%1 is missing</source>
-        <translation>%1 がありません</translation>
-    </message>
-    <message>
-        <source>the volume view is missing</source>
-        <translation>ボリュームのビューがありません</translation>
-    </message>
-    <message>
-        <source>the database comes from a newer QuickViewer</source>
-        <translation>このカタログデータベースは新しいバージョンの QuickViewer で作成されています</translation>
+        <translation type="vanished">タグを編集(&amp;E)...</translation>
     </message>
 </context>
 <context>
@@ -2821,6 +2898,45 @@
         <source>Click and enter a new shortcut key.</source>
         <comment>Gray text to be displayed on LineEdit to input the shortcut key</comment>
         <translation>クリックして、新しいショートカットキーをキーボードで入力してください。</translation>
+    </message>
+</context>
+<context>
+    <name>VolumeTagDialog</name>
+    <message>
+        <location filename="../src/catalog/volumetagdialog.ui" line="14"/>
+        <source>Edit tags</source>
+        <translation>タグの編集</translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/volumetagdialog.ui" line="22"/>
+        <source>Title:</source>
+        <translation>タイトル:</translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/volumetagdialog.ui" line="32"/>
+        <source>Tags:</source>
+        <translation>タグ:</translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/volumetagdialog.ui" line="46"/>
+        <source>New tag</source>
+        <translation>新しいタグ</translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/volumetagdialog.ui" line="53"/>
+        <source>&amp;Add</source>
+        <translation>追加(&amp;A)</translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/volumetagdialog.ui" line="62"/>
+        <source>Tags belong to this book only. The title is used when the list shows titles rather than folder names.</source>
+        <extracomment>Line under the tag list of the dialog that edits one catalog volume</extracomment>
+        <translation type="unfinished">タグはこの本だけに付きます。タイトルは、一覧がタイトルを表示する設定のときに使われます。</translation>
+    </message>
+    <message>
+        <source>Tags belong to this book only. The title is used when the list shows titles rather than folder names.</source>
+        <comment>Line under the tag list of the dialog that edits one catalog volume</comment>
+        <translation type="vanished">タグはこの本だけに付きます。タイトルは、一覧がタイトルを表示する設定のときに使われます。</translation>
     </message>
 </context>
 </TS>
