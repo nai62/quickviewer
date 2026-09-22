@@ -237,7 +237,7 @@ QFrame.layout {
     </widget>
    </item>
    <item>
-    <widget class="QListView" name="volumeList">
+    <widget class="CatalogVolumeListView" name="volumeList">
      <property name="acceptDrops">
       <bool>true</bool>
      </property>
@@ -546,10 +546,16 @@ QFrame.layout {
   <slot>handleFolderViewListActionTriggered()</slot>
   <slot>handleFolderViewIconActionTriggered()</slot>
   <slot>handleFolderViewIconNoTextActionTriggered()</slot>
-  <slot>handleSearchComboBoxCurrentIndexChanged(QString)</slot>
   <slot>handleSearchTitleWithOptionsActionTriggered(bool)</slot>
   <slot>handleCatalogTitleWithoutOptionsActionTriggered(bool)</slot>
   <slot>handleVolumeListItemDoubleClicked(QModelIndex)</slot>
   <slot>handleManageCatalogButtonClicked()</slot>
  </slots>
+ <customwidgets>
+  <customwidget>
+   <class>CatalogVolumeListView</class>
+   <extends>QListView</extends>
+   <header>catalogvolumelistview.h</header>
+  </customwidget>
+ </customwidgets>
 </ui>

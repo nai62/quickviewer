@@ -99,6 +99,7 @@ class WindowStartupTest : public QObject
 
 private slots:
     void catalogListStartsAtTheTopInListMode();
+    void catalogViewConsumesWheelEventsAtScrollBoundary();
     void catalogTagBarFollowsRemovedTags();
 
     void init()
@@ -2294,6 +2295,42 @@ void WindowStartupTest::catalogListStartsAtTheTopInListMode()
     const QRect second = list->visualRect(list->model()->index(1, 0));
     QCOMPARE(first.top(), 0);
     QCOMPARE(second.top(), first.bottom() + 1);
+}
+
+void WindowStartupTest::catalogViewConsumesWheelEventsAtScrollBoundary()
+{
+    QTemporaryDir databaseDirectory;
+    QVERIFY(databaseDirectory.isValid());
+    CatalogDatabase catalogDatabase(nullptr,
+                                    databaseDirectory.filePath(QStringLiteral("catalog.db")));
+
+    qApp->setCatalogViewModeSetting(qvEnums::CatalogViewMode::List);
+    StartupWindow viewer;
+    viewer.resize(400, 800);
+    viewer.setCatalogDatabase(&catalogDatabase);
+    viewer.show();
+    viewer.createCatalogWindow(true);
+    QApplication::processEvents();
+
+    QListView *list = viewer.findChild<QListView *>(QStringLiteral("volumeList"));
+    QVERIFY(list);
+    // One entry per row, top to bottom, and never wrapped.
+    QCOMPARE(list->flow(), QListView::TopToBottom);
+    QVERIFY(!list->isWrapping());
+
+    // A wheel event over the list belongs to the list, even when it cannot
+    // scroll: the window must not turn it into a page.
+    QWheelEvent event(QPointF(1, 1),
+                      QPointF(1, 1),
+                      QPoint(),
+                      QPoint(0, -120),
+                      Qt::NoButton,
+                      Qt::NoModifier,
+                      Qt::NoScrollPhase,
+                      false);
+    event.ignore();
+    QApplication::sendEvent(list->viewport(), &event);
+    QVERIFY(event.isAccepted());
 }
 
 void WindowStartupTest::catalogTagBarFollowsRemovedTags()

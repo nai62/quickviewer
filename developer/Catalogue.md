@@ -113,6 +113,16 @@ with the tag editor.
   counts the volumes that can be listed and says how many stored volumes it
   leaves out.
 
+## The panel
+
+- The list of books keeps wheel input to itself, the way the folder panel
+  does: scrolling it at its end never turns a page in the viewer.
+- Its search field looks like one - a magnifier, a hint of what it searches
+  and a clear button - and searches the titles the list shows.
+- Right-clicking a book edits its title and tags. "Manage catalogs" does the
+  same for the books of the catalogue selected there, and lists every volume,
+  cover or not.
+
 ## Tests
 
 | Target | Covers |

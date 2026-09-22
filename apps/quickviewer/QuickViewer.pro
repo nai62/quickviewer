@@ -144,6 +144,7 @@ SOURCES += \
     src/benchmark/startupfoldertextprofile.cpp \
     src/catalog/catalogbuilder.cpp \
     src/catalog/catalogdatabase.cpp \
+    src/catalog/catalogvolumelistview.cpp \
     src/catalog/catalogwindow.cpp \
     src/catalog/databasesettingdialog.cpp \
     src/catalog/managedatabasedialog.cpp \
@@ -208,6 +209,7 @@ HEADERS  += \
     src/benchmark/startupfoldertextprofile.h \
     src/catalog/catalogbuilder.h \
     src/catalog/catalogdatabase.h \
+    src/catalog/catalogvolumelistview.h \
     src/catalog/catalogwindow.h \
     src/catalog/databasesettingdialog.h \
     src/catalog/managedatabasedialog.h \
