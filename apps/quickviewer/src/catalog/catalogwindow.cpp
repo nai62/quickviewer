@@ -158,10 +158,15 @@ void CatalogWindow::setCatalogDatabase(CatalogDatabase *catalogDatabase)
         ui->statusLabel->setText(m_catalogDatabase->errorMessage());
         return;
     }
-    m_volumes = m_catalogDatabase->volumes();
-    initTagButtons();
+    refreshCatalog();
 
     resetViewMode();
+}
+
+void CatalogWindow::refreshCatalog()
+{
+    m_volumes = m_catalogDatabase->volumes();
+    initTagButtons();
     searchByWord(true);
 }
 
@@ -217,6 +222,9 @@ void CatalogWindow::resetTagButtons(QStringList buttons, QStringList checks)
 
 void CatalogWindow::initTagButtons()
 {
+    // Whatever the user pressed stays pressed while the bar is rebuilt: the
+    // tags a reload no longer offers drop out on their own.
+    const QStringList checked = getTagWords();
     QStringList buttons;
     if (qApp->ShowTagBar()) {
         QMap<int, TagRecord *> tags = m_catalogDatabase->tagsByCount();
@@ -232,7 +240,7 @@ void CatalogWindow::initTagButtons()
             }
         }
     }
-    resetTagButtons(buttons, QStringList());
+    resetTagButtons(buttons, checked);
 }
 
 QStringList CatalogWindow::getTagWords()
@@ -351,11 +359,7 @@ void CatalogWindow::dropEvent(QDropEvent *e)
     dialog.dropEvent(e);
     dialog.exec();
 
-    m_volumes = m_catalogDatabase->volumes();
-    initTagButtons();
-    searchByWord(true);
-
-    resetVolumes();
+    refreshCatalog();
 }
 
 void CatalogWindow::resizeEvent(QResizeEvent *event)
@@ -443,9 +447,7 @@ void CatalogWindow::handleManageCatalogButtonClicked()
     dialog.setCatalogDatabase(m_catalogDatabase);
     dialog.exec();
 
-    m_volumes = m_catalogDatabase->volumes();
-    initTagButtons();
-    searchByWord(true);
+    refreshCatalog();
 }
 
 void CatalogWindow::handleSearchEditTextChanged(QString)
@@ -522,9 +524,7 @@ void CatalogWindow::editVolumeTags(int row)
     }
 
     // The tags and the titles the list shows both changed.
-    m_volumes = m_catalogDatabase->volumes();
-    initTagButtons();
-    searchByWord(true);
+    refreshCatalog();
 }
 
 void CatalogWindow::handleSearchTitleWithOptionsActionTriggered(bool checked)

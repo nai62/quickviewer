@@ -2503,8 +2503,26 @@ void WindowStartupTest::catalogTagButtonsMatchStoredTags()
     QVERIFY(tag);
     QCOMPARE(list->model()->rowCount(), 2);
     tag->click();
+    QVERIFY(tag->isChecked());
     QCOMPARE(list->model()->rowCount(), 1);
     QCOMPARE(list->model()->index(0, 0).data().toString(), QStringLiteral("Alpha"));
+
+    // Building the bar again, as a reload of the catalog does, keeps the tag
+    // the user pressed: the list stays the one that tag asked for.
+    catalog->handleShowTagBarActionTriggered(true);
+    QApplication::processEvents();
+    QPushButton *rebuilt = nullptr;
+    for (auto *button : frame->findChildren<QPushButton *>()) {
+        if (button->text() == QStringLiteral("Space Opera")) {
+            rebuilt = button;
+        }
+    }
+    QVERIFY(rebuilt);
+    QVERIFY(rebuilt->isChecked());
+    QCOMPARE(list->model()->rowCount(), 1);
+    QCOMPARE(list->model()->index(0, 0).data().toString(), QStringLiteral("Alpha"));
+    tag = rebuilt;
+
     search->setText(QStringLiteral("Beta"));
     QCOMPARE(list->model()->rowCount(), 0);
     tag->click();

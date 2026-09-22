@@ -26,6 +26,8 @@ public:
     void setAsInnerWidget();
     void resetVolumes();
     void searchByWord(bool doForce = false);
+    /** Reads the catalog again and shows what the search and tag bar ask for. */
+    void refreshCatalog();
     void dragEnterEvent(QDragEnterEvent *e);
     void dropEvent(QDropEvent *e);
     void resizeEvent(QResizeEvent *event);
