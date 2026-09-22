@@ -2,6 +2,10 @@
 #include <QtSql>
 #include <QDebug>
 
+#ifdef Q_OS_WIN
+#    include <Windows.h>
+#endif
+
 #include "catalogbuilder.h"
 #include "catalogdatabase.h"
 #include "fileloader.h"
@@ -48,6 +52,33 @@ public:
     bool baseFolder;
     QStringList ancestors;
 };
+
+/** Identifies the folder behind any symlink or Windows junction in its path. */
+QString folderIdentity(const QString &path)
+{
+#ifdef Q_OS_WIN
+    const QString native = QDir::toNativeSeparators(QFileInfo(path).absoluteFilePath());
+    const HANDLE handle = CreateFileW(reinterpret_cast<LPCWSTR>(native.utf16()),
+                                      0,
+                                      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                                      nullptr,
+                                      OPEN_EXISTING,
+                                      FILE_FLAG_BACKUP_SEMANTICS,
+                                      nullptr);
+    if (handle != INVALID_HANDLE_VALUE) {
+        BY_HANDLE_FILE_INFORMATION info{};
+        const bool found = GetFileInformationByHandle(handle, &info);
+        CloseHandle(handle);
+        if (found) {
+            return QStringLiteral("%1:%2:%3")
+                .arg(info.dwVolumeSerialNumber)
+                .arg(info.nFileIndexHigh)
+                .arg(info.nFileIndexLow);
+        }
+    }
+#endif
+    return QFileInfo(path).canonicalFilePath();
+}
 
 /** True once the batch \a canceled belongs to has been asked to stop. */
 bool isCanceled(const QAtomicInt *canceled)
@@ -154,11 +185,10 @@ bool CatalogDatabase::writeBundledDatabase(const QFileInfo &file)
     if (temporary.write(contents) != contents.size() || !temporary.flush()) {
         return false;
     }
-    const QString temporaryPath = temporary.fileName();
-    temporary.close();
-    if (!QFile::rename(temporaryPath, path)) {
+    if (!temporary.rename(path)) {
         return QFile::exists(path);
     }
+    temporary.setAutoRemove(false);
     return true;
 }
 
@@ -221,8 +251,7 @@ int CatalogDatabase::buildCatalogVolumes(const QString &dirpath,
     // The base folder is a volume of its own, and the rows of its sub-volumes
     // keep the parent id this traversal has always recorded for them.
     QList<CatalogFolderJob> jobs;
-    jobs << CatalogFolderJob{
-        dirpath, volume_id, -1, true, {QFileInfo(dirpath).canonicalFilePath()}};
+    jobs << CatalogFolderJob{dirpath, volume_id, -1, true, {folderIdentity(dirpath)}};
     int scannedCount = 0;
     int knownCount = jobs.size();
     emit catalogProgressRangeChanged(0, knownCount);
@@ -248,7 +277,7 @@ int CatalogDatabase::buildCatalogVolumes(const QString &dirpath,
             const QDir dir(job.path);
             for (const QString &name : scan.subVolumeNames) {
                 const QString path = dir.filePath(name);
-                const QString canonical = QFileInfo(path).canonicalFilePath();
+                const QString canonical = folderIdentity(path);
                 // Follow linked folders, but never return to an ancestor through
                 // a symlink or Windows junction.
                 if (canonical.isEmpty() || job.ancestors.contains(canonical)) {
@@ -490,6 +519,7 @@ CatalogDatabase::createCatalogAsync(QList<CatalogRecord> newers)
         return &m_catalogWatcher;
     }
     m_volumesDirty = true;
+    m_errorMessage.clear();
     m_catalogCanceled.storeRelease(0);
     if (!ensureReady()) {
         // Nothing can be stored; finish an empty batch so that the caller
@@ -497,7 +527,8 @@ CatalogDatabase::createCatalogAsync(QList<CatalogRecord> newers)
         newers.clear();
     }
     const QString path = m_dbPath;
-    QFuture<QList<CatalogRecord>> future = QtConcurrent::run([this, path, newers] {
+    const QString openingError = m_errorMessage;
+    QFuture<QList<CatalogRecord>> future = QtConcurrent::run([this, path, newers, openingError] {
         // Create, use and close this connection on the worker that owns it.
         CatalogDatabase worker(nullptr, path);
         connect(&worker,
@@ -527,7 +558,7 @@ CatalogDatabase::createCatalogAsync(QList<CatalogRecord> newers)
             }
             result << worker.createCatalog(request.name, request.path, &m_catalogCanceled);
         }
-        const QString error = worker.errorMessage();
+        const QString error = openingError.isEmpty() ? worker.errorMessage() : openingError;
         QMetaObject::invokeMethod(
             this,
             [this, error] {
@@ -1065,6 +1096,7 @@ bool CatalogDatabase::deleteAllCatalogs()
     for (const char *table : removals) {
         QSqlQuery removal(m_db);
         if (!removal.exec(QStringLiteral("DELETE FROM %1").arg(QLatin1String(table)))) {
+            m_errorMessage = removal.lastError().text();
             qDebug() << table << " delete failed: " << removal.lastError();
             rollback();
             return false;
