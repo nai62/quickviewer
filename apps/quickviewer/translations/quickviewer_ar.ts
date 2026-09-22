@@ -4,47 +4,47 @@
 <context>
     <name>CatalogDatabase</name>
     <message>
-        <location filename="../src/catalog/catalogdatabase.cpp" line="140"/>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="146"/>
         <source>The catalog database could not be created: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogdatabase.cpp" line="144"/>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="150"/>
         <source>The catalog database is not a file: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogdatabase.cpp" line="149"/>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="155"/>
         <source>The catalog database could not be opened: %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogdatabase.cpp" line="156"/>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="162"/>
         <source>The catalog database cannot be used: %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogdatabase.cpp" line="208"/>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="214"/>
         <source>%1 is missing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogdatabase.cpp" line="214"/>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="220"/>
         <source>the volume view is missing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogdatabase.cpp" line="220"/>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="226"/>
         <source>the database comes from a newer QuickViewer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogdatabase.cpp" line="453"/>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="462"/>
         <source>The catalog source is not a folder or archive: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogdatabase.cpp" line="1117"/>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="1104"/>
         <source>A catalog transaction is already running.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -130,53 +130,53 @@
         <translation type="vanished">حقل مصطلح البحث واضغط على مفتاح الادخال للبحث عن طريق العنوان.</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="72"/>
-        <location filename="../src/catalog/catalogwindow.cpp" line="107"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="76"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="111"/>
         <source>Search titles</source>
         <comment>Gray text that prompts a keyword search of Volume</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="73"/>
-        <location filename="../src/catalog/catalogwindow.cpp" line="112"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="77"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="116"/>
         <source>Type part of a title and press Enter to search.</source>
         <comment>Tooltip of the field that searches the titles of the catalog</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="78"/>
-        <location filename="../src/catalog/catalogwindow.cpp" line="130"/>
-        <location filename="../src/catalog/catalogwindow.cpp" line="259"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="82"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="134"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="281"/>
         <source>Drop an image folder here to create a catalog.</source>
         <comment>Status bar text briefly explaining how to use CatalogWindow</comment>
         <translation>اسقاط مجلد الصورة هنا وانشاء كتالوج.</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="270"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="292"/>
         <source>%1 volumes</source>
         <comment>Text of the status bar showing how many volumes are listed</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="274"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="296"/>
         <source>%1 of %2 volumes</source>
         <comment>Text of the status bar showing [the number of hits]/[total number] of Volume</comment>
         <translation>(شاشة تخزين (%1/%2</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="282"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="304"/>
         <source>(%1 without a cover are not shown)</source>
         <comment>Status bar note about volumes the catalog holds but does not list</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="488"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="504"/>
         <source>Edit tags...</source>
         <comment>Context menu entry of a book in the catalog list</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="519"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="534"/>
         <source>Catalog database</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2057,41 +2057,41 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/cataloglist.ui" line="68"/>
+        <location filename="../src/catalog/cataloglist.ui" line="71"/>
         <source>More</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/cataloglist.ui" line="173"/>
+        <location filename="../src/catalog/cataloglist.ui" line="176"/>
         <source>Right-click a catalog to edit, delete, or open its folder.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/cataloglist.ui" line="178"/>
+        <location filename="../src/catalog/cataloglist.ui" line="181"/>
         <source>Books of the selected catalog</source>
         <extracomment>Frame holding the books of the catalog selected above, and the button that edits the tags of one of them</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/cataloglist.ui" line="185"/>
+        <location filename="../src/catalog/cataloglist.ui" line="188"/>
         <source>Title</source>
         <extracomment>Column of the list of books that shows the title of a book</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/cataloglist.ui" line="190"/>
+        <location filename="../src/catalog/cataloglist.ui" line="193"/>
         <source>Tags</source>
         <extracomment>Column of the list of books that shows the tags of a book</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/cataloglist.ui" line="210"/>
+        <location filename="../src/catalog/cataloglist.ui" line="213"/>
         <source>&amp;Edit tags...</source>
         <extracomment>Button that opens the dialog which edits the title and tags of the selected book</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/cataloglist.ui" line="238"/>
+        <location filename="../src/catalog/cataloglist.ui" line="241"/>
         <source>Cover of the selected book</source>
         <extracomment>Tooltip of the picture that shows the cover of the book selected in the list</extracomment>
         <translation type="unfinished"></translation>
@@ -2100,12 +2100,6 @@
         <location filename="../src/catalog/cataloglist.ui" line="289"/>
         <source>Open in Explorer</source>
         <extracomment>Button that shows the folder of the selected catalog where the platform lists files</extracomment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/catalog/cataloglist.ui" line="294"/>
-        <source>Remove missing entries (%1)</source>
-        <extracomment>Button that removes the catalog entries whose folder is no longer there</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2155,137 +2149,139 @@
         <translation type="vanished">كل الكتالوجات</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="26"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="27"/>
         <source>Name</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>الاسم</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="29"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="30"/>
         <source>Created</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>وقت الابتكار</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="31"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="32"/>
         <source>Path</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>مسار</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="50"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="51"/>
         <source>Close</source>
         <comment>Button that closes the catalog manager</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="127"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="199"/>
         <source>Remove missing entries (%1)</source>
         <comment>Button that removes the catalog entries whose folder is no longer there</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="139"/>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="151"/>
+        <location filename="../src/catalog/cataloglist.ui" line="294"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="211"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="223"/>
         <source>Remove missing entries</source>
+        <extracomment>Button that removes the catalog entries whose folder is no longer there</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="140"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="212"/>
         <source>%1 registered folder(s) are no longer there. Remove them from the list? The image files are not deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="151"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="223"/>
         <source>Removed %1 entry(ies).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="159"/>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="439"/>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="711"/>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="749"/>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="775"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="231"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="515"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="692"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="727"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="747"/>
         <source>Catalog database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="161"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="233"/>
         <source>Move or rename that file, then open the catalog again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="180"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="270"/>
         <source>Start creating (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="181"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="271"/>
         <source>Start creating</source>
         <comment>Button that builds the folders which were added to the list above</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="202"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="265"/>
         <source>Stop creating</source>
         <comment>Button that cancels the catalogs being built</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="232"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="326"/>
         <source>Not created yet</source>
         <comment>Representation of time indicating that the catalog is not currently created and will be generated from now</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="370"/>
-        <source>No cover</source>
-        <comment>Text shown where a cover would be</comment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="566"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="614"/>
         <source>Catalog creation incomplete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="567"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="615"/>
         <source>Catalog(s) left unstored: %1</source>
         <comment>Body of message box when some catalogs could not be stored</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="646"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="259"/>
         <source>Stopping...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="673"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="197"/>
+        <source>Remove missing entries</source>
+        <comment>Button that removes the catalog entries whose folder is no longer there</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="654"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="674"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="655"/>
         <source>%1 added folder(s) are not created yet. Close and discard them?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="743"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="721"/>
         <source>Delete catalog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="744"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="722"/>
         <source>Delete &quot;%1&quot; from the list of catalogs? The image files are not deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="770"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="742"/>
         <source>Delete all catalogs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="771"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="743"/>
         <source>Delete every catalog from the list? The image files are not deleted.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2305,7 +2301,7 @@
         <translation type="vanished">نهج ل</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="511"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="583"/>
         <source>Edit Catalog</source>
         <comment>Button for editing contents of already created catalog</comment>
         <translation>تحرير الكتالوج</translation>
@@ -2316,7 +2312,7 @@
         <translation type="vanished">لقد نجحنا!</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="561"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="609"/>
         <source>Catalog creation completed.</source>
         <comment>Body of message box when catalog generation finished successfully</comment>
         <translation>اكتمال انشاء الكتالوج</translation>
@@ -2327,7 +2323,7 @@
         <translation type="vanished">الغيت!</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="557"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="605"/>
         <source>Catalog creation was cancelled.</source>
         <comment>Body of message box when catalog generation is canceled</comment>
         <translation>انشاء كتالوج تم الغاؤه</translation>
@@ -2862,6 +2858,15 @@
         <source>Record</source>
         <comment>Button for starting entering the shortcut key</comment>
         <translation>سجل</translation>
+    </message>
+</context>
+<context>
+    <name>VolumeCoverPane</name>
+    <message>
+        <location filename="../src/catalog/volumecoverpane.cpp" line="36"/>
+        <source>No cover</source>
+        <comment>Text shown where a cover would be</comment>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
