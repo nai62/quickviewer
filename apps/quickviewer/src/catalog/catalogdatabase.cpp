@@ -584,13 +584,16 @@ QList<VolumeThumbRecord> CatalogDatabase::volumes()
     QSqlQuery v_volumethm(m_db);
     // The view carries the cover itself but not the row it came from, and the
     // cover of a volume is read and fitted once per row of the catalog list.
-    v_volumethm.prepare("SELECT v_volumethm.*, t_volumes.thumb_id AS thumb_id FROM v_volumethm "
-                        "LEFT OUTER JOIN t_volumes ON t_volumes.id = v_volumethm.id");
+    v_volumethm.prepare("SELECT v_volumethm.*, t_volumes.thumb_id AS thumb_id, "
+                        "t_volumes.catalog_id AS catalog_id FROM v_volumethm "
+                        "LEFT OUTER JOIN t_volumes ON t_volumes.id = v_volumethm.id ORDER BY "
+                        "v_volumethm.realname_asc");
     if (!execQuery(v_volumethm, "v_volumethm")) {
         // The query failed, so the cache stays empty rather than remembering
         // the failure as the contents of the catalog.
         return result;
     }
+    QMap<int, int> rowOfVolume;
     while (v_volumethm.next()) {
         VolumeThumbRecord vtr;
         vtr.id = v_volumethm.value("id").toInt();
@@ -603,7 +606,21 @@ QList<VolumeThumbRecord> CatalogDatabase::volumes()
         vtr.parent_id = v_volumethm.value("parent_id").toInt();
         vtr.thumb_id = v_volumethm.value("thumb_id").toInt();
         vtr.thumbnail = v_volumethm.value("thumbnail").toByteArray();
+        vtr.catalog_id = v_volumethm.value("catalog_id").toInt();
+        rowOfVolume.insert(vtr.id, int(result.size()));
         result.append(vtr);
+    }
+    QSqlQuery tags(m_db);
+    tags.prepare(QStringLiteral("SELECT v.volume_id, t.name FROM t_volumetags v "
+                                "JOIN t_tags t ON t.id = v.tag_id"));
+    if (!execQuery(tags, "volume tags")) {
+        return {};
+    }
+    while (tags.next()) {
+        const auto row = rowOfVolume.constFind(tags.value(0).toInt());
+        if (row != rowOfVolume.constEnd()) {
+            result[row.value()].tags << tags.value(1).toString();
+        }
     }
     loadTags();
     m_volumesDirty = false;

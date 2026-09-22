@@ -5,6 +5,7 @@
 #include <QDateTime>
 #include <QMetaType>
 #include <QString>
+#include <QStringList>
 
 // t_catalogs
 class CatalogRecord
@@ -39,6 +40,7 @@ public:
     int parent_id = 0;
     int catalog_id = 0;
     QByteArray thumbnail;
+    QStringList tags;
 };
 
 // t_tags

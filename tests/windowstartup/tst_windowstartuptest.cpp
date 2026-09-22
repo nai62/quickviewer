@@ -1,3 +1,4 @@
+#include <QAbstractItemModelTester>
 #include "foldertextcache.h"
 #include <QtTest>
 
@@ -104,6 +105,8 @@ private slots:
     void separatePanelClosesWithTheMainWindow();
     void catalogListStartsAtTheTopInListMode();
     void catalogSearchFieldNarrowsTheList();
+    void catalogTagButtonsMatchStoredTags();
+    void catalogModelRejectsInvalidIndexes();
     void catalogCoverFillsAndCentresInTheIconBox();
     void catalogCoverIsReadOnce();
     void catalogViewConsumesWheelEventsAtScrollBoundary();
@@ -2441,6 +2444,80 @@ void WindowStartupTest::catalogCoverIsReadOnce()
 }
 
 /** Typing in the catalog's search field narrows the list it shows. */
+void WindowStartupTest::catalogModelRejectsInvalidIndexes()
+{
+    VolumeItemModel model(nullptr);
+    QVERIFY(!model.data(QModelIndex(), Qt::DisplayRole).isValid());
+    VolumeThumbRecord volume;
+    volume.realname = QStringLiteral("Book");
+    QList<VolumeThumbRecord *> volumes{&volume};
+    model.setVolumes(&volumes);
+    QAbstractItemModelTester tester(&model, QAbstractItemModelTester::FailureReportingMode::QtTest);
+    QVERIFY(!model.index(-1, 0).isValid());
+    QVERIFY(!model.index(0, -1).isValid());
+    QVERIFY(!model.index(0, 1).isValid());
+    QVERIFY(!model.index(1, 0).isValid());
+    const QModelIndex book = model.index(0, 0);
+    QVERIFY(book.isValid());
+    QCOMPARE(model.rowCount(book), 0);
+    QVERIFY(!model.index(0, 0, book).isValid());
+    qApp->setTitleWithoutOptions(true);
+    QCOMPARE(model.data(book, Qt::DisplayRole).toString(), QStringLiteral("Book"));
+}
+
+void WindowStartupTest::catalogTagButtonsMatchStoredTags()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString root = directory.filePath(QStringLiteral("Shelf"));
+    QVERIFY(writeCatalogShelf(root, {QStringLiteral("Alpha"), QStringLiteral("Beta")}));
+    CatalogDatabase database(nullptr, directory.filePath(QStringLiteral("catalog.db")));
+    QVERIFY(database.createCatalog(QStringLiteral("Shelf"), root).created);
+    for (const auto &volume : database.volumes()) {
+        if (volume.realname == QStringLiteral("Alpha")) {
+            QVERIFY(database.setVolumeTags(volume.id, {QStringLiteral("Space Opera")}));
+        } else if (volume.realname == QStringLiteral("Beta")) {
+            QVERIFY(database.setVolumeTags(volume.id, {QStringLiteral("Other")}));
+        }
+    }
+    qApp->setCatalogViewModeSetting(qvEnums::CatalogViewMode::Icon);
+    qApp->setShowTagBar(true);
+    qApp->setSearchTitleWithOptions(true);
+    StartupWindow viewer;
+    viewer.setCatalogDatabase(&database);
+    viewer.show();
+    viewer.createCatalogWindow(true);
+    QApplication::processEvents();
+    auto *catalog = viewer.catalogWindow();
+    auto *list = catalog->findChild<QListView *>(QStringLiteral("volumeList"));
+    auto *search = catalog->findChild<QLineEdit *>(QStringLiteral("searchEdit"));
+    auto *frame = catalog->findChild<QWidget *>(QStringLiteral("tagFrame"));
+    QVERIFY(list && search && frame);
+    QPushButton *tag = nullptr;
+    for (auto *button : frame->findChildren<QPushButton *>()) {
+        if (button->text() == QStringLiteral("Space Opera")) {
+            tag = button;
+        }
+    }
+    QVERIFY(tag);
+    QCOMPARE(list->model()->rowCount(), 2);
+    tag->click();
+    QCOMPARE(list->model()->rowCount(), 1);
+    QCOMPARE(list->model()->index(0, 0).data().toString(), QStringLiteral("Alpha"));
+    search->setText(QStringLiteral("Beta"));
+    QCOMPARE(list->model()->rowCount(), 0);
+    tag->click();
+    QCOMPARE(list->model()->rowCount(), 1);
+    search->clear();
+    QCOMPARE(list->model()->rowCount(), 2);
+    const QString previousStatus =
+        catalog->findChild<QLabel *>(QStringLiteral("statusLabel"))->text();
+    QVERIFY(database.deleteAllCatalogs());
+    catalog->setCatalogDatabase(&database);
+    QCOMPARE(list->model()->rowCount(), 0);
+    QVERIFY(catalog->findChild<QLabel *>(QStringLiteral("statusLabel"))->text() != previousStatus);
+}
+
 void WindowStartupTest::catalogSearchFieldNarrowsTheList()
 {
     QTemporaryDir directory;

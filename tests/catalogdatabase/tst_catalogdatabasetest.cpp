@@ -18,6 +18,7 @@
 #include <QtTest>
 
 #include "catalogbuilder.h"
+#include "catalogwindow.h"
 #include "catalogdatabase.h"
 #include "managedatabasedialog.h"
 #include "volumenameparser.h"
@@ -167,6 +168,7 @@ private Q_SLOTS:
     void keepsAnExistingTemporaryFile();
     void rejectsInvalidCatalogSources();
     void ignoresInvalidDroppedUrls();
+    void searchesForALiteralHyphen();
     void catalogsAFolderWithAnArchiveExtension();
     void doesNotFollowAFolderCycle();
 
@@ -191,6 +193,16 @@ private Q_SLOTS:
     void failedCatalogRemovalKeepsTheStoredRows();
     void orphanVolumeTagsDoNotBreakTagQueries();
 };
+
+void CatalogDatabaseTest::searchesForALiteralHyphen()
+{
+    SearchWords words(QStringLiteral("-"));
+    QVERIFY(words.match(QStringLiteral("a-b")));
+    QVERIFY(!words.match(QStringLiteral("ab")));
+    SearchWords exclude(QStringLiteral("book -draft"));
+    QVERIFY(exclude.match(QStringLiteral("book final")));
+    QVERIFY(!exclude.match(QStringLiteral("book draft")));
+}
 
 void CatalogDatabaseTest::rejectsInvalidCatalogSources()
 {

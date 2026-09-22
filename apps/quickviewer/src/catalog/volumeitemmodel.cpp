@@ -69,7 +69,8 @@ QPixmap VolumeItemModel::coverPixmap(const VolumeThumbRecord &record) const
 QVariant VolumeItemModel::data(const QModelIndex &index, int role) const
 {
     int row = index.row();
-    if (!m_volumeSearch) {
+    if (!index.isValid() || index.model() != this || index.column() != 0 || !m_volumeSearch ||
+        row < 0 || row >= m_volumeSearch->size()) {
         return QVariant();
     }
     const VolumeThumbRecord *vtr = m_volumeSearch->at(row);
@@ -78,7 +79,7 @@ QVariant VolumeItemModel::data(const QModelIndex &index, int role) const
         if (m_catalogViewMode == qvEnums::CatalogViewMode::IconNoText) {
             return QVariant();
         }
-        return qApp->TitleWithoutOptions() ? vtr->name : vtr->realname;
+        return qApp->TitleWithoutOptions() && !vtr->name.isEmpty() ? vtr->name : vtr->realname;
     case Qt::DecorationRole:
         return coverPixmap(*vtr);
     case Qt::SizeHintRole: {
@@ -95,14 +96,14 @@ QVariant VolumeItemModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-int VolumeItemModel::rowCount(const QModelIndex &) const
+int VolumeItemModel::rowCount(const QModelIndex &parent) const
 {
-    return !m_volumeSearch ? 0 : m_volumeSearch->size();
+    return parent.isValid() || !m_volumeSearch ? 0 : m_volumeSearch->size();
 }
 
-QModelIndex VolumeItemModel::index(int row, int column, const QModelIndex &) const
+QModelIndex VolumeItemModel::index(int row, int column, const QModelIndex &parent) const
 {
-    if (column > 1 || !m_volumeSearch) {
+    if (parent.isValid() || row < 0 || column != 0 || !m_volumeSearch) {
         return QModelIndex();
     }
     return row < m_volumeSearch->size() ? createIndex(row, column, m_volumeSearch->at(row))

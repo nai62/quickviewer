@@ -74,13 +74,14 @@ private:
     int listableVolumeCount() const;
 
     Ui::CatalogWindow *ui;
-    CatalogDatabase *m_catalogDatabase;
+    CatalogDatabase *m_catalogDatabase = nullptr;
     QMap<int, CatalogRecord> m_catalogs;
     QList<int> m_enabledCatalogs;
     QList<VolumeThumbRecord> m_volumes;
     QList<VolumeThumbRecord *> m_volumeSearch;
     QMenu m_folderViewMenu;
     QString m_lastSearchWord;
+    QStringList m_lastTagWords;
     VolumeItemModel m_itemModel;
 };
 

@@ -256,6 +256,8 @@ void CatalogWindow::resetVolumes()
 {
     m_itemModel.setVolumes(&m_volumeSearch);
     if (m_volumes.isEmpty()) {
+        ui->statusLabel->setText(tr("Drop an image folder here to create a catalog.",
+                                    "Status bar text briefly explaining how to use CatalogWindow"));
         return;
     }
     // A volume without a cover cannot be shown, so it does not belong in the
@@ -299,14 +301,14 @@ void CatalogWindow::searchByWord(bool doForce)
 {
     QString search = ui->searchEdit->text();
 
-    // Tag Buttons as search words
-    search += " " + getTagWords().join(" ");
+    const QStringList tagWords = getTagWords();
 
     search = search.trimmed();
-    if (!doForce && search == m_lastSearchWord) {
+    if (!doForce && search == m_lastSearchWord && tagWords == m_lastTagWords) {
         return;
     }
     m_lastSearchWord = search;
+    m_lastTagWords = tagWords;
 
     //    int cnt = 0;
     m_volumeSearch.clear();
@@ -315,7 +317,15 @@ void CatalogWindow::searchByWord(bool doForce)
         if (vtr.thumbnail.isEmpty()) {
             continue;
         }
-        QString title = qApp->SearchTitleWithOptions() ? vtr.nameNoCase : vtr.realnameNoCase;
+        const bool hasTags =
+            std::all_of(tagWords.cbegin(), tagWords.cend(), [&vtr](const QString &tag) {
+                return vtr.tags.contains(tag, Qt::CaseInsensitive);
+            });
+        if (!hasTags) {
+            continue;
+        }
+        QString title = qApp->SearchTitleWithOptions() && !vtr.name.isEmpty() ? vtr.nameNoCase
+                                                                              : vtr.realnameNoCase;
         if (!searchwords.match(title)) {
             continue;
         }
@@ -451,7 +461,8 @@ void CatalogWindow::handleSearchLineEditEditingFinished()
 void CatalogWindow::handleVolumeListItemDoubleClicked(const QModelIndex &index)
 {
     int row = index.row();
-    if (row >= m_volumeSearch.size()) {
+    if (!index.isValid() || index.model() != &m_itemModel || row < 0 ||
+        row >= m_volumeSearch.size()) {
         return;
     }
     emit openVolume(OpenTarget::container(m_volumeSearch[row]->path));
@@ -561,7 +572,7 @@ SearchWords::SearchWords(const QString &searchNoCase)
         if (s.isEmpty()) {
             continue;
         }
-        if (s[0] == '-') {
+        if (s.size() > 1 && s[0] == '-') {
             nomatches << s.mid(1);
         } else {
             matches << s;

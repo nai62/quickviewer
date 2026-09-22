@@ -11,7 +11,7 @@ public:
     VolumeItemModel(QObject *parent);
     QVariant data(const QModelIndex &index, int role) const override;
     int rowCount(const QModelIndex &parent) const override;
-    int columnCount(const QModelIndex &) const override { return 1; }
+    int columnCount(const QModelIndex &parent) const override { return parent.isValid() ? 0 : 1; }
     QModelIndex
     index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex &) const override { return QModelIndex(); }
