@@ -1,4 +1,5 @@
 #include "volumeitemmodel.h"
+#include "fileloader.h"
 #include "qvapplication.h"
 
 VolumeItemModel::VolumeItemModel(QObject *parent)
@@ -6,6 +7,31 @@ VolumeItemModel::VolumeItemModel(QObject *parent)
       m_volumeSearch(nullptr),
       m_catalogViewMode(qvEnums::CatalogViewMode::Icon)
 {
+}
+
+QPixmap VolumeItemModel::coverPixmap(const VolumeThumbRecord &record) const
+{
+    const QImage cover = QImage::fromData(record.thumbnail, IFileLoader::jpegQtFormatName());
+    if (cover.isNull()) {
+        // A cover that cannot be decoded is no cover: the view then shows the
+        // name alone, which is what the catalog window counts as unlistable.
+        return QPixmap();
+    }
+    if (!m_coverBox.isValid()) {
+        return QPixmap::fromImage(cover);
+    }
+    // The stored cover is as wide as the view shows it, but as tall as the page
+    // it came from, and the item view pins a decoration to the top of its cell.
+    // Draw the scaled cover into a filled box, so the room above and below it is
+    // the same whatever shape the page has.
+    QPixmap box(m_coverBox);
+    box.fill(Qt::transparent);
+    const QPixmap scaled =
+        QPixmap::fromImage(cover.scaled(m_coverBox, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    QPainter painter(&box);
+    painter.drawPixmap(
+        (box.width() - scaled.width()) / 2, (box.height() - scaled.height()) / 2, scaled);
+    return box;
 }
 
 QVariant VolumeItemModel::data(const QModelIndex &index, int role) const
@@ -22,7 +48,7 @@ QVariant VolumeItemModel::data(const QModelIndex &index, int role) const
         }
         return qApp->TitleWithoutOptions() ? vtr->name : vtr->realname;
     case Qt::DecorationRole:
-        return QIcon(QPixmap::fromImage(QImage::fromData(vtr->thumbnail)));
+        return coverPixmap(*vtr);
     case Qt::SizeHintRole: {
         const bool iconLongText = qApp->IconLongText();
         if (m_catalogViewMode == qvEnums::CatalogViewMode::List) {

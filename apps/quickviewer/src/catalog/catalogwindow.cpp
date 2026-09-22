@@ -88,6 +88,9 @@ CatalogWindow::CatalogWindow(QWidget *parent, Ui::MainWindow *uiMain)
 
     // VolumeView
     m_itemModel.setViewMode(qApp->CatalogViewModeSetting());
+    // Every display mode draws its cover at the icon size, so that is the box
+    // the model fits a cover into.
+    m_itemModel.setCoverBox(ui->volumeList->iconSize());
     ui->volumeList->setModel(&m_itemModel);
     ui->volumeList->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->volumeList,

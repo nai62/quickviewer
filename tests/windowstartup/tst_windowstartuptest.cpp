@@ -1,6 +1,8 @@
 #include "foldertextcache.h"
 #include <QtTest>
 
+#include <algorithm>
+
 #include "catalogwindow.h"
 #include "folderwindow.h"
 #include "mainwindow.h"
@@ -99,6 +101,7 @@ class WindowStartupTest : public QObject
 
 private slots:
     void catalogListStartsAtTheTopInListMode();
+    void catalogCoverFillsAndCentresInTheIconBox();
     void catalogViewConsumesWheelEventsAtScrollBoundary();
     void catalogTagBarFollowsRemovedTags();
 
@@ -2262,6 +2265,85 @@ static bool writeCatalogShelf(const QString &root, const QStringList &folderName
         }
     }
     return true;
+}
+
+/** The bounding box of a cover's red pixels, in the cover's own pixels. */
+static QRect coverInkBox(const QPixmap &cover)
+{
+    const QImage image = cover.toImage();
+    int left = image.width();
+    int top = image.height();
+    int right = -1;
+    int bottom = -1;
+    for (int y = 0; y < image.height(); ++y) {
+        for (int x = 0; x < image.width(); ++x) {
+            const QColor color = image.pixelColor(x, y);
+            if (color.red() > 150 && color.green() < 100) {
+                left = qMin(left, x);
+                top = qMin(top, y);
+                right = qMax(right, x);
+                bottom = qMax(bottom, y);
+            }
+        }
+    }
+    return right < left ? QRect() : QRect(QPoint(left, top), QPoint(right, bottom));
+}
+
+void WindowStartupTest::catalogCoverFillsAndCentresInTheIconBox()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString root = directory.filePath(QStringLiteral("Shelf"));
+    QVERIFY(writeCatalogShelf(root, {QStringLiteral("Book A")}));
+    // Two books whose pages ask for opposite shapes: one taller than it is
+    // wide, one wider than it is tall.
+    {
+        const QString folder = QDir(root).filePath(QStringLiteral("Book B"));
+        QVERIFY(QDir().mkpath(folder));
+        QImage wide(QSize(300, 120), QImage::Format_RGB32);
+        wide.fill(Qt::red);
+        QVERIFY(wide.save(QDir(folder).filePath(QStringLiteral("01.png"))));
+    }
+
+    QTemporaryDir databaseDirectory;
+    QVERIFY(databaseDirectory.isValid());
+    CatalogDatabase catalogDatabase(nullptr,
+                                    databaseDirectory.filePath(QStringLiteral("catalog.db")));
+    QVERIFY(catalogDatabase.createCatalog(QStringLiteral("Shelf"), root).created);
+
+    qApp->setCatalogViewModeSetting(qvEnums::CatalogViewMode::IconNoText);
+    StartupWindow viewer;
+    viewer.setCatalogDatabase(&catalogDatabase);
+    viewer.show();
+    viewer.createCatalogWindow(true);
+    QApplication::processEvents();
+
+    QListView *list = viewer.findChild<QListView *>(QStringLiteral("volumeList"));
+    QVERIFY(list);
+    QCOMPARE(list->model()->rowCount(), 2);
+    const QSize box = list->iconSize();
+    QVERIFY(box.isValid());
+
+    QList<qreal> shapes;
+    for (int row = 0; row < list->model()->rowCount(); ++row) {
+        const QPixmap cover =
+            list->model()->data(list->model()->index(row, 0), Qt::DecorationRole).value<QPixmap>();
+        QVERIFY(!cover.isNull());
+        // The decoration fills the room the view gives it, so the cover can sit
+        // in the middle of its cell whatever shape the page has.
+        QCOMPARE(cover.size(), box);
+        const QRect ink = coverInkBox(cover);
+        QVERIFY(ink.isValid());
+        // The room above and below the cover is the room to its left and right.
+        QVERIFY(qAbs(ink.left() - (box.width() - 1 - ink.right())) <= 1);
+        QVERIFY(qAbs(ink.top() - (box.height() - 1 - ink.bottom())) <= 1);
+        // Fitting changes neither shape: a wide page stays wide, a tall one
+        // stays tall.
+        shapes.append(qreal(ink.width()) / ink.height());
+    }
+    std::sort(shapes.begin(), shapes.end());
+    QVERIFY(qAbs(shapes.at(0) - 2.0 / 3.0) < 0.05);
+    QVERIFY(qAbs(shapes.at(1) - 2.5) < 0.05);
 }
 
 void WindowStartupTest::catalogListStartsAtTheTopInListMode()
