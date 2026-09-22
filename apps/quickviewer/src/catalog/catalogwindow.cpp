@@ -33,19 +33,28 @@ static void clearLayout(QLayout *layout)
 /** The magnifier of the search field, drawn from the palette of \a owner. */
 static QIcon searchFieldIcon(const QWidget &owner)
 {
-    constexpr int Side = 14;
+    // A line edit paints its action at the size the style asks for and scales
+    // the pixmap to it, so the shape of the drawing is what decides how big the
+    // magnifier looks. A line of text sets the canvas, and the drawing keeps to
+    // the middle three quarters of it, so the magnifier reads as one more glyph
+    // in that line instead of filling the height of the field.
+    const qreal side = qMax(12, owner.fontMetrics().height());
+    const qreal span = side * 3.0 / 4.0;
+    const qreal inset = (side - span) / 2.0;
+    const qreal lens = span * 5.0 / 8.0;
     const qreal ratio = owner.devicePixelRatioF();
-    QPixmap pixmap(QSize(Side, Side) * int(ratio));
+    QPixmap pixmap(QSize(qCeil(side * ratio), qCeil(side * ratio)));
     pixmap.setDevicePixelRatio(ratio);
     pixmap.fill(Qt::transparent);
     QPainter painter(&pixmap);
     painter.setRenderHint(QPainter::Antialiasing);
-    QPen pen(owner.palette().color(QPalette::PlaceholderText), 1.4);
+    QPen pen(owner.palette().color(QPalette::PlaceholderText), qMax(1.0, side / 12.0));
     pen.setCapStyle(Qt::RoundCap);
     painter.setPen(pen);
     painter.setBrush(Qt::NoBrush);
-    painter.drawEllipse(QRectF(1.5, 1.5, 8.5, 8.5));
-    painter.drawLine(QPointF(8.6, 8.6), QPointF(12.5, 12.5));
+    painter.drawEllipse(QRectF(inset, inset, lens, lens));
+    painter.drawLine(QPointF(inset + lens * 0.78, inset + lens * 0.78),
+                     QPointF(inset + span, inset + span));
     return QIcon(pixmap);
 }
 
@@ -98,6 +107,9 @@ CatalogWindow::CatalogWindow(QWidget *parent, Ui::MainWindow *uiMain)
     ui->searchCombo->lineEdit()->addAction(searchFieldIcon(*ui->searchCombo->lineEdit()),
                                            QLineEdit::LeadingPosition);
     ui->searchCombo->lineEdit()->setClearButtonEnabled(true);
+    // The field searches; it has no list to drop down.
+    ui->searchCombo->setStyleSheet(
+        QStringLiteral("QComboBox::drop-down { border: none; width: 0px; }"));
     ui->searchCombo->setToolTip(tr("Type part of a title and press Enter to search.",
                                    "Tooltip of the field that searches the titles of the catalog"));
 
