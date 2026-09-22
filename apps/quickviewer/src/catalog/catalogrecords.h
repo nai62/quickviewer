@@ -12,6 +12,11 @@ class CatalogRecord
 {
 public:
     int id = 0;
+    /**
+     * The id a caller asked with, when this record is the answer to a build
+     * request: a batch tells its requests apart by this rather than by a path.
+     */
+    int requestId = 0;
     int basevolume_id = 0;
     QString name;
     QString path;

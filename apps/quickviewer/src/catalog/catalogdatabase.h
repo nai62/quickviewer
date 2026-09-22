@@ -142,9 +142,11 @@ private:
     /* Catalogs */
     /**
      * Creates one catalog for the batch that \a canceled belongs to, or for a
-     * caller that cannot cancel the build when it is nullptr.
+     * caller that cannot cancel the build when it is nullptr. The result
+     * carries \a requestId, so the batch can tell which request it answers.
      */
-    CatalogRecord createCatalog(QString name, QString path, const QAtomicInt *canceled);
+    CatalogRecord
+    createCatalog(QString name, QString path, int requestId, const QAtomicInt *canceled);
 };
 
 #endif // CATALOGDATABASE_H

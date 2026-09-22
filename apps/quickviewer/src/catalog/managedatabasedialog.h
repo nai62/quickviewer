@@ -51,7 +51,9 @@ private:
     void updatePurgeAction();
     /** Enables actions only for a selected catalog while no build is running. */
     void updateCatalogActions();
-    void selectPendingCatalog(int index);
+    /** The row of the request \a requestId in the pending list, or -1. */
+    int pendingRequestIndex(int requestId) const;
+    void selectPendingCatalog(int requestId);
     /** Shows the cover of the book the list has selected, or a placeholder. */
     void updateCover();
     /** Draws the cover kept by updateCover() into the room the label has. */
@@ -64,6 +66,8 @@ private:
     Ui::ManageDatabaseDialog *ui;
     QMap<int, CatalogRecord> m_catalogs;
     QList<CatalogRecord> m_makeCatalogs;
+    /** Id of the next folder added for building; never a catalog's own. */
+    int m_nextRequestId = -1;
     QStringList m_missingVolumes;
     CatalogDatabase *m_catalogDatabase;
     QImage m_cover;

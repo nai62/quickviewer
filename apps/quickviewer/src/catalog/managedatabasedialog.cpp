@@ -240,7 +240,6 @@ void ManageDatabaseDialog::resetCatalogList()
 {
     const QTreeWidgetItem *previous = ui->treeWidget->currentItem();
     const int previousId = previous ? previous->data(0, Qt::UserRole).toInt() : 0;
-    const QString previousPath = previous ? previous->text(2) : QString();
     const QSignalBlocker blocker(ui->treeWidget);
     ui->treeWidget->clear();
     // Existing catalogs
@@ -257,32 +256,30 @@ void ManageDatabaseDialog::resetCatalogList()
         ui->treeWidget->addTopLevelItem(item);
     }
     // Making catalogs
-    {
-        int cnt = -100;
-        for (const CatalogRecord &catalog : m_makeCatalogs) {
-            QTreeWidgetItem *item = new QTreeWidgetItem;
-            item->setText(0, "* " + catalog.name);
-            item->setText(1,
-                          tr("Not created yet",
-                             "Representation of time indicating that the catalog is not currently "
-                             "created and will be generated from now"));
-            item->setText(2, catalog.path);
-            item->setToolTip(2, catalog.path);
-            item->setData(0, Qt::UserRole, cnt--);
-            item->setBackground(0, QBrush(QColor("lightgreen")));
-            QFont font = item->font(0);
-            font.setItalic(true);
-            item->setFont(0, font);
-            ui->treeWidget->addTopLevelItem(item);
-        }
+    for (const CatalogRecord &catalog : m_makeCatalogs) {
+        QTreeWidgetItem *item = new QTreeWidgetItem;
+        item->setText(0, "* " + catalog.name);
+        item->setText(1,
+                      tr("Not created yet",
+                         "Representation of time indicating that the catalog is not currently "
+                         "created and will be generated from now"));
+        item->setText(2, catalog.path);
+        item->setToolTip(2, catalog.path);
+        // The row carries the id the request was added with, so it still names
+        // the same request after the list around it changed.
+        item->setData(0, Qt::UserRole, catalog.id);
+        item->setBackground(0, QBrush(QColor("lightgreen")));
+        QFont font = item->font(0);
+        font.setItalic(true);
+        item->setFont(0, font);
+        ui->treeWidget->addTopLevelItem(item);
     }
 
     QTreeWidgetItem *selected = nullptr;
     for (int row = 0; row < ui->treeWidget->topLevelItemCount(); ++row) {
         QTreeWidgetItem *item = ui->treeWidget->topLevelItem(row);
         const int id = item->data(0, Qt::UserRole).toInt();
-        if ((previousId > 0 && id == previousId) ||
-            (previousId < 0 && item->text(2) == previousPath)) {
+        if (id == previousId) {
             selected = item;
             break;
         }
@@ -294,14 +291,21 @@ void ManageDatabaseDialog::resetCatalogList()
     handleCatalogSelectionChanged();
 }
 
-void ManageDatabaseDialog::selectPendingCatalog(int index)
+int ManageDatabaseDialog::pendingRequestIndex(int requestId) const
 {
-    if (index < 0) {
-        return;
+    for (int index = 0; index < m_makeCatalogs.size(); ++index) {
+        if (m_makeCatalogs.at(index).id == requestId) {
+            return index;
+        }
     }
+    return -1;
+}
+
+void ManageDatabaseDialog::selectPendingCatalog(int requestId)
+{
     for (int row = 0; row < ui->treeWidget->topLevelItemCount(); ++row) {
         auto *item = ui->treeWidget->topLevelItem(row);
-        if (item->data(0, Qt::UserRole).toInt() == -100 - index) {
+        if (item->data(0, Qt::UserRole).toInt() == requestId) {
             ui->treeWidget->setCurrentItem(item);
             ui->treeWidget->scrollToItem(item);
             break;
@@ -493,11 +497,12 @@ void ManageDatabaseDialog::handleAddButtonClicked()
     if (!databaseSettingDialog(catalog, false)) {
         return;
     }
+    catalog.id = m_nextRequestId--;
     m_makeCatalogs << catalog;
     ui->statusLabel->clear();
 
     resetCatalogList();
-    selectPendingCatalog(int(m_makeCatalogs.size()) - 1);
+    selectPendingCatalog(catalog.id);
     normalButtonStates();
 }
 
@@ -507,6 +512,7 @@ void ManageDatabaseDialog::dropEvent(QDropEvent *e)
         return;
     }
     QList<QUrl> urlList = e->mimeData()->urls();
+    int lastRequestId = 0;
     for (int i = 0; i < urlList.size(); i++) {
         QUrl url = urlList[i];
         if (!url.isLocalFile()) {
@@ -527,12 +533,14 @@ void ManageDatabaseDialog::dropEvent(QDropEvent *e)
         if (catalog.path.isEmpty()) {
             continue;
         }
+        catalog.id = m_nextRequestId--;
+        lastRequestId = catalog.id;
         m_makeCatalogs << catalog;
     }
 
     ui->statusLabel->clear();
     resetCatalogList();
-    selectPendingCatalog(int(m_makeCatalogs.size()) - 1);
+    selectPendingCatalog(lastRequestId);
     normalButtonStates();
 }
 
@@ -562,16 +570,11 @@ void ManageDatabaseDialog::handleCatalogCreated(const CatalogRecord cr)
         return;
     }
     m_catalogs[cr.id] = cr;
-    int i = 0;
-    for (const CatalogRecord &c : m_makeCatalogs) {
-        if (QDir::cleanPath(QFileInfo(cr.path).absoluteFilePath()) ==
-            QDir::cleanPath(QFileInfo(c.path).absoluteFilePath())) {
-            break;
-        }
-        i++;
-    }
-    if (i < m_makeCatalogs.size()) {
-        m_makeCatalogs.removeAt(i);
+    // The result names the request it answers, so the row that goes is the one
+    // that was built, whatever paths the requests were added with.
+    const int index = pendingRequestIndex(cr.requestId);
+    if (index >= 0) {
+        m_makeCatalogs.removeAt(index);
     }
 
     resetCatalogList();
@@ -749,7 +752,10 @@ void ManageDatabaseDialog::handleEditButtonClicked()
         m_catalogs[id] = catalog;
     } else {
         // A catalog that is only waiting to be built stays in the request.
-        const int pendingIndex = -100 - id;
+        const int pendingIndex = pendingRequestIndex(id);
+        if (pendingIndex < 0) {
+            return;
+        }
         catalog = m_makeCatalogs[pendingIndex];
         if (!databaseSettingDialog(catalog, false)) {
             return;
@@ -759,7 +765,7 @@ void ManageDatabaseDialog::handleEditButtonClicked()
 
     resetCatalogList();
     if (id < 0) {
-        selectPendingCatalog(-100 - id);
+        selectPendingCatalog(id);
     }
 }
 
@@ -786,9 +792,9 @@ void ManageDatabaseDialog::handleDeleteButtonClicked()
         }
         m_catalogs.remove(id);
     } else {
-        id = -100 - id;
-        if (id < m_makeCatalogs.size()) {
-            m_makeCatalogs.removeAt(id);
+        const int pendingIndex = pendingRequestIndex(id);
+        if (pendingIndex >= 0) {
+            m_makeCatalogs.removeAt(pendingIndex);
         }
     }
 

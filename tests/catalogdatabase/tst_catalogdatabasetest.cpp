@@ -198,6 +198,7 @@ private Q_SLOTS:
     void managerBuildsPendingCatalogsWithoutACompletionDialog();
     void managerContextMenuTargetsTheClickedCatalog();
     void managerOffersToRemoveMissingEntries();
+    void pendingCatalogsKeepTheirIdentity();
     void managerKeepsTheSelectedBookAfterEditing();
     void closingManagerCanKeepPendingCatalogs();
     void deletingAllCatalogsCanBeCancelled();
@@ -1142,6 +1143,40 @@ void CatalogDatabaseTest::managerOffersToRemoveMissingEntries()
 
     QTRY_COMPARE(database.volumes().size(), 2);
     QVERIFY(!purge->isEnabled());
+}
+
+void CatalogDatabaseTest::pendingCatalogsKeepTheirIdentity()
+{
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    QVERIFY(fixture.addImage(QStringLiteral("Alpha"), QStringLiteral("01.png"), QSize(60, 90)));
+    QVERIFY(fixture.addImage(QStringLiteral("Beta"), QStringLiteral("01.png"), QSize(60, 90)));
+
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    ManageDatabaseDialog dialog;
+    dialog.setCatalogDatabase(&database);
+    QMimeData mime;
+    mime.setUrls({QUrl::fromLocalFile(fixture.folder(QStringLiteral("Alpha"))),
+                  QUrl::fromLocalFile(fixture.folder(QStringLiteral("Beta")))});
+    QDropEvent drop(QPointF(), Qt::CopyAction, &mime, Qt::LeftButton, Qt::NoModifier);
+    dialog.dropEvent(&drop);
+
+    auto *catalogs = dialog.findChild<QTreeWidget *>(QStringLiteral("treeWidget"));
+    QVERIFY(catalogs);
+    QCOMPARE(catalogs->topLevelItemCount(), 2);
+    const int firstId = catalogs->topLevelItem(0)->data(0, Qt::UserRole).toInt();
+    const int secondId = catalogs->topLevelItem(1)->data(0, Qt::UserRole).toInt();
+    QVERIFY(firstId < 0);
+    QVERIFY(secondId < 0);
+    QVERIFY(firstId != secondId);
+
+    // Taking one request away leaves the other named by the id it was added
+    // with, not by where it now sits in the list.
+    catalogs->setCurrentItem(catalogs->topLevelItem(0));
+    dialog.handleDeleteButtonClicked();
+    QCOMPARE(catalogs->topLevelItemCount(), 1);
+    QCOMPARE(catalogs->topLevelItem(0)->data(0, Qt::UserRole).toInt(), secondId);
+    QCOMPARE(catalogs->topLevelItem(0)->text(0), QStringLiteral("* Beta"));
 }
 
 void CatalogDatabaseTest::managerKeepsTheSelectedBookAfterEditing()

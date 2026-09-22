@@ -444,12 +444,16 @@ bool CatalogDatabase::updateVolumeOrders()
 
 CatalogRecord CatalogDatabase::createCatalog(QString name, QString path)
 {
-    return createCatalog(name, path, nullptr);
+    return createCatalog(name, path, 0, nullptr);
 }
 
-CatalogRecord CatalogDatabase::createCatalog(QString name, QString path, const QAtomicInt *canceled)
+CatalogRecord CatalogDatabase::createCatalog(QString name,
+                                             QString path,
+                                             int requestId,
+                                             const QAtomicInt *canceled)
 {
     CatalogRecord catalog = {0};
+    catalog.requestId = requestId;
     if (!ensureReady()) {
         return catalog;
     }
@@ -562,7 +566,8 @@ CatalogDatabase::createCatalogAsync(QList<CatalogRecord> newers)
             if (isCanceled(&m_catalogCanceled)) {
                 break;
             }
-            result << worker.createCatalog(request.name, request.path, &m_catalogCanceled);
+            result << worker.createCatalog(
+                request.name, request.path, request.id, &m_catalogCanceled);
         }
         const QString error = openingError.isEmpty() ? worker.errorMessage() : openingError;
         QMetaObject::invokeMethod(
