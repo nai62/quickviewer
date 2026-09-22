@@ -4,6 +4,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QImage>
+#include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
 #include <QMimeData>
@@ -50,6 +51,13 @@ CatalogRecord catalogRequest(const QString &name, const QString &path)
     request.name = name;
     request.path = path;
     return request;
+}
+
+/** The shape (width over height) of the cover the dialog shows, or 0 for none. */
+qreal shownCoverShape(const QLabel *cover)
+{
+    const QPixmap pixmap = cover->pixmap();
+    return pixmap.isNull() ? 0.0 : qreal(pixmap.width()) / pixmap.height();
 }
 
 } // namespace
@@ -159,6 +167,7 @@ private Q_SLOTS:
     void offersTheTitleAndTagsOfAVolumeForEditing();
     void showsTheBooksOfTheSelectedCatalog();
     void listsTheFolderOfEachCatalog();
+    void showsTheCoverOfTheSelectedBook();
     void parsesVolumeNames_data();
     void parsesVolumeNames();
     void finishesAnEmptyCatalogRequest();
@@ -575,6 +584,73 @@ void CatalogDatabaseTest::listsTheFolderOfEachCatalog()
     // And the column is inside the room the list has rather than scrolled off
     // the right edge of it.
     QVERIFY(catalogs->columnViewportPosition(2) < catalogs->viewport()->width());
+}
+
+void CatalogDatabaseTest::showsTheCoverOfTheSelectedBook()
+{
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    // Two books whose pages ask for opposite shapes.
+    QVERIFY(fixture.addImage(QStringLiteral("Alpha"), QStringLiteral("01.png"), QSize(60, 90)));
+    QVERIFY(fixture.addImage(QStringLiteral("Beta"), QStringLiteral("01.png"), QSize(90, 60)));
+
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    QVERIFY(database.createCatalog(QStringLiteral("Library"), fixture.rootPath()).created);
+
+    ManageDatabaseDialog dialog;
+    dialog.setCatalogDatabase(&database);
+    dialog.show();
+    QApplication::processEvents();
+
+    QTreeWidget *catalogs = dialog.findChild<QTreeWidget *>(QStringLiteral("treeWidget"));
+    QTreeWidget *books = dialog.findChild<QTreeWidget *>(QStringLiteral("booksTree"));
+    QLabel *cover = dialog.findChild<QLabel *>(QStringLiteral("coverLabel"));
+    QPushButton *openInExplorer =
+        dialog.findChild<QPushButton *>(QStringLiteral("openInExplorerButton"));
+    QVERIFY(catalogs);
+    QVERIFY(books);
+    QVERIFY(cover);
+    QVERIFY(openInExplorer);
+
+    // Nothing is selected, so there is no cover to show and no folder to open.
+    QCOMPARE(shownCoverShape(cover), 0.0);
+    QVERIFY(!openInExplorer->isEnabled());
+
+    catalogs->setCurrentItem(catalogs->topLevelItem(0));
+    QApplication::processEvents();
+
+    // The folder is there to be shown as soon as a catalog is.
+    QVERIFY(openInExplorer->isEnabled());
+    // The first book of the catalog is selected, and its cover is shown with
+    // the shape of the page it came from.
+    QVERIFY(books->currentItem());
+    QCOMPARE(books->currentItem()->text(0), QStringLiteral("Alpha"));
+    QVERIFY(qAbs(shownCoverShape(cover) - 2.0 / 3.0) < 0.05);
+
+    // Choosing another book shows that book's cover instead.
+    QTreeWidgetItem *beta = nullptr;
+    for (int row = 0; row < books->topLevelItemCount(); ++row) {
+        if (books->topLevelItem(row)->text(0) == QStringLiteral("Beta")) {
+            beta = books->topLevelItem(row);
+        }
+    }
+    QVERIFY(beta);
+    books->setCurrentItem(beta);
+    QApplication::processEvents();
+    QCOMPARE(books->currentItem()->text(0), QStringLiteral("Beta"));
+    QVERIFY(qAbs(shownCoverShape(cover) - 3.0 / 2.0) < 0.05);
+
+    // A book whose folder holds no image has no cover to show.
+    QTreeWidgetItem *library = nullptr;
+    for (int row = 0; row < books->topLevelItemCount(); ++row) {
+        if (books->topLevelItem(row)->text(0) == QStringLiteral("Library")) {
+            library = books->topLevelItem(row);
+        }
+    }
+    QVERIFY(library);
+    books->setCurrentItem(library);
+    QApplication::processEvents();
+    QCOMPARE(shownCoverShape(cover), 0.0);
 }
 
 void CatalogDatabaseTest::parsesVolumeNames_data()

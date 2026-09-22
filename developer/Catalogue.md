@@ -30,7 +30,7 @@ catalogues rather than thumbnails.
 | `catalogrecords.h` | the records the catalog UI passes around |
 | `CatalogWindow` | the list, the search box, the tag bar, and the tag editor of one book |
 | `VolumeTagDialog` | the title and the tags of one volume |
-| `ManageDatabaseDialog` | catalogues: adding and dropping folders, starting and stopping a build, deleting, removing entries whose folders are gone, and the books of one catalog with the tag editor for each |
+| `ManageDatabaseDialog` | catalogues: adding and dropping folders, starting and stopping a build, deleting, removing entries whose folders are gone, showing one catalogue's folder where the platform lists files, and the books of one catalog with their covers and the tag editor for each |
 
 `CatalogBuilder` reads the file system and holds no database; the catalog
 walks one folder level at a time, one scan per folder on a worker thread, and
@@ -122,12 +122,18 @@ with the tag editor.
 - Right-clicking a book edits its title and tags. "Manage catalogs" does the
   same for the books of the catalogue selected there, and lists every volume,
   cover or not.
+- "Manage catalogs" also lists each catalogue with its name, the time it was
+  built and the folder it was created from, and **Open in Explorer** shows that
+  folder where the platform lists files.
+- Choosing a catalogue there starts on its first book, so the cover pane beside
+  the list of books has something to show. Choosing another book shows that
+  book's cover, and a book the catalog stored without one says so.
 
 ## Tests
 
 | Target | Covers |
 | --- | --- |
-| `tests/catalogdatabase` | the catalog database: opening and creating the file, refusing an unreadable one, building a catalogue from folders and archives, covers, the volume name rules, editing titles and tags, cancelling and failing a build, removing a catalogue, removing entries whose folders are gone |
+| `tests/catalogdatabase` | the catalog database: opening and creating the file, refusing an unreadable one, building a catalogue from folders and archives, covers, the volume name rules, editing titles and tags, cancelling and failing a build, removing a catalogue, removing entries whose folders are gone, and what the catalogue manager lists and shows for a selection |
 
 Run the catalog tests on Windows with
 `scripts\verify-windows.cmd debug --test catalogdatabase`, and the whole suite

@@ -3,6 +3,7 @@
 #include "managedatabasedialog.h"
 #include "databasesettingdialog.h"
 #include "fileloader.h"
+#include "models/filemanager.h"
 #include "ui_cataloglist.h"
 #include "volumetagdialog.h"
 
@@ -47,6 +48,10 @@ ManageDatabaseDialog::ManageDatabaseDialog(QWidget *parent)
             &QTreeWidget::currentItemChanged,
             this,
             &ManageDatabaseDialog::handleCatalogSelectionChanged);
+    connect(ui->openInExplorerButton,
+            &QPushButton::clicked,
+            this,
+            &ManageDatabaseDialog::handleOpenInExplorerClicked);
     connect(ui->editTagsButton,
             &QPushButton::clicked,
             this,
@@ -55,12 +60,15 @@ ManageDatabaseDialog::ManageDatabaseDialog(QWidget *parent)
             &QTreeWidget::itemDoubleClicked,
             this,
             &ManageDatabaseDialog::handleEditTagsButtonClicked);
-    // The tag editor needs a book: the button follows what the list has.
+    // The tag editor and the cover both follow the book the list has.
     connect(
         ui->booksTree, &QTreeWidget::currentItemChanged, this, [this](QTreeWidgetItem *current) {
             ui->editTagsButton->setEnabled(current != nullptr);
+            updateCover();
         });
     ui->editTagsButton->setEnabled(false);
+    // The cover changes size with the label, not only with the selection.
+    ui->coverLabel->installEventFilter(this);
 
     resetCatalogList();
 }
@@ -128,6 +136,7 @@ void ManageDatabaseDialog::reportCatalogDatabaseProblem()
 void ManageDatabaseDialog::normalButtonStates()
 {
     ui->addButton->setEnabled(true);
+    updateExplorerButton();
     if (m_catalogs.isEmpty() && m_makeCatalogs.isEmpty()) {
         ui->editButton->setEnabled(false);
         ui->deleteButton->setEnabled(false);
@@ -165,6 +174,7 @@ void ManageDatabaseDialog::progressButtonStates()
     ui->deleteAllButton->setEnabled(false);
     ui->updateAllButton->setEnabled(false);
     ui->purgeMissingButton->setEnabled(false);
+    ui->openInExplorerButton->setEnabled(false);
     ui->buttonBox->setEnabled(false);
 
     ui->progressBar->setVisible(true);
@@ -216,7 +226,11 @@ void ManageDatabaseDialog::resetCatalogList()
 void ManageDatabaseDialog::handleCatalogSelectionChanged()
 {
     ui->booksTree->clear();
+    m_bookCovers.clear();
     ui->editTagsButton->setEnabled(false);
+    updateExplorerButton();
+    // The cover that was shown belonged to the catalog that was selected.
+    updateCover();
     if (!m_catalogDatabase) {
         return;
     }
@@ -240,10 +254,68 @@ void ManageDatabaseDialog::handleCatalogSelectionChanged()
         item->setText(1, entry.second.join(QStringLiteral(", ")));
         item->setData(0, Qt::UserRole, volume.id);
         ui->booksTree->addTopLevelItem(item);
+        m_bookCovers.insert(volume.id, volume.thumbnail);
     }
     if (ui->booksTree->topLevelItemCount() > 0) {
         // Start on the first book so that the editor is one press away.
         ui->booksTree->setCurrentItem(ui->booksTree->topLevelItem(0));
+    }
+    updateCover();
+}
+
+void ManageDatabaseDialog::updateExplorerButton()
+{
+    // There is a folder to show as soon as the list has a catalog to show it
+    // for, whether or not it has been built yet.
+    const QTreeWidgetItem *selected = ui->treeWidget->currentItem();
+    ui->openInExplorerButton->setEnabled(selected != nullptr && !selected->text(2).isEmpty());
+}
+
+void ManageDatabaseDialog::updateCover()
+{
+    const QTreeWidgetItem *current = ui->booksTree->currentItem();
+    const auto stored = current ? m_bookCovers.constFind(current->data(0, Qt::UserRole).toInt())
+                                : m_bookCovers.constEnd();
+    m_cover = stored == m_bookCovers.constEnd()
+                  ? QImage()
+                  : QImage::fromData(*stored, IFileLoader::jpegQtFormatName());
+    applyCover();
+}
+
+void ManageDatabaseDialog::applyCover()
+{
+    QLabel *label = ui->coverLabel;
+    if (m_cover.isNull()) {
+        // A book the catalog stored without a cover, or no book at all.
+        label->setPixmap(QPixmap());
+        label->setText(tr("No cover", "Text shown where a cover would be"));
+        return;
+    }
+    label->setText(QString());
+    label->setPixmap(QPixmap::fromImage(
+        m_cover.scaled(label->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation)));
+}
+
+bool ManageDatabaseDialog::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == ui->coverLabel && event->type() == QEvent::Resize) {
+        applyCover();
+    }
+    return QDialog::eventFilter(watched, event);
+}
+
+void ManageDatabaseDialog::handleOpenInExplorerClicked()
+{
+    const QTreeWidgetItem *current = ui->treeWidget->currentItem();
+    if (!current) {
+        return;
+    }
+    // A catalog waiting to be built has no record yet; both kinds show the
+    // folder they were added with in the path column.
+    const int id = current->data(0, Qt::UserRole).toInt();
+    const QString path = id > 0 && m_catalogs.contains(id) ? m_catalogs[id].path : current->text(2);
+    if (!path.isEmpty()) {
+        showInFileManager(path);
     }
 }
 

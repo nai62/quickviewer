@@ -26,6 +26,7 @@ public:
 protected:
     void closeEvent(QCloseEvent *e);
     void reject() override;
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 public slots:
     void handleAddButtonClicked();
@@ -38,12 +39,19 @@ public slots:
     void handleEditTagsButtonClicked();
     void handleUpdateAllButtonClicked();
     void handleCancelButtonClicked();
+    void handleOpenInExplorerClicked();
 
 private slots:
     void handleCatalogCreated(const CatalogRecord cr);
     void handleCatalogCreationFinished();
 
 private:
+    /** Enables the explorer button for the catalog the list has selected. */
+    void updateExplorerButton();
+    /** Shows the cover of the book the list has selected, or a placeholder. */
+    void updateCover();
+    /** Draws the cover kept by updateCover() into the room the label has. */
+    void applyCover();
     void releaseCatalogWatcher();
     void reportCatalogDatabaseProblem();
     void stopBuilding();
@@ -55,6 +63,9 @@ private:
     QList<CatalogRecord> m_makeCatalogs;
     QStringList m_missingVolumes;
     CatalogDatabase *m_catalogDatabase;
+    /** The stored cover of each book of the selected catalog, by volume id. */
+    QMap<int, QByteArray> m_bookCovers;
+    QImage m_cover;
 
     QFutureWatcher<QList<CatalogRecord>> *m_catalogWatcher;
 };
