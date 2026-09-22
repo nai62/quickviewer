@@ -180,6 +180,7 @@ private Q_SLOTS:
     void registersADroppedArchiveAsItsOwnCatalog();
     void editsTheTitleAndTagsOfAVolume();
     void offersTheTitleAndTagsOfAVolumeForEditing();
+    void addingATagWithEnterKeepsTheEditorOpen();
     void showsTheBooksOfTheSelectedCatalog();
     void listsTheFolderOfEachCatalog();
     void showsTheCoverOfTheSelectedBook();
@@ -700,6 +701,30 @@ void CatalogDatabaseTest::editsTheTitleAndTagsOfAVolume()
     QVERIFY(database.setVolumeTags(alphaId, QStringList()));
     QVERIFY(database.getTagsFromVolumeId(alphaId).isEmpty());
     QVERIFY(database.tagsByCount().isEmpty());
+}
+
+void CatalogDatabaseTest::addingATagWithEnterKeepsTheEditorOpen()
+{
+    VolumeTagDialog dialog;
+    dialog.setVolume(QStringLiteral("Book"), QStringLiteral("Book"), {}, {});
+    dialog.show();
+    auto *field = dialog.findChild<QLineEdit *>(QStringLiteral("newTagEdit"));
+    QVERIFY(field);
+    field->setFocus();
+    QApplication::processEvents();
+    QSignalSpy accepted(&dialog, &QDialog::accepted);
+    field->setText(QStringLiteral("New tag"));
+    QTest::keyClick(field, Qt::Key_Return);
+    QCOMPARE(dialog.tags(), QStringList{QStringLiteral("New tag")});
+    QVERIFY(field->text().isEmpty());
+    QCOMPARE(accepted.size(), 0);
+    QVERIFY(dialog.isVisible());
+    field->setText(QStringLiteral("Another"));
+    QTest::keyClick(field, Qt::Key_Enter);
+    QCOMPARE(dialog.tags().size(), 2);
+    QCOMPARE(accepted.size(), 0);
+    dialog.findChild<QDialogButtonBox *>()->button(QDialogButtonBox::Ok)->click();
+    QCOMPARE(accepted.size(), 1);
 }
 
 void CatalogDatabaseTest::offersTheTitleAndTagsOfAVolumeForEditing()

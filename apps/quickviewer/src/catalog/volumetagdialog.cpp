@@ -1,6 +1,7 @@
 #include "volumetagdialog.h"
 
 #include "ui_volumetagdialog.h"
+#include <QKeyEvent>
 
 VolumeTagDialog::VolumeTagDialog(QWidget *parent)
     : QDialog(parent),
@@ -9,11 +10,8 @@ VolumeTagDialog::VolumeTagDialog(QWidget *parent)
     ui->setupUi(this);
     connect(
         ui->addTagButton, &QPushButton::clicked, this, &VolumeTagDialog::handleAddTagButtonClicked);
-    // Enter in the tag field adds that tag instead of accepting the dialog.
-    connect(ui->newTagEdit,
-            &QLineEdit::returnPressed,
-            this,
-            &VolumeTagDialog::handleAddTagButtonClicked);
+    // Consume Enter here so it cannot also activate the dialog's default OK.
+    ui->newTagEdit->installEventFilter(this);
 }
 
 VolumeTagDialog::~VolumeTagDialog()
@@ -21,11 +19,24 @@ VolumeTagDialog::~VolumeTagDialog()
     delete ui;
 }
 
+bool VolumeTagDialog::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == ui->newTagEdit && event->type() == QEvent::KeyPress) {
+        const auto *key = static_cast<QKeyEvent *>(event);
+        if (key->key() == Qt::Key_Return || key->key() == Qt::Key_Enter) {
+            handleAddTagButtonClicked();
+            return true;
+        }
+    }
+    return QDialog::eventFilter(watched, event);
+}
+
 void VolumeTagDialog::setVolume(const QString &title,
                                 const QString &realname,
                                 const QStringList &knownTagNames,
                                 const QStringList &volumeTagNames)
 {
+    ui->newTagEdit->clear();
     ui->nameEdit->setText(title);
     ui->nameEdit->setPlaceholderText(realname);
 

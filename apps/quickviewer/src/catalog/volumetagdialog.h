@@ -33,6 +33,9 @@ public:
     QString displayName() const;
     QStringList tags() const;
 
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
+
 private slots:
     void handleAddTagButtonClicked();
 
