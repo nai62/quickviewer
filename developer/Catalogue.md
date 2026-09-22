@@ -27,6 +27,7 @@ catalogues rather than thumbnails.
 | `CatalogDatabase` | the connection, transactions, the statements that fill a catalogue, and every query the catalog windows run |
 | `CatalogBuilder` | reading folders and archives, and encoding covers |
 | `VolumeNameParser` (`volumenameparser.{h,cpp}`) | the title and the tags a volume name suggests |
+| `SearchWords` (`searchwords.{h,cpp}`) | which titles one search of the catalog list asks for |
 | `catalogrecords.h` | the records the catalog UI passes around |
 | `CatalogWindow` | the list, the search box, the tag bar, and the tag editor of one book |
 | `VolumeTagDialog` | the title and the tags of one volume |
@@ -129,7 +130,10 @@ with the tag editor.
 - Its search field looks like one - a magnifier, a hint of what it searches
   and a clear button. The "Ignore parenthesized text when searching titles"
   option chooses between the catalog title and the original folder name,
-  independently of the option controlling which title the list displays.
+  independently of the option controlling which title the list displays. A
+  search is a list of words that all have to appear in that title, plus words
+  that must not appear at all: a word written with a leading `-` only excludes,
+  and a lone `-` stays an ordinary word.
 - The list reads a cover from the database once and keeps what it fitted, so
   repainting a row does not decode its JPEG again. The cache is bounded, and
   its keys are the rows the covers are stored in, which the database never

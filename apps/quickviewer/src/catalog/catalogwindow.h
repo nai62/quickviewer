@@ -13,16 +13,6 @@ class CatalogWindow;
 class MainWindow;
 }
 
-class SearchWords
-{
-public:
-    bool isEmpty;
-    QStringList matches;
-    QStringList nomatches;
-    SearchWords(const QString &searchNoCase);
-    bool match(const QString &targetNoCase);
-};
-
 class CatalogWindow : public QWidget
 {
     Q_OBJECT

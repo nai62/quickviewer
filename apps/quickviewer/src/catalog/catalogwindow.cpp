@@ -5,6 +5,7 @@
 #include "catalogwindow.h"
 #include "managedatabasedialog.h"
 #include "qvapplication.h"
+#include "searchwords.h"
 #include "volumetagdialog.h"
 #include "flowlayout.h"
 
@@ -312,7 +313,7 @@ void CatalogWindow::searchByWord(bool doForce)
 
     //    int cnt = 0;
     m_volumeSearch.clear();
-    SearchWords searchwords(search.toLower());
+    SearchWords searchwords(search);
     for (const VolumeThumbRecord &vtr : m_volumes) {
         if (vtr.thumbnail.isEmpty()) {
             continue;
@@ -559,41 +560,4 @@ void CatalogWindow::closeEvent(QCloseEvent *e)
 {
     QWidget::closeEvent(e);
     emit closed();
-}
-
-SearchWords::SearchWords(const QString &searchNoCase)
-{
-    if (searchNoCase.isEmpty()) {
-        isEmpty = true;
-        return;
-    }
-    isEmpty = false;
-    for (const QString &s : searchNoCase.trimmed().split(" ")) {
-        if (s.isEmpty()) {
-            continue;
-        }
-        if (s.size() > 1 && s[0] == '-') {
-            nomatches << s.mid(1);
-        } else {
-            matches << s;
-        }
-    }
-}
-
-bool SearchWords::match(const QString &targetNoCase)
-{
-    if (isEmpty) {
-        return true;
-    }
-    for (const QString &s : matches) {
-        if (!targetNoCase.contains(s)) {
-            return false;
-        }
-    }
-    for (const QString &s : nomatches) {
-        if (targetNoCase.contains(s)) {
-            return false;
-        }
-    }
-    return true;
 }

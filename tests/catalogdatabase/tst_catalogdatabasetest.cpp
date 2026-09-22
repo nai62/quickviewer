@@ -26,6 +26,7 @@
 #include "catalogwindow.h"
 #include "catalogdatabase.h"
 #include "managedatabasedialog.h"
+#include "searchwords.h"
 #include "volumenameparser.h"
 #include "volumetagdialog.h"
 

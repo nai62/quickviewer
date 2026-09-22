@@ -148,6 +148,7 @@ SOURCES += \
     src/catalog/catalogwindow.cpp \
     src/catalog/databasesettingdialog.cpp \
     src/catalog/managedatabasedialog.cpp \
+    src/catalog/searchwords.cpp \
     src/catalog/volumeitemmodel.cpp \
     src/catalog/volumenameparser.cpp \
     src/catalog/volumetagdialog.cpp \
@@ -213,6 +214,7 @@ HEADERS  += \
     src/catalog/catalogwindow.h \
     src/catalog/databasesettingdialog.h \
     src/catalog/managedatabasedialog.h \
+    src/catalog/searchwords.h \
     src/catalog/catalogrecords.h \
     src/catalog/volumeitemmodel.h \
     src/catalog/volumenameparser.h \
