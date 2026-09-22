@@ -146,19 +146,16 @@ bool CatalogDatabase::writeBundledDatabase(const QFileInfo &file)
     // Write beside the target and rename it into place: a half-written file
     // never becomes the catalog database, and a second instance that created
     // the file meanwhile wins instead of being overwritten.
-    const QString temporaryPath = path + QStringLiteral(".tmp");
-    QFile temporary(temporaryPath);
-    if (!temporary.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+    QTemporaryFile temporary(path + QStringLiteral(".XXXXXX"));
+    if (!temporary.open()) {
         return false;
     }
-    const bool written = temporary.write(contents) == contents.size();
+    if (temporary.write(contents) != contents.size() || !temporary.flush()) {
+        return false;
+    }
+    const QString temporaryPath = temporary.fileName();
     temporary.close();
-    if (!written) {
-        QFile::remove(temporaryPath);
-        return false;
-    }
     if (!QFile::rename(temporaryPath, path)) {
-        QFile::remove(temporaryPath);
         return QFile::exists(path);
     }
     return true;
@@ -333,6 +330,7 @@ int CatalogDatabase::createVolume(const QString &dirpath, int catalog_id, int pa
     QSqlQuery t_tagentries(m_db);
     t_tagentries.prepare("INSERT INTO t_volumetags (volume_id, tag_id, catalog_id) VALUES "
                          "(:volume_id, :tag_id, :catalog_id)");
+    QSet<int> storedTags;
     for (const TagRecord &t : tagged.tags) {
         QString tagkey = QString("%1:%2").arg(t.type_id).arg(t.name.toLower());
         if (!m_tags.contains(tagkey)) {
@@ -348,6 +346,10 @@ int CatalogDatabase::createVolume(const QString &dirpath, int catalog_id, int pa
             m_tags2[newtag.id] = &m_tags[tagkey];
         }
         TagRecord &tag = m_tags[tagkey];
+        if (storedTags.contains(tag.id)) {
+            continue;
+        }
+        storedTags.insert(tag.id);
         t_tagentries.bindValue(":volume_id", volume_id);
         t_tagentries.bindValue(":tag_id", tag.id);
         t_tagentries.bindValue(":catalog_id", catalog_id);
@@ -411,7 +413,9 @@ CatalogRecord CatalogDatabase::createCatalog(QString name, QString path, const Q
     catalog.path = path;
     catalog.created_at = QDateTime::currentDateTime();
 
-    transaction();
+    if (!transaction()) {
+        return catalog;
+    }
 
     QSqlQuery t_catalogs(m_db);
     t_catalogs.prepare("INSERT INTO t_catalogs (name,path,created_at,updated_at)"
@@ -451,7 +455,11 @@ CatalogRecord CatalogDatabase::createCatalog(QString name, QString path, const Q
         rollback();
         return catalog;
     }
-    commit();
+    if (!commit()) {
+        return catalog;
+    }
+    catalog.basevolume_id = basevolume_id;
+    catalog.updated_at = catalog.created_at;
     catalog.created = true;
     m_volumesDirty = true;
     emit catalogCreated(catalog);
@@ -681,7 +689,9 @@ int CatalogDatabase::removeMissingVolumes()
         "DELETE FROM t_volumes WHERE path = :path",
     };
 
-    transaction();
+    if (!transaction()) {
+        return 0;
+    }
     for (const char *statement : removals) {
         for (const QString &path : missing) {
             QSqlQuery query(m_db);
@@ -697,14 +707,29 @@ int CatalogDatabase::removeMissingVolumes()
         rollback();
         return 0;
     }
-    commit();
-    removeUnusedTags();
+    if (!removeUnusedTags()) {
+        rollback();
+        return 0;
+    }
+    if (!commit()) {
+        return 0;
+    }
     loadTags();
     m_volumesDirty = true;
     return missing.size();
 }
 
 bool CatalogDatabase::setVolumeTags(int volume_id, const QStringList &tags)
+{
+    return editVolume(volume_id, tags, nullptr);
+}
+
+bool CatalogDatabase::setVolumeDetails(int volume_id, const QString &name, const QStringList &tags)
+{
+    return editVolume(volume_id, tags, &name);
+}
+
+bool CatalogDatabase::editVolume(int volume_id, const QStringList &tags, const QString *name)
 {
     if (!ensureReady()) {
         return false;
@@ -731,7 +756,9 @@ bool CatalogDatabase::setVolumeTags(int volume_id, const QStringList &tags)
         }
     }
 
-    transaction();
+    if (!transaction()) {
+        return false;
+    }
     QSqlQuery removal(m_db);
     removal.prepare(QStringLiteral("DELETE FROM t_volumetags WHERE volume_id = :volume_id"));
     removal.bindValue(":volume_id", volume_id);
@@ -756,21 +783,26 @@ bool CatalogDatabase::setVolumeTags(int volume_id, const QStringList &tags)
             return false;
         }
     }
-    commit();
+    if ((name && !setVolumeDisplayName(volume_id, *name)) || !removeUnusedTags()) {
+        rollback();
+        return false;
+    }
+    if (!commit()) {
+        return false;
+    }
 
     // The catalog and the tag bar read the tags from memory as well.
-    removeUnusedTags();
     loadTags();
+    m_volumesDirty = true;
     return true;
 }
 
-void CatalogDatabase::removeUnusedTags()
+bool CatalogDatabase::removeUnusedTags()
 {
     QSqlQuery unused(m_db);
-    if (!unused.exec(QStringLiteral(
-            "DELETE FROM t_tags WHERE id NOT IN (SELECT tag_id FROM t_volumetags)"))) {
-        qDebug() << "unused tag removal failed: " << unused.lastError();
-    }
+    unused.prepare(QStringLiteral("DELETE FROM t_tags WHERE NOT EXISTS "
+                                  "(SELECT 1 FROM t_volumetags WHERE tag_id = t_tags.id)"));
+    return execQuery(unused, "unused tags");
 }
 
 int CatalogDatabase::findOrCreateTag(const QString &name)
@@ -887,12 +919,14 @@ QList<TagRecord> CatalogDatabase::getTagsFromVolumeId(int volume_id)
     return result;
 }
 
-void CatalogDatabase::deleteCatalog(int id)
+bool CatalogDatabase::deleteCatalog(int id)
 {
     if (!ensureReady()) {
-        return;
+        return false;
     }
-    transaction();
+    if (!transaction()) {
+        return false;
+    }
 
     QSqlQuery t_thumbs(m_db);
     t_thumbs.prepare("DELETE FROM t_thumbnails WHERE id IN (SELECT thumb_id FROM t_files WHERE "
@@ -900,7 +934,7 @@ void CatalogDatabase::deleteCatalog(int id)
     t_thumbs.bindValue(":catalog_id", id);
     if (!execQuery(t_thumbs, "t_thumbnails")) {
         rollback();
-        return;
+        return false;
     }
 
     QSqlQuery t_files(m_db);
@@ -909,7 +943,7 @@ void CatalogDatabase::deleteCatalog(int id)
     t_files.bindValue(":catalog_id", id);
     if (!execQuery(t_files, "t_files")) {
         rollback();
-        return;
+        return false;
     }
 
     QSqlQuery t_fileorders(m_db);
@@ -918,7 +952,7 @@ void CatalogDatabase::deleteCatalog(int id)
     t_fileorders.bindValue(":catalog_id", id);
     if (!execQuery(t_fileorders, "t_fileorders")) {
         rollback();
-        return;
+        return false;
     }
 
     QSqlQuery t_volumeorders(m_db);
@@ -927,7 +961,7 @@ void CatalogDatabase::deleteCatalog(int id)
     t_volumeorders.bindValue(":catalog_id", id);
     if (!execQuery(t_volumeorders, "t_volumeorders")) {
         rollback();
-        return;
+        return false;
     }
 
     QSqlQuery t_volumetags(m_db);
@@ -935,7 +969,7 @@ void CatalogDatabase::deleteCatalog(int id)
     t_volumetags.bindValue(":catalog_id", id);
     if (!execQuery(t_volumetags, "t_volumetags")) {
         rollback();
-        return;
+        return false;
     }
 
     QSqlQuery t_volumes(m_db);
@@ -943,7 +977,7 @@ void CatalogDatabase::deleteCatalog(int id)
     t_volumes.bindValue(":catalog_id", id);
     if (!execQuery(t_volumes, "t_volumes")) {
         rollback();
-        return;
+        return false;
     }
 
     QSqlQuery t_catalogs(m_db);
@@ -951,34 +985,42 @@ void CatalogDatabase::deleteCatalog(int id)
     t_catalogs.bindValue(":id", id);
     if (!execQuery(t_catalogs, "t_catalogs")) {
         rollback();
-        return;
+        return false;
     }
 
-    commit();
-    removeUnusedTags();
+    if (!removeUnusedTags()) {
+        rollback();
+        return false;
+    }
+    if (!commit()) {
+        return false;
+    }
     loadTags();
     m_volumesDirty = true;
+    return true;
 }
 
-void CatalogDatabase::updateCatalogName(int id, QString name)
+bool CatalogDatabase::updateCatalogName(int id, QString name)
 {
     if (!ensureReady()) {
-        return;
+        return false;
     }
     QSqlQuery t_catalogs(m_db);
     t_catalogs.prepare("UPDATE t_catalogs SET name=:name, updated_at=:updated_at WHERE id=:id");
     t_catalogs.bindValue(":id", id);
     t_catalogs.bindValue(":name", name);
     t_catalogs.bindValue(":updated_at", QDateTime::currentDateTime());
-    execQuery(t_catalogs, "t_catalogs");
+    return execQuery(t_catalogs, "t_catalogs");
 }
 
-void CatalogDatabase::deleteAllCatalogs()
+bool CatalogDatabase::deleteAllCatalogs()
 {
     if (!ensureReady()) {
-        return;
+        return false;
     }
-    transaction();
+    if (!transaction()) {
+        return false;
+    }
     static const char *const removals[] = {"t_thumbnails",
                                            "t_fileorders",
                                            "t_volumeorders",
@@ -992,36 +1034,47 @@ void CatalogDatabase::deleteAllCatalogs()
         if (!removal.exec(QStringLiteral("DELETE FROM %1").arg(QLatin1String(table)))) {
             qDebug() << table << " delete failed: " << removal.lastError();
             rollback();
-            return;
+            return false;
         }
     }
-    commit();
+    if (!commit()) {
+        return false;
+    }
     m_volumesDirty = true;
+    loadTags();
     vacuum();
+    return true;
 }
 
-void CatalogDatabase::transaction()
+bool CatalogDatabase::transaction()
 {
     if (m_transaction) {
-        return;
+        m_errorMessage = tr("A catalog transaction is already running.");
+        return false;
     }
     if (!m_db.transaction()) {
+        m_errorMessage = m_db.lastError().text();
         qDebug() << "m_db transaction failed: " << m_db.lastError();
-        return;
+        return false;
     }
+    m_errorMessage.clear();
     m_transaction = true;
+    return true;
 }
 
-void CatalogDatabase::commit()
+bool CatalogDatabase::commit()
 {
     if (!m_transaction) {
-        return;
+        return false;
     }
     if (!m_db.commit()) {
+        m_errorMessage = m_db.lastError().text();
         qDebug() << "m_db commit failed: " << m_db.lastError();
-        return;
+        rollback();
+        return false;
     }
     m_transaction = false;
+    return true;
 }
 
 void CatalogDatabase::rollback()
@@ -1034,6 +1087,9 @@ void CatalogDatabase::rollback()
         return;
     }
     m_transaction = false;
+    m_volumesDirty = true;
+    // Inserts rolled back above may have allocated tag ids in memory.
+    loadTags();
 }
 
 void CatalogDatabase::vacuum()
@@ -1050,6 +1106,7 @@ void CatalogDatabase::vacuum()
 bool CatalogDatabase::execQuery(QSqlQuery &query, const QString &statement)
 {
     if (!query.exec()) {
+        m_errorMessage = query.lastError().text();
         qDebug() << statement << " query failed: " << query.lastError();
         return false;
     }

@@ -504,8 +504,10 @@ void CatalogWindow::editVolumeTags(int row)
     if (dialog.exec() != QDialog::Accepted) {
         return;
     }
-    m_catalogDatabase->setVolumeDisplayName(volumeId, dialog.displayName());
-    m_catalogDatabase->setVolumeTags(volumeId, dialog.tags());
+    if (!m_catalogDatabase->setVolumeDetails(volumeId, dialog.displayName(), dialog.tags())) {
+        QMessageBox::warning(this, tr("Catalog database"), m_catalogDatabase->errorMessage());
+        return;
+    }
 
     // The tags and the titles the list shows both changed.
     m_volumes = m_catalogDatabase->volumes();

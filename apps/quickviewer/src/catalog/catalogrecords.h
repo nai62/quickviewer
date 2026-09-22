@@ -10,14 +10,14 @@
 class CatalogRecord
 {
 public:
-    int id;
-    int basevolume_id;
+    int id = 0;
+    int basevolume_id = 0;
     QString name;
     QString description;
     QString path;
     QDateTime created_at;
     QDateTime updated_at;
-    bool created;
+    bool created = false;
     bool operator==(const CatalogRecord &rhs) { return id == rhs.id; }
 };
 Q_DECLARE_METATYPE(CatalogRecord)

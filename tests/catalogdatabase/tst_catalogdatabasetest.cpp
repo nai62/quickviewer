@@ -157,6 +157,12 @@ class CatalogDatabaseTest : public QObject
 
 private Q_SLOTS:
     void storesCoversUnderTheVolumeThatOwnsThem();
+    void failedCommitLeavesNoCatalog();
+    void failedBuildDoesNotReuseRolledBackTags();
+    void deletingAllCatalogsDoesNotReuseDeletedTags();
+    void failedTagEditKeepsTheTitleAndTags();
+    void keepsAnExistingTemporaryFile();
+
     void createsTheCatalogDatabaseOnFirstUse();
     void keepsAnUnreadableCatalogDatabase();
     void refusesADatabaseWithoutTheCatalogSchema();
@@ -178,6 +184,115 @@ private Q_SLOTS:
     void failedCatalogRemovalKeepsTheStoredRows();
     void orphanVolumeTagsDoNotBreakTagQueries();
 };
+
+void CatalogDatabaseTest::failedCommitLeavesNoCatalog()
+{
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    QVERIFY(
+        fixture.addImage(QStringLiteral("Book (Tag)"), QStringLiteral("01.png"), QSize(60, 90)));
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    QVERIFY(database.ensureReady());
+    CatalogProbe reader(fixture.databasePath(), QStringLiteral("catalog-reader"));
+    QVERIFY(reader.exec(QStringLiteral("BEGIN")));
+    QCOMPARE(reader.count(QStringLiteral("t_catalogs")), 0);
+    QSignalSpy created(&database, &CatalogDatabase::catalogCreated);
+    // A reader can coexist with the writes, but prevents COMMIT in SQLite.
+    QVERIFY(!database.createCatalog(QStringLiteral("Blocked"), fixture.rootPath()).created);
+    QCOMPARE(created.size(), 0);
+    QVERIFY(!database.errorMessage().isEmpty());
+    QVERIFY(reader.exec(QStringLiteral("ROLLBACK")));
+    QCOMPARE(reader.count(QStringLiteral("t_catalogs")), 0);
+    QCOMPARE(reader.count(QStringLiteral("t_tags")), 0);
+    QVERIFY(database.createCatalog(QStringLiteral("Retry"), fixture.rootPath()).created);
+    QCOMPARE(reader.count(QStringLiteral("t_catalogs")), 1);
+}
+
+void CatalogDatabaseTest::failedBuildDoesNotReuseRolledBackTags()
+{
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    QVERIFY(
+        fixture.addImage(QStringLiteral("Book (Tag)"), QStringLiteral("01.png"), QSize(60, 90)));
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    QVERIFY(database.ensureReady());
+    CatalogProbe probe(fixture.databasePath(), QStringLiteral("catalog-probe"));
+    QVERIFY(probe.exec(QStringLiteral("CREATE TRIGGER fail_cover BEFORE INSERT ON t_thumbnails "
+                                      "BEGIN SELECT RAISE(ABORT, 'cover failure'); END")));
+    QVERIFY(!database.createCatalog(QStringLiteral("Broken"), fixture.rootPath()).created);
+    QCOMPARE(probe.count(QStringLiteral("t_tags")), 0);
+    QVERIFY(probe.exec(QStringLiteral("DROP TRIGGER fail_cover")));
+    QVERIFY(database.createCatalog(QStringLiteral("Retry"), fixture.rootPath()).created);
+    QCOMPARE(probe.count(QStringLiteral("t_tags")), 1);
+    QCOMPARE(probe
+                 .scalar(QStringLiteral("SELECT COUNT(*) FROM t_volumetags v "
+                                        "JOIN t_tags t ON t.id = v.tag_id"))
+                 .toInt(),
+             1);
+}
+
+void CatalogDatabaseTest::deletingAllCatalogsDoesNotReuseDeletedTags()
+{
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    QVERIFY(fixture.addImage(
+        QStringLiteral("Book (Tag) (Tag)"), QStringLiteral("01.png"), QSize(60, 90)));
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    QVERIFY(database.createCatalog(QStringLiteral("First"), fixture.rootPath()).created);
+    QVERIFY(database.deleteAllCatalogs());
+    QVERIFY(database.createCatalog(QStringLiteral("Second"), fixture.rootPath()).created);
+    CatalogProbe probe(fixture.databasePath(), QStringLiteral("catalog-probe"));
+    QCOMPARE(probe.count(QStringLiteral("t_tags")), 1);
+    // Repeated fields in a name still assign the tag only once.
+    QCOMPARE(probe.count(QStringLiteral("t_volumetags")), 1);
+    QCOMPARE(probe
+                 .scalar(QStringLiteral("SELECT COUNT(*) FROM t_volumetags v "
+                                        "JOIN t_tags t ON t.id = v.tag_id"))
+                 .toInt(),
+             1);
+}
+
+void CatalogDatabaseTest::failedTagEditKeepsTheTitleAndTags()
+{
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    QVERIFY(
+        fixture.addImage(QStringLiteral("Book (Tag)"), QStringLiteral("01.png"), QSize(60, 90)));
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    QVERIFY(database.createCatalog(QStringLiteral("Library"), fixture.rootPath()).created);
+    CatalogProbe probe(fixture.databasePath(), QStringLiteral("catalog-probe"));
+    const int id =
+        probe.scalar(QStringLiteral("SELECT id FROM t_volumes WHERE name = 'Book'")).toInt();
+    QVERIFY(id > 0);
+    QVERIFY(
+        probe.exec(QStringLiteral("CREATE TRIGGER fail_title BEFORE UPDATE OF name ON t_volumes "
+                                  "BEGIN SELECT RAISE(ABORT, 'title failure'); END")));
+    QVERIFY(
+        !database.setVolumeDetails(id, QStringLiteral("New title"), {QStringLiteral("New tag")}));
+    QCOMPARE(database.getTagsFromVolumeId(id).first().name, QStringLiteral("Tag"));
+    QCOMPARE(
+        probe.scalar(QStringLiteral("SELECT name FROM t_volumes WHERE id = %1").arg(id)).toString(),
+        QStringLiteral("Book"));
+    QCOMPARE(probe.count(QStringLiteral("t_tags")), 1);
+    QVERIFY(probe.exec(QStringLiteral("DROP TRIGGER fail_title")));
+    QVERIFY(
+        database.setVolumeDetails(id, QStringLiteral("New title"), {QStringLiteral("New tag")}));
+    QCOMPARE(database.getTagsFromVolumeId(id).first().name, QStringLiteral("New tag"));
+}
+
+void CatalogDatabaseTest::keepsAnExistingTemporaryFile()
+{
+    CatalogFixture fixture(false);
+    QVERIFY(fixture.isReady());
+    QFile temporary(fixture.databasePath() + QStringLiteral(".tmp"));
+    QVERIFY(temporary.open(QIODevice::WriteOnly));
+    QCOMPARE(temporary.write("keep this file"), qint64(14));
+    temporary.close();
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    QVERIFY(database.ensureReady());
+    QVERIFY(temporary.open(QIODevice::ReadOnly));
+    QCOMPARE(temporary.readAll(), QByteArray("keep this file"));
+}
 
 void CatalogDatabaseTest::storesCoversUnderTheVolumeThatOwnsThem()
 {

@@ -358,8 +358,10 @@ void ManageDatabaseDialog::handleEditTagsButtonClicked()
     if (dialog.exec() != QDialog::Accepted) {
         return;
     }
-    m_catalogDatabase->setVolumeDisplayName(volumeId, dialog.displayName());
-    m_catalogDatabase->setVolumeTags(volumeId, dialog.tags());
+    if (!m_catalogDatabase->setVolumeDetails(volumeId, dialog.displayName(), dialog.tags())) {
+        QMessageBox::warning(this, tr("Catalog database"), m_catalogDatabase->errorMessage());
+        return;
+    }
 
     // Show the title and the tags the book carries now.
     handleCatalogSelectionChanged();
@@ -626,7 +628,10 @@ void ManageDatabaseDialog::handleEditButtonClicked()
         if (!databaseSettingDialog(catalog, true)) {
             return;
         }
-        m_catalogDatabase->updateCatalogName(id, catalog.name);
+        if (!m_catalogDatabase->updateCatalogName(id, catalog.name)) {
+            QMessageBox::warning(this, tr("Catalog database"), m_catalogDatabase->errorMessage());
+            return;
+        }
         m_catalogs[id] = catalog;
     } else {
         // A catalog that is only waiting to be built stays in the request.
@@ -658,7 +663,10 @@ void ManageDatabaseDialog::handleDeleteButtonClicked()
                     .arg(m_catalogs[id].name))) {
             return;
         }
-        m_catalogDatabase->deleteCatalog(id);
+        if (!m_catalogDatabase->deleteCatalog(id)) {
+            QMessageBox::warning(this, tr("Catalog database"), m_catalogDatabase->errorMessage());
+            return;
+        }
         m_catalogs.remove(id);
     } else {
         id = -100 - id;
@@ -683,7 +691,10 @@ void ManageDatabaseDialog::handleDeleteAllButtonClicked()
             tr("Delete every catalog from the list? The image files are not deleted."))) {
         return;
     }
-    m_catalogDatabase->deleteAllCatalogs();
+    if (!m_catalogDatabase->deleteAllCatalogs()) {
+        QMessageBox::warning(this, tr("Catalog database"), m_catalogDatabase->errorMessage());
+        return;
+    }
     m_catalogs.clear();
     m_makeCatalogs.clear();
 

@@ -45,9 +45,9 @@ public:
     void cancelCreateCatalogAsync();
     QFutureWatcher<QList<CatalogRecord>> *catalogWatcher() { return &m_catalogWatcher; }
 
-    void deleteCatalog(int id);
-    void updateCatalogName(int id, QString name);
-    void deleteAllCatalogs();
+    bool deleteCatalog(int id);
+    bool updateCatalogName(int id, QString name);
+    bool deleteAllCatalogs();
 
     /* Volumes */
     QList<VolumeThumbRecord> volumes();
@@ -81,6 +81,8 @@ public:
      * Sets the title a catalog shows for \a volume_id. The volume keeps its
      * real name: which of the two the list shows is a view option.
      */
+    /** Stores the title and tags together, or leaves both unchanged on failure. */
+    bool setVolumeDetails(int volume_id, const QString &name, const QStringList &tags);
     bool setVolumeDisplayName(int volume_id, const QString &name);
 
     /* Tags */
@@ -101,7 +103,8 @@ private:
     /** Row of the tag \a name, which is created as a normal tag when missing. */
     int findOrCreateTag(const QString &name);
     /** Drops the tags that no volume carries any more. */
-    void removeUnusedTags();
+    bool removeUnusedTags();
+    bool editVolume(int volume_id, const QStringList &tags, const QString *name);
 
     QString m_dbPath;
     QString m_connectionName;
@@ -119,8 +122,8 @@ private:
 
     /* Basical */
     bool execQuery(QSqlQuery &query, const QString &statement);
-    void transaction();
-    void commit();
+    bool transaction();
+    bool commit();
     void rollback();
 
     /* Volumes/Files */
