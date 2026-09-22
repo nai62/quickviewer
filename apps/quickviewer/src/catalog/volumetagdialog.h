@@ -4,8 +4,6 @@
 #include <QDialog>
 #include <QStringList>
 
-#include "catalogrecords.h"
-
 namespace Ui {
 class VolumeTagDialog;
 }

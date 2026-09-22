@@ -523,14 +523,19 @@ void CatalogDatabaseTest::showsTheBooksOfTheSelectedCatalog()
     dialog.setCatalogDatabase(&database);
     QTreeWidget *catalogs = dialog.findChild<QTreeWidget *>(QStringLiteral("treeWidget"));
     QTreeWidget *books = dialog.findChild<QTreeWidget *>(QStringLiteral("booksTree"));
+    QPushButton *editTags = dialog.findChild<QPushButton *>(QStringLiteral("editTagsButton"));
     QVERIFY(catalogs);
     QVERIFY(books);
+    QVERIFY(editTags);
     // Nothing is selected, so no book is shown yet.
     QCOMPARE(books->topLevelItemCount(), 0);
+    QVERIFY(!editTags->isEnabled());
 
     catalogs->setCurrentItem(catalogs->topLevelItem(0));
     // The folder the catalog was created from and the two folders below it.
     QCOMPARE(books->topLevelItemCount(), 3);
+    // The editor is one press away as soon as a book is in the list.
+    QVERIFY(editTags->isEnabled());
     bool found = false;
     for (int row = 0; row < books->topLevelItemCount(); ++row) {
         QTreeWidgetItem *item = books->topLevelItem(row);

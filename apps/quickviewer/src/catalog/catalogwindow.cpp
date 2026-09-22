@@ -30,6 +30,25 @@ static void clearLayout(QLayout *layout)
     }
 }
 
+/** The magnifier of the search field, drawn from the palette of \a owner. */
+static QIcon searchFieldIcon(const QWidget &owner)
+{
+    constexpr int Side = 14;
+    const qreal ratio = owner.devicePixelRatioF();
+    QPixmap pixmap(QSize(Side, Side) * int(ratio));
+    pixmap.setDevicePixelRatio(ratio);
+    pixmap.fill(Qt::transparent);
+    QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
+    QPen pen(owner.palette().color(QPalette::PlaceholderText), 1.4);
+    pen.setCapStyle(Qt::RoundCap);
+    painter.setPen(pen);
+    painter.setBrush(Qt::NoBrush);
+    painter.drawEllipse(QRectF(1.5, 1.5, 8.5, 8.5));
+    painter.drawLine(QPointF(8.6, 8.6), QPointF(12.5, 12.5));
+    return QIcon(pixmap);
+}
+
 CatalogWindow::CatalogWindow(QWidget *parent, Ui::MainWindow *uiMain)
     : QWidget(parent),
       ui(new Ui::CatalogWindow),
@@ -41,8 +60,10 @@ CatalogWindow::CatalogWindow(QWidget *parent, Ui::MainWindow *uiMain)
         qApp->languageSelector(), &LanguageManager::languageChanged, this, [this](const QString &) {
             ui->retranslateUi(this);
             ui->searchCombo->lineEdit()->setPlaceholderText(
-                tr("Enter a search term and press Enter to search by title.",
-                   "Gray text that prompts a keyword search of Volume"));
+                tr("Search titles", "Gray text that prompts a keyword search of Volume"));
+            ui->searchCombo->setToolTip(
+                tr("Type part of a title and press Enter to search.",
+                   "Tooltip of the field that searches the titles of the catalog"));
             if (m_volumes.isEmpty()) {
                 ui->statusLabel->setText(
                     tr("Drop an image folder here to create a catalog.",
@@ -71,8 +92,14 @@ CatalogWindow::CatalogWindow(QWidget *parent, Ui::MainWindow *uiMain)
             this,
             &CatalogWindow::handleSearchLineEditEditingFinished);
     ui->searchCombo->lineEdit()->setPlaceholderText(
-        tr("Enter a search term and press Enter to search by title.",
-           "Gray text that prompts a keyword search of Volume"));
+        tr("Search titles", "Gray text that prompts a keyword search of Volume"));
+    // A search field should look like one: a magnifier, a hint of what it
+    // searches, and a way to clear what was typed.
+    ui->searchCombo->lineEdit()->addAction(searchFieldIcon(*ui->searchCombo->lineEdit()),
+                                           QLineEdit::LeadingPosition);
+    ui->searchCombo->lineEdit()->setClearButtonEnabled(true);
+    ui->searchCombo->setToolTip(tr("Type part of a title and press Enter to search.",
+                                   "Tooltip of the field that searches the titles of the catalog"));
 
     // TagFrame
     if (!qApp->ShowTagBar()) {

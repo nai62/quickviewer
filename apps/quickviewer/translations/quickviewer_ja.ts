@@ -111,6 +111,16 @@
         <comment>Context menu entry of a book in the catalog list</comment>
         <translation>タグを編集...</translation>
     </message>
+    <message>
+        <source>Search titles</source>
+        <comment>Gray text that prompts a keyword search of Volume</comment>
+        <translation>タイトルで検索</translation>
+    </message>
+    <message>
+        <source>Type part of a title and press Enter to search.</source>
+        <comment>Tooltip of the field that searches the titles of the catalog</comment>
+        <translation>タイトルの一部を入力して Enter を押すと検索します。</translation>
+    </message>
 </context>
 <context>
     <name>VolumeTagDialog</name>

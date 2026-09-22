@@ -46,6 +46,11 @@ ManageDatabaseDialog::ManageDatabaseDialog(QWidget *parent)
             &QTreeWidget::itemDoubleClicked,
             this,
             &ManageDatabaseDialog::handleEditTagsButtonClicked);
+    // The tag editor needs a book: the button follows what the list has.
+    connect(
+        ui->booksTree, &QTreeWidget::currentItemChanged, this, [this](QTreeWidgetItem *current) {
+            ui->editTagsButton->setEnabled(current != nullptr);
+        });
     ui->editTagsButton->setEnabled(false);
 
     resetCatalogList();
@@ -223,6 +228,10 @@ void ManageDatabaseDialog::handleCatalogSelectionChanged()
         item->setData(0, Qt::UserRole, volume.id);
         ui->booksTree->addTopLevelItem(item);
     }
+    if (ui->booksTree->topLevelItemCount() > 0) {
+        // Start on the first book so that the editor is one press away.
+        ui->booksTree->setCurrentItem(ui->booksTree->topLevelItem(0));
+    }
 }
 
 void ManageDatabaseDialog::handleEditTagsButtonClicked()
@@ -231,6 +240,9 @@ void ManageDatabaseDialog::handleEditTagsButtonClicked()
         return;
     }
     QTreeWidgetItem *current = ui->booksTree->currentItem();
+    if (!current && ui->booksTree->topLevelItemCount() > 0) {
+        current = ui->booksTree->topLevelItem(0);
+    }
     if (!current) {
         return;
     }
