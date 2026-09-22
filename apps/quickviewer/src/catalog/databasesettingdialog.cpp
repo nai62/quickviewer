@@ -43,12 +43,15 @@ void DatabaseSettingDialog::dragEnterEvent(QDragEnterEvent *e)
 }
 void DatabaseSettingDialog::dropEvent(QDropEvent *e)
 {
-    if (!e->mimeData()->hasUrls()) {
+    if (m_editing || !e->mimeData()->hasUrls()) {
         return;
     }
     QList<QUrl> urlList = e->mimeData()->urls();
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < qMin(1, int(urlList.size())); i++) {
         QUrl url = urlList[i];
+        if (!url.isLocalFile()) {
+            continue;
+        }
         QFileInfo info(url.toLocalFile());
         if (info.isDir()) {
             ui->pathEdit->setText(QDir::toNativeSeparators(info.absoluteFilePath()));
@@ -72,10 +75,13 @@ void DatabaseSettingDialog::checkAcceptable()
 {
     bool enabled = false;
     do {
-        if (m_name.isEmpty()) {
+        if (m_name.trimmed().isEmpty()) {
             break;
         }
-        if (m_path.isEmpty() || !QFileInfo(m_path).exists()) {
+        const QFileInfo source(m_path);
+        if (m_path.trimmed().isEmpty() ||
+            (!m_editing &&
+             !(source.isDir() || (source.isFile() && IFileLoader::isArchiveFile(m_path))))) {
             break;
         }
         enabled = true;

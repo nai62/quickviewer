@@ -46,6 +46,7 @@ public:
     int volumeId;
     int subVolumeParentId;
     bool baseFolder;
+    QStringList ancestors;
 };
 
 /** True once the batch \a canceled belongs to has been asked to stop. */
@@ -220,7 +221,8 @@ int CatalogDatabase::buildCatalogVolumes(const QString &dirpath,
     // The base folder is a volume of its own, and the rows of its sub-volumes
     // keep the parent id this traversal has always recorded for them.
     QList<CatalogFolderJob> jobs;
-    jobs << CatalogFolderJob{dirpath, volume_id, -1, true};
+    jobs << CatalogFolderJob{
+        dirpath, volume_id, -1, true, {QFileInfo(dirpath).canonicalFilePath()}};
     int scannedCount = 0;
     int knownCount = jobs.size();
     emit catalogProgressRangeChanged(0, knownCount);
@@ -246,13 +248,20 @@ int CatalogDatabase::buildCatalogVolumes(const QString &dirpath,
             const QDir dir(job.path);
             for (const QString &name : scan.subVolumeNames) {
                 const QString path = dir.filePath(name);
+                const QString canonical = QFileInfo(path).canonicalFilePath();
+                // Follow linked folders, but never return to an ancestor through
+                // a symlink or Windows junction.
+                if (canonical.isEmpty() || job.ancestors.contains(canonical)) {
+                    continue;
+                }
                 const int subVolumeId = createVolume(path, catalog_id, job.subVolumeParentId);
                 if (subVolumeId < 0) {
                     return -1;
                 }
                 // Kept from the traversal this replaces: a volume is recorded
                 // under the folder above the one that holds it.
-                subJobs << CatalogFolderJob{path, subVolumeId, job.volumeId, false};
+                subJobs << CatalogFolderJob{
+                    path, subVolumeId, job.volumeId, false, job.ancestors + QStringList{canonical}};
             }
 
             if (!scan.cover.isEmpty()) {
@@ -409,6 +418,13 @@ CatalogRecord CatalogDatabase::createCatalog(QString name, QString path, const Q
     if (!ensureReady()) {
         return catalog;
     }
+    const QFileInfo source(path);
+    if (path.trimmed().isEmpty() ||
+        !(source.isDir() || (source.isFile() && IFileLoader::isArchiveFile(path)))) {
+        m_errorMessage = tr("The catalog source is not a folder or archive: %1").arg(path);
+        return catalog;
+    }
+    path = source.absoluteFilePath();
     catalog.name = name;
     catalog.path = path;
     catalog.created_at = QDateTime::currentDateTime();

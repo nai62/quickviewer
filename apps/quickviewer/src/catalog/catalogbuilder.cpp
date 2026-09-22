@@ -65,7 +65,7 @@ CatalogCover frontPageOfFolder(const QDir &dir)
 CatalogFolderScan CatalogBuilder::scanFolder(const QString &path, bool baseFolder)
 {
     CatalogFolderScan scan;
-    if (IFileLoader::isArchiveFile(path)) {
+    if (QFileInfo(path).isFile() && IFileLoader::isArchiveFile(path)) {
         // An archive is a leaf volume whose front page is the first page inside.
         VolumeLoader volumeLoader(path);
         const ImageContent content = volumeLoader.loadThumbnailSourceImage();

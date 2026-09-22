@@ -388,12 +388,15 @@ void ManageDatabaseDialog::handleAddButtonClicked()
 
 void ManageDatabaseDialog::dropEvent(QDropEvent *e)
 {
-    if (!e->mimeData()->hasUrls()) {
+    if (m_catalogWatcher || !e->mimeData()->hasUrls()) {
         return;
     }
     QList<QUrl> urlList = e->mimeData()->urls();
     for (int i = 0; i < urlList.size(); i++) {
         QUrl url = urlList[i];
+        if (!url.isLocalFile()) {
+            continue;
+        }
         QFileInfo info(url.toLocalFile());
         CatalogRecord catalog = {0};
         if (info.isDir()) {
@@ -405,6 +408,9 @@ void ManageDatabaseDialog::dropEvent(QDropEvent *e)
             const bool book = IFileLoader::isArchiveFile(info.fileName());
             catalog.name = info.baseName();
             catalog.path = QDir::toNativeSeparators(book ? info.absoluteFilePath() : info.path());
+        }
+        if (catalog.path.isEmpty()) {
+            continue;
         }
         m_makeCatalogs << catalog;
     }

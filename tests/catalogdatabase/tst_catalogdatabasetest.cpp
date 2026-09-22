@@ -9,6 +9,9 @@
 #include <QListWidget>
 #include <QMimeData>
 #include <QPushButton>
+#include <QProcess>
+#include <QDialogButtonBox>
+#include "databasesettingdialog.h"
 #include <QTemporaryDir>
 #include <QTreeWidget>
 #include <QtSql>
@@ -162,6 +165,10 @@ private Q_SLOTS:
     void deletingAllCatalogsDoesNotReuseDeletedTags();
     void failedTagEditKeepsTheTitleAndTags();
     void keepsAnExistingTemporaryFile();
+    void rejectsInvalidCatalogSources();
+    void ignoresInvalidDroppedUrls();
+    void catalogsAFolderWithAnArchiveExtension();
+    void doesNotFollowAFolderCycle();
 
     void createsTheCatalogDatabaseOnFirstUse();
     void keepsAnUnreadableCatalogDatabase();
@@ -184,6 +191,89 @@ private Q_SLOTS:
     void failedCatalogRemovalKeepsTheStoredRows();
     void orphanVolumeTagsDoNotBreakTagQueries();
 };
+
+void CatalogDatabaseTest::rejectsInvalidCatalogSources()
+{
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    QVERIFY(fixture.addRootImage(QStringLiteral("01.png"), QSize(60, 90)));
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    const QStringList invalid{QString(),
+                              QDir(fixture.rootPath()).filePath(QStringLiteral("missing")),
+                              QDir(fixture.rootPath()).filePath(QStringLiteral("01.png"))};
+    for (const QString &path : invalid) {
+        QVERIFY(!database.createCatalog(QStringLiteral("Invalid"), path).created);
+        QVERIFY(!database.errorMessage().isEmpty());
+        QVERIFY(database.catalogs().isEmpty());
+        DatabaseSettingDialog dialog;
+        dialog.setName(QStringLiteral("Invalid"));
+        dialog.setPath(path);
+        dialog.checkAcceptable();
+        QVERIFY(!dialog.findChild<QDialogButtonBox *>()->button(QDialogButtonBox::Ok)->isEnabled());
+    }
+}
+
+void CatalogDatabaseTest::ignoresInvalidDroppedUrls()
+{
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    ManageDatabaseDialog dialog;
+    dialog.setCatalogDatabase(&database);
+    QMimeData mime;
+    mime.setUrls({QUrl(QStringLiteral("https://example.com/book")),
+                  QUrl::fromLocalFile(fixture.rootPath())});
+    QDropEvent drop(QPointF(), Qt::CopyAction, &mime, Qt::LeftButton, Qt::NoModifier);
+    dialog.dropEvent(&drop);
+    QCOMPARE(dialog.findChild<QTreeWidget *>(QStringLiteral("treeWidget"))->topLevelItemCount(), 0);
+}
+
+void CatalogDatabaseTest::catalogsAFolderWithAnArchiveExtension()
+{
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    QVERIFY(fixture.addImage(QStringLiteral("Book.zip"), QStringLiteral("01.png"), QSize(60, 90)));
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    QVERIFY(database.createCatalog(QStringLiteral("Library"), fixture.rootPath()).created);
+    int covers = 0;
+    for (const auto &volume : database.volumes()) {
+        covers += !volume.thumbnail.isEmpty();
+    }
+    QCOMPARE(covers, 1);
+}
+
+void CatalogDatabaseTest::doesNotFollowAFolderCycle()
+{
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    QVERIFY(fixture.addImage(QStringLiteral("Book"), QStringLiteral("01.png"), QSize(60, 90)));
+    const QString link =
+        QDir(fixture.folder(QStringLiteral("Book"))).filePath(QStringLiteral("Loop"));
+#ifdef Q_OS_WIN
+    QProcess process;
+    process.start(QStringLiteral("cmd.exe"),
+                  {QStringLiteral("/d"),
+                   QStringLiteral("/c"),
+                   QStringLiteral("mklink"),
+                   QStringLiteral("/J"),
+                   QDir::toNativeSeparators(link),
+                   QDir::toNativeSeparators(fixture.rootPath())});
+    QVERIFY(process.waitForFinished());
+    QCOMPARE(process.exitCode(), 0);
+#else
+    QVERIFY(QFile::link(fixture.rootPath(), link));
+#endif
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    const bool created =
+        database.createCatalog(QStringLiteral("Library"), fixture.rootPath()).created;
+#ifdef Q_OS_WIN
+    QVERIFY(QDir().rmdir(link));
+#else
+    QVERIFY(QFile::remove(link));
+#endif
+    QVERIFY(created);
+    QCOMPARE(database.volumes().size(), 2);
+}
 
 void CatalogDatabaseTest::failedCommitLeavesNoCatalog()
 {
@@ -785,6 +875,11 @@ void CatalogDatabaseTest::parsesVolumeNames_data()
     QTest::addColumn<QString>("realname");
     QTest::addColumn<QString>("title");
     QTest::addColumn<QStringList>("tags"); // "name(type)"
+
+    QTest::newRow("unfinished-parenthesis") << QStringLiteral("Book (unfinished")
+                                            << QStringLiteral("Book (unfinished") << QStringList();
+    QTest::newRow("unfinished-bracket") << QStringLiteral("Book [unfinished")
+                                        << QStringLiteral("Book [unfinished") << QStringList();
 
     QTest::newRow("plain") << QStringLiteral("Book Title") << QStringLiteral("Book Title")
                            << QStringList();

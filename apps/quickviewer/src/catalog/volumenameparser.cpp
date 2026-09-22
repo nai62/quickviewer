@@ -117,6 +117,10 @@ TaggedName parseVolumeName(const QString &realname)
         }
     }
 
+    // An unfinished field is literal title text, not a tag to discard.
+    if (!group.isNull()) {
+        title += group + raw;
+    }
     result.name = title.trimmed();
     return result;
 }
