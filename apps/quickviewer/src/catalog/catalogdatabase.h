@@ -43,6 +43,7 @@ public:
     CatalogRecord createCatalog(QString name, QString path);
     QFutureWatcher<QList<CatalogRecord>> *createCatalogAsync(QList<CatalogRecord> newers);
     void cancelCreateCatalogAsync();
+    QFutureWatcher<QList<CatalogRecord>> *catalogWatcher() { return &m_catalogWatcher; }
 
     void deleteCatalog(int id);
     void updateCatalogName(int id, QString name);
@@ -133,7 +134,6 @@ private:
      * caller that cannot cancel the build when it is nullptr.
      */
     CatalogRecord createCatalog(QString name, QString path, const QAtomicInt *canceled);
-    QList<CatalogRecord> callCreateCatalog(const QList<CatalogRecord> &newers);
 };
 
 #endif // CATALOGDATABASE_H

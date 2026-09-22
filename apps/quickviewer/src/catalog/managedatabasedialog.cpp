@@ -75,6 +75,7 @@ ManageDatabaseDialog::ManageDatabaseDialog(QWidget *parent)
 
 ManageDatabaseDialog::~ManageDatabaseDialog()
 {
+    stopBuilding();
     delete ui;
 }
 
@@ -135,6 +136,11 @@ void ManageDatabaseDialog::reportCatalogDatabaseProblem()
 
 void ManageDatabaseDialog::normalButtonStates()
 {
+    setAcceptDrops(true);
+    ui->treeWidget->setEnabled(true);
+    ui->booksTree->setEnabled(true);
+    ui->cancelButton->setEnabled(true);
+    updatePurgeButton();
     ui->addButton->setEnabled(true);
     updateExplorerButton();
     if (m_catalogs.isEmpty() && m_makeCatalogs.isEmpty()) {
@@ -167,6 +173,10 @@ void ManageDatabaseDialog::normalButtonStates()
 
 void ManageDatabaseDialog::progressButtonStates()
 {
+    setAcceptDrops(false);
+    ui->treeWidget->setEnabled(false);
+    ui->booksTree->setEnabled(false);
+    ui->editTagsButton->setEnabled(false);
     ui->addButton->setEnabled(false);
     ui->editButton->setEnabled(false);
     ui->deleteButton->setEnabled(false);
@@ -423,7 +433,7 @@ bool ManageDatabaseDialog::databaseSettingDialog(CatalogRecord &catalog, bool ed
 
 void ManageDatabaseDialog::handleCatalogCreated(const CatalogRecord cr)
 {
-    if (!cr.created) {
+    if (!m_catalogWatcher || !cr.created) {
         return;
     }
     m_catalogs[cr.id] = cr;
@@ -446,13 +456,20 @@ void ManageDatabaseDialog::handleCatalogCreationFinished()
     if (!m_catalogWatcher) {
         return;
     }
+    const bool canceled = m_catalogWatcher->isCanceled();
     releaseCatalogWatcher();
+    m_catalogs = m_catalogDatabase->catalogs();
 
     resetCatalogList();
     normalButtonStates();
 
     QMessageBox msgBox(this);
-    if (m_makeCatalogs.isEmpty()) {
+    if (canceled) {
+        msgBox.setWindowTitle(
+            tr("Cancelled!", "Title of message box when catalog generation was canceled"));
+        msgBox.setText(tr("Catalog creation was cancelled.",
+                          "Body of message box when catalog generation is canceled"));
+    } else if (m_makeCatalogs.isEmpty()) {
         msgBox.setWindowTitle(
             tr("Completed", "Title of message box when catalog generation finished successfully"));
         msgBox.setText(tr("Catalog creation completed.",
@@ -512,7 +529,7 @@ void ManageDatabaseDialog::handleCancelButtonClicked()
                 &CatalogDatabase::catalogCreated,
                 this,
                 &ManageDatabaseDialog::handleCatalogCreated);
-        m_catalogWatcher = m_catalogDatabase->createCatalogAsync(m_makeCatalogs);
+        m_catalogWatcher = m_catalogDatabase->catalogWatcher();
         connect(m_catalogWatcher,
                 &QFutureWatcher<QList<CatalogRecord>>::finished,
                 this,
@@ -531,20 +548,12 @@ void ManageDatabaseDialog::handleCancelButtonClicked()
                 &QLabel::setText);
 
         progressButtonStates();
+        m_catalogDatabase->createCatalogAsync(m_makeCatalogs);
     } else {
-        releaseCatalogWatcher();
         m_catalogDatabase->cancelCreateCatalogAsync();
-
-        resetCatalogList();
-        normalButtonStates();
-
-        QMessageBox msgBox(this);
-        msgBox.setWindowTitle(
-            tr("Cancelled!", "Title of message box when catalog generation was canceled"));
-        QString message = QString(tr("Catalog creation was cancelled.",
-                                     "Body of message box when catalog generation is canceled"));
-        msgBox.setText(message);
-        msgBox.exec();
+        // Keep the dialog locked until the worker has rolled back and closed
+        // its connection. A second start must not reset its cancellation flag.
+        ui->cancelButton->setEnabled(false);
     }
 }
 

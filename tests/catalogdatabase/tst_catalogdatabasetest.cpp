@@ -171,6 +171,8 @@ private Q_SLOTS:
     void parsesVolumeNames_data();
     void parsesVolumeNames();
     void finishesAnEmptyCatalogRequest();
+    void buildsCatalogsOnAWorkerConnection();
+    void keepsTheManagerLockedUntilCancellationFinishes();
     void cancelledBuildLeavesNoHalfBuiltCatalog();
     void failedCatalogBuildReleasesTheDatabase();
     void failedCatalogRemovalKeepsTheStoredRows();
@@ -734,6 +736,60 @@ void CatalogDatabaseTest::parsesVolumeNames()
     QCOMPARE(parsed.name, title);
     QCOMPARE(parsed.realname, realname);
     QCOMPARE(parsedTags, tags);
+}
+
+void CatalogDatabaseTest::keepsTheManagerLockedUntilCancellationFinishes()
+{
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    QVERIFY(fixture.addImage(QStringLiteral("Book"), QStringLiteral("01.png"), QSize(60, 90)));
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    {
+        ManageDatabaseDialog dialog;
+        dialog.setCatalogDatabase(&database);
+        QMimeData mime;
+        mime.setUrls({QUrl::fromLocalFile(fixture.rootPath())});
+        QDropEvent drop(QPointF(), Qt::CopyAction, &mime, Qt::LeftButton, Qt::NoModifier);
+        dialog.dropEvent(&drop);
+        dialog.handleCancelButtonClicked();
+        dialog.handleCancelButtonClicked();
+        QVERIFY(!dialog.findChild<QPushButton *>(QStringLiteral("addButton"))->isEnabled());
+        QVERIFY(!dialog.findChild<QPushButton *>(QStringLiteral("cancelButton"))->isEnabled());
+        QVERIFY(!dialog.findChild<QTreeWidget *>(QStringLiteral("treeWidget"))->isEnabled());
+        QVERIFY(!dialog.acceptDrops());
+        // Destruction also waits for the worker; it cannot outlive the dialog.
+    }
+    QVERIFY(database.catalogWatcher()->isFinished());
+    QVERIFY(database.createCatalog(QStringLiteral("After"), fixture.rootPath()).created);
+}
+
+void CatalogDatabaseTest::buildsCatalogsOnAWorkerConnection()
+{
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    QVERIFY(
+        fixture.addImage(QStringLiteral("Book (Shared)"), QStringLiteral("01.png"), QSize(60, 90)));
+    {
+        CatalogDatabase first(nullptr, fixture.databasePath());
+        QVERIFY(first.createCatalog(QStringLiteral("First"), fixture.rootPath()).created);
+    }
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    QCOMPARE(database.volumes().size(), 2);
+    QSignalSpy created(&database, &CatalogDatabase::catalogCreated);
+    auto *watcher = database.catalogWatcher();
+    QSignalSpy finished(watcher, &QFutureWatcher<QList<CatalogRecord>>::finished);
+    database.createCatalogAsync({catalogRequest(QStringLiteral("Second"), fixture.rootPath())});
+    QTRY_COMPARE(finished.size(), 1);
+    QCOMPARE(watcher->result().size(), 1);
+    QVERIFY(watcher->result().first().created);
+    QCOMPARE(created.size(), 1);
+    QCOMPARE(database.volumes().size(), 4);
+    CatalogProbe probe(fixture.databasePath(), QStringLiteral("catalog-probe"));
+    QCOMPARE(probe.count(QStringLiteral("t_tags")), 1);
+    QCOMPARE(probe.count(QStringLiteral("t_volumetags")), 2);
+    // The main connection still reads and writes after the worker closed its own.
+    database.deleteCatalog(watcher->result().first().id);
+    QCOMPARE(database.volumes().size(), 2);
 }
 
 void CatalogDatabaseTest::finishesAnEmptyCatalogRequest()

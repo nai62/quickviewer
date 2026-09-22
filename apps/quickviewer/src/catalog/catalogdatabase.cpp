@@ -71,8 +71,7 @@ CatalogDatabase::CatalogDatabase(QObject *parent, QString dbpath)
 
 CatalogDatabase::~CatalogDatabase()
 {
-    // A catalog build can still be running on a worker thread, and it talks to
-    // the connection that is unregistered here.
+    // The worker owns its connection, but still reads our cancellation flag.
     m_catalogCanceled.storeRelease(1);
     m_catalogWatcher.cancel();
     m_catalogWatcher.waitForFinished();
@@ -128,6 +127,7 @@ bool CatalogDatabase::ensureReady()
 
     qDebug() << "catalog database:" << m_dbPath;
     m_ready = true;
+    loadTags();
     return true;
 }
 
@@ -459,33 +459,61 @@ CatalogRecord CatalogDatabase::createCatalog(QString name, QString path, const Q
     return catalog;
 }
 
-QList<CatalogRecord> CatalogDatabase::callCreateCatalog(const QList<CatalogRecord> &newers)
-{
-    QList<CatalogRecord> result;
-    for (const CatalogRecord &r : newers) {
-        if (isCanceled(&m_catalogCanceled)) {
-            break;
-        }
-        result << createCatalog(r.name, r.path, &m_catalogCanceled);
-        if (isCanceled(&m_catalogCanceled)) {
-            break;
-        }
-    }
-
-    return result;
-}
-
 QFutureWatcher<QList<CatalogRecord>> *
 CatalogDatabase::createCatalogAsync(QList<CatalogRecord> newers)
 {
+    if (m_catalogWatcher.isRunning()) {
+        return &m_catalogWatcher;
+    }
+    m_volumesDirty = true;
     m_catalogCanceled.storeRelease(0);
     if (!ensureReady()) {
         // Nothing can be stored; finish an empty batch so that the caller
         // still hears that the build ended.
         newers.clear();
     }
-    QFuture<QList<CatalogRecord>> future =
-        QtConcurrent::run([this, newers] { return callCreateCatalog(newers); });
+    const QString path = m_dbPath;
+    QFuture<QList<CatalogRecord>> future = QtConcurrent::run([this, path, newers] {
+        // Create, use and close this connection on the worker that owns it.
+        CatalogDatabase worker(nullptr, path);
+        connect(&worker,
+                &CatalogDatabase::catalogCreated,
+                this,
+                &CatalogDatabase::catalogCreated,
+                Qt::DirectConnection);
+        connect(&worker,
+                &CatalogDatabase::catalogProgressRangeChanged,
+                this,
+                &CatalogDatabase::catalogProgressRangeChanged,
+                Qt::DirectConnection);
+        connect(&worker,
+                &CatalogDatabase::catalogProgressValueChanged,
+                this,
+                &CatalogDatabase::catalogProgressValueChanged,
+                Qt::DirectConnection);
+        connect(&worker,
+                &CatalogDatabase::catalogProgressTextChanged,
+                this,
+                &CatalogDatabase::catalogProgressTextChanged,
+                Qt::DirectConnection);
+        QList<CatalogRecord> result;
+        for (const CatalogRecord &request : newers) {
+            if (isCanceled(&m_catalogCanceled)) {
+                break;
+            }
+            result << worker.createCatalog(request.name, request.path, &m_catalogCanceled);
+        }
+        const QString error = worker.errorMessage();
+        QMetaObject::invokeMethod(
+            this,
+            [this, error] {
+                m_errorMessage = error;
+                m_volumesDirty = true;
+                loadTags();
+            },
+            Qt::QueuedConnection);
+        return result;
+    });
     m_catalogWatcher.setFuture(future);
     return &m_catalogWatcher;
 }
