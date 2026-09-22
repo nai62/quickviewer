@@ -115,3 +115,13 @@ the helper leaves after an idle period - the next request starts it again.
 Failed requests leave safe display text; one key is attempted twice and then
 keeps its placeholder instead of asking on every paint. The startup profile
 driver lives in `src/benchmark/startupfoldertextprofile.cpp`; see Testing.md.
+
+### Panels
+
+The folder view, the catalog view and the retouch panel are panels of the main
+window. Docked, a panel is a child of the window's splitter and is destroyed
+with the window. Separated, it is a top-level window with no parent, so the main
+window closes it from its own `closeEvent`: a panel left behind would keep the
+application running with nothing to attach it to. Going either way, closing a
+panel leaves the startup-view setting alone while the window itself is closing,
+so the panel is back the next time the application starts.

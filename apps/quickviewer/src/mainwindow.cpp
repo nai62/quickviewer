@@ -649,10 +649,29 @@ void MainWindow::closeEvent(QCloseEvent *)
     // splitterMoved.
     saveVisibleFolderViewWidth();
     m_onWindowClosing = true;
+    // A panel that was taken out of this window is a window of its own, so it
+    // would keep the application running with nothing to attach it to. It
+    // belongs here and goes with the window it was taken out of.
+    closeSeparatePanels();
     delete m_contextMenu;
     m_contextMenu = nullptr;
     qApp->setWindowGeometry(saveGeometry());
     qApp->setWindowState(saveState());
+}
+
+void MainWindow::closeSeparatePanels()
+{
+    // A panel docked in this window is a child of it and is destroyed with it.
+    // One that was separated has no parent, so closing it is this window's job.
+    if (m_folderWindow && m_folderWindow->isWindow()) {
+        handleFolderWindowClosed();
+    }
+    if (m_catalogWindow && m_catalogWindow->isWindow()) {
+        handleCatalogWindowClosed();
+    }
+    if (m_retouchWindow && m_retouchWindow->isWindow()) {
+        handleRetouchWindowClosed();
+    }
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)

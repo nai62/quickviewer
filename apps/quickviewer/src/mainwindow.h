@@ -245,6 +245,8 @@ private:
     void reserveConfiguredStartupPanelSpace();
     bool replaceStartupPanelPlaceholder(QWidget *panel);
     void updateFolderViewCurrentItem();
+    /** Closes the panels that were taken out of the window. */
+    void closeSeparatePanels();
 
 protected:
     Ui::MainWindow *ui;

@@ -21,6 +21,7 @@ public:
     QString panelEntryAtReveal;
 
     FolderWindow *folderWindow() const { return m_folderWindow; }
+    CatalogWindow *catalogWindow() const { return m_catalogWindow; }
     QSplitter *panelSplitter() const
     {
         return findChild<QSplitter *>(QStringLiteral("catalogSplitter"));
@@ -100,6 +101,7 @@ class WindowStartupTest : public QObject
     Q_OBJECT
 
 private slots:
+    void separatePanelClosesWithTheMainWindow();
     void catalogListStartsAtTheTopInListMode();
     void catalogCoverFillsAndCentresInTheIconBox();
     void catalogCoverIsReadOnce();
@@ -2266,6 +2268,43 @@ static bool writeCatalogShelf(const QString &root, const QStringList &folderName
         }
     }
     return true;
+}
+
+/** A panel taken out of the main window closes with it. */
+void WindowStartupTest::separatePanelClosesWithTheMainWindow()
+{
+    QTemporaryDir folderDirectory;
+    QVERIFY(folderDirectory.isValid());
+    QTemporaryDir databaseDirectory;
+    QVERIFY(databaseDirectory.isValid());
+    CatalogDatabase catalogDatabase(nullptr,
+                                    databaseDirectory.filePath(QStringLiteral("catalog.db")));
+
+    // This is what "separate the panel from the application window" asks for:
+    // the panels become windows that belong to no other widget.
+    qApp->setShowPanelSeparateWindow(true);
+    StartupWindow viewer;
+    viewer.setCatalogDatabase(&catalogDatabase);
+    viewer.show();
+    viewer.createFolderWindow(false, folderDirectory.path(), false);
+    viewer.createCatalogWindow(false);
+    QApplication::processEvents();
+
+    FolderWindow *folderPanel = viewer.folderWindow();
+    CatalogWindow *catalogPanel = viewer.catalogWindow();
+    QVERIFY(folderPanel);
+    QVERIFY(catalogPanel);
+    QVERIFY(folderPanel->isWindow());
+    QVERIFY(catalogPanel->isWindow());
+    QPointer<FolderWindow> folderGuard(folderPanel);
+    QPointer<CatalogWindow> catalogGuard(catalogPanel);
+
+    viewer.close();
+    QApplication::processEvents();
+
+    // Neither is left behind to keep the application running on its own.
+    QVERIFY(folderGuard.isNull());
+    QVERIFY(catalogGuard.isNull());
 }
 
 /** The bounding box of a cover's red pixels, in the cover's own pixels. */
