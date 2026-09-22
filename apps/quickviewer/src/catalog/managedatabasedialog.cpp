@@ -85,7 +85,7 @@ ManageDatabaseDialog::ManageDatabaseDialog(QWidget *parent)
     connect(ui->openInExplorerAction,
             &QAction::triggered,
             this,
-            &ManageDatabaseDialog::handleOpenInExplorerClicked);
+            &ManageDatabaseDialog::handleOpenInExplorerActionTriggered);
     connect(ui->editTagsButton,
             &QPushButton::clicked,
             this,
@@ -208,14 +208,33 @@ void ManageDatabaseDialog::normalButtonStates()
     ui->buttonBox->setEnabled(true);
     startMissingVolumeCheck();
     updateCatalogActions();
-
-    const int pending = int(m_makeCatalogs.size());
-    ui->cancelButton->setEnabled(pending > 0);
-    ui->cancelButton->setText(
-        pending > 0 ? tr("Start creating (%1)").arg(pending)
-                    : tr("Start creating",
-                         "Button that builds the folders which were added to the list above"));
+    updateStartButton(BuildState::Idle);
     ui->progressWidget->setVisible(false);
+}
+
+void ManageDatabaseDialog::updateStartButton(BuildState state)
+{
+    const int pending = int(m_makeCatalogs.size());
+    switch (state) {
+    case BuildState::Idle:
+        ui->cancelButton->setEnabled(pending > 0);
+        ui->cancelButton->setText(
+            pending > 0 ? tr("Start creating (%1)").arg(pending)
+                        : tr("Start creating",
+                             "Button that builds the folders which were added to the list above"));
+        break;
+    case BuildState::Building:
+        ui->cancelButton->setEnabled(true);
+        ui->cancelButton->setText(
+            tr("Stop creating", "Button that cancels the catalogs being built"));
+        break;
+    case BuildState::Stopping:
+        // The worker is rolling back; starting again must not reset its
+        // cancellation flag, so the button waits for it.
+        ui->cancelButton->setEnabled(false);
+        ui->cancelButton->setText(tr("Stopping..."));
+        break;
+    }
 }
 
 void ManageDatabaseDialog::progressButtonStates()
@@ -233,7 +252,7 @@ void ManageDatabaseDialog::progressButtonStates()
     ui->volumeNameLabel->clear();
     ui->progressBar->setRange(0, 0);
     ui->progressWidget->setVisible(true);
-    ui->cancelButton->setText(tr("Stop creating", "Button that cancels the catalogs being built"));
+    updateStartButton(BuildState::Building);
 }
 
 void ManageDatabaseDialog::resetCatalogList()
@@ -431,7 +450,7 @@ bool ManageDatabaseDialog::eventFilter(QObject *watched, QEvent *event)
     return QDialog::eventFilter(watched, event);
 }
 
-void ManageDatabaseDialog::handleOpenInExplorerClicked()
+void ManageDatabaseDialog::handleOpenInExplorerActionTriggered()
 {
     const QTreeWidgetItem *current = ui->treeWidget->currentItem();
     if (!current) {
@@ -679,10 +698,7 @@ void ManageDatabaseDialog::handleCancelButtonClicked()
         m_catalogDatabase->createCatalogAsync(m_makeCatalogs);
     } else {
         m_catalogDatabase->cancelCreateCatalogAsync();
-        // Keep the dialog locked until the worker has rolled back and closed
-        // its connection. A second start must not reset its cancellation flag.
-        ui->cancelButton->setEnabled(false);
-        ui->cancelButton->setText(tr("Stopping..."));
+        updateStartButton(BuildState::Stopping);
     }
 }
 
@@ -728,7 +744,7 @@ bool ManageDatabaseDialog::confirmRemoval(const QString &title, const QString &t
     return answer == QMessageBox::Yes;
 }
 
-void ManageDatabaseDialog::handleEditButtonClicked()
+void ManageDatabaseDialog::handleEditActionTriggered()
 {
     if (!m_catalogDatabase) {
         return;
@@ -769,7 +785,7 @@ void ManageDatabaseDialog::handleEditButtonClicked()
     }
 }
 
-void ManageDatabaseDialog::handleDeleteButtonClicked()
+void ManageDatabaseDialog::handleDeleteActionTriggered()
 {
     if (!m_catalogDatabase) {
         return;
@@ -802,7 +818,7 @@ void ManageDatabaseDialog::handleDeleteButtonClicked()
     normalButtonStates();
 }
 
-void ManageDatabaseDialog::handleDeleteAllButtonClicked()
+void ManageDatabaseDialog::handleDeleteAllActionTriggered()
 {
     if (!m_catalogDatabase) {
         return;

@@ -868,7 +868,7 @@ private slots:
         // Closing the menu from the event loop keeps a person out of the test,
         // and the menu is kept to say which one the request opened.
         QMenu *shownMenu = nullptr;
-        const auto requestMenu = [&](const QModelIndex &index, const QPoint &pos, bool keyboard) {
+        const auto requestMenu = [&](const QModelIndex &, const QPoint &pos, bool keyboard) {
             QTimer::singleShot(0, [&shownMenu] {
                 if (QWidget *popup = QApplication::activePopupWidget()) {
                     shownMenu = qobject_cast<QMenu *>(popup);

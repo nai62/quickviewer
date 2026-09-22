@@ -29,14 +29,14 @@ protected:
 
 public slots:
     void handleAddButtonClicked();
-    void handleDeleteButtonClicked();
-    void handleEditButtonClicked();
-    void handleDeleteAllButtonClicked();
+    void handleEditActionTriggered();
+    void handleDeleteActionTriggered();
+    void handleDeleteAllActionTriggered();
     void handlePurgeMissingActionTriggered();
     void handleCatalogSelectionChanged();
     void handleEditTagsButtonClicked();
     void handleCancelButtonClicked();
-    void handleOpenInExplorerClicked();
+    void handleOpenInExplorerActionTriggered();
     void handleCatalogContextMenu(const QPoint &position);
 
 private slots:
@@ -45,6 +45,13 @@ private slots:
     void handleMissingVolumesChecked();
 
 private:
+    /**
+     * How far a build is, as far as the button that starts and stops one has
+     * to know: it carries the count of the folders waiting, or the verb that
+     * applies to the state the build is in.
+     */
+    enum class BuildState { Idle, Building, Stopping };
+    void updateStartButton(BuildState state);
     /** Asks the worker which of the registered paths are no longer there. */
     void startMissingVolumeCheck();
     /** Writes the purge action from the paths the last check reported. */

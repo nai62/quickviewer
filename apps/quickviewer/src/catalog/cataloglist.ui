@@ -327,26 +327,26 @@
    <sender>editAction</sender>
    <signal>triggered()</signal>
    <receiver>ManageDatabaseDialog</receiver>
-   <slot>handleEditButtonClicked()</slot>
+   <slot>handleEditActionTriggered()</slot>
   </connection>
   <connection>
    <sender>deleteAction</sender>
    <signal>triggered()</signal>
    <receiver>ManageDatabaseDialog</receiver>
-   <slot>handleDeleteButtonClicked()</slot>
+   <slot>handleDeleteActionTriggered()</slot>
   </connection>
   <connection>
    <sender>deleteAllAction</sender>
    <signal>triggered()</signal>
    <receiver>ManageDatabaseDialog</receiver>
-   <slot>handleDeleteAllButtonClicked()</slot>
+   <slot>handleDeleteAllActionTriggered()</slot>
   </connection>
  </connections>
  <slots>
   <slot>handleAddButtonClicked()</slot>
   <slot>handleCancelButtonClicked()</slot>
-  <slot>handleEditButtonClicked()</slot>
-  <slot>handleDeleteButtonClicked()</slot>
-  <slot>handleDeleteAllButtonClicked()</slot>
+  <slot>handleEditActionTriggered()</slot>
+  <slot>handleDeleteActionTriggered()</slot>
+  <slot>handleDeleteAllActionTriggered()</slot>
  </slots>
 </ui>

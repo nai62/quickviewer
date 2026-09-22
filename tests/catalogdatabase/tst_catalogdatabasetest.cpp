@@ -1173,7 +1173,7 @@ void CatalogDatabaseTest::pendingCatalogsKeepTheirIdentity()
     // Taking one request away leaves the other named by the id it was added
     // with, not by where it now sits in the list.
     catalogs->setCurrentItem(catalogs->topLevelItem(0));
-    dialog.handleDeleteButtonClicked();
+    dialog.handleDeleteActionTriggered();
     QCOMPARE(catalogs->topLevelItemCount(), 1);
     QCOMPARE(catalogs->topLevelItem(0)->data(0, Qt::UserRole).toInt(), secondId);
     QCOMPARE(catalogs->topLevelItem(0)->text(0), QStringLiteral("* Beta"));
