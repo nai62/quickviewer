@@ -16,7 +16,6 @@ SOURCES += \
     $$UNRAR_SOURCE_ROOT/arcread.cpp \
     $$UNRAR_SOURCE_ROOT/unicode.cpp \
     $$UNRAR_SOURCE_ROOT/system.cpp \
-    $$UNRAR_SOURCE_ROOT/isnt.cpp \
     $$UNRAR_SOURCE_ROOT/crypt.cpp \
     $$UNRAR_SOURCE_ROOT/crc.cpp \
     $$UNRAR_SOURCE_ROOT/rawread.cpp \
@@ -49,6 +48,8 @@ SOURCES += \
     $$UNRAR_SOURCE_ROOT/ui.cpp \
     $$UNRAR_SOURCE_ROOT/largepage.cpp \
     $$UNRAR_SOURCE_ROOT/motw.cpp \
+
+win32: SOURCES += $$UNRAR_SOURCE_ROOT/isnt.cpp
 
 contains(DEFINES, RAR_BUILD_UNRAR) {
     SOURCES += \
