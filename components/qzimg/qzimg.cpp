@@ -332,9 +332,8 @@ static QImage scaledRGB(QImage img,
         return QImage();
     }
     try {
-        const unsigned API_2_1 = ZIMG_MAKE_API_VERSION(2, 1);
         zimg_graph_builder_params params;
-        zimg_graph_builder_params_default(&params, API_2_1);
+        zimg_graph_builder_params_default(&params, ZIMG_API_VERSION);
         switch (mode) {
         case QZimg::ResizeBicubic:
             params.resample_filter = ZIMG_RESIZE_BICUBIC;
@@ -406,9 +405,8 @@ static QImage scaledARGB(QImage img,
         return QImage();
     }
     try {
-        const unsigned API_2_1 = ZIMG_MAKE_API_VERSION(2, 1);
         zimg_graph_builder_params params;
-        zimg_graph_builder_params_default(&params, API_2_1);
+        zimg_graph_builder_params_default(&params, ZIMG_API_VERSION);
         switch (mode) {
         case QZimg::ResizeBicubic:
             params.resample_filter = ZIMG_RESIZE_BICUBIC;
