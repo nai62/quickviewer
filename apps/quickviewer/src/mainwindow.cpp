@@ -47,7 +47,7 @@ MainWindow::MainWindow(QWidget *parent)
       //    , contextMenu(this)
       ,
       m_viewerSession(this),
-      m_thumbManager(nullptr),
+      m_catalogDatabase(nullptr),
       m_startupPanelPlaceholder(nullptr),
       m_folderWindow(nullptr),
       m_catalogWindow(nullptr),
@@ -242,6 +242,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionSaveFolderViewWidth->setChecked(qApp->SaveFolderViewWidth());
 
     // Catalogs
+    connect(ui->actionManageCatalogs,
+            &QAction::triggered,
+            this,
+            &MainWindow::handleManageCatalogsActionTriggered);
     ui->actionCatalogIconLongText->setChecked(qApp->IconLongText());
     ui->actionSearchTitleWithOptions->setChecked(qApp->SearchTitleWithOptions());
     ui->actionCatalogTitleWithoutOptions->setChecked(qApp->TitleWithoutOptions());
@@ -645,10 +649,29 @@ void MainWindow::closeEvent(QCloseEvent *)
     // splitterMoved.
     saveVisibleFolderViewWidth();
     m_onWindowClosing = true;
+    // A panel that was taken out of this window is a window of its own, so it
+    // would keep the application running with nothing to attach it to. It
+    // belongs here and goes with the window it was taken out of.
+    closeSeparatePanels();
     delete m_contextMenu;
     m_contextMenu = nullptr;
     qApp->setWindowGeometry(saveGeometry());
     qApp->setWindowState(saveState());
+}
+
+void MainWindow::closeSeparatePanels()
+{
+    // A panel docked in this window is a child of it and is destroyed with it.
+    // One that was separated has no parent, so closing it is this window's job.
+    if (m_folderWindow && m_folderWindow->isWindow()) {
+        handleFolderWindowClosed();
+    }
+    if (m_catalogWindow && m_catalogWindow->isWindow()) {
+        handleCatalogWindowClosed();
+    }
+    if (m_retouchWindow && m_retouchWindow->isWindow()) {
+        handleRetouchWindowClosed();
+    }
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
@@ -867,9 +890,9 @@ void MainWindow::makeBookmarkMenu()
     ui->menuLoadBookmark->addAction(ui->actionClearBookmarks);
 }
 
-void MainWindow::setThumbnailManager(ThumbnailManager *manager)
+void MainWindow::setCatalogDatabase(CatalogDatabase *catalogDatabase)
 {
-    m_thumbManager = manager;
+    m_catalogDatabase = catalogDatabase;
 
     const bool startupVolumeRequested =
         qApp->arguments().length() >= 2 || (qApp->AutoLoaded() && !qApp->LastViewPath().isEmpty());
@@ -880,7 +903,7 @@ void MainWindow::setThumbnailManager(ThumbnailManager *manager)
 
 void MainWindow::initializeConfiguredStartupPanel(const QString &folderPath)
 {
-    if (m_startupPanelInitialized || !m_thumbManager) {
+    if (m_startupPanelInitialized || !m_catalogDatabase) {
         return;
     }
     m_startupPanelInitialized = true;
@@ -1272,7 +1295,7 @@ bool MainWindow::changeFolderPath(QString path)
         return false;
     }
     if (!m_folderWindow) {
-        // An image passed on the command line is loaded before setThumbnailManager()
+        // An image passed on the command line is loaded before setCatalogDatabase()
         // creates the startup FolderWindow. Preserve its directory until then.
         m_pendingFolderPath = path;
         return false;
@@ -1362,6 +1385,18 @@ void MainWindow::handleCatalogWindowClosed()
     }
 }
 
+void MainWindow::handleManageCatalogsActionTriggered()
+{
+    // The dialog belongs to the catalog panel, and the panel reloads its list
+    // when the dialog closes, so open the panel first.
+    if (!m_catalogWindow) {
+        createCatalogWindow(!qApp->ShowPanelSeparateWindow());
+    }
+    if (m_catalogWindow) {
+        m_catalogWindow->handleManageCatalogButtonClicked();
+    }
+}
+
 bool MainWindow::isCatalogSearching()
 {
     if (!m_catalogWindow || !m_catalogWindow->parent()) {
@@ -1380,7 +1415,7 @@ void MainWindow::createCatalogWindow(bool docked)
         closeAllDockedWindow();
         int lastwidth = qApp->CatalogViewWidth();
         m_catalogWindow = new CatalogWindow(nullptr, ui);
-        m_catalogWindow->setThumbnailManager(m_thumbManager);
+        m_catalogWindow->setCatalogDatabase(m_catalogDatabase);
         connect(
             m_catalogWindow, &CatalogWindow::closed, this, &MainWindow::handleCatalogWindowClosed);
         connect(m_catalogWindow,
@@ -1398,7 +1433,7 @@ void MainWindow::createCatalogWindow(bool docked)
         m_catalogWindow->setAsInnerWidget();
     } else {
         m_catalogWindow = new CatalogWindow(nullptr, ui);
-        m_catalogWindow->setThumbnailManager(m_thumbManager);
+        m_catalogWindow->setCatalogDatabase(m_catalogDatabase);
         connect(
             m_catalogWindow, &CatalogWindow::closed, this, &MainWindow::handleCatalogWindowClosed);
         connect(m_catalogWindow,
@@ -1970,7 +2005,7 @@ void MainWindow::handleSearchTitleWithOptionsActionTriggered(bool checked)
 {
     qApp->setSearchTitleWithOptions(checked);
     if (m_catalogWindow) {
-        m_catalogWindow->resetVolumes();
+        m_catalogWindow->searchByWord(true);
     }
 }
 
@@ -1989,7 +2024,7 @@ void MainWindow::handleCatalogViewListActionTriggered()
     ui->actionCatalogViewIcon->setChecked(false);
     ui->actionCatalogViewIconNoText->setChecked(false);
     if (m_catalogWindow) {
-        m_catalogWindow->resetVolumes();
+        m_catalogWindow->resetViewMode();
     }
 }
 
@@ -2000,7 +2035,7 @@ void MainWindow::handleCatalogViewIconActionTriggered()
     ui->actionCatalogViewIcon->setChecked(true);
     ui->actionCatalogViewIconNoText->setChecked(false);
     if (m_catalogWindow) {
-        m_catalogWindow->resetVolumes();
+        m_catalogWindow->resetViewMode();
     }
 }
 
@@ -2011,7 +2046,7 @@ void MainWindow::handleCatalogViewIconNoTextActionTriggered()
     ui->actionCatalogViewIcon->setChecked(false);
     ui->actionCatalogViewIconNoText->setChecked(true);
     if (m_catalogWindow) {
-        m_catalogWindow->resetVolumes();
+        m_catalogWindow->resetViewMode();
     }
 }
 

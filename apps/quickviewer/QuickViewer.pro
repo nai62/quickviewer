@@ -142,10 +142,18 @@ macos {
 SOURCES += \
     src/benchmark/imagebenchmarkrunner.cpp \
     src/benchmark/startupfoldertextprofile.cpp \
+    src/catalog/catalogbuilder.cpp \
+    src/catalog/catalogbuildqueue.cpp \
+    src/catalog/catalogdatabase.cpp \
+    src/catalog/catalogvolumelistview.cpp \
     src/catalog/catalogwindow.cpp \
     src/catalog/databasesettingdialog.cpp \
     src/catalog/managedatabasedialog.cpp \
+    src/catalog/searchwords.cpp \
+    src/catalog/volumecoverpane.cpp \
     src/catalog/volumeitemmodel.cpp \
+    src/catalog/volumenameparser.cpp \
+    src/catalog/volumetagdialog.cpp \
     src/exifdialog.cpp \
     src/folderview/folderitemdelegate.cpp \
     src/folderview/folderitemmodel.cpp \
@@ -170,7 +178,6 @@ SOURCES += \
     src/models/shadereffect.cpp \
     src/models/svgloader.cpp \
     src/startupprofiler.cpp \
-    src/models/thumbnailmanager.cpp \
     src/models/volumecache.cpp \
     src/models/volumehandle.cpp \
     src/optionsdialog.cpp \
@@ -203,10 +210,19 @@ SOURCES += \
 HEADERS  += \
     src/benchmark/imagebenchmarkrunner.h \
     src/benchmark/startupfoldertextprofile.h \
+    src/catalog/catalogbuilder.h \
+    src/catalog/catalogbuildqueue.h \
+    src/catalog/catalogdatabase.h \
+    src/catalog/catalogvolumelistview.h \
     src/catalog/catalogwindow.h \
     src/catalog/databasesettingdialog.h \
     src/catalog/managedatabasedialog.h \
+    src/catalog/searchwords.h \
+    src/catalog/volumecoverpane.h \
+    src/catalog/catalogrecords.h \
     src/catalog/volumeitemmodel.h \
+    src/catalog/volumenameparser.h \
+    src/catalog/volumetagdialog.h \
     src/exifdialog.h \
     src/folderview/folderitemdelegate.h \
     src/folderview/folderitem.h \
@@ -236,7 +252,6 @@ HEADERS  += \
     src/models/shadermanager.h \
     src/models/shadereffect.h \
     src/models/svgloader.h \
-    src/models/thumbnailmanager.h \
     src/models/volumecache.h \
     src/models/volumehandle.h \
     src/models/viewerstate.h \
@@ -289,6 +304,7 @@ FORMS    += \
     src/catalog/cataloglist.ui \
     src/catalog/catalogwindow.ui \
     src/catalog/createdb.ui \
+    src/catalog/volumetagdialog.ui \
     src/folderview/folderwindow.ui \
     src/optionsdialog.ui \
     src/renamedialog.ui \

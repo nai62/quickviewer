@@ -20,4 +20,5 @@ run `scripts\verify-windows.cmd debug --test <name>`, then commit.
 | [Testing.md](Testing.md) | Build and test commands, environment variables, verification policy, WSL, traps when adding sources or tests |
 | [CppLint.md](CppLint.md) | clang-format scope, commands, pre-commit hook |
 | [Architecture.md](Architecture.md) | Domain terminology and responsibility boundaries |
+| [Catalogue.md](Catalogue.md) | Catalogues: volumes, covers, tags, and the volume name rules |
 | [Benchmark.md](Benchmark.md) | Benchmark suites and measurement conditions |

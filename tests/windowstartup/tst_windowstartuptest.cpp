@@ -1,12 +1,15 @@
-#include <QSqlDatabase>
+#include <QAbstractItemModelTester>
 #include "foldertextcache.h"
 #include <QtTest>
 
+#include <algorithm>
+
+#include "catalogwindow.h"
 #include "folderwindow.h"
 #include "mainwindow.h"
 #include "models/filemanager.h"
 #include "models/qvapplication.h"
-#include "models/thumbnailmanager.h"
+#include "catalogdatabase.h"
 
 #define FILELOADER_DATAPATH WINDOWSTARTUP_SRCDIR "../fileloader/data/"
 
@@ -19,6 +22,7 @@ public:
     QString panelEntryAtReveal;
 
     FolderWindow *folderWindow() const { return m_folderWindow; }
+    CatalogWindow *catalogWindow() const { return m_catalogWindow; }
     QSplitter *panelSplitter() const
     {
         return findChild<QSplitter *>(QStringLiteral("catalogSplitter"));
@@ -98,6 +102,17 @@ class WindowStartupTest : public QObject
     Q_OBJECT
 
 private slots:
+    void separatePanelClosesWithTheMainWindow();
+    void catalogListStartsAtTheTopInListMode();
+    void catalogSearchFieldNarrowsTheList();
+    void catalogWindowShowsACatalogBuiltWhileItIsOpen();
+    void catalogTagButtonsMatchStoredTags();
+    void catalogModelRejectsInvalidIndexes();
+    void catalogCoverFillsAndCentresInTheIconBox();
+    void catalogCoverIsReadOnce();
+    void catalogViewConsumesWheelEventsAtScrollBoundary();
+    void catalogTagBarFollowsRemovedTags();
+
     void init()
     {
         qApp->setAutoLoaded(false);
@@ -214,16 +229,14 @@ private slots:
         QTemporaryDir databaseDirectory;
         QVERIFY(databaseDirectory.isValid());
         const auto cleanup = qScopeGuard([&] {
-            // The manager's QSqlDatabase handle and the viewer must die before
-            // removing the registered connection and its temporary directory.
-            QSqlDatabase::removeDatabase(QSqlDatabase::defaultConnection);
             QTRY_VERIFY_WITH_TIMEOUT(!QFile::exists(archivePath) || QFile::remove(archivePath),
                                      5000);
         });
         StartupWindow viewer;
         viewer.resize(800, 600);
-        ThumbnailManager manager(&viewer, databaseDirectory.filePath(QStringLiteral("catalog.db")));
-        viewer.setThumbnailManager(&manager);
+        CatalogDatabase catalogDatabase(&viewer,
+                                        databaseDirectory.filePath(QStringLiteral("catalog.db")));
+        viewer.setCatalogDatabase(&catalogDatabase);
 
         viewer.initializeStartup();
 
@@ -855,7 +868,7 @@ private slots:
         // Closing the menu from the event loop keeps a person out of the test,
         // and the menu is kept to say which one the request opened.
         QMenu *shownMenu = nullptr;
-        const auto requestMenu = [&](const QModelIndex &index, const QPoint &pos, bool keyboard) {
+        const auto requestMenu = [&](const QModelIndex &, const QPoint &pos, bool keyboard) {
             QTimer::singleShot(0, [&shownMenu] {
                 if (QWidget *popup = QApplication::activePopupWidget()) {
                     shownMenu = qobject_cast<QMenu *>(popup);
@@ -2244,6 +2257,482 @@ private slots:
         QVERIFY(!qApp->History().contains(encryptedPath));
     }
 };
+
+/** A catalog of three books, one folder per book, each with a cover image. */
+static bool writeCatalogShelf(const QString &root, const QStringList &folderNames)
+{
+    for (const QString &name : folderNames) {
+        const QString folder = QDir(root).filePath(name);
+        if (!QDir().mkpath(folder)) {
+            return false;
+        }
+        QImage image(QSize(200, 300), QImage::Format_RGB32);
+        image.fill(Qt::red);
+        if (!image.save(QDir(folder).filePath(QStringLiteral("01.png")))) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/** A panel taken out of the main window closes with it. */
+void WindowStartupTest::separatePanelClosesWithTheMainWindow()
+{
+    QTemporaryDir folderDirectory;
+    QVERIFY(folderDirectory.isValid());
+    QTemporaryDir databaseDirectory;
+    QVERIFY(databaseDirectory.isValid());
+    CatalogDatabase catalogDatabase(nullptr,
+                                    databaseDirectory.filePath(QStringLiteral("catalog.db")));
+
+    // This is what "separate the panel from the application window" asks for:
+    // the panels become windows that belong to no other widget.
+    qApp->setShowPanelSeparateWindow(true);
+    StartupWindow viewer;
+    viewer.setCatalogDatabase(&catalogDatabase);
+    viewer.show();
+    viewer.createFolderWindow(false, folderDirectory.path(), false);
+    viewer.createCatalogWindow(false);
+    QApplication::processEvents();
+
+    FolderWindow *folderPanel = viewer.folderWindow();
+    CatalogWindow *catalogPanel = viewer.catalogWindow();
+    QVERIFY(folderPanel);
+    QVERIFY(catalogPanel);
+    QVERIFY(folderPanel->isWindow());
+    QVERIFY(catalogPanel->isWindow());
+    QPointer<FolderWindow> folderGuard(folderPanel);
+    QPointer<CatalogWindow> catalogGuard(catalogPanel);
+
+    viewer.close();
+    QApplication::processEvents();
+
+    // Neither is left behind to keep the application running on its own.
+    QVERIFY(folderGuard.isNull());
+    QVERIFY(catalogGuard.isNull());
+}
+
+/** The bounding box of a cover's red pixels, in the cover's own pixels. */
+static QRect coverInkBox(const QPixmap &cover)
+{
+    const QImage image = cover.toImage();
+    int left = image.width();
+    int top = image.height();
+    int right = -1;
+    int bottom = -1;
+    for (int y = 0; y < image.height(); ++y) {
+        for (int x = 0; x < image.width(); ++x) {
+            const QColor color = image.pixelColor(x, y);
+            if (color.red() > 150 && color.green() < 100) {
+                left = qMin(left, x);
+                top = qMin(top, y);
+                right = qMax(right, x);
+                bottom = qMax(bottom, y);
+            }
+        }
+    }
+    return right < left ? QRect() : QRect(QPoint(left, top), QPoint(right, bottom));
+}
+
+void WindowStartupTest::catalogCoverFillsAndCentresInTheIconBox()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString root = directory.filePath(QStringLiteral("Shelf"));
+    QVERIFY(writeCatalogShelf(root, {QStringLiteral("Book A")}));
+    // Two books whose pages ask for opposite shapes: one taller than it is
+    // wide, one wider than it is tall.
+    {
+        const QString folder = QDir(root).filePath(QStringLiteral("Book B"));
+        QVERIFY(QDir().mkpath(folder));
+        QImage wide(QSize(300, 120), QImage::Format_RGB32);
+        wide.fill(Qt::red);
+        QVERIFY(wide.save(QDir(folder).filePath(QStringLiteral("01.png"))));
+    }
+
+    QTemporaryDir databaseDirectory;
+    QVERIFY(databaseDirectory.isValid());
+    CatalogDatabase catalogDatabase(nullptr,
+                                    databaseDirectory.filePath(QStringLiteral("catalog.db")));
+    QVERIFY(catalogDatabase.createCatalog(QStringLiteral("Shelf"), root).created);
+
+    qApp->setCatalogViewModeSetting(qvEnums::CatalogViewMode::IconNoText);
+    StartupWindow viewer;
+    viewer.setCatalogDatabase(&catalogDatabase);
+    viewer.show();
+    viewer.createCatalogWindow(true);
+    QApplication::processEvents();
+
+    QListView *list = viewer.findChild<QListView *>(QStringLiteral("volumeList"));
+    QVERIFY(list);
+    QCOMPARE(list->model()->rowCount(), 2);
+    const QSize box = list->iconSize();
+    QVERIFY(box.isValid());
+
+    QList<qreal> shapes;
+    for (int row = 0; row < list->model()->rowCount(); ++row) {
+        const QPixmap cover =
+            list->model()->data(list->model()->index(row, 0), Qt::DecorationRole).value<QPixmap>();
+        QVERIFY(!cover.isNull());
+        // The decoration fills the room the view gives it, so the cover can sit
+        // in the middle of its cell whatever shape the page has.
+        QCOMPARE(cover.size(), box);
+        const QRect ink = coverInkBox(cover);
+        QVERIFY(ink.isValid());
+        // The room above and below the cover is the room to its left and right.
+        QVERIFY(qAbs(ink.left() - (box.width() - 1 - ink.right())) <= 1);
+        QVERIFY(qAbs(ink.top() - (box.height() - 1 - ink.bottom())) <= 1);
+        // Fitting changes neither shape: a wide page stays wide, a tall one
+        // stays tall.
+        shapes.append(qreal(ink.width()) / ink.height());
+    }
+    std::sort(shapes.begin(), shapes.end());
+    QVERIFY(qAbs(shapes.at(0) - 2.0 / 3.0) < 0.05);
+    QVERIFY(qAbs(shapes.at(1) - 2.5) < 0.05);
+}
+
+/** The list hands back the cover it read rather than reading the JPEG again. */
+void WindowStartupTest::catalogCoverIsReadOnce()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString root = directory.filePath(QStringLiteral("Shelf"));
+    QVERIFY(writeCatalogShelf(root, {QStringLiteral("Book A")}));
+    // A second page of the other shape, so a cover that came out of the wrong
+    // entry of the cache would show.
+    {
+        const QString folder = QDir(root).filePath(QStringLiteral("Book B"));
+        QVERIFY(QDir().mkpath(folder));
+        QImage wide(QSize(300, 120), QImage::Format_RGB32);
+        wide.fill(Qt::red);
+        QVERIFY(wide.save(QDir(folder).filePath(QStringLiteral("01.png"))));
+    }
+
+    QTemporaryDir databaseDirectory;
+    QVERIFY(databaseDirectory.isValid());
+    CatalogDatabase catalogDatabase(nullptr,
+                                    databaseDirectory.filePath(QStringLiteral("catalog.db")));
+    QVERIFY(catalogDatabase.createCatalog(QStringLiteral("Shelf"), root).created);
+
+    qApp->setCatalogViewModeSetting(qvEnums::CatalogViewMode::IconNoText);
+    StartupWindow viewer;
+    viewer.setCatalogDatabase(&catalogDatabase);
+    viewer.show();
+    viewer.createCatalogWindow(true);
+    QApplication::processEvents();
+
+    QListView *list = viewer.findChild<QListView *>(QStringLiteral("volumeList"));
+    QVERIFY(list);
+    QCOMPARE(list->model()->rowCount(), 2);
+    const auto coverAt = [list](int row) {
+        return list->model()
+            ->data(list->model()->index(row, 0), Qt::DecorationRole)
+            .value<QPixmap>();
+    };
+
+    // The same row answers with the cover that was read the first time: reading
+    // it again would have decoded the JPEG into a pixmap of its own.
+    const QPixmap first = coverAt(0);
+    QVERIFY(!first.isNull());
+    QCOMPARE(coverAt(0).cacheKey(), first.cacheKey());
+
+    // Each row keeps its own cover: the tall page stays tall, the wide one wide.
+    const QPixmap other = coverAt(1);
+    QVERIFY(!other.isNull());
+    QCOMPARE(coverAt(1).cacheKey(), other.cacheKey());
+    QVERIFY(coverInkBox(first).height() > coverInkBox(first).width());
+    QVERIFY(coverInkBox(other).width() > coverInkBox(other).height());
+}
+
+/** Typing in the catalog's search field narrows the list it shows. */
+void WindowStartupTest::catalogModelRejectsInvalidIndexes()
+{
+    VolumeItemModel model(nullptr);
+    QVERIFY(!model.data(QModelIndex(), Qt::DisplayRole).isValid());
+    VolumeThumbRecord volume;
+    volume.realname = QStringLiteral("Book");
+    QList<VolumeThumbRecord *> volumes{&volume};
+    model.setVolumes(&volumes);
+    QAbstractItemModelTester tester(&model, QAbstractItemModelTester::FailureReportingMode::QtTest);
+    QVERIFY(!model.index(-1, 0).isValid());
+    QVERIFY(!model.index(0, -1).isValid());
+    QVERIFY(!model.index(0, 1).isValid());
+    QVERIFY(!model.index(1, 0).isValid());
+    const QModelIndex book = model.index(0, 0);
+    QVERIFY(book.isValid());
+    QCOMPARE(model.rowCount(book), 0);
+    QVERIFY(!model.index(0, 0, book).isValid());
+    qApp->setTitleWithoutOptions(true);
+    QCOMPARE(model.data(book, Qt::DisplayRole).toString(), QStringLiteral("Book"));
+}
+
+void WindowStartupTest::catalogTagButtonsMatchStoredTags()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString root = directory.filePath(QStringLiteral("Shelf"));
+    QVERIFY(writeCatalogShelf(root, {QStringLiteral("Alpha"), QStringLiteral("Beta")}));
+    CatalogDatabase database(nullptr, directory.filePath(QStringLiteral("catalog.db")));
+    QVERIFY(database.createCatalog(QStringLiteral("Shelf"), root).created);
+    for (const auto &volume : database.volumes()) {
+        if (volume.realname == QStringLiteral("Alpha")) {
+            QVERIFY(
+                database.setVolumeDetails(volume.id, volume.name, {QStringLiteral("Space Opera")}));
+        } else if (volume.realname == QStringLiteral("Beta")) {
+            QVERIFY(database.setVolumeDetails(volume.id, volume.name, {QStringLiteral("Other")}));
+        }
+    }
+    qApp->setCatalogViewModeSetting(qvEnums::CatalogViewMode::Icon);
+    qApp->setShowTagBar(true);
+    qApp->setSearchTitleWithOptions(true);
+    StartupWindow viewer;
+    viewer.setCatalogDatabase(&database);
+    viewer.show();
+    viewer.createCatalogWindow(true);
+    QApplication::processEvents();
+    auto *catalog = viewer.catalogWindow();
+    auto *list = catalog->findChild<QListView *>(QStringLiteral("volumeList"));
+    auto *search = catalog->findChild<QLineEdit *>(QStringLiteral("searchEdit"));
+    auto *frame = catalog->findChild<QWidget *>(QStringLiteral("tagFrame"));
+    QVERIFY(list && search && frame);
+    QPushButton *tag = nullptr;
+    for (auto *button : frame->findChildren<QPushButton *>()) {
+        if (button->text() == QStringLiteral("Space Opera")) {
+            tag = button;
+        }
+    }
+    QVERIFY(tag);
+    QCOMPARE(list->model()->rowCount(), 2);
+    tag->click();
+    QVERIFY(tag->isChecked());
+    QCOMPARE(list->model()->rowCount(), 1);
+    QCOMPARE(list->model()->index(0, 0).data().toString(), QStringLiteral("Alpha"));
+
+    // Building the bar again, as a reload of the catalog does, keeps the tag
+    // the user pressed: the list stays the one that tag asked for.
+    catalog->handleShowTagBarActionTriggered(true);
+    QApplication::processEvents();
+    QPushButton *rebuilt = nullptr;
+    for (auto *button : frame->findChildren<QPushButton *>()) {
+        if (button->text() == QStringLiteral("Space Opera")) {
+            rebuilt = button;
+        }
+    }
+    QVERIFY(rebuilt);
+    QVERIFY(rebuilt->isChecked());
+    QCOMPARE(list->model()->rowCount(), 1);
+    QCOMPARE(list->model()->index(0, 0).data().toString(), QStringLiteral("Alpha"));
+    tag = rebuilt;
+
+    search->setText(QStringLiteral("Beta"));
+    QCOMPARE(list->model()->rowCount(), 0);
+    tag->click();
+    QCOMPARE(list->model()->rowCount(), 1);
+    search->clear();
+    QCOMPARE(list->model()->rowCount(), 2);
+    const QString previousStatus =
+        catalog->findChild<QLabel *>(QStringLiteral("statusLabel"))->text();
+    QVERIFY(database.deleteAllCatalogs());
+    catalog->setCatalogDatabase(&database);
+    QCOMPARE(list->model()->rowCount(), 0);
+    QVERIFY(catalog->findChild<QLabel *>(QStringLiteral("statusLabel"))->text() != previousStatus);
+}
+
+void WindowStartupTest::catalogSearchFieldNarrowsTheList()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString root = directory.filePath(QStringLiteral("Shelf"));
+    QVERIFY(writeCatalogShelf(root, {QStringLiteral("Alpha"), QStringLiteral("Beta")}));
+
+    QTemporaryDir databaseDirectory;
+    QVERIFY(databaseDirectory.isValid());
+    CatalogDatabase catalogDatabase(nullptr,
+                                    databaseDirectory.filePath(QStringLiteral("catalog.db")));
+    QVERIFY(catalogDatabase.createCatalog(QStringLiteral("Shelf"), root).created);
+
+    // The list shows the titles, so the search has something to narrow.
+    qApp->setCatalogViewModeSetting(qvEnums::CatalogViewMode::Icon);
+    StartupWindow viewer;
+    viewer.setCatalogDatabase(&catalogDatabase);
+    viewer.show();
+    viewer.createCatalogWindow(true);
+    QApplication::processEvents();
+
+    QListView *list = viewer.findChild<QListView *>(QStringLiteral("volumeList"));
+    QLineEdit *search = viewer.findChild<QLineEdit *>(QStringLiteral("searchEdit"));
+    QVERIFY(list);
+    QVERIFY(search);
+    QCOMPARE(list->model()->rowCount(), 2);
+
+    // The field searches as the user types, so one of the two books is left.
+    search->setText(QStringLiteral("Beta"));
+    QApplication::processEvents();
+    QCOMPARE(list->model()->rowCount(), 1);
+    QCOMPARE(list->model()->data(list->model()->index(0, 0), Qt::DisplayRole).toString(),
+             QStringLiteral("Beta"));
+
+    // Emptying it brings the other book back.
+    search->clear();
+    QApplication::processEvents();
+    QCOMPARE(list->model()->rowCount(), 2);
+}
+
+/** A build that ends while the window is open shows up in its list. */
+void WindowStartupTest::catalogWindowShowsACatalogBuiltWhileItIsOpen()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString root = directory.filePath(QStringLiteral("Shelf"));
+    QVERIFY(writeCatalogShelf(root, {QStringLiteral("Alpha")}));
+    const QString secondRoot = directory.filePath(QStringLiteral("Shelf Two"));
+    QVERIFY(writeCatalogShelf(secondRoot, {QStringLiteral("Beta")}));
+
+    QTemporaryDir databaseDirectory;
+    QVERIFY(databaseDirectory.isValid());
+    CatalogDatabase catalogDatabase(nullptr,
+                                    databaseDirectory.filePath(QStringLiteral("catalog.db")));
+    QVERIFY(catalogDatabase.createCatalog(QStringLiteral("Shelf"), root).created);
+
+    qApp->setCatalogViewModeSetting(qvEnums::CatalogViewMode::IconNoText);
+    StartupWindow viewer;
+    viewer.setCatalogDatabase(&catalogDatabase);
+    viewer.show();
+    viewer.createCatalogWindow(true);
+    QApplication::processEvents();
+
+    QListView *list = viewer.findChild<QListView *>(QStringLiteral("volumeList"));
+    QVERIFY(list);
+    QCOMPARE(list->model()->rowCount(), 1);
+
+    // The manager builds on a worker. The window is not read in the middle of
+    // that: it reads the catalog when the database says the build is over.
+    CatalogRecord request;
+    request.name = QStringLiteral("Shelf Two");
+    request.path = secondRoot;
+    catalogDatabase.createCatalogAsync({request});
+    QTRY_COMPARE(list->model()->rowCount(), 2);
+}
+
+void WindowStartupTest::catalogListStartsAtTheTopInListMode()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString root = directory.filePath(QStringLiteral("Shelf"));
+    QVERIFY(writeCatalogShelf(
+        root, {QStringLiteral("Book A"), QStringLiteral("Book B"), QStringLiteral("Book C")}));
+
+    QTemporaryDir databaseDirectory;
+    QVERIFY(databaseDirectory.isValid());
+    CatalogDatabase catalogDatabase(nullptr,
+                                    databaseDirectory.filePath(QStringLiteral("catalog.db")));
+    QVERIFY(catalogDatabase.createCatalog(QStringLiteral("Shelf"), root).created);
+
+    qApp->setCatalogViewModeSetting(qvEnums::CatalogViewMode::List);
+    StartupWindow viewer;
+    viewer.resize(400, 800);
+    viewer.setCatalogDatabase(&catalogDatabase);
+    viewer.show();
+    viewer.createCatalogWindow(true);
+    QApplication::processEvents();
+
+    QListView *list = viewer.findChild<QListView *>(QStringLiteral("volumeList"));
+    QVERIFY(list);
+    QCOMPARE(list->model()->rowCount(), 3);
+
+    // The first book sits at the top of the list, with the next right below it.
+    const QRect first = list->visualRect(list->model()->index(0, 0));
+    const QRect second = list->visualRect(list->model()->index(1, 0));
+    QCOMPARE(first.top(), 0);
+    QCOMPARE(second.top(), first.bottom() + 1);
+}
+
+void WindowStartupTest::catalogViewConsumesWheelEventsAtScrollBoundary()
+{
+    QTemporaryDir databaseDirectory;
+    QVERIFY(databaseDirectory.isValid());
+    CatalogDatabase catalogDatabase(nullptr,
+                                    databaseDirectory.filePath(QStringLiteral("catalog.db")));
+
+    qApp->setCatalogViewModeSetting(qvEnums::CatalogViewMode::List);
+    StartupWindow viewer;
+    viewer.resize(400, 800);
+    viewer.setCatalogDatabase(&catalogDatabase);
+    viewer.show();
+    viewer.createCatalogWindow(true);
+    QApplication::processEvents();
+
+    QListView *list = viewer.findChild<QListView *>(QStringLiteral("volumeList"));
+    QVERIFY(list);
+    // One entry per row, top to bottom, and never wrapped.
+    QCOMPARE(list->flow(), QListView::TopToBottom);
+    QVERIFY(!list->isWrapping());
+
+    // A wheel event over the list belongs to the list, even when it cannot
+    // scroll: the window must not turn it into a page.
+    QWheelEvent event(QPointF(1, 1),
+                      QPointF(1, 1),
+                      QPoint(),
+                      QPoint(0, -120),
+                      Qt::NoButton,
+                      Qt::NoModifier,
+                      Qt::NoScrollPhase,
+                      false);
+    event.ignore();
+    QApplication::sendEvent(list->viewport(), &event);
+    QVERIFY(event.isAccepted());
+}
+
+void WindowStartupTest::catalogTagBarFollowsRemovedTags()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString root = directory.filePath(QStringLiteral("Shelf"));
+    // Each name suggests one tag, so the bar has two buttons to show.
+    QVERIFY(writeCatalogShelf(
+        root, {QStringLiteral("Sample (First)"), QStringLiteral("Sample (Second)")}));
+
+    QTemporaryDir databaseDirectory;
+    QVERIFY(databaseDirectory.isValid());
+    CatalogDatabase catalogDatabase(nullptr,
+                                    databaseDirectory.filePath(QStringLiteral("catalog.db")));
+    QVERIFY(catalogDatabase.createCatalog(QStringLiteral("Shelf"), root).created);
+
+    qApp->setShowTagBar(true);
+    StartupWindow viewer;
+    viewer.resize(400, 800);
+    viewer.setCatalogDatabase(&catalogDatabase);
+    viewer.show();
+    viewer.createCatalogWindow(true);
+    QApplication::processEvents();
+
+    CatalogWindow *window = viewer.findChild<CatalogWindow *>();
+    QVERIFY(window);
+    QFrame *tagFrame = window->findChild<QFrame *>(QStringLiteral("tagFrame"));
+    QVERIFY(tagFrame);
+    const auto tagButtonCount = [tagFrame] {
+        return tagFrame->findChildren<QPushButton *>().size();
+    };
+    QCOMPARE(tagButtonCount(), 2);
+
+    // The user takes one of the two tags away.
+    int secondVolumeId = -1;
+    QString secondVolumeName;
+    for (const VolumeThumbRecord &volume : catalogDatabase.volumes()) {
+        if (volume.realname == QStringLiteral("Sample (Second)")) {
+            secondVolumeId = volume.id;
+            secondVolumeName = volume.name;
+        }
+    }
+    QVERIFY(secondVolumeId > 0);
+    QVERIFY(catalogDatabase.setVolumeDetails(secondVolumeId, secondVolumeName, QStringList()));
+
+    // Asking the panel for its tag bar again must drop the button of the tag
+    // that no book carries any more.
+    window->handleShowTagBarActionTriggered(true);
+    QApplication::processEvents();
+    QCOMPARE(tagButtonCount(), 0);
+}
 
 int main(int argc, char **argv)
 {

@@ -77,6 +77,13 @@ volume. `ReadProgressStore` indexes these records by volume path and persists
 them to `progress.ini`. Public C++ names do not define the file format; existing
 INI keys remain compatibility constraints.
 
+### Catalog
+
+A **catalog** is a folder registered in the catalog database; its **volumes**
+are the folders and archives below it, each with a **cover**, and a **tag**
+belongs to one volume. [Catalogue.md](Catalogue.md) describes the catalog
+feature, its objects and the rules it follows.
+
 ## Responsibility boundary
 
 The viewer's mutable reading state belongs to `ViewerSession`. A `Volume`
@@ -108,3 +115,13 @@ the helper leaves after an idle period - the next request starts it again.
 Failed requests leave safe display text; one key is attempted twice and then
 keeps its placeholder instead of asking on every paint. The startup profile
 driver lives in `src/benchmark/startupfoldertextprofile.cpp`; see Testing.md.
+
+### Panels
+
+The folder view, the catalog view and the retouch panel are panels of the main
+window. Docked, a panel is a child of the window's splitter and is destroyed
+with the window. Separated, it is a top-level window with no parent, so the main
+window closes it from its own `closeEvent`: a panel left behind would keep the
+application running with nothing to attach it to. Going either way, closing a
+panel leaves the startup-view setting alone while the window itself is closing,
+so the panel is back the next time the application starts.

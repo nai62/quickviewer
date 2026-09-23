@@ -13,7 +13,7 @@ class MainWindow;
 }
 class FolderWindow;
 class CatalogWindow;
-class ThumbnailManager;
+class CatalogDatabase;
 class RetouchWindow;
 
 class MainWindow : public QMainWindow
@@ -66,7 +66,7 @@ public:
         }
     }
     void makeBookmarkMenu();
-    void setThumbnailManager(ThumbnailManager *manager);
+    void setCatalogDatabase(CatalogDatabase *catalogDatabase);
     void resetVolumeCaption();
     void resetShortCut(const QString name, const QString shortcuttext, bool removed);
 
@@ -121,6 +121,7 @@ public slots:
 
     // Catalog
     void handleShowCatalogActionTriggered();
+    void handleManageCatalogsActionTriggered();
     void handleCatalogWindowClosed();
     void handleCatalogWindowOpenVolume(const OpenTarget &target);
     void handleSearchTitleWithOptionsActionTriggered(bool checked);
@@ -244,6 +245,8 @@ private:
     void reserveConfiguredStartupPanelSpace();
     bool replaceStartupPanelPlaceholder(QWidget *panel);
     void updateFolderViewCurrentItem();
+    /** Closes the panels that were taken out of the window. */
+    void closeSeparatePanels();
 
 protected:
     Ui::MainWindow *ui;
@@ -269,7 +272,7 @@ protected:
     QList<QAction *> m_shaderMenuGroup;
     QList<QAction *> m_languageMenuGroup;
     QList<QAction *> m_sortByMenuGroup;
-    ThumbnailManager *m_thumbManager;
+    CatalogDatabase *m_catalogDatabase;
     QWidget *m_startupPanelPlaceholder;
     FolderWindow *m_folderWindow;
     QString m_pendingFolderPath;

@@ -2,6 +2,54 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="es">
 <context>
+    <name>CatalogDatabase</name>
+    <message>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="146"/>
+        <source>The catalog database could not be created: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="150"/>
+        <source>The catalog database is not a file: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="155"/>
+        <source>The catalog database could not be opened: %1 (%2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="162"/>
+        <source>The catalog database cannot be used: %1 (%2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="214"/>
+        <source>%1 is missing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="220"/>
+        <source>the volume view is missing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="226"/>
+        <source>the database comes from a newer QuickViewer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="462"/>
+        <source>The catalog source is not a folder or archive: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/catalogdatabase.cpp" line="1104"/>
+        <source>A catalog transaction is already running.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>CatalogWindow</name>
     <message>
         <location filename="../src/catalog/catalogwindow.ui" line="50"/>
@@ -14,22 +62,22 @@
         <translation>&amp;Archivo</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.ui" line="296"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="270"/>
         <source>Previous</source>
         <translation>Previo</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.ui" line="305"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="279"/>
         <source>Next</source>
         <translation>Próximo</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.ui" line="373"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="347"/>
         <source>&amp;Close</source>
         <translation>&amp;Cierra la ventana</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.ui" line="389"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="363"/>
         <source>Ignore parenthesized text when searching titles</source>
         <extracomment>Ability to search with the title removed (parenthesized) removed from the title of Volume in the catalog</extracomment>
         <translation>Quita (Options) a título de libro cuando busca</translation>
@@ -42,59 +90,95 @@
     <message>
         <location filename="../src/catalog/catalogwindow.ui" line="82"/>
         <location filename="../src/catalog/catalogwindow.ui" line="88"/>
-        <location filename="../src/catalog/catalogwindow.ui" line="353"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="327"/>
         <source>Switch display format</source>
         <translation>Cambio la manera de visualización</translation>
     </message>
     <message>
         <location filename="../src/catalog/catalogwindow.ui" line="118"/>
-        <location filename="../src/catalog/catalogwindow.ui" line="362"/>
-        <location filename="../src/catalog/catalogwindow.ui" line="365"/>
-        <location filename="../src/catalog/catalogwindow.ui" line="368"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="336"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="339"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="342"/>
         <source>Manage catalogs</source>
         <translation>Manego de Catalogo</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.ui" line="317"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="291"/>
         <source>List</source>
         <translation>Lista</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.ui" line="329"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="303"/>
         <source>Icons and titles</source>
         <translation>Mirar Lado-a-Lado</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.ui" line="341"/>
-        <location filename="../src/catalog/catalogwindow.ui" line="344"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="315"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="318"/>
         <source>Icons only</source>
         <translation>Solo Iconos</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.ui" line="381"/>
+        <location filename="../src/catalog/catalogwindow.ui" line="355"/>
         <source>Remove parenthesized text from book title</source>
         <extracomment>Ability to remove and display (parenthesized) text from Volume title in the catalog</extracomment>
         <translation>Remover (Options) titulo de libro</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="43"/>
-        <location filename="../src/catalog/catalogwindow.cpp" line="68"/>
         <source>Enter a search term and press Enter to search by title.</source>
         <comment>Gray text that prompts a keyword search of Volume</comment>
-        <translation>Escribe una Búsqueda de palabra y Aprieta teclado de entrar.</translation>
+        <translation type="vanished">Escribe una Búsqueda de palabra y Aprieta teclado de entrar.</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="47"/>
-        <location filename="../src/catalog/catalogwindow.cpp" line="86"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="76"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="111"/>
+        <source>Search titles</source>
+        <comment>Gray text that prompts a keyword search of Volume</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/catalogwindow.cpp" line="77"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="116"/>
+        <source>Type part of a title and press Enter to search.</source>
+        <comment>Tooltip of the field that searches the titles of the catalog</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/catalogwindow.cpp" line="82"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="134"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="281"/>
         <source>Drop an image folder here to create a catalog.</source>
         <comment>Status bar text briefly explaining how to use CatalogWindow</comment>
         <translation>Suelta una carpeta para crear un catalogo.</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="209"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="292"/>
+        <source>%1 volumes</source>
+        <comment>Text of the status bar showing how many volumes are listed</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/catalogwindow.cpp" line="296"/>
         <source>%1 of %2 volumes</source>
         <comment>Text of the status bar showing [the number of hits]/[total number] of Volume</comment>
         <translation>(%1/%2) está en visualización.</translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/catalogwindow.cpp" line="304"/>
+        <source>(%1 without a cover are not shown)</source>
+        <comment>Status bar note about volumes the catalog holds but does not list</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/catalogwindow.cpp" line="504"/>
+        <source>Edit tags...</source>
+        <comment>Context menu entry of a book in the catalog list</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/catalogwindow.cpp" line="534"/>
+        <source>Catalog database</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -121,7 +205,7 @@
         <translation>Cada catálogo puede incluir multiple subcarpetas</translation>
     </message>
     <message>
-        <location filename="../src/catalog/databasesettingdialog.cpp" line="92"/>
+        <location filename="../src/catalog/databasesettingdialog.cpp" line="103"/>
         <source>Select a folder containing images or archives</source>
         <comment>Caption of FolderSelectDialog urging selection of folders containing Images and Archives</comment>
         <translation>Por favor selecciona una carpeta que incluya imágenes o archivos</translation>
@@ -1161,20 +1245,20 @@
         <translation>&amp;Ayuda</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="496"/>
+        <location filename="../src/mainwindow.ui" line="497"/>
         <source>E&amp;xit</source>
         <extracomment>End application</extracomment>
         <translation>&amp;Salir</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="550"/>
+        <location filename="../src/mainwindow.ui" line="551"/>
         <source>&amp;Fit mode</source>
         <extracomment>Automatically resize the image according to the size of the window</extracomment>
         <translation>&amp;Agrandamiento o Reducción de imagen automático</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="168"/>
-        <location filename="../src/mainwindow.cpp" line="1745"/>
+        <location filename="../src/mainwindow.cpp" line="1785"/>
         <source>&amp;Fullscreen</source>
         <translation>&amp;Pantalla completa</translation>
     </message>
@@ -1184,7 +1268,7 @@
         <translation>QuickViewer</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="604"/>
+        <location filename="../src/mainwindow.ui" line="605"/>
         <source>&amp;Open...</source>
         <extracomment>Open an image or archive for viewing</extracomment>
         <translation>Abrir(&amp;O)...</translation>
@@ -1195,43 +1279,43 @@
         <translation>&amp;Historia</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="591"/>
+        <location filename="../src/mainwindow.ui" line="592"/>
         <source>&amp;Reopen last viewed item</source>
         <extracomment>Opening the image automatically when opening the application the last time it was started</extracomment>
         <translation>&amp;Automaticamente cargar la ultimate usada</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="621"/>
+        <location filename="../src/mainwindow.ui" line="622"/>
         <source>&amp;Last page</source>
         <extracomment>Switch to the last image of Volume currently displayed button</extracomment>
         <translation>&amp;Última Página</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="630"/>
+        <location filename="../src/mainwindow.ui" line="631"/>
         <source>&amp;First page</source>
         <extracomment>Switch to the first image of the currently displayed Volume button</extracomment>
         <translation>&amp;Primera Página</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="666"/>
+        <location filename="../src/mainwindow.ui" line="667"/>
         <source>EXIF &amp;information</source>
         <extracomment>Button to display JPEG EXIF information (if any)</extracomment>
         <translation>&amp;Información Exif</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1057"/>
+        <location filename="../src/mainwindow.ui" line="1066"/>
         <source>&amp;Keyboard Shortcuts...</source>
         <extracomment>Menu that displays a dialog for changing keyboard shortcuts</extracomment>
         <translation>Configuracion de &amp;Teclado</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="583"/>
+        <location filename="../src/mainwindow.ui" line="584"/>
         <source>&amp;About QuickViewer</source>
         <extracomment>A menu for displaying a message box for displaying application information</extracomment>
         <translation>&amp;Sobre QuickViewer</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="680"/>
+        <location filename="../src/mainwindow.ui" line="681"/>
         <source>N&amp;ext volume</source>
         <extracomment>Switch to the next Volume in the same folder as the currently displayed Volume button</extracomment>
         <translation>&amp;Próximo Volumen</translation>
@@ -1242,25 +1326,25 @@
         <translation>&amp;Navegacion</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="704"/>
+        <location filename="../src/mainwindow.ui" line="705"/>
         <source>Exit application or full screen</source>
         <extracomment>Function that cancels it while full screen is displayed and terminates the application otherwise</extracomment>
         <translation>Cierra aplicaciones o pantalla completa</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="733"/>
+        <location filename="../src/mainwindow.ui" line="734"/>
         <source>&amp;Clear history</source>
         <extracomment>Menu for clearing the history of opening images</extracomment>
         <translation>&amp;Limpiar la historia</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="745"/>
+        <location filename="../src/mainwindow.ui" line="746"/>
         <source>Stay on &amp;top</source>
         <extracomment>When on it keeps the window always on top</extracomment>
         <translation>&amp;Ventana Siempre Arriba</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="948"/>
+        <location filename="../src/mainwindow.ui" line="957"/>
         <source>Sh&amp;ow/hide menu bar</source>
         <translation>&amp;Ver/Ocultar el Menu Principal</translation>
     </message>
@@ -1271,54 +1355,54 @@
         <translation>Renderizado(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="776"/>
+        <location filename="../src/mainwindow.ui" line="777"/>
         <source>&amp;Maximize or Normal</source>
         <extracomment>Function to switch windows to maximize or normal display</extracomment>
         <translation>&amp;Máximo o Normal</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="793"/>
+        <location filename="../src/mainwindow.ui" line="794"/>
         <source>Skip forward 10 pages</source>
         <extracomment>Switch to 10 images in Volume button</extracomment>
         <translation>Rapido hacia Atras</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="802"/>
+        <location filename="../src/mainwindow.ui" line="803"/>
         <source>Skip back 10 pages</source>
         <extracomment>Switch to the previous 10 images in Volume button</extracomment>
         <translation>Rebobinado rápido</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="816"/>
+        <location filename="../src/mainwindow.ui" line="817"/>
         <source>&amp;Rotate</source>
         <extracomment>Button to rotate the currently displayed image 90 degrees clockwise</extracomment>
         <translation>&amp;Rotar</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="855"/>
+        <location filename="../src/mainwindow.ui" line="856"/>
         <source>Load bookmark</source>
         <extracomment>Button to restore saved image page from registered bookmark</extracomment>
         <translation>Cargar Marcador</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="846"/>
+        <location filename="../src/mainwindow.ui" line="847"/>
         <source>Manage bookmarks</source>
         <translation>Manegar Marcadores</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="860"/>
+        <location filename="../src/mainwindow.ui" line="861"/>
         <source>Clear bookmarks</source>
         <extracomment>Button to delete all saved bookmarks</extracomment>
         <translation>Limpiar Marcadores</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2468"/>
+        <location filename="../src/mainwindow.cpp" line="2510"/>
         <source>Bookmark saved.</source>
         <translation>Marcado salvado.</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="376"/>
-        <location filename="../src/mainwindow.ui" line="1070"/>
+        <location filename="../src/mainwindow.ui" line="1079"/>
         <source>ContextMenu</source>
         <translation>Menu de Contexto</translation>
     </message>
@@ -1338,73 +1422,73 @@
         <translation>&amp;Catálogo</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="523"/>
+        <location filename="../src/mainwindow.ui" line="524"/>
         <source>Zoom &amp;in</source>
         <extracomment>Button for enlarging the currently displayed image</extracomment>
         <translation>&amp;Ampliar</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="526"/>
+        <location filename="../src/mainwindow.ui" line="527"/>
         <source>Zoom in</source>
         <translation>Ampliar</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="535"/>
+        <location filename="../src/mainwindow.ui" line="536"/>
         <source>Zoom &amp;out</source>
         <extracomment>Reduce the image currently displayed button</extracomment>
         <translation>&amp;Reduccion</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="538"/>
+        <location filename="../src/mainwindow.ui" line="539"/>
         <source>Zoom out</source>
         <translation>Reduccion</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="888"/>
+        <location filename="../src/mainwindow.ui" line="897"/>
         <source>Remove parenthesized text from book title</source>
         <extracomment>Ability to remove and display (parenthesized) text from Volume title in the catalog</extracomment>
         <translation>Quita (opciónes) a la Título de Libro</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="896"/>
+        <location filename="../src/mainwindow.ui" line="905"/>
         <source>Ignore parenthesized text when searching titles</source>
         <extracomment>Ability to search with the title removed (parenthesized) removed from the title of Volume in the catalog</extracomment>
         <translation>Remover (paréntesis) de el titulo de archivo en busqueda</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="908"/>
-        <location filename="../src/mainwindow.ui" line="911"/>
+        <location filename="../src/mainwindow.ui" line="917"/>
+        <location filename="../src/mainwindow.ui" line="920"/>
         <source>Icons and titles</source>
         <extracomment>For Volume in the catalog, a mode to list up icons and titles vertically</extracomment>
         <translation>Ver en Iconos</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="932"/>
-        <location filename="../src/mainwindow.ui" line="935"/>
+        <location filename="../src/mainwindow.ui" line="941"/>
+        <location filename="../src/mainwindow.ui" line="944"/>
         <source>List</source>
         <extracomment>Mode to list volumes in the catalog with icons and titles arranged side by side</extracomment>
         <translation>Ver en Lista</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="943"/>
+        <location filename="../src/mainwindow.ui" line="952"/>
         <source>Show tag bar</source>
         <extracomment>Squeeze the Volume of the catalog Function to erase the bar displaying the tag button</extracomment>
         <translation>Mostrar Etiquetas</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="807"/>
+        <location filename="../src/mainwindow.ui" line="808"/>
         <source>Copy file to clipboard</source>
         <extracomment>Menu to copy currently displayed image file on Explorer</extracomment>
         <translation>Copiar Archivo en tablero</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="763"/>
+        <location filename="../src/mainwindow.ui" line="764"/>
         <source>&amp;Bilinear interpolation (fast)</source>
         <extracomment>Menu to resize the image by bilinear interpolation by GPU</extracomment>
         <translation>&amp;Complemento de Bilineal(rápido)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="442"/>
+        <location filename="../src/mainwindow.ui" line="443"/>
         <source>F&amp;older</source>
         <translation>&amp;Carpeta</translation>
     </message>
@@ -1414,115 +1498,126 @@
         <translation type="vanished">No agrande las imágenes pequeñas en Fitting</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1048"/>
+        <location filename="../src/mainwindow.ui" line="1057"/>
         <source>Show image information in full screen</source>
         <extracomment>Signage that displays the file name of the image at full screen display</extracomment>
         <translation>Mostrar ruta de archivo en pantalla completa</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="505"/>
+        <location filename="../src/mainwindow.ui" line="506"/>
         <source>&amp;Next</source>
         <extracomment>Switch to the next image button</extracomment>
         <translation>Imagen Pr&amp;óxima</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="514"/>
+        <location filename="../src/mainwindow.ui" line="515"/>
         <source>&amp;Previous</source>
         <extracomment>Switch to previous image button</extracomment>
         <translation>Imagen Pr&amp;evia</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="562"/>
+        <location filename="../src/mainwindow.ui" line="563"/>
         <source>2-page &amp;spread</source>
         <extracomment>Arranging two images side by side like when opening a book</extracomment>
         <translation>&amp;Pagina Doble</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="599"/>
+        <location filename="../src/mainwindow.ui" line="600"/>
         <source>&amp;Right-bound</source>
         <extracomment>Books written in vertical writing such as Japanese and Chinese read from right, so read from right page to left page</extracomment>
         <translation>Doble Pagina de &amp;Der. a Izq.</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="654"/>
+        <location filename="../src/mainwindow.ui" line="655"/>
         <source>Open in &amp;Explorer</source>
         <extracomment>Menu that displays Explorer with the currently displayed image file selected</extracomment>
         <translation>Abrir en &amp;Explorador</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="699"/>
+        <location filename="../src/mainwindow.ui" line="700"/>
         <source>Previous p&amp;age</source>
         <extracomment>Because there are times when the page is missing due to bookbinding convenience, digital books will fit the left and right pages with this operation</extracomment>
         <translation>Previa (&amp;Una Pagina)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="720"/>
+        <location filename="../src/mainwindow.ui" line="721"/>
         <source>Display &amp;first page alone</source>
         <extracomment>In the case of a digital book, since the first image is a cover page, only one image is displayed</extracomment>
         <translation>Primera imagen abiertos como una vista(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="771"/>
+        <location filename="../src/mainwindow.ui" line="772"/>
         <source>&amp;Nearest Neighbor interpolation (fast but coarse)</source>
         <extracomment>Menu to resize image by Nearest Neighbor interpolation by GPU</extracomment>
         <translation>&amp;Nearest Neighbor Interpolación (Rapido pero malo)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="784"/>
+        <location filename="../src/mainwindow.ui" line="785"/>
         <source>&amp;Restore window display at next startup</source>
         <extracomment>When restarting the next time, restore the position size of the window at the time of the last termination</extracomment>
         <translation>&amp;Recordar posicion de la ventana</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="837"/>
+        <location filename="../src/mainwindow.ui" line="838"/>
         <source>Add bookmark</source>
         <extracomment>Button to add the currently displayed volume and page to bookmark</extracomment>
         <translation>Añadir a Marcados</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="923"/>
+        <location filename="../src/mainwindow.ui" line="886"/>
+        <source>Manage &amp;catalogs...</source>
+        <extracomment>Menu entry that opens the dialog which adds, edits and removes the folders registered as catalogs</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.ui" line="889"/>
+        <source>Add, edit and remove the folders registered as catalogs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.ui" line="932"/>
         <source>Icons only</source>
         <extracomment>Mode to list Volume in the catalog with only the icons side by side</extracomment>
         <translation>Ver en Iconos</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="953"/>
+        <location filename="../src/mainwindow.ui" line="962"/>
         <source>Send image by email...</source>
         <extracomment>Menu to attach the currently displayed image to the mail software and start up</extracomment>
         <translation>Enviar esta Imagen por Email</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="961"/>
+        <location filename="../src/mainwindow.ui" line="970"/>
         <source>Larger &amp;grid for long titles</source>
         <extracomment>Functions to be used when the Volume title in the catalog is long</extracomment>
         <translation>Para vizualizar un título largo, tenga el bastidor &amp;grande</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="981"/>
+        <location filename="../src/mainwindow.ui" line="990"/>
         <source>Bicubic interpolation by CPU (quality)</source>
         <extracomment>Menu that performs bicubic interpolation with CPU when resizing image</extracomment>
         <translation>Bicubic interpolation por CPU (quality)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="993"/>
+        <location filename="../src/mainwindow.ui" line="1002"/>
         <source>Include images in subfolders</source>
         <extracomment>When enumerating images, subfolders are also included in the range</extracomment>
         <translation>Abre con Subcarpetas</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1001"/>
+        <location filename="../src/mainwindow.ui" line="1010"/>
         <source>Open at last-read page</source>
         <extracomment>A setting menu that allows you to advance the page to the point you read when you reopen Volume that you read a part way up again</extracomment>
         <translation>Pagina previante en Presentacion</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1009"/>
+        <location filename="../src/mainwindow.ui" line="1018"/>
         <source>Show reading progress</source>
         <extracomment>Ability to display read information read in the middle in FolderWindow</extracomment>
         <translation>Ver que tan lejo has leido</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1019"/>
+        <location filename="../src/mainwindow.ui" line="1028"/>
         <source>Rename</source>
         <extracomment>A menu for changing the file name of the currently displayed image</extracomment>
         <translation>Renombrar</translation>
@@ -1543,98 +1638,98 @@
         <translation type="vanished">No se pudo abrir. ¿No hay imagenes?</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2058"/>
+        <location filename="../src/mainwindow.cpp" line="2100"/>
         <source>Select an image or archive</source>
         <comment>Title of the dialog displayed when opening a file with OpenFileFolder</comment>
         <translation>Seleccione un archivo</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="574"/>
+        <location filename="../src/mainwindow.ui" line="575"/>
         <source>Full screen</source>
         <extracomment>Button to switch the window display to full screen</extracomment>
         <translation>Pantalla completa</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="612"/>
+        <location filename="../src/mainwindow.ui" line="613"/>
         <source>&amp;Keep wide images together in 2-page view</source>
         <extracomment>Automatically switch because it may spread 2 pages are combined into one image in the digital book</extracomment>
         <translation>&amp;Solo demuestre una pagina Estrecha en Doble Pagina</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="641"/>
+        <location filename="../src/mainwindow.ui" line="642"/>
         <source>Show status &amp;bar</source>
         <translation>Ver Bara de &amp;Estado</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="649"/>
+        <location filename="../src/mainwindow.ui" line="650"/>
         <source>Show &amp;page bar</source>
         <translation>Ver Bara de &amp;Pagina</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="671"/>
+        <location filename="../src/mainwindow.ui" line="672"/>
         <source>Check for &amp;updates...</source>
         <extracomment>A menu to start up the browser to check whether the currently used QuickViewer is the latest version on the project web page</extracomment>
         <translation>Ver si ahi una nueva &amp;version en el Internet</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="689"/>
+        <location filename="../src/mainwindow.ui" line="690"/>
         <source>P&amp;revious volume</source>
         <extracomment>Switch to the previous Volume in the same folder as Volume currently being displayed Button</extracomment>
         <translation>Volumen P&amp;revio</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="694"/>
+        <location filename="../src/mainwindow.ui" line="695"/>
         <source>Next &amp;page</source>
         <extracomment>Because there are times when the page is missing due to bookbinding convenience, digital books will fit the left and right pages with this operation</extracomment>
         <translation>Proximo (&amp;Una Pagina)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="712"/>
+        <location filename="../src/mainwindow.ui" line="713"/>
         <source>Show &amp;toolbar</source>
         <translation>Ver la Bara de &amp;Herramientas</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="728"/>
+        <location filename="../src/mainwindow.ui" line="729"/>
         <source>Show &amp;menu bar</source>
         <translation>Ver la Bara de &amp;Menu</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="750"/>
+        <location filename="../src/mainwindow.ui" line="751"/>
         <source>&amp;Copy image to clipboard</source>
         <extracomment>A menu for copying the bitmap of the currently displayed image to the clipboard</extracomment>
         <translation>&amp;Copia la imagen a el portapapeles</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="755"/>
+        <location filename="../src/mainwindow.ui" line="756"/>
         <source>Move image to &amp;Recycle Bin</source>
         <extracomment>Menu that puts the currently displayed image in Recycle Bin</extracomment>
         <translation>Mover Imagen hacia &amp;Basura</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="828"/>
+        <location filename="../src/mainwindow.ui" line="829"/>
         <source>&amp;Slideshow</source>
         <extracomment>Button to start displaying slideshow</extracomment>
         <translation>&amp;Presentacion de Imagenes</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="865"/>
+        <location filename="../src/mainwindow.ui" line="866"/>
         <source>Project &amp;website</source>
         <extracomment>Button to display the web page of the project in the browser</extracomment>
         <translation>Ver la &amp;pagina de QuickViewer en el internet</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="877"/>
+        <location filename="../src/mainwindow.ui" line="878"/>
         <source>Show &amp;Catalog</source>
         <extracomment>Button to display Catalog Window. Switch between internal display, independent display, and erase</extracomment>
         <translation>Ver el &amp;Catalogo</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="880"/>
+        <location filename="../src/mainwindow.ui" line="881"/>
         <source>Show Catalog</source>
         <translation>Ver el Catalogo</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="973"/>
+        <location filename="../src/mainwindow.ui" line="982"/>
         <source>Show &amp;Folder</source>
         <extracomment>Button to display FolderWindow. Switch between internal display, independent display, and erase</extracomment>
         <translation>Ver &amp;Carpeta</translation>
@@ -1645,25 +1740,25 @@
         <translation type="vanished">CPU Bicúbica después de GPU Bilineal (estándar)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1014"/>
+        <location filename="../src/mainwindow.ui" line="1023"/>
         <source>&amp;Settings</source>
         <extracomment>Menu for displaying a dialog for changing the adjunct setting of the application</extracomment>
         <translation>&amp;Configuracion</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1027"/>
+        <location filename="../src/mainwindow.ui" line="1036"/>
         <source>Don&apos;t upscale small images</source>
         <extracomment>Ability to display an image smaller than the window as it is when fit is displayed</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1040"/>
+        <location filename="../src/mainwindow.ui" line="1049"/>
         <source>Full screen on startup</source>
         <extracomment>Ability to always launch applications in full screen</extracomment>
         <translation>Pantalla completa al iniciar</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1065"/>
+        <location filename="../src/mainwindow.ui" line="1074"/>
         <source>Confirm moving image to &amp;Recycle Bin</source>
         <extracomment>A function to display a confirmation screen when moving the currently displayed image to Recycle Bin</extracomment>
         <translation>Ver una advertencia antes de mandar a &amp;Borrar</translation>
@@ -1674,112 +1769,112 @@
         <translation type="vanished">Asociaciones de imágenes (requiere Administrador)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1075"/>
+        <location filename="../src/mainwindow.ui" line="1084"/>
         <source>&amp;Mouse Settings...</source>
         <translation>Configurar el &amp;Mouse</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1080"/>
+        <location filename="../src/mainwindow.ui" line="1089"/>
         <source>Delete the image</source>
         <translation>Eliminar la imagen</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2305"/>
+        <location filename="../src/mainwindow.cpp" line="2347"/>
         <source>Are you sure you want to move the image to Recycle Bin?</source>
         <comment>Confirm putting displayed file in Recycle Box Message Box body</comment>
         <translation>¿Tirar esta imagen a la basura?</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2299"/>
-        <location filename="../src/mainwindow.cpp" line="2343"/>
+        <location filename="../src/mainwindow.cpp" line="2341"/>
+        <location filename="../src/mainwindow.cpp" line="2385"/>
         <source>Confirmation</source>
         <comment>Confirm deleting image file on MessageBox title</comment>
         <translation>Confirmar</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1696"/>
+        <location filename="../src/mainwindow.cpp" line="1736"/>
         <source>Loading...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1699"/>
+        <location filename="../src/mainwindow.cpp" line="1739"/>
         <source>No images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1701"/>
+        <location filename="../src/mainwindow.cpp" line="1741"/>
         <source>Unavailable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2052"/>
+        <location filename="../src/mainwindow.cpp" line="2094"/>
         <source>All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.heic *.heif);;Archives( *.zip *.7z *.rar)</source>
         <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2348"/>
+        <location filename="../src/mainwindow.cpp" line="2390"/>
         <source>Are you sure you want to delete this image?</source>
         <comment>Confirm deleting image file on Message Box body</comment>
         <translation>¿Estás seguro de que quieres eliminar esta imagen?</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1085"/>
+        <location filename="../src/mainwindow.ui" line="1094"/>
         <source>File Associations... (current user)</source>
         <extracomment>Ability to associate QuickViewer and image files on Explorer (Host Global)</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1093"/>
+        <location filename="../src/mainwindow.ui" line="1102"/>
         <source>Don&apos;t update history</source>
         <extracomment>Flag for prohibiting update of history</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1105"/>
+        <location filename="../src/mainwindow.ui" line="1114"/>
         <source>Open panels in separate windows</source>
         <extracomment>Flag separating the catalog and folder windows into independent windows</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="456"/>
+        <location filename="../src/mainwindow.ui" line="457"/>
         <source>&amp;Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1113"/>
+        <location filename="../src/mainwindow.ui" line="1122"/>
         <source>Large menu and toolbar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1118"/>
+        <location filename="../src/mainwindow.ui" line="1127"/>
         <source>Turn left page</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1123"/>
+        <location filename="../src/mainwindow.ui" line="1132"/>
         <source>Turn right page</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1131"/>
+        <location filename="../src/mainwindow.ui" line="1140"/>
         <source>Split wide images into two pages</source>
         <extracomment>Flag to display images on the left and right sides with a portrait display</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1143"/>
+        <location filename="../src/mainwindow.ui" line="1152"/>
         <source>Loupe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1151"/>
+        <location filename="../src/mainwindow.ui" line="1160"/>
         <source>Pan with mouse movement when zoomed</source>
         <extracomment>Flag to scroll the image with moving the mouse pointer instead of displaying the scroll bar</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1163"/>
+        <location filename="../src/mainwindow.ui" line="1172"/>
         <source>Fit to width</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1790,77 +1885,77 @@
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="404"/>
-        <location filename="../src/mainwindow.ui" line="460"/>
+        <location filename="../src/mainwindow.ui" line="461"/>
         <source>Fit mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1175"/>
+        <location filename="../src/mainwindow.ui" line="1184"/>
         <source>Fit to window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1187"/>
+        <location filename="../src/mainwindow.ui" line="1196"/>
         <source>Image adjustments...</source>
         <extracomment>a menu test which show window changes brightness of the image</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1195"/>
+        <location filename="../src/mainwindow.ui" line="1204"/>
         <source>Spline16 interpolation by CPU</source>
         <extracomment>Menu that performs Spline16 interpolation with CPU when resizing image</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1203"/>
+        <location filename="../src/mainwindow.ui" line="1212"/>
         <source>Spline36 interpolation by CPU</source>
         <extracomment>Menu that performs Spline36 interpolation with CPU when resizing image</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1211"/>
+        <location filename="../src/mainwindow.ui" line="1220"/>
         <source>Lanczos3 interpolation by CPU</source>
         <extracomment>Menu that performs Lanczos3 interpolation with CPU when resizing image</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1219"/>
+        <location filename="../src/mainwindow.ui" line="1228"/>
         <source>Lanczos4 interpolation by CPU</source>
         <extracomment>Menu that performs Lanczos4 interpolation with CPU when resizing image</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1224"/>
+        <location filename="../src/mainwindow.ui" line="1233"/>
         <source>Next page or volume</source>
         <extracomment>Switch to next image, or to next volume if the page is first button</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1229"/>
+        <location filename="../src/mainwindow.ui" line="1238"/>
         <source>Previous page or volume</source>
         <extracomment>Switch to previous image, or to previous volume if the page is last button</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1237"/>
+        <location filename="../src/mainwindow.ui" line="1246"/>
         <source>Remember catalog pane width</source>
         <extracomment>Flag to restore the width of Catalog view</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1245"/>
+        <location filename="../src/mainwindow.ui" line="1254"/>
         <source>Remember folder pane width</source>
         <extracomment>Flag to restore the width of Folder view</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1253"/>
+        <location filename="../src/mainwindow.ui" line="1262"/>
         <source>Save reading progress</source>
         <extracomment>Flag to save progress.ini</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1261"/>
+        <location filename="../src/mainwindow.ui" line="1270"/>
         <source>Hide mouse cursor in full screen</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1871,37 +1966,37 @@
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="274"/>
-        <location filename="../src/mainwindow.ui" line="1266"/>
+        <location filename="../src/mainwindow.ui" line="1275"/>
         <source>&amp;Sort by</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1274"/>
+        <location filename="../src/mainwindow.ui" line="1283"/>
         <source>File name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1282"/>
+        <location filename="../src/mainwindow.ui" line="1291"/>
         <source>File name (descending)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1290"/>
+        <location filename="../src/mainwindow.ui" line="1299"/>
         <source>File size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1298"/>
+        <location filename="../src/mainwindow.ui" line="1307"/>
         <source>File size (descending)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1306"/>
+        <location filename="../src/mainwindow.ui" line="1315"/>
         <source>Modified time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1314"/>
+        <location filename="../src/mainwindow.ui" line="1323"/>
         <source>Modified time (descending)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1927,114 +2022,290 @@
         <translation>Administración de catálogo</translation>
     </message>
     <message>
-        <location filename="../src/catalog/cataloglist.ui" line="46"/>
+        <location filename="../src/catalog/cataloglist.ui" line="26"/>
+        <source>Drop image folders here, or add them with &quot;Add folder...&quot;. Press &quot;Start creating&quot; to build the catalogs.</source>
+        <extracomment>Line above the catalog list that explains how a folder is registered as a catalog and built</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/cataloglist.ui" line="38"/>
+        <source>Add &amp;folder...</source>
+        <extracomment>Button that registers another folder as a catalog</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/cataloglist.ui" line="51"/>
+        <source>Start creating</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/cataloglist.ui" line="71"/>
+        <source>More</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/cataloglist.ui" line="176"/>
+        <source>Right-click a catalog to edit, delete, or open its folder.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/cataloglist.ui" line="181"/>
+        <source>Books of the selected catalog</source>
+        <extracomment>Frame holding the books of the catalog selected above, and the button that edits the tags of one of them</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/cataloglist.ui" line="188"/>
+        <source>Title</source>
+        <extracomment>Column of the list of books that shows the title of a book</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/cataloglist.ui" line="193"/>
+        <source>Tags</source>
+        <extracomment>Column of the list of books that shows the tags of a book</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/cataloglist.ui" line="213"/>
+        <source>&amp;Edit tags...</source>
+        <extracomment>Button that opens the dialog which edits the title and tags of the selected book</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/cataloglist.ui" line="241"/>
+        <source>Cover of the selected book</source>
+        <extracomment>Tooltip of the picture that shows the cover of the book selected in the list</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/cataloglist.ui" line="289"/>
+        <source>Open in Explorer</source>
+        <extracomment>Button that shows the folder of the selected catalog where the platform lists files</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/cataloglist.ui" line="299"/>
+        <source>Delete all catalogs...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>&amp;Add</source>
         <extracomment>Button to add a new catalog</extracomment>
-        <translation>&amp;Anadir</translation>
+        <translation type="vanished">&amp;Anadir</translation>
     </message>
     <message>
-        <location filename="../src/catalog/cataloglist.ui" line="56"/>
         <source>Update catalog</source>
         <extracomment>Button for updating the contents of registered catalog</extracomment>
-        <translation>Actualizar Base de datos</translation>
+        <translation type="vanished">Actualizar Base de datos</translation>
     </message>
     <message>
-        <location filename="../src/catalog/cataloglist.ui" line="63"/>
+        <location filename="../src/catalog/cataloglist.ui" line="284"/>
         <source>&amp;Delete</source>
         <extracomment>Button to delete information of registered catalog</extracomment>
         <translation>&amp;Borrar</translation>
     </message>
     <message>
-        <location filename="../src/catalog/cataloglist.ui" line="70"/>
+        <location filename="../src/catalog/cataloglist.ui" line="279"/>
         <source>&amp;Edit</source>
         <extracomment>Button to edit information on registered catalog</extracomment>
         <translation>&amp;Editar</translation>
     </message>
     <message>
-        <location filename="../src/catalog/cataloglist.ui" line="101"/>
         <source>Delete all</source>
-        <translation>Eliminar Todos</translation>
+        <translation type="vanished">Eliminar Todos</translation>
     </message>
     <message>
-        <location filename="../src/catalog/cataloglist.ui" line="108"/>
         <source>Update all</source>
         <extracomment>登録済みのカタログの内容を更新するボタン</extracomment>
-        <translation>Actualizar Todos</translation>
+        <translation type="vanished">Actualizar Todos</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="20"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="27"/>
         <source>Name</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>Nombre</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="25"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="32"/>
         <source>Path</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>Ruta</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="72"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="51"/>
+        <source>Close</source>
+        <comment>Button that closes the catalog manager</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="199"/>
+        <source>Remove missing entries (%1)</source>
+        <comment>Button that removes the catalog entries whose folder is no longer there</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/cataloglist.ui" line="294"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="211"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="223"/>
+        <source>Remove missing entries</source>
+        <extracomment>Button that removes the catalog entries whose folder is no longer there</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="212"/>
+        <source>%1 registered folder(s) are no longer there. Remove them from the list? The image files are not deleted.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="223"/>
+        <source>Removed %1 entry(ies).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="231"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="515"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="692"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="727"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="747"/>
+        <source>Catalog database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="233"/>
+        <source>Move or rename that file, then open the catalog again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="270"/>
+        <source>Start creating (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="271"/>
+        <source>Start creating</source>
+        <comment>Button that builds the folders which were added to the list above</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="265"/>
+        <source>Stop creating</source>
+        <comment>Button that cancels the catalogs being built</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="326"/>
+        <source>Not created yet</source>
+        <comment>Representation of time indicating that the catalog is not currently created and will be generated from now</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="614"/>
+        <source>Catalog creation incomplete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="615"/>
+        <source>Catalog(s) left unstored: %1</source>
+        <comment>Body of message box when some catalogs could not be stored</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="259"/>
+        <source>Stopping...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="197"/>
+        <source>Remove missing entries</source>
+        <comment>Button that removes the catalog entries whose folder is no longer there</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="654"/>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="655"/>
+        <source>%1 added folder(s) are not created yet. Close and discard them?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="721"/>
+        <source>Delete catalog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="722"/>
+        <source>Delete &quot;%1&quot; from the list of catalogs? The image files are not deleted.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="742"/>
+        <source>Delete all catalogs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="743"/>
+        <source>Delete every catalog from the list? The image files are not deleted.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Start</source>
         <comment>Button to start catalog creation for specified folder</comment>
-        <translation>Crear Catalogo</translation>
+        <translation type="vanished">Crear Catalogo</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="90"/>
         <source>Cancel</source>
         <comment>Button to cancel the catalog being generated</comment>
-        <translation>Cancelar</translation>
+        <translation type="vanished">Cancelar</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="255"/>
         <source>Completed</source>
         <comment>Title of message box when catalog generation finished successfully</comment>
-        <translation>¡Fue Exitoso!</translation>
+        <translation type="vanished">¡Fue Exitoso!</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="318"/>
         <source>Cancelled!</source>
         <comment>Title of message box when catalog generation was canceled</comment>
-        <translation>Ha Cancelado!</translation>
+        <translation type="vanished">Ha Cancelado!</translation>
     </message>
     <message>
-        <location filename="../src/catalog/cataloglist.ui" line="40"/>
         <source>Selected Catalog</source>
         <extracomment>Name of the frame in which buttons for operating one catalog are arranged</extracomment>
-        <translation>Catálogo seleccionado</translation>
+        <translation type="vanished">Catálogo seleccionado</translation>
     </message>
     <message>
-        <location filename="../src/catalog/cataloglist.ui" line="86"/>
         <source>All Catalogs</source>
         <extracomment>Name of the frame in which buttons for operating all catalogs are arranged</extracomment>
-        <translation>Todos los Catálogos</translation>
+        <translation type="vanished">Todos los Catálogos</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="23"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="30"/>
         <source>Created</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>Tiempo de Creacion</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="115"/>
         <source>Pending</source>
         <comment>Representation of time indicating that the catalog is not currently created and will be generated from now</comment>
-        <translation>ninguno</translation>
+        <translation type="vanished">ninguno</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="182"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="583"/>
         <source>Edit Catalog</source>
         <comment>Button for editing contents of already created catalog</comment>
         <translation>Editar el catálogo</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="257"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="609"/>
         <source>Catalog creation completed.</source>
         <comment>Body of message box when catalog generation finished successfully</comment>
         <translation>¡Se ha creado el catalogo con exito!</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="319"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="605"/>
         <source>Catalog creation was cancelled.</source>
         <comment>Body of message box when catalog generation is canceled</comment>
         <translation>Se ha cancelado la creacion de catalogos</translation>
@@ -2556,6 +2827,49 @@
         <source>Click and enter a new shortcut key.</source>
         <comment>Gray text to be displayed on LineEdit to input the shortcut key</comment>
         <translation>Hace clic y escribe el atajo de teclado nuevo.</translation>
+    </message>
+</context>
+<context>
+    <name>VolumeCoverPane</name>
+    <message>
+        <location filename="../src/catalog/volumecoverpane.cpp" line="36"/>
+        <source>No cover</source>
+        <comment>Text shown where a cover would be</comment>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>VolumeTagDialog</name>
+    <message>
+        <location filename="../src/catalog/volumetagdialog.ui" line="14"/>
+        <source>Edit tags</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/volumetagdialog.ui" line="22"/>
+        <source>Title:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/volumetagdialog.ui" line="32"/>
+        <source>Tags:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/volumetagdialog.ui" line="46"/>
+        <source>New tag</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/volumetagdialog.ui" line="53"/>
+        <source>&amp;Add</source>
+        <translation type="unfinished">&amp;Anadir</translation>
+    </message>
+    <message>
+        <location filename="../src/catalog/volumetagdialog.ui" line="62"/>
+        <source>Tags belong to this book only. The title is used when the list shows titles rather than folder names.</source>
+        <extracomment>Line under the tag list of the dialog that edits one catalog volume</extracomment>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

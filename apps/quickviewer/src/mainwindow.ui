@@ -425,8 +425,9 @@
     <property name="title">
      <string>&amp;Catalog</string>
     </property>
-    <addaction name="actionShowCatalog"/>
-    <addaction name="separator"/>
+   <addaction name="actionShowCatalog"/>
+   <addaction name="actionManageCatalogs"/>
+   <addaction name="separator"/>
     <addaction name="actionCatalogViewList"/>
     <addaction name="actionCatalogViewIcon"/>
     <addaction name="actionCatalogViewIconNoText"/>
@@ -878,6 +879,14 @@
    </property>
    <property name="toolTip">
     <string>Show Catalog</string>
+   </property>
+  </action>
+  <action name="actionManageCatalogs">
+   <property name="text">
+    <string extracomment="Menu entry that opens the dialog which adds, edits and removes the folders registered as catalogs">Manage &amp;catalogs...</string>
+   </property>
+   <property name="toolTip">
+    <string>Add, edit and remove the folders registered as catalogs</string>
    </property>
   </action>
   <action name="actionCatalogTitleWithoutOptions">

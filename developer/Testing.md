@@ -144,6 +144,7 @@ Supported names are:
 | `svgloader` | `tst_svgloadertest.exe` |
 | `viewernavigation` | `tst_viewernavigationtest.exe` |
 | `windowstartup` | `tst_windowstartuptest.exe` |
+| `catalogdatabase` | `tst_catalogdatabasetest.exe` |
 
 The optional `test-function` is passed to QtTest as the function selector.
 `--viewer-only` and `--startup-only` are obsolete and are not supported.

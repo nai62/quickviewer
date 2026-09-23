@@ -4,7 +4,7 @@
 #include <QtGui>
 #include <QMenu>
 #include <QMainWindow>
-#include "models/thumbnailmanager.h"
+#include "catalogdatabase.h"
 #include "models/volumelocation.h"
 #include "volumeitemmodel.h"
 
@@ -13,16 +13,6 @@ class CatalogWindow;
 class MainWindow;
 }
 
-class SearchWords
-{
-public:
-    bool isEmpty;
-    QStringList matches;
-    QStringList nomatches;
-    SearchWords(const QString &searchNoCase);
-    bool match(const QString &targetNoCase);
-};
-
 class CatalogWindow : public QWidget
 {
     Q_OBJECT
@@ -30,17 +20,18 @@ class CatalogWindow : public QWidget
 public:
     explicit CatalogWindow(QWidget *parent, Ui::MainWindow *uiMain);
     ~CatalogWindow();
-    void setThumbnailManager(ThumbnailManager *manager);
+    void setCatalogDatabase(CatalogDatabase *catalogDatabase);
     void resetViewMode();
     void setAsToplevelWindow();
     void setAsInnerWidget();
     void resetVolumes();
     void searchByWord(bool doForce = false);
+    /** Reads the catalog again and shows what the search and tag bar ask for. */
+    void refreshCatalog();
     void dragEnterEvent(QDragEnterEvent *e);
     void dropEvent(QDropEvent *e);
     void resizeEvent(QResizeEvent *event);
     bool isCatalogSearching();
-    void clearTagFrame();
     void initTagButtons();
     void resetTagButtons(QStringList buttons, QStringList checks);
     QStringList getTagWords();
@@ -52,10 +43,10 @@ public slots:
     void handleFolderViewIconActionTriggered();
     void handleFolderViewIconNoTextActionTriggered();
     void handleManageCatalogButtonClicked();
-    void handleSearchComboBoxEditTextChanged(QString search);
-    void handleSearchComboBoxCurrentIndexChanged(QString search);
+    void handleSearchEditTextChanged(QString text);
     void handleSearchLineEditEditingFinished();
     void handleVolumeListItemDoubleClicked(const QModelIndex &index);
+    void handleVolumeListContextMenu(const QPoint &position);
     void handleSearchTitleWithOptionsActionTriggered(bool checked);
     void handleCatalogTitleWithoutOptionsActionTriggered(bool checked);
     void handleTagButtonClicked();
@@ -68,14 +59,18 @@ protected:
     void closeEvent(QCloseEvent *e);
 
 private:
+    /** Opens the tag dialog for the volume at \a row of the shown list. */
+    void editVolumeTags(int row);
+
+    int listableVolumeCount() const;
+
     Ui::CatalogWindow *ui;
-    ThumbnailManager *m_thumbManager;
-    QMap<int, CatalogRecord> m_catalogs;
-    QList<int> m_enabledCatalogs;
+    CatalogDatabase *m_catalogDatabase = nullptr;
     QList<VolumeThumbRecord> m_volumes;
     QList<VolumeThumbRecord *> m_volumeSearch;
     QMenu m_folderViewMenu;
     QString m_lastSearchWord;
+    QStringList m_lastTagWords;
     VolumeItemModel m_itemModel;
 };
 

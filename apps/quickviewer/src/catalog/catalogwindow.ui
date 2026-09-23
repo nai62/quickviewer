@@ -140,39 +140,13 @@
        </size>
       </property>
      </widget>
-     <widget class="QSplitter" name="splitter">
+     <widget class="QLineEdit" name="searchEdit">
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <widget class="QComboBox" name="searchCombo">
-       <property name="minimumSize">
-        <size>
-         <width>50</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="baseSize">
-        <size>
-         <width>100</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="editable">
-        <bool>true</bool>
-       </property>
-      </widget>
      </widget>
     </widget>
    </item>
@@ -237,7 +211,7 @@ QFrame.layout {
     </widget>
    </item>
    <item>
-    <widget class="QListView" name="volumeList">
+    <widget class="CatalogVolumeListView" name="volumeList">
      <property name="acceptDrops">
       <bool>true</bool>
      </property>
@@ -412,10 +386,10 @@ QFrame.layout {
    </hints>
   </connection>
   <connection>
-   <sender>searchCombo</sender>
-   <signal>editTextChanged(QString)</signal>
+   <sender>searchEdit</sender>
+   <signal>textChanged(QString)</signal>
    <receiver>CatalogWindow</receiver>
-   <slot>handleSearchComboBoxEditTextChanged(QString)</slot>
+   <slot>handleSearchEditTextChanged(QString)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>589</x>
@@ -492,22 +466,6 @@ QFrame.layout {
    </hints>
   </connection>
   <connection>
-   <sender>searchCombo</sender>
-   <signal>currentIndexChanged(QString)</signal>
-   <receiver>CatalogWindow</receiver>
-   <slot>handleSearchComboBoxCurrentIndexChanged(QString)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>388</x>
-     <y>45</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>356</x>
-     <y>341</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>actionCloseWindow</sender>
    <signal>triggered()</signal>
    <receiver>CatalogWindow</receiver>
@@ -527,7 +485,7 @@ QFrame.layout {
    <sender>actionManageCatalogs</sender>
    <signal>triggered()</signal>
    <receiver>CatalogWindow</receiver>
-   <slot>handleFolderViewIconNoTextActionTriggered()</slot>
+   <slot>handleManageCatalogButtonClicked()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -558,14 +516,20 @@ QFrame.layout {
  </connections>
  <slots>
   <slot>handleFolderViewButtonClicked()</slot>
-  <slot>handleSearchComboBoxEditTextChanged(QString)</slot>
+  <slot>handleSearchEditTextChanged(QString)</slot>
   <slot>handleFolderViewListActionTriggered()</slot>
   <slot>handleFolderViewIconActionTriggered()</slot>
   <slot>handleFolderViewIconNoTextActionTriggered()</slot>
-  <slot>handleSearchComboBoxCurrentIndexChanged(QString)</slot>
   <slot>handleSearchTitleWithOptionsActionTriggered(bool)</slot>
   <slot>handleCatalogTitleWithoutOptionsActionTriggered(bool)</slot>
   <slot>handleVolumeListItemDoubleClicked(QModelIndex)</slot>
   <slot>handleManageCatalogButtonClicked()</slot>
  </slots>
+ <customwidgets>
+  <customwidget>
+   <class>CatalogVolumeListView</class>
+   <extends>QListView</extends>
+   <header>catalogvolumelistview.h</header>
+  </customwidget>
+ </customwidgets>
 </ui>

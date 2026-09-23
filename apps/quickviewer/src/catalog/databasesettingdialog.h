@@ -3,7 +3,7 @@
 
 #include <QtGui>
 #include <QDialog>
-#include "models/thumbnailmanager.h"
+#include "catalogdatabase.h"
 
 namespace Ui {
 class DatabaseSettingDialog;
@@ -39,7 +39,7 @@ private:
     Ui::DatabaseSettingDialog *ui;
     QString m_name;
     QString m_path;
-    bool m_editing;
+    bool m_editing = false;
 };
 
 #endif // DATABASESETTING_H
