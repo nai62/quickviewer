@@ -111,7 +111,7 @@ linux {
     SEVENZIP_UNIX_BUNDLE_DIR = $$clean_path($$OUT_PWD/../../bundle)
 
     sevenzip_unix.target = sevenzip_unix
-    sevenzip_unix.commands = mkdir -p $$shell_quote($$SEVENZIP_UNIX_BUILD) $$shell_quote($$SEVENZIP_UNIX_BIN_DIR) $$shell_quote($$SEVENZIP_UNIX_LIB_DIR) $$shell_quote($$SEVENZIP_UNIX_BUNDLE_DIR) && $(MAKE) -C $$shell_quote($$SEVENZIP_UPSTREAM_ROOT/CPP/7zip/Bundles/Format7zF) -f makefile.gcc O=$$shell_quote($$SEVENZIP_UNIX_BUILD) CXXFLAGS_EXTRA=-DZ7_USE_VIRTUAL_DESTRUCTOR_IN_IUNKNOWN && cp $$shell_quote($$SEVENZIP_UNIX_LIBRARY) $$shell_quote($$SEVENZIP_UNIX_BIN_DIR/7z.so) && cp $$shell_quote($$SEVENZIP_UNIX_LIBRARY) $$shell_quote($$SEVENZIP_UNIX_LIB_DIR/lib7z.so) && cp $$shell_quote($$SEVENZIP_UNIX_LIBRARY) $$shell_quote($$SEVENZIP_UNIX_BUNDLE_DIR/7z.so)
+    sevenzip_unix.commands = mkdir -p $$shell_quote($$SEVENZIP_UNIX_BUILD) $$shell_quote($$SEVENZIP_UNIX_BIN_DIR) $$shell_quote($$SEVENZIP_UNIX_LIB_DIR) $$shell_quote($$SEVENZIP_UNIX_BUNDLE_DIR) && $(MAKE) -C $$shell_quote($$SEVENZIP_UPSTREAM_ROOT/CPP/7zip/Bundles/Format7zF) -f makefile.gcc O=$$shell_quote($$SEVENZIP_UNIX_BUILD) CXXFLAGS_EXTRA=-DZ7_USE_VIRTUAL_DESTRUCTOR_IN_IUNKNOWN && cp $$shell_quote($$SEVENZIP_UNIX_LIBRARY) $$shell_quote($$SEVENZIP_UNIX_BIN_DIR/7z.so) && cp $$shell_quote($$SEVENZIP_UNIX_LIBRARY) $$shell_quote($$SEVENZIP_UNIX_LIB_DIR/lib7z.so) && cp $$shell_quote($$SEVENZIP_UNIX_LIBRARY) $$shell_quote($$SEVENZIP_UNIX_LIB_DIR/7z.so) && cp $$shell_quote($$SEVENZIP_UNIX_LIBRARY) $$shell_quote($$SEVENZIP_UNIX_BUNDLE_DIR/7z.so)
     QMAKE_EXTRA_TARGETS += sevenzip_unix
     PRE_TARGETDEPS += sevenzip_unix
 }
