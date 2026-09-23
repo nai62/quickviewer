@@ -47,7 +47,7 @@ jobs:
           target: desktop
           arch: ${{ env.QT_ARCH }}
           modules: "qtimageformats"
-          archives: "icu qtbase qtsvg qttools"
+          archives: "icu qtbase qtdeclarative qtsvg qttools"
           aqtsource: "git+https://github.com/miurahr/aqtinstall.git@8c3695d4a4e1ceabf6a74dc6c79681656dc6b74b"
           cache: true
 
