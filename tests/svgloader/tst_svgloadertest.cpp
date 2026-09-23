@@ -59,11 +59,11 @@ void SvgLoaderTest::rendersWithResvg()
 
 void SvgLoaderTest::rendersTransformedNestedSvg()
 {
-    const QByteArray svg = R"(<svg xmlns="http://www.w3.org/2000/svg" width="20" height="10">
+    const QByteArray svg = R"svg(<svg xmlns="http://www.w3.org/2000/svg" width="20" height="10">
         <svg width="10" height="10" transform="translate(5 0)">
             <rect width="10" height="10" fill="red"/>
         </svg>
-    </svg>)";
+    </svg>)svg";
     const SvgLoader::RenderResult result =
         SvgLoader::render(svg, QString(), QSize(20, 10), qvEnums::SvgLoaderBackend::Resvg);
 
