@@ -51,6 +51,12 @@ jobs:
           aqtsource: "git+https://github.com/miurahr/aqtinstall.git@8c3695d4a4e1ceabf6a74dc6c79681656dc6b74b"
           cache: true
 
+      - name: Add bundled ICU to library path
+        run: |
+          icu=$(find "$QT_ROOT_DIR" -name 'libicui18n.so.73' -print -quit)
+          test -n "$icu"
+          echo "LD_LIBRARY_PATH=$(dirname "$icu"):$LD_LIBRARY_PATH" >> "$GITHUB_ENV"
+
       - name: Set up Rust
         run: |
           rustup toolchain install 1.87.0 --profile minimal
@@ -85,9 +91,8 @@ jobs:
 
       - name: Run release application to first paint
         if: matrix.configuration == 'release'
-        env:
-          LD_LIBRARY_PATH: ${{ github.workspace }}/build-release/lib
         run: |
+          export LD_LIBRARY_PATH="$PWD/build-release/lib:$LD_LIBRARY_PATH"
           xvfb-run -a build-release/bin/QuickViewer --benchmark first-paint --runs 1 --warmup 0 \
             --output "$RUNNER_TEMP/qv-first-paint.csv" docs/62086450_p3.jpg
 
@@ -101,9 +106,8 @@ jobs:
 
       - name: Run debug tests
         if: matrix.configuration == 'debug'
-        env:
-          LD_LIBRARY_PATH: ${{ github.workspace }}/build-debug/lib
         run: |
+          export LD_LIBRARY_PATH="$PWD/build-debug/lib:$LD_LIBRARY_PATH"
           result_dir=build-debug/test-results
           mkdir -p "$result_dir"
           tests=(
