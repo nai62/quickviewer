@@ -1,5 +1,7 @@
 #include "catalogvolumelistview.h"
 
+#include <QWheelEvent>
+
 CatalogVolumeListView::CatalogVolumeListView(QWidget *parent)
     : QListView(parent)
 {
