@@ -46,10 +46,9 @@ SOURCES += \
     $$UNRAR_SOURCE_ROOT/rs16.cpp \
     $$UNRAR_SOURCE_ROOT/cmddata.cpp \
     $$UNRAR_SOURCE_ROOT/ui.cpp \
-    $$UNRAR_SOURCE_ROOT/largepage.cpp \
-    $$UNRAR_SOURCE_ROOT/motw.cpp \
+    $$UNRAR_SOURCE_ROOT/largepage.cpp
 
-win32: SOURCES += $$UNRAR_SOURCE_ROOT/isnt.cpp
+win32: SOURCES += $$UNRAR_SOURCE_ROOT/isnt.cpp $$UNRAR_SOURCE_ROOT/motw.cpp
 
 contains(DEFINES, RAR_BUILD_UNRAR) {
     SOURCES += \
