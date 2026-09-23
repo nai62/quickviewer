@@ -2,6 +2,7 @@
 #include <QCoreApplication>
 #include <QImageReader>
 #include <QString>
+#include <QTemporaryDir>
 #include <QtTest>
 
 #include "fileloader7zarchive.h"
@@ -47,7 +48,14 @@ private Q_SLOTS:
 
 void FileLoaderTest::initTestCase()
 {
-    QVERIFY(FileLoader7zArchive::initializeLib());
+    // Archive initialization must not depend on the current working directory.
+    QTemporaryDir workingDirectory;
+    QVERIFY(workingDirectory.isValid());
+    const QString originalDirectory = QDir::currentPath();
+    QVERIFY(QDir::setCurrent(workingDirectory.path()));
+    const bool initialized = FileLoader7zArchive::initializeLib();
+    QVERIFY(QDir::setCurrent(originalDirectory));
+    QVERIFY(initialized);
 }
 
 void FileLoaderTest::cleanupTestCase()

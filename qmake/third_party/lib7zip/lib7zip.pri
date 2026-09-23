@@ -5,6 +5,8 @@ THIRD_PARTY_ROOT = $$clean_path($$PWD/../../../third_party)
 SEVENZIP_ROOT = $$THIRD_PARTY_ROOT/7zip/7zip
 P7ZIP_ROOT = $$THIRD_PARTY_ROOT/p7zip
 LIB7ZIP_ROOT = $$THIRD_PARTY_ROOT/lib7zip
+LIB7ZIP_UNIX_OS_SOURCE = $$LIB7ZIP_ROOT/src/OSFunctions_UnixLike.cpp
+linux: LIB7ZIP_UNIX_OS_SOURCE = $$PWD/OSFunctions_UnixLike.cpp
 
 win32 {
 #    DEFINES += QT7Z_STATIC_LINK
@@ -86,7 +88,7 @@ win32 {
         $$LIB7ZIP_ROOT/src/HelperFuncs.cpp \
         $$LIB7ZIP_ROOT/src/GUIDs.cpp \
         $$LIB7ZIP_ROOT/src/OSFunctions_OS2.cpp \
-        $$LIB7ZIP_ROOT/src/OSFunctions_UnixLike.cpp \
+        $$LIB7ZIP_UNIX_OS_SOURCE \
         $$LIB7ZIP_ROOT/src/OSFunctions_Win32.cpp \
         $$SEVENZIP_ROOT/CPP/Common/MyWindows.cpp \
         $$SEVENZIP_ROOT/CPP/Windows/PropVariant.cpp \
@@ -95,6 +97,22 @@ win32 {
     precompile_header:!isEmpty(PRECOMPILED_HEADER) {
         DEFINES += USING_PCH
     }
+}
+
+linux {
+    # Build the official 7-Zip engine outside the source submodule. lib7zip
+    # still uses p7zip headers for its existing COM interface definitions.
+    SEVENZIP_UPSTREAM_ROOT = $$THIRD_PARTY_ROOT/7zip/upstream
+    SEVENZIP_UNIX_BUILD = $$clean_path($$OUT_PWD/7zip-26.03)
+    SEVENZIP_UNIX_LIBRARY = $$SEVENZIP_UNIX_BUILD/7z.so
+    SEVENZIP_UNIX_BIN_DIR = $$clean_path($$OUT_PWD/../../bin)
+    SEVENZIP_UNIX_LIB_DIR = $$clean_path($$OUT_PWD/../../lib)
+    SEVENZIP_UNIX_BUNDLE_DIR = $$clean_path($$OUT_PWD/../../bundle)
+
+    sevenzip_unix.target = sevenzip_unix
+    sevenzip_unix.commands = mkdir -p $$shell_quote($$SEVENZIP_UNIX_BUILD) $$shell_quote($$SEVENZIP_UNIX_BIN_DIR) $$shell_quote($$SEVENZIP_UNIX_LIB_DIR) $$shell_quote($$SEVENZIP_UNIX_BUNDLE_DIR) && $(MAKE) -C $$shell_quote($$SEVENZIP_UPSTREAM_ROOT/CPP/7zip/Bundles/Format7zF) -f makefile.gcc O=$$shell_quote($$SEVENZIP_UNIX_BUILD) && cp $$shell_quote($$SEVENZIP_UNIX_LIBRARY) $$shell_quote($$SEVENZIP_UNIX_BIN_DIR/7z.so) && cp $$shell_quote($$SEVENZIP_UNIX_LIBRARY) $$shell_quote($$SEVENZIP_UNIX_LIB_DIR/lib7z.so) && cp $$shell_quote($$SEVENZIP_UNIX_LIBRARY) $$shell_quote($$SEVENZIP_UNIX_BUNDLE_DIR/7z.so)
+    QMAKE_EXTRA_TARGETS += sevenzip_unix
+    PRE_TARGETDEPS += sevenzip_unix
 }
 
 unix {
@@ -186,7 +204,7 @@ unix {
         $$LIB7ZIP_ROOT/src/7ZipOpenArchive.cpp \
         $$LIB7ZIP_ROOT/src/HelperFuncs.cpp \
         $$LIB7ZIP_ROOT/src/OSFunctions_OS2.cpp \
-        $$LIB7ZIP_ROOT/src/OSFunctions_UnixLike.cpp \
+        $$LIB7ZIP_UNIX_OS_SOURCE \
         $$LIB7ZIP_ROOT/src/OSFunctions_Win32.cpp \
         $$P7ZIP_ROOT/CPP/Common/MyWindows.cpp \
         $$P7ZIP_ROOT/CPP/Windows/PropVariant.cpp \
