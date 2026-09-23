@@ -102,6 +102,7 @@ win32 {
 linux {
     # Build the official 7-Zip engine outside the source submodule. lib7zip
     # still uses p7zip headers for its existing COM interface definitions.
+    # Match their IUnknown vtable, which includes a virtual destructor.
     SEVENZIP_UPSTREAM_ROOT = $$THIRD_PARTY_ROOT/7zip/upstream
     SEVENZIP_UNIX_BUILD = $$clean_path($$OUT_PWD/7zip-26.03)
     SEVENZIP_UNIX_LIBRARY = $$SEVENZIP_UNIX_BUILD/7z.so
@@ -110,7 +111,7 @@ linux {
     SEVENZIP_UNIX_BUNDLE_DIR = $$clean_path($$OUT_PWD/../../bundle)
 
     sevenzip_unix.target = sevenzip_unix
-    sevenzip_unix.commands = mkdir -p $$shell_quote($$SEVENZIP_UNIX_BUILD) $$shell_quote($$SEVENZIP_UNIX_BIN_DIR) $$shell_quote($$SEVENZIP_UNIX_LIB_DIR) $$shell_quote($$SEVENZIP_UNIX_BUNDLE_DIR) && $(MAKE) -C $$shell_quote($$SEVENZIP_UPSTREAM_ROOT/CPP/7zip/Bundles/Format7zF) -f makefile.gcc O=$$shell_quote($$SEVENZIP_UNIX_BUILD) && cp $$shell_quote($$SEVENZIP_UNIX_LIBRARY) $$shell_quote($$SEVENZIP_UNIX_BIN_DIR/7z.so) && cp $$shell_quote($$SEVENZIP_UNIX_LIBRARY) $$shell_quote($$SEVENZIP_UNIX_LIB_DIR/lib7z.so) && cp $$shell_quote($$SEVENZIP_UNIX_LIBRARY) $$shell_quote($$SEVENZIP_UNIX_BUNDLE_DIR/7z.so)
+    sevenzip_unix.commands = mkdir -p $$shell_quote($$SEVENZIP_UNIX_BUILD) $$shell_quote($$SEVENZIP_UNIX_BIN_DIR) $$shell_quote($$SEVENZIP_UNIX_LIB_DIR) $$shell_quote($$SEVENZIP_UNIX_BUNDLE_DIR) && $(MAKE) -C $$shell_quote($$SEVENZIP_UPSTREAM_ROOT/CPP/7zip/Bundles/Format7zF) -f makefile.gcc O=$$shell_quote($$SEVENZIP_UNIX_BUILD) CXXFLAGS_EXTRA=-DZ7_USE_VIRTUAL_DESTRUCTOR_IN_IUNKNOWN && cp $$shell_quote($$SEVENZIP_UNIX_LIBRARY) $$shell_quote($$SEVENZIP_UNIX_BIN_DIR/7z.so) && cp $$shell_quote($$SEVENZIP_UNIX_LIBRARY) $$shell_quote($$SEVENZIP_UNIX_LIB_DIR/lib7z.so) && cp $$shell_quote($$SEVENZIP_UNIX_LIBRARY) $$shell_quote($$SEVENZIP_UNIX_BUNDLE_DIR/7z.so)
     QMAKE_EXTRA_TARGETS += sevenzip_unix
     PRE_TARGETDEPS += sevenzip_unix
 }
