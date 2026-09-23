@@ -37,7 +37,7 @@ jobs:
       - name: Install Linux dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-dev libheif-dev libheif-plugin-libde265 libturbojpeg xvfb
+          sudo apt-get install -y gdb libgl1-mesa-dev libheif-dev libheif-plugin-libde265 libturbojpeg xvfb
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -139,6 +139,12 @@ jobs:
             else
               exit_code=$?
               failed+=("tst_${test} (exit $exit_code)")
+              if [[ "$test" == fileloadertest && "$exit_code" -eq 139 ]]; then
+                echo "::group::tst_${test} backtrace"
+                xvfb-run -a gdb -batch -ex 'set pagination off' -ex run \
+                  -ex 'thread apply all bt 30' --args "$exe" zipArchives || true
+                echo "::endgroup::"
+              fi
             fi
             if [[ -f "$result_file" ]]; then
               cat "$result_file"
