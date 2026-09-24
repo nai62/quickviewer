@@ -15,6 +15,12 @@ These instructions apply to the entire repository.
 - Add a regression test before or with a crash fix whenever the affected layer
   can be exercised deterministically.
 
+## Commit messages
+
+- Use Conventional Commits-style subjects in the form `<type>: <description>`
+  (for example, `fix: omit version from window titles`). Choose a type that
+  describes the change, such as `fix`, `feat`, `docs`, `refactor`, or `chore`.
+
 ## Verification and handoff contract
 
 Follow the repository `developer/README.md` documentation index; the Windows
