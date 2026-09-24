@@ -16,7 +16,7 @@ void ImageString::initialize(PageInfoProvider *pm, MetricsProvider metricsProvid
 QString ImageString::getTitleBarText()
 {
     if (!m_viewerSession || m_viewerSession->pageCount() == 0) {
-        return QString("%1 v%2").arg(qApp->applicationName()).arg(qApp->applicationVersion());
+        return qApp->applicationName();
     }
     return QString("%1 - %2")
         .arg(formatString(qApp->ShowStatusBar() ? qApp->TitleTextFormat()

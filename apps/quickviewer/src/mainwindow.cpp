@@ -332,7 +332,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(
         ui->graphicsView, &ImageView::slideShowStopped, this, &MainWindow::handleSlideShowStopped);
 
-    setWindowTitle(QString("%1 v%2").arg(qApp->applicationName()).arg(qApp->applicationVersion()));
+    setWindowTitle(qApp->applicationName());
 }
 
 void MainWindow::initializeStartup()
@@ -1681,8 +1681,7 @@ void MainWindow::handleViewerSessionVolumeChanged(QString path)
         updateFolderViewCurrentItem();
     }
     if (path.isEmpty()) {
-        setWindowTitle(
-            QString("%1 v%2").arg(qApp->applicationName()).arg(qApp->applicationVersion()));
+        setWindowTitle(qApp->applicationName());
         syncPageBar();
         return;
     }
