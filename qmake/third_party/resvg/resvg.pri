@@ -27,6 +27,7 @@ QMAKE_EXTRA_TARGETS += resvg_c_api
 PRE_TARGETDEPS += $$RESVG_LIBRARY
 
 INCLUDEPATH += $$RESVG_C_API_DIR
-LIBS += -L$$shell_quote($$shell_path($$RESVG_TARGET_DIR/$$RESVG_PROFILE)) -lresvg
+win32: LIBS += -L$$shell_quote($$shell_path($$RESVG_TARGET_DIR/$$RESVG_PROFILE)) -lresvg
+unix: LIBS += $$shell_quote($$shell_path($$RESVG_LIBRARY))
 
 win32: LIBS += -lWs2_32 -lBcrypt -lUserenv -lNtdll

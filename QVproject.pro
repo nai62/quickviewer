@@ -52,6 +52,7 @@ contains(DEFINES, QV_WITH_LUMINOR) {
     SUBDIRS += luminor
     luminor.file = components/qluminor/luminor.pro
     QuickViewer.depends += luminor
+    viewernavigationtest.depends += luminor
     windowstartuptest.depends += luminor
     catalogdatabasetest.depends += luminor
     languageswitchtest.depends += luminor

@@ -11,6 +11,7 @@ private slots:
     void rasterDimensionsAreValidated();
     void rasterSizeFitsWithinBothLimits();
     void rendersWithResvg();
+    void rendersTransformedNestedSvg();
     void parseFailureFallsBackToQtSvg();
 #ifdef Q_OS_WIN
     void rendersJapaneseTextWithResvg();
@@ -54,6 +55,24 @@ void SvgLoaderTest::rendersWithResvg()
     QVERIFY2(result.resvgError.isEmpty(), qPrintable(result.resvgError));
     QCOMPARE(result.image.size(), QSize(1440, 1080));
     QVERIFY(!result.image.isNull());
+}
+
+void SvgLoaderTest::rendersTransformedNestedSvg()
+{
+    const QByteArray svg = R"svg(<svg xmlns="http://www.w3.org/2000/svg" width="20" height="10">
+        <svg width="10" height="10" transform="translate(5 0)">
+            <rect width="10" height="10" fill="red"/>
+        </svg>
+    </svg>)svg";
+    const SvgLoader::RenderResult result =
+        SvgLoader::render(svg, QString(), QSize(20, 10), qvEnums::SvgLoaderBackend::Resvg);
+
+    QCOMPARE(result.backend, qvEnums::SvgLoaderBackend::Resvg);
+    QVERIFY2(result.resvgError.isEmpty(), qPrintable(result.resvgError));
+    QCOMPARE(result.image.size(), QSize(20, 10));
+    QCOMPARE(qAlpha(result.image.pixel(2, 5)), 0);
+    QCOMPARE(result.image.pixelColor(7, 5), QColor(Qt::red));
+    QCOMPARE(qAlpha(result.image.pixel(17, 5)), 0);
 }
 
 void SvgLoaderTest::parseFailureFallsBackToQtSvg()

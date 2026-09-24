@@ -1,0 +1,160 @@
+name: Linux build and tests
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  QT_VERSION: "6.11.2"
+  QT_ARCH: "linux_gcc_64"
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.configuration }} build${{ matrix.configuration == 'debug' && ' and tests' || '' }} (Ubuntu 24.04)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [release, debug]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - name: Check out HEIF image plug-in
+        if: matrix.configuration == 'debug'
+        uses: actions/checkout@v7
+        with:
+          repository: novomesk/qt-heic-image-plugin
+          ref: 16e740ae05dd59f8f63330225c53ef657a854e1d
+          path: qt-heic-image-plugin
+
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gdb libgl1-mesa-dev libheif-dev libheif-plugin-libde265 libturbojpeg locales xvfb
+          sudo locale-gen en_US.UTF-8
+          echo "LC_ALL=en_US.UTF-8" >> "$GITHUB_ENV"
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: linux
+          target: desktop
+          arch: ${{ env.QT_ARCH }}
+          modules: "qtimageformats"
+          archives: "icu qtbase qtdeclarative qtsvg qttools"
+          aqtsource: "git+https://github.com/miurahr/aqtinstall.git@8c3695d4a4e1ceabf6a74dc6c79681656dc6b74b"
+          cache: true
+
+      - name: Add bundled ICU to library path
+        run: |
+          icu=$(find "$QT_ROOT_DIR" -name 'libicui18n.so.73' -print -quit)
+          test -n "$icu"
+          echo "LD_LIBRARY_PATH=$(dirname "$icu"):$LD_LIBRARY_PATH" >> "$GITHUB_ENV"
+
+      - name: Set up Rust
+        run: |
+          rustup toolchain install 1.87.0 --profile minimal
+          rustup default 1.87.0
+          rustc --version
+
+      - name: Build HEIF image plug-in
+        if: matrix.configuration == 'debug'
+        run: |
+          cat > qt-heic-image-plugin/qt-heic-image-plugin-ci.pro <<'EOF'
+          TARGET = kimg_heif6
+          HEADERS += src/heif_p.h src/util_p.h
+          SOURCES += src/heif.cpp
+          OTHER_FILES += src/heif.json
+          LIBS += -lheif
+          TEMPLATE = lib
+          CONFIG += debug skip_target_version_ext c++17 warn_on plugin
+          CONFIG -= release separate_debug_info debug_and_release force_debug_info
+          EOF
+          cd qt-heic-image-plugin
+          qmake qt-heic-image-plugin-ci.pro
+          make -j2
+
+      - name: Configure build
+        run: |
+          mkdir "build-${{ matrix.configuration }}"
+          cd "build-${{ matrix.configuration }}"
+          qmake -r ../QVproject.pro CONFIG+=${{ matrix.configuration }} CONFIG-=${{ matrix.configuration == 'debug' && 'release' || 'debug' }} CONFIG-=debug_and_release CONFIG-=debug_and_release_target
+
+      - name: Build
+        run: make -C "build-${{ matrix.configuration }}" -j2
+
+      - name: Run release application to first paint
+        if: matrix.configuration == 'release'
+        run: |
+          export LD_LIBRARY_PATH="$PWD/build-release/lib:$LD_LIBRARY_PATH"
+          xvfb-run -a build-release/bin/QuickViewer --benchmark first-paint --runs 1 --warmup 0 \
+            --output "$RUNNER_TEMP/qv-first-paint.csv" docs/62086450_p3.jpg
+
+      - name: Stage HEIF image plug-in
+        if: matrix.configuration == 'debug'
+        run: |
+          mkdir -p build-debug/lib/imageformats
+          plugin=$(find qt-heic-image-plugin -type f -name 'libkimg_heif6.so' -print -quit)
+          test -n "$plugin"
+          cp "$plugin" build-debug/lib/imageformats/
+
+      - name: Run debug tests
+        if: matrix.configuration == 'debug'
+        run: |
+          export LD_LIBRARY_PATH="$PWD/build-debug/lib:$LD_LIBRARY_PATH"
+          result_dir=build-debug/test-results
+          mkdir -p "$result_dir"
+          tests=(
+            prefetchplannertest
+            asynccachetest
+            latestresultdispatchertest
+            fileloadertest
+            svgloadertest
+            viewernavigationtest
+            windowstartuptest
+            catalogdatabasetest
+            languageswitch
+          )
+          failed=()
+
+          for test in "${tests[@]}"; do
+            exe="build-debug/lib/tst_${test}"
+            result_file="$result_dir/tst_${test}.txt"
+            echo "::group::tst_${test}"
+            if [[ ! -x "$exe" ]]; then
+              echo "::error::Missing test executable: $exe"
+              failed+=("tst_${test} (missing)")
+              echo "::endgroup::"
+              continue
+            fi
+
+            if xvfb-run -a "$exe" -v1 -o "$result_file,txt"; then
+              exit_code=0
+            else
+              exit_code=$?
+              failed+=("tst_${test} (exit $exit_code)")
+              if [[ "$test" == fileloadertest && "$exit_code" -eq 139 ]]; then
+                echo "::group::tst_${test} backtrace"
+                xvfb-run -a gdb -batch -ex 'set pagination off' -ex run \
+                  -ex 'thread apply all bt 30' --args "$exe" zipArchives || true
+                echo "::endgroup::"
+              fi
+            fi
+            if [[ -f "$result_file" ]]; then
+              cat "$result_file"
+            fi
+            echo "::endgroup::"
+          done
+
+          if (( ${#failed[@]} )); then
+            echo "::error::Failed tests: ${failed[*]}"
+            exit 1
+          fi

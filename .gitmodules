@@ -22,3 +22,6 @@
 [submodule "third_party/zlib"]
 	path = third_party/zlib
 	url = https://github.com/madler/zlib.git
+[submodule "third_party/7zip/upstream"]
+	path = third_party/7zip/upstream
+	url = https://github.com/ip7z/7zip.git

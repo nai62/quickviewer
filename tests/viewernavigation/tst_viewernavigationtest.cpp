@@ -448,6 +448,36 @@ private slots:
         QCOMPARE(output.image.pixelColor(0, 0).rgb(), QColor(Qt::darkCyan).rgb());
     }
 
+    void imageDecoderPreservesDetailedPngPixels()
+    {
+        QImage source(QSize(13, 11), QImage::Format_RGB32);
+        for (int y = 0; y < source.height(); ++y) {
+            for (int x = 0; x < source.width(); ++x) {
+                source.setPixelColor(x,
+                                     y,
+                                     QColor((x * 37 + y * 11) % 256,
+                                            (x * 19 + y * 41) % 256,
+                                            (x * 53 + y * 7) % 256));
+            }
+        }
+        QByteArray bytes;
+        QBuffer buffer(&bytes);
+        QVERIFY(buffer.open(QIODevice::WriteOnly));
+        QVERIFY(source.save(&buffer, "PNG"));
+        buffer.close();
+
+        ImageDecoder decoder;
+        ImageDecodeOutput output;
+        QVERIFY(decoder.decodeSpng(bytes, output));
+        QCOMPARE(output.sourceSize, source.size());
+        QCOMPARE(output.image.size(), source.size());
+        for (int y = 0; y < source.height(); ++y) {
+            for (int x = 0; x < source.width(); ++x) {
+                QCOMPARE(output.image.pixelColor(x, y).rgb(), source.pixelColor(x, y).rgb());
+            }
+        }
+    }
+
     void imageDecoderLeavesAnimatedPngToTheCaller()
     {
         const QByteArray animated = withAnimationChunk(encodedStillPng(QSize(7, 5), Qt::darkCyan));
@@ -1720,6 +1750,33 @@ private slots:
         pageWithDefaults.setPageLayoutFitting(
             QRect(0, 0, 100, 100), RenderedPage::PageCenter, qvEnums::FitMode::FitToRect, 1.0);
         QCOMPARE(pageWithDefaults.displayScale(), 0.25);
+    }
+
+    void cpuResizePreservesOpaqueAndAlphaRegions()
+    {
+        QImage rgb(8, 8, QImage::Format_RGB32);
+        rgb.fill(Qt::red);
+        const QImage scaledRgb =
+            QZimg::scaled(rgb, QSize(16, 16), Qt::IgnoreAspectRatio, QZimg::ResizeLanczos3);
+        QCOMPARE(scaledRgb.size(), QSize(16, 16));
+        QCOMPARE(scaledRgb.pixelColor(8, 8), QColor(Qt::red));
+
+        QImage argb(16, 16, QImage::Format_ARGB32);
+        argb.fill(Qt::transparent);
+        for (int y = 4; y < 12; ++y) {
+            for (int x = 4; x < 12; ++x) {
+                argb.setPixelColor(x, y, Qt::red);
+            }
+        }
+        const QImage scaledArgb =
+            QZimg::scaled(argb, QSize(32, 32), Qt::IgnoreAspectRatio, QZimg::ResizeLanczos3);
+        QCOMPARE(scaledArgb.size(), QSize(32, 32));
+        QCOMPARE(qAlpha(scaledArgb.pixel(0, 0)), 0);
+        const QColor center = scaledArgb.pixelColor(16, 16);
+        QVERIFY(center.alpha() > 240);
+        QVERIFY(center.red() > 240);
+        QVERIFY(center.green() < 16);
+        QVERIFY(center.blue() < 16);
     }
 
     void cpuResizeGivesUpOnAnEmptyImage()

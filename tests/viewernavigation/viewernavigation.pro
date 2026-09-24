@@ -125,6 +125,11 @@ LIBS += -L../../lib -leasyexif -lresizehalf -lfileloader -lunrar -lzimg -lspng
 contains(DEFINES, QV_WITH_LUMINOR) {
     INCLUDEPATH += ../../components/qluminor
     win32: LIBS += -L$$PWD/../../third_party/luminor/$${LUMINOR_BIN_PATH} -lluminor -lluminor_rgba -lhalide_runtime -lqluminor
+    unix: LIBS += -L$$PWD/../../third_party/luminor/$${LUMINOR_BIN_PATH} \
+        $$PWD/../../third_party/luminor/$${LUMINOR_BIN_PATH}/luminor.o \
+        $$PWD/../../third_party/luminor/$${LUMINOR_BIN_PATH}/luminor_rgba.o \
+        $$PWD/../../third_party/luminor/$${LUMINOR_BIN_PATH}/halide_runtime.a \
+        -lqluminor -ldl
 }
 
 win32: LIBS += -luser32 -ladvapi32 -lshell32 -lShlwapi -loleaut32 -lole32 -luuid
