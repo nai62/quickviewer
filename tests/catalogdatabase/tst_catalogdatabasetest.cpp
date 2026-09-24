@@ -1046,7 +1046,8 @@ void CatalogDatabaseTest::managerBuildsPendingCatalogsWithoutACompletionDialog()
     QTRY_VERIFY(!database.isBuilding());
     QVERIFY(!showedMessage);
     QCOMPARE(database.catalogs().size(), 1);
-    QVERIFY(!start->isEnabled());
+    // The worker can finish before the queued UI update disables Start.
+    QTRY_VERIFY(!start->isEnabled());
     QVERIFY(catalogs->currentItem()->data(0, Qt::UserRole).toInt() > 0);
     QVERIFY(!dialog.findChild<QLabel *>(QStringLiteral("statusLabel"))->text().isEmpty());
 }
