@@ -44,26 +44,29 @@ git submodule update --init --recursive
 
 ### 7-Zip archive engine
 
-The bundled Windows `7z.dll` files are from the official 7-Zip 26.03
-installers. The x64 DLL came from `7z2603-x64.exe` (DLL SHA-256
+The bundled Windows `7z.dll` files in `third_party/7zip/windll` are from the
+official 7-Zip 26.03 installers.
+The x64 DLL came from `7z2603-x64.exe` (DLL SHA-256
 `65e4c1f855f9ef6e8f0f5df8e3f27d9eb5f07311408639da0a1ca0b8f4871b0d`)
 and the x86 DLL from `7z2603.exe` (DLL SHA-256
 `d132e89038c802c5d5281e543a83dc407680effe0144f21b4fb431dd45fca61d`).
 Both installers are published at the [7-Zip 26.03 release](https://github.com/ip7z/7zip/releases/tag/26.03).
 
-On Linux, the fileloader build uses the pinned official 7-Zip source at
-`third_party/7zip/upstream` to build the full-format `7z.so` in the shadow
-build tree. The build stages it next to the viewer and fileloader test
-executables and in the existing library and AppImage bundle locations.
+On Linux, the fileloader build uses the official 7-Zip 26.03 source
+submodule pinned at `third_party/7zip/upstream` to build the full-format
+`7z.so` in the shadow build tree. The build stages it next to the viewer and
+fileloader test executables and in the existing library and AppImage bundle
+locations.
 The Linux lib7zip loader prefers the copy beside the executable over a
 system-installed `7z.so`. A C and C++ toolchain and GNU Make are required
 for that source build.
 
-`third_party/7zip/7zip` and `third_party/p7zip` remain as the older header
-sets required to compile the existing `lib7zip` wrapper on Windows and Unix,
-respectively. They are not the bundled archive engines. When updating the
-engine again, check its COM interface and exported functions against these
-headers before changing the DLL or shared library.
+`third_party/7zip/7zip` and `third_party/p7zip` are older source copies
+tracked directly in this repository. Their headers are still required to
+compile the existing `lib7zip` wrapper on Windows and Unix, respectively. They
+are not the bundled archive engines. When updating the engine again, check
+its COM interface and exported functions against these headers before changing
+the DLL or shared library.
 
 ### Set up HEIC/HEIF support
 
