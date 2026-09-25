@@ -1,4 +1,5 @@
 #include "folderitemmodel.h"
+#include "folderplaceholdertext.h"
 #include "startupprofiler.h"
 
 #ifdef Q_OS_WIN
@@ -7,50 +8,6 @@
 #endif
 
 namespace {
-// Check both weights the delegate draws. NoFontMerging forbids a lookup while
-// constructing the primary font, including for the replacement character.
-bool supportsGlyph(const QRawFont &normal, const QRawFont &bold, char32_t code)
-{
-    return normal.isValid() && bold.isValid() && normal.supportsCharacter(code) &&
-           bold.supportsCharacter(code);
-}
-
-/** True when the name holds nothing a replacement could stand in for. */
-bool isAsciiOnly(const QString &name)
-{
-    for (const QChar &character : name) {
-        if (character.unicode() >= 0x80) {
-            return false;
-        }
-    }
-    return true;
-}
-
-/**
- * The name with every character the primary font cannot draw replaced, or an
- * empty string when the name can be drawn as it is.
- */
-QString placeholderName(const QString &name,
-                        const QRawFont &normal,
-                        const QRawFont &bold,
-                        QChar replacement)
-{
-    if (isAsciiOnly(name)) {
-        return QString();
-    }
-    QString result;
-    bool replaced = false;
-    for (char32_t code : name.toUcs4()) {
-        if (code < 0x80 || supportsGlyph(normal, bold, code)) {
-            result += QString::fromUcs4(&code, 1);
-        } else {
-            result += replacement;
-            replaced = true;
-        }
-    }
-    return replaced ? result : QString();
-}
-
 #ifdef Q_OS_WIN
 QImage shellIconImage(const wchar_t *path, DWORD attributes)
 {
@@ -144,18 +101,9 @@ FolderItemModel::FolderItemModel(QObject *parent, FolderTextCache *textCache)
 
 void FolderItemModel::updatePrimaryFontGlyphs()
 {
-    QFont primary = m_textFont;
-    primary.setStyleStrategy(QFont::StyleStrategy(primary.styleStrategy() | QFont::NoFontMerging));
-    m_primaryNormal = QRawFont::fromFont(primary);
-    primary.setBold(true);
-    m_primaryBold = QRawFont::fromFont(primary);
-    m_replacement = QLatin1Char('?');
-    for (char32_t candidate : {char32_t(0x25a1), char32_t(0x00b7), U'?'}) {
-        if (supportsGlyph(m_primaryNormal, m_primaryBold, candidate)) {
-            m_replacement = QChar(candidate);
-            break;
-        }
-    }
+    m_primaryNormal = FolderPlaceholderText::primaryFont(m_textFont, false);
+    m_primaryBold = FolderPlaceholderText::primaryFont(m_textFont, true);
+    m_replacement = FolderPlaceholderText::placeholderCharacter(m_primaryNormal, m_primaryBold);
 }
 
 void FolderItemModel::handleIconLoadFinished()
@@ -322,8 +270,8 @@ void FolderItemModel::updatePlaceholderNames()
         return;
     }
     for (const FolderItem &item : *m_searchedVolumes) {
-        const QString placeholder =
-            placeholderName(item.name, m_primaryNormal, m_primaryBold, m_replacement);
+        const QString placeholder = FolderPlaceholderText::placeholder(
+            item.name, m_primaryNormal, m_primaryBold, m_replacement);
         m_placeholderNames.append(placeholder);
         const QByteArray key = placeholder.isEmpty()
                                    ? QByteArray()

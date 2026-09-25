@@ -104,6 +104,13 @@ reports the rows it shows, and only those ask for text, so a folder with
 thousands of names renders what is on screen; requests outstanding at once are
 bounded and the model asks for the rest as results arrive.
 
+FolderPathLabel, the panel's caption, answers for the folder's own path the way a
+row answers for a name: a path comes from the disk, so it can hold a character
+the UI font cannot draw, and the frame that reveals the window paints the
+caption. The caption stands in for those characters and paints the helper's
+image of the path, which the helper wraps at the width the caption gives it, so
+the raw path is never shaped on the GUI thread.
+
 The same executable runs a private `--folder-text-helper` mode to shape and
 rasterize missing-glyph names. A Qt worker thread would still contend with the
 GUI's font database mutex and would not populate its thread-local font engines.
