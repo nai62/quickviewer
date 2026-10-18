@@ -133,8 +133,12 @@ static void appendLittleEndian32(QByteArray &out, quint32 value)
 }
 
 // Builds a JPEG that carries IFD0 with nothing but an EXIF Orientation tag.
-static QByteArray
-jpegWithOrientation(int orientation, const QSize &size = QSize(8, 4), quint32 ifdOffset = 8)
+// `declaredEntries` is the IFD0 entry count written, which can claim more
+// entries than the one present.
+static QByteArray jpegWithOrientation(int orientation,
+                                      const QSize &size = QSize(8, 4),
+                                      quint32 ifdOffset = 8,
+                                      quint16 declaredEntries = 1)
 {
     QImage image(size, QImage::Format_RGB32);
     image.fill(Qt::yellow);
@@ -154,7 +158,7 @@ jpegWithOrientation(int orientation, const QSize &size = QSize(8, 4), quint32 if
     payload.append("II", 2);
     appendLittleEndian16(payload, 0x2A);
     appendLittleEndian32(payload, ifdOffset); // offset of IFD0
-    appendLittleEndian16(payload, 1); // one IFD0 entry
+    appendLittleEndian16(payload, declaredEntries); // one IFD0 entry is present
     appendLittleEndian16(payload, 0x0112);
     appendLittleEndian16(payload, 3); // SHORT
     appendLittleEndian32(payload, 1);
@@ -255,6 +259,11 @@ public:
     InflateCacheMode getCacheMode() const override { return InflateNoCached; }
 
     QStringList requestedNames() const { return m_requestedNames; }
+    void addFile(const QString &name, const QByteArray &bytes)
+    {
+        m_names.append(name);
+        m_images.insert(name, bytes);
+    }
 
 private:
     QStringList m_names;
@@ -817,6 +826,9 @@ private slots:
         QCOMPARE(content.loadedImageSize, QSize(64, 32));
         QCOMPARE(int(content.exifInfo.Orientation), orientation);
         QCOMPARE(content.hasDetailedMetadata, detailedMetadata);
+        // The full parse decides whether there is EXIF to show; the fast path
+        // leaves that to the later metadata load.
+        QCOMPARE(content.hasExif, detailedMetadata);
         QCOMPARE(content.resizedImage.size(), resizedSize);
     }
 
@@ -845,6 +857,53 @@ private slots:
 
         QCOMPARE(content.originalSize, QSize(64, 32));
         QCOMPARE(content.loadedImageSize, loadedSize);
+    }
+
+    void decodeImageBytesKeepsTheOrientationWhenTheExifParseFails()
+    {
+        // IFD0 claims more entries than the file holds: the marker reader finds
+        // the orientation in the first one, while the full EXIF parse gives up.
+        const QByteArray bytes = jpegWithOrientation(6, QSize(64, 32), 8, 0xFFFF);
+        QVERIFY(!bytes.isEmpty());
+        ImageDecodePolicy policy;
+        policy.jpeg = JpegDecoderPreference::Qt;
+        const ImageContent content =
+            Volume::decodeImageBytes("corrupt.jpg", bytes, QSize(8, 16), QSize(), true, policy);
+
+        QCOMPARE(int(content.exifInfo.Orientation), 6);
+        QCOMPARE(content.resizedImage.size(), QSize(16, 8));
+    }
+
+    void volumeReadsTheExifThePrefetchSkipped()
+    {
+        const QByteArray tagged = jpegWithOrientation(6, QSize(64, 32));
+        const QByteArray corrupt = jpegWithOrientation(6, QSize(64, 32), 8, 0xFFFF);
+        QVERIFY(!tagged.isEmpty());
+        QVERIFY(!corrupt.isEmpty());
+        auto loader = std::make_unique<MemoryFileLoader>(0);
+        loader->addFile("tagged.jpg", tagged);
+        loader->addFile("corrupt.jpg", corrupt);
+        Volume volume(nullptr, std::move(loader));
+        ImageDecodePolicy policy;
+        policy.jpeg = JpegDecoderPreference::Qt;
+
+        // A prefetched page reads the orientation alone, so whether it has
+        // EXIF is not known until the full parse.
+        const ImageContent prefetched =
+            Volume::decodeImageBytes("tagged.jpg", tagged, QSize(), QSize(), false, policy);
+        QVERIFY(!prefetched.hasDetailedMetadata);
+        QVERIFY(!prefetched.hasExif);
+        const ImageContent detailed = volume.withDetailedMetadata(prefetched);
+        QVERIFY(detailed.hasDetailedMetadata);
+        QVERIFY(detailed.hasExif);
+        QCOMPARE(int(detailed.exifInfo.Orientation), 6);
+
+        // EXIF the full parse rejects is not shown, and keeps the orientation.
+        const ImageContent corruptDetailed = volume.withDetailedMetadata(
+            Volume::decodeImageBytes("corrupt.jpg", corrupt, QSize(), QSize(), false, policy));
+        QVERIFY(corruptDetailed.hasDetailedMetadata);
+        QVERIFY(!corruptDetailed.hasExif);
+        QCOMPARE(int(corruptDetailed.exifInfo.Orientation), 6);
     }
 
     void jpegExifOrientationReadsTheExifSegment()
@@ -913,13 +972,25 @@ private slots:
         QCOMPARE(content.resizedImage.size(), resizedSize);
     }
 
-    void decodeImageBytesKeepsRawSoftwareOutOfOrientation()
+    void decodeImageBytesReadsRawTextMetadata_data()
     {
-        // RAW and TIFF metadata comes from the decoded image's text. A Software
-        // value that reads as a number used to be taken as the orientation.
+        QTest::addColumn<QString>("path");
+        QTest::addColumn<bool>("raw");
+        QTest::newRow("raw") << QString("camera.dng") << true;
+        // TIFF is not RAW: Qt reads its orientation, and it has no such text.
+        QTest::newRow("tiff") << QString("camera.tif") << false;
+    }
+
+    void decodeImageBytesReadsRawTextMetadata()
+    {
+        QFETCH(QString, path);
+        QFETCH(bool, raw);
+        // RAW metadata comes from the decoded image's text. These bytes are a
+        // PNG, which the decoder detects whatever the suffix says.
         QImage image(64, 32, QImage::Format_RGB32);
         image.fill(Qt::red);
         image.setText("Software", "6");
+        image.setText("ImageWidth", "64");
         QByteArray bytes;
         QBuffer buffer(&bytes);
         QVERIFY(buffer.open(QIODevice::WriteOnly));
@@ -927,10 +998,12 @@ private slots:
         buffer.close();
 
         const ImageContent content =
-            Volume::decodeImageBytes("camera.tif", bytes, QSize(8, 16), QSize(), false);
+            Volume::decodeImageBytes(path, bytes, QSize(8, 16), QSize(), false);
 
         QVERIFY(!content.loadedImage.isNull());
-        QCOMPARE(content.exifInfo.Software, std::string("6"));
+        QCOMPARE(content.hasExif, raw);
+        QCOMPARE(content.exifInfo.Software, raw ? std::string("6") : std::string());
+        // A Software value that reads as a number used to be taken as the orientation.
         QVERIFY(!content.isOrientationRotated());
         QCOMPARE(content.resizedImage.size(), QSize(8, 4));
     }
@@ -1853,6 +1926,21 @@ private slots:
         imageString.initialize(&session, [] { return RenderedPageMetrics(QVector<qreal>{0.5}); });
 
         QCOMPARE(imageString.formatString("%p|%s|%m"), QString("sample.png|100x200|50%"));
+    }
+
+    void imageStringGivesTheSizeAsDisplayed()
+    {
+        ViewerSession session(nullptr);
+        QImage image(200, 100, QImage::Format_RGB32);
+        easyexif::EXIFInfo exif;
+        exif.Orientation = 6;
+        QVERIFY(
+            session.appendVisiblePage(ImageContent(image, "turned.jpg", image.size(), exif, 1024)));
+        ImageString imageString;
+        imageString.initialize(&session, [] { return RenderedPageMetrics(QVector<qreal>{1.0}); });
+
+        // Stored wide, displayed tall after the quarter turn.
+        QCOMPARE(imageString.formatString("%s"), QString("100x200"));
     }
 
     void renderedPageUsesRenderSettingsSnapshot()

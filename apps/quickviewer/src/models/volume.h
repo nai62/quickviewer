@@ -132,6 +132,12 @@ public:
      */
     void prefetchInitialDisplayPage();
     ImageContent loadThumbnailSourceImage();
+    /**
+     * \a content, one of this volume's pages, with its full EXIF read when the
+     * load that produced it only read the orientation. Reads the page's bytes
+     * on the calling thread.
+     */
+    ImageContent withDetailedMetadata(ImageContent content) const;
 
     ImageLoadFuture imageLoadAt(int pageIndex) const;
     bool openedWithSpecifiedImageFile() const { return m_openedWithSpecifiedImageFile; }

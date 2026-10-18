@@ -44,6 +44,13 @@ struct ImageContent
     size_t fileSize = 0;
     bool isPreview = false;
     bool hasDetailedMetadata = false;
+    /**
+     * True when the file carries EXIF the viewer could read: a JPEG whose full
+     * EXIF parse succeeded, or a RAW image whose decoder reported its extents.
+     * False until hasDetailedMetadata is set, since the fast path only reads
+     * the orientation.
+     */
+    bool hasExif = false;
     RetouchParameters appliedRetouchParameters;
     qvEnums::ShaderEffect appliedResizeMode = qvEnums::ShaderEffect::Bilinear;
 
@@ -119,14 +126,13 @@ struct ImageContent
     {
         return isOrientationRotated() ? QSize(size.height(), size.width()) : size;
     }
-    /**
-     * True when the page is wider than tall as displayed, after the EXIF
-     * orientation has turned it.
-     */
+    /** Size of the source image as displayed, after the EXIF orientation. */
+    QSize displayedSize() const { return orientedSize(originalSize); }
+    /** True when the page is wider than tall as displayed. */
     bool isLandscape() const
     {
-        const QSize displayedSize = orientedSize(originalSize);
-        return displayedSize.width() > displayedSize.height();
+        const QSize size = displayedSize();
+        return size.width() > size.height();
     }
     void initializeAnimation();
 };

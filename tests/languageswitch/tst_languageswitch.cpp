@@ -253,6 +253,8 @@ private slots:
         content.exifInfo.ImageWidth = 640;
         content.exifInfo.ImageHeight = 480;
         content.exifInfo.Orientation = 1;
+        content.hasDetailedMetadata = true;
+        content.hasExif = true;
         exif.setExif(content);
 
         auto *loadAction = viewer.findChild<QAction *>(QStringLiteral("actionLoadBookmark"));

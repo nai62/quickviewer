@@ -41,7 +41,7 @@ const QList<QByteArray> &supportedImageFormats()
 
 const QStringList &exifRawImageFormats()
 {
-    static const QStringList formats{"crw", "cr2", "arw", "nef", "raf", "dng", "tif", "tiff"};
+    static const QStringList formats{"crw", "cr2", "arw", "nef", "raf", "dng"};
     return formats;
 }
 

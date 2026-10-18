@@ -1086,6 +1086,12 @@ QString ViewerSession::currentPageNumberText() const
         m_pageNavigator.currentPageIndex(), volume->pageCount(), m_visiblePages.size());
 }
 
+ImageContent ViewerSession::withDetailedMetadata(const ImageContent &page) const
+{
+    Volume *volume = activeVolume();
+    return volume ? volume->withDetailedMetadata(page) : page;
+}
+
 QString ViewerSession::currentPageStatusText() const
 {
     Volume *volume = activeVolume();
@@ -1095,7 +1101,7 @@ QString ViewerSession::currentPageStatusText() const
     QVector<PageDisplayEntry> visiblePages;
     visiblePages.reserve(m_visiblePages.size());
     for (const ImageContent &content : m_visiblePages) {
-        visiblePages.push_back({content.path, content.originalSize});
+        visiblePages.push_back({content.path, content.displayedSize()});
     }
     return PageDisplayFormatter::statusText(
         m_pageNavigator.currentPageIndex(), volume->pageCount(), visiblePages);
