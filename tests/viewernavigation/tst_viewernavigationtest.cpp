@@ -2551,6 +2551,21 @@ private slots:
         QVERIFY(!contents.at(2));
     }
 
+    void addedPageReportsTheShapeItIsDisplayedIn()
+    {
+        ViewerSession session(nullptr);
+        ImageView view;
+        view.setViewerSession(&session);
+        const QImage image(8, 4, QImage::Format_ARGB32);
+        easyexif::EXIFInfo exif;
+        exif.Orientation = 6;
+
+        // Stored wide, but displayed tall after the quarter turn.
+        QCOMPARE(
+            view.addRenderedPage(ImageContent(image, "turned.jpg", image.size(), exif, 0), true),
+            ImageView::AddRenderedPageResult::AddedPortrait);
+    }
+
     void fittingModeRelayoutsRenderedPage()
     {
         ViewerSession session(nullptr);
