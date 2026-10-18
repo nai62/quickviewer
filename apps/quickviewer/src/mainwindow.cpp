@@ -2327,6 +2327,28 @@ void MainWindow::handleConfirmDeletePageActionTriggered(bool checked)
     qApp->setConfirmDeletePage(checked);
 }
 
+bool MainWindow::confirmRemoval(const QString &question, const QString &path)
+{
+    if (!qApp->ConfirmDeletePage()) {
+        return true;
+    }
+    const VisiblePages pages = m_viewerSession.visiblePages();
+    const ImageContent *page = pages.first();
+    if (!page) {
+        return false;
+    }
+    QMessageBox msgBox(this);
+    msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Cancel);
+    msgBox.setWindowTitle(tr("Confirmation", "Confirm deleting image file on MessageBox title"));
+    msgBox.setTextFormat(Qt::RichText);
+    msgBox.setText(QString("<h2>%1</h2><p>%2</p>").arg(question, path));
+    const QImage image =
+        page->orientedImage(page->loadedImage.scaled(QSize(100, 100), Qt::KeepAspectRatio));
+    msgBox.setIconPixmap(QPixmap::fromImage(image));
+    return msgBox.exec() != QMessageBox::Cancel;
+}
+
 void MainWindow::handleRecyclePageActionTriggered()
 {
     if (m_viewerSession.visiblePageCount() <= 0 || !m_viewerSession.isFolder()) {
@@ -2336,35 +2358,10 @@ void MainWindow::handleRecyclePageActionTriggered()
     if (!path.length()) {
         return;
     }
-    if (qApp->ConfirmDeletePage()) {
-        QMessageBox msgBox(this);
-        msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Cancel);
-        msgBox.setWindowTitle(
-            tr("Confirmation", "Confirm deleting image file on MessageBox title"));
-
-        //text
-        msgBox.setTextFormat(Qt::RichText);
-        QString message =
-            QString("<h2>%1</h2><p>%2</p>")
-                .arg(tr("Are you sure you want to move the image to Recycle Bin?",
-                        "Confirm putting displayed file in Recycle Box Message Box body"))
-                .arg(path);
-        msgBox.setText(message);
-
-        //icon
-        const VisiblePages pages = m_viewerSession.visiblePages();
-        const ImageContent *page = pages.first();
-        if (!page) {
-            return;
-        }
-        const QImage image =
-            page->orientedImage(page->loadedImage.scaled(QSize(100, 100), Qt::KeepAspectRatio));
-        msgBox.setIconPixmap(QPixmap::fromImage(image));
-
-        if (msgBox.exec() == QMessageBox::Cancel) {
-            return;
-        }
+    if (!confirmRemoval(tr("Are you sure you want to move the image to Recycle Bin?",
+                           "Confirm putting displayed file in Recycle Box Message Box body"),
+                        path)) {
+        return;
     }
     if (moveToTrash(path)) {
         m_viewerSession.reloadVolumeAfterImageRemoval();
@@ -2380,34 +2377,10 @@ void MainWindow::handleDeletePageActionTriggered()
     if (!path.length()) {
         return;
     }
-    if (qApp->ConfirmDeletePage()) {
-        QMessageBox msgBox(this);
-        msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Cancel);
-        msgBox.setWindowTitle(
-            tr("Confirmation", "Confirm deleting image file on MessageBox title"));
-
-        //text
-        msgBox.setTextFormat(Qt::RichText);
-        QString message = QString("<h2>%1</h2><p>%2</p>")
-                              .arg(tr("Are you sure you want to delete this image?",
-                                      "Confirm deleting image file on Message Box body"))
-                              .arg(path);
-        msgBox.setText(message);
-
-        //icon
-        const VisiblePages pages = m_viewerSession.visiblePages();
-        const ImageContent *page = pages.first();
-        if (!page) {
-            return;
-        }
-        const QImage image =
-            page->orientedImage(page->loadedImage.scaled(QSize(100, 100), Qt::KeepAspectRatio));
-        msgBox.setIconPixmap(QPixmap::fromImage(image));
-
-        if (msgBox.exec() == QMessageBox::Cancel) {
-            return;
-        }
+    if (!confirmRemoval(tr("Are you sure you want to delete this image?",
+                           "Confirm deleting image file on Message Box body"),
+                        path)) {
+        return;
     }
     QFile file(path);
     if (file.remove()) {

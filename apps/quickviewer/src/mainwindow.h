@@ -230,6 +230,11 @@ private:
     };
 
     void setStatusMessage(StatusMessage message);
+    /**
+     * Asks whether \a path may go, as ConfirmDeletePage asks to, with the
+     * displayed page as the dialog's picture. True when it may.
+     */
+    bool confirmRemoval(const QString &question, const QString &path);
     void syncPageBar();
     void applyImageSortBy(qvEnums::ImageSortBy sortBy);
     void openResolvedTarget(const OpenTarget &target, bool allowSecondPage);
