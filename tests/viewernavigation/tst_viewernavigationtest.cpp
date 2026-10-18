@@ -780,8 +780,8 @@ private slots:
         QCOMPARE(content.originalSize, QSize(64, 32));
         QCOMPARE(content.loadedImageSize, QSize(32, 16));
         QCOMPARE(content.loadedImage.size(), content.loadedImageSize);
-        // QZimg preserves aspect ratio using the requested height, not a bounding box.
-        QCOMPARE(content.resizedImage.size(), QSize(16, 8));
+        // The CPU resize fits the image within the 8x8 page size.
+        QCOMPARE(content.resizedImage.size(), QSize(8, 4));
         QCOMPARE(content.loadedImage.pixelColor(0, 0), QColor(Qt::cyan));
         QVERIFY(content.hasDetailedMetadata); // PNG needs no deferred JPEG EXIF load.
         QCOMPARE(content.path, QStringLiteral("still.png"));
