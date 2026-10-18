@@ -3007,31 +3007,26 @@ private slots:
         view.setViewerSession(&session);
 
         const QImage image(8, 4, QImage::Format_ARGB32);
-        QCOMPARE(view.addRenderedPage(ImageContent(image, "first.png", image.size(), {}, 0), true),
-                 ImageView::AddRenderedPageResult::AddedLandscape);
+        QVERIFY(view.addRenderedPage(ImageContent(image, "first.png", image.size(), {}, 0), true));
         QCOMPARE(view.renderedPageCount(), 1);
         QCOMPARE(view.renderedPageContents().count(), 1);
 
-        QCOMPARE(view.addRenderedPage(ImageContent(image, "second.png", image.size(), {}, 0), true),
-                 ImageView::AddRenderedPageResult::AddedLandscape);
+        QVERIFY(view.addRenderedPage(ImageContent(image, "second.png", image.size(), {}, 0), true));
         QCOMPARE(view.renderedPageCount(), 2);
         VisiblePages contents = view.renderedPageContents();
         QCOMPARE(contents.at(0)->path, QString("first.png"));
         QCOMPARE(contents.at(1)->path, QString("second.png"));
-        QCOMPARE(view.addRenderedPage(ImageContent(image, "third.png", image.size(), {}, 0), true),
-                 ImageView::AddRenderedPageResult::Rejected);
+        QVERIFY(!view.addRenderedPage(ImageContent(image, "third.png", image.size(), {}, 0), true));
 
         view.clearRenderedPages();
         QCOMPARE(view.renderedPageCount(), 0);
         QVERIFY(view.renderedPageContents().isEmpty());
 
-        QCOMPARE(view.addRenderedPage(ImageContent(image, "replacement.png", image.size(), {}, 0),
-                                      false),
-                 ImageView::AddRenderedPageResult::AddedLandscape);
+        QVERIFY(view.addRenderedPage(ImageContent(image, "replacement.png", image.size(), {}, 0),
+                                     false));
         QCOMPARE(view.renderedPageCount(), 1);
-        QCOMPARE(
-            view.addRenderedPage(ImageContent(image, "prepended.png", image.size(), {}, 0), false),
-            ImageView::AddRenderedPageResult::AddedLandscape);
+        QVERIFY(
+            view.addRenderedPage(ImageContent(image, "prepended.png", image.size(), {}, 0), false));
         QCOMPARE(view.renderedPageCount(), 2);
         contents = view.renderedPageContents();
         QCOMPARE(contents.at(0)->path, QString("prepended.png"));
@@ -3040,19 +3035,15 @@ private slots:
         QVERIFY(!contents.at(2));
     }
 
-    void addedPageReportsTheShapeItIsDisplayedIn()
+    void pageShapeIsTheShapeItIsDisplayedIn()
     {
-        ViewerSession session(nullptr);
-        ImageView view;
-        view.setViewerSession(&session);
         const QImage image(8, 4, QImage::Format_ARGB32);
         easyexif::EXIFInfo exif;
         exif.Orientation = 6;
 
         // Stored wide, but displayed tall after the quarter turn.
-        QCOMPARE(
-            view.addRenderedPage(ImageContent(image, "turned.jpg", image.size(), exif, 0), true),
-            ImageView::AddRenderedPageResult::AddedPortrait);
+        QVERIFY(!ImageContent(image, "turned.jpg", image.size(), exif, 0).isLandscape());
+        QVERIFY(ImageContent(image, "upright.jpg", image.size(), {}, 0).isLandscape());
     }
 
     void fittingModeRelayoutsRenderedPage()

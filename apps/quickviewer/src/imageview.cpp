@@ -200,25 +200,23 @@ void ImageView::handleVolumeChanged(QString)
     m_pageRotations = QVector<int>(m_viewerSession->pageCount());
 }
 
-ImageView::AddRenderedPageResult ImageView::addRenderedPage(ImageContent content, bool append)
+bool ImageView::addRenderedPage(ImageContent content, bool append)
 {
     const int pageCount = renderedPageCount();
     if (m_viewerSession == nullptr || pageCount >= 2) {
-        return AddRenderedPageResult::Rejected;
+        return false;
     }
-    const bool landscape = content.isLandscape();
     if (!m_renderedPages.add(std::move(content),
                              append,
                              this,
                              scene(),
                              pageRenderSettings(),
                              m_openSeparatedPageFromEnd)) {
-        return AddRenderedPageResult::Rejected;
+        return false;
     }
 
     m_shaderManager.prepareInitialize();
-
-    return landscape ? AddRenderedPageResult::AddedLandscape : AddRenderedPageResult::AddedPortrait;
+    return true;
 }
 
 PageRenderSettings ImageView::pageRenderSettings() const
