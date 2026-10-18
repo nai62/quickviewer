@@ -483,6 +483,14 @@ static QImage scaledARGB(QImage img,
     return oimg;
 }
 
+QSize QZimg::scaledSize(const QSize &sourceSize,
+                        const QSize &newsize,
+                        Qt::AspectRatioMode aspectMode)
+{
+    // A thin source fitted in a box can round to an empty side, which zimg rejects.
+    return sourceSize.scaled(newsize, aspectMode).expandedTo(QSize(1, 1));
+}
+
 QImage QZimg::scaled(const QImage &src,
                      const QSize &newsize,
                      Qt::AspectRatioMode aspectMode,
@@ -507,10 +515,9 @@ QImage QZimg::scaled(const QImage &src,
     in_format.pixel_range = ZIMG_RANGE_FULL;
 
     zimgxx::zimage_format out_format = in_format;
-    out_format.height = newsize.height();
-    out_format.width = aspectMode == Qt::IgnoreAspectRatio
-                           ? newsize.width()
-                           : in_format.width * out_format.height / in_format.height;
+    const QSize outSize = scaledSize(img.size(), newsize, aspectMode);
+    out_format.width = outSize.width();
+    out_format.height = outSize.height();
     QImage oimg;
     if (img.format() == QImage::Format_RGB32) {
         oimg = scaledRGB(img, in_format, out_format, mode);

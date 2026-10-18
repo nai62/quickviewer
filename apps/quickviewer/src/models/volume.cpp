@@ -357,9 +357,10 @@ void Volume::updatePrefetchCache(int anchorPageIndex, PrefetchMode mode, QSize v
             ImageContent cachedImage = cachedImageLoad->result();
             if (cachedImage.loadedImageSize.isValid()) {
                 const QSize pageSize = viewportSize;
-                QSize resized = cachedImage.orientedSize(pageSize);
-                resized.setWidth(cachedImage.loadedImageSize.width() * resized.height() /
-                                 cachedImage.loadedImageSize.height());
+                // The size resizeImageForViewport() would produce for this page.
+                const QSize resized = QZimg::scaledSize(cachedImage.loadedImageSize,
+                                                        cachedImage.orientedSize(pageSize),
+                                                        Qt::KeepAspectRatio);
 
                 if (cachedImage.resizedImage.size() != resized &&
                     !cachedImage.loadedImage.isNull()) {

@@ -2108,6 +2108,42 @@ private slots:
         QVERIFY(center.blue() < 16);
     }
 
+    void cpuResizeKeepsTheShapeWithinTheBox_data()
+    {
+        QTest::addColumn<QSize>("source");
+        QTest::addColumn<QSize>("box");
+        QTest::addColumn<int>("aspectMode");
+        QTest::addColumn<QSize>("scaled");
+        // A wide source in a tall box is bounded by the width, not the height.
+        QTest::newRow("wide in tall")
+            << QSize(64, 32) << QSize(8, 16) << int(Qt::KeepAspectRatio) << QSize(8, 4);
+        QTest::newRow("wide in wide")
+            << QSize(64, 32) << QSize(16, 8) << int(Qt::KeepAspectRatio) << QSize(16, 8);
+        QTest::newRow("tall in wide")
+            << QSize(32, 64) << QSize(16, 8) << int(Qt::KeepAspectRatio) << QSize(4, 8);
+        QTest::newRow("expanding") << QSize(64, 32) << QSize(8, 16)
+                                   << int(Qt::KeepAspectRatioByExpanding) << QSize(32, 16);
+        QTest::newRow("ignoring") << QSize(64, 32) << QSize(8, 16) << int(Qt::IgnoreAspectRatio)
+                                  << QSize(8, 16);
+        // The short side of a thin source would round to nothing.
+        QTest::newRow("thin") << QSize(1000, 2) << QSize(10, 10) << int(Qt::KeepAspectRatio)
+                              << QSize(10, 1);
+    }
+
+    void cpuResizeKeepsTheShapeWithinTheBox()
+    {
+        QFETCH(QSize, source);
+        QFETCH(QSize, box);
+        QFETCH(int, aspectMode);
+        QFETCH(QSize, scaled);
+        QImage image(source, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        const auto mode = Qt::AspectRatioMode(aspectMode);
+
+        QCOMPARE(QZimg::scaledSize(source, box, mode), scaled);
+        QCOMPARE(QZimg::scaled(image, box, mode, QZimg::ResizeBicubic).size(), scaled);
+    }
+
     void cpuResizeGivesUpOnAnEmptyImage()
     {
         QElapsedTimer timer;
