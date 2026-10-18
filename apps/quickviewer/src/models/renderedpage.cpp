@@ -23,17 +23,10 @@ static int horizontalOffsetForAlignment(RenderedPage::PageAlign alignment,
     return offset;
 }
 
-static int normalizedRotationDegrees(int m_rotationDegrees)
+static int normalizedRotationDegrees(int rotationDegrees)
 {
-    const int remainder = m_rotationDegrees % 360;
+    const int remainder = rotationDegrees % 360;
     return remainder < 0 ? remainder + 360 : remainder;
-}
-
-static int combinedRotationDegrees(int baseRotationDegrees, int rotationOffset)
-{
-    const int combined =
-        normalizedRotationDegrees(baseRotationDegrees) + normalizedRotationDegrees(rotationOffset);
-    return combined >= 360 ? combined - 360 : combined;
 }
 
 RenderedPage::RenderedPage(QObject *parent, PageRenderSettings renderSettings)
@@ -41,7 +34,7 @@ RenderedPage::RenderedPage(QObject *parent, PageRenderSettings renderSettings)
       m_scene(nullptr),
       m_content(),
       m_graphicsItem(nullptr),
-      m_rotationDegrees(0),
+      m_orientation(),
       m_signageText(),
       m_signageTextItem(nullptr),
       m_signageBackgroundItem(nullptr),
@@ -61,7 +54,7 @@ RenderedPage::RenderedPage(QObject *parent,
       m_scene(graphicsScene),
       m_content(std::move(imageContent)),
       m_graphicsItem(nullptr),
-      m_rotationDegrees(0),
+      m_orientation(),
       m_signageText(),
       m_signageTextItem(nullptr),
       m_signageBackgroundItem(nullptr),
@@ -79,16 +72,7 @@ RenderedPage::RenderedPage(QObject *parent,
         m_graphicsItem = errorTextItem;
         return;
     }
-    if (m_content.exifInfo.ImageWidth > 0 && m_content.exifInfo.Orientation != 1) {
-        switch (m_content.exifInfo.Orientation) {
-        case 6: // 90 degrees clockwise
-            m_rotationDegrees = 90;
-            break;
-        case 8: // 90 degrees counterclockwise
-            m_rotationDegrees = 270;
-            break;
-        }
-    }
+    m_orientation = m_content.orientationTransform();
     initializePage();
 }
 
@@ -147,26 +131,26 @@ bool RenderedPage::rewindSeparatedHalf()
     return true;
 }
 
+QTransform RenderedPage::pageTransform(int rotationOffset) const
+{
+    // Points are row vectors, so the orientation turns the stored pixels upright
+    // before the requested rotation turns the upright page.
+    return m_orientation * QTransform().rotate(normalizedRotationDegrees(rotationOffset));
+}
+
+QRectF RenderedPage::transformedImageBounds(int rotationOffset) const
+{
+    return pageTransform(rotationOffset).mapRect(QRectF(QPointF(), m_content.loadedImage.size()));
+}
+
 QPoint RenderedPage::offsetForRotation(int rotationOffset) const
 {
-    switch (combinedRotationDegrees(m_rotationDegrees, rotationOffset)) {
-    case 90:
-        return QPoint(m_content.loadedImage.height(), 0);
-    case 180:
-        return QPoint(m_content.loadedImage.width(), m_content.loadedImage.height());
-    case 270:
-        return QPoint(0, m_content.loadedImage.width());
-    default:
-        return QPoint();
-    }
+    return (-transformedImageBounds(rotationOffset).topLeft()).toPoint();
 }
 
 QSize RenderedPage::rotatedImageSize(int rotationOffset) const
 {
-    const int rotation = combinedRotationDegrees(m_rotationDegrees, rotationOffset);
-    return rotation == 90 || rotation == 270
-               ? QSize(m_content.loadedImage.height(), m_content.loadedImage.width())
-               : m_content.loadedImage.size();
+    return transformedImageBounds(rotationOffset).size().toSize();
 }
 
 QRect RenderedPage::setPageLayoutFitting(QRect viewport,
@@ -217,9 +201,7 @@ QRect RenderedPage::setPageLayoutFitting(QRect viewport,
         if (targetSize.height() == viewport1.height()) { // Fit to the top and bottom edges.
             const int horizontalOffset =
                 horizontalOffsetForAlignment(alignment, viewport, targetSize);
-            drawRect = QRect(QPoint(rotationOffsetPosition.x() + viewport.x() + horizontalOffset,
-                                    rotationOffsetPosition.y()),
-                             targetSize);
+            drawRect = QRect(QPoint(viewport.x() + horizontalOffset, 0), targetSize);
         } else { // Fit to the left and right edges.
             const int horizontalOffset =
                 horizontalOffsetForAlignment(alignment, viewport, targetSize);
@@ -227,9 +209,7 @@ QRect RenderedPage::setPageLayoutFitting(QRect viewport,
             verticalOffset = pixelRatio != 1.0
                                  ? 0
                                  : verticalOffset; // If pixelRatio > 1, no correction is required
-            drawRect = QRect(QPoint(rotationOffsetPosition.x() + viewport.x() + horizontalOffset,
-                                    rotationOffsetPosition.y() + verticalOffset),
-                             targetSize);
+            drawRect = QRect(QPoint(viewport.x() + horizontalOffset, verticalOffset), targetSize);
         }
     } else {
         if (viewport.height() < targetSize.height() && targetSize.height() < viewport1.height()) {
@@ -238,21 +218,18 @@ QRect RenderedPage::setPageLayoutFitting(QRect viewport,
                 horizontalOffsetForAlignment(alignment, viewport, targetSize);
             const int verticalOffset =
                 pixelRatio == 1.0 ? 0 : (-viewport1.height() + targetSize.height()) / 2;
-            drawRect = QRect(QPoint(rotationOffsetPosition.x() + viewport.x() + horizontalOffset,
-                                    rotationOffsetPosition.y() + verticalOffset),
-                             targetSize);
+            drawRect = QRect(QPoint(viewport.x() + horizontalOffset, verticalOffset), targetSize);
         } else {
             const int horizontalOffset =
                 horizontalOffsetForAlignment(alignment, viewport, targetSize);
             const int verticalOffset =
                 pixelRatio == 1.0 ? 0 : (viewport.height() - viewport1.height()) / 2;
-            drawRect = QRect(QPoint(rotationOffsetPosition.x() + viewport.x() + horizontalOffset,
-                                    rotationOffsetPosition.y() + verticalOffset),
-                             targetSize);
+            drawRect = QRect(QPoint(viewport.x() + horizontalOffset, verticalOffset), targetSize);
         }
     }
 
-    QPoint imagePos = drawRect.topLeft();
+    // The item turns about its origin, so it sits where the turned image starts.
+    QPoint imagePos = drawRect.topLeft() + rotationOffsetPosition;
     if (separatePage && ((m_separationState == FirstHalf && qApp->RightSideBook()) ||
                          (m_separationState == SecondHalf && !qApp->RightSideBook()))) {
         // Display only the right side of the image
@@ -285,11 +262,10 @@ QRect RenderedPage::setPageLayoutManual(
     const int horizontalOffset =
         horizontalOffsetForAlignment(alignment, viewport, targetSize, true);
     const int verticalOffset = qMax(0, (viewport.height() - targetSize.height()) / 2);
-    QRect drawRect(QPoint(rotationOffsetPosition.x() + viewport.x() + horizontalOffset,
-                          rotationOffsetPosition.y() + verticalOffset),
-                   targetSize);
+    QRect drawRect(QPoint(viewport.x() + horizontalOffset, verticalOffset), targetSize);
 
-    QPoint imagePos = drawRect.topLeft();
+    // The item turns about its origin, so it sits where the turned image starts.
+    QPoint imagePos = drawRect.topLeft() + rotationOffsetPosition;
     if (separatePage && ((m_separationState == FirstHalf && qApp->RightSideBook()) ||
                          (m_separationState == SecondHalf && !qApp->RightSideBook()))) {
         // Display only the right side of the image
@@ -311,9 +287,10 @@ void RenderedPage::applyResize(
     qreal scale, int rotationOffset, QPoint position, QSize targetSize, bool loupe)
 {
     ensureInitialized();
-    const int appliedRotation = combinedRotationDegrees(m_rotationDegrees, rotationOffset);
+    const QTransform transform = pageTransform(rotationOffset);
+    // The resized image keeps the stored axes, which a quarter turn exchanges.
     const QSize resizeTargetSize =
-        appliedRotation % 180 ? QSize(targetSize.height(), targetSize.width()) : targetSize;
+        qFuzzyIsNull(transform.m11()) ? targetSize.transposed() : targetSize;
     const qvEnums::ShaderEffect effect =
         m_content.movie.isNull() ? qApp->Effect() : qvEnums::ShaderEffect::Bilinear;
     QImage &sourceImage = imageWithRetouch();
@@ -340,7 +317,7 @@ void RenderedPage::applyResize(
                 m_scene->removeItem(m_graphicsItem);
                 delete m_graphicsItem;
                 m_graphicsItem = m_scene->addPixmap(QPixmap::fromImage(m_content.resizedImage));
-                m_graphicsItem->setRotation(m_rotationDegrees);
+                m_graphicsItem->setTransform(m_orientation);
             }
         }
         m_graphicsItem->setScale(m_content.resizedImage.isNull() ? retouchedScale : 1.0);
@@ -350,7 +327,7 @@ void RenderedPage::applyResize(
         initializePage(true);
         m_graphicsItem->setScale(retouchedScale);
     }
-    m_graphicsItem->setRotation(appliedRotation);
+    m_graphicsItem->setTransform(transform);
     m_graphicsItem->setPos(position);
 }
 
@@ -386,7 +363,7 @@ void RenderedPage::initializePage(bool resetResizedImage)
             QPixmap::fromImage(scalesInView(qApp->Effect()) || m_content.resizedImage.isNull()
                                    ? imageWithRetouch()
                                    : m_content.resizedImage));
-        m_graphicsItem->setRotation(m_rotationDegrees);
+        m_graphicsItem->setTransform(m_orientation);
     }
 
     if (resetResizedImage) {

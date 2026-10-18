@@ -39,7 +39,16 @@ public:
     static QImage toPackedImage(const QImage &src, int stridePack = 64);
 
     /**
-     * @brief Scales src to newsize, or returns a null image when src is null.
+     * @brief Size scaled() gives an image of sourceSize: s itself, or the
+     * source's shape fitted within (KeepAspectRatio) or around
+     * (KeepAspectRatioByExpanding) s, as QSize::scaled() does. Never empty.
+     */
+    static QSize
+    scaledSize(const QSize &sourceSize, const QSize &s, Qt::AspectRatioMode aspectMode);
+
+    /**
+     * @brief Scales src to scaledSize(src.size(), s, aspectMode), or returns a
+     * null image when src is null.
      */
     static QImage scaled(const QImage &src,
                          const QSize &s,

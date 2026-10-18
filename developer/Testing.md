@@ -303,6 +303,23 @@ history entries unopenable. Copy the bytes with `[IO.File]::ReadAllBytes` and
 `WriteAllBytes`, and read and write text with `[IO.File]::ReadAllText` and
 `WriteAllText` plus `New-Object System.Text.UTF8Encoding($false)`.
 
+### Image orientation
+
+A change to EXIF orientation handling, page rotation, page layout, or the
+decoders is checked against generated samples. The script draws the mandrill
+(USC-SIPI 4.2.03, for example OpenCV's `samples/data/baboon.jpg`) with
+asymmetric markers and writes JPEG, TIFF, and HEIC files in all eight
+orientations, PNG and WebP files whose tag QuickViewer does not read, and a
+folder and an archive for catalog covers:
+
+```bash
+uv run --script scripts/make-orientation-samples.py baboon.jpg /mnt/c/build/orientation-samples
+```
+
+Every file of a folder must look the same when opened. The `README.txt` written
+next to the samples lists what each folder checks. Keep the samples outside the
+source tree; they are not committed.
+
 ## Traps when adding source files or tests
 
 ### A new or removed source needs `--qmake`

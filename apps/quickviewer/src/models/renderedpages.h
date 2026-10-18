@@ -55,6 +55,7 @@ public:
     void setCursor(const QCursor &cursor);
 
     std::optional<qreal> firstDrawScale() const;
+    /** Pixels of the first page, turned upright for its EXIF orientation. */
     QImage firstImage() const;
     VisiblePages contents() const;
     RenderedPageMetrics metrics() const;

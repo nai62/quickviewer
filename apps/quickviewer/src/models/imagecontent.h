@@ -68,18 +68,66 @@ struct ImageContent
         return !loadedImage.isNull() || !resizedImage.isNull() || !movie.isNull();
     }
     /**
-     * True when the EXIF orientation rotates the stored pixels by 90 degrees, so
-     * the displayed size has width and height exchanged.
+     * True when the EXIF orientation exchanges the axes of the stored pixels
+     * (a quarter turn, with or without a mirror), so the displayed size has
+     * width and height exchanged.
      */
-    bool isOrientationRotated() const
+    static bool orientationSwapsAxes(int orientation)
     {
-        return exifInfo.Orientation == 6 || exifInfo.Orientation == 8;
+        return orientation >= 5 && orientation <= 8;
+    }
+    bool isOrientationRotated() const { return orientationSwapsAxes(exifInfo.Orientation); }
+    /**
+     * Linear transform that turns the stored pixels upright for the EXIF
+     * orientation. It carries no translation, so an image it flips or turns
+     * lands on the negative side of that axis; callers move it back by the
+     * mapped bounds. Values outside 1-8, including easyexif's 0 for a missing
+     * tag, are upright.
+     */
+    QTransform orientationTransform() const
+    {
+        switch (exifInfo.Orientation) {
+        case 2: // mirror horizontal
+            return QTransform(-1, 0, 0, 1, 0, 0);
+        case 3: // rotate 180
+            return QTransform(-1, 0, 0, -1, 0, 0);
+        case 4: // mirror vertical
+            return QTransform(1, 0, 0, -1, 0, 0);
+        case 5: // mirror horizontal and rotate 270 clockwise (transpose)
+            return QTransform(0, 1, 1, 0, 0, 0);
+        case 6: // rotate 90 clockwise
+            return QTransform(0, 1, -1, 0, 0, 0);
+        case 7: // mirror horizontal and rotate 90 clockwise (transverse)
+            return QTransform(0, -1, -1, 0, 0, 0);
+        case 8: // rotate 270 clockwise
+            return QTransform(0, -1, 1, 0, 0, 0);
+        default:
+            return QTransform();
+        }
+    }
+    /**
+     * \a image, cut from the stored pixels, turned upright for the EXIF
+     * orientation. The page view turns its item instead, so this is for the
+     * places that hand the pixels on.
+     */
+    QImage orientedImage(const QImage &image) const
+    {
+        const QTransform transform = orientationTransform();
+        return transform.isIdentity() ? image : image.transformed(transform);
     }
     QSize orientedSize(const QSize &size) const
     {
         return isOrientationRotated() ? QSize(size.height(), size.width()) : size;
     }
-    bool isLandscape() const { return originalSize.width() > originalSize.height(); }
+    /**
+     * True when the page is wider than tall as displayed, after the EXIF
+     * orientation has turned it.
+     */
+    bool isLandscape() const
+    {
+        const QSize displayedSize = orientedSize(originalSize);
+        return displayedSize.width() > displayedSize.height();
+    }
     void initializeAnimation();
 };
 

@@ -9,6 +9,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QImage>
+#include <QImageWriter>
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
@@ -167,6 +168,7 @@ class CatalogDatabaseTest : public QObject
 
 private Q_SLOTS:
     void storesCoversUnderTheVolumeThatOwnsThem();
+    void storesUprightCoversOfTurnedImages();
     void failedCommitLeavesNoCatalog();
     void failedBuildDoesNotReuseRolledBackTags();
     void deletingAllCatalogsDoesNotReuseDeletedTags();
@@ -510,6 +512,44 @@ void CatalogDatabaseTest::storesCoversUnderTheVolumeThatOwnsThem()
         }
     }
     QCOMPARE(volumesWithCover, 3);
+}
+
+void CatalogDatabaseTest::storesUprightCoversOfTurnedImages()
+{
+    if (!QImageWriter::supportedImageFormats().contains("tiff")) {
+        QSKIP("The Qt TIFF plug-in is not available.");
+    }
+    CatalogFixture fixture;
+    QVERIFY(fixture.isReady());
+    // The image is stored wide and tagged to be turned a quarter, so it is
+    // displayed tall, the way its cover has to be.
+    const QString path = QDir(fixture.folder(QStringLiteral("Alpha"))).filePath("01.tif");
+    QImage image(200, 100, QImage::Format_RGB32);
+    image.fill(Qt::red);
+    QImageWriter writer(path, "tiff");
+    writer.setTransformation(QImageIOHandler::TransformationRotate90);
+    QVERIFY2(writer.write(image), qPrintable(writer.errorString()));
+
+    CatalogDatabase database(nullptr, fixture.databasePath());
+    QVERIFY(database.createCatalog(QStringLiteral("Library"), fixture.rootPath()).created);
+
+    CatalogProbe probe(fixture.databasePath(), QStringLiteral("catalog-probe"));
+    QVERIFY(probe.isOpen());
+    QCOMPARE(
+        probe.scalar(QStringLiteral("SELECT width FROM t_files WHERE name = '01.tif'")).toInt(),
+        100);
+    QCOMPARE(
+        probe.scalar(QStringLiteral("SELECT height FROM t_files WHERE name = '01.tif'")).toInt(),
+        200);
+    const QString thumbnailOf01 =
+        QStringLiteral("FROM t_thumbnails WHERE id = (SELECT thumb_id FROM t_files WHERE name = "
+                       "'01.tif')");
+    const int thumbnailWidth =
+        probe.scalar(QStringLiteral("SELECT width ") + thumbnailOf01).toInt();
+    const int thumbnailHeight =
+        probe.scalar(QStringLiteral("SELECT height ") + thumbnailOf01).toInt();
+    QVERIFY(thumbnailWidth > 0);
+    QVERIFY(qAbs(double(thumbnailWidth) / thumbnailHeight - 0.5) < 0.05);
 }
 
 void CatalogDatabaseTest::createsTheCatalogDatabaseOnFirstUse()

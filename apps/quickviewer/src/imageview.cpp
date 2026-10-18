@@ -206,7 +206,7 @@ ImageView::AddRenderedPageResult ImageView::addRenderedPage(ImageContent content
     if (m_viewerSession == nullptr || pageCount >= 2) {
         return AddRenderedPageResult::Rejected;
     }
-    const bool landscape = content.loadedImage.width() > content.loadedImage.height();
+    const bool landscape = content.isLandscape();
     if (!m_renderedPages.add(std::move(content),
                              append,
                              this,

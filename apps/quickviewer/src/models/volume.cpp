@@ -357,9 +357,10 @@ void Volume::updatePrefetchCache(int anchorPageIndex, PrefetchMode mode, QSize v
             ImageContent cachedImage = cachedImageLoad->result();
             if (cachedImage.loadedImageSize.isValid()) {
                 const QSize pageSize = viewportSize;
-                QSize resized = cachedImage.orientedSize(pageSize);
-                resized.setWidth(cachedImage.loadedImageSize.width() * resized.height() /
-                                 cachedImage.loadedImageSize.height());
+                // The size resizeImageForViewport() would produce for this page.
+                const QSize resized = QZimg::scaledSize(cachedImage.loadedImageSize,
+                                                        cachedImage.orientedSize(pageSize),
+                                                        Qt::KeepAspectRatio);
 
                 if (cachedImage.resizedImage.size() != resized &&
                     !cachedImage.loadedImage.isNull()) {
@@ -479,7 +480,6 @@ static void parseExifTextExtents(QImage &img, easyexif::EXIFInfo &info)
 {
     info.Make = img.text("Make").toStdString();
     info.Model = img.text("Model").toStdString();
-    info.Orientation = img.text("Software").toInt();
     info.BitsPerSample = img.text("BitsPerSample").toInt();
     info.Software = img.text("Software").toStdString();
     info.DateTime = img.text("DateTime").toStdString();
@@ -719,12 +719,53 @@ static bool cropForHalfResize(QImage &src, const QString &path)
     return true;
 }
 
+/**
+ * EXIF orientation for the transformation a Qt image handler reports. Qt names
+ * the same eight cases as the tag, and its JPEG and TIFF handlers read the tag
+ * with the inverse of this table.
+ */
+static int exifOrientationFromQt(QImageIOHandler::Transformations transformation)
+{
+    switch (int(transformation)) {
+    case QImageIOHandler::TransformationMirror:
+        return 2;
+    case QImageIOHandler::TransformationRotate180:
+        return 3;
+    case QImageIOHandler::TransformationFlip:
+        return 4;
+    case QImageIOHandler::TransformationFlipAndRotate90:
+        return 5;
+    case QImageIOHandler::TransformationRotate90:
+        return 6;
+    case QImageIOHandler::TransformationMirrorAndRotate90:
+        return 7;
+    case QImageIOHandler::TransformationRotate270:
+        return 8;
+    default:
+        return 1;
+    }
+}
+
+/**
+ * `displayedSize` measured along the axes of the stored pixels. A decode target
+ * bounds the page as displayed, while the decoders scale the stored pixels,
+ * whose axes an EXIF quarter turn exchanges.
+ */
+static QSize storedAxesSize(const QSize &displayedSize, int orientation)
+{
+    return ImageContent::orientationSwapsAxes(orientation) ? displayedSize.transposed()
+                                                           : displayedSize;
+}
+
 // Metadata and display preparation are shared by native and Qt static-image decoders.
-// Keep this outside decode timing and Qt format-name negotiation.
+// Keep this outside decode timing and Qt format-name negotiation. `orientation`
+// is the EXIF orientation of the stored pixels, which a full EXIF parse of a
+// JPEG reads again, and `decodeTargetSize` is along the stored axes.
 static ImageContent finishStaticImage(QImage src,
                                       QSize baseSize,
                                       const QString &path,
                                       const QByteArray &bytes,
+                                      int orientation,
                                       QSize pageSize,
                                       QSize decodeTargetSize,
                                       bool loadDetailedMetadata,
@@ -738,12 +779,15 @@ static ImageContent finishStaticImage(QImage src,
             info.parseFrom(reinterpret_cast<const unsigned char *>(bytes.constData()),
                            bytes.length());
         } else {
-            info.Orientation = jpegExifOrientation(bytes);
+            info.Orientation = orientation;
         }
     }
 
     if (src.width() > 0 && IFileLoader::isExifRawImageFile(path)) {
         parseExifTextExtents(src, info);
+    }
+    if (src.width() > 0 && !isExifJpeg) {
+        info.Orientation = orientation;
     }
 
     ic.originalSize = baseSize;
@@ -817,15 +861,20 @@ static ImageContent loadWithSpecifiedFormat(QString path,
         return ic;
     }
 
+    // JPEG carries its orientation in a marker that is read without decoding.
+    const int jpegOrientation =
+        IFileLoader::isExifJpegImageFile(path) ? jpegExifOrientation(bytes) : 1;
+    const QSize nativeDecodeTargetSize = storedAxesSize(decodeTargetSize, jpegOrientation);
     NativeDecodeOutcome native =
-        tryNativeDecode(decoder, bytes, plan.native, decodeTargetSize, metrics);
+        tryNativeDecode(decoder, bytes, plan.native, nativeDecodeTargetSize, metrics);
     if (native.decoded) {
         return finishStaticImage(std::move(native.image),
                                  native.sourceSize,
                                  path,
                                  bytes,
+                                 jpegOrientation,
                                  pageSize,
-                                 decodeTargetSize,
+                                 nativeDecodeTargetSize,
                                  loadDetailedMetadata,
                                  maxTextureSize);
     }
@@ -863,12 +912,18 @@ static ImageContent loadWithSpecifiedFormat(QString path,
         }
         baseSize = reader.size();
         QSize loadingSize = baseSize;
+        // Qt reads the orientation of the formats whose handler knows the tag,
+        // and leaves the pixels as stored because autoTransform is off.
+        const int orientation = IFileLoader::isExifJpegImageFile(path)
+                                    ? jpegOrientation
+                                    : exifOrientationFromQt(reader.transformation());
+        const QSize storedDecodeTargetSize = storedAxesSize(decodeTargetSize, orientation);
         if (reader.format() == IFileLoader::turboJpegFormatName() && !qApp->UseFastDCTForJPEG()) {
             reader.setQuality(0);
         }
         if (plan.decoderScaling && reader.supportsOption(QImageIOHandler::ScaledSize)) {
-            const QSize targetSize =
-                ImageDecoder::constrainedDecodeSize(baseSize, decodeTargetSize, maxTextureSize);
+            const QSize targetSize = ImageDecoder::constrainedDecodeSize(
+                baseSize, storedDecodeTargetSize, maxTextureSize);
             if (targetSize.isValid() && targetSize != baseSize) {
                 loadingSize = targetSize;
                 reader.setScaledSize(loadingSize);
@@ -900,8 +955,9 @@ static ImageContent loadWithSpecifiedFormat(QString path,
                                  baseSize,
                                  path,
                                  bytes,
+                                 orientation,
                                  pageSize,
-                                 decodeTargetSize,
+                                 storedDecodeTargetSize,
                                  loadDetailedMetadata,
                                  maxTextureSize);
     }
