@@ -718,12 +718,42 @@ static bool cropForHalfResize(QImage &src, const QString &path)
     return true;
 }
 
+/**
+ * EXIF orientation for the transformation a Qt image handler reports. Qt names
+ * the same eight cases as the tag, and its JPEG and TIFF handlers read the tag
+ * with the inverse of this table.
+ */
+static int exifOrientationFromQt(QImageIOHandler::Transformations transformation)
+{
+    switch (int(transformation)) {
+    case QImageIOHandler::TransformationMirror:
+        return 2;
+    case QImageIOHandler::TransformationRotate180:
+        return 3;
+    case QImageIOHandler::TransformationFlip:
+        return 4;
+    case QImageIOHandler::TransformationFlipAndRotate90:
+        return 5;
+    case QImageIOHandler::TransformationRotate90:
+        return 6;
+    case QImageIOHandler::TransformationMirrorAndRotate90:
+        return 7;
+    case QImageIOHandler::TransformationRotate270:
+        return 8;
+    default:
+        return 1;
+    }
+}
+
 // Metadata and display preparation are shared by native and Qt static-image decoders.
-// Keep this outside decode timing and Qt format-name negotiation.
+// Keep this outside decode timing and Qt format-name negotiation. `orientation`
+// is the EXIF orientation of the stored pixels, which a full EXIF parse of a
+// JPEG reads again.
 static ImageContent finishStaticImage(QImage src,
                                       QSize baseSize,
                                       const QString &path,
                                       const QByteArray &bytes,
+                                      int orientation,
                                       QSize pageSize,
                                       QSize decodeTargetSize,
                                       bool loadDetailedMetadata,
@@ -737,12 +767,15 @@ static ImageContent finishStaticImage(QImage src,
             info.parseFrom(reinterpret_cast<const unsigned char *>(bytes.constData()),
                            bytes.length());
         } else {
-            info.Orientation = jpegExifOrientation(bytes);
+            info.Orientation = orientation;
         }
     }
 
     if (src.width() > 0 && IFileLoader::isExifRawImageFile(path)) {
         parseExifTextExtents(src, info);
+    }
+    if (src.width() > 0 && !isExifJpeg) {
+        info.Orientation = orientation;
     }
 
     ic.originalSize = baseSize;
@@ -816,6 +849,9 @@ static ImageContent loadWithSpecifiedFormat(QString path,
         return ic;
     }
 
+    // JPEG carries its orientation in a marker that is read without decoding.
+    const int jpegOrientation =
+        IFileLoader::isExifJpegImageFile(path) ? jpegExifOrientation(bytes) : 1;
     NativeDecodeOutcome native =
         tryNativeDecode(decoder, bytes, plan.native, decodeTargetSize, metrics);
     if (native.decoded) {
@@ -823,6 +859,7 @@ static ImageContent loadWithSpecifiedFormat(QString path,
                                  native.sourceSize,
                                  path,
                                  bytes,
+                                 jpegOrientation,
                                  pageSize,
                                  decodeTargetSize,
                                  loadDetailedMetadata,
@@ -862,6 +899,11 @@ static ImageContent loadWithSpecifiedFormat(QString path,
         }
         baseSize = reader.size();
         QSize loadingSize = baseSize;
+        // Qt reads the orientation of the formats whose handler knows the tag,
+        // and leaves the pixels as stored because autoTransform is off.
+        const int orientation = IFileLoader::isExifJpegImageFile(path)
+                                    ? jpegOrientation
+                                    : exifOrientationFromQt(reader.transformation());
         if (reader.format() == IFileLoader::turboJpegFormatName() && !qApp->UseFastDCTForJPEG()) {
             reader.setQuality(0);
         }
@@ -899,6 +941,7 @@ static ImageContent loadWithSpecifiedFormat(QString path,
                                  baseSize,
                                  path,
                                  bytes,
+                                 orientation,
                                  pageSize,
                                  decodeTargetSize,
                                  loadDetailedMetadata,

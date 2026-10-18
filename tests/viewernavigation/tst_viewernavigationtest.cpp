@@ -829,6 +829,55 @@ private slots:
         }
     }
 
+    void decodeImageBytesTakesTheOrientationQtReports_data()
+    {
+        QTest::addColumn<int>("transformation");
+        QTest::addColumn<int>("orientation");
+        QTest::addColumn<QSize>("resizedSize");
+        QTest::newRow("none") << int(QImageIOHandler::TransformationNone) << 1 << QSize(8, 4);
+        QTest::newRow("mirror") << int(QImageIOHandler::TransformationMirror) << 2 << QSize(8, 4);
+        QTest::newRow("rotate 180")
+            << int(QImageIOHandler::TransformationRotate180) << 3 << QSize(8, 4);
+        QTest::newRow("flip") << int(QImageIOHandler::TransformationFlip) << 4 << QSize(8, 4);
+        QTest::newRow("flip and rotate 90")
+            << int(QImageIOHandler::TransformationFlipAndRotate90) << 5 << QSize(16, 8);
+        QTest::newRow("rotate 90")
+            << int(QImageIOHandler::TransformationRotate90) << 6 << QSize(16, 8);
+        QTest::newRow("mirror and rotate 90")
+            << int(QImageIOHandler::TransformationMirrorAndRotate90) << 7 << QSize(16, 8);
+        QTest::newRow("rotate 270")
+            << int(QImageIOHandler::TransformationRotate270) << 8 << QSize(16, 8);
+    }
+
+    void decodeImageBytesTakesTheOrientationQtReports()
+    {
+        QFETCH(int, transformation);
+        QFETCH(int, orientation);
+        QFETCH(QSize, resizedSize);
+        if (!QImageWriter::supportedImageFormats().contains("tiff")) {
+            QSKIP("The Qt TIFF plug-in is not available.");
+        }
+        // The Qt TIFF handler writes the transformation as the EXIF orientation
+        // tag and reports it back when reading.
+        QImage image(64, 32, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        QByteArray bytes;
+        QBuffer buffer(&bytes);
+        QVERIFY(buffer.open(QIODevice::WriteOnly));
+        QImageWriter writer(&buffer, "tiff");
+        writer.setTransformation(QImageIOHandler::Transformations(transformation));
+        QVERIFY2(writer.write(image), qPrintable(writer.errorString()));
+        buffer.close();
+
+        const ImageContent content =
+            Volume::decodeImageBytes("oriented.tif", bytes, QSize(8, 16), QSize(), false);
+
+        QCOMPARE(content.loadedImageSize, QSize(64, 32));
+        QCOMPARE(int(content.exifInfo.Orientation), orientation);
+        // Page dimensions are swapped before CPU resizing for a quarter turn.
+        QCOMPARE(content.resizedImage.size(), resizedSize);
+    }
+
     void decodeImageBytesKeepsRawSoftwareOutOfOrientation()
     {
         // RAW and TIFF metadata comes from the decoded image's text. A Software
