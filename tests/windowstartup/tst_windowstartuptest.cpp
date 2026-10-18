@@ -3037,18 +3037,25 @@ void WindowStartupTest::catalogManagerPaintsNoGlyphTheFontCannotDraw()
     QTemporaryDir directory;
     QVERIFY(directory.isValid());
     const QString root = directory.filePath(QStringLiteral("Shelf") + rare);
-    QVERIFY(writeCatalogShelf(root, {QStringLiteral("Alpha")}));
+    QVERIFY(writeCatalogShelf(root, {QStringLiteral("Alpha") + rare}));
     CatalogDatabase database(nullptr, directory.filePath(QStringLiteral("catalog.db")));
     QVERIFY(database.createCatalog(QStringLiteral("Shelf") + rare, root).created);
+    for (const auto &volume : database.volumes()) {
+        QVERIFY(database.setVolumeDetails(volume.id, volume.name, {QStringLiteral("Tag") + rare}));
+    }
     ManageDatabaseDialog dialog;
+    // The catalogs on the left, and the books of the selected one on the right.
     auto *tree = dialog.findChild<QTreeWidget *>(QStringLiteral("treeWidget"));
-    QVERIFY(tree);
+    auto *books = dialog.findChild<QTreeWidget *>(QStringLiteral("booksTree"));
+    QVERIFY(tree && books);
     auto *style = new RecordingFolderStyle;
-    style->setParent(tree);
+    style->setParent(&dialog);
     tree->setStyle(style);
+    books->setStyle(style);
     dialog.setCatalogDatabase(&database);
     dialog.resize(600, 300);
     dialog.grab();
+    QVERIFY(books->topLevelItemCount() > 0);
     QVERIFY(!style->paintedText.isEmpty());
     for (const QString &text : std::as_const(style->paintedText)) {
         QVERIFY2(!text.contains(rare), qPrintable(text));
