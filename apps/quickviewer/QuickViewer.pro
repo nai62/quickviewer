@@ -160,6 +160,8 @@ SOURCES += \
     src/text/textimagelabel.cpp \
     src/text/fallbacktext.cpp \
     src/text/textimagecache.cpp \
+    src/text/textimagebutton.cpp \
+    src/text/textimageitemdelegate.cpp \
     src/folderview/folderlistview.cpp \
     src/folderview/folderwindow.cpp \
     src/imageview.cpp \
@@ -232,6 +234,8 @@ HEADERS  += \
     src/text/textimagelabel.h \
     src/text/fallbacktext.h \
     src/text/textimagecache.h \
+    src/text/textimagebutton.h \
+    src/text/textimageitemdelegate.h \
     src/folderview/folderlistview.h \
     src/folderview/folderwindow.h \
     src/imageview.h \

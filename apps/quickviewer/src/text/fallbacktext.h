@@ -46,6 +46,13 @@ QChar placeholderCharacter(const QRawFont &normal, const QRawFont &bold);
 QString
 placeholder(const QString &text, const QRawFont &normal, const QRawFont &bold, QChar replacement);
 
+/**
+ * placeholder() for \a text drawn in \a font, with the fonts and the
+ * replacement character remembered per font, so a view can check every cell
+ * it paints. GUI thread only.
+ */
+QString placeholderFor(const QString &text, const QFont &font);
+
 } // namespace FallbackText
 
 #endif // FALLBACKTEXT_H
