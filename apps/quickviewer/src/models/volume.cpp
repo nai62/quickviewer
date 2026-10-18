@@ -422,6 +422,12 @@ void Volume::prefetchCoverImages(int anchorPageIndex)
     }
 }
 
+ImageContent Volume::withDetailedMetadata(ImageContent content) const
+{
+    const QString path = content.path;
+    return enrichDetailedMetadata(m_loadContext, std::move(content), path);
+}
+
 ImageContent Volume::loadThumbnailSourceImage()
 {
     if (!loaderForPrefetch()) {
@@ -776,11 +782,13 @@ static ImageContent finishStaticImage(QImage src,
     ImageContent ic(path, bytes.length());
     const bool isExifJpeg = src.width() > 0 && IFileLoader::isExifJpegImageFile(path);
     if (isExifJpeg && loadDetailedMetadata) {
-        info.parseFrom(reinterpret_cast<const unsigned char *>(bytes.constData()), bytes.length());
+        ic.hasExif = info.parseFrom(reinterpret_cast<const unsigned char *>(bytes.constData()),
+                                    bytes.length()) == PARSE_EXIF_SUCCESS;
     }
 
     if (src.width() > 0 && IFileLoader::isExifRawImageFile(path)) {
         parseExifTextExtents(src, info);
+        ic.hasExif = info.ImageWidth > 0;
     }
     if (src.width() > 0) {
         info.Orientation = orientation;
@@ -1004,8 +1012,9 @@ static ImageContent enrichDetailedMetadata(const QSharedPointer<ImageLoadContext
         // The page is already laid out with the orientation the marker reader
         // found, and a parse that fails clears it.
         const unsigned short orientation = content.exifInfo.Orientation;
-        content.exifInfo.parseFrom(reinterpret_cast<const unsigned char *>(bytes.constData()),
-                                   bytes.length());
+        content.hasExif =
+            content.exifInfo.parseFrom(reinterpret_cast<const unsigned char *>(bytes.constData()),
+                                       bytes.length()) == PARSE_EXIF_SUCCESS;
         content.exifInfo.Orientation = orientation;
     }
     content.hasDetailedMetadata = true;

@@ -29,6 +29,7 @@ public slots:
 private:
     Ui::ExifDialog *ui;
     bool m_hasContent;
+    bool m_hasExif = false;
     QString m_exif;
     QString m_exifPath;
     QSize m_originalSize;

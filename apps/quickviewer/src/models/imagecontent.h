@@ -44,6 +44,13 @@ struct ImageContent
     size_t fileSize = 0;
     bool isPreview = false;
     bool hasDetailedMetadata = false;
+    /**
+     * True when the file carries EXIF the viewer could read: a JPEG whose full
+     * EXIF parse succeeded, or a RAW image whose decoder reported its extents.
+     * False until hasDetailedMetadata is set, since the fast path only reads
+     * the orientation.
+     */
+    bool hasExif = false;
     RetouchParameters appliedRetouchParameters;
     qvEnums::ShaderEffect appliedResizeMode = qvEnums::ShaderEffect::Bilinear;
 

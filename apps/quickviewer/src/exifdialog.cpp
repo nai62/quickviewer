@@ -192,6 +192,7 @@ QString ExifDialog::generateOrientation(unsigned short orient)
 void ExifDialog::setExif(const ImageContent &content)
 {
     m_hasContent = true;
+    m_hasExif = content.hasExif;
     m_exifPath = content.path;
     m_originalSize = content.originalSize;
     m_exifInfo = content.exifInfo;
@@ -201,7 +202,7 @@ void ExifDialog::setExif(const ImageContent &content)
 void ExifDialog::updateExifText()
 {
     const easyexif::EXIFInfo &info = m_exifInfo;
-    if (!info.ImageWidth) {
+    if (!m_hasExif) {
         ui->textEdit->setText(
             tr("Exif is not included.", "Text to display if EXIF is not included in JPEG"));
         return;

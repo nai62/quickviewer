@@ -259,6 +259,11 @@ public:
     InflateCacheMode getCacheMode() const override { return InflateNoCached; }
 
     QStringList requestedNames() const { return m_requestedNames; }
+    void addFile(const QString &name, const QByteArray &bytes)
+    {
+        m_names.append(name);
+        m_images.insert(name, bytes);
+    }
 
 private:
     QStringList m_names;
@@ -864,6 +869,38 @@ private slots:
 
         QCOMPARE(int(content.exifInfo.Orientation), 6);
         QCOMPARE(content.resizedImage.size(), QSize(16, 8));
+    }
+
+    void volumeReadsTheExifThePrefetchSkipped()
+    {
+        const QByteArray tagged = jpegWithOrientation(6, QSize(64, 32));
+        const QByteArray corrupt = jpegWithOrientation(6, QSize(64, 32), 8, 0xFFFF);
+        QVERIFY(!tagged.isEmpty());
+        QVERIFY(!corrupt.isEmpty());
+        auto loader = std::make_unique<MemoryFileLoader>(0);
+        loader->addFile("tagged.jpg", tagged);
+        loader->addFile("corrupt.jpg", corrupt);
+        Volume volume(nullptr, std::move(loader));
+        ImageDecodePolicy policy;
+        policy.jpeg = JpegDecoderPreference::Qt;
+
+        // A prefetched page reads the orientation alone, so whether it has
+        // EXIF is not known until the full parse.
+        const ImageContent prefetched =
+            Volume::decodeImageBytes("tagged.jpg", tagged, QSize(), QSize(), false, policy);
+        QVERIFY(!prefetched.hasDetailedMetadata);
+        QVERIFY(!prefetched.hasExif);
+        const ImageContent detailed = volume.withDetailedMetadata(prefetched);
+        QVERIFY(detailed.hasDetailedMetadata);
+        QVERIFY(detailed.hasExif);
+        QCOMPARE(int(detailed.exifInfo.Orientation), 6);
+
+        // EXIF the full parse rejects is not shown, and keeps the orientation.
+        const ImageContent corruptDetailed = volume.withDetailedMetadata(
+            Volume::decodeImageBytes("corrupt.jpg", corrupt, QSize(), QSize(), false, policy));
+        QVERIFY(corruptDetailed.hasDetailedMetadata);
+        QVERIFY(!corruptDetailed.hasExif);
+        QCOMPARE(int(corruptDetailed.exifInfo.Orientation), 6);
     }
 
     void jpegExifOrientationReadsTheExifSegment()

@@ -1522,7 +1522,11 @@ void MainWindow::handleOpenExifActionTriggered()
     }
     const VisiblePages pages = m_viewerSession.visiblePages();
     const ImageContent *page = pages.first();
-    if (!page || page->exifInfo.ImageWidth == 0) {
+    if (!page) {
+        return;
+    }
+    const ImageContent detailedPage = m_viewerSession.withDetailedMetadata(*page);
+    if (!detailedPage.hasExif) {
         return;
     }
     if (m_catalogWindow && m_catalogWindow->parent()) {
@@ -1534,7 +1538,7 @@ void MainWindow::handleOpenExifActionTriggered()
 
     m_exifDialog = new ExifDialog();
     ui->actionOpenExif->setChecked(true);
-    m_exifDialog->setExif(*page);
+    m_exifDialog->setExif(detailedPage);
     connect(m_exifDialog, &ExifDialog::closed, this, &MainWindow::handleExifDialogClosed);
 
     ui->catalogSplitter->insertWidget(1, m_exifDialog);
@@ -1670,7 +1674,7 @@ void MainWindow::handleViewerSessionPageChanged()
     if (m_exifDialog) {
         const VisiblePages pages = m_viewerSession.visiblePages();
         if (const ImageContent *page = pages.first()) {
-            m_exifDialog->setExif(*page);
+            m_exifDialog->setExif(m_viewerSession.withDetailedMetadata(*page));
         }
     }
 }

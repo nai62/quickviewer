@@ -151,6 +151,11 @@ public:
      *      or some1.jpg (10/2182)[WIDTHxHEIGHT]
      */
     QString currentPageStatusText() const;
+    /**
+     * \a page, one of the visible pages, with its full EXIF read if its load
+     * skipped it. Prefetched pages are decoded with the orientation alone.
+     */
+    ImageContent withDetailedMetadata(const ImageContent &page) const;
     QString pageSignage(int pageIndex) const;
 
     QString volumePath() const override
