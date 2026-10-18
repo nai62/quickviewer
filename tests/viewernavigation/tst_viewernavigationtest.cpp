@@ -829,6 +829,28 @@ private slots:
         }
     }
 
+    void decodeImageBytesKeepsRawSoftwareOutOfOrientation()
+    {
+        // RAW and TIFF metadata comes from the decoded image's text. A Software
+        // value that reads as a number used to be taken as the orientation.
+        QImage image(64, 32, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        image.setText("Software", "6");
+        QByteArray bytes;
+        QBuffer buffer(&bytes);
+        QVERIFY(buffer.open(QIODevice::WriteOnly));
+        QVERIFY(image.save(&buffer, "PNG"));
+        buffer.close();
+
+        const ImageContent content =
+            Volume::decodeImageBytes("camera.tif", bytes, QSize(8, 16), QSize(), false);
+
+        QVERIFY(!content.loadedImage.isNull());
+        QCOMPARE(content.exifInfo.Software, std::string("6"));
+        QVERIFY(!content.isOrientationRotated());
+        QCOMPARE(content.resizedImage.size(), QSize(8, 4));
+    }
+
     void decodeImageBytesRejectsExifOffsetOutsideTheSegment()
     {
         // The IFD offset is a 32-bit field, so an offset near 4 GiB used to wrap

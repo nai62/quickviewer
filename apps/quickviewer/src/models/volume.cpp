@@ -479,7 +479,6 @@ static void parseExifTextExtents(QImage &img, easyexif::EXIFInfo &info)
 {
     info.Make = img.text("Make").toStdString();
     info.Model = img.text("Model").toStdString();
-    info.Orientation = img.text("Software").toInt();
     info.BitsPerSample = img.text("BitsPerSample").toInt();
     info.Software = img.text("Software").toStdString();
     info.DateTime = img.text("DateTime").toStdString();
