@@ -91,7 +91,32 @@ provides ordered content and loading facilities, and may be shared or cached
 without carrying a session's current-page state. Rendering state belongs to
 `RenderedPage`, outside both the volume and navigation model.
 
-### Folder text rendering
+### Text from the user's data
+
+Names and paths come from the disk and the catalog, so they can hold a
+character the UI font cannot draw. Shaping such text on the GUI thread makes Qt
+load a fallback font, which stalls the window for a few hundred milliseconds the
+first time. Widgets that draw such text therefore use `src/text/`:
+
+- `FallbackText` checks the primary font without merging and stands in for the
+  characters it cannot draw, one placeholder per code point.
+- `TextImageCache` asks the text-image helper to rasterize the real text, laid
+  out the way the widget shows it: one line, a line elided to a width, lines
+  wrapped like a label, or the lines that fit an item view's cell.
+- `TextImageLabel` (the folder caption and the status bar's page caption),
+  `TextImageButton` (the catalog's tag buttons) and `TextImageItemDelegate`
+  (the catalog's volume list and the catalog manager) lay out and paint the
+  placeholder, then paint the helper's image tinted with the colour they draw
+  in. The fullscreen signage swaps its placeholder for the image the same way.
+
+The real text stays what the widget answers to: the model's display text, the
+button's tag, the label's accessible name, tooltips and copies. Only what is
+painted and measured is the placeholder. Menus, the EXIF dialog and the window
+title draw such text as it is: a menu item or a text edit cannot paint an image
+in place of its text without losing accelerators or selection, and the native
+title bar is drawn by the system.
+
+#### The folder panel
 
 FolderItemModel keeps disk names separate from safe display text and rasterized
 text. Characters missing from either weight of the view's primary font initially
@@ -112,7 +137,7 @@ image of the path, which the helper wraps at the width the caption gives it, so
 the raw path is never shaped on the GUI thread.
 
 The same executable runs a private `--text-image-helper` mode to shape and
-rasterize missing-glyph names. A Qt worker thread would still contend with the
+rasterize missing-glyph text. A Qt worker thread would still contend with the
 GUI's font database mutex and would not populate its thread-local font engines.
 The helper has a separate font database, receives framed requests over standard
 input and returns images over standard output. The delegate never passes the

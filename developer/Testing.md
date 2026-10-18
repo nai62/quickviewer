@@ -255,7 +255,7 @@ start "" /wait "C:\build\quickviewer-msvc2022_64-release\bin\QuickViewer.exe" "C
 set "QV_PROFILE_FIRST_IMAGE="
 ```
 
-### Folder text responsiveness
+### Text from the user's data
 
 `QV_PROFILE_FOLDER_TEXT=1` extends `QV_PROFILE_FIRST_IMAGE` profiling past the
 reveal until the folder list has its text. It settles the whole folder, not only
@@ -280,8 +280,16 @@ folder it shows, so open a folder whose own path holds such a name as well: the
 caption shows the placeholder at once and the path once the helper has answered,
 at every panel width.
 
+The same placeholder-then-image sequence applies to the status bar's page
+caption, the catalog's volume titles (icon and list modes) and tag buttons, the
+catalog manager's names and paths, and the fullscreen signage. Check each with
+a name holding such a character (an emoji or a CJK Extension character works on
+most systems), with the Default and Dark themes and with a page selected, and
+check that a tag button still searches for its tag and the catalog manager's
+path tooltip shows the real path.
+
 `scripts\verify-windows.cmd debug --test windowstartup` covers the model, cache,
-caption and transport cases.
+caption, delegate, button, signage and transport cases.
 
 ## C++ lint
 
