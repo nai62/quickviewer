@@ -130,53 +130,53 @@
         <translation type="vanished">Entrez le terme à rechercher et appuyez sur la touche Entrée pour effectuer une recherche par titre.</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="76"/>
-        <location filename="../src/catalog/catalogwindow.cpp" line="111"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="78"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="117"/>
         <source>Search titles</source>
         <comment>Gray text that prompts a keyword search of Volume</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="77"/>
-        <location filename="../src/catalog/catalogwindow.cpp" line="116"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="79"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="122"/>
         <source>Type part of a title and press Enter to search.</source>
         <comment>Tooltip of the field that searches the titles of the catalog</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="82"/>
-        <location filename="../src/catalog/catalogwindow.cpp" line="134"/>
-        <location filename="../src/catalog/catalogwindow.cpp" line="281"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="84"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="140"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="287"/>
         <source>Drop an image folder here to create a catalog.</source>
         <comment>Status bar text briefly explaining how to use CatalogWindow</comment>
         <translation>Déposez le dossier d&apos;images ici et créez un catalogue.</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="292"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="298"/>
         <source>%1 volumes</source>
         <comment>Text of the status bar showing how many volumes are listed</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="296"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="302"/>
         <source>%1 of %2 volumes</source>
         <comment>Text of the status bar showing [the number of hits]/[total number] of Volume</comment>
         <translation>(%1/%2) affichage volume.</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="304"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="310"/>
         <source>(%1 without a cover are not shown)</source>
         <comment>Status bar note about volumes the catalog holds but does not list</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="504"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="510"/>
         <source>Edit tags...</source>
         <comment>Context menu entry of a book in the catalog list</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="534"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="540"/>
         <source>Catalog database</source>
         <translation type="unfinished"></translation>
     </message>
@@ -219,117 +219,117 @@
         <translation>Informations Exif</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="237"/>
+        <location filename="../src/exifdialog.cpp" line="238"/>
         <source>Image description</source>
         <translation>Description d&apos;Image</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="215"/>
+        <location filename="../src/exifdialog.cpp" line="216"/>
         <source>Make</source>
         <translation>Faire</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="216"/>
+        <location filename="../src/exifdialog.cpp" line="217"/>
         <source>Model</source>
         <translation>Modèle</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="226"/>
+        <location filename="../src/exifdialog.cpp" line="227"/>
         <source>F-number</source>
         <translation>FNombre</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="234"/>
+        <location filename="../src/exifdialog.cpp" line="235"/>
         <source>Flash</source>
         <translation>Flash</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="213"/>
+        <location filename="../src/exifdialog.cpp" line="214"/>
         <source>Image width</source>
         <translation>Largeur image</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="210"/>
+        <location filename="../src/exifdialog.cpp" line="211"/>
         <source>Filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="214"/>
+        <location filename="../src/exifdialog.cpp" line="215"/>
         <source>Image height</source>
         <translation>Hauteur image</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="219"/>
+        <location filename="../src/exifdialog.cpp" line="220"/>
         <source>Bits per sample</source>
         <translation>BitsParEchantillon</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="220"/>
+        <location filename="../src/exifdialog.cpp" line="221"/>
         <source>Software</source>
         <translation>Logiciel</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="221"/>
+        <location filename="../src/exifdialog.cpp" line="222"/>
         <source>DateTime</source>
         <translation>DateHeure</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="222"/>
+        <location filename="../src/exifdialog.cpp" line="223"/>
         <source>Date/time original</source>
         <translation>DateHeureOriginal</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="223"/>
+        <location filename="../src/exifdialog.cpp" line="224"/>
         <source>Date/time digitized</source>
         <translation>DateHeureNumérisé</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="224"/>
+        <location filename="../src/exifdialog.cpp" line="225"/>
         <source>Subsecond time original</source>
         <translation>SubSecTimeOriginal</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="238"/>
+        <location filename="../src/exifdialog.cpp" line="239"/>
         <source>Copyright</source>
         <translation>Copyright</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="225"/>
+        <location filename="../src/exifdialog.cpp" line="226"/>
         <source>Exposure time</source>
         <translation>Temps Exposition</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="227"/>
+        <location filename="../src/exifdialog.cpp" line="228"/>
         <source>ISO speed</source>
         <translation>RatioVitesse ISOS</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="228"/>
+        <location filename="../src/exifdialog.cpp" line="229"/>
         <source>Shutter speed</source>
         <translation>ValeurVitesseObturation</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="229"/>
+        <location filename="../src/exifdialog.cpp" line="230"/>
         <source>Exposure bias</source>
         <translation>Valeur biais exposition</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="230"/>
+        <location filename="../src/exifdialog.cpp" line="231"/>
         <source>Subject distance</source>
         <translation>DistanceduSujet</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="231"/>
+        <location filename="../src/exifdialog.cpp" line="232"/>
         <source>Focal length</source>
         <translation>Distance focale</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="232"/>
+        <location filename="../src/exifdialog.cpp" line="233"/>
         <source>35 mm equivalent focal length</source>
         <translation>Longueur focale en 35mm</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="236"/>
+        <location filename="../src/exifdialog.cpp" line="237"/>
         <source>Metering mode</source>
         <translation>ModeMesure</translation>
     </message>
@@ -489,7 +489,7 @@
         <translation type="vanished">Exif n&apos;est pas inclus.</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="217"/>
+        <location filename="../src/exifdialog.cpp" line="218"/>
         <source>Orientation of camera</source>
         <translation>Orientation de l&apos;appareil</translation>
     </message>
@@ -504,7 +504,7 @@
         <translation type="vanished">Nom-fichier</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="211"/>
+        <location filename="../src/exifdialog.cpp" line="212"/>
         <source>Pixels</source>
         <translation>Pixels</translation>
     </message>
@@ -689,7 +689,7 @@
         <translation>Rotation 270 CW</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="206"/>
+        <location filename="../src/exifdialog.cpp" line="207"/>
         <source>Exif is not included.</source>
         <comment>Text to display if EXIF is not included in JPEG</comment>
         <translation>Exif n&apos;est pas inclus.</translation>
@@ -997,8 +997,8 @@
 <context>
     <name>FolderWindow</name>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="106"/>
-        <location filename="../src/folderview/folderwindow.ui" line="211"/>
+        <location filename="../src/folderview/folderwindow.ui" line="103"/>
+        <location filename="../src/folderview/folderwindow.ui" line="208"/>
         <source>Home</source>
         <extracomment>Button for returning to QuickViewer&apos;s home folder</extracomment>
         <translation>Aller vers home</translation>
@@ -1014,46 +1014,46 @@
         <translation type="vanished">suivant</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="155"/>
-        <location filename="../src/folderview/folderwindow.ui" line="229"/>
-        <location filename="../src/folderview/folderwindow.ui" line="271"/>
+        <location filename="../src/folderview/folderwindow.ui" line="152"/>
+        <location filename="../src/folderview/folderwindow.ui" line="226"/>
+        <location filename="../src/folderview/folderwindow.ui" line="268"/>
         <source>Reload</source>
         <translation>Recharger</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="158"/>
+        <location filename="../src/folderview/folderwindow.ui" line="155"/>
         <source>Refresh</source>
         <extracomment>Button for updating the currently displayed folder information</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="234"/>
+        <location filename="../src/folderview/folderwindow.ui" line="231"/>
         <source>Name</source>
         <translation>Nom</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="256"/>
+        <location filename="../src/folderview/folderwindow.ui" line="253"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="261"/>
+        <location filename="../src/folderview/folderwindow.ui" line="258"/>
         <source>Open in &amp;Explorer</source>
         <extracomment>Menu that displays Explorer with the currently displayed image file selected</extracomment>
         <translation type="unfinished">Ouvrir dans &amp;Explorer</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="266"/>
+        <location filename="../src/folderview/folderwindow.ui" line="263"/>
         <source>Copy path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="220"/>
+        <location filename="../src/folderview/folderwindow.ui" line="217"/>
         <source>Parent</source>
         <translation>VersParent</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="246"/>
+        <location filename="../src/folderview/folderwindow.ui" line="243"/>
         <source>Other</source>
         <translation>Autres</translation>
     </message>
@@ -1068,13 +1068,13 @@
         <translation type="vanished">Dossier courant</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="103"/>
+        <location filename="../src/folderview/folderwindow.ui" line="100"/>
         <source>Go to home folder</source>
         <translation>Déplacer vers dossiers personnel</translation>
     </message>
     <message>
+        <location filename="../src/folderview/folderwindow.ui" line="126"/>
         <location filename="../src/folderview/folderwindow.ui" line="129"/>
-        <location filename="../src/folderview/folderwindow.ui" line="132"/>
         <source>Parent folder</source>
         <extracomment>Button for moving from the currently displayed folder to the next higher folder</extracomment>
         <translation>DossierSupérieur</translation>
@@ -1109,7 +1109,7 @@
         <translation type="vanished">Trié par UpDate</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="251"/>
+        <location filename="../src/folderview/folderwindow.ui" line="248"/>
         <source>Set as home folder</source>
         <translation>Définissez ce dossier comme dossier d&apos;accueil</translation>
     </message>
@@ -1601,7 +1601,7 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="168"/>
-        <location filename="../src/mainwindow.cpp" line="1785"/>
+        <location filename="../src/mainwindow.cpp" line="1789"/>
         <source>&amp;Fullscreen</source>
         <translation>&amp;Plein écran</translation>
     </message>
@@ -1739,7 +1739,7 @@
         <translation>EffacerSignets</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2510"/>
+        <location filename="../src/mainwindow.cpp" line="2537"/>
         <source>Bookmark saved.</source>
         <translation>Signet enregistré..</translation>
     </message>
@@ -2333,47 +2333,60 @@
         <translation type="vanished">Le fichier image n&apos;a pas été trouvé. Ne peut être ouvert.</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1736"/>
+        <location filename="../src/mainwindow.cpp" line="1740"/>
         <source>Loading...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1739"/>
+        <location filename="../src/mainwindow.cpp" line="1743"/>
         <source>No images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1741"/>
+        <location filename="../src/mainwindow.cpp" line="1745"/>
         <source>Unavailable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2094"/>
+        <location filename="../src/mainwindow.cpp" line="2098"/>
         <source>All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.heic *.heif);;Archives( *.zip *.7z *.rar)</source>
         <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2100"/>
+        <location filename="../src/mainwindow.cpp" line="2104"/>
         <source>Select an image or archive</source>
         <comment>Title of the dialog displayed when opening a file with OpenFileFolder</comment>
         <translation>Veuillez sélectionner l&apos;image ou l&apos;archive</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2341"/>
-        <location filename="../src/mainwindow.cpp" line="2385"/>
+        <location filename="../src/mainwindow.cpp" line="2344"/>
+        <location filename="../src/mainwindow.cpp" line="2405"/>
         <source>Confirmation</source>
         <comment>Confirm deleting image file on MessageBox title</comment>
         <translation>Confirmation</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2347"/>
+        <location filename="../src/mainwindow.cpp" line="2371"/>
         <source>Are you sure you want to move the image to Recycle Bin?</source>
         <comment>Confirm putting displayed file in Recycle Box Message Box body</comment>
         <translation>Êtes-vous sûr de vouloir déplacer l&apos;image dans la corbeille?</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2390"/>
+        <location filename="../src/mainwindow.cpp" line="2394"/>
+        <source>Are you sure you want to move this whole archive to Recycle Bin?</source>
+        <comment>Confirm putting the displayed archive, with every page in it, in Recycle Box Message Box body</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp" line="2406"/>
+        <source>The archive could not be moved to Recycle Bin:
+%1</source>
+        <comment>Message shown when the displayed archive could not be put in Recycle Box</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp" line="2431"/>
         <source>Are you sure you want to delete this image?</source>
         <comment>Confirm deleting image file on Message Box body</comment>
         <translation>Êtes-vous sûr de vouloir supprimer cette image?</translation>
@@ -2564,139 +2577,139 @@
         <translation type="vanished">Suppression de Création de Catalogue</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="27"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="33"/>
         <source>Name</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>Nom</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="30"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="36"/>
         <source>Created</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>Heure de création</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="32"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="38"/>
         <source>Path</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>Chemin</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="51"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="57"/>
         <source>Close</source>
         <comment>Button that closes the catalog manager</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="199"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="205"/>
         <source>Remove missing entries (%1)</source>
         <comment>Button that removes the catalog entries whose folder is no longer there</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/catalog/cataloglist.ui" line="294"/>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="211"/>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="223"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="217"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="229"/>
         <source>Remove missing entries</source>
         <extracomment>Button that removes the catalog entries whose folder is no longer there</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="212"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="218"/>
         <source>%1 registered folder(s) are no longer there. Remove them from the list? The image files are not deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="223"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="229"/>
         <source>Removed %1 entry(ies).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="231"/>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="515"/>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="692"/>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="727"/>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="747"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="237"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="521"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="698"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="733"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="753"/>
         <source>Catalog database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="233"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="239"/>
         <source>Move or rename that file, then open the catalog again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="270"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="276"/>
         <source>Start creating (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="271"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="277"/>
         <source>Start creating</source>
         <comment>Button that builds the folders which were added to the list above</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="265"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="271"/>
         <source>Stop creating</source>
         <comment>Button that cancels the catalogs being built</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="326"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="332"/>
         <source>Not created yet</source>
         <comment>Representation of time indicating that the catalog is not currently created and will be generated from now</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="614"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="620"/>
         <source>Catalog creation incomplete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="615"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="621"/>
         <source>Catalog(s) left unstored: %1</source>
         <comment>Body of message box when some catalogs could not be stored</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="259"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="265"/>
         <source>Stopping...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="197"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="203"/>
         <source>Remove missing entries</source>
         <comment>Button that removes the catalog entries whose folder is no longer there</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="654"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="660"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="655"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="661"/>
         <source>%1 added folder(s) are not created yet. Close and discard them?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="721"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="727"/>
         <source>Delete catalog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="722"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="728"/>
         <source>Delete &quot;%1&quot; from the list of catalogs? The image files are not deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="742"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="748"/>
         <source>Delete all catalogs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="743"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="749"/>
         <source>Delete every catalog from the list? The image files are not deleted.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2716,7 +2729,7 @@
         <translation type="vanished">S&apos;approcher</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="583"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="589"/>
         <source>Edit Catalog</source>
         <comment>Button for editing contents of already created catalog</comment>
         <translation>Edition de ctalogue</translation>
@@ -2727,7 +2740,7 @@
         <translation type="vanished">Réussi!</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="609"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="615"/>
         <source>Catalog creation completed.</source>
         <comment>Body of message box when catalog generation finished successfully</comment>
         <translation>Création de Catalogue faite</translation>
@@ -2738,7 +2751,7 @@
         <translation type="vanished">Supprimé!</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="605"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="611"/>
         <source>Catalog creation was cancelled.</source>
         <comment>Body of message box when catalog generation is canceled</comment>
         <translation>Suppression de Création de Catalogue</translation>
@@ -3342,7 +3355,7 @@
 <context>
     <name>RenderedPage</name>
     <message>
-        <location filename="../src/models/renderedpage.cpp" line="76"/>
+        <location filename="../src/models/renderedpage.cpp" line="71"/>
         <source>NOT IMAGE FILE</source>
         <comment>Error messages to be displayed on screen when image loading fails</comment>
         <translation type="unfinished">PAS DE FICHIER IMAGE</translation>
