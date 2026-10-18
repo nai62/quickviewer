@@ -759,8 +759,9 @@ static QSize storedAxesSize(const QSize &displayedSize, int orientation)
 
 // Metadata and display preparation are shared by native and Qt static-image decoders.
 // Keep this outside decode timing and Qt format-name negotiation. `orientation`
-// is the EXIF orientation of the stored pixels, which a full EXIF parse of a
-// JPEG reads again, and `decodeTargetSize` is along the stored axes.
+// is the EXIF orientation of the stored pixels, which stays the page's
+// orientation even when a full EXIF parse of a JPEG fails, and `decodeTargetSize`
+// is along the stored axes.
 static ImageContent finishStaticImage(QImage src,
                                       QSize baseSize,
                                       const QString &path,
@@ -774,19 +775,14 @@ static ImageContent finishStaticImage(QImage src,
     easyexif::EXIFInfo info;
     ImageContent ic(path, bytes.length());
     const bool isExifJpeg = src.width() > 0 && IFileLoader::isExifJpegImageFile(path);
-    if (isExifJpeg) {
-        if (loadDetailedMetadata) {
-            info.parseFrom(reinterpret_cast<const unsigned char *>(bytes.constData()),
-                           bytes.length());
-        } else {
-            info.Orientation = orientation;
-        }
+    if (isExifJpeg && loadDetailedMetadata) {
+        info.parseFrom(reinterpret_cast<const unsigned char *>(bytes.constData()), bytes.length());
     }
 
     if (src.width() > 0 && IFileLoader::isExifRawImageFile(path)) {
         parseExifTextExtents(src, info);
     }
-    if (src.width() > 0 && !isExifJpeg) {
+    if (src.width() > 0) {
         info.Orientation = orientation;
     }
 
@@ -1005,8 +1001,12 @@ static ImageContent enrichDetailedMetadata(const QSharedPointer<ImageLoadContext
 
     const QByteArray bytes = context ? context->load(path) : QByteArray();
     if (!bytes.isEmpty()) {
+        // The page is already laid out with the orientation the marker reader
+        // found, and a parse that fails clears it.
+        const unsigned short orientation = content.exifInfo.Orientation;
         content.exifInfo.parseFrom(reinterpret_cast<const unsigned char *>(bytes.constData()),
                                    bytes.length());
+        content.exifInfo.Orientation = orientation;
     }
     content.hasDetailedMetadata = true;
     return content;

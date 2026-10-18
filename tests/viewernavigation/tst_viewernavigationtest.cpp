@@ -133,8 +133,12 @@ static void appendLittleEndian32(QByteArray &out, quint32 value)
 }
 
 // Builds a JPEG that carries IFD0 with nothing but an EXIF Orientation tag.
-static QByteArray
-jpegWithOrientation(int orientation, const QSize &size = QSize(8, 4), quint32 ifdOffset = 8)
+// `declaredEntries` is the IFD0 entry count written, which can claim more
+// entries than the one present.
+static QByteArray jpegWithOrientation(int orientation,
+                                      const QSize &size = QSize(8, 4),
+                                      quint32 ifdOffset = 8,
+                                      quint16 declaredEntries = 1)
 {
     QImage image(size, QImage::Format_RGB32);
     image.fill(Qt::yellow);
@@ -154,7 +158,7 @@ jpegWithOrientation(int orientation, const QSize &size = QSize(8, 4), quint32 if
     payload.append("II", 2);
     appendLittleEndian16(payload, 0x2A);
     appendLittleEndian32(payload, ifdOffset); // offset of IFD0
-    appendLittleEndian16(payload, 1); // one IFD0 entry
+    appendLittleEndian16(payload, declaredEntries); // one IFD0 entry is present
     appendLittleEndian16(payload, 0x0112);
     appendLittleEndian16(payload, 3); // SHORT
     appendLittleEndian32(payload, 1);
@@ -845,6 +849,21 @@ private slots:
 
         QCOMPARE(content.originalSize, QSize(64, 32));
         QCOMPARE(content.loadedImageSize, loadedSize);
+    }
+
+    void decodeImageBytesKeepsTheOrientationWhenTheExifParseFails()
+    {
+        // IFD0 claims more entries than the file holds: the marker reader finds
+        // the orientation in the first one, while the full EXIF parse gives up.
+        const QByteArray bytes = jpegWithOrientation(6, QSize(64, 32), 8, 0xFFFF);
+        QVERIFY(!bytes.isEmpty());
+        ImageDecodePolicy policy;
+        policy.jpeg = JpegDecoderPreference::Qt;
+        const ImageContent content =
+            Volume::decodeImageBytes("corrupt.jpg", bytes, QSize(8, 16), QSize(), true, policy);
+
+        QCOMPARE(int(content.exifInfo.Orientation), 6);
+        QCOMPARE(content.resizedImage.size(), QSize(16, 8));
     }
 
     void jpegExifOrientationReadsTheExifSegment()
