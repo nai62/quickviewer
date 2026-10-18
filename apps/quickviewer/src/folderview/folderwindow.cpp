@@ -567,8 +567,8 @@ void FolderWindow::resetPathLabel(int)
     // The path comes from the disk, so it can hold a character the UI font
     // cannot draw. The caption stands in for those characters and paints the
     // helper's image of the path once it arrives, instead of shaping the path
-    // in the frame that reveals the window. See FolderPathLabel.
-    ui->pathLabel->setPath(m_currentPath);
+    // in the frame that reveals the window. See TextImageLabel.
+    ui->pathLabel->setSourceText(m_currentPath);
 }
 
 QString FolderWindow::itemPath(const QModelIndex &index) const

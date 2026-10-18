@@ -1,5 +1,5 @@
 #include "folderitemmodel.h"
-#include "folderplaceholdertext.h"
+#include "fallbacktext.h"
 #include "startupprofiler.h"
 
 #ifdef Q_OS_WIN
@@ -56,11 +56,11 @@ void FolderItemModel::startIconLoad()
 #endif
 }
 
-FolderItemModel::FolderItemModel(QObject *parent, FolderTextCache *textCache)
+FolderItemModel::FolderItemModel(QObject *parent, TextImageCache *textCache)
     : QAbstractItemModel(parent),
       m_searchedVolumes(nullptr),
       m_currentVolumeRow(-1),
-      m_textCache(textCache ? textCache : FolderTextCache::instance()),
+      m_textCache(textCache ? textCache : TextImageCache::instance()),
       m_textFont(QApplication::font()),
       m_textPalette(QApplication::palette())
 {
@@ -83,9 +83,9 @@ FolderItemModel::FolderItemModel(QObject *parent, FolderTextCache *textCache)
 #endif
     updatePrimaryFontGlyphs();
     connect(m_textCache,
-            &FolderTextCache::finished,
+            &TextImageCache::finished,
             this,
-            [this](const QByteArray &key, const FolderTextResult &result) {
+            [this](const QByteArray &key, const TextImageResult &result) {
                 for (int row = 0; row < m_textKeys.size(); ++row) {
                     if (m_textKeys[row] == key) {
                         m_textImages[row] = result;
@@ -100,9 +100,9 @@ FolderItemModel::FolderItemModel(QObject *parent, FolderTextCache *textCache)
 
 void FolderItemModel::updatePrimaryFontGlyphs()
 {
-    m_primaryNormal = FolderPlaceholderText::primaryFont(m_textFont, false);
-    m_primaryBold = FolderPlaceholderText::primaryFont(m_textFont, true);
-    m_replacement = FolderPlaceholderText::placeholderCharacter(m_primaryNormal, m_primaryBold);
+    m_primaryNormal = FallbackText::primaryFont(m_textFont, false);
+    m_primaryBold = FallbackText::primaryFont(m_textFont, true);
+    m_replacement = FallbackText::placeholderCharacter(m_primaryNormal, m_primaryBold);
 }
 
 void FolderItemModel::handleIconLoadFinished()
@@ -254,7 +254,7 @@ void FolderItemModel::setTextStyle(const QFont &font, const QPalette &palette, q
 
 void FolderItemModel::updatePlaceholderNames()
 {
-    QHash<QByteArray, FolderTextResult> retained;
+    QHash<QByteArray, TextImageResult> retained;
     for (int row = 0; row < m_textKeys.size(); ++row) {
         if (m_textImages.at(row)) {
             retained.insert(m_textKeys.at(row), m_textImages.at(row));
@@ -267,12 +267,12 @@ void FolderItemModel::updatePlaceholderNames()
         return;
     }
     for (const FolderItem &item : *m_searchedVolumes) {
-        const QString placeholder = FolderPlaceholderText::placeholder(
-            item.name, m_primaryNormal, m_primaryBold, m_replacement);
+        const QString placeholder =
+            FallbackText::placeholder(item.name, m_primaryNormal, m_primaryBold, m_replacement);
         m_placeholderNames.append(placeholder);
         const QByteArray key = placeholder.isEmpty()
                                    ? QByteArray()
-                                   : FolderTextCache::key(item.name, m_textFont, m_textRatio);
+                                   : TextImageCache::key(item.name, m_textFont, m_textRatio);
         m_textKeys.append(key);
         m_textImages.append(retained.contains(key) ? retained.value(key)
                                                    : m_textCache->lookup(key));

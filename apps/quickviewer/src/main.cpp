@@ -1,4 +1,4 @@
-#include "foldertextcache.h"
+#include "textimagecache.h"
 #include <QtCore>
 #include <QtWidgets>
 
@@ -112,8 +112,8 @@ int runEmptyWindowChild(int argc, char **argv)
 
 int main(int argc, char *argv[])
 {
-    if (isFolderTextHelper(argc, argv)) {
-        return runFolderTextHelper(argc, argv);
+    if (isTextImageHelper(argc, argv)) {
+        return runTextImageHelper(argc, argv);
     }
 
     StartupProfiler::start();

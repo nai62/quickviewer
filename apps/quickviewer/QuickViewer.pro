@@ -51,7 +51,7 @@ INCLUDEPATH += ../../third_party/easyexif
 INCLUDEPATH += ../../components/fileloader
 INCLUDEPATH += ../../components/qzimg
 INCLUDEPATH += ../../third_party/libspng/spng
-INCLUDEPATH += ./src ./src/catalog ./src/widgets ./src/models ./src/folderview
+INCLUDEPATH += ./src ./src/catalog ./src/widgets ./src/models ./src/folderview ./src/text
 INCLUDEPATH += ../../components/i18n ./src/qnamedpipe ./src/qactionmanager
 
 
@@ -157,9 +157,9 @@ SOURCES += \
     src/exifdialog.cpp \
     src/folderview/folderitemdelegate.cpp \
     src/folderview/folderitemmodel.cpp \
-    src/folderview/folderpathlabel.cpp \
-    src/folderview/folderplaceholdertext.cpp \
-    src/folderview/foldertextcache.cpp \
+    src/text/textimagelabel.cpp \
+    src/text/fallbacktext.cpp \
+    src/text/textimagecache.cpp \
     src/folderview/folderlistview.cpp \
     src/folderview/folderwindow.cpp \
     src/imageview.cpp \
@@ -229,9 +229,9 @@ HEADERS  += \
     src/folderview/folderitemdelegate.h \
     src/folderview/folderitem.h \
     src/folderview/folderitemmodel.h \
-    src/folderview/folderpathlabel.h \
-    src/folderview/folderplaceholdertext.h \
-    src/folderview/foldertextcache.h \
+    src/text/textimagelabel.h \
+    src/text/fallbacktext.h \
+    src/text/textimagecache.h \
     src/folderview/folderlistview.h \
     src/folderview/folderwindow.h \
     src/imageview.h \

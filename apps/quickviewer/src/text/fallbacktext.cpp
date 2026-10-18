@@ -1,6 +1,6 @@
-#include "folderplaceholdertext.h"
+#include "fallbacktext.h"
 
-namespace FolderPlaceholderText {
+namespace FallbackText {
 QRawFont primaryFont(const QFont &font, bool bold)
 {
     QFont primary = font;
@@ -53,4 +53,4 @@ placeholder(const QString &text, const QRawFont &normal, const QRawFont &bold, Q
     return replaced ? result : QString();
 }
 
-} // namespace FolderPlaceholderText
+} // namespace FallbackText

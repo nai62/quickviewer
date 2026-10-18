@@ -261,7 +261,7 @@ set "QV_PROFILE_FIRST_IMAGE="
 reveal until the folder list has its text. It settles the whole folder, not only
 the rows on screen: `folder-text.gui-heartbeat` counts event-loop service while
 that happens, `folder-text.profile-timeout` means the run never settled, and
-`folder-text.idle-stop` marks the text helper exiting after its idle period.
+`text-image.idle-stop` marks the text helper exiting after its idle period.
 
 ```bat
 set "QV_PROFILE_FIRST_IMAGE=C:\build\qv-folder-text.tsv"
@@ -271,7 +271,7 @@ set "QV_PROFILE_FOLDER_TEXT="
 set "QV_PROFILE_FIRST_IMAGE="
 ```
 
-The helper is the same executable in `--folder-text-helper` mode, so nothing
+The helper is the same executable in `--text-image-helper` mode, so nothing
 extra is deployed. Check a folder holding a name the UI font cannot draw: it
 shows a placeholder first, then the real text once the helper answers. While it
 loads, close and reopen the panel, scroll and select rows, and try a narrow

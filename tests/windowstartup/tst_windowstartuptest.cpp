@@ -1,6 +1,6 @@
 #include <QAbstractItemModelTester>
-#include "foldertextcache.h"
-#include "folderpathlabel.h"
+#include "textimagecache.h"
+#include "textimagelabel.h"
 #include <QtTest>
 
 #include <algorithm>
@@ -61,19 +61,19 @@ private:
 
 // No OS font cache or scheduling assumptions: the test decides exactly when a
 // request completes, including after its originating model has been destroyed.
-class DelayedFolderTextCache : public FolderTextCache
+class DelayedTextImageCache : public TextImageCache
 {
 public:
     QList<QByteArray> requests;
     void finish(const QByteArray &key, bool success = true)
     {
-        auto result = QSharedPointer<FolderTextImages>::create();
-        for (int i = 0; i < FolderTextImages::ImageCount; ++i) {
+        auto result = QSharedPointer<TextImages>::create();
+        for (int i = 0; i < TextImages::ImageCount; ++i) {
             QImage image(20 + i, 16, QImage::Format_ARGB32_Premultiplied);
             image.fill(Qt::black);
             result->images.append(image);
         }
-        complete(key, success ? result : FolderTextResult());
+        complete(key, success ? result : TextImageResult());
     }
 
 protected:
@@ -83,7 +83,7 @@ protected:
 /** True once the row paints the helper's image of its name. */
 static bool hasTextImages(const QModelIndex &index)
 {
-    return bool(index.data(FolderItemModel::TextImagesRole).value<FolderTextResult>());
+    return bool(index.data(FolderItemModel::TextImagesRole).value<TextImageResult>());
 }
 
 class RecordingFolderStyle : public QProxyStyle
@@ -1101,7 +1101,7 @@ private slots:
 
     void folderTextSurvivesModelDestructionAndSharesCompletion()
     {
-        DelayedFolderTextCache cache;
+        DelayedTextImageCache cache;
         const char32_t missing = 0x10ffff;
         const QString name = QStringLiteral("book") + QString::fromUcs4(&missing, 1) + ".zip";
         QList<FolderItem> items{FolderItem(name, FolderItem::Archive, QDateTime())};
@@ -1127,7 +1127,7 @@ private slots:
 
     void folderTextIgnoresOldFolderAndStyleCompletions()
     {
-        DelayedFolderTextCache cache;
+        DelayedTextImageCache cache;
         const char32_t missing = 0x10ffff;
         const QString suffix = QString::fromUcs4(&missing, 1);
         QList<FolderItem> first{FolderItem("a" + suffix, FolderItem::Archive, QDateTime())};
@@ -1151,15 +1151,15 @@ private slots:
         QVERIFY(!hasTextImages(model.index(0, 0)));
         cache.finish(styledKey);
         QVERIFY(hasTextImages(model.index(0, 0)));
-        const auto result = model.data(model.index(0, 0), FolderItemModel::TextImagesRole)
-                                .value<FolderTextResult>();
+        const auto result =
+            model.data(model.index(0, 0), FolderItemModel::TextImagesRole).value<TextImageResult>();
         QVERIFY(result);
-        QCOMPARE(result->images.size(), FolderTextImages::ImageCount);
+        QCOMPARE(result->images.size(), TextImages::ImageCount);
     }
 
     void folderTextFailureRetriesOnceAndDoesNotBlockOtherNames()
     {
-        DelayedFolderTextCache cache;
+        DelayedTextImageCache cache;
         const char32_t missing = 0x10ffff;
         const QString suffix = QString::fromUcs4(&missing, 1);
         QList<FolderItem> items{FolderItem("a" + suffix, FolderItem::Archive, QDateTime())};
@@ -1172,19 +1172,19 @@ private slots:
         cache.finish(cache.requests.first(), false);
         QVERIFY(!model.textImagesPending());
         model.requestTextImages();
-        QCOMPARE(cache.requests.size(), FolderTextCache::MaxAttempts);
+        QCOMPARE(cache.requests.size(), TextImageCache::MaxAttempts);
 
         // Out of attempts: the name keeps its placeholder instead of asking on
         // every paint.
         cache.finish(cache.requests.last(), false);
         model.requestTextImages();
-        QCOMPARE(cache.requests.size(), FolderTextCache::MaxAttempts);
+        QCOMPARE(cache.requests.size(), TextImageCache::MaxAttempts);
 
         // A different name is not held back by that.
         items[0].name = "b" + suffix;
         model.setVolumes(&items);
         model.requestTextImages();
-        QCOMPARE(cache.requests.size(), FolderTextCache::MaxAttempts + 1);
+        QCOMPARE(cache.requests.size(), TextImageCache::MaxAttempts + 1);
         cache.finish(cache.requests.last());
         QVERIFY(hasTextImages(model.index(0, 0)));
     }
@@ -1194,7 +1194,7 @@ private slots:
         const bool progress = qApp->ShowReadProgress();
         qApp->setShowReadProgress(false);
         const auto restore = qScopeGuard([progress] { qApp->setShowReadProgress(progress); });
-        DelayedFolderTextCache cache;
+        DelayedTextImageCache cache;
         const char32_t missing = 0x10ffff;
         const QString name = "book" + QString::fromUcs4(&missing, 1);
         QList<FolderItem> items{FolderItem(name, FolderItem::Archive, QDateTime())};
@@ -1235,24 +1235,24 @@ private slots:
         const QFont font = QApplication::font();
         // The helper returns colourless masks, so the key carries only what
         // changes the pixels it renders: the text, the font and the scale.
-        const auto base = FolderTextCache::key("name", font, 1);
-        QVERIFY(base != FolderTextCache::key("name", font, 2));
-        QVERIFY(base != FolderTextCache::key("other", font, 1));
+        const auto base = TextImageCache::key("name", font, 1);
+        QVERIFY(base != TextImageCache::key("name", font, 2));
+        QVERIFY(base != TextImageCache::key("other", font, 1));
         QFont bold = font;
         bold.setBold(true);
-        QVERIFY(base != FolderTextCache::key("name", bold, 1));
+        QVERIFY(base != TextImageCache::key("name", bold, 1));
     }
 
     void folderTextHelperReturnsImagesAtTheRequestedScale()
     {
-        FolderTextCache cache;
+        TextImageCache cache;
         QFont font = QApplication::font();
-        const QByteArray key = FolderTextCache::key(QString::fromUtf8("test摇.zip"), font, 2);
+        const QByteArray key = TextImageCache::key(QString::fromUtf8("test摇.zip"), font, 2);
         cache.request(key);
         QTRY_VERIFY_WITH_TIMEOUT(!cache.pending(key), 15000);
         const auto result = cache.lookup(key);
         QVERIFY(result);
-        QCOMPARE(result->images.size(), FolderTextImages::ImageCount);
+        QCOMPARE(result->images.size(), TextImages::ImageCount);
         for (const auto &image : result->images) {
             QVERIFY(!image.isNull());
             QCOMPARE(image.devicePixelRatio(), 2.0);
@@ -1261,7 +1261,7 @@ private slots:
 
     void folderTextRequestsOnlyTheRowsTheListShows()
     {
-        DelayedFolderTextCache cache;
+        DelayedTextImageCache cache;
         const char32_t missing = 0x10ffff;
         const QString suffix = QString::fromUcs4(&missing, 1);
         QList<FolderItem> items;
@@ -1283,16 +1283,16 @@ private slots:
         // The profile settles the whole folder, still in the batches the cache
         // accepts at once; the rest follows as results arrive.
         model.requestAllTextImages();
-        QCOMPARE(cache.requests.size(), FolderTextCache::MaxOutstanding);
+        QCOMPARE(cache.requests.size(), TextImageCache::MaxOutstanding);
         QVERIFY(model.textImagesPending());
     }
 
     void folderTextHelperLeavesWhenItIsIdle()
     {
-        FolderTextCache cache;
+        TextImageCache cache;
         cache.setIdleShutdownInterval(200);
         const QFont font = QApplication::font();
-        const QByteArray first = FolderTextCache::key(QString::fromUtf8("test\u6447.zip"), font, 1);
+        const QByteArray first = TextImageCache::key(QString::fromUtf8("test\u6447.zip"), font, 1);
         cache.request(first);
         QTRY_VERIFY_WITH_TIMEOUT(!cache.pending(first), 15000);
         QVERIFY(cache.helperRunning());
@@ -1302,7 +1302,7 @@ private slots:
 
         // ...and the next request starts it again.
         const QByteArray second =
-            FolderTextCache::key(QString::fromUtf8("test\u6447 2.zip"), font, 1);
+            TextImageCache::key(QString::fromUtf8("test\u6447 2.zip"), font, 1);
         cache.request(second);
         QTRY_VERIFY_WITH_TIMEOUT(!cache.pending(second), 15000);
         QVERIFY(cache.lookup(second));
@@ -1471,7 +1471,7 @@ private slots:
         QVERIFY(QDir().mkpath(directory.filePath(rareName)));
 
         FolderWindow panel(nullptr, nullptr);
-        auto *caption = panel.findChild<FolderPathLabel *>(QStringLiteral("pathLabel"));
+        auto *caption = panel.findChild<TextImageLabel *>(QStringLiteral("pathLabel"));
         QVERIFY(caption);
         panel.setFolderPath(directory.filePath(rareName), false);
         const QString path = panel.currentPath();
@@ -1480,24 +1480,24 @@ private slots:
         // The caption holds the path but draws the placeholder: the glyph the UI
         // font cannot draw never reaches GUI-side shaping, in the first frame or
         // in the layout that sizes it.
-        QCOMPARE(caption->path(), path);
+        QCOMPARE(caption->sourceText(), path);
         QVERIFY(caption->text() != path);
         QVERIFY(!caption->text().contains(QChar(missingGlyph)));
         QCOMPARE(caption->text().size(), path.size());
-        QVERIFY(!caption->paintsPathImage());
+        QVERIFY(!caption->paintsTextImage());
 
         // The helper answers afterwards, and the caption paints its image.
         panel.resize(400, 400);
         panel.show();
         QVERIFY(QTest::qWaitForWindowExposed(&panel));
-        QTRY_VERIFY_WITH_TIMEOUT(caption->paintsPathImage(), 15000);
+        QTRY_VERIFY_WITH_TIMEOUT(caption->paintsTextImage(), 15000);
         QVERIFY(!caption->text().contains(QChar(missingGlyph)));
 
         // A path the font draws whole keeps its text and asks for no image.
         panel.setFolderPath(directory.path(), false);
-        QCOMPARE(caption->path(), panel.currentPath());
+        QCOMPARE(caption->sourceText(), panel.currentPath());
         QCOMPARE(caption->text(), panel.currentPath());
-        QVERIFY(!caption->paintsPathImage());
+        QVERIFY(!caption->paintsTextImage());
     }
 
     void folderViewConsumesWheelEventsAtScrollBoundary()
@@ -2791,8 +2791,8 @@ void WindowStartupTest::catalogTagBarFollowsRemovedTags()
 
 int main(int argc, char **argv)
 {
-    if (isFolderTextHelper(argc, argv)) {
-        return runFolderTextHelper(argc, argv);
+    if (isTextImageHelper(argc, argv)) {
+        return runTextImageHelper(argc, argv);
     }
 
     QStandardPaths::setTestModeEnabled(true);

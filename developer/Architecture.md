@@ -95,7 +95,7 @@ without carrying a session's current-page state. Rendering state belongs to
 
 FolderItemModel keeps disk names separate from safe display text and rasterized
 text. Characters missing from either weight of the view's primary font initially
-use a replacement; file operations always use the disk name. FolderTextCache is
+use a replacement; file operations always use the disk name. TextImageCache is
 owned by the application, so destroying or replacing a panel cannot abandon a
 shared request. Results are keyed by the name, resolved font and device pixel
 ratio, and hold one white coverage mask per weight: the delegate tints a mask
@@ -104,14 +104,14 @@ reports the rows it shows, and only those ask for text, so a folder with
 thousands of names renders what is on screen; requests outstanding at once are
 bounded and the model asks for the rest as results arrive.
 
-FolderPathLabel, the panel's caption, answers for the folder's own path the way a
-row answers for a name: a path comes from the disk, so it can hold a character
+The panel's caption, a TextImageLabel, answers for the folder's own path the way
+a row answers for a name: a path comes from the disk, so it can hold a character
 the UI font cannot draw, and the frame that reveals the window paints the
 caption. The caption stands in for those characters and paints the helper's
 image of the path, which the helper wraps at the width the caption gives it, so
 the raw path is never shaped on the GUI thread.
 
-The same executable runs a private `--folder-text-helper` mode to shape and
+The same executable runs a private `--text-image-helper` mode to shape and
 rasterize missing-glyph names. A Qt worker thread would still contend with the
 GUI's font database mutex and would not populate its thread-local font engines.
 The helper has a separate font database, receives framed requests over standard
