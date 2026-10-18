@@ -130,11 +130,6 @@
         <translation>本のタイトルから(かっこ)に書かれたオプションを取り除く</translation>
     </message>
     <message>
-        <source>Enter a search term and press Enter to search by title.</source>
-        <comment>Gray text that prompts a keyword search of Volume</comment>
-        <translation type="vanished">タイトルで検索するには、この欄に検索語を入力してEnterキーを押してください。</translation>
-    </message>
-    <message>
         <location filename="../src/catalog/catalogwindow.cpp" line="84"/>
         <location filename="../src/catalog/catalogwindow.cpp" line="140"/>
         <location filename="../src/catalog/catalogwindow.cpp" line="287"/>
@@ -531,10 +526,6 @@
         <translation>クリップボードにコピー</translation>
     </message>
     <message>
-        <source>File name</source>
-        <translation type="vanished">ファイル名</translation>
-    </message>
-    <message>
         <location filename="../src/exifdialog.cpp" line="212"/>
         <source>Pixels</source>
         <translation>ピクセル数</translation>
@@ -683,10 +674,6 @@
         <translation>GIF イメージ (*.gif)</translation>
     </message>
     <message>
-        <source>JPEG Image (*.jpg, *.jpeg)</source>
-        <translation type="vanished">JPEG イメージ (*.jpg, *.jpeg)</translation>
-    </message>
-    <message>
         <location filename="../../../components/file-association/fileassocdialog.cpp" line="33"/>
         <source>JPEG Image</source>
         <comment>description of File format on Explorer(.jpeg)</comment>
@@ -747,14 +734,6 @@
     </message>
 </context>
 <context>
-    <name>FolderItemModel</name>
-    <message>
-        <source>Modified</source>
-        <comment>Title of the column in the folder list when displaying as an independent Window in Folder Window</comment>
-        <translation type="vanished">更新日時</translation>
-    </message>
-</context>
-<context>
     <name>FolderWindow</name>
     <message>
         <location filename="../src/folderview/folderwindow.ui" line="103"/>
@@ -762,16 +741,6 @@
         <source>Home</source>
         <extracomment>Button for returning to QuickViewer&apos;s home folder</extracomment>
         <translation>ホームフォルダに移動</translation>
-    </message>
-    <message>
-        <source>Previous</source>
-        <extracomment>Button for returning to the previous folder from the currently displayed folder</extracomment>
-        <translation type="vanished">前へ</translation>
-    </message>
-    <message>
-        <source>Next</source>
-        <extracomment>Button for returning to the folder after the current displayed folder</extracomment>
-        <translation type="vanished">次へ</translation>
     </message>
     <message>
         <location filename="../src/folderview/folderwindow.ui" line="152"/>
@@ -823,11 +792,6 @@
         <translation>一覧</translation>
     </message>
     <message>
-        <source>Current folder</source>
-        <extracomment>Label indicating that the current folder PATH is being displayed</extracomment>
-        <translation type="vanished">現在のフォルダ</translation>
-    </message>
-    <message>
         <location filename="../src/folderview/folderwindow.ui" line="100"/>
         <source>Go to home folder</source>
         <translation>ホームフォルダに移動</translation>
@@ -850,23 +814,6 @@
         <location filename="../src/folderview/folderwindow.cpp" line="159"/>
         <source>Open history</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Modified</source>
-        <translation type="vanished">更新日時</translation>
-    </message>
-    <message>
-        <source>Change sort order</source>
-        <extracomment>Tooltip for pulldown to change folder sorting method</extracomment>
-        <translation type="vanished">並べ替える方法を変更します</translation>
-    </message>
-    <message>
-        <source>Sort by name</source>
-        <translation type="vanished">名前順で並べ替え</translation>
-    </message>
-    <message>
-        <source>Sort by modified time</source>
-        <translation type="vanished">更新日時で並べ替え</translation>
     </message>
     <message>
         <location filename="../src/folderview/folderwindow.ui" line="248"/>
@@ -948,21 +895,6 @@
         <source>Current page number in the volume, e.g. &apos;33/100&apos; or &apos;33-34/100&apos;</source>
         <comment>Format tag of text displayed in title bar and status bar</comment>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Image file size as correct number of bytes, e.g. &apos;1,154,340 Bytes&apos;</source>
-        <comment>Format tag of text displayed in title bar and status bar</comment>
-        <translation type="vanished">画像のファイルサイズをバイト単位で、例: &apos;1,154,340 バイト&apos;</translation>
-    </message>
-    <message>
-        <source>Image bitmap size with useful, e.g. &apos;1.59 MB&apos;</source>
-        <comment>Format tag of text displayed in title bar and status bar</comment>
-        <translation type="vanished">画像のビットマップとしての大きさ、例: &apos;1.59MB&apos;</translation>
-    </message>
-    <message>
-        <source>Current page number of the volume e.g. &apos;33/100&apos; or &apos;33-34/100&apos;</source>
-        <comment>Format tag of text displayed in title bar and status bar</comment>
-        <translation type="vanished">ボリューム内の現在のページ番号、例: &apos;33/100&apos; または &apos;33-34/100&apos;</translation>
     </message>
     <message>
         <location filename="../src/models/imagestring.cpp" line="89"/>
@@ -1248,11 +1180,6 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <source>Manage &amp;catalogs...</source>
-        <comment>Menu entry that opens the dialog which adds, edits and removes the folders registered as catalogs</comment>
-        <translation type="vanished">カタログの管理(&amp;M)...</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.ui" line="889"/>
         <source>Add, edit and remove the folders registered as catalogs</source>
         <translation>カタログとして登録したフォルダの追加・編集・削除</translation>
@@ -1435,16 +1362,6 @@
         <translation>コンテキストメニュー</translation>
     </message>
     <message>
-        <source>Bi&amp;cubic interpolation (slow)</source>
-        <extracomment>Menu for resizing image by bicubic interpolation by GPU</extracomment>
-        <translation type="vanished">バイキュービック補間(&amp;B 遅い)</translation>
-    </message>
-    <message>
-        <source>&amp;Lanczos interpolation (very slow)</source>
-        <extracomment>Menu for resizing image by Lanczos interpolation by GPU</extracomment>
-        <translation type="vanished">Lanczos補間(&amp;L 非常に遅い)</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.ui" line="426"/>
         <source>&amp;Catalog</source>
         <translation>カタログ(&amp;C)</translation>
@@ -1519,11 +1436,6 @@
         <location filename="../src/mainwindow.ui" line="443"/>
         <source>F&amp;older</source>
         <translation>フォルダ(&amp;O)</translation>
-    </message>
-    <message>
-        <source>Don&apos;t enlarge small images on Fitting</source>
-        <extracomment>Ability to display an image smaller than the window as it is when fit is displayed</extracomment>
-        <translation type="vanished">フィット表示時、画面より小さな画像は拡大しない</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="1057"/>
@@ -1646,21 +1558,6 @@
         <translation>ファイル名を変更する</translation>
     </message>
     <message>
-        <source>No folder or archive is loaded.</source>
-        <comment>The text of the status bar to be displayed when there is no image to be displayed immediately after the application is activated</comment>
-        <translation type="vanished">フォルダまたはアーカイブが読み込まれていません。</translation>
-    </message>
-    <message>
-        <source>Image file not found. Can&apos;t be opened</source>
-        <comment>Text to display in the status bar when failed to open the specified Volume</comment>
-        <translation type="vanished">開くことができませんでした。画像ファイルが見つかりません。</translation>
-    </message>
-    <message>
-        <source>Image file was not found. Can&apos;t be opened.</source>
-        <comment>Text to display in the status bar when failed to open the specified Volume</comment>
-        <translation type="vanished">開くことができませんでした。画像ファイルが見つかりません。</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.cpp" line="2104"/>
         <source>Select an image or archive</source>
         <comment>Title of the dialog displayed when opening a file with OpenFileFolder</comment>
@@ -1758,11 +1655,6 @@
         <translation>フォルダを表示(&amp;F)</translation>
     </message>
     <message>
-        <source>CPU Bicubic after GPU Bilinear (standard)</source>
-        <extracomment>Preview by bilinear with GPU, then replace with bicubic resized image by CPU</extracomment>
-        <translation type="vanished">GPUによるバイリニアの後、CPUによるバイキュービック(標準)</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.ui" line="1023"/>
         <source>&amp;Settings</source>
         <extracomment>Menu for displaying a dialog for changing the adjunct setting of the application</extracomment>
@@ -1785,11 +1677,6 @@
         <source>Confirm moving image to &amp;Recycle Bin</source>
         <extracomment>A function to display a confirmation screen when moving the currently displayed image to Recycle Bin</extracomment>
         <translation>ゴミ箱に移動する際に確認する(&amp;R)</translation>
-    </message>
-    <message>
-        <source>File Associations... (administrator)</source>
-        <extracomment>Ability to associate QuickViewer and image files on Explorer (Host Global)</extracomment>
-        <translation type="vanished">画像の関連付け (管理者権限が必要)</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="1084"/>
@@ -1996,11 +1883,6 @@
         <translation>フルスクリーン時にマウスカーソルを非表示にする</translation>
     </message>
     <message>
-        <source>All Files( *.* );;Images ( *.jpg *.jpeg *.png *.tif *.tiff *.ico);;Archives( *.zip *.7z *.rar)</source>
-        <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
-        <translation type="obsolete">全てのファイル( *.* );;画像 (*.jpg *.jpeg *.png *.tif *.tiff *.ico);;アーカイブ( *.zip *.7z</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.ui" line="274"/>
         <location filename="../src/mainwindow.ui" line="1275"/>
         <source>&amp;Sort by</source>
@@ -2040,14 +1922,6 @@
         <location filename="../src/mainwindow.ui" line="318"/>
         <source>&amp;Tools</source>
         <translation>ツール(&amp;T)</translation>
-    </message>
-</context>
-<context>
-    <name>MainWindowForWindows</name>
-    <message>
-        <source>Sh&amp;ow/hide menu bar</source>
-        <comment>An additional menu displayed when right-clicking the title bar, which is used when undoing the main menu when it is hidden</comment>
-        <translation type="vanished">メインメニューの表示／非表示切り替え(&amp;O)</translation>
     </message>
 </context>
 <context>
@@ -2106,11 +1980,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Remove missing entries (%1)</source>
-        <extracomment>Button that removes the catalog entries whose folder is no longer there</extracomment>
-        <translation type="obsolete">見つからない項目を削除 (%1)</translation>
-    </message>
-    <message>
         <location filename="../src/catalog/cataloglist.ui" line="299"/>
         <source>Delete all catalogs...</source>
         <translation>すべてのカタログを削除...</translation>
@@ -2137,11 +2006,6 @@
         <translation>エクスプローラーで開く</translation>
     </message>
     <message>
-        <source>No cover</source>
-        <comment>Text shown where a cover would be</comment>
-        <translation type="vanished">表紙なし</translation>
-    </message>
-    <message>
         <location filename="../src/catalog/cataloglist.ui" line="176"/>
         <source>Right-click a catalog to edit, delete, or open its folder.</source>
         <translation>カタログを右クリックすると、編集・削除・フォルダーを開く操作ができます。</translation>
@@ -2150,16 +2014,6 @@
         <location filename="../src/catalog/cataloglist.ui" line="17"/>
         <source>Manage catalogs</source>
         <translation>カタログの管理</translation>
-    </message>
-    <message>
-        <source>&amp;Add</source>
-        <extracomment>Button to add a new catalog</extracomment>
-        <translation type="vanished">新規(&amp;A)</translation>
-    </message>
-    <message>
-        <source>Update catalog</source>
-        <extracomment>Button for updating the contents of registered catalog</extracomment>
-        <translation type="vanished">更新</translation>
     </message>
     <message>
         <location filename="../src/catalog/cataloglist.ui" line="284"/>
@@ -2174,15 +2028,6 @@
         <translation>編集(&amp;E)</translation>
     </message>
     <message>
-        <source>Delete all</source>
-        <translation type="vanished">全て削除</translation>
-    </message>
-    <message>
-        <source>Update all</source>
-        <extracomment>登録済みのカタログの内容を更新するボタン</extracomment>
-        <translation type="vanished">全て更新</translation>
-    </message>
-    <message>
         <location filename="../src/catalog/managedatabasedialog.cpp" line="33"/>
         <source>Name</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
@@ -2195,45 +2040,10 @@
         <translation>フォルダ</translation>
     </message>
     <message>
-        <source>Start</source>
-        <comment>Button to start catalog creation for specified folder</comment>
-        <translation type="vanished">処理開始</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <comment>Button to cancel the catalog being generated</comment>
-        <translation type="vanished">処理キャンセル</translation>
-    </message>
-    <message>
-        <source>Completed</source>
-        <comment>Title of message box when catalog generation finished successfully</comment>
-        <translation type="vanished">完了!</translation>
-    </message>
-    <message>
-        <source>Cancelled!</source>
-        <comment>Title of message box when catalog generation was canceled</comment>
-        <translation type="vanished">キャンセルされました!</translation>
-    </message>
-    <message>
-        <source>Selected Catalog</source>
-        <extracomment>Name of the frame in which buttons for operating one catalog are arranged</extracomment>
-        <translation type="vanished">選択したカタログ</translation>
-    </message>
-    <message>
-        <source>All Catalogs</source>
-        <extracomment>Name of the frame in which buttons for operating all catalogs are arranged</extracomment>
-        <translation type="vanished">全てのカタログ</translation>
-    </message>
-    <message>
         <location filename="../src/catalog/managedatabasedialog.cpp" line="36"/>
         <source>Created</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>作成日時</translation>
-    </message>
-    <message>
-        <source>Pending</source>
-        <comment>Representation of time indicating that the catalog is not currently created and will be generated from now</comment>
-        <translation type="vanished">これから</translation>
     </message>
     <message>
         <location filename="../src/catalog/managedatabasedialog.cpp" line="589"/>
@@ -2271,20 +2081,6 @@
         <location filename="../src/catalog/managedatabasedialog.cpp" line="620"/>
         <source>Catalog creation incomplete</source>
         <translation>カタログの作成が完了しませんでした</translation>
-    </message>
-    <message>
-        <source>Catalog(s) left unstored: %1</source>
-        <translation type="vanished">保存できなかったカタログ: %1 件</translation>
-    </message>
-    <message>
-        <source>Add &amp;folder...</source>
-        <comment>Button that registers another folder as a catalog</comment>
-        <translation type="vanished">フォルダを追加(&amp;F)...</translation>
-    </message>
-    <message>
-        <source>Drop image folders here, or add them with &quot;Add folder...&quot;. Press &quot;Start creating&quot; to build the catalogs.</source>
-        <comment>Line above the catalog list that explains how a folder is registered as a catalog and built</comment>
-        <translation type="vanished">画像フォルダをここにドロップするか「フォルダを追加」で登録します。「作成開始」を押すとカタログを作成します。</translation>
     </message>
     <message>
         <location filename="../src/catalog/managedatabasedialog.cpp" line="332"/>
@@ -2342,11 +2138,6 @@
         <translation>すべてのカタログの登録を削除します。画像ファイルは削除されません。</translation>
     </message>
     <message>
-        <source>Close</source>
-        <comment>Title of the message box that asks about folders that are not created yet</comment>
-        <translation type="vanished">確認</translation>
-    </message>
-    <message>
         <location filename="../src/catalog/managedatabasedialog.cpp" line="661"/>
         <source>%1 added folder(s) are not created yet. Close and discard them?</source>
         <translation>未作成のフォルダが %1 件あります。破棄して閉じますか？</translation>
@@ -2375,26 +2166,6 @@
         <source>Removed %1 entry(ies).</source>
         <translation>%1 件を削除しました。</translation>
     </message>
-    <message>
-        <source>Books of the selected catalog</source>
-        <comment>Frame holding the books of the catalog selected above, and the button that edits the tags of one of them</comment>
-        <translation type="vanished">選択したカタログの本</translation>
-    </message>
-    <message>
-        <source>Title</source>
-        <comment>Column of the list of books that shows the title of a book</comment>
-        <translation type="vanished">タイトル</translation>
-    </message>
-    <message>
-        <source>Tags</source>
-        <comment>Column of the list of books that shows the tags of a book</comment>
-        <translation type="vanished">タグ</translation>
-    </message>
-    <message>
-        <source>&amp;Edit tags...</source>
-        <comment>Button that opens the dialog which edits the title and tags of the selected book</comment>
-        <translation type="vanished">タグを編集(&amp;E)...</translation>
-    </message>
 </context>
 <context>
     <name>MouseConfigDialog</name>
@@ -2403,11 +2174,6 @@
         <source>Mouse shortcut:</source>
         <comment>Title of LineEdit label to which mouse sequence is input</comment>
         <translation>マウス入力:</translation>
-    </message>
-    <message>
-        <source>Select the combination of the checks below, press the &apos;Add Sequence&apos; button</source>
-        <comment>Placeholder text urging the mouse input setting procedure</comment>
-        <translation type="vanished">下のチェックの組み合わせを選択し、『設定追加』ボタンを押してください</translation>
     </message>
     <message>
         <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="86"/>
@@ -2751,14 +2517,6 @@
     </message>
 </context>
 <context>
-    <name>PageContent</name>
-    <message>
-        <source>NOT IMAGE FILE</source>
-        <comment>Error messages to be displayed on screen when image loading fails</comment>
-        <translation type="vanished">画像以外のファイルです</translation>
-    </message>
-</context>
-<context>
     <name>QVApplication</name>
     <message>
         <location filename="../src/models/qvapplication.cpp" line="269"/>
@@ -2960,11 +2718,6 @@
         <source>Tags belong to this book only. The title is used when the list shows titles rather than folder names.</source>
         <extracomment>Line under the tag list of the dialog that edits one catalog volume</extracomment>
         <translation type="unfinished">タグはこの本だけに付きます。タイトルは、一覧がタイトルを表示する設定のときに使われます。</translation>
-    </message>
-    <message>
-        <source>Tags belong to this book only. The title is used when the list shows titles rather than folder names.</source>
-        <comment>Line under the tag list of the dialog that edits one catalog volume</comment>
-        <translation type="vanished">タグはこの本だけに付きます。タイトルは、一覧がタイトルを表示する設定のときに使われます。</translation>
     </message>
 </context>
 </TS>

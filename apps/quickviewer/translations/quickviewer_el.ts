@@ -125,11 +125,6 @@
         <translation>Αφαίρεση (Επιλογές) από Τίτλο βιβλίου</translation>
     </message>
     <message>
-        <source>Enter a search term and press Enter to search by title.</source>
-        <comment>Gray text that prompts a keyword search of Volume</comment>
-        <translation type="vanished">Εισάγετε λέξεις αναζήτησης και πατήστε Enter για αναζήτηση βάσει τίτλου.</translation>
-    </message>
-    <message>
         <location filename="../src/catalog/catalogwindow.cpp" line="78"/>
         <location filename="../src/catalog/catalogwindow.cpp" line="117"/>
         <source>Search titles</source>
@@ -531,10 +526,6 @@
         <translation>Αντιγραφή στο πρόχειρο</translation>
     </message>
     <message>
-        <source>File name</source>
-        <translation type="vanished">Όνομα αρχείου</translation>
-    </message>
-    <message>
         <location filename="../src/exifdialog.cpp" line="212"/>
         <source>Pixels</source>
         <translation>Πίξελ</translation>
@@ -603,10 +594,6 @@
         <location filename="../../../components/file-association/fileassocdialog.ui" line="83"/>
         <source>TIFF Image (*.tif, *.tiff)</source>
         <translation>Εικόνα TIFF (*.tif, *.tiff)</translation>
-    </message>
-    <message>
-        <source>JPEG Image (*.jpg, *.jpeg)</source>
-        <translation type="vanished">Εικόνα JPEG (*.jpg, *.jpeg)</translation>
     </message>
     <message>
         <location filename="../../../components/file-association/fileassocdialog.ui" line="111"/>
@@ -747,19 +734,6 @@
     </message>
 </context>
 <context>
-    <name>FolderItemModel</name>
-    <message>
-        <source>Name</source>
-        <comment>Title of the column in the folder list when displaying as an independent Window in Folder Window</comment>
-        <translation type="vanished">Όνομα</translation>
-    </message>
-    <message>
-        <source>Modified</source>
-        <comment>Title of the column in the folder list when displaying as an independent Window in Folder Window</comment>
-        <translation type="vanished">Τροποποίηση</translation>
-    </message>
-</context>
-<context>
     <name>FolderWindow</name>
     <message>
         <location filename="../src/folderview/folderwindow.ui" line="103"/>
@@ -790,24 +764,9 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Next</source>
-        <extracomment>Button for returning to the folder after the current displayed folder</extracomment>
-        <translation type="vanished">Επόμενος</translation>
-    </message>
-    <message>
-        <source>Previous</source>
-        <extracomment>Button for returning to the previous folder from the currently displayed folder</extracomment>
-        <translation type="vanished">Προηγούμενος</translation>
-    </message>
-    <message>
         <location filename="../src/folderview/folderwindow.ui" line="100"/>
         <source>Go to home folder</source>
         <translation>Μετάβαση στον αρχικό φάκελο</translation>
-    </message>
-    <message>
-        <source>Current folder</source>
-        <extracomment>Label indicating that the current folder PATH is being displayed</extracomment>
-        <translation type="vanished">Τρέχων φάκελος</translation>
     </message>
     <message>
         <location filename="../src/folderview/folderwindow.ui" line="155"/>
@@ -852,10 +811,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Modified</source>
-        <translation type="vanished">Τροποποίηση</translation>
-    </message>
-    <message>
         <location filename="../src/folderview/folderwindow.ui" line="248"/>
         <source>Set as home folder</source>
         <translation>Ορισμός αυτού του φακέλου ως αρχικού</translation>
@@ -864,19 +819,6 @@
         <location filename="../src/folderview/folderwindow.ui" line="32"/>
         <source>Folders</source>
         <translation>Λίστα αρχείων</translation>
-    </message>
-    <message>
-        <source>Sort by name</source>
-        <translation type="vanished">Ταξιν. βάσει ονόματος</translation>
-    </message>
-    <message>
-        <source>Sort by modified time</source>
-        <translation type="vanished">Ταξιν. βάσει χρόνου</translation>
-    </message>
-    <message>
-        <source>Change sort order</source>
-        <extracomment>Tooltip for pulldown to change folder sorting method</extracomment>
-        <translation type="vanished">Αλλαγή μεθόδου ταξινόμησης</translation>
     </message>
     <message>
         <location filename="../src/folderview/folderwindow.cpp" line="125"/>
@@ -953,21 +895,6 @@
         <source>Current page number in the volume, e.g. &apos;33/100&apos; or &apos;33-34/100&apos;</source>
         <comment>Format tag of text displayed in title bar and status bar</comment>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Image file size as correct number of bytes, e.g. &apos;1,154,340 Bytes&apos;</source>
-        <comment>Format tag of text displayed in title bar and status bar</comment>
-        <translation type="vanished">Μέγεθος αρχείου εικόνας ως σωστός αριθμός bytes, π.χ. «1,154,340 Bytes»</translation>
-    </message>
-    <message>
-        <source>Image bitmap size with useful, e.g. &apos;1.59 MB&apos;</source>
-        <comment>Format tag of text displayed in title bar and status bar</comment>
-        <translation type="vanished">Μέγεθος εικόνας bitmap με χρήσιμο, π.χ. «1.59 MB»</translation>
-    </message>
-    <message>
-        <source>Current page number of the volume e.g. &apos;33/100&apos; or &apos;33-34/100&apos;</source>
-        <comment>Format tag of text displayed in title bar and status bar</comment>
-        <translation type="vanished">Τρέχων αριθμός σελίδας του τόμου, π.χ. «33/100» ή «33-34/100»</translation>
     </message>
     <message>
         <location filename="../src/models/imagestring.cpp" line="89"/>
@@ -1291,11 +1218,6 @@
         <translation>Προηγούμενη μόνο μί&amp;α σελίδα</translation>
     </message>
     <message>
-        <source>CPU Bicubic after GPU Bilinear (standard)</source>
-        <extracomment>Preview by bilinear with GPU, then replace with bicubic resized image by CPU</extracomment>
-        <translation type="vanished">Δικυβική CPU μετά τη διγραμμική GPU (κανονικό)</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.ui" line="713"/>
         <source>Show &amp;toolbar</source>
         <translation>Εμφάνιση γραμμής ερ&amp;γαλείων</translation>
@@ -1316,11 +1238,6 @@
         <source>Load bookmark</source>
         <extracomment>Button to restore saved image page from registered bookmark</extracomment>
         <translation>Φόρτωση σελιδοδείκτη</translation>
-    </message>
-    <message>
-        <source>&amp;Lanczos interpolation (very slow)</source>
-        <extracomment>Menu for resizing image by Lanczos interpolation by GPU</extracomment>
-        <translation type="vanished">&amp;Παρεμβολή Lanczos (πολύ αργό)</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="746"/>
@@ -1551,11 +1468,6 @@
         <translation>Μεγιστοποίηση στην επόμενη εκτέλεση</translation>
     </message>
     <message>
-        <source>Don&apos;t enlarge small images on Fitting</source>
-        <extracomment>Ability to display an image smaller than the window as it is when fit is displayed</extracomment>
-        <translation type="vanished">Χωρίς μεγέθυνση μικρών εικόνων στην Προσαρμογή</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.ui" line="1084"/>
         <source>&amp;Mouse Settings...</source>
         <translation>Διαμόρφωση π&amp;οντικιού</translation>
@@ -1733,20 +1645,10 @@
         <translation>Έξοδος εφαρμογής σε πλήρη οθόνη</translation>
     </message>
     <message>
-        <source>Bi&amp;cubic interpolation (slow)</source>
-        <extracomment>Menu for resizing image by bicubic interpolation by GPU</extracomment>
-        <translation type="vanished">Δι&amp;κυβική παρεμβολή (αργό)</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.ui" line="990"/>
         <source>Bicubic interpolation by CPU (quality)</source>
         <extracomment>Menu that performs bicubic interpolation with CPU when resizing image</extracomment>
         <translation>Περεμβολή δικυβικής από CPU (ποιοτικό)</translation>
-    </message>
-    <message>
-        <source>File Associations... (administrator)</source>
-        <extracomment>Ability to associate QuickViewer and image files on Explorer (Host Global)</extracomment>
-        <translation type="vanished">Συσχέτιση εικόνων (Διαχειριστής)</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="256"/>
@@ -1781,21 +1683,6 @@
         <location filename="../src/mainwindow.ui" line="343"/>
         <source>&amp;Navigation</source>
         <translation>&amp;Περιήγηση</translation>
-    </message>
-    <message>
-        <source>No folder or archive is loaded.</source>
-        <comment>The text of the status bar to be displayed when there is no image to be displayed immediately after the application is activated</comment>
-        <translation type="vanished">Δεν έχει φορτωθεί κάποιος φάκελος ή αρχείο.</translation>
-    </message>
-    <message>
-        <source>Image file not found. Can&apos;t be opened</source>
-        <comment>Text to display in the status bar when failed to open the specified Volume</comment>
-        <translation type="vanished">Δεν είναι δυνατό το άνοιγμα γιατί δεν βρέθηκε το αρχείο εικόνας</translation>
-    </message>
-    <message>
-        <source>Image file was not found. Can&apos;t be opened.</source>
-        <comment>Text to display in the status bar when failed to open the specified Volume</comment>
-        <translation type="vanished">Δεν είναι δυνατό το άνοιγμα γιατί δεν βρέθηκε το αρχείο εικόνας.</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="1740"/>
@@ -2038,14 +1925,6 @@
     </message>
 </context>
 <context>
-    <name>MainWindowForWindows</name>
-    <message>
-        <source>Sh&amp;ow/hide menu bar</source>
-        <comment>An additional menu displayed when right-clicking the title bar, which is used when undoing the main menu when it is hidden</comment>
-        <translation type="vanished">Εμ&amp;φάνιση /Απόκρυψη βασικής γραμμής μενού</translation>
-    </message>
-</context>
-<context>
     <name>ManageDatabaseDialog</name>
     <message>
         <location filename="../src/catalog/managedatabasedialog.cpp" line="38"/>
@@ -2133,59 +2012,10 @@
         <translation>Διαχείριση καταλόγων</translation>
     </message>
     <message>
-        <source>Delete all</source>
-        <translation type="vanished">Διαγραφή όλων</translation>
-    </message>
-    <message>
-        <source>Start</source>
-        <comment>Button to start catalog creation for specified folder</comment>
-        <translation type="vanished">Έναρξη εργασίας</translation>
-    </message>
-    <message>
-        <source>Cancelled!</source>
-        <comment>Title of message box when catalog generation was canceled</comment>
-        <translation type="vanished">Ακυρώθηκε!</translation>
-    </message>
-    <message>
-        <source>Completed</source>
-        <comment>Title of message box when catalog generation finished successfully</comment>
-        <translation type="vanished">Ολοκληρώθηκε!</translation>
-    </message>
-    <message>
-        <source>&amp;Add</source>
-        <extracomment>Button to add a new catalog</extracomment>
-        <translation type="vanished">&amp;Προσθήκη νέου</translation>
-    </message>
-    <message>
-        <source>Update all</source>
-        <extracomment>登録済みのカタログの内容を更新するボタン</extracomment>
-        <translation type="vanished">Ενημέρωση όλων</translation>
-    </message>
-    <message>
         <location filename="../src/catalog/cataloglist.ui" line="284"/>
         <source>&amp;Delete</source>
         <extracomment>Button to delete information of registered catalog</extracomment>
         <translation>&amp;Διαγραφή</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <comment>Button to cancel the catalog being generated</comment>
-        <translation type="vanished">Ακύρωση εργασίας</translation>
-    </message>
-    <message>
-        <source>Update catalog</source>
-        <extracomment>Button for updating the contents of registered catalog</extracomment>
-        <translation type="vanished">Ενημέρωση βάσης δεδομένων</translation>
-    </message>
-    <message>
-        <source>Selected Catalog</source>
-        <extracomment>Name of the frame in which buttons for operating one catalog are arranged</extracomment>
-        <translation type="vanished">Επιλεγμένος κατάλογος</translation>
-    </message>
-    <message>
-        <source>All Catalogs</source>
-        <extracomment>Name of the frame in which buttons for operating all catalogs are arranged</extracomment>
-        <translation type="vanished">Όλοι οι κατάλογοι</translation>
     </message>
     <message>
         <location filename="../src/catalog/managedatabasedialog.cpp" line="33"/>
@@ -2319,11 +2149,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Pending</source>
-        <comment>Representation of time indicating that the catalog is not currently created and will be generated from now</comment>
-        <translation type="vanished">προσέγγιση σε</translation>
-    </message>
-    <message>
         <location filename="../src/catalog/managedatabasedialog.cpp" line="589"/>
         <source>Edit Catalog</source>
         <comment>Button for editing contents of already created catalog</comment>
@@ -2355,11 +2180,6 @@
         <source>Mouse shortcut:</source>
         <comment>Title of LineEdit label to which mouse sequence is input</comment>
         <translation>Ακολουθία ποντικιού:</translation>
-    </message>
-    <message>
-        <source>Select the combination of the checks below, press the &apos;Add Sequence&apos; button</source>
-        <comment>Placeholder text urging the mouse input setting procedure</comment>
-        <translation type="vanished">Επιλέξτε συνδυασμό από τα παρακάτω πλαίσια και πατήστε «Προσθήκη ακολουθίας»</translation>
     </message>
     <message>
         <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="19"/>
@@ -2700,14 +2520,6 @@
         <location filename="../src/optionsdialog.cpp" line="142"/>
         <source>Qt SVG (Compatibility mode)</source>
         <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>PageContent</name>
-    <message>
-        <source>NOT IMAGE FILE</source>
-        <comment>Error messages to be displayed on screen when image loading fails</comment>
-        <translation type="vanished">ΔΕΝ ΥΠΑΡΧΕΙ ΑΡΧΕΙΟ ΕΙΚΟΝΑΣ</translation>
     </message>
 </context>
 <context>

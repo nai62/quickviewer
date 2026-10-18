@@ -125,11 +125,6 @@
         <translation>ازالة (خيارات) من عنوان الكتاب</translation>
     </message>
     <message>
-        <source>Enter a search term and press Enter to search by title.</source>
-        <comment>Gray text that prompts a keyword search of Volume</comment>
-        <translation type="vanished">حقل مصطلح البحث واضغط على مفتاح الادخال للبحث عن طريق العنوان.</translation>
-    </message>
-    <message>
         <location filename="../src/catalog/catalogwindow.cpp" line="78"/>
         <location filename="../src/catalog/catalogwindow.cpp" line="117"/>
         <source>Search titles</source>
@@ -343,10 +338,6 @@
         <source>Copy to clipboard</source>
         <extracomment>Text of button to copy meta information to clipboard</extracomment>
         <translation>نسخ الى الحافظة</translation>
-    </message>
-    <message>
-        <source>File name</source>
-        <translation type="vanished">اسم الملف</translation>
     </message>
     <message>
         <location filename="../src/exifdialog.cpp" line="212"/>
@@ -640,10 +631,6 @@
         <translation>GIF Image (*.gif)</translation>
     </message>
     <message>
-        <source>JPEG Image (*.jpg, *.jpeg)</source>
-        <translation type="vanished">JPEG Image (*.jpg, *.jpeg)</translation>
-    </message>
-    <message>
         <location filename="../../../components/file-association/fileassocdialog.ui" line="188"/>
         <source>Click OK to update the Windows registry, or Cancel to leave it unchanged.</source>
         <translation>اذا قمت بالضغط على الزر موافق ستقوم بكتابة تسجيل. الغاء اذا كان غير ضروري.</translation>
@@ -747,19 +734,6 @@
     </message>
 </context>
 <context>
-    <name>FolderItemModel</name>
-    <message>
-        <source>Name</source>
-        <comment>Title of the column in the folder list when displaying as an independent Window in Folder Window</comment>
-        <translation type="vanished">الاسم</translation>
-    </message>
-    <message>
-        <source>Modified</source>
-        <comment>Title of the column in the folder list when displaying as an independent Window in Folder Window</comment>
-        <translation type="vanished">تحديث</translation>
-    </message>
-</context>
-<context>
     <name>FolderWindow</name>
     <message>
         <location filename="../src/folderview/folderwindow.ui" line="103"/>
@@ -767,16 +741,6 @@
         <source>Home</source>
         <extracomment>Button for returning to QuickViewer&apos;s home folder</extracomment>
         <translation>الانتقال للصفحة الرئيسية</translation>
-    </message>
-    <message>
-        <source>Previous</source>
-        <extracomment>Button for returning to the previous folder from the currently displayed folder</extracomment>
-        <translation type="vanished">السابق</translation>
-    </message>
-    <message>
-        <source>Next</source>
-        <extracomment>Button for returning to the folder after the current displayed folder</extracomment>
-        <translation type="vanished">التالي</translation>
     </message>
     <message>
         <location filename="../src/folderview/folderwindow.ui" line="152"/>
@@ -828,11 +792,6 @@
         <translation>قائمة المجلدات</translation>
     </message>
     <message>
-        <source>Current folder</source>
-        <extracomment>Label indicating that the current folder PATH is being displayed</extracomment>
-        <translation type="vanished">المجلد الحالي</translation>
-    </message>
-    <message>
         <location filename="../src/folderview/folderwindow.ui" line="100"/>
         <source>Go to home folder</source>
         <translation>الانتقال الى المجلد الرئيسي</translation>
@@ -855,23 +814,6 @@
         <location filename="../src/folderview/folderwindow.cpp" line="159"/>
         <source>Open history</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Modified</source>
-        <translation type="vanished">تحديث</translation>
-    </message>
-    <message>
-        <source>Change sort order</source>
-        <extracomment>Tooltip for pulldown to change folder sorting method</extracomment>
-        <translation type="vanished">تغيير اسلوب الفرز</translation>
-    </message>
-    <message>
-        <source>Sort by name</source>
-        <translation type="vanished">فرز حسب الاسم</translation>
-    </message>
-    <message>
-        <source>Sort by modified time</source>
-        <translation type="vanished">تم الفرز حسب التاريخ</translation>
     </message>
     <message>
         <location filename="../src/folderview/folderwindow.ui" line="248"/>
@@ -976,21 +918,6 @@
         <source>Current page number in the volume, e.g. &apos;33/100&apos; or &apos;33-34/100&apos;</source>
         <comment>Format tag of text displayed in title bar and status bar</comment>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Image file size as correct number of bytes, e.g. &apos;1,154,340 Bytes&apos;</source>
-        <comment>Format tag of text displayed in title bar and status bar</comment>
-        <translation type="vanished">حجم ملف الصورة كعدد صحيح من وحدات البايت، على سبيل المثال &apos;1,154,340 بايت&apos;</translation>
-    </message>
-    <message>
-        <source>Image bitmap size with useful, e.g. &apos;1.59 MB&apos;</source>
-        <comment>Format tag of text displayed in title bar and status bar</comment>
-        <translation type="vanished">حجم الصورة النقطية مع مفيدة، على سبيل المثال &apos;1.59 م ب&apos;</translation>
-    </message>
-    <message>
-        <source>Current page number of the volume e.g. &apos;33/100&apos; or &apos;33-34/100&apos;</source>
-        <comment>Format tag of text displayed in title bar and status bar</comment>
-        <translation type="vanished">رقم الصفحة الحالي للمجلد مثل &apos;33/100&apos; او &apos;33-34/100&apos;</translation>
     </message>
     <message>
         <location filename="../src/models/imagestring.cpp" line="89"/>
@@ -1430,16 +1357,6 @@
         <translation>قائمة السياق</translation>
     </message>
     <message>
-        <source>Bi&amp;cubic interpolation (slow)</source>
-        <extracomment>Menu for resizing image by bicubic interpolation by GPU</extracomment>
-        <translation type="vanished">الاس&amp;تيفاء ثنائي ومكعب (بطيء)</translation>
-    </message>
-    <message>
-        <source>&amp;Lanczos interpolation (very slow)</source>
-        <extracomment>Menu for resizing image by Lanczos interpolation by GPU</extracomment>
-        <translation type="vanished">الاستيفاء (بطيئة جدا) &amp;Lanczos</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.ui" line="426"/>
         <source>&amp;Catalog</source>
         <translation>&amp;كتالوج</translation>
@@ -1514,11 +1431,6 @@
         <location filename="../src/mainwindow.ui" line="443"/>
         <source>F&amp;older</source>
         <translation>الم&amp;جلد</translation>
-    </message>
-    <message>
-        <source>Don&apos;t enlarge small images on Fitting</source>
-        <extracomment>Ability to display an image smaller than the window as it is when fit is displayed</extracomment>
-        <translation type="vanished">لا تقم بتكبير الصور الصغيرة عند التركيب</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="1057"/>
@@ -1737,11 +1649,6 @@
         <translation>عرض &amp;المجلد</translation>
     </message>
     <message>
-        <source>CPU Bicubic after GPU Bilinear (standard)</source>
-        <extracomment>Preview by bilinear with GPU, then replace with bicubic resized image by CPU</extracomment>
-        <translation type="vanished">(قياسي) Bicubic بعد GPU Bilinear وحدة المعالجة</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.ui" line="1023"/>
         <source>&amp;Settings</source>
         <extracomment>Menu for displaying a dialog for changing the adjunct setting of the application</extracomment>
@@ -1764,11 +1671,6 @@
         <source>Confirm moving image to &amp;Recycle Bin</source>
         <extracomment>A function to display a confirmation screen when moving the currently displayed image to Recycle Bin</extracomment>
         <translation>تاكيد نقل الصورة الى &amp; سلة المحذوفات</translation>
-    </message>
-    <message>
-        <source>File Associations... (administrator)</source>
-        <extracomment>Ability to associate QuickViewer and image files on Explorer (Host Global)</extracomment>
-        <translation type="vanished">ارتباطات الصور (يتطلب المشرف)</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="1084"/>
@@ -1958,21 +1860,6 @@
         <translation>وقت التعديل (تنازلي)</translation>
     </message>
     <message>
-        <source>No folder or archive is loaded.</source>
-        <comment>The text of the status bar to be displayed when there is no image to be displayed immediately after the application is activated</comment>
-        <translation type="vanished">لم يتم تحميل اي مجلد او ارشيف.</translation>
-    </message>
-    <message>
-        <source>Image file not found. Can&apos;t be opened</source>
-        <comment>Text to display in the status bar when failed to open the specified Volume</comment>
-        <translation type="vanished">ملف الصورة غير موجود. لا يمكن فتحه</translation>
-    </message>
-    <message>
-        <source>Image file was not found. Can&apos;t be opened.</source>
-        <comment>Text to display in the status bar when failed to open the specified Volume</comment>
-        <translation type="vanished">لم يتم العثور على ملف الصورة. لا يمكن فتحه.</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.cpp" line="1740"/>
         <source>Loading...</source>
         <translation type="unfinished"></translation>
@@ -2035,14 +1922,6 @@
         <location filename="../src/mainwindow.ui" line="318"/>
         <source>&amp;Tools</source>
         <translation>أدوات(&amp;T)</translation>
-    </message>
-</context>
-<context>
-    <name>MainWindowForWindows</name>
-    <message>
-        <source>Sh&amp;ow/hide menu bar</source>
-        <comment>An additional menu displayed when right-clicking the title bar, which is used when undoing the main menu when it is hidden</comment>
-        <translation type="vanished">اظ&amp;هار/اخفاء شريط القوائم الرئيسي</translation>
     </message>
 </context>
 <context>
@@ -2121,16 +2000,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&amp;Add</source>
-        <extracomment>Button to add a new catalog</extracomment>
-        <translation type="vanished">&amp;اضافة جديد</translation>
-    </message>
-    <message>
-        <source>Update catalog</source>
-        <extracomment>Button for updating the contents of registered catalog</extracomment>
-        <translation type="vanished">تحديث قاعدة البيانات</translation>
-    </message>
-    <message>
         <location filename="../src/catalog/cataloglist.ui" line="284"/>
         <source>&amp;Delete</source>
         <extracomment>Button to delete information of registered catalog</extracomment>
@@ -2141,25 +2010,6 @@
         <source>&amp;Edit</source>
         <extracomment>Button to edit information on registered catalog</extracomment>
         <translation>&amp;تعديل</translation>
-    </message>
-    <message>
-        <source>Delete all</source>
-        <translation type="vanished">حذف الكل</translation>
-    </message>
-    <message>
-        <source>Update all</source>
-        <extracomment>登録済みのカタログの内容を更新するボタン</extracomment>
-        <translation type="vanished">تحديث الكل</translation>
-    </message>
-    <message>
-        <source>Selected Catalog</source>
-        <extracomment>Name of the frame in which buttons for operating one catalog are arranged</extracomment>
-        <translation type="vanished">كتالوج حدد</translation>
-    </message>
-    <message>
-        <source>All Catalogs</source>
-        <extracomment>Name of the frame in which buttons for operating all catalogs are arranged</extracomment>
-        <translation type="vanished">كل الكتالوجات</translation>
     </message>
     <message>
         <location filename="../src/catalog/managedatabasedialog.cpp" line="33"/>
@@ -2299,41 +2149,16 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Start</source>
-        <comment>Button to start catalog creation for specified folder</comment>
-        <translation type="vanished">بدء العمل</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <comment>Button to cancel the catalog being generated</comment>
-        <translation type="vanished">الغاء العمل</translation>
-    </message>
-    <message>
-        <source>Pending</source>
-        <comment>Representation of time indicating that the catalog is not currently created and will be generated from now</comment>
-        <translation type="vanished">نهج ل</translation>
-    </message>
-    <message>
         <location filename="../src/catalog/managedatabasedialog.cpp" line="589"/>
         <source>Edit Catalog</source>
         <comment>Button for editing contents of already created catalog</comment>
         <translation>تحرير الكتالوج</translation>
     </message>
     <message>
-        <source>Completed</source>
-        <comment>Title of message box when catalog generation finished successfully</comment>
-        <translation type="vanished">لقد نجحنا!</translation>
-    </message>
-    <message>
         <location filename="../src/catalog/managedatabasedialog.cpp" line="615"/>
         <source>Catalog creation completed.</source>
         <comment>Body of message box when catalog generation finished successfully</comment>
         <translation>اكتمال انشاء الكتالوج</translation>
-    </message>
-    <message>
-        <source>Cancelled!</source>
-        <comment>Title of message box when catalog generation was canceled</comment>
-        <translation type="vanished">الغيت!</translation>
     </message>
     <message>
         <location filename="../src/catalog/managedatabasedialog.cpp" line="611"/>
@@ -2355,11 +2180,6 @@
         <source>Mouse shortcut:</source>
         <comment>Title of LineEdit label to which mouse sequence is input</comment>
         <translation>تسلسل الماوس:</translation>
-    </message>
-    <message>
-        <source>Select the combination of the checks below, press the &apos;Add Sequence&apos; button</source>
-        <comment>Placeholder text urging the mouse input setting procedure</comment>
-        <translation type="vanished">حدد تركيبة التحققات ادناه، واضغط زر اضافة تسلسل</translation>
     </message>
     <message>
         <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="19"/>
@@ -2694,22 +2514,6 @@
         <location filename="../src/optionsdialog.cpp" line="142"/>
         <source>Qt SVG (Compatibility mode)</source>
         <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>PageContent</name>
-    <message>
-        <source>NOT IMAGE FILE</source>
-        <comment>Error messages to be displayed on screen when image loading fails</comment>
-        <translation type="vanished">NOT IMAGE FILE</translation>
-    </message>
-</context>
-<context>
-    <name>QLanguageSelector</name>
-    <message>
-        <source>Always use text translation</source>
-        <comment>Menu text that uses textual translation rather than regular qm format</comment>
-        <translation type="vanished">استخدام ترجمة النص دائما</translation>
     </message>
 </context>
 <context>

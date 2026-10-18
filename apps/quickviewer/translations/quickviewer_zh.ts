@@ -125,11 +125,6 @@
         <translation>从标题中移除(选项)</translation>
     </message>
     <message>
-        <source>Enter a search term and press Enter to search by title.</source>
-        <comment>Gray text that prompts a keyword search of Volume</comment>
-        <translation type="vanished">搜素框，将关键字输入此栏.</translation>
-    </message>
-    <message>
         <location filename="../src/catalog/catalogwindow.cpp" line="78"/>
         <location filename="../src/catalog/catalogwindow.cpp" line="117"/>
         <source>Search titles</source>
@@ -531,10 +526,6 @@
         <translation>复制到剪贴板</translation>
     </message>
     <message>
-        <source>File name</source>
-        <translation type="vanished">文件名</translation>
-    </message>
-    <message>
         <location filename="../src/exifdialog.cpp" line="212"/>
         <source>Pixels</source>
         <translation>像素</translation>
@@ -683,10 +674,6 @@
         <translation>GIF图片(*.gif)</translation>
     </message>
     <message>
-        <source>JPEG Image (*.jpg, *.jpeg)</source>
-        <translation type="vanished">JPEG图片(*.jpg, *.jpeg)</translation>
-    </message>
-    <message>
         <location filename="../../../components/file-association/fileassocdialog.cpp" line="33"/>
         <source>JPEG Image</source>
         <comment>description of File format on Explorer(.jpeg)</comment>
@@ -747,19 +734,6 @@
     </message>
 </context>
 <context>
-    <name>FolderItemModel</name>
-    <message>
-        <source>Name</source>
-        <comment>Title of the column in the folder list when displaying as an independent Window in Folder Window</comment>
-        <translation type="vanished">名称</translation>
-    </message>
-    <message>
-        <source>Modified</source>
-        <comment>Title of the column in the folder list when displaying as an independent Window in Folder Window</comment>
-        <translation type="vanished">更新时间</translation>
-    </message>
-</context>
-<context>
     <name>FolderWindow</name>
     <message>
         <location filename="../src/folderview/folderwindow.ui" line="103"/>
@@ -767,16 +741,6 @@
         <source>Home</source>
         <extracomment>Button for returning to QuickViewer&apos;s home folder</extracomment>
         <translation>移动到主文件夹</translation>
-    </message>
-    <message>
-        <source>Previous</source>
-        <extracomment>Button for returning to the previous folder from the currently displayed folder</extracomment>
-        <translation type="vanished">前一个</translation>
-    </message>
-    <message>
-        <source>Next</source>
-        <extracomment>Button for returning to the folder after the current displayed folder</extracomment>
-        <translation type="vanished">下一个</translation>
     </message>
     <message>
         <location filename="../src/folderview/folderwindow.ui" line="152"/>
@@ -828,11 +792,6 @@
         <translation>文件夹列表</translation>
     </message>
     <message>
-        <source>Current folder</source>
-        <extracomment>Label indicating that the current folder PATH is being displayed</extracomment>
-        <translation type="vanished">当前文件夹</translation>
-    </message>
-    <message>
         <location filename="../src/folderview/folderwindow.ui" line="100"/>
         <source>Go to home folder</source>
         <translation>前往主文件夹</translation>
@@ -855,23 +814,6 @@
         <location filename="../src/folderview/folderwindow.cpp" line="159"/>
         <source>Open history</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Modified</source>
-        <translation type="vanished">更新时间</translation>
-    </message>
-    <message>
-        <source>Change sort order</source>
-        <extracomment>Tooltip for pulldown to change folder sorting method</extracomment>
-        <translation type="vanished">切换排序方法</translation>
-    </message>
-    <message>
-        <source>Sort by name</source>
-        <translation type="vanished">按名称排序</translation>
-    </message>
-    <message>
-        <source>Sort by modified time</source>
-        <translation type="vanished">按更新时间排序</translation>
     </message>
     <message>
         <location filename="../src/folderview/folderwindow.ui" line="248"/>
@@ -953,21 +895,6 @@
         <source>Current page number in the volume, e.g. &apos;33/100&apos; or &apos;33-34/100&apos;</source>
         <comment>Format tag of text displayed in title bar and status bar</comment>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Image file size as correct number of bytes, e.g. &apos;1,154,340 Bytes&apos;</source>
-        <comment>Format tag of text displayed in title bar and status bar</comment>
-        <translation type="vanished">图片占用精确空间，例如：&apos;1,154,340 Bytes&apos;</translation>
-    </message>
-    <message>
-        <source>Image bitmap size with useful, e.g. &apos;1.59 MB&apos;</source>
-        <comment>Format tag of text displayed in title bar and status bar</comment>
-        <translation type="vanished">图片有效空间，例如：&apos;1.59MB&apos;</translation>
-    </message>
-    <message>
-        <source>Current page number of the volume e.g. &apos;33/100&apos; or &apos;33-34/100&apos;</source>
-        <comment>Format tag of text displayed in title bar and status bar</comment>
-        <translation type="vanished">当前位置，例如“33/100”或“33-34/100”</translation>
     </message>
     <message>
         <location filename="../src/models/imagestring.cpp" line="89"/>
@@ -1430,16 +1357,6 @@
         <translation>右键菜单</translation>
     </message>
     <message>
-        <source>Bi&amp;cubic interpolation (slow)</source>
-        <extracomment>Menu for resizing image by bicubic interpolation by GPU</extracomment>
-        <translation type="vanished">三次内插法处理(&amp;c 慢)</translation>
-    </message>
-    <message>
-        <source>&amp;Lanczos interpolation (very slow)</source>
-        <extracomment>Menu for resizing image by Lanczos interpolation by GPU</extracomment>
-        <translation type="vanished">兰克泽斯插法处理(&amp;L 非常慢)</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.ui" line="426"/>
         <source>&amp;Catalog</source>
         <translation>目录(&amp;C)</translation>
@@ -1514,11 +1431,6 @@
         <location filename="../src/mainwindow.ui" line="443"/>
         <source>F&amp;older</source>
         <translation>文件夹(&amp;o)</translation>
-    </message>
-    <message>
-        <source>Don&apos;t enlarge small images on Fitting</source>
-        <extracomment>Ability to display an image smaller than the window as it is when fit is displayed</extracomment>
-        <translation type="vanished">适合模式不扩大低分辨率图片</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="1057"/>
@@ -1646,21 +1558,6 @@
         <translation>重命名</translation>
     </message>
     <message>
-        <source>No folder or archive is loaded.</source>
-        <comment>The text of the status bar to be displayed when there is no image to be displayed immediately after the application is activated</comment>
-        <translation type="vanished">没能加载文件夹或压缩包。</translation>
-    </message>
-    <message>
-        <source>Image file not found. Can&apos;t be opened</source>
-        <comment>Text to display in the status bar when failed to open the specified Volume</comment>
-        <translation type="vanished">找不到图像文件，无法打开</translation>
-    </message>
-    <message>
-        <source>Image file was not found. Can&apos;t be opened.</source>
-        <comment>Text to display in the status bar when failed to open the specified Volume</comment>
-        <translation type="vanished">找不到图像文件，无法打开。</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.cpp" line="2104"/>
         <source>Select an image or archive</source>
         <comment>Title of the dialog displayed when opening a file with OpenFileFolder</comment>
@@ -1758,11 +1655,6 @@
         <translation>显示文件夹(&amp;F)</translation>
     </message>
     <message>
-        <source>CPU Bicubic after GPU Bilinear (standard)</source>
-        <extracomment>Preview by bilinear with GPU, then replace with bicubic resized image by CPU</extracomment>
-        <translation type="vanished">用GPU双线性插值后，用CPU双三次插值(标准）</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.ui" line="1023"/>
         <source>&amp;Settings</source>
         <extracomment>Menu for displaying a dialog for changing the adjunct setting of the application</extracomment>
@@ -1785,11 +1677,6 @@
         <source>Confirm moving image to &amp;Recycle Bin</source>
         <extracomment>A function to display a confirmation screen when moving the currently displayed image to Recycle Bin</extracomment>
         <translation>确认移动图片到回收站(&amp;R)</translation>
-    </message>
-    <message>
-        <source>File Associations... (administrator)</source>
-        <extracomment>Ability to associate QuickViewer and image files on Explorer (Host Global)</extracomment>
-        <translation type="vanished">关联文件(管理员)</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="1084"/>
@@ -1996,11 +1883,6 @@
         <translation>全屏时隐藏鼠标光标</translation>
     </message>
     <message>
-        <source>All Files( *.* );;Images ( *.jpg *.jpeg *.png *.tif *.tiff *.ico);;Archives( *.zip *.7z *.rar)</source>
-        <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
-        <translation type="vanished">全文件( *.* );;图像 (*.jpg *.jpeg *.png *.tif *.tiff *.ico);;档案( *.zip *.7z *.rar)</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.ui" line="274"/>
         <location filename="../src/mainwindow.ui" line="1275"/>
         <source>&amp;Sort by</source>
@@ -2040,14 +1922,6 @@
         <location filename="../src/mainwindow.ui" line="318"/>
         <source>&amp;Tools</source>
         <translation>工具(&amp;T)</translation>
-    </message>
-</context>
-<context>
-    <name>MainWindowForWindows</name>
-    <message>
-        <source>Sh&amp;ow/hide menu bar</source>
-        <comment>An additional menu displayed when right-clicking the title bar, which is used when undoing the main menu when it is hidden</comment>
-        <translation type="vanished">显示/隐藏主菜单(&amp;o)</translation>
     </message>
 </context>
 <context>
@@ -2126,16 +2000,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&amp;Add</source>
-        <extracomment>Button to add a new catalog</extracomment>
-        <translation type="vanished">添加(&amp;A)</translation>
-    </message>
-    <message>
-        <source>Update catalog</source>
-        <extracomment>Button for updating the contents of registered catalog</extracomment>
-        <translation type="vanished">更新数据库</translation>
-    </message>
-    <message>
         <location filename="../src/catalog/cataloglist.ui" line="284"/>
         <source>&amp;Delete</source>
         <extracomment>Button to delete information of registered catalog</extracomment>
@@ -2146,15 +2010,6 @@
         <source>&amp;Edit</source>
         <extracomment>Button to edit information on registered catalog</extracomment>
         <translation>编辑(&amp;E)</translation>
-    </message>
-    <message>
-        <source>Delete all</source>
-        <translation type="vanished">删除全部</translation>
-    </message>
-    <message>
-        <source>Update all</source>
-        <extracomment>登録済みのカタログの内容を更新するボタン</extracomment>
-        <translation type="vanished">更新全部</translation>
     </message>
     <message>
         <location filename="../src/catalog/managedatabasedialog.cpp" line="33"/>
@@ -2288,45 +2143,10 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Start</source>
-        <comment>Button to start catalog creation for specified folder</comment>
-        <translation type="vanished">开始处理</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <comment>Button to cancel the catalog being generated</comment>
-        <translation type="vanished">取消处理</translation>
-    </message>
-    <message>
-        <source>Completed</source>
-        <comment>Title of message box when catalog generation finished successfully</comment>
-        <translation type="vanished">成功！</translation>
-    </message>
-    <message>
-        <source>Cancelled!</source>
-        <comment>Title of message box when catalog generation was canceled</comment>
-        <translation type="vanished">取消！</translation>
-    </message>
-    <message>
-        <source>Selected Catalog</source>
-        <extracomment>Name of the frame in which buttons for operating one catalog are arranged</extracomment>
-        <translation type="vanished">已选目录</translation>
-    </message>
-    <message>
-        <source>All Catalogs</source>
-        <extracomment>Name of the frame in which buttons for operating all catalogs are arranged</extracomment>
-        <translation type="vanished">全部目录</translation>
-    </message>
-    <message>
         <location filename="../src/catalog/managedatabasedialog.cpp" line="36"/>
         <source>Created</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>创建时间</translation>
-    </message>
-    <message>
-        <source>Pending</source>
-        <comment>Representation of time indicating that the catalog is not currently created and will be generated from now</comment>
-        <translation type="vanished">即将开始</translation>
     </message>
     <message>
         <location filename="../src/catalog/managedatabasedialog.cpp" line="589"/>
@@ -2378,11 +2198,6 @@
         <source>Select a mouse button and modifiers, then click &apos;Add shortcut&apos;.</source>
         <comment>Placeholder text urging the mouse input setting procedure</comment>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Select the combination of the checks below, press the &apos;Add Sequence&apos; button</source>
-        <comment>Placeholder text urging the mouse input setting procedure</comment>
-        <translation type="vanished">选择以下复选框的组合，点击“添加序列”按钮</translation>
     </message>
     <message>
         <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="27"/>
@@ -2699,22 +2514,6 @@
         <location filename="../src/optionsdialog.cpp" line="142"/>
         <source>Qt SVG (Compatibility mode)</source>
         <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>PageContent</name>
-    <message>
-        <source>NOT IMAGE FILE</source>
-        <comment>Error messages to be displayed on screen when image loading fails</comment>
-        <translation type="vanished">不是图像文件</translation>
-    </message>
-</context>
-<context>
-    <name>QLanguageSelector</name>
-    <message>
-        <source>Always use text translation</source>
-        <comment>Menu text that uses textual translation rather than regular qm format</comment>
-        <translation type="vanished">始终使用文本翻译</translation>
     </message>
 </context>
 <context>

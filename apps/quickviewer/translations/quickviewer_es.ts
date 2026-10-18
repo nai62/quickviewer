@@ -125,11 +125,6 @@
         <translation>Remover (Options) titulo de libro</translation>
     </message>
     <message>
-        <source>Enter a search term and press Enter to search by title.</source>
-        <comment>Gray text that prompts a keyword search of Volume</comment>
-        <translation type="vanished">Escribe una Búsqueda de palabra y Aprieta teclado de entrar.</translation>
-    </message>
-    <message>
         <location filename="../src/catalog/catalogwindow.cpp" line="78"/>
         <location filename="../src/catalog/catalogwindow.cpp" line="117"/>
         <source>Search titles</source>
@@ -739,19 +734,6 @@
     </message>
 </context>
 <context>
-    <name>FolderItemModel</name>
-    <message>
-        <source>Name</source>
-        <comment>Title of the column in the folder list when displaying as an independent Window in Folder Window</comment>
-        <translation type="vanished">Nombre</translation>
-    </message>
-    <message>
-        <source>Modified</source>
-        <comment>Title of the column in the folder list when displaying as an independent Window in Folder Window</comment>
-        <translation type="vanished">Dia y hora de construccion</translation>
-    </message>
-</context>
-<context>
     <name>FolderWindow</name>
     <message>
         <location filename="../src/folderview/folderwindow.ui" line="103"/>
@@ -759,16 +741,6 @@
         <source>Home</source>
         <extracomment>Button for returning to QuickViewer&apos;s home folder</extracomment>
         <translation>Volver al inicio</translation>
-    </message>
-    <message>
-        <source>Previous</source>
-        <extracomment>Button for returning to the previous folder from the currently displayed folder</extracomment>
-        <translation type="vanished">Previo</translation>
-    </message>
-    <message>
-        <source>Next</source>
-        <extracomment>Button for returning to the folder after the current displayed folder</extracomment>
-        <translation type="vanished">Próximo</translation>
     </message>
     <message>
         <location filename="../src/folderview/folderwindow.ui" line="152"/>
@@ -820,11 +792,6 @@
         <translation>Lista de Carpetas</translation>
     </message>
     <message>
-        <source>Current folder</source>
-        <extracomment>Label indicating that the current folder PATH is being displayed</extracomment>
-        <translation type="vanished">Carpeta Presente</translation>
-    </message>
-    <message>
         <location filename="../src/folderview/folderwindow.ui" line="100"/>
         <source>Go to home folder</source>
         <translation>Ir a Carpeta de Inicio</translation>
@@ -847,23 +814,6 @@
         <location filename="../src/folderview/folderwindow.cpp" line="159"/>
         <source>Open history</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Modified</source>
-        <translation type="vanished">Refrescar</translation>
-    </message>
-    <message>
-        <source>Change sort order</source>
-        <extracomment>Tooltip for pulldown to change folder sorting method</extracomment>
-        <translation type="vanished">Cambia la manera de clasificacion</translation>
-    </message>
-    <message>
-        <source>Sort by name</source>
-        <translation type="vanished">Ordena por Nombre</translation>
-    </message>
-    <message>
-        <source>Sort by modified time</source>
-        <translation type="vanished">Ordena por Fecha</translation>
     </message>
     <message>
         <location filename="../src/folderview/folderwindow.ui" line="248"/>
@@ -1407,16 +1357,6 @@
         <translation>Menu de Contexto</translation>
     </message>
     <message>
-        <source>Bi&amp;cubic interpolation (slow)</source>
-        <extracomment>Menu for resizing image by bicubic interpolation by GPU</extracomment>
-        <translation type="vanished">Interpolación bicúbica (lento)</translation>
-    </message>
-    <message>
-        <source>&amp;Lanczos interpolation (very slow)</source>
-        <extracomment>Menu for resizing image by Lanczos interpolation by GPU</extracomment>
-        <translation type="vanished">&amp;Interpolación Lanczos (muy lento)</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.ui" line="426"/>
         <source>&amp;Catalog</source>
         <translation>&amp;Catálogo</translation>
@@ -1491,11 +1431,6 @@
         <location filename="../src/mainwindow.ui" line="443"/>
         <source>F&amp;older</source>
         <translation>&amp;Carpeta</translation>
-    </message>
-    <message>
-        <source>Don&apos;t enlarge small images on Fitting</source>
-        <extracomment>Ability to display an image smaller than the window as it is when fit is displayed</extracomment>
-        <translation type="vanished">No agrande las imágenes pequeñas en Fitting</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="1057"/>
@@ -1623,21 +1558,6 @@
         <translation>Renombrar</translation>
     </message>
     <message>
-        <source>No folder or archive is loaded.</source>
-        <comment>The text of the status bar to be displayed when there is no image to be displayed immediately after the application is activated</comment>
-        <translation type="vanished">Ninguna carpeta o archivo esta cargado.</translation>
-    </message>
-    <message>
-        <source>Image file not found. Can&apos;t be opened</source>
-        <comment>Text to display in the status bar when failed to open the specified Volume</comment>
-        <translation type="vanished">No se pudo abrir. ¿No hay imagenes?</translation>
-    </message>
-    <message>
-        <source>Image file was not found. Can&apos;t be opened.</source>
-        <comment>Text to display in the status bar when failed to open the specified Volume</comment>
-        <translation type="vanished">No se pudo abrir. ¿No hay imagenes?</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.cpp" line="2104"/>
         <source>Select an image or archive</source>
         <comment>Title of the dialog displayed when opening a file with OpenFileFolder</comment>
@@ -1735,11 +1655,6 @@
         <translation>Ver &amp;Carpeta</translation>
     </message>
     <message>
-        <source>CPU Bicubic after GPU Bilinear (standard)</source>
-        <extracomment>Preview by bilinear with GPU, then replace with bicubic resized image by CPU</extracomment>
-        <translation type="vanished">CPU Bicúbica después de GPU Bilineal (estándar)</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.ui" line="1023"/>
         <source>&amp;Settings</source>
         <extracomment>Menu for displaying a dialog for changing the adjunct setting of the application</extracomment>
@@ -1762,11 +1677,6 @@
         <source>Confirm moving image to &amp;Recycle Bin</source>
         <extracomment>A function to display a confirmation screen when moving the currently displayed image to Recycle Bin</extracomment>
         <translation>Ver una advertencia antes de mandar a &amp;Borrar</translation>
-    </message>
-    <message>
-        <source>File Associations... (administrator)</source>
-        <extracomment>Ability to associate QuickViewer and image files on Explorer (Host Global)</extracomment>
-        <translation type="vanished">Asociaciones de imágenes (requiere Administrador)</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="1084"/>
@@ -1973,11 +1883,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>All Files( *.* );;Images ( *.jpg *.jpeg *.png *.tif *.tiff *.ico);;Archives( *.zip *.7z *.rar)</source>
-        <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
-        <translation type="obsolete">Todos los archivos( *.* );;Imágenes (*.jpg *.jpeg *.png *.tif *.tiff *.ico);;Archives( *.zip *.7z *.rar)</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.ui" line="274"/>
         <location filename="../src/mainwindow.ui" line="1275"/>
         <source>&amp;Sort by</source>
@@ -2017,14 +1922,6 @@
         <location filename="../src/mainwindow.ui" line="318"/>
         <source>&amp;Tools</source>
         <translation>Herramientas(&amp;T)</translation>
-    </message>
-</context>
-<context>
-    <name>MainWindowForWindows</name>
-    <message>
-        <source>Sh&amp;ow/hide menu bar</source>
-        <comment>An additional menu displayed when right-clicking the title bar, which is used when undoing the main menu when it is hidden</comment>
-        <translation type="vanished">Visualiza/Oculta de Menú principal</translation>
     </message>
 </context>
 <context>
@@ -2103,16 +2000,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&amp;Add</source>
-        <extracomment>Button to add a new catalog</extracomment>
-        <translation type="vanished">&amp;Anadir</translation>
-    </message>
-    <message>
-        <source>Update catalog</source>
-        <extracomment>Button for updating the contents of registered catalog</extracomment>
-        <translation type="vanished">Actualizar Base de datos</translation>
-    </message>
-    <message>
         <location filename="../src/catalog/cataloglist.ui" line="284"/>
         <source>&amp;Delete</source>
         <extracomment>Button to delete information of registered catalog</extracomment>
@@ -2123,15 +2010,6 @@
         <source>&amp;Edit</source>
         <extracomment>Button to edit information on registered catalog</extracomment>
         <translation>&amp;Editar</translation>
-    </message>
-    <message>
-        <source>Delete all</source>
-        <translation type="vanished">Eliminar Todos</translation>
-    </message>
-    <message>
-        <source>Update all</source>
-        <extracomment>登録済みのカタログの内容を更新するボタン</extracomment>
-        <translation type="vanished">Actualizar Todos</translation>
     </message>
     <message>
         <location filename="../src/catalog/managedatabasedialog.cpp" line="33"/>
@@ -2265,45 +2143,10 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Start</source>
-        <comment>Button to start catalog creation for specified folder</comment>
-        <translation type="vanished">Crear Catalogo</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <comment>Button to cancel the catalog being generated</comment>
-        <translation type="vanished">Cancelar</translation>
-    </message>
-    <message>
-        <source>Completed</source>
-        <comment>Title of message box when catalog generation finished successfully</comment>
-        <translation type="vanished">¡Fue Exitoso!</translation>
-    </message>
-    <message>
-        <source>Cancelled!</source>
-        <comment>Title of message box when catalog generation was canceled</comment>
-        <translation type="vanished">Ha Cancelado!</translation>
-    </message>
-    <message>
-        <source>Selected Catalog</source>
-        <extracomment>Name of the frame in which buttons for operating one catalog are arranged</extracomment>
-        <translation type="vanished">Catálogo seleccionado</translation>
-    </message>
-    <message>
-        <source>All Catalogs</source>
-        <extracomment>Name of the frame in which buttons for operating all catalogs are arranged</extracomment>
-        <translation type="vanished">Todos los Catálogos</translation>
-    </message>
-    <message>
         <location filename="../src/catalog/managedatabasedialog.cpp" line="36"/>
         <source>Created</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>Tiempo de Creacion</translation>
-    </message>
-    <message>
-        <source>Pending</source>
-        <comment>Representation of time indicating that the catalog is not currently created and will be generated from now</comment>
-        <translation type="vanished">ninguno</translation>
     </message>
     <message>
         <location filename="../src/catalog/managedatabasedialog.cpp" line="589"/>
@@ -2671,14 +2514,6 @@
         <location filename="../src/optionsdialog.cpp" line="142"/>
         <source>Qt SVG (Compatibility mode)</source>
         <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>PageContent</name>
-    <message>
-        <source>NOT IMAGE FILE</source>
-        <comment>Error messages to be displayed on screen when image loading fails</comment>
-        <translation type="vanished">Extract solid archives to temporary directory</translation>
     </message>
 </context>
 <context>
