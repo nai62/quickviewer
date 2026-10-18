@@ -21,6 +21,18 @@ These instructions apply to the entire repository.
   (for example, `fix: omit version from window titles`). Choose a type that
   describes the change, such as `fix`, `feat`, `docs`, `refactor`, or `chore`.
 
+## Pull requests and remote operations
+
+- This repository is maintained as a fork of `kanryu/quickviewer`, which is no
+  longer developed. Open pull requests, issues, and comments only on the
+  repository the `origin` remote points to. Never create or modify anything on
+  `kanryu/quickviewer`.
+- GitHub records this repository as a fork, so `gh` can pick the parent
+  repository as its default target. Before a `gh` command that writes, such as
+  `gh pr create` or `gh pr comment`, confirm that `gh repo set-default --view`
+  names the `origin` repository, or pass that repository with `--repo`.
+- Push only to `origin`.
+
 ## Verification and handoff contract
 
 Follow the repository `developer/README.md` documentation index; the Windows
