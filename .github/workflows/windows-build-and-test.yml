@@ -276,7 +276,8 @@ jobs:
             "tst_svgloadertest.exe",
             "tst_viewernavigationtest.exe",
             "tst_windowstartuptest.exe",
-            "tst_catalogdatabasetest.exe"
+            "tst_catalogdatabasetest.exe",
+            "tst_languageswitch.exe"
           )
           $failed = @()
 

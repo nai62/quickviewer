@@ -240,9 +240,10 @@ if /I "%QV_TEST_NAME%"=="svgloader" set "QV_TEST_EXE_NAME=tst_svgloadertest.exe"
 if /I "%QV_TEST_NAME%"=="viewernavigation" set "QV_TEST_EXE_NAME=tst_viewernavigationtest.exe"
 if /I "%QV_TEST_NAME%"=="windowstartup" set "QV_TEST_EXE_NAME=tst_windowstartuptest.exe"
 if /I "%QV_TEST_NAME%"=="catalogdatabase" set "QV_TEST_EXE_NAME=tst_catalogdatabasetest.exe"
+if /I "%QV_TEST_NAME%"=="languageswitch" set "QV_TEST_EXE_NAME=tst_languageswitch.exe"
 if not defined QV_TEST_EXE_NAME (
     echo ERROR: Unknown test name: %QV_TEST_NAME%
-    echo Supported tests: prefetchplanner, asynccache, latestresultdispatcher, fileloader, svgloader, viewernavigation, windowstartup, catalogdatabase
+    echo Supported tests: prefetchplanner, asynccache, latestresultdispatcher, fileloader, svgloader, viewernavigation, windowstartup, catalogdatabase, languageswitch
     exit /b 2
 )
 set "PATH=%QV_QT_DIR%\bin;%QV_BUILD_DIR%\lib;%PATH%"
@@ -267,6 +268,7 @@ call :run_test tst_svgloadertest.exe
 call :run_test tst_viewernavigationtest.exe
 call :run_test tst_windowstartuptest.exe
 call :run_test tst_catalogdatabasetest.exe
+call :run_test tst_languageswitch.exe
 
 if not "!QV_TEST_FAILED!"=="0" (
     echo === One or more tests failed ===
@@ -371,4 +373,5 @@ echo.
 echo Test names:
 echo   prefetchplanner  asynccache  latestresultdispatcher  fileloader
 echo   svgloader        viewernavigation  windowstartup  catalogdatabase
+echo   languageswitch
 exit /b 2
