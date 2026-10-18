@@ -1884,6 +1884,37 @@ private slots:
         QCOMPARE(item->sceneBoundingRect().toRect(), drawRect);
     }
 
+    void renderedPageSeparatesOnlyPagesWideAsDisplayed_data()
+    {
+        QTest::addColumn<int>("orientation");
+        QTest::addColumn<QSize>("drawnSize");
+        // A wide page is split in a tall viewport and shows one half at a time.
+        QTest::newRow("1 wide") << 1 << QSize(100, 100);
+        QTest::newRow("3 wide upside down") << 3 << QSize(100, 100);
+        // Stored wide but displayed tall, so the whole page is shown.
+        QTest::newRow("5 tall") << 5 << QSize(100, 200);
+        QTest::newRow("6 tall") << 6 << QSize(100, 200);
+    }
+
+    void renderedPageSeparatesOnlyPagesWideAsDisplayed()
+    {
+        QFETCH(int, orientation);
+        QFETCH(QSize, drawnSize);
+
+        QGraphicsScene scene;
+        QImage image(400, 200, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        easyexif::EXIFInfo exif;
+        exif.Orientation = static_cast<unsigned short>(orientation);
+        RenderedPage page(nullptr, &scene, ImageContent(image, "page.jpg", image.size(), exif, 0));
+        const QRect viewport(0, 0, 100, 200);
+        page.updateSeparationForViewport(true, viewport.size());
+
+        const QRect drawRect = page.setPageLayoutFitting(
+            viewport, RenderedPage::PageCenter, qvEnums::FitMode::FitToRect, 1.0);
+        QCOMPARE(drawRect.size(), drawnSize);
+    }
+
     void cpuResizePreservesOpaqueAndAlphaRegions()
     {
         QImage rgb(8, 8, QImage::Format_RGB32);

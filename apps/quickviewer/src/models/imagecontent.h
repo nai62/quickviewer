@@ -108,7 +108,15 @@ struct ImageContent
     {
         return isOrientationRotated() ? QSize(size.height(), size.width()) : size;
     }
-    bool isLandscape() const { return originalSize.width() > originalSize.height(); }
+    /**
+     * True when the page is wider than tall as displayed, after the EXIF
+     * orientation has turned it.
+     */
+    bool isLandscape() const
+    {
+        const QSize displayedSize = orientedSize(originalSize);
+        return displayedSize.width() > displayedSize.height();
+    }
     void initializeAnimation();
 };
 
