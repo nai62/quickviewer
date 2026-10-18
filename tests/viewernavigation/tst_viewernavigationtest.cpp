@@ -826,6 +826,9 @@ private slots:
         QCOMPARE(content.loadedImageSize, QSize(64, 32));
         QCOMPARE(int(content.exifInfo.Orientation), orientation);
         QCOMPARE(content.hasDetailedMetadata, detailedMetadata);
+        // The full parse decides whether there is EXIF to show; the fast path
+        // leaves that to the later metadata load.
+        QCOMPARE(content.hasExif, detailedMetadata);
         QCOMPARE(content.resizedImage.size(), resizedSize);
     }
 

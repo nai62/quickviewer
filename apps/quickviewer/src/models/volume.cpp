@@ -781,14 +781,16 @@ static ImageContent finishStaticImage(QImage src,
     easyexif::EXIFInfo info;
     ImageContent ic(path, bytes.length());
     const bool isExifJpeg = src.width() > 0 && IFileLoader::isExifJpegImageFile(path);
+    // Kept apart from `ic`, which is built again once the pixels are ready.
+    bool hasExif = false;
     if (isExifJpeg && loadDetailedMetadata) {
-        ic.hasExif = info.parseFrom(reinterpret_cast<const unsigned char *>(bytes.constData()),
-                                    bytes.length()) == PARSE_EXIF_SUCCESS;
+        hasExif = info.parseFrom(reinterpret_cast<const unsigned char *>(bytes.constData()),
+                                 bytes.length()) == PARSE_EXIF_SUCCESS;
     }
 
     if (src.width() > 0 && IFileLoader::isExifRawImageFile(path)) {
         parseExifTextExtents(src, info);
-        ic.hasExif = info.ImageWidth > 0;
+        hasExif = info.ImageWidth > 0;
     }
     if (src.width() > 0) {
         info.Orientation = orientation;
@@ -832,6 +834,7 @@ static ImageContent finishStaticImage(QImage src,
         ic.loadedImageSize = ic.loadedImage.size();
     }
     ic.hasDetailedMetadata = loadDetailedMetadata || !isExifJpeg;
+    ic.hasExif = hasExif;
 
     // CPU resizing before Page Viewing
     if (!pageSize.isEmpty() && !ic.loadedImage.isNull()) {
