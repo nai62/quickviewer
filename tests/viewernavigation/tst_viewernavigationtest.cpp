@@ -286,6 +286,208 @@ public:
     }
 };
 
+/**
+ * The layouts renderedPagesLayoutCharacterization pins, by row name.
+ */
+static QHash<QString, QString> layoutCharacterization()
+{
+    return {
+        // The scale comes from a whole-pixel target size: 266/400, not 2/3.
+        {QStringLiteral("dpr1 rect x1 single r0"),
+         QStringLiteral("scene 17,0 266x200; page0 at 17,0 scale 0.665 shows 17,0 266x199.5; "
+                        "notational 0.665")},
+        {QStringLiteral("dpr1 rect x1 single r90"),
+         QStringLiteral(
+             "scene 75,0 150x200; page0 at 225,0 scale 0.5 shows 75,0 150x200; notational 0.5")},
+        {QStringLiteral("dpr1 rect x1 dual r0"),
+         QStringLiteral(
+             "scene 0,0 300x200; page0 at 150,44 scale 0.375 shows 150,44 150x112.5; notational "
+             "0.375; page1 at 0,0 scale 0.5 shows 0,0 150x200; notational 0.5")},
+        {QStringLiteral("dpr1 rect x1 dual r90"),
+         QStringLiteral(
+             "scene 0,0 300x200; page0 at 300,0 scale 0.5 shows 150,0 150x200; notational 0.5; "
+             "page1 at 150,44 scale 0.375 shows 0,44 150x112.5; notational 0.375")},
+        {QStringLiteral("dpr1 rect x2 single r0"),
+         QStringLiteral(
+             "scene 0,0 532x399; page0 at 0,0 scale 1.33 shows 0,0 532x399; notational 1.33")},
+        {QStringLiteral("dpr1 rect x2 single r90"),
+         QStringLiteral(
+             "scene 0,0 300x400; page0 at 300,0 scale 1 shows 0,0 300x400; notational 1")},
+        {QStringLiteral("dpr1 rect x2 dual r0"),
+         QStringLiteral(
+             "scene -150,0 600x400; page0 at 150,0 scale 0.75 shows 150,0 300x225; notational "
+             "0.75; page1 at -150,0 scale 1 shows -150,0 300x400; notational 1")},
+        {QStringLiteral("dpr1 rect x2 dual r90"),
+         QStringLiteral(
+             "scene -150,0 600x400; page0 at 450,0 scale 1 shows 150,0 300x400; notational 1; "
+             "page1 at 150,0 scale 0.75 shows -150,0 300x225; notational 0.75")},
+        {QStringLiteral("dpr1 rect x1 single r0 split"),
+         QStringLiteral(
+             "scene 0,0 200x300; page0 at -200,0 scale 1 shows -200,0 400x300; notational 1")},
+        {QStringLiteral("dpr1 width x1 single r0"),
+         QStringLiteral(
+             "scene 0,0 300x225; page0 at 0,0 scale 0.75 shows 0,0 300x225; notational 0.75")},
+        {QStringLiteral("dpr1 width x1 single r90"),
+         QStringLiteral(
+             "scene 0,0 300x400; page0 at 300,0 scale 1 shows 0,0 300x400; notational 1")},
+        {QStringLiteral("dpr1 width x1 dual r0"),
+         QStringLiteral(
+             "scene 0,0 300x200; page0 at 150,0 scale 0.375 shows 150,0 150x112.5; notational "
+             "0.375; page1 at 0,0 scale 0.5 shows 0,0 150x200; notational 0.5")},
+        {QStringLiteral("dpr1 width x1 dual r90"),
+         QStringLiteral(
+             "scene 0,0 300x200; page0 at 300,0 scale 0.5 shows 150,0 150x200; notational 0.5; "
+             "page1 at 150,0 scale 0.375 shows 0,0 150x112.5; notational 0.375")},
+        {QStringLiteral("dpr1 width x2 single r0"),
+         QStringLiteral(
+             "scene 0,0 600x450; page0 at 0,0 scale 1.5 shows 0,0 600x450; notational 1.5")},
+        {QStringLiteral("dpr1 width x2 single r90"),
+         QStringLiteral(
+             "scene 0,0 600x800; page0 at 600,0 scale 2 shows 0,0 600x800; notational 2")},
+        {QStringLiteral("dpr1 width x2 dual r0"),
+         QStringLiteral(
+             "scene -150,0 600x400; page0 at 150,0 scale 0.75 shows 150,0 300x225; notational "
+             "0.75; page1 at -150,0 scale 1 shows -150,0 300x400; notational 1")},
+        {QStringLiteral("dpr1 width x2 dual r90"),
+         QStringLiteral(
+             "scene -150,0 600x400; page0 at 450,0 scale 1 shows 150,0 300x400; notational 1; "
+             "page1 at 150,0 scale 0.75 shows -150,0 300x225; notational 0.75")},
+        {QStringLiteral("dpr1 width x1 single r0 split"),
+         QStringLiteral(
+             "scene 0,0 200x300; page0 at -200,0 scale 1 shows -200,0 400x300; notational 1")},
+        {QStringLiteral("dpr1 manual x1 single r0"),
+         QStringLiteral(
+             "scene 50,25 200x150; page0 at 50,25 scale 0.5 shows 50,25 200x150; notational 0.5")},
+        {QStringLiteral("dpr1 manual x1 single r90"),
+         QStringLiteral(
+             "scene 75,0 150x200; page0 at 225,0 scale 0.5 shows 75,0 150x200; notational 0.5")},
+        {QStringLiteral("dpr1 manual x1 dual r0"),
+         QStringLiteral(
+             "scene 0,0 350x200; page0 at 150,25 scale 0.5 shows 150,25 200x150; notational 0.5; "
+             "page1 at 0,0 scale 0.5 shows 0,0 150x200; notational 0.5")},
+        {QStringLiteral("dpr1 manual x1 dual r90"),
+         QStringLiteral(
+             "scene -50,0 350x200; page0 at 300,0 scale 0.5 shows 150,0 150x200; notational 0.5; "
+             "page1 at 150,25 scale 0.5 shows -50,25 200x150; notational 0.5")},
+        {QStringLiteral("dpr1 manual x2 single r0"),
+         QStringLiteral("scene 0,0 400x300; page0 at 0,0 scale 1 shows 0,0 400x300; notational 1")},
+        {QStringLiteral("dpr1 manual x2 single r90"),
+         QStringLiteral(
+             "scene 0,0 300x400; page0 at 300,0 scale 1 shows 0,0 300x400; notational 1")},
+        {QStringLiteral("dpr1 manual x2 dual r0"),
+         QStringLiteral(
+             "scene -150,0 700x400; page0 at 150,0 scale 1 shows 150,0 400x300; notational 1; "
+             "page1 at -150,0 scale 1 shows -150,0 300x400; notational 1")},
+        {QStringLiteral("dpr1 manual x2 dual r90"),
+         QStringLiteral("scene -250,0 700x400; page0 at 450,0 scale 1 shows 150,0 300x400; "
+                        "notational 1; page1 at 150,0 scale 1 shows -250,0 400x300; notational 1")},
+        {QStringLiteral("dpr1 manual x1 single r0 split"),
+         QStringLiteral("scene 50,75 100x150; page0 at -50,75 scale 0.5 shows -50,75 200x150; "
+                        "notational 0.5")},
+        {QStringLiteral("dpr2 rect x1 single r0"),
+         QStringLiteral("scene -116,0 533x400; page0 at -116,0 scale 1.3325 shows -116,0 "
+                        "533x399.75; notational 1.3325")},
+        {QStringLiteral("dpr2 rect x1 single r90"),
+         QStringLiteral(
+             "scene 0,0 300x400; page0 at 300,0 scale 1 shows 0,0 300x400; notational 1")},
+        // Inconsistent: at 1x the shorter page is centred vertically (dpr1 rect x1
+        // dual r0); at 2x it sits at the top.
+        {QStringLiteral("dpr2 rect x1 dual r0"),
+         QStringLiteral(
+             "scene -150,0 600x400; page0 at 150,0 scale 0.75 shows 150,0 300x225; notational "
+             "0.75; page1 at -150,0 scale 1 shows -150,0 300x400; notational 1")},
+        {QStringLiteral("dpr2 rect x1 dual r90"),
+         QStringLiteral(
+             "scene -150,0 600x400; page0 at 450,0 scale 1 shows 150,0 300x400; notational 1; "
+             "page1 at 150,0 scale 0.75 shows -150,0 300x225; notational 0.75")},
+        {QStringLiteral("dpr2 rect x2 single r0"),
+         QStringLiteral("scene 0,0 1066x800; page0 at 0,0 scale 2.665 shows 0,0 1066x799.5; "
+                        "notational 2.665")},
+        {QStringLiteral("dpr2 rect x2 single r90"),
+         QStringLiteral(
+             "scene 0,0 600x800; page0 at 600,0 scale 2 shows 0,0 600x800; notational 2")},
+        {QStringLiteral("dpr2 rect x2 dual r0"),
+         QStringLiteral(
+             "scene -450,0 1200x800; page0 at 150,0 scale 1.5 shows 150,0 600x450; notational 1.5; "
+             "page1 at -450,0 scale 2 shows -450,0 600x800; notational 2")},
+        {QStringLiteral("dpr2 rect x2 dual r90"),
+         QStringLiteral(
+             "scene -450,0 1200x800; page0 at 750,0 scale 2 shows 150,0 600x800; notational 2; "
+             "page1 at 150,0 scale 1.5 shows -450,0 600x450; notational 1.5")},
+        // Inconsistent: at 2x a fitted wide page is not split in a tall viewport,
+        // because the split compares the logical height with the device width;
+        // at 1x it is (dpr1 rect x1 single r0 split), and manual layout splits at
+        // both scales.
+        {QStringLiteral("dpr2 rect x1 single r0 split"),
+         QStringLiteral(
+             "scene -100,0 400x300; page0 at -100,0 scale 1 shows -100,0 400x300; notational 1")},
+        {QStringLiteral("dpr2 width x1 single r0"),
+         QStringLiteral("scene -150,-100 600x450; page0 at -150,-100 scale 1.5 shows -150,-100 "
+                        "600x450; notational 1.5")},
+        {QStringLiteral("dpr2 width x1 single r90"),
+         QStringLiteral("scene -150,-100 600x800; page0 at 450,-100 scale 2 shows -150,-100 "
+                        "600x800; notational 2")},
+        // Inconsistent: at 2x the two pages of a spread start at different heights
+        // (-87 and -100); at 1x both start at 0.
+        {QStringLiteral("dpr2 width x1 dual r0"),
+         QStringLiteral(
+             "scene -150,-100 600x400; page0 at 150,-87 scale 0.75 shows 150,-87 300x225; "
+             "notational 0.75; page1 at -150,-100 scale 1 shows -150,-100 300x400; notational 1")},
+        {QStringLiteral("dpr2 width x1 dual r90"),
+         QStringLiteral(
+             "scene -150,-100 600x400; page0 at 450,-100 scale 1 shows 150,-100 300x400; "
+             "notational 1; page1 at 150,-87 scale 0.75 shows -150,-87 300x225; notational 0.75")},
+        {QStringLiteral("dpr2 width x2 single r0"),
+         QStringLiteral(
+             "scene 0,0 1200x900; page0 at 0,0 scale 3 shows 0,0 1200x900; notational 3")},
+        {QStringLiteral("dpr2 width x2 single r90"),
+         QStringLiteral(
+             "scene 0,0 1200x1600; page0 at 1200,0 scale 4 shows 0,0 1200x1600; notational 4")},
+        {QStringLiteral("dpr2 width x2 dual r0"),
+         QStringLiteral(
+             "scene -450,0 1200x800; page0 at 150,0 scale 1.5 shows 150,0 600x450; notational 1.5; "
+             "page1 at -450,0 scale 2 shows -450,0 600x800; notational 2")},
+        {QStringLiteral("dpr2 width x2 dual r90"),
+         QStringLiteral(
+             "scene -450,0 1200x800; page0 at 750,0 scale 2 shows 150,0 600x800; notational 2; "
+             "page1 at 150,0 scale 1.5 shows -450,0 600x450; notational 1.5")},
+        // Inconsistent: not split at 2x either; see "dpr2 rect x1 single r0 split".
+        {QStringLiteral("dpr2 width x1 single r0 split"),
+         QStringLiteral("scene -100,-150 400x300; page0 at -100,-150 scale 1 shows -100,-150 "
+                        "400x300; notational 1")},
+        // Manual layout ignores the screen scale: the same scene as at 1x.
+        {QStringLiteral("dpr2 manual x1 single r0"),
+         QStringLiteral(
+             "scene 50,25 200x150; page0 at 50,25 scale 0.5 shows 50,25 200x150; notational 0.5")},
+        {QStringLiteral("dpr2 manual x1 single r90"),
+         QStringLiteral(
+             "scene 75,0 150x200; page0 at 225,0 scale 0.5 shows 75,0 150x200; notational 0.5")},
+        {QStringLiteral("dpr2 manual x1 dual r0"),
+         QStringLiteral(
+             "scene 0,0 350x200; page0 at 150,25 scale 0.5 shows 150,25 200x150; notational 0.5; "
+             "page1 at 0,0 scale 0.5 shows 0,0 150x200; notational 0.5")},
+        {QStringLiteral("dpr2 manual x1 dual r90"),
+         QStringLiteral(
+             "scene -50,0 350x200; page0 at 300,0 scale 0.5 shows 150,0 150x200; notational 0.5; "
+             "page1 at 150,25 scale 0.5 shows -50,25 200x150; notational 0.5")},
+        {QStringLiteral("dpr2 manual x2 single r0"),
+         QStringLiteral("scene 0,0 400x300; page0 at 0,0 scale 1 shows 0,0 400x300; notational 1")},
+        {QStringLiteral("dpr2 manual x2 single r90"),
+         QStringLiteral(
+             "scene 0,0 300x400; page0 at 300,0 scale 1 shows 0,0 300x400; notational 1")},
+        {QStringLiteral("dpr2 manual x2 dual r0"),
+         QStringLiteral(
+             "scene -150,0 700x400; page0 at 150,0 scale 1 shows 150,0 400x300; notational 1; "
+             "page1 at -150,0 scale 1 shows -150,0 300x400; notational 1")},
+        {QStringLiteral("dpr2 manual x2 dual r90"),
+         QStringLiteral("scene -250,0 700x400; page0 at 450,0 scale 1 shows 150,0 300x400; "
+                        "notational 1; page1 at 150,0 scale 1 shows -250,0 400x300; notational 1")},
+        {QStringLiteral("dpr2 manual x1 single r0 split"),
+         QStringLiteral("scene 50,75 100x150; page0 at -50,75 scale 0.5 shows -50,75 200x150; "
+                        "notational 0.5")},
+    };
+}
+
 class ViewerNavigationTest : public QObject
 {
     Q_OBJECT
@@ -1941,6 +2143,150 @@ private slots:
 
         // Stored wide, displayed tall after the quarter turn.
         QCOMPARE(imageString.formatString("%s"), QString("100x200"));
+    }
+
+    /**
+     * Characterizes how pages are laid out, as it stands: every combination of
+     * screen scale, fit mode, loupe, one or two pages and rotation, plus the
+     * split of a wide page in a tall viewport. Each row pins where the scene
+     * puts every page and at which scale, so a change to the layout shows up
+     * row by row. Rows whose values look inconsistent are pinned too, and say
+     * so; they document what the layout does, not what it should do.
+     */
+    void renderedPagesLayoutCharacterization_data()
+    {
+        QTest::addColumn<qreal>("pixelRatio");
+        QTest::addColumn<int>("fitMode");
+        QTest::addColumn<qreal>("scaleFactor");
+        QTest::addColumn<bool>("dual");
+        QTest::addColumn<int>("rotation");
+        QTest::addColumn<bool>("separate");
+        QTest::addColumn<QString>("expected");
+
+        const QHash<QString, QString> expected = layoutCharacterization();
+        const auto add = [&](qreal ratio,
+                             qvEnums::FitMode fit,
+                             qreal factor,
+                             bool dual,
+                             int rotation,
+                             bool separate) {
+            const char *fitName = fit == qvEnums::FitMode::FitToRect    ? "rect"
+                                  : fit == qvEnums::FitMode::FitToWidth ? "width"
+                                                                        : "manual";
+            const QString name = QStringLiteral("dpr%1 %2 x%3 %4 r%5%6")
+                                     .arg(ratio)
+                                     .arg(QLatin1String(fitName))
+                                     .arg(factor)
+                                     .arg(dual ? QStringLiteral("dual") : QStringLiteral("single"))
+                                     .arg(rotation)
+                                     .arg(separate ? QStringLiteral(" split") : QString());
+            QTest::newRow(qPrintable(name)) << ratio << int(fit) << factor << dual << rotation
+                                            << separate << expected.value(name);
+        };
+        for (qreal ratio : {1.0, 2.0}) {
+            for (auto fit : {qvEnums::FitMode::FitToRect,
+                             qvEnums::FitMode::FitToWidth,
+                             qvEnums::FitMode::NoFitting}) {
+                for (qreal factor : {1.0, 2.0}) {
+                    for (bool dual : {false, true}) {
+                        for (int rotation : {0, 90}) {
+                            add(ratio, fit, factor, dual, rotation, false);
+                        }
+                    }
+                }
+                add(ratio, fit, 1.0, false, 0, true);
+            }
+        }
+    }
+
+    void renderedPagesLayoutCharacterization()
+    {
+        QFETCH(qreal, pixelRatio);
+        QFETCH(int, fitMode);
+        QFETCH(qreal, scaleFactor);
+        QFETCH(bool, dual);
+        QFETCH(int, rotation);
+        QFETCH(bool, separate);
+        QFETCH(QString, expected);
+
+        const auto effect = qApp->Effect();
+        const bool dontEnlarge = qApp->DontEnlargeSmallImagesOnFitting();
+        const bool rightSideBook = qApp->RightSideBook();
+        const bool separateSetting = qApp->SeparatePagesWhenWideImage();
+        const auto restore = qScopeGuard([=] {
+            qApp->setEffect(effect);
+            qApp->setDontEnlargeSmallImagesOnFitting(dontEnlarge);
+            qApp->setRightSideBook(rightSideBook);
+            qApp->setSeparatePagesWhenWideImage(separateSetting);
+        });
+        // The view scales the pixmap; a CPU resize would replace it.
+        qApp->setEffect(qvEnums::ShaderEffect::Bilinear);
+        qApp->setDontEnlargeSmallImagesOnFitting(false);
+        qApp->setRightSideBook(true);
+        qApp->setSeparatePagesWhenWideImage(separate);
+
+        QGraphicsScene scene;
+        PageRenderSettings settings;
+        settings.pixelRatio = pixelRatio;
+        RenderedPages pages;
+        QImage wide(400, 300, QImage::Format_RGB32);
+        wide.fill(Qt::red);
+        QImage tall(300, 400, QImage::Format_RGB32);
+        tall.fill(Qt::blue);
+        QVERIFY(pages.add(ImageContent(wide, "wide.bmp", wide.size(), {}, 0),
+                          true,
+                          nullptr,
+                          &scene,
+                          settings,
+                          false));
+        if (dual) {
+            QVERIFY(pages.add(ImageContent(tall, "tall.bmp", tall.size(), {}, 0),
+                              true,
+                              nullptr,
+                              &scene,
+                              settings,
+                              false));
+        }
+
+        PageRenderRequest request;
+        request.settings = settings;
+        request.layout.viewport = separate ? QRect(0, 0, 200, 300) : QRect(0, 0, 300, 200);
+        request.layout.fitMode = qvEnums::FitMode(fitMode);
+        request.layout.manualScale = 0.5;
+        request.layout.scaleFactor = scaleFactor;
+        request.layout.loupe = scaleFactor > 1.0;
+        request.layout.separateWideImages = separate;
+        request.layout.rightSideBook = true;
+        request.layout.rotations = {rotation, rotation};
+        const QRect sceneRect = pages.layout(request, {});
+
+        const auto rect = [](const QRectF &r) {
+            return QStringLiteral("%1,%2 %3x%4")
+                .arg(r.x())
+                .arg(r.y())
+                .arg(r.width())
+                .arg(r.height());
+        };
+        QStringList actual{QStringLiteral("scene ") + rect(sceneRect)};
+        const VisiblePages contents = pages.contents();
+        const RenderedPageMetrics metrics = pages.metrics();
+        QList<QGraphicsPixmapItem *> items;
+        for (QGraphicsItem *item : scene.items(Qt::AscendingOrder)) {
+            if (auto *pixmap = qgraphicsitem_cast<QGraphicsPixmapItem *>(item)) {
+                items << pixmap;
+            }
+        }
+        for (int index = 0; index < items.size(); ++index) {
+            QGraphicsPixmapItem *item = items.at(index);
+            actual << QStringLiteral("page%1 at %2,%3 scale %4 shows %5")
+                          .arg(index)
+                          .arg(item->pos().x())
+                          .arg(item->pos().y())
+                          .arg(item->scale())
+                          .arg(rect(item->sceneBoundingRect()));
+            actual << QStringLiteral("notational %1").arg(metrics.notationalScaleAt(index));
+        }
+        QCOMPARE(actual.join(QStringLiteral("; ")), expected);
     }
 
     void renderedPageUsesRenderSettingsSnapshot()
