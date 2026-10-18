@@ -2,31 +2,6 @@
 #include "folderitemmodel.h"
 #include "qvapplication.h"
 
-namespace {
-/**
- * The helper returns white coverage masks, so one result serves every palette
- * colour. Tinting is cheap but the list repaints on every hover, so the recent
- * results are kept.
- */
-QImage tintedTextMask(const QImage &mask, const QColor &color)
-{
-    static QCache<QPair<qint64, QRgb>, QImage> cache(2 * 1024); // KiB
-    const QPair<qint64, QRgb> key(mask.cacheKey(), color.rgba());
-    if (const QImage *cached = cache.object(key)) {
-        return *cached;
-    }
-    QImage image(mask.size(), QImage::Format_ARGB32_Premultiplied);
-    image.setDevicePixelRatio(mask.devicePixelRatio());
-    image.fill(color);
-    QPainter painter(&image);
-    painter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
-    painter.drawImage(QPoint(0, 0), mask);
-    painter.end();
-    cache.insert(key, new QImage(image), qMax(1, int(image.sizeInBytes() / 1024)));
-    return image;
-}
-} // namespace
-
 FolderItemDelegate::FolderItemDelegate(QWidget *parent)
     : QStyledItemDelegate(parent)
 {

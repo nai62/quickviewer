@@ -1,5 +1,6 @@
 #include <QAbstractItemModelTester>
 #include "foldertextcache.h"
+#include "folderpathlabel.h"
 #include <QtTest>
 
 #include <algorithm>
@@ -1442,6 +1443,52 @@ private slots:
             const QModelIndex index = view->model()->index(row, 0);
             QCOMPARE(index.data().toString(), QFileInfo(panel->itemPath(index)).fileName());
         }
+    }
+
+    /**
+     * The caption names the folder the panel shows, and that path comes from the
+     * disk. Shaping a path the UI font cannot draw would load a fallback font
+     * inside the frame that reveals the window - the load the list avoids for a
+     * name - so the caption stands in for those characters and paints the
+     * helper's image of the path once it has one.
+     */
+    void folderPathLabelPaintsAPathTheFontCannotDraw()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        // U+0378 is unassigned, so no UI font can draw it on either platform.
+        const char32_t missingGlyph = 0x0378;
+        const QString rareName = QStringLiteral("pictures") + QString::fromUcs4(&missingGlyph, 1);
+        QVERIFY(QDir().mkpath(directory.filePath(rareName)));
+
+        FolderWindow panel(nullptr, nullptr);
+        auto *caption = panel.findChild<FolderPathLabel *>(QStringLiteral("pathLabel"));
+        QVERIFY(caption);
+        panel.setFolderPath(directory.filePath(rareName), false);
+        const QString path = panel.currentPath();
+        QVERIFY(!path.isEmpty());
+
+        // The caption holds the path but draws the placeholder: the glyph the UI
+        // font cannot draw never reaches GUI-side shaping, in the first frame or
+        // in the layout that sizes it.
+        QCOMPARE(caption->path(), path);
+        QVERIFY(caption->text() != path);
+        QVERIFY(!caption->text().contains(QChar(missingGlyph)));
+        QCOMPARE(caption->text().size(), path.size());
+        QVERIFY(!caption->paintsPathImage());
+
+        // The helper answers afterwards, and the caption paints its image.
+        panel.resize(400, 400);
+        panel.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&panel));
+        QTRY_VERIFY_WITH_TIMEOUT(caption->paintsPathImage(), 15000);
+        QVERIFY(!caption->text().contains(QChar(missingGlyph)));
+
+        // A path the font draws whole keeps its text and asks for no image.
+        panel.setFolderPath(directory.path(), false);
+        QCOMPARE(caption->path(), panel.currentPath());
+        QCOMPARE(caption->text(), panel.currentPath());
+        QVERIFY(!caption->paintsPathImage());
     }
 
     void folderViewConsumesWheelEventsAtScrollBoundary()

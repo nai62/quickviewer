@@ -564,11 +564,11 @@ void FolderWindow::sortVolumes()
 
 void FolderWindow::resetPathLabel(int)
 {
-    //    QFontMetrics fontMetrics(ui->pathLabel->font());
-    //    QString pathLabelTxt = fontMetrics.elidedText(
-    //                QDir::toNativeSeparators(m_currentPath), Qt::ElideMiddle, maxWidth-10);
-    //    ui->pathLabel->setText(pathLabelTxt);
-    ui->pathLabel->setText(m_currentPath);
+    // The path comes from the disk, so it can hold a character the UI font
+    // cannot draw. The caption stands in for those characters and paints the
+    // helper's image of the path once it arrives, instead of shaping the path
+    // in the frame that reveals the window. See FolderPathLabel.
+    ui->pathLabel->setPath(m_currentPath);
 }
 
 QString FolderWindow::itemPath(const QModelIndex &index) const

@@ -274,10 +274,13 @@ The helper is the same executable in `--folder-text-helper` mode, so nothing
 extra is deployed. Check a folder holding a name the UI font cannot draw: it
 shows a placeholder first, then the real text once the helper answers. While it
 loads, close and reopen the panel, scroll and select rows, and try a narrow
-column, a fullscreen window and another screen DPI.
+column, a fullscreen window and another screen DPI. The panel's caption names the
+folder it shows, so open a folder whose own path holds such a name as well: the
+caption shows the placeholder at once and the path once the helper has answered,
+at every panel width.
 
-`scripts\verify-windows.cmd debug --test windowstartup` covers the model, cache
-and transport cases.
+`scripts\verify-windows.cmd debug --test windowstartup` covers the model, cache,
+caption and transport cases.
 
 ## C++ lint
 

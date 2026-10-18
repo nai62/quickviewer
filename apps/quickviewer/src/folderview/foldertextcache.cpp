@@ -10,6 +10,14 @@
 namespace {
 constexpr quint32 MaxPacket = 32 * 1024 * 1024;
 constexpr int IdleShutdownMilliseconds = 10000;
+/** Widest text a caption has the helper wrap, and the tallest block it lays out. */
+constexpr int MaxWrapWidth = 4096;
+constexpr int MaxWrapHeight = 4096;
+/**
+ * Most pixels one wrapped mask may cover. The parent refuses a packet it cannot
+ * carry and fails every request behind it, so an oversized one is refused here.
+ */
+constexpr qsizetype MaxImagePixels = 6 * 1024 * 1024;
 QByteArray packet(const QByteArray &payload)
 {
     QByteArray result;
@@ -23,11 +31,12 @@ FolderTextResult render(const QByteArray &key)
 {
     QString text;
     QFont font;
-    qreal ratio;
+    qreal ratio = 1;
+    int wrapWidth = 0;
     QDataStream input(key);
-    input >> text >> font >> ratio;
+    input >> text >> font >> ratio >> wrapWidth;
     if (input.status() != QDataStream::Ok || !qIsFinite(ratio) || ratio < 0.5 || ratio > 8 ||
-        text.size() > 32768) {
+        text.size() > 32768 || wrapWidth < 0 || wrapWidth > MaxWrapWidth) {
         return {};
     }
     auto result = QSharedPointer<FolderTextImages>::create();
@@ -40,23 +49,58 @@ FolderTextResult render(const QByteArray &key)
         QImage device(1, 1, QImage::Format_ARGB32_Premultiplied);
         device.setDevicePixelRatio(ratio);
         QFontMetrics metrics(font, &device);
-        const QString visible = metrics.elidedText(text, Qt::ElideRight, 4096);
-        const int width = qBound(1, metrics.horizontalAdvance(visible) + 4, 8192);
-        const int height = qBound(1, metrics.height() + 4, 512);
-        QImage image(QSize(qCeil(width * ratio), qCeil(height * ratio)),
-                     QImage::Format_ARGB32_Premultiplied);
+        // A caption wraps the path the way the label does, so the image covers
+        // the lines the label draws; a name gets one line, elided to the width
+        // a list row can hold.
+        const bool wrapped = wrapWidth > 0;
+        const QString visible =
+            wrapped ? QString() : metrics.elidedText(text, Qt::ElideRight, 4096);
+        const QRect lines = wrapped ? metrics.boundingRect(QRect(0, 0, wrapWidth, MaxWrapHeight),
+                                                           Qt::TextWordWrap,
+                                                           text)
+                                    : QRect();
+        const int width =
+            qBound(1, (wrapped ? lines.width() : metrics.horizontalAdvance(visible)) + 4, 8192);
+        const int height = qBound(1, (wrapped ? lines.height() : metrics.height()) + 4, 16384);
+        const QSize imageSize(qCeil(width * ratio), qCeil(height * ratio));
+        if (wrapped && qsizetype(imageSize.width()) * imageSize.height() > MaxImagePixels) {
+            return {};
+        }
+        QImage image(imageSize, QImage::Format_ARGB32_Premultiplied);
         image.setDevicePixelRatio(ratio);
         image.fill(Qt::transparent);
         QPainter painter(&image);
         painter.setFont(font);
-        // Coverage only: the GUI tints the mask with the colour the row needs.
+        // Coverage only: the GUI tints the mask with the colour it draws in.
         painter.setPen(Qt::white);
-        painter.drawText(QPoint(2, 2 + metrics.ascent()), visible);
+        if (wrapped) {
+            painter.drawText(QRect(2, 2, wrapWidth, lines.height()), Qt::TextWordWrap, text);
+        } else {
+            painter.drawText(QPoint(2, 2 + metrics.ascent()), visible);
+        }
         painter.end();
         result->images.append(image);
     }
     return result;
 }
+}
+
+QImage tintedTextMask(const QImage &mask, const QColor &color)
+{
+    static QCache<QPair<qint64, QRgb>, QImage> cache(2 * 1024); // KiB
+    const QPair<qint64, QRgb> key(mask.cacheKey(), color.rgba());
+    if (const QImage *cached = cache.object(key)) {
+        return *cached;
+    }
+    QImage image(mask.size(), QImage::Format_ARGB32_Premultiplied);
+    image.setDevicePixelRatio(mask.devicePixelRatio());
+    image.fill(color);
+    QPainter painter(&image);
+    painter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+    painter.drawImage(QPoint(0, 0), mask);
+    painter.end();
+    cache.insert(key, new QImage(image), qMax(1, int(image.sizeInBytes() / 1024)));
+    return image;
 }
 
 FolderTextCache::FolderTextCache(QObject *parent)
@@ -110,7 +154,7 @@ FolderTextCache *FolderTextCache::instance()
     return cache;
 }
 
-QByteArray FolderTextCache::key(const QString &text, const QFont &font, qreal ratio)
+QByteArray FolderTextCache::key(const QString &text, const QFont &font, qreal ratio, int wrapWidth)
 {
     // Resolve point sizes on the GUI screen before handing them to the helper.
     QFont resolved = font;
@@ -119,7 +163,7 @@ QByteArray FolderTextCache::key(const QString &text, const QFont &font, qreal ra
     }
     QByteArray result;
     QDataStream stream(&result, QIODevice::WriteOnly);
-    stream << text << resolved << ratio;
+    stream << text << resolved << ratio << wrapWidth;
     return result;
 }
 

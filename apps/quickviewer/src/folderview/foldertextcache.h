@@ -16,6 +16,13 @@ struct FolderTextImages
 using FolderTextResult = QSharedPointer<const FolderTextImages>;
 Q_DECLARE_METATYPE(FolderTextResult)
 
+/**
+ * \a mask tinted with \a color. The helper returns colourless coverage, so one
+ * result serves every palette colour; the recent tints are kept because hover,
+ * selection and a palette change repaint the widgets that draw them.
+ */
+QImage tintedTextMask(const QImage &mask, const QColor &color);
+
 class FolderTextCache : public QObject
 {
     Q_OBJECT
@@ -23,7 +30,13 @@ public:
     explicit FolderTextCache(QObject *parent = nullptr);
     ~FolderTextCache() override;
     static FolderTextCache *instance();
-    static QByteArray key(const QString &text, const QFont &font, qreal devicePixelRatio);
+    /**
+     * The key of one rasterization: the text, the resolved font and the scale,
+     * plus the width the text is wrapped at. Zero means one line, elided to
+     * what a list row can hold; a caption passes the width it has.
+     */
+    static QByteArray
+    key(const QString &text, const QFont &font, qreal devicePixelRatio, int wrapWidth = 0);
     FolderTextResult lookup(const QByteArray &key) const;
     /**
      * Asks the helper for the text behind \a key. A key that failed is retried

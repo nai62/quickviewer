@@ -157,6 +157,8 @@ SOURCES += \
     src/exifdialog.cpp \
     src/folderview/folderitemdelegate.cpp \
     src/folderview/folderitemmodel.cpp \
+    src/folderview/folderpathlabel.cpp \
+    src/folderview/folderplaceholdertext.cpp \
     src/folderview/foldertextcache.cpp \
     src/folderview/folderlistview.cpp \
     src/folderview/folderwindow.cpp \
@@ -227,6 +229,8 @@ HEADERS  += \
     src/folderview/folderitemdelegate.h \
     src/folderview/folderitem.h \
     src/folderview/folderitemmodel.h \
+    src/folderview/folderpathlabel.h \
+    src/folderview/folderplaceholdertext.h \
     src/folderview/foldertextcache.h \
     src/folderview/folderlistview.h \
     src/folderview/folderwindow.h \
