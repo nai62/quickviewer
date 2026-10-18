@@ -70,6 +70,8 @@ public slots:
     void handleAnimationFinished();
 
 private:
+    QTransform pageTransform(int rotationOffset) const;
+    QRectF transformedImageBounds(int rotationOffset) const;
     QImage &imageWithRetouch();
     void ensureInitialized();
     void dispose();
@@ -77,7 +79,7 @@ private:
     QGraphicsScene *m_scene;
     ImageContent m_content;
     QGraphicsItem *m_graphicsItem;
-    int m_rotationDegrees;
+    QTransform m_orientation;
     QString m_signageText;
     QGraphicsTextItem *m_signageTextItem;
     QGraphicsRectItem *m_signageBackgroundItem;

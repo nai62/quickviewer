@@ -185,6 +185,21 @@ jpegWithOrientation(int orientation, const QSize &size = QSize(8, 4), quint32 if
     return result;
 }
 
+static QPointF rectCorner(const QRectF &rect, Qt::Corner corner)
+{
+    switch (corner) {
+    case Qt::TopLeftCorner:
+        return rect.topLeft();
+    case Qt::TopRightCorner:
+        return rect.topRight();
+    case Qt::BottomLeftCorner:
+        return rect.bottomLeft();
+    case Qt::BottomRightCorner:
+        return rect.bottomRight();
+    }
+    return QPointF();
+}
+
 class EmptyFileLoader final : public IFileLoader
 {
 public:
@@ -766,14 +781,24 @@ private slots:
     void decodeImageBytesPreservesOrientationDuringPreparation_data()
     {
         QTest::addColumn<bool>("detailedMetadata");
-        QTest::newRow("orientation-only") << false;
-        QTest::newRow("full-exif") << true;
+        QTest::addColumn<int>("orientation");
+        QTest::addColumn<QSize>("resizedSize");
+        // Page dimensions are swapped before CPU resizing for every orientation
+        // that exchanges the axes, mirrored or not.
+        QTest::newRow("orientation-only 6") << false << 6 << QSize(16, 8);
+        QTest::newRow("full-exif 6") << true << 6 << QSize(16, 8);
+        QTest::newRow("orientation-only 3") << false << 3 << QSize(8, 4);
+        QTest::newRow("orientation-only 5") << false << 5 << QSize(16, 8);
+        QTest::newRow("orientation-only 7") << false << 7 << QSize(16, 8);
+        QTest::newRow("orientation-only 8") << false << 8 << QSize(16, 8);
     }
 
     void decodeImageBytesPreservesOrientationDuringPreparation()
     {
         QFETCH(bool, detailedMetadata);
-        const QByteArray bytes = jpegWithOrientation(6, QSize(64, 32));
+        QFETCH(int, orientation);
+        QFETCH(QSize, resizedSize);
+        const QByteArray bytes = jpegWithOrientation(orientation, QSize(64, 32));
         QVERIFY(!bytes.isEmpty());
         ImageDecodePolicy policy;
         policy.jpeg = JpegDecoderPreference::Qt;
@@ -782,10 +807,9 @@ private slots:
 
         QCOMPARE(content.originalSize, QSize(64, 32));
         QCOMPARE(content.loadedImageSize, QSize(64, 32));
-        QCOMPARE(int(content.exifInfo.Orientation), 6);
+        QCOMPARE(int(content.exifInfo.Orientation), orientation);
         QCOMPARE(content.hasDetailedMetadata, detailedMetadata);
-        // Page dimensions are swapped for EXIF orientation 6 before CPU resizing.
-        QCOMPARE(content.resizedImage.size(), QSize(16, 8));
+        QCOMPARE(content.resizedImage.size(), resizedSize);
     }
 
     void jpegExifOrientationReadsTheExifSegment()
@@ -1750,6 +1774,71 @@ private slots:
         pageWithDefaults.setPageLayoutFitting(
             QRect(0, 0, 100, 100), RenderedPage::PageCenter, qvEnums::FitMode::FitToRect, 1.0);
         QCOMPARE(pageWithDefaults.displayScale(), 0.25);
+    }
+
+    void renderedPageTurnsStoredPixelsUpright_data()
+    {
+        QTest::addColumn<int>("orientation");
+        QTest::addColumn<int>("rotation");
+        QTest::addColumn<QSize>("drawnSize");
+        // Corners of the drawn page that the stored top-left and top-right pixels reach.
+        QTest::addColumn<Qt::Corner>("topLeftLandsAt");
+        QTest::addColumn<Qt::Corner>("topRightLandsAt");
+        const QSize wide(100, 50);
+        const QSize tall(50, 100);
+        QTest::newRow("missing tag") << 0 << 0 << wide << Qt::TopLeftCorner << Qt::TopRightCorner;
+        QTest::newRow("1 upright") << 1 << 0 << wide << Qt::TopLeftCorner << Qt::TopRightCorner;
+        QTest::newRow("2 mirror horizontal")
+            << 2 << 0 << wide << Qt::TopRightCorner << Qt::TopLeftCorner;
+        QTest::newRow("3 rotate 180")
+            << 3 << 0 << wide << Qt::BottomRightCorner << Qt::BottomLeftCorner;
+        QTest::newRow("4 mirror vertical")
+            << 4 << 0 << wide << Qt::BottomLeftCorner << Qt::BottomRightCorner;
+        QTest::newRow("5 transpose") << 5 << 0 << tall << Qt::TopLeftCorner << Qt::BottomLeftCorner;
+        QTest::newRow("6 rotate 90")
+            << 6 << 0 << tall << Qt::TopRightCorner << Qt::BottomRightCorner;
+        QTest::newRow("7 transverse")
+            << 7 << 0 << tall << Qt::BottomRightCorner << Qt::TopRightCorner;
+        QTest::newRow("8 rotate 270")
+            << 8 << 0 << tall << Qt::BottomLeftCorner << Qt::TopLeftCorner;
+        // The requested rotation turns the page after the orientation has.
+        QTest::newRow("6 then 90")
+            << 6 << 90 << wide << Qt::BottomRightCorner << Qt::BottomLeftCorner;
+        QTest::newRow("2 then 90")
+            << 2 << 90 << tall << Qt::BottomRightCorner << Qt::TopRightCorner;
+        QTest::newRow("1 then -90")
+            << 1 << -90 << tall << Qt::BottomLeftCorner << Qt::TopLeftCorner;
+    }
+
+    void renderedPageTurnsStoredPixelsUpright()
+    {
+        QFETCH(int, orientation);
+        QFETCH(int, rotation);
+        QFETCH(QSize, drawnSize);
+        QFETCH(Qt::Corner, topLeftLandsAt);
+        QFETCH(Qt::Corner, topRightLandsAt);
+
+        QGraphicsScene scene;
+        QImage image(400, 200, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        easyexif::EXIFInfo exif;
+        exif.Orientation = static_cast<unsigned short>(orientation);
+        RenderedPage page(nullptr, &scene, ImageContent(image, "page.jpg", image.size(), exif, 0));
+        page.setPageLayoutFitting(QRect(0, 0, 100, 100),
+                                  RenderedPage::PageCenter,
+                                  qvEnums::FitMode::FitToRect,
+                                  1.0,
+                                  rotation);
+
+        const QGraphicsPixmapItem *item = page.graphicsPixmapItem();
+        QVERIFY(item);
+        const QRectF drawn = item->sceneBoundingRect();
+        QCOMPARE(drawn.size().toSize(), drawnSize);
+        const QRectF stored = item->boundingRect();
+        QCOMPARE(item->mapToScene(stored.topLeft()).toPoint(),
+                 rectCorner(drawn, topLeftLandsAt).toPoint());
+        QCOMPARE(item->mapToScene(stored.topRight()).toPoint(),
+                 rectCorner(drawn, topRightLandsAt).toPoint());
     }
 
     void cpuResizePreservesOpaqueAndAlphaRegions()
