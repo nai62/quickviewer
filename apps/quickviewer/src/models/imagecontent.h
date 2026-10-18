@@ -105,6 +105,16 @@ struct ImageContent
             return QTransform();
         }
     }
+    /**
+     * \a image, cut from the stored pixels, turned upright for the EXIF
+     * orientation. The page view turns its item instead, so this is for the
+     * places that hand the pixels on.
+     */
+    QImage orientedImage(const QImage &image) const
+    {
+        const QTransform transform = orientationTransform();
+        return transform.isIdentity() ? image : image.transformed(transform);
+    }
     QSize orientedSize(const QSize &size) const
     {
         return isOrientationRotated() ? QSize(size.height(), size.width()) : size;

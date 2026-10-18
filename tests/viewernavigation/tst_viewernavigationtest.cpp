@@ -200,6 +200,14 @@ static QPointF rectCorner(const QRectF &rect, Qt::Corner corner)
     return QPointF();
 }
 
+// The pixel in the \a corner of \a image.
+static QColor cornerPixel(const QImage &image, Qt::Corner corner)
+{
+    const bool right = corner == Qt::TopRightCorner || corner == Qt::BottomRightCorner;
+    const bool bottom = corner == Qt::BottomLeftCorner || corner == Qt::BottomRightCorner;
+    return image.pixelColor(right ? image.width() - 1 : 0, bottom ? image.height() - 1 : 0);
+}
+
 class EmptyFileLoader final : public IFileLoader
 {
 public:
@@ -1872,6 +1880,46 @@ private slots:
         pageWithDefaults.setPageLayoutFitting(
             QRect(0, 0, 100, 100), RenderedPage::PageCenter, qvEnums::FitMode::FitToRect, 1.0);
         QCOMPARE(pageWithDefaults.displayScale(), 0.25);
+    }
+
+    void orientedImageTurnsThePixelsUpright_data()
+    {
+        QTest::addColumn<int>("orientation");
+        QTest::addColumn<QSize>("size");
+        // Corners that the stored top-left (red) and top-right (blue) pixels reach.
+        QTest::addColumn<Qt::Corner>("redCorner");
+        QTest::addColumn<Qt::Corner>("blueCorner");
+        const QSize wide(3, 2);
+        const QSize tall(2, 3);
+        QTest::newRow("1") << 1 << wide << Qt::TopLeftCorner << Qt::TopRightCorner;
+        QTest::newRow("2") << 2 << wide << Qt::TopRightCorner << Qt::TopLeftCorner;
+        QTest::newRow("3") << 3 << wide << Qt::BottomRightCorner << Qt::BottomLeftCorner;
+        QTest::newRow("4") << 4 << wide << Qt::BottomLeftCorner << Qt::BottomRightCorner;
+        QTest::newRow("5") << 5 << tall << Qt::TopLeftCorner << Qt::BottomLeftCorner;
+        QTest::newRow("6") << 6 << tall << Qt::TopRightCorner << Qt::BottomRightCorner;
+        QTest::newRow("7") << 7 << tall << Qt::BottomRightCorner << Qt::TopRightCorner;
+        QTest::newRow("8") << 8 << tall << Qt::BottomLeftCorner << Qt::TopLeftCorner;
+    }
+
+    void orientedImageTurnsThePixelsUpright()
+    {
+        QFETCH(int, orientation);
+        QFETCH(QSize, size);
+        QFETCH(Qt::Corner, redCorner);
+        QFETCH(Qt::Corner, blueCorner);
+
+        QImage stored(3, 2, QImage::Format_RGB32);
+        stored.fill(Qt::white);
+        stored.setPixelColor(0, 0, Qt::red);
+        stored.setPixelColor(2, 0, Qt::blue);
+        easyexif::EXIFInfo exif;
+        exif.Orientation = static_cast<unsigned short>(orientation);
+        const ImageContent content(stored, "page.jpg", stored.size(), exif, 0);
+
+        const QImage upright = content.orientedImage(stored);
+        QCOMPARE(upright.size(), size);
+        QCOMPARE(cornerPixel(upright, redCorner), QColor(Qt::red));
+        QCOMPARE(cornerPixel(upright, blueCorner), QColor(Qt::blue));
     }
 
     void renderedPageTurnsStoredPixelsUpright_data()

@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QImage>
+#include <QImageReader>
 
 #include "fileloader.h"
 #include "imagecontent.h"
@@ -17,7 +18,7 @@ constexpr int ThumbnailWidth = 96;
 // JPEG quality of the stored thumbnails.
 constexpr int ThumbnailJpegQuality = 90;
 
-/** Thumbnail of \a image the way the catalog stores it. */
+/** Thumbnail of the upright \a image the way the catalog stores it. */
 CatalogCover coverFromImage(const QImage &image, const QString &name, const QFileInfo &info)
 {
     CatalogCover cover;
@@ -55,7 +56,11 @@ CatalogCover frontPageOfFolder(const QDir &dir)
             continue;
         }
         const QString path = dir.filePath(file);
-        return coverFromImage(QImage(path), file, QFileInfo(path));
+        // Qt reads the orientation tag of JPEG and TIFF, and turns the pixels
+        // upright only when asked to.
+        QImageReader reader(path);
+        reader.setAutoTransform(true);
+        return coverFromImage(reader.read(), file, QFileInfo(path));
     }
     return CatalogCover();
 }
@@ -70,7 +75,8 @@ CatalogFolderScan CatalogBuilder::scanFolder(const QString &path, bool baseFolde
         VolumeLoader volumeLoader(path);
         const ImageContent content = volumeLoader.loadThumbnailSourceImage();
         if (!content.loadedImage.isNull()) {
-            scan.cover = coverFromImage(content.loadedImage, content.path, QFileInfo(path));
+            scan.cover = coverFromImage(
+                content.orientedImage(content.loadedImage), content.path, QFileInfo(path));
         }
         return scan;
     }
