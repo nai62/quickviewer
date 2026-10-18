@@ -969,13 +969,25 @@ private slots:
         QCOMPARE(content.resizedImage.size(), resizedSize);
     }
 
-    void decodeImageBytesKeepsRawSoftwareOutOfOrientation()
+    void decodeImageBytesReadsRawTextMetadata_data()
     {
-        // RAW and TIFF metadata comes from the decoded image's text. A Software
-        // value that reads as a number used to be taken as the orientation.
+        QTest::addColumn<QString>("path");
+        QTest::addColumn<bool>("raw");
+        QTest::newRow("raw") << QString("camera.dng") << true;
+        // TIFF is not RAW: Qt reads its orientation, and it has no such text.
+        QTest::newRow("tiff") << QString("camera.tif") << false;
+    }
+
+    void decodeImageBytesReadsRawTextMetadata()
+    {
+        QFETCH(QString, path);
+        QFETCH(bool, raw);
+        // RAW metadata comes from the decoded image's text. These bytes are a
+        // PNG, which the decoder detects whatever the suffix says.
         QImage image(64, 32, QImage::Format_RGB32);
         image.fill(Qt::red);
         image.setText("Software", "6");
+        image.setText("ImageWidth", "64");
         QByteArray bytes;
         QBuffer buffer(&bytes);
         QVERIFY(buffer.open(QIODevice::WriteOnly));
@@ -983,10 +995,12 @@ private slots:
         buffer.close();
 
         const ImageContent content =
-            Volume::decodeImageBytes("camera.tif", bytes, QSize(8, 16), QSize(), false);
+            Volume::decodeImageBytes(path, bytes, QSize(8, 16), QSize(), false);
 
         QVERIFY(!content.loadedImage.isNull());
-        QCOMPARE(content.exifInfo.Software, std::string("6"));
+        QCOMPARE(content.hasExif, raw);
+        QCOMPARE(content.exifInfo.Software, raw ? std::string("6") : std::string());
+        // A Software value that reads as a number used to be taken as the orientation.
         QVERIFY(!content.isOrientationRotated());
         QCOMPARE(content.resizedImage.size(), QSize(8, 4));
     }
