@@ -1381,8 +1381,11 @@ private slots:
 
         QVERIFY2(!model->textImagesPending(),
                  "the list paint started the fallback font load it would have to wait for");
-        // The load runs after the paint and completes the row.
-        QTRY_VERIFY(hasTextImages(row));
+        // The load runs after the paint and completes the row - when the row
+        // stands in for the glyph at all, which a UI font that has it does not.
+        if (row.data(FolderItemModel::SafeTextRole).toString() != row.data().toString()) {
+            QTRY_VERIFY(hasTextImages(row));
+        }
     }
 
     void folderListPlaceholdersNeverDescribeAnotherEntry()
@@ -1450,14 +1453,19 @@ private slots:
             return QModelIndex();
         };
         QVERIFY(rareRow().isValid());
-        QTRY_VERIFY(hasTextImages(rareRow()));
+        // A UI font that draws the glyph itself needs no placeholder and no image.
+        const bool standsIn =
+            rareRow().data(FolderItemModel::SafeTextRole).toString() != rareRow().data().toString();
+        if (standsIn) {
+            QTRY_VERIFY(hasTextImages(rareRow()));
+        }
         checkRows();
 
         // Rebuilding the list keeps the image: the cache holds it, so opening
         // another entry of the same folder (which re-lists it) must not fall back
         // to the placeholder.
         panel->setFolderPath(directory.path(), false);
-        QVERIFY(hasTextImages(rareRow()));
+        QCOMPARE(hasTextImages(rareRow()), standsIn);
         checkRows();
     }
 
