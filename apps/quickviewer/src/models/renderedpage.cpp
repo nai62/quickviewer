@@ -201,9 +201,7 @@ QRect RenderedPage::setPageLayoutFitting(QRect viewport,
         if (targetSize.height() == viewport1.height()) { // Fit to the top and bottom edges.
             const int horizontalOffset =
                 horizontalOffsetForAlignment(alignment, viewport, targetSize);
-            drawRect = QRect(QPoint(rotationOffsetPosition.x() + viewport.x() + horizontalOffset,
-                                    rotationOffsetPosition.y()),
-                             targetSize);
+            drawRect = QRect(QPoint(viewport.x() + horizontalOffset, 0), targetSize);
         } else { // Fit to the left and right edges.
             const int horizontalOffset =
                 horizontalOffsetForAlignment(alignment, viewport, targetSize);
@@ -211,9 +209,7 @@ QRect RenderedPage::setPageLayoutFitting(QRect viewport,
             verticalOffset = pixelRatio != 1.0
                                  ? 0
                                  : verticalOffset; // If pixelRatio > 1, no correction is required
-            drawRect = QRect(QPoint(rotationOffsetPosition.x() + viewport.x() + horizontalOffset,
-                                    rotationOffsetPosition.y() + verticalOffset),
-                             targetSize);
+            drawRect = QRect(QPoint(viewport.x() + horizontalOffset, verticalOffset), targetSize);
         }
     } else {
         if (viewport.height() < targetSize.height() && targetSize.height() < viewport1.height()) {
@@ -222,21 +218,18 @@ QRect RenderedPage::setPageLayoutFitting(QRect viewport,
                 horizontalOffsetForAlignment(alignment, viewport, targetSize);
             const int verticalOffset =
                 pixelRatio == 1.0 ? 0 : (-viewport1.height() + targetSize.height()) / 2;
-            drawRect = QRect(QPoint(rotationOffsetPosition.x() + viewport.x() + horizontalOffset,
-                                    rotationOffsetPosition.y() + verticalOffset),
-                             targetSize);
+            drawRect = QRect(QPoint(viewport.x() + horizontalOffset, verticalOffset), targetSize);
         } else {
             const int horizontalOffset =
                 horizontalOffsetForAlignment(alignment, viewport, targetSize);
             const int verticalOffset =
                 pixelRatio == 1.0 ? 0 : (viewport.height() - viewport1.height()) / 2;
-            drawRect = QRect(QPoint(rotationOffsetPosition.x() + viewport.x() + horizontalOffset,
-                                    rotationOffsetPosition.y() + verticalOffset),
-                             targetSize);
+            drawRect = QRect(QPoint(viewport.x() + horizontalOffset, verticalOffset), targetSize);
         }
     }
 
-    QPoint imagePos = drawRect.topLeft();
+    // The item turns about its origin, so it sits where the turned image starts.
+    QPoint imagePos = drawRect.topLeft() + rotationOffsetPosition;
     if (separatePage && ((m_separationState == FirstHalf && qApp->RightSideBook()) ||
                          (m_separationState == SecondHalf && !qApp->RightSideBook()))) {
         // Display only the right side of the image
@@ -269,11 +262,10 @@ QRect RenderedPage::setPageLayoutManual(
     const int horizontalOffset =
         horizontalOffsetForAlignment(alignment, viewport, targetSize, true);
     const int verticalOffset = qMax(0, (viewport.height() - targetSize.height()) / 2);
-    QRect drawRect(QPoint(rotationOffsetPosition.x() + viewport.x() + horizontalOffset,
-                          rotationOffsetPosition.y() + verticalOffset),
-                   targetSize);
+    QRect drawRect(QPoint(viewport.x() + horizontalOffset, verticalOffset), targetSize);
 
-    QPoint imagePos = drawRect.topLeft();
+    // The item turns about its origin, so it sits where the turned image starts.
+    QPoint imagePos = drawRect.topLeft() + rotationOffsetPosition;
     if (separatePage && ((m_separationState == FirstHalf && qApp->RightSideBook()) ||
                          (m_separationState == SecondHalf && !qApp->RightSideBook()))) {
         // Display only the right side of the image

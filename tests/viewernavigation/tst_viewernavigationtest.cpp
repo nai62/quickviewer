@@ -1841,6 +1841,49 @@ private slots:
                  rectCorner(drawn, topRightLandsAt).toPoint());
     }
 
+    void renderedPageReportsTheRectItDraws_data()
+    {
+        QTest::addColumn<int>("orientation");
+        QTest::addColumn<int>("rotation");
+        QTest::addColumn<bool>("fitting");
+        for (const bool fitting : {true, false}) {
+            const char *layout = fitting ? "fitting" : "manual";
+            for (const int rotation : {0, 90, 180, 270}) {
+                QTest::addRow("%s upright %d", layout, rotation) << 1 << rotation << fitting;
+            }
+            QTest::addRow("%s orientation 3", layout) << 3 << 0 << fitting;
+            QTest::addRow("%s orientation 7", layout) << 7 << 0 << fitting;
+        }
+    }
+
+    void renderedPageReportsTheRectItDraws()
+    {
+        QFETCH(int, orientation);
+        QFETCH(int, rotation);
+        QFETCH(bool, fitting);
+
+        QGraphicsScene scene;
+        QImage image(400, 200, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        easyexif::EXIFInfo exif;
+        exif.Orientation = static_cast<unsigned short>(orientation);
+        RenderedPage page(nullptr, &scene, ImageContent(image, "page.jpg", image.size(), exif, 0));
+        const QRect viewport(0, 0, 100, 100);
+        // The scene rect is the union of these rects, so a turned page has to
+        // report where it is drawn rather than where its item is anchored.
+        const QRect drawRect =
+            fitting ? page.setPageLayoutFitting(viewport,
+                                                RenderedPage::PageCenter,
+                                                qvEnums::FitMode::FitToRect,
+                                                1.0,
+                                                rotation)
+                    : page.setPageLayoutManual(viewport, RenderedPage::PageCenter, 0.25, rotation);
+
+        const QGraphicsPixmapItem *item = page.graphicsPixmapItem();
+        QVERIFY(item);
+        QCOMPARE(item->sceneBoundingRect().toRect(), drawRect);
+    }
+
     void cpuResizePreservesOpaqueAndAlphaRegions()
     {
         QImage rgb(8, 8, QImage::Format_RGB32);
