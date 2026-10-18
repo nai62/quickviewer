@@ -2342,7 +2342,9 @@ bool MainWindow::confirmRemoval(const QString &question, const QString &path)
     msgBox.setDefaultButton(QMessageBox::Cancel);
     msgBox.setWindowTitle(tr("Confirmation", "Confirm deleting image file on MessageBox title"));
     msgBox.setTextFormat(Qt::RichText);
-    msgBox.setText(QString("<h2>%1</h2><p>%2</p>").arg(question, path));
+    msgBox.setText(
+        QString("<h2>%1</h2><p>%2</p>")
+            .arg(question.toHtmlEscaped(), QDir::toNativeSeparators(path).toHtmlEscaped()));
     const QImage image =
         page->orientedImage(page->loadedImage.scaled(QSize(100, 100), Qt::KeepAspectRatio));
     msgBox.setIconPixmap(QPixmap::fromImage(image));
