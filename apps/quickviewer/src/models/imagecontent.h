@@ -72,10 +72,11 @@ struct ImageContent
      * (a quarter turn, with or without a mirror), so the displayed size has
      * width and height exchanged.
      */
-    bool isOrientationRotated() const
+    static bool orientationSwapsAxes(int orientation)
     {
-        return exifInfo.Orientation >= 5 && exifInfo.Orientation <= 8;
+        return orientation >= 5 && orientation <= 8;
     }
+    bool isOrientationRotated() const { return orientationSwapsAxes(exifInfo.Orientation); }
     /**
      * Linear transform that turns the stored pixels upright for the EXIF
      * orientation. It carries no translation, so an image it flips or turns

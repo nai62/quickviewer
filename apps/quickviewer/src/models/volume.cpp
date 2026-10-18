@@ -745,10 +745,21 @@ static int exifOrientationFromQt(QImageIOHandler::Transformations transformation
     }
 }
 
+/**
+ * `displayedSize` measured along the axes of the stored pixels. A decode target
+ * bounds the page as displayed, while the decoders scale the stored pixels,
+ * whose axes an EXIF quarter turn exchanges.
+ */
+static QSize storedAxesSize(const QSize &displayedSize, int orientation)
+{
+    return ImageContent::orientationSwapsAxes(orientation) ? displayedSize.transposed()
+                                                           : displayedSize;
+}
+
 // Metadata and display preparation are shared by native and Qt static-image decoders.
 // Keep this outside decode timing and Qt format-name negotiation. `orientation`
 // is the EXIF orientation of the stored pixels, which a full EXIF parse of a
-// JPEG reads again.
+// JPEG reads again, and `decodeTargetSize` is along the stored axes.
 static ImageContent finishStaticImage(QImage src,
                                       QSize baseSize,
                                       const QString &path,
@@ -852,8 +863,9 @@ static ImageContent loadWithSpecifiedFormat(QString path,
     // JPEG carries its orientation in a marker that is read without decoding.
     const int jpegOrientation =
         IFileLoader::isExifJpegImageFile(path) ? jpegExifOrientation(bytes) : 1;
+    const QSize nativeDecodeTargetSize = storedAxesSize(decodeTargetSize, jpegOrientation);
     NativeDecodeOutcome native =
-        tryNativeDecode(decoder, bytes, plan.native, decodeTargetSize, metrics);
+        tryNativeDecode(decoder, bytes, plan.native, nativeDecodeTargetSize, metrics);
     if (native.decoded) {
         return finishStaticImage(std::move(native.image),
                                  native.sourceSize,
@@ -861,7 +873,7 @@ static ImageContent loadWithSpecifiedFormat(QString path,
                                  bytes,
                                  jpegOrientation,
                                  pageSize,
-                                 decodeTargetSize,
+                                 nativeDecodeTargetSize,
                                  loadDetailedMetadata,
                                  maxTextureSize);
     }
@@ -904,12 +916,13 @@ static ImageContent loadWithSpecifiedFormat(QString path,
         const int orientation = IFileLoader::isExifJpegImageFile(path)
                                     ? jpegOrientation
                                     : exifOrientationFromQt(reader.transformation());
+        const QSize storedDecodeTargetSize = storedAxesSize(decodeTargetSize, orientation);
         if (reader.format() == IFileLoader::turboJpegFormatName() && !qApp->UseFastDCTForJPEG()) {
             reader.setQuality(0);
         }
         if (plan.decoderScaling && reader.supportsOption(QImageIOHandler::ScaledSize)) {
-            const QSize targetSize =
-                ImageDecoder::constrainedDecodeSize(baseSize, decodeTargetSize, maxTextureSize);
+            const QSize targetSize = ImageDecoder::constrainedDecodeSize(
+                baseSize, storedDecodeTargetSize, maxTextureSize);
             if (targetSize.isValid() && targetSize != baseSize) {
                 loadingSize = targetSize;
                 reader.setScaledSize(loadingSize);
@@ -943,7 +956,7 @@ static ImageContent loadWithSpecifiedFormat(QString path,
                                  bytes,
                                  orientation,
                                  pageSize,
-                                 decodeTargetSize,
+                                 storedDecodeTargetSize,
                                  loadDetailedMetadata,
                                  maxTextureSize);
     }

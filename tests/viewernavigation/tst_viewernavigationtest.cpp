@@ -812,6 +812,33 @@ private slots:
         QCOMPARE(content.resizedImage.size(), resizedSize);
     }
 
+    void decodeImageBytesBoundsPreviewsAsDisplayed_data()
+    {
+        QTest::addColumn<int>("orientation");
+        QTest::addColumn<QSize>("loadedSize");
+        // The 16x32 target bounds the page as displayed, so a quarter turn
+        // decodes the stored pixels into 32x16.
+        QTest::newRow("1 upright") << 1 << QSize(16, 8);
+        QTest::newRow("3 rotate 180") << 3 << QSize(16, 8);
+        QTest::newRow("6 rotate 90") << 6 << QSize(32, 16);
+        QTest::newRow("7 transverse") << 7 << QSize(32, 16);
+    }
+
+    void decodeImageBytesBoundsPreviewsAsDisplayed()
+    {
+        QFETCH(int, orientation);
+        QFETCH(QSize, loadedSize);
+        const QByteArray bytes = jpegWithOrientation(orientation, QSize(64, 32));
+        QVERIFY(!bytes.isEmpty());
+        ImageDecodePolicy policy;
+        policy.jpeg = JpegDecoderPreference::Qt;
+        const ImageContent content =
+            Volume::decodeImageBytes("preview.jpg", bytes, QSize(), QSize(16, 32), false, policy);
+
+        QCOMPARE(content.originalSize, QSize(64, 32));
+        QCOMPARE(content.loadedImageSize, loadedSize);
+    }
+
     void jpegExifOrientationReadsTheExifSegment()
     {
         QCOMPARE(jpegExifOrientation(jpegWithOrientation(6)), 6);
