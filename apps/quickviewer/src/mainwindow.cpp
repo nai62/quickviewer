@@ -2353,7 +2353,14 @@ bool MainWindow::confirmRemoval(const QString &question, const QString &path)
 
 void MainWindow::handleRecyclePageActionTriggered()
 {
-    if (m_viewerSession.visiblePageCount() <= 0 || !m_viewerSession.isFolder()) {
+    if (m_viewerSession.visiblePageCount() <= 0) {
+        return;
+    }
+    if (m_viewerSession.isArchive()) {
+        recycleActiveArchive();
+        return;
+    }
+    if (!m_viewerSession.isFolder()) {
         return;
     }
     QString path = m_viewerSession.currentPagePath();
@@ -2367,6 +2374,47 @@ void MainWindow::handleRecyclePageActionTriggered()
     }
     if (moveToTrash(path)) {
         m_viewerSession.reloadVolumeAfterImageRemoval();
+    }
+}
+
+/**
+ * Moves the archive on display to the Recycle Bin and goes on to the next
+ * volume. Windows cannot move a file that is open, so the viewer lets go of the
+ * archive first; when it still cannot be moved, the archive is opened again on
+ * the page that was shown and the failure is reported.
+ */
+void MainWindow::recycleActiveArchive()
+{
+    const ArchiveRemovalPlan plan = m_viewerSession.archiveRemovalPlan();
+    if (!plan.isValid()) {
+        // An archive inside another one is not a file the bin can take.
+        return;
+    }
+    if (!confirmRemoval(tr("Are you sure you want to move this whole archive to Recycle Bin?",
+                           "Confirm putting the displayed archive, with every page in it, in "
+                           "Recycle Box Message Box body"),
+                        plan.archivePath)) {
+        return;
+    }
+    const bool released = m_viewerSession.releaseArchive(plan);
+    if (!released || !moveToTrash(plan.archivePath)) {
+        m_viewerSession.openEntry({plan.archivePath, plan.pageName});
+        QMessageBox::warning(
+            this,
+            tr("Confirmation", "Confirm deleting image file on MessageBox title"),
+            tr("The archive could not be moved to Recycle Bin:\n%1",
+               "Message shown when the displayed archive could not be put in Recycle Box")
+                .arg(QDir::toNativeSeparators(plan.archivePath)));
+        return;
+    }
+    if (m_folderWindow &&
+        QDir::cleanPath(QDir::fromNativeSeparators(m_folderWindow->currentPath())) ==
+            QFileInfo(plan.archivePath).absolutePath()) {
+        // The panel lists the folder the archive was in.
+        m_folderWindow->setFolderPath(m_folderWindow->currentPath(), false);
+    }
+    if (!m_viewerSession.openVolumeAfterArchiveRemoval(plan)) {
+        setStatusMessage(StatusMessage::NoVolume);
     }
 }
 

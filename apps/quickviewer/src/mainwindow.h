@@ -235,6 +235,7 @@ private:
      * displayed page as the dialog's picture. True when it may.
      */
     bool confirmRemoval(const QString &question, const QString &path);
+    void recycleActiveArchive();
     void syncPageBar();
     void applyImageSortBy(qvEnums::ImageSortBy sortBy);
     void openResolvedTarget(const OpenTarget &target, bool allowSecondPage);
