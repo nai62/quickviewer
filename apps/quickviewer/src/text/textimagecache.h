@@ -23,6 +23,31 @@ Q_DECLARE_METATYPE(TextImageResult)
  */
 QImage tintedTextMask(const QImage &mask, const QColor &color);
 
+/**
+ * How the helper lays a text out. The default is one line, elided on the right
+ * to what a list row can hold; a widget clips that line to the room it has.
+ */
+struct TextImageLayout
+{
+    /**
+     * Zero for the default line. Without a wrap flag, the width the line is
+     * elided to; with one, the width the lines are wrapped at.
+     */
+    int width = 0;
+    /**
+     * With a wrap flag, zero keeps every line, as a word-wrapped label does.
+     * Otherwise it is the height of the box an item view gives the text: the
+     * lines that fit are kept and the last of them is elided.
+     */
+    int height = 0;
+    /**
+     * Qt::Alignment of the lines, plus Qt::TextWordWrap to wrap the way a
+     * label does or Qt::TextWrapAnywhere to wrap the way an item view does.
+     */
+    int flags = 0;
+    Qt::TextElideMode elideMode = Qt::ElideRight;
+};
+
 class TextImageCache : public QObject
 {
     Q_OBJECT
@@ -32,11 +57,12 @@ public:
     static TextImageCache *instance();
     /**
      * The key of one rasterization: the text, the resolved font and the scale,
-     * plus the width the text is wrapped at. Zero means one line, elided to
-     * what a list row can hold; a caption passes the width it has.
+     * plus how the text is laid out.
      */
-    static QByteArray
-    key(const QString &text, const QFont &font, qreal devicePixelRatio, int wrapWidth = 0);
+    static QByteArray key(const QString &text,
+                          const QFont &font,
+                          qreal devicePixelRatio,
+                          const TextImageLayout &layout = {});
     TextImageResult lookup(const QByteArray &key) const;
     /**
      * Asks the helper for the text behind \a key. A key that failed is retried

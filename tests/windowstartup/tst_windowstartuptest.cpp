@@ -1500,6 +1500,85 @@ private slots:
         QVERIFY(!caption->paintsTextImage());
     }
 
+    /**
+     * A one-line label elides the way it is asked to - the status bar elides
+     * the page caption in the middle - and does so for the placeholder and for
+     * the helper's image alike, so the window never widens for a long path.
+     */
+    void textImageLabelElidesALineTheFontCannotDraw()
+    {
+        const char32_t missingGlyph = 0x0378;
+        const QString rare = QString::fromUcs4(&missingGlyph, 1);
+        const QString text = QStringLiteral("C:/books/") + QString(40, QLatin1Char('a')) + rare +
+                             QString(40, QLatin1Char('b')) + QStringLiteral("/page.png");
+        TextImageLabel label;
+        label.setElision(Qt::ElideMiddle, 160);
+        label.setSourceText(text);
+        QCOMPARE(label.sourceText(), text);
+        QVERIFY(!label.text().contains(rare));
+        QVERIFY(label.text().startsWith(QStringLiteral("C:/books/")));
+        QVERIFY(label.text().endsWith(QStringLiteral("/page.png")));
+        QVERIFY(label.fontMetrics().horizontalAdvance(label.text()) <= 160);
+        // Screen readers get the text, not the stand-in.
+        QCOMPARE(label.accessibleName(), text);
+
+        label.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&label));
+        QTRY_VERIFY_WITH_TIMEOUT(label.paintsTextImage(), 15000);
+        QVERIFY(label.sizeHint().width() <= 160 + 2 * label.margin() + label.frameWidth() * 2);
+
+        // Text set from outside is shown as it is, never covered by the image.
+        label.setText(QStringLiteral("Bookmark saved."));
+        QVERIFY(!label.paintsTextImage());
+        label.setSourceText(text);
+        QVERIFY(label.paintsTextImage());
+
+        // Text the font draws whole is only elided.
+        const QString plain = QStringLiteral("C:/books/") + QString(80, QLatin1Char('c'));
+        label.setSourceText(plain);
+        QCOMPARE(label.text(), label.fontMetrics().elidedText(plain, Qt::ElideMiddle, 160));
+        QVERIFY(!label.paintsTextImage());
+        QVERIFY(label.accessibleName().isEmpty());
+    }
+
+    /**
+     * The status bar shows the page's path once a volume opens. That path comes
+     * from the disk, so the caption stands in for a character the UI font
+     * cannot draw instead of shaping it on the GUI thread.
+     */
+    void statusBarCaptionStandsInForGlyphsTheFontCannotDraw()
+    {
+        QTemporaryDir root;
+        QVERIFY(root.isValid());
+        const char32_t missingGlyph = 0x0378;
+        const QString rare = QString::fromUcs4(&missingGlyph, 1);
+        const QString folder = root.filePath(QStringLiteral("pictures"));
+        QVERIFY(QDir().mkpath(folder));
+        QImage image(16, 16, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        QVERIFY(image.save(QDir(folder).filePath(QStringLiteral("page") + rare + ".bmp")));
+
+        const bool statusBar = qApp->ShowStatusBar();
+        const QString format = qApp->StatusTextFormat();
+        qApp->setShowStatusBar(true);
+        // The caption names the page's file.
+        qApp->setStatusTextFormat(QStringLiteral("%p"));
+        const auto restore = qScopeGuard([statusBar, format] {
+            qApp->setShowStatusBar(statusBar);
+            qApp->setStatusTextFormat(format);
+        });
+        StartupWindow viewer;
+        auto *caption = viewer.findChild<TextImageLabel *>(QStringLiteral("statusLabel"));
+        QVERIFY(caption);
+        viewer.resize(600, 400);
+        viewer.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&viewer));
+        viewer.openPath(folder);
+        QTRY_VERIFY(caption->sourceText().contains(rare));
+        QVERIFY(!caption->text().isEmpty());
+        QVERIFY(!caption->text().contains(rare));
+    }
+
     void folderViewConsumesWheelEventsAtScrollBoundary()
     {
         FolderWindow folder(nullptr, nullptr);

@@ -27,18 +27,70 @@ QByteArray packet(const QByteArray &payload)
     return result;
 }
 
+constexpr int WrapFlags = Qt::TextWordWrap | Qt::TextWrapAnywhere;
+
+/**
+ * The lines an item view shows of \a text in the box \a layout gives it: the
+ * lines that fit, and the last of them elided when more of the text follows,
+ * the way a view lays out a wrapped item.
+ */
+QString boxLines(const QString &text,
+                 const QFont &font,
+                 QPaintDevice *device,
+                 const TextImageLayout &layout)
+{
+    const QFontMetrics metrics(font, device);
+    QTextLayout textLayout(text, font, device);
+    QTextOption option;
+    option.setWrapMode((layout.flags & Qt::TextWrapAnywhere)
+                           ? QTextOption::WrapAtWordBoundaryOrAnywhere
+                           : QTextOption::WordWrap);
+    textLayout.setTextOption(option);
+    textLayout.beginLayout();
+    QStringList lines;
+    int height = 0;
+    for (QTextLine line = textLayout.createLine(); line.isValid(); line = textLayout.createLine()) {
+        line.setLineWidth(layout.width);
+        QString lineText = text.mid(line.textStart(), line.textLength());
+        const bool more = line.textStart() + line.textLength() < text.size();
+        if (more && height + 2 * metrics.lineSpacing() > layout.height) {
+            // The last line that fits stands for the rest of the text.
+            if (layout.elideMode != Qt::ElideNone) {
+                lineText =
+                    metrics.elidedText(text.mid(line.textStart()), layout.elideMode, layout.width);
+            }
+            lines.append(lineText);
+            break;
+        }
+        while (!lineText.isEmpty() && lineText.back().isSpace()) {
+            lineText.chop(1);
+        }
+        lines.append(lineText);
+        height += metrics.lineSpacing();
+    }
+    textLayout.endLayout();
+    return lines.join(QLatin1Char('\n'));
+}
+
 TextImageResult render(const QByteArray &key)
 {
     QString text;
     QFont font;
     qreal ratio = 1;
-    int wrapWidth = 0;
+    TextImageLayout layout;
+    int elideMode = Qt::ElideRight;
     QDataStream input(key);
-    input >> text >> font >> ratio >> wrapWidth;
+    input >> text >> font >> ratio >> layout.width >> layout.height >> layout.flags >> elideMode;
+    layout.elideMode = Qt::TextElideMode(elideMode);
     if (input.status() != QDataStream::Ok || !qIsFinite(ratio) || ratio < 0.5 || ratio > 8 ||
-        text.size() > 32768 || wrapWidth < 0 || wrapWidth > MaxWrapWidth) {
+        text.size() > 32768 || layout.width < 0 || layout.width > MaxWrapWidth ||
+        layout.height < 0 || layout.height > MaxWrapHeight || elideMode < Qt::ElideLeft ||
+        elideMode > Qt::ElideNone) {
         return {};
     }
+    const bool wrapped = layout.width > 0 && (layout.flags & WrapFlags);
+    const bool boxed = wrapped && layout.height > 0;
+    const int alignment = layout.flags & ~WrapFlags;
     auto result = QSharedPointer<TextImages>::create();
     for (int bold = 0; bold < TextImages::ImageCount; ++bold) {
         if (bold) {
@@ -49,19 +101,27 @@ TextImageResult render(const QByteArray &key)
         QImage device(1, 1, QImage::Format_ARGB32_Premultiplied);
         device.setDevicePixelRatio(ratio);
         QFontMetrics metrics(font, &device);
-        // A caption wraps the path the way the label does, so the image covers
-        // the lines the label draws; a name gets one line, elided to the width
-        // a list row can hold.
-        const bool wrapped = wrapWidth > 0;
-        const QString visible =
-            wrapped ? QString() : metrics.elidedText(text, Qt::ElideRight, 4096);
-        const QRect lines = wrapped ? metrics.boundingRect(QRect(0, 0, wrapWidth, MaxWrapHeight),
-                                                           Qt::TextWordWrap,
-                                                           text)
-                                    : QRect();
-        const int width =
-            qBound(1, (wrapped ? lines.width() : metrics.horizontalAdvance(visible)) + 4, 8192);
-        const int height = qBound(1, (wrapped ? lines.height() : metrics.height()) + 4, 16384);
+        // A label wraps the text the way the label does, so the image covers
+        // the lines the label draws; an item view keeps what fits in its box;
+        // anything else gets one line, elided to the width it is given or to
+        // what a list row can hold.
+        QString visible;
+        QSize content;
+        QRect lines;
+        if (boxed) {
+            visible = boxLines(text, font, &device, layout);
+            content = QSize(layout.width, layout.height);
+        } else if (wrapped) {
+            lines = metrics.boundingRect(
+                QRect(0, 0, layout.width, MaxWrapHeight), alignment | Qt::TextWordWrap, text);
+            content = lines.size();
+        } else {
+            visible = layout.width > 0 ? metrics.elidedText(text, layout.elideMode, layout.width)
+                                       : metrics.elidedText(text, Qt::ElideRight, 4096);
+            content = QSize(metrics.horizontalAdvance(visible), metrics.height());
+        }
+        const int width = qBound(1, content.width() + 4, 8192);
+        const int height = qBound(1, content.height() + 4, 16384);
         const QSize imageSize(qCeil(width * ratio), qCeil(height * ratio));
         if (wrapped && qsizetype(imageSize.width()) * imageSize.height() > MaxImagePixels) {
             return {};
@@ -73,8 +133,16 @@ TextImageResult render(const QByteArray &key)
         painter.setFont(font);
         // Coverage only: the GUI tints the mask with the colour it draws in.
         painter.setPen(Qt::white);
-        if (wrapped) {
-            painter.drawText(QRect(2, 2, wrapWidth, lines.height()), Qt::TextWordWrap, text);
+        const QRect area(QPoint(2, 2), content);
+        if (boxed) {
+            painter.setClipRect(area);
+            painter.drawText(area, alignment, visible);
+        } else if (wrapped) {
+            // Wrapped at the width the label has, and moved so that the lines
+            // start at the image's margin whichever side they align to.
+            painter.drawText(QRect(2 - lines.x(), 2, layout.width, lines.height()),
+                             alignment | Qt::TextWordWrap,
+                             text);
         } else {
             painter.drawText(QPoint(2, 2 + metrics.ascent()), visible);
         }
@@ -154,7 +222,10 @@ TextImageCache *TextImageCache::instance()
     return cache;
 }
 
-QByteArray TextImageCache::key(const QString &text, const QFont &font, qreal ratio, int wrapWidth)
+QByteArray TextImageCache::key(const QString &text,
+                               const QFont &font,
+                               qreal ratio,
+                               const TextImageLayout &layout)
 {
     // Resolve point sizes on the GUI screen before handing them to the helper.
     QFont resolved = font;
@@ -163,7 +234,8 @@ QByteArray TextImageCache::key(const QString &text, const QFont &font, qreal rat
     }
     QByteArray result;
     QDataStream stream(&result, QIODevice::WriteOnly);
-    stream << text << resolved << ratio << wrapWidth;
+    stream << text << resolved << ratio << layout.width << layout.height << layout.flags
+           << int(layout.elideMode);
     return result;
 }
 
