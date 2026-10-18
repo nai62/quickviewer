@@ -150,8 +150,8 @@ QString ImageString::formatString(QString fmt)
             // Image size, e.g. '1920x1080'
         case 's':
             result << QString("%1x%2")
-                          .arg(page->originalSize.width())
-                          .arg(page->originalSize.height());
+                          .arg(page->displayedSize().width())
+                          .arg(page->displayedSize().height());
             break;
             // Display magnification of image, e.g. '25%'
         case 'm':

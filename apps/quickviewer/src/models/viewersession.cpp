@@ -1101,7 +1101,7 @@ QString ViewerSession::currentPageStatusText() const
     QVector<PageDisplayEntry> visiblePages;
     visiblePages.reserve(m_visiblePages.size());
     for (const ImageContent &content : m_visiblePages) {
-        visiblePages.push_back({content.path, content.originalSize});
+        visiblePages.push_back({content.path, content.displayedSize()});
     }
     return PageDisplayFormatter::statusText(
         m_pageNavigator.currentPageIndex(), volume->pageCount(), visiblePages);

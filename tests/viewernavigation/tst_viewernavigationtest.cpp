@@ -1911,6 +1911,21 @@ private slots:
         QCOMPARE(imageString.formatString("%p|%s|%m"), QString("sample.png|100x200|50%"));
     }
 
+    void imageStringGivesTheSizeAsDisplayed()
+    {
+        ViewerSession session(nullptr);
+        QImage image(200, 100, QImage::Format_RGB32);
+        easyexif::EXIFInfo exif;
+        exif.Orientation = 6;
+        QVERIFY(
+            session.appendVisiblePage(ImageContent(image, "turned.jpg", image.size(), exif, 1024)));
+        ImageString imageString;
+        imageString.initialize(&session, [] { return RenderedPageMetrics(QVector<qreal>{1.0}); });
+
+        // Stored wide, displayed tall after the quarter turn.
+        QCOMPARE(imageString.formatString("%s"), QString("100x200"));
+    }
+
     void renderedPageUsesRenderSettingsSnapshot()
     {
         QGraphicsScene scene;
