@@ -1922,6 +1922,26 @@ private slots:
         QCOMPARE(cornerPixel(upright, blueCorner), QColor(Qt::blue));
     }
 
+    void renderedPagesHandOutTheFirstPageUpright()
+    {
+        // Copying a page hands out these pixels, which have to look the way
+        // the page is displayed.
+        QGraphicsScene scene;
+        QImage stored(4, 2, QImage::Format_RGB32);
+        stored.fill(Qt::red);
+        easyexif::EXIFInfo exif;
+        exif.Orientation = 6;
+        RenderedPages pages;
+        QVERIFY(pages.add(ImageContent(stored, "page.jpg", stored.size(), exif, 0),
+                          true,
+                          nullptr,
+                          &scene,
+                          PageRenderSettings(),
+                          false));
+
+        QCOMPARE(pages.firstImage().size(), QSize(2, 4));
+    }
+
     void renderedPageTurnsStoredPixelsUpright_data()
     {
         QTest::addColumn<int>("orientation");

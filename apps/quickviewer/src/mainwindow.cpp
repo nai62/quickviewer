@@ -2354,8 +2354,8 @@ void MainWindow::handleRecyclePageActionTriggered()
         if (!page) {
             return;
         }
-        QImage image = page->loadedImage;
-        image = image.scaled(QSize(100, 100), Qt::KeepAspectRatio);
+        const QImage image =
+            page->orientedImage(page->loadedImage.scaled(QSize(100, 100), Qt::KeepAspectRatio));
         msgBox.setIconPixmap(QPixmap::fromImage(image));
 
         if (msgBox.exec() == QMessageBox::Cancel) {
@@ -2397,8 +2397,8 @@ void MainWindow::handleDeletePageActionTriggered()
         if (!page) {
             return;
         }
-        QImage image = page->loadedImage;
-        image = image.scaled(QSize(100, 100), Qt::KeepAspectRatio);
+        const QImage image =
+            page->orientedImage(page->loadedImage.scaled(QSize(100, 100), Qt::KeepAspectRatio));
         msgBox.setIconPixmap(QPixmap::fromImage(image));
 
         if (msgBox.exec() == QMessageBox::Cancel) {

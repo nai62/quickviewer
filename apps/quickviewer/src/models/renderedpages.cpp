@@ -128,7 +128,11 @@ std::optional<qreal> RenderedPages::firstDrawScale() const
 QImage RenderedPages::firstImage() const
 {
     const RenderedPage *page = at(0);
-    return page ? page->imageContent().loadedImage : QImage();
+    if (!page) {
+        return QImage();
+    }
+    const ImageContent &content = page->imageContent();
+    return content.orientedImage(content.loadedImage);
 }
 
 VisiblePages RenderedPages::contents() const
