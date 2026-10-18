@@ -17,7 +17,7 @@ void FolderItemDelegate::paint(QPainter *painter,
 {
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
-    // DisplayRole may contain the real name for accessibility/search. Neither
+    // DisplayRole holds the real name for accessibility/search. Neither
     // style layout nor sizeHint may shape that name on the GUI thread.
     opt.text = index.data(FolderItemModel::SafeTextRole).toString();
     opt.font.setStyleStrategy(

@@ -89,8 +89,7 @@ FolderItemModel::FolderItemModel(QObject *parent, FolderTextCache *textCache)
                 for (int row = 0; row < m_textKeys.size(); ++row) {
                     if (m_textKeys[row] == key) {
                         m_textImages[row] = result;
-                        emit dataChanged(
-                            index(row, 0), index(row, 0), {Qt::DisplayRole, TextImagesRole});
+                        emit dataChanged(index(row, 0), index(row, 0), {TextImagesRole});
                     }
                 }
                 // A bounded number of requests is outstanding at a time, so the
@@ -164,10 +163,8 @@ QVariant FolderItemModel::data(const QModelIndex &index, int role) const
     const FolderItem &fi = m_searchedVolumes->at(row);
     switch (role) {
     case Qt::DisplayRole:
-        if (row < m_placeholderNames.size() && !m_textImages.at(row) &&
-            !m_placeholderNames.at(row).isEmpty()) {
-            return m_placeholderNames.at(row);
-        }
+        // The name on disk, for screen readers and the list's type-ahead search:
+        // neither shapes it, and the delegate paints SafeTextRole instead.
         return fi.name;
     case SafeTextRole:
         return m_placeholderNames.value(row).isEmpty() ? fi.name : m_placeholderNames.at(row);

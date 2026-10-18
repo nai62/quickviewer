@@ -80,6 +80,12 @@ protected:
     void submit(const QByteArray &key) override { requests.append(key); }
 };
 
+/** True once the row paints the helper's image of its name. */
+static bool hasTextImages(const QModelIndex &index)
+{
+    return bool(index.data(FolderItemModel::TextImagesRole).value<FolderTextResult>());
+}
+
 class RecordingFolderStyle : public QProxyStyle
 {
 public:
@@ -1108,14 +1114,14 @@ private slots:
         second.setVolumes(&items);
         second.requestTextImages();
         QCOMPARE(cache.requests.size(), 1);
-        QVERIFY(second.data(second.index(0, 0), Qt::DisplayRole).toString() != name);
+        QVERIFY(!hasTextImages(second.index(0, 0)));
         first.reset();
         cache.finish(key);
-        QCOMPARE(second.data(second.index(0, 0), Qt::DisplayRole).toString(), name);
+        QVERIFY(hasTextImages(second.index(0, 0)));
         QVERIFY(!second.textImagesPending());
         FolderItemModel reopened(nullptr, &cache);
         reopened.setVolumes(&items);
-        QCOMPARE(reopened.data(reopened.index(0, 0), Qt::DisplayRole).toString(), name);
+        QVERIFY(hasTextImages(reopened.index(0, 0)));
         QCOMPARE(cache.requests.size(), 1);
     }
 
@@ -1142,9 +1148,9 @@ private slots:
         QVERIFY(nextKey != styledKey);
         cache.finish(oldKey);
         cache.finish(nextKey);
-        QVERIFY(model.data(model.index(0, 0), Qt::DisplayRole).toString() != next.first().name);
+        QVERIFY(!hasTextImages(model.index(0, 0)));
         cache.finish(styledKey);
-        QCOMPARE(model.data(model.index(0, 0), Qt::DisplayRole).toString(), next.first().name);
+        QVERIFY(hasTextImages(model.index(0, 0)));
         const auto result = model.data(model.index(0, 0), FolderItemModel::TextImagesRole)
                                 .value<FolderTextResult>();
         QVERIFY(result);
@@ -1180,7 +1186,7 @@ private slots:
         model.requestTextImages();
         QCOMPARE(cache.requests.size(), FolderTextCache::MaxAttempts + 1);
         cache.finish(cache.requests.last());
-        QCOMPARE(model.data(model.index(0, 0), Qt::DisplayRole).toString(), items.first().name);
+        QVERIFY(hasTextImages(model.index(0, 0)));
     }
 
     void folderTextPaintNeverShapesTheOriginalMissingGlyph()
@@ -1210,7 +1216,7 @@ private slots:
         // Completion is deliberately held until after the GUI has painted.
         // Both the regular and current/bold paints must consume the images.
         cache.finish(cache.requests.first());
-        QCOMPARE(model.data(model.index(0, 0), Qt::DisplayRole).toString(), name);
+        QVERIFY(hasTextImages(model.index(0, 0)));
         for (int current : {-1, 0}) {
             model.setCurrentVolumeRow(current);
             style->paintedText.clear();
@@ -1320,13 +1326,18 @@ private slots:
         QVERIFY(view);
         const QModelIndex row = view->model()->index(0, 0);
         QVERIFY(row.isValid());
-        // The list starts with a placeholder...
-        QVERIFY(!row.data().toString().contains(QChar(0x0378)));
-        QVERIFY(row.data().toString() != rareName);
+        // The list paints a placeholder at first...
+        const QString painted = row.data(FolderItemModel::SafeTextRole).toString();
+        QVERIFY(!painted.contains(QChar(0x0378)));
+        QVERIFY(painted != rareName);
+        QVERIFY(!hasTextImages(row));
+        // ...while screen readers and the type-ahead search get the name itself.
+        QCOMPARE(row.data().toString(), rareName);
 
         view->grab();
-        // ...and is completed once the fallback font has been loaded.
-        QTRY_VERIFY(view->model()->index(0, 0).data().toString().contains(QChar(0x0378)));
+        // The helper's image of the name completes the row.
+        QTRY_VERIFY(hasTextImages(view->model()->index(0, 0)));
+        QCOMPARE(view->model()->index(0, 0).data().toString(), rareName);
     }
 
     /**
@@ -1356,7 +1367,7 @@ private slots:
         QVERIFY(model);
         const QModelIndex row = model->index(0, 0);
         QVERIFY(row.isValid());
-        QVERIFY(!row.data().toString().contains(QString::fromUcs4(&unicorn, 1)));
+        QVERIFY(!hasTextImages(row));
 
         // The first frame of the list is a synchronous paint like this one.
         view->grab();
@@ -1364,7 +1375,7 @@ private slots:
         QVERIFY2(!model->textImagesPending(),
                  "the list paint started the fallback font load it would have to wait for");
         // The load runs after the paint and completes the row.
-        QTRY_VERIFY(row.data().toString().contains(QString::fromUcs4(&unicorn, 1)));
+        QTRY_VERIFY(hasTextImages(row));
     }
 
     void folderListPlaceholdersNeverDescribeAnotherEntry()
@@ -1387,15 +1398,16 @@ private slots:
         QVERIFY(panel);
         QVERIFY(view);
 
-        // The display may hold a placeholder, but the path the panel acts on -
+        // The painted text may be a placeholder, but the path the panel acts on -
         // opening, the read-progress lookup, and the volume cache key - is always
         // the name on disk, and a row never shows another entry's text.
         const auto checkRows = [&] {
             QCOMPARE(view->model()->rowCount(), 2);
             for (int row = 0; row < view->model()->rowCount(); ++row) {
                 const QModelIndex index = view->model()->index(row, 0);
-                const QString display = index.data().toString();
+                const QString display = index.data(FolderItemModel::SafeTextRole).toString();
                 const QString real = QFileInfo(panel->itemPath(index)).fileName();
+                QCOMPARE(index.data().toString(), real);
                 if (real.contains(QChar(0xD83D))) {
                     // Either the name itself, or the same name with the glyph the
                     // font cannot draw replaced - never another entry's name. The
@@ -1419,30 +1431,27 @@ private slots:
         panel->resortVolumes();
         checkRows();
 
-        // The real names arrive once the fallback font has been loaded.
+        // The helper's image of the rare name arrives after the paint.
         view->grab();
-        const auto rareNameIsShown = [&] {
+        const auto rareRow = [&] {
             for (int row = 0; row < view->model()->rowCount(); ++row) {
-                if (view->model()->index(row, 0).data().toString().contains(QChar(0xD83D))) {
-                    return true;
+                const QModelIndex index = view->model()->index(row, 0);
+                if (index.data().toString().contains(QChar(0xD83D))) {
+                    return index;
                 }
             }
-            return false;
+            return QModelIndex();
         };
-        QTRY_VERIFY(rareNameIsShown());
-        for (int row = 0; row < view->model()->rowCount(); ++row) {
-            const QModelIndex index = view->model()->index(row, 0);
-            QCOMPARE(index.data().toString(), QFileInfo(panel->itemPath(index)).fileName());
-        }
+        QVERIFY(rareRow().isValid());
+        QTRY_VERIFY(hasTextImages(rareRow()));
+        checkRows();
 
-        // Rebuilding the list once the font has been loaded keeps the real names:
-        // the load is remembered per process, so opening another entry of the same
-        // folder (which re-lists it) must not fall back to the placeholder.
+        // Rebuilding the list keeps the image: the cache holds it, so opening
+        // another entry of the same folder (which re-lists it) must not fall back
+        // to the placeholder.
         panel->setFolderPath(directory.path(), false);
-        for (int row = 0; row < view->model()->rowCount(); ++row) {
-            const QModelIndex index = view->model()->index(row, 0);
-            QCOMPARE(index.data().toString(), QFileInfo(panel->itemPath(index)).fileName());
-        }
+        QVERIFY(hasTextImages(rareRow()));
+        checkRows();
     }
 
     /**
