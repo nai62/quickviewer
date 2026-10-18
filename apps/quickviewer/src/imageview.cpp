@@ -226,6 +226,10 @@ PageRenderSettings ImageView::pageRenderSettings() const
     PageRenderSettings settings;
     settings.pixelRatio = m_lastScreenPixelRatio;
     settings.retouchParameters = m_retouchParams;
+    settings.effect = qApp->Effect();
+    settings.dontEnlargeSmallImages = qApp->DontEnlargeSmallImagesOnFitting();
+    settings.rightSideBook = qApp->RightSideBook();
+    settings.separateWideImages = qApp->SeparatePagesWhenWideImage();
     return settings;
 }
 

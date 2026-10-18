@@ -2209,25 +2209,14 @@ private slots:
         QFETCH(bool, separate);
         QFETCH(QString, expected);
 
-        const auto effect = qApp->Effect();
-        const bool dontEnlarge = qApp->DontEnlargeSmallImagesOnFitting();
-        const bool rightSideBook = qApp->RightSideBook();
-        const bool separateSetting = qApp->SeparatePagesWhenWideImage();
-        const auto restore = qScopeGuard([=] {
-            qApp->setEffect(effect);
-            qApp->setDontEnlargeSmallImagesOnFitting(dontEnlarge);
-            qApp->setRightSideBook(rightSideBook);
-            qApp->setSeparatePagesWhenWideImage(separateSetting);
-        });
-        // The view scales the pixmap; a CPU resize would replace it.
-        qApp->setEffect(qvEnums::ShaderEffect::Bilinear);
-        qApp->setDontEnlargeSmallImagesOnFitting(false);
-        qApp->setRightSideBook(true);
-        qApp->setSeparatePagesWhenWideImage(separate);
-
         QGraphicsScene scene;
         PageRenderSettings settings;
         settings.pixelRatio = pixelRatio;
+        // The view scales the pixmap; a CPU resize would replace it.
+        settings.effect = qvEnums::ShaderEffect::Bilinear;
+        settings.dontEnlargeSmallImages = false;
+        settings.rightSideBook = true;
+        settings.separateWideImages = separate;
         RenderedPages pages;
         QImage wide(400, 300, QImage::Format_RGB32);
         wide.fill(Qt::red);
@@ -2287,6 +2276,36 @@ private slots:
             actual << QStringLiteral("notational %1").arg(metrics.notationalScaleAt(index));
         }
         QCOMPARE(actual.join(QStringLiteral("; ")), expected);
+    }
+
+    /**
+     * The page draws with the settings it is given, whatever the application's
+     * settings say.
+     */
+    void renderedPageTakesItsSettingsFromTheSnapshotOnly()
+    {
+        const bool dontEnlarge = qApp->DontEnlargeSmallImagesOnFitting();
+        const auto restore =
+            qScopeGuard([dontEnlarge] { qApp->setDontEnlargeSmallImagesOnFitting(dontEnlarge); });
+        qApp->setDontEnlargeSmallImagesOnFitting(false);
+
+        QGraphicsScene scene;
+        QImage image(50, 40, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        PageRenderSettings settings;
+        settings.dontEnlargeSmallImages = true;
+        RenderedPage page(
+            nullptr, &scene, ImageContent(image, "small.bmp", image.size(), {}, 0), settings);
+        page.setPageLayoutFitting(
+            QRect(0, 0, 200, 160), RenderedPage::PageCenter, qvEnums::FitMode::FitToRect, 1.0);
+        QCOMPARE(page.displayScale(), 1.0);
+
+        settings.dontEnlargeSmallImages = false;
+        qApp->setDontEnlargeSmallImagesOnFitting(true);
+        page.setRenderSettings(settings);
+        page.setPageLayoutFitting(
+            QRect(0, 0, 200, 160), RenderedPage::PageCenter, qvEnums::FitMode::FitToRect, 1.0);
+        QCOMPARE(page.displayScale(), 4.0);
     }
 
     void renderedPageUsesRenderSettingsSnapshot()
