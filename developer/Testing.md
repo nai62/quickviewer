@@ -255,13 +255,13 @@ start "" /wait "C:\build\quickviewer-msvc2022_64-release\bin\QuickViewer.exe" "C
 set "QV_PROFILE_FIRST_IMAGE="
 ```
 
-### Folder text responsiveness
+### Text from the user's data
 
 `QV_PROFILE_FOLDER_TEXT=1` extends `QV_PROFILE_FIRST_IMAGE` profiling past the
 reveal until the folder list has its text. It settles the whole folder, not only
 the rows on screen: `folder-text.gui-heartbeat` counts event-loop service while
 that happens, `folder-text.profile-timeout` means the run never settled, and
-`folder-text.idle-stop` marks the text helper exiting after its idle period.
+`text-image.idle-stop` marks the text helper exiting after its idle period.
 
 ```bat
 set "QV_PROFILE_FIRST_IMAGE=C:\build\qv-folder-text.tsv"
@@ -271,7 +271,7 @@ set "QV_PROFILE_FOLDER_TEXT="
 set "QV_PROFILE_FIRST_IMAGE="
 ```
 
-The helper is the same executable in `--folder-text-helper` mode, so nothing
+The helper is the same executable in `--text-image-helper` mode, so nothing
 extra is deployed. Check a folder holding a name the UI font cannot draw: it
 shows a placeholder first, then the real text once the helper answers. While it
 loads, close and reopen the panel, scroll and select rows, and try a narrow
@@ -280,8 +280,16 @@ folder it shows, so open a folder whose own path holds such a name as well: the
 caption shows the placeholder at once and the path once the helper has answered,
 at every panel width.
 
+The same placeholder-then-image sequence applies to the status bar's page
+caption, the catalog's volume titles (icon and list modes) and tag buttons, the
+catalog manager's names and paths, and the fullscreen signage. Check each with
+a name holding such a character (an emoji or a CJK Extension character works on
+most systems), with the Default and Dark themes and with a page selected, and
+check that a tag button still searches for its tag and the catalog manager's
+path tooltip shows the real path.
+
 `scripts\verify-windows.cmd debug --test windowstartup` covers the model, cache,
-caption and transport cases.
+caption, delegate, button, signage and transport cases.
 
 ## C++ lint
 

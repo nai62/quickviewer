@@ -8,6 +8,7 @@
 #include "fileloader.h"
 #include "models/filemanager.h"
 #include "ui_cataloglist.h"
+#include "textimageitemdelegate.h"
 #include "volumetagdialog.h"
 
 ManageDatabaseDialog::ManageDatabaseDialog(QWidget *parent)
@@ -22,6 +23,11 @@ ManageDatabaseDialog::ManageDatabaseDialog(QWidget *parent)
 
     // CatalogTree
     ui->treeWidget->sortByColumn(1, Qt::DescendingOrder);
+    // Names, paths and tags come from the user's data: a character the UI font cannot draw
+    // is rasterized by the text-image helper instead of loading a fallback
+    // font while the dialog opens.
+    ui->treeWidget->setItemDelegate(new TextImageItemDelegate(ui->treeWidget));
+    ui->booksTree->setItemDelegate(new TextImageItemDelegate(ui->booksTree));
     QTreeWidgetItem *header = ui->treeWidget->headerItem();
     header->setText(
         0, tr("Name", "Title of the column in the list part of the folder registered as Catalog"));

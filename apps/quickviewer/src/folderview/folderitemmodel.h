@@ -6,7 +6,7 @@
 #include <QtCore>
 
 #include "folderitem.h"
-#include "foldertextcache.h"
+#include "textimagecache.h"
 #include "models/readprogressstore.h"
 
 /**
@@ -31,7 +31,7 @@ public:
         ReadProgressRole
     };
 
-    FolderItemModel(QObject *parent, FolderTextCache *textCache = nullptr);
+    FolderItemModel(QObject *parent, TextImageCache *textCache = nullptr);
     /**
      * Starts loading the list icons in the background. Called while the window
      * is still being created, so the panel does not have to wait for the shell
@@ -79,7 +79,7 @@ private:
     QList<FolderItem> *m_searchedVolumes;
     int m_currentVolumeRow;
     QStringList m_placeholderNames;
-    FolderTextCache *m_textCache;
+    TextImageCache *m_textCache;
     QFont m_textFont;
     QPalette m_textPalette;
     qreal m_textRatio = 1;
@@ -89,7 +89,7 @@ private:
     int m_firstVisibleRow = 0;
     int m_lastVisibleRow = -1;
     QList<QByteArray> m_textKeys;
-    QList<FolderTextResult> m_textImages;
+    QList<TextImageResult> m_textImages;
     QHash<int, ReadProgress> m_readProgress;
     QFutureWatcher<FolderIconImages> m_iconWatcher;
     QIcon m_folderIcon;

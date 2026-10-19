@@ -531,7 +531,7 @@ void MainWindow::resetShortcutKeys()
 void MainWindow::setStatusMessage(StatusMessage message)
 {
     m_statusMessage = message;
-    ui->statusLabel->clear();
+    ui->statusLabel->setSourceText(QString());
     switch (message) {
     case StatusMessage::None:
         return;
@@ -1662,9 +1662,10 @@ void MainWindow::handleViewerSessionPageChanged()
     m_pageCaption = m_imageString.getStatusBarText();
 
     // Elide text(Otherwise the width of the main window will be forcibly changed)
-    QFontMetrics fontMetrics(ui->statusLabel->font());
-    QString statusLabelTxt = fontMetrics.elidedText(m_pageCaption, Qt::ElideMiddle, width() - 100);
-    ui->statusLabel->setText(statusLabelTxt);
+    // The caption is a path from the disk, so the label stands in for the
+    // characters the UI font cannot draw instead of loading a fallback font.
+    ui->statusLabel->setElision(Qt::ElideMiddle, width() - 100);
+    ui->statusLabel->setSourceText(m_pageCaption);
     resetVolumeCaption();
 
     if (!qApp->ShowStatusBar()) {
@@ -1719,7 +1720,7 @@ void MainWindow::handleViewerLoadStatusChanged()
         m_viewerSession.loadStatus().phase == ViewerLoadPhase::Failed) {
         m_statusMessage = StatusMessage::None;
         m_pageCaption.clear();
-        ui->statusLabel->clear();
+        ui->statusLabel->setSourceText(QString());
     }
     syncPageBar();
 }
@@ -2142,7 +2143,7 @@ void MainWindow::handleShowStatusBarActionTriggered(bool checked)
         setWindowTitle(m_volumeCaption);
         ui->statusBar->show();
         if (m_statusMessage == StatusMessage::None) {
-            ui->statusLabel->setText(m_pageCaption);
+            ui->statusLabel->setSourceText(m_pageCaption);
         } else {
             setStatusMessage(m_statusMessage);
         }

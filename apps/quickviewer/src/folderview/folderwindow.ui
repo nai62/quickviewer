@@ -52,7 +52,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="FolderPathLabel" name="pathLabel">
+    <widget class="TextImageLabel" name="pathLabel">
      <property name="text">
       <string notr="true">My Pictures</string>
      </property>
@@ -271,9 +271,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>FolderPathLabel</class>
+   <class>TextImageLabel</class>
    <extends>QLabel</extends>
-   <header location="global">folderpathlabel.h</header>
+   <header location="global">textimagelabel.h</header>
   </customwidget>
   <customwidget>
    <class>FolderListView</class>

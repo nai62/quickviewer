@@ -7,6 +7,7 @@
 #include <QtWidgets>
 
 #include "imagecontent.h"
+#include "textimagecache.h"
 
 struct PageRenderSettings
 {
@@ -74,6 +75,7 @@ private:
     QRectF transformedImageBounds(int rotationOffset) const;
     QImage &imageWithRetouch();
     void ensureInitialized();
+    void applySignageImage(const TextImageResult &result);
     void dispose();
 
     QGraphicsScene *m_scene;
@@ -81,8 +83,12 @@ private:
     QGraphicsItem *m_graphicsItem;
     QTransform m_orientation;
     QString m_signageText;
-    QGraphicsTextItem *m_signageTextItem;
+    /** The signage's text, or the helper's image of it once that arrived. */
+    QGraphicsItem *m_signageTextItem;
     QGraphicsRectItem *m_signageBackgroundItem;
+    QByteArray m_signageKey;
+    bool m_signageRightAligned = false;
+    QMetaObject::Connection m_signageConnection;
     qreal m_drawScale;
     qreal m_displayScale;
     SeparationState m_separationState;

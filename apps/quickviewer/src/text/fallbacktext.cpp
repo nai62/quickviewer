@@ -1,6 +1,8 @@
-#include "folderplaceholdertext.h"
+#include "fallbacktext.h"
 
-namespace FolderPlaceholderText {
+#include <QHash>
+
+namespace FallbackText {
 QRawFont primaryFont(const QFont &font, bool bold)
 {
     QFont primary = font;
@@ -53,4 +55,38 @@ placeholder(const QString &text, const QRawFont &normal, const QRawFont &bold, Q
     return replaced ? result : QString();
 }
 
-} // namespace FolderPlaceholderText
+QString placeholderFor(const QString &text, const QFont &font)
+{
+    struct Fonts
+    {
+        QRawFont normal;
+        QRawFont bold;
+        QChar replacement;
+    };
+    static QHash<QString, Fonts> fontsByKey;
+    // A wide text is checked character by character against the fonts, so a
+    // plain one is let through before any font is looked up.
+    bool asciiOnly = true;
+    for (const QChar &character : text) {
+        if (character.unicode() >= 0x80) {
+            asciiOnly = false;
+            break;
+        }
+    }
+    if (asciiOnly) {
+        return QString();
+    }
+    const QString key = font.key();
+    auto found = fontsByKey.constFind(key);
+    if (found == fontsByKey.cend()) {
+        if (fontsByKey.size() >= 32) {
+            fontsByKey.clear();
+        }
+        Fonts fonts{primaryFont(font, false), primaryFont(font, true), QChar()};
+        fonts.replacement = placeholderCharacter(fonts.normal, fonts.bold);
+        found = fontsByKey.insert(key, fonts);
+    }
+    return placeholder(text, found->normal, found->bold, found->replacement);
+}
+
+} // namespace FallbackText

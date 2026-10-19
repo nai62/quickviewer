@@ -17,7 +17,7 @@ void FolderItemDelegate::paint(QPainter *painter,
 {
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
-    // DisplayRole may contain the real name for accessibility/search. Neither
+    // DisplayRole holds the real name for accessibility/search. Neither
     // style layout nor sizeHint may shape that name on the GUI thread.
     opt.text = index.data(FolderItemModel::SafeTextRole).toString();
     opt.font.setStyleStrategy(
@@ -43,9 +43,9 @@ void FolderItemDelegate::paint(QPainter *painter,
     QStyle *style = widget ? widget->style() : QApplication::style();
 
     // Keep the platform hover rendering above the active-volume background.
-    const FolderTextResult text =
-        index.data(FolderItemModel::TextImagesRole).value<FolderTextResult>();
-    if (text && text->images.size() == FolderTextImages::ImageCount) {
+    const TextImageResult text =
+        index.data(FolderItemModel::TextImagesRole).value<TextImageResult>();
+    if (text && text->images.size() == TextImages::ImageCount) {
         QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &opt, widget);
         const int margin = style->pixelMetric(QStyle::PM_FocusFrameHMargin, &opt, widget) + 1;
         textRect.adjust(margin, 0, -margin, 0);
@@ -151,8 +151,8 @@ QSize FolderItemDelegate::sizeHint(const QStyleOptionViewItem &option,
     // about a third taller than the name it shows, so keep the text and a small
     // margin instead.
     size.setHeight(opt.fontMetrics.height() + RowTextMargin * 2);
-    const FolderTextResult text =
-        index.data(FolderItemModel::TextImagesRole).value<FolderTextResult>();
+    const TextImageResult text =
+        index.data(FolderItemModel::TextImagesRole).value<TextImageResult>();
     if (text && !text->images.isEmpty()) {
         size.setWidth(
             qMax(size.width(), qCeil(text->images.first().deviceIndependentSize().width()) + 24));
