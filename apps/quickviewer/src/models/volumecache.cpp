@@ -122,6 +122,18 @@ void VolumeCache::invalidate(const VolumeCacheKey &key)
     m_loads.remove(key);
 }
 
+void VolumeCache::invalidatePath(const QString &normalizedVolumePath)
+{
+    QList<VolumeCacheKey> keys = m_loads.keys();
+    keys += m_generations.keys();
+    keys += m_recentErrors.keys();
+    for (const VolumeCacheKey &key : keys) {
+        if (key.normalizedVolumePath == normalizedVolumePath) {
+            invalidate(key);
+        }
+    }
+}
+
 void VolumeCache::clear()
 {
     m_generations.clear();

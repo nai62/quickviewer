@@ -1,4 +1,6 @@
 #include "renderedpage.h"
+#include "fallbacktext.h"
+#include "textimagecache.h"
 #include "qzimg.h"
 #include "shadereffect.h"
 
@@ -377,6 +379,7 @@ void RenderedPage::resetSignage(QRect viewport, RenderedPage::PageAlign alignmen
             m_scene->removeItem(m_signageTextItem);
             delete m_signageTextItem;
             m_signageTextItem = nullptr;
+            m_signageKey.clear();
             m_scene->removeItem(m_signageBackgroundItem);
             delete m_signageBackgroundItem;
             m_signageBackgroundItem = nullptr;
@@ -386,17 +389,76 @@ void RenderedPage::resetSignage(QRect viewport, RenderedPage::PageAlign alignmen
     if (m_signageTextItem) {
         return;
     }
-    m_signageTextItem = m_scene->addText(m_signageText);
-    m_signageTextItem->setPos(alignment == RenderedPage::PageRight
-                                  ? viewport.right() - m_signageTextItem->boundingRect().width()
-                                  : 0,
-                              0);
-    m_signageTextItem->setDefaultTextColor(Qt::green);
-    m_signageTextItem->setZValue(1);
+    // The signage names the page's file, which can hold a character the UI
+    // font cannot draw: the text item shows a placeholder for it, and the
+    // text-image helper's image of the name takes its place once it arrives.
+    const QString safeText = FallbackText::placeholderFor(m_signageText, m_scene->font());
+    QGraphicsTextItem *textItem = m_scene->addText(safeText.isEmpty() ? m_signageText : safeText);
+    textItem->setPos(alignment == RenderedPage::PageRight
+                         ? viewport.right() - textItem->boundingRect().width()
+                         : 0,
+                     0);
+    textItem->setDefaultTextColor(Qt::green);
+    textItem->setZValue(1);
+    m_signageTextItem = textItem;
     QBrush brush(QColor::fromRgb(0, 0, 0, 0x80));
     m_signageBackgroundItem =
-        m_scene->addRect(m_signageTextItem->boundingRect(), Qt::PenStyle::NoPen, brush);
-    m_signageBackgroundItem->setPos(m_signageTextItem->pos());
+        m_scene->addRect(textItem->boundingRect(), Qt::PenStyle::NoPen, brush);
+    m_signageBackgroundItem->setPos(textItem->pos());
+    if (safeText.isEmpty()) {
+        return;
+    }
+    TextImageCache *cache = TextImageCache::instance();
+    // The scene is laid out in device pixels, so the image is drawn at scale 1.
+    m_signageKey = TextImageCache::key(m_signageText, m_scene->font(), 1.0);
+    m_signageRightAligned = alignment == RenderedPage::PageRight;
+    if (const TextImageResult cached = cache->lookup(m_signageKey)) {
+        applySignageImage(cached);
+        return;
+    }
+    if (!m_signageConnection) {
+        m_signageConnection = connect(cache,
+                                      &TextImageCache::finished,
+                                      this,
+                                      [this](const QByteArray &key, const TextImageResult &result) {
+                                          if (key == m_signageKey && result) {
+                                              applySignageImage(result);
+                                          }
+                                      });
+    }
+    cache->request(m_signageKey);
+}
+
+/**
+ * Puts the helper's image of the signage where its placeholder was, on a
+ * background that fits the name.
+ */
+void RenderedPage::applySignageImage(const TextImageResult &result)
+{
+    auto *textItem = qgraphicsitem_cast<QGraphicsTextItem *>(m_signageTextItem);
+    if (!textItem || !m_signageBackgroundItem || result->images.isEmpty()) {
+        return;
+    }
+    // The text item keeps its document margin around the text, and the
+    // helper keeps two pixels around the name.
+    constexpr qreal ImageMargin = 2;
+    const qreal margin = textItem->document()->documentMargin();
+    const QImage mask = result->images.first();
+    const QSizeF content = mask.deviceIndependentSize() - QSizeF(2 * ImageMargin, 2 * ImageMargin);
+    const QRectF bounds(0, 0, content.width() + 2 * margin, content.height() + 2 * margin);
+    QPointF position = textItem->pos();
+    if (m_signageRightAligned) {
+        position.rx() += textItem->boundingRect().width() - bounds.width();
+    }
+    QGraphicsPixmapItem *imageItem =
+        m_scene->addPixmap(QPixmap::fromImage(tintedTextMask(mask, Qt::green)));
+    imageItem->setPos(position + QPointF(margin - ImageMargin, margin - ImageMargin));
+    imageItem->setZValue(1);
+    m_scene->removeItem(textItem);
+    delete textItem;
+    m_signageTextItem = imageItem;
+    m_signageBackgroundItem->setRect(bounds);
+    m_signageBackgroundItem->setPos(position);
 }
 
 void RenderedPage::dispose()
@@ -410,6 +472,7 @@ void RenderedPage::dispose()
         m_scene->removeItem(m_signageTextItem);
         delete m_signageTextItem;
         m_signageTextItem = nullptr;
+        m_signageKey.clear();
         m_scene->removeItem(m_signageBackgroundItem);
         delete m_signageBackgroundItem;
         m_signageBackgroundItem = nullptr;

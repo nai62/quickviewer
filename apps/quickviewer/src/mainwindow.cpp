@@ -188,6 +188,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionSeparatePagesWhenWideImage->setChecked(qApp->SeparatePagesWhenWideImage());
 
     ui->actionShowSubfolders->setChecked(qApp->ShowSubfolders());
+    ui->actionConfirmImageRemoval->setChecked(qApp->ConfirmImageRemoval());
+    ui->actionConfirmArchiveRemoval->setChecked(qApp->ConfirmArchiveRemoval());
 
     ui->actionAutoLoaded->setChecked(qApp->AutoLoaded());
     ui->actionSavingHistory->setChecked(qApp->DontSavingHistory());
@@ -531,7 +533,7 @@ void MainWindow::resetShortcutKeys()
 void MainWindow::setStatusMessage(StatusMessage message)
 {
     m_statusMessage = message;
-    ui->statusLabel->clear();
+    ui->statusLabel->setSourceText(QString());
     switch (message) {
     case StatusMessage::None:
         return;
@@ -1662,9 +1664,10 @@ void MainWindow::handleViewerSessionPageChanged()
     m_pageCaption = m_imageString.getStatusBarText();
 
     // Elide text(Otherwise the width of the main window will be forcibly changed)
-    QFontMetrics fontMetrics(ui->statusLabel->font());
-    QString statusLabelTxt = fontMetrics.elidedText(m_pageCaption, Qt::ElideMiddle, width() - 100);
-    ui->statusLabel->setText(statusLabelTxt);
+    // The caption is a path from the disk, so the label stands in for the
+    // characters the UI font cannot draw instead of loading a fallback font.
+    ui->statusLabel->setElision(Qt::ElideMiddle, width() - 100);
+    ui->statusLabel->setSourceText(m_pageCaption);
     resetVolumeCaption();
 
     if (!qApp->ShowStatusBar()) {
@@ -1681,6 +1684,7 @@ void MainWindow::handleViewerSessionPageChanged()
 
 void MainWindow::handleViewerSessionVolumeChanged(QString path)
 {
+    updateRemovalActionTexts();
     if (!m_viewerSession.initialImagePaintPending()) {
         updateFolderViewCurrentItem();
     }
@@ -1719,7 +1723,7 @@ void MainWindow::handleViewerLoadStatusChanged()
         m_viewerSession.loadStatus().phase == ViewerLoadPhase::Failed) {
         m_statusMessage = StatusMessage::None;
         m_pageCaption.clear();
-        ui->statusLabel->clear();
+        ui->statusLabel->setSourceText(QString());
     }
     syncPageBar();
 }
@@ -1785,6 +1789,7 @@ void MainWindow::handleLanguageSelectorLanguageChanged(QString language)
 {
     qApp->setUiLanguage(language);
     ui->retranslateUi(this);
+    updateRemovalActionTexts();
     m_fullscreenButton->setToolTip(tr("&Fullscreen"));
     ui->statusBar->clearMessage();
 
@@ -2142,7 +2147,7 @@ void MainWindow::handleShowStatusBarActionTriggered(bool checked)
         setWindowTitle(m_volumeCaption);
         ui->statusBar->show();
         if (m_statusMessage == StatusMessage::None) {
-            ui->statusLabel->setText(m_pageCaption);
+            ui->statusLabel->setSourceText(m_pageCaption);
         } else {
             setStatusMessage(m_statusMessage);
         }
@@ -2322,92 +2327,166 @@ void MainWindow::handleRenameImageFileActionTriggered()
     }
 }
 
-void MainWindow::handleConfirmDeletePageActionTriggered(bool checked)
+void MainWindow::handleConfirmImageRemovalActionTriggered(bool checked)
 {
-    qApp->setConfirmDeletePage(checked);
+    qApp->setConfirmImageRemoval(checked);
+}
+
+void MainWindow::handleConfirmArchiveRemovalActionTriggered(bool checked)
+{
+    qApp->setConfirmArchiveRemoval(checked);
+}
+
+bool MainWindow::confirmRemoval(bool ask, const QString &question, const QString &path)
+{
+    if (!ask) {
+        return true;
+    }
+    const VisiblePages pages = m_viewerSession.visiblePages();
+    const ImageContent *page = pages.first();
+    if (!page) {
+        return false;
+    }
+    QMessageBox msgBox(this);
+    msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Cancel);
+    msgBox.setWindowTitle(tr("Confirmation", "Confirm deleting image file on MessageBox title"));
+    msgBox.setTextFormat(Qt::RichText);
+    msgBox.setText(
+        QString("<h2>%1</h2><p>%2</p>")
+            .arg(question.toHtmlEscaped(), QDir::toNativeSeparators(path).toHtmlEscaped()));
+    const QImage image =
+        page->orientedImage(page->loadedImage.scaled(QSize(100, 100), Qt::KeepAspectRatio));
+    msgBox.setIconPixmap(QPixmap::fromImage(image));
+    return msgBox.exec() != QMessageBox::Cancel;
 }
 
 void MainWindow::handleRecyclePageActionTriggered()
 {
-    if (m_viewerSession.visiblePageCount() <= 0 || !m_viewerSession.isFolder()) {
+    if (m_viewerSession.visiblePageCount() <= 0) {
+        return;
+    }
+    if (m_viewerSession.isArchive()) {
+        removeActiveArchive(false);
+        return;
+    }
+    if (!m_viewerSession.isFolder()) {
         return;
     }
     QString path = m_viewerSession.currentPagePath();
     if (!path.length()) {
         return;
     }
-    if (qApp->ConfirmDeletePage()) {
-        QMessageBox msgBox(this);
-        msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Cancel);
-        msgBox.setWindowTitle(
-            tr("Confirmation", "Confirm deleting image file on MessageBox title"));
-
-        //text
-        msgBox.setTextFormat(Qt::RichText);
-        QString message =
-            QString("<h2>%1</h2><p>%2</p>")
-                .arg(tr("Are you sure you want to move the image to Recycle Bin?",
-                        "Confirm putting displayed file in Recycle Box Message Box body"))
-                .arg(path);
-        msgBox.setText(message);
-
-        //icon
-        const VisiblePages pages = m_viewerSession.visiblePages();
-        const ImageContent *page = pages.first();
-        if (!page) {
-            return;
-        }
-        const QImage image =
-            page->orientedImage(page->loadedImage.scaled(QSize(100, 100), Qt::KeepAspectRatio));
-        msgBox.setIconPixmap(QPixmap::fromImage(image));
-
-        if (msgBox.exec() == QMessageBox::Cancel) {
-            return;
-        }
+    if (!confirmRemoval(qApp->ConfirmImageRemoval(),
+                        tr("Are you sure you want to move the image to Recycle Bin?",
+                           "Confirm putting displayed file in Recycle Box Message Box body"),
+                        path)) {
+        return;
     }
     if (moveToTrash(path)) {
         m_viewerSession.reloadVolumeAfterImageRemoval();
     }
 }
 
+/**
+ * Moves the archive on display to the Recycle Bin, or deletes it, and goes on
+ * to the next volume. Windows cannot move or delete a file that is open, so the
+ * viewer lets go of the archive first; when it still cannot be removed, the
+ * archive is opened again on the page that was shown and the failure is
+ * reported.
+ */
+void MainWindow::removeActiveArchive(bool permanently)
+{
+    const ArchiveRemovalPlan plan = m_viewerSession.archiveRemovalPlan();
+    if (!plan.isValid()) {
+        // An archive inside another one is not a file of its own.
+        return;
+    }
+    // An archive goes with every image in it, so moving it to the bin has a
+    // setting of its own: turning off the question for images does not turn
+    // it off here. Deleting it cannot be undone, so that is always asked.
+    const bool confirmed =
+        permanently
+            ? confirmRemoval(true,
+                             tr("Are you sure you want to delete this whole archive?",
+                                "Confirm deleting the displayed archive, with every page in it, "
+                                "on Message Box body"),
+                             plan.archivePath)
+            : confirmRemoval(qApp->ConfirmArchiveRemoval(),
+                             tr("Are you sure you want to move this whole archive to Recycle Bin?",
+                                "Confirm putting the displayed archive, with every page in it, in "
+                                "Recycle Box Message Box body"),
+                             plan.archivePath);
+    if (!confirmed) {
+        return;
+    }
+    const bool released = m_viewerSession.releaseArchive(plan);
+    const bool removed =
+        released && (permanently ? QFile::remove(plan.archivePath) : moveToTrash(plan.archivePath));
+    if (!removed) {
+        m_viewerSession.openEntry({plan.archivePath, plan.pageName});
+        const QString path = QDir::toNativeSeparators(plan.archivePath);
+        QMessageBox::warning(
+            this,
+            tr("Confirmation", "Confirm deleting image file on MessageBox title"),
+            permanently
+                ? tr("The archive could not be deleted:\n%1",
+                     "Message shown when the displayed archive could not be deleted")
+                      .arg(path)
+                : tr("The archive could not be moved to Recycle Bin:\n%1",
+                     "Message shown when the displayed archive could not be put in Recycle Box")
+                      .arg(path));
+        return;
+    }
+    if (m_folderWindow &&
+        QDir::cleanPath(QDir::fromNativeSeparators(m_folderWindow->currentPath())) ==
+            QFileInfo(plan.archivePath).absolutePath()) {
+        // The panel lists the folder the archive was in.
+        m_folderWindow->setFolderPath(m_folderWindow->currentPath(), false);
+    }
+    if (!m_viewerSession.openVolumeAfterArchiveRemoval(plan)) {
+        setStatusMessage(StatusMessage::NoVolume);
+    }
+}
+
+void MainWindow::updateRemovalActionTexts()
+{
+    // With an archive on display, Recycle and Delete take every image in it,
+    // so the menu and the shortcut's entry say so instead of naming one image.
+    const bool archive = m_viewerSession.isArchive();
+    ui->actionRecyclePage->setText(
+        archive ? tr("Move archive to &Recycle Bin",
+                     "Menu that puts the displayed archive, with every image in it, in Recycle Bin")
+                : tr("Move image to &Recycle Bin"));
+    ui->actionDeletePage->setText(
+        archive ? tr("Delete the archive",
+                     "Menu that deletes the displayed archive, with every image in it, for good")
+                : tr("Delete the image"));
+}
+
 void MainWindow::handleDeletePageActionTriggered()
 {
-    if (m_viewerSession.visiblePageCount() <= 0 || !m_viewerSession.isFolder()) {
+    if (m_viewerSession.visiblePageCount() <= 0) {
+        return;
+    }
+    if (m_viewerSession.isArchive()) {
+        removeActiveArchive(true);
+        return;
+    }
+    if (!m_viewerSession.isFolder()) {
         return;
     }
     QString path = m_viewerSession.currentPagePath();
     if (!path.length()) {
         return;
     }
-    if (qApp->ConfirmDeletePage()) {
-        QMessageBox msgBox(this);
-        msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Cancel);
-        msgBox.setWindowTitle(
-            tr("Confirmation", "Confirm deleting image file on MessageBox title"));
-
-        //text
-        msgBox.setTextFormat(Qt::RichText);
-        QString message = QString("<h2>%1</h2><p>%2</p>")
-                              .arg(tr("Are you sure you want to delete this image?",
-                                      "Confirm deleting image file on Message Box body"))
-                              .arg(path);
-        msgBox.setText(message);
-
-        //icon
-        const VisiblePages pages = m_viewerSession.visiblePages();
-        const ImageContent *page = pages.first();
-        if (!page) {
-            return;
-        }
-        const QImage image =
-            page->orientedImage(page->loadedImage.scaled(QSize(100, 100), Qt::KeepAspectRatio));
-        msgBox.setIconPixmap(QPixmap::fromImage(image));
-
-        if (msgBox.exec() == QMessageBox::Cancel) {
-            return;
-        }
+    // Deleting cannot be undone, so it is asked whatever the setting says: the
+    // setting is about moving the image to the Recycle Bin.
+    if (!confirmRemoval(true,
+                        tr("Are you sure you want to delete this image?",
+                           "Confirm deleting image file on Message Box body"),
+                        path)) {
+        return;
     }
     QFile file(path);
     if (file.remove()) {

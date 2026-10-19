@@ -74,6 +74,7 @@ public:
     }
 
     bool contains(const Key &key) const { return m_values.contains(key); }
+    QList<Key> keys() const { return m_values.keys(); }
     int size() const { return m_values.size(); }
     bool isEmpty() const { return m_values.isEmpty(); }
 

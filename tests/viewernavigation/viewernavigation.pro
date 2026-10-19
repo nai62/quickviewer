@@ -22,6 +22,7 @@ INCLUDEPATH += \
     ../../apps/quickviewer/src/widgets \
     ../../apps/quickviewer/src/models \
     ../../apps/quickviewer/src/folderview \
+    ../../apps/quickviewer/src/text \
     ../../components/i18n \
     ../../apps/quickviewer/src/qnamedpipe \
     ../../apps/quickviewer/src/qactionmanager \
@@ -54,6 +55,9 @@ SOURCES += \
     ../../apps/quickviewer/src/models/shadereffect.cpp \
     ../../apps/quickviewer/src/models/svgloader.cpp \
     ../../apps/quickviewer/src/startupprofiler.cpp \
+    ../../apps/quickviewer/src/text/fallbacktext.cpp \
+    ../../apps/quickviewer/src/text/textimagecache.cpp \
+    ../../apps/quickviewer/src/text/textimagelabel.cpp \
     ../../apps/quickviewer/src/models/volumecache.cpp \
     ../../apps/quickviewer/src/models/volumehandle.cpp \
     ../../apps/quickviewer/src/models/volume.cpp \
@@ -96,6 +100,9 @@ HEADERS += \
     ../../apps/quickviewer/src/models/shadereffect.h \
     ../../apps/quickviewer/src/models/svgloader.h \
     ../../apps/quickviewer/src/startupprofiler.h \
+    ../../apps/quickviewer/src/text/fallbacktext.h \
+    ../../apps/quickviewer/src/text/textimagecache.h \
+    ../../apps/quickviewer/src/text/textimagelabel.h \
     ../../apps/quickviewer/src/models/volumecache.h \
     ../../apps/quickviewer/src/models/volumehandle.h \
     ../../apps/quickviewer/src/models/visiblepages.h \

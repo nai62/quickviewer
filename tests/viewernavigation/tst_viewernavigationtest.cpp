@@ -488,6 +488,53 @@ static QHash<QString, QString> layoutCharacterization()
     };
 }
 
+/**
+ * An archive whose every read waits at \a gate, so the test decides when a
+ * page is read, and counts the reads in \a reads.
+ */
+class GatedArchiveFileLoader final : public MemoryFileLoader
+{
+public:
+    GatedArchiveFileLoader(int imageCount,
+                           QSharedPointer<QSemaphore> gate,
+                           QSharedPointer<QAtomicInt> reads)
+        : MemoryFileLoader(imageCount),
+          m_gate(std::move(gate)),
+          m_reads(std::move(reads))
+    {
+    }
+
+    bool isArchive() const override { return true; }
+    QByteArray getFile(QString name) override
+    {
+        m_reads->fetchAndAddOrdered(1);
+        m_gate->acquire();
+        return MemoryFileLoader::getFile(name);
+    }
+
+private:
+    QSharedPointer<QSemaphore> m_gate;
+    QSharedPointer<QAtomicInt> m_reads;
+};
+
+/**
+ * Copies of a multi-page archive, as volumes of one folder, with a folder
+ * volume listed before them.
+ */
+static bool writeArchiveShelf(const QString &root, const QStringList &archiveNames)
+{
+    const QString source = QString(FILELOADER_DATAPATH "7z/image.7z");
+    for (const QString &name : archiveNames) {
+        if (!QFile::copy(source, QDir(root).filePath(name))) {
+            return false;
+        }
+    }
+    const QString folder = QDir(root).filePath(QStringLiteral("folder"));
+    QImage image(16, 16, QImage::Format_RGB32);
+    image.fill(Qt::red);
+    return QDir().mkpath(folder) && image.save(QDir(folder).filePath("page.bmp"));
+}
+
 class ViewerNavigationTest : public QObject
 {
     Q_OBJECT
@@ -2022,6 +2069,129 @@ private slots:
         QCOMPARE(session.pageCount(), 2);
         QCOMPARE(session.stateKind(), ViewerStateKind::VolumeReady);
         QCOMPARE(session.currentPageName(), QString("page-2.bmp"));
+    }
+
+    void archiveRemovalGoesToTheNextVolumeThenThePreviousOnes()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QVERIFY(writeArchiveShelf(directory.path(), {"a.7z", "b.7z", "c.7z"}));
+        const auto path = [&directory](const QString &name) {
+            return QDir::cleanPath(QDir::fromNativeSeparators(directory.filePath(name)));
+        };
+        qApp->setOpenVolumeWithProgress(false);
+        qApp->setDualView(false);
+        ViewerSession session(nullptr);
+
+        QVERIFY(session.openContainer(path("b.7z")));
+        QVERIFY(session.selectPage(1));
+        ArchiveRemovalPlan plan = session.archiveRemovalPlan();
+        QVERIFY(plan.isValid());
+        QCOMPARE(plan.archivePath, path("b.7z"));
+        QCOMPARE(plan.pageName, session.currentPageName());
+        // Folders are listed before archives, as volume navigation lists them.
+        QCOMPARE(plan.nextVolumePaths, QStringList({path("c.7z"), path("a.7z"), path("folder")}));
+
+        QVERIFY(session.openContainer(path("c.7z")));
+        plan = session.archiveRemovalPlan();
+        QCOMPARE(plan.nextVolumePaths, QStringList({path("b.7z"), path("a.7z"), path("folder")}));
+
+        // A folder is not an archive the bin can take as a whole.
+        QVERIFY(session.openContainer(path("folder")));
+        QVERIFY(!session.archiveRemovalPlan().isValid());
+    }
+
+    /**
+     * Windows cannot move a file that is open. Releasing the archive closes it
+     * - the volume, its cached copy and the page loads it started - so the file
+     * can go, and the viewer then opens the volume after it.
+     */
+    void releasedArchiveCanBeRemovedAndTheNextOneOpens()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QVERIFY(writeArchiveShelf(directory.path(), {"a.7z", "b.7z"}));
+        qApp->setOpenVolumeWithProgress(false);
+        qApp->setDualView(false);
+        ViewerSession session(nullptr);
+        QSignalSpy volumes(&session, &ViewerSession::volumeChanged);
+        QVERIFY(session.openContainer(directory.filePath("a.7z")));
+        QVERIFY(session.advanceOnePage());
+        const ArchiveRemovalPlan plan = session.archiveRemovalPlan();
+        QVERIFY(plan.isValid());
+
+        QVERIFY(session.releaseArchive(plan));
+        QCOMPARE(session.stateKind(), ViewerStateKind::Empty);
+        QCOMPARE(session.visiblePageCount(), 0);
+        QVERIFY(QFile::remove(plan.archivePath));
+
+        volumes.clear();
+        QVERIFY(session.openVolumeAfterArchiveRemoval(plan));
+        QCOMPARE(QDir::cleanPath(QDir::fromNativeSeparators(session.volumePath())),
+                 QDir::cleanPath(QDir::fromNativeSeparators(directory.filePath("b.7z"))));
+
+        // With nothing left to open, the viewer is empty.
+        const ArchiveRemovalPlan last = session.archiveRemovalPlan();
+        QVERIFY(session.releaseArchive(last));
+        QVERIFY(QFile::remove(last.archivePath));
+        QVERIFY(QDir(directory.filePath("folder")).removeRecursively());
+        ArchiveRemovalPlan nothingLeft = last;
+        nothingLeft.nextVolumePaths = {directory.filePath("a.7z")};
+        volumes.clear();
+        QVERIFY(!session.openVolumeAfterArchiveRemoval(nothingLeft));
+        QCOMPARE(session.stateKind(), ViewerStateKind::Empty);
+        QVERIFY(!volumes.isEmpty());
+        QCOMPARE(volumes.last().first().toString(), QString());
+    }
+
+    /**
+     * The archive goes back on the page that was shown when it cannot be moved.
+     */
+    void releasedArchiveReopensOnItsPage()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QVERIFY(writeArchiveShelf(directory.path(), {"a.7z"}));
+        qApp->setOpenVolumeWithProgress(false);
+        qApp->setDualView(false);
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(directory.filePath("a.7z")));
+        QVERIFY(session.lastPage());
+        const ArchiveRemovalPlan plan = session.archiveRemovalPlan();
+        QVERIFY(session.releaseArchive(plan));
+        QVERIFY(session.openEntry({plan.archivePath, plan.pageName}));
+        QCOMPARE(session.currentPageName(), plan.pageName);
+        QCOMPARE(session.currentPageIndex(), session.pageCount() - 1);
+    }
+
+    /**
+     * The loads a volume queued go with it: each would read a page nobody
+     * shows, and keep the archive open until it had, so the archive could not
+     * be moved away.
+     */
+    void destroyedVolumeDropsTheLoadsItQueued()
+    {
+        const int previousCacheSize = qApp->MaxImagesCache();
+        const auto restoreCacheSize =
+            qScopeGuard([previousCacheSize] { qApp->setMaxImagesCache(previousCacheSize); });
+        constexpr int PlannedLoads = 12;
+        qApp->setMaxImagesCache(PlannedLoads);
+        auto gate = QSharedPointer<QSemaphore>::create();
+        auto reads = QSharedPointer<QAtomicInt>::create(0);
+        auto *volume =
+            new Volume(nullptr, std::make_unique<GatedArchiveFileLoader>(24, gate, reads));
+        volume->loadPageList();
+        // An archive is read by at most four loads at a time, so most of the
+        // planned loads wait for a thread.
+        volume->updatePrefetchCache(0, PrefetchMode::NormalForward, QSize(100, 100));
+        const QWeakPointer<ImageLoadContext> context = volume->loadContext();
+
+        delete volume;
+        gate->release(PlannedLoads);
+
+        QTRY_VERIFY(context.isNull());
+        QVERIFY2(reads->loadAcquire() < PlannedLoads,
+                 qPrintable(QString::number(reads->loadAcquire())));
     }
 
     void removingLastDisplayedPageOpensPreviousOne()

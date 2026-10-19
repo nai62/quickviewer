@@ -1,5 +1,5 @@
-#ifndef FOLDERPLACEHOLDERTEXT_H
-#define FOLDERPLACEHOLDERTEXT_H
+#ifndef FALLBACKTEXT_H
+#define FALLBACKTEXT_H
 
 #include <QChar>
 #include <QFont>
@@ -11,20 +11,20 @@
  *
  * Qt loads the font it picks for a glyph the primary font does not have while
  * it shapes the text, and that load costs the GUI thread hundreds of
- * milliseconds the first time. The folder panel therefore checks the primary
- * font without merging, stands in for the characters it cannot draw, and lets
- * FolderTextCache rasterize the real text in another process.
+ * milliseconds the first time. A widget that draws such text therefore checks
+ * the primary font without merging, stands in for the characters it cannot
+ * draw, and lets TextImageCache rasterize the real text in another process.
  */
-namespace FolderPlaceholderText {
+namespace FallbackText {
 
 /**
- * \a font as the panel checks it: the style strategy forbids merging, so asking
+ * \a font as a widget checks it: the style strategy forbids merging, so asking
  * about a character never loads a fallback font. \a bold picks the weight.
  */
 QRawFont primaryFont(const QFont &font, bool bold);
 
 /**
- * True when both weights the panel draws have a glyph for \a code. A row or a
+ * True when both weights a widget draws have a glyph for \a code. A row or a
  * caption is drawn in either weight, so checking both keeps a placeholder that
  * would need a fallback font of its own out of the first paint.
  */
@@ -46,6 +46,13 @@ QChar placeholderCharacter(const QRawFont &normal, const QRawFont &bold);
 QString
 placeholder(const QString &text, const QRawFont &normal, const QRawFont &bold, QChar replacement);
 
-} // namespace FolderPlaceholderText
+/**
+ * placeholder() for \a text drawn in \a font, with the fonts and the
+ * replacement character remembered per font, so a view can check every cell
+ * it paints. GUI thread only.
+ */
+QString placeholderFor(const QString &text, const QFont &font);
 
-#endif // FOLDERPLACEHOLDERTEXT_H
+} // namespace FallbackText
+
+#endif // FALLBACKTEXT_H

@@ -8,6 +8,8 @@
 #include "searchwords.h"
 #include "volumetagdialog.h"
 #include "flowlayout.h"
+#include "textimagebutton.h"
+#include "textimageitemdelegate.h"
 
 #ifdef Q_OS_WIN
 #    include <Windows.h>
@@ -96,6 +98,10 @@ CatalogWindow::CatalogWindow(QWidget *parent, Ui::MainWindow *uiMain)
     // the model fits a cover into.
     m_itemModel.setCoverBox(ui->volumeList->iconSize());
     ui->volumeList->setModel(&m_itemModel);
+    // Titles come from folder and archive names, so a character the UI font
+    // cannot draw is rasterized by the text-image helper instead of loading a
+    // fallback font while the catalog opens.
+    ui->volumeList->setItemDelegate(new TextImageItemDelegate(ui->volumeList));
     ui->volumeList->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->volumeList,
             &QListView::customContextMenuRequested,
@@ -224,9 +230,9 @@ void CatalogWindow::resetTagButtons(QStringList buttons, QStringList checks)
     // Reset Tag Buttons
     clearLayout(ui->tagFrame->layout());
     for (int i = 0; i < buttons.size(); i++) {
-        QPushButton *b = new QPushButton;
+        auto *b = new TextImageButton;
         QString name = buttons[i];
-        b->setText(name);
+        b->setSourceText(name);
         b->setCheckable(true);
         if (checks.contains(name)) {
             b->setChecked(true);
@@ -265,11 +271,11 @@ QStringList CatalogWindow::getTagWords()
         if (!item->widget()) {
             continue;
         }
-        QPushButton *b = dynamic_cast<QPushButton *>(item->widget());
+        auto *b = qobject_cast<TextImageButton *>(item->widget());
         if (!b || !b->isChecked()) {
             continue;
         }
-        result << b->text();
+        result << b->sourceText();
     }
     return result;
 }

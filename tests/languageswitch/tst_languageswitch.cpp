@@ -1,4 +1,4 @@
-#include "foldertextcache.h"
+#include "textimagecache.h"
 #include <QtTest>
 
 #include <utility>
@@ -379,8 +379,8 @@ private slots:
 
 int main(int argc, char **argv)
 {
-    if (isFolderTextHelper(argc, argv)) {
-        return runFolderTextHelper(argc, argv);
+    if (isTextImageHelper(argc, argv)) {
+        return runTextImageHelper(argc, argv);
     }
 
     QStandardPaths::setTestModeEnabled(true);

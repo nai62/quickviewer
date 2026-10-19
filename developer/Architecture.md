@@ -41,6 +41,12 @@ A **page** is a position in a volume's ordered file list. An **image** is the
 decoded content loaded for that page. Page-oriented names refer to ordering or
 navigation; image-oriented names refer to loading or decoded data.
 
+An **image file** is the file on disk that a folder page is read from. Names
+that act on files, such as `isImageFile` or `ConfirmImageRemoval`, mean the
+file. Archive pages have no image file of their own, so renaming applies to
+folder pages only, and moving to the Recycle Bin or deleting takes the whole
+archive; see [Removing files](#removing-files).
+
 `ImageContent` carries decoded image data, metadata, and reusable processing
 results. `RenderedPage` owns the presentation state needed to display one
 `ImageContent` in the graphics scene.
@@ -68,7 +74,9 @@ to `ViewerSession`.
 
 `PrefetchMode` describes the expected navigation direction and speed.
 `PrefetchPlanner` converts that intent into page indexes, while `Volume` performs
-the corresponding image loads and cache updates.
+the corresponding image loads and cache updates. The loads a volume queued go
+with it: a destroyed volume cancels those that have not started, so it does not
+leave its loader - for an archive, the open file - held by pages nobody shows.
 
 ### Read progress
 
@@ -91,11 +99,36 @@ provides ordered content and loading facilities, and may be shared or cached
 without carrying a session's current-page state. Rendering state belongs to
 `RenderedPage`, outside both the volume and navigation model.
 
-### Folder text rendering
+### Text from the user's data
+
+Names and paths come from the disk and the catalog, so they can hold a
+character the UI font cannot draw. Shaping such text on the GUI thread makes Qt
+load a fallback font, which stalls the window for a few hundred milliseconds the
+first time. Widgets that draw such text therefore use `src/text/`:
+
+- `FallbackText` checks the primary font without merging and stands in for the
+  characters it cannot draw, one placeholder per code point.
+- `TextImageCache` asks the text-image helper to rasterize the real text, laid
+  out the way the widget shows it: one line, a line elided to a width, lines
+  wrapped like a label, or the lines that fit an item view's cell.
+- `TextImageLabel` (the folder caption and the status bar's page caption),
+  `TextImageButton` (the catalog's tag buttons) and `TextImageItemDelegate`
+  (the catalog's volume list and the catalog manager) lay out and paint the
+  placeholder, then paint the helper's image tinted with the colour they draw
+  in. The fullscreen signage swaps its placeholder for the image the same way.
+
+The real text stays what the widget answers to: the model's display text, the
+button's tag, the label's accessible name, tooltips and copies. Only what is
+painted and measured is the placeholder. Menus, the EXIF dialog and the window
+title draw such text as it is: a menu item or a text edit cannot paint an image
+in place of its text without losing accelerators or selection, and the native
+title bar is drawn by the system.
+
+#### The folder panel
 
 FolderItemModel keeps disk names separate from safe display text and rasterized
 text. Characters missing from either weight of the view's primary font initially
-use a replacement; file operations always use the disk name. FolderTextCache is
+use a replacement; file operations always use the disk name. TextImageCache is
 owned by the application, so destroying or replacing a panel cannot abandon a
 shared request. Results are keyed by the name, resolved font and device pixel
 ratio, and hold one white coverage mask per weight: the delegate tints a mask
@@ -104,15 +137,15 @@ reports the rows it shows, and only those ask for text, so a folder with
 thousands of names renders what is on screen; requests outstanding at once are
 bounded and the model asks for the rest as results arrive.
 
-FolderPathLabel, the panel's caption, answers for the folder's own path the way a
-row answers for a name: a path comes from the disk, so it can hold a character
+The panel's caption, a TextImageLabel, answers for the folder's own path the way
+a row answers for a name: a path comes from the disk, so it can hold a character
 the UI font cannot draw, and the frame that reveals the window paints the
 caption. The caption stands in for those characters and paints the helper's
 image of the path, which the helper wraps at the width the caption gives it, so
 the raw path is never shaped on the GUI thread.
 
-The same executable runs a private `--folder-text-helper` mode to shape and
-rasterize missing-glyph names. A Qt worker thread would still contend with the
+The same executable runs a private `--text-image-helper` mode to shape and
+rasterize missing-glyph text. A Qt worker thread would still contend with the
 GUI's font database mutex and would not populate its thread-local font engines.
 The helper has a separate font database, receives framed requests over standard
 input and returns images over standard output. The delegate never passes the
@@ -132,3 +165,27 @@ window closes it from its own `closeEvent`: a panel left behind would keep the
 application running with nothing to attach it to. Going either way, closing a
 panel leaves the startup-view setting alone while the window itself is closing,
 so the panel is back the next time the application starts.
+
+### Removing files
+
+Del moves what is on display to the Recycle Bin and Shift+Del deletes it. In a
+folder volume that is the image file of the first visible page; with an archive
+on display it is the whole archive, after which the viewer opens the volume
+after it, or the one before it after the last. An archive inside another one
+is not a file of its own and is left alone.
+
+- Moving to the bin asks first as a setting says, one for images
+  (`ConfirmImageRemoval`) and one for archives (`ConfirmArchiveRemoval`): an
+  archive goes with every image in it, so turning off the question for images
+  does not turn it off for archives. Deleting cannot be undone and always
+  asks. `ConfirmImageRemoval` keeps the ini key of the setting it was,
+  `ConfirmDeletePage`: as with `progress.ini`, C++ names do not define the
+  settings file.
+- No path silently deletes a file for good. On Windows the shell's file
+  operation warns when a file cannot go to the bin, as on a network share, and
+  declining reports a failure. Elsewhere `QFile::moveToTrash` uses the
+  desktop's trash and leaves the file where it was when it cannot.
+- Windows cannot move or delete a file that is open, so the viewer lets go of
+  the archive first: the volume, its cached copies and the page loads it
+  started. When the archive still cannot be removed, it is opened again on the
+  page that was shown and the failure is reported.

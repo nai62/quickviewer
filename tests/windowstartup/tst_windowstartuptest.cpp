@@ -1,6 +1,8 @@
 #include <QAbstractItemModelTester>
-#include "foldertextcache.h"
-#include "folderpathlabel.h"
+#include "textimagecache.h"
+#include "textimagebutton.h"
+#include "textimageitemdelegate.h"
+#include "textimagelabel.h"
 #include <QtTest>
 
 #include <algorithm>
@@ -11,6 +13,8 @@
 #include "models/filemanager.h"
 #include "models/qvapplication.h"
 #include "catalogdatabase.h"
+#include "managedatabasedialog.h"
+#include "models/renderedpage.h"
 
 #define FILELOADER_DATAPATH WINDOWSTARTUP_SRCDIR "../fileloader/data/"
 
@@ -30,6 +34,18 @@ public:
     }
     ViewerSession *viewerSession() { return &m_viewerSession; }
     ImageView *imageView() const { return findChild<ImageView *>(QStringLiteral("graphicsView")); }
+
+    /** When set, files are deleted instead of trashed, and listed in \a trashedPaths. */
+    bool fakeTrash = false;
+    QStringList trashedPaths;
+    bool moveToTrash(QString path) override
+    {
+        if (!fakeTrash) {
+            return ArchiveAwareMainWindow::moveToTrash(path);
+        }
+        trashedPaths << QDir::fromNativeSeparators(path);
+        return QFile::remove(path);
+    }
 
 protected:
     bool setStartupWindowCloaked(bool cloaked) override
@@ -61,23 +77,59 @@ private:
 
 // No OS font cache or scheduling assumptions: the test decides exactly when a
 // request completes, including after its originating model has been destroyed.
-class DelayedFolderTextCache : public FolderTextCache
+class DelayedTextImageCache : public TextImageCache
 {
 public:
     QList<QByteArray> requests;
     void finish(const QByteArray &key, bool success = true)
     {
-        auto result = QSharedPointer<FolderTextImages>::create();
-        for (int i = 0; i < FolderTextImages::ImageCount; ++i) {
+        auto result = QSharedPointer<TextImages>::create();
+        for (int i = 0; i < TextImages::ImageCount; ++i) {
             QImage image(20 + i, 16, QImage::Format_ARGB32_Premultiplied);
             image.fill(Qt::black);
             result->images.append(image);
         }
-        complete(key, success ? result : FolderTextResult());
+        complete(key, success ? result : TextImageResult());
     }
 
 protected:
     void submit(const QByteArray &key) override { requests.append(key); }
+};
+
+/** True once the row paints the helper's image of its name. */
+static bool hasTextImages(const QModelIndex &index)
+{
+    return bool(index.data(FolderItemModel::TextImagesRole).value<TextImageResult>());
+}
+
+/**
+ * Answers every message box the viewer opens with \a button while it lives,
+ * and counts them.
+ */
+class MessageBoxResponder : public QObject
+{
+public:
+    explicit MessageBoxResponder(QMessageBox::StandardButton button)
+    {
+        connect(&m_timer, &QTimer::timeout, this, [this, button] {
+            auto *box = qobject_cast<QMessageBox *>(QApplication::activeModalWidget());
+            if (!box) {
+                return;
+            }
+            ++answered;
+            if (QAbstractButton *answer = box->button(button)) {
+                answer->click();
+            } else {
+                box->reject();
+            }
+        });
+        m_timer.start(10);
+    }
+
+    int answered = 0;
+
+private:
+    QTimer m_timer;
 };
 
 class RecordingFolderStyle : public QProxyStyle
@@ -113,6 +165,9 @@ private slots:
     void catalogCoverIsReadOnce();
     void catalogViewConsumesWheelEventsAtScrollBoundary();
     void catalogTagBarFollowsRemovedTags();
+    void catalogListPaintsNoGlyphTheFontCannotDraw();
+    void catalogTagButtonsSearchTheTagTheyStandFor();
+    void catalogManagerPaintsNoGlyphTheFontCannotDraw();
 
     void init()
     {
@@ -565,6 +620,297 @@ private slots:
         QCOMPARE(
             QDir::cleanPath(QDir::fromNativeSeparators(panel->currentPath())),
             QDir::cleanPath(QDir::fromNativeSeparators(root.filePath(QStringLiteral("inner")))));
+    }
+
+#if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
+    /**
+     * Without the Windows Recycle Bin, a recycled image goes to the desktop's
+     * trash, from where a file manager can put it back.
+     */
+    void recycledImageGoesToTheTrash()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        // A trash of the test's own, on the filesystem the image is on. Test
+        // mode keeps the data location under the home directory.
+        const QByteArray home = qgetenv("HOME");
+        const QByteArray dataHome = qgetenv("XDG_DATA_HOME");
+        const auto restoreEnvironment = qScopeGuard([&] {
+            qputenv("HOME", home);
+            if (dataHome.isEmpty()) {
+                qunsetenv("XDG_DATA_HOME");
+            } else {
+                qputenv("XDG_DATA_HOME", dataHome);
+            }
+        });
+        qputenv("HOME", QFile::encodeName(directory.path()));
+        qputenv("XDG_DATA_HOME", QFile::encodeName(directory.filePath(QStringLiteral("share"))));
+        // Qt makes the trash inside the data directory but not the directory
+        // itself, which a desktop session always has.
+        QVERIFY(
+            QDir().mkpath(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)));
+        const QString folder = directory.filePath(QStringLiteral("book"));
+        QVERIFY(QDir().mkpath(folder));
+        for (int page = 0; page < 2; ++page) {
+            QImage image(16, 16, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 60, 255, 255));
+            QVERIFY(image.save(QDir(folder).filePath(QStringLiteral("page-%1.bmp").arg(page))));
+        }
+        qApp->setConfirmImageRemoval(false);
+
+        StartupWindow viewer;
+        viewer.openPath(folder);
+        QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("page-0.bmp"));
+        viewer.handleRecyclePageActionTriggered();
+
+        QVERIFY(!QFile::exists(QDir(folder).filePath(QStringLiteral("page-0.bmp"))));
+        QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("page-1.bmp"));
+        QStringList trashed;
+        QDirIterator files(directory.path(),
+                           {QStringLiteral("page-0.bmp")},
+                           QDir::Files | QDir::Hidden,
+                           QDirIterator::Subdirectories);
+        while (files.hasNext()) {
+            trashed << QDir::fromNativeSeparators(files.next());
+        }
+        QCOMPARE(trashed.size(), 1);
+        QVERIFY2(trashed.first().contains(QStringLiteral("/Trash/files/")),
+                 qPrintable(trashed.first()));
+    }
+#endif
+
+    void removalConfirmationMenusShowTheSettings_data()
+    {
+        QTest::addColumn<QString>("actionName");
+        QTest::addColumn<bool>("archive");
+        QTest::newRow("image") << QStringLiteral("actionConfirmImageRemoval") << false;
+        QTest::newRow("archive") << QStringLiteral("actionConfirmArchiveRemoval") << true;
+    }
+
+    /**
+     * The menu shows whether the viewer asks before an image or an archive is
+     * removed, and changes that setting alone.
+     */
+    void removalConfirmationMenusShowTheSettings()
+    {
+        QFETCH(QString, actionName);
+        QFETCH(bool, archive);
+        for (const bool confirm : {true, false}) {
+            // The other setting starts the other way, so a menu item that
+            // changed it would show.
+            qApp->setConfirmImageRemoval(archive ? !confirm : confirm);
+            qApp->setConfirmArchiveRemoval(archive ? confirm : !confirm);
+            StartupWindow viewer;
+            QAction *action = viewer.findChild<QAction *>(actionName);
+            QVERIFY(action);
+            QCOMPARE(action->isChecked(), confirm);
+
+            action->trigger();
+            QCOMPARE(qApp->ConfirmImageRemoval(), !confirm);
+            QCOMPARE(qApp->ConfirmArchiveRemoval(), !confirm);
+        }
+        qApp->setConfirmImageRemoval(true);
+        qApp->setConfirmArchiveRemoval(true);
+    }
+
+    /**
+     * The menu names what Recycle and Delete take: the image, or the whole
+     * archive on display, also once the menus are translated again.
+     */
+    void removalMenusNameWhatTheyTake()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const QString folder = directory.filePath(QStringLiteral("folder"));
+        QVERIFY(QDir().mkpath(folder));
+        QImage image(16, 16, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        QVERIFY(image.save(QDir(folder).filePath(QStringLiteral("page.bmp"))));
+        const QString archive = directory.filePath(QStringLiteral("book.7z"));
+        QVERIFY(QFile::copy(QString(FILELOADER_DATAPATH "7z/image.7z"), archive));
+        StartupWindow viewer;
+        QList<QAction *> actions;
+        for (const char *name : {"actionRecyclePage", "actionDeletePage"}) {
+            QAction *action = viewer.findChild<QAction *>(QLatin1String(name));
+            QVERIFY(action);
+            actions << action;
+        }
+        const auto texts = [&actions] {
+            QStringList result;
+            for (const QAction *action : actions) {
+                result << action->text();
+            }
+            return result;
+        };
+
+        viewer.openPath(folder);
+        const QStringList imageTexts = texts();
+        viewer.openPath(archive);
+        const QStringList archiveTexts = texts();
+        for (int i = 0; i < actions.size(); ++i) {
+            QVERIFY2(archiveTexts.at(i) != imageTexts.at(i), qPrintable(imageTexts.at(i)));
+        }
+
+        viewer.handleLanguageSelectorLanguageChanged(qApp->UiLanguage());
+        QCOMPARE(texts(), archiveTexts);
+        viewer.openPath(folder);
+        QCOMPARE(texts(), imageTexts);
+    }
+
+    /** An image is asked about as the setting for images says, whatever the archive's. */
+    void imageRemovalAsksAsTheImageSettingSays()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 3; ++page) {
+            QImage image(16, 16, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 60, 255, 255));
+            QVERIFY(image.save(directory.filePath(QStringLiteral("page-%1.bmp").arg(page))));
+        }
+        StartupWindow viewer;
+        viewer.fakeTrash = true;
+        viewer.openPath(directory.path());
+
+        qApp->setConfirmImageRemoval(true);
+        qApp->setConfirmArchiveRemoval(false);
+        {
+            MessageBoxResponder cancel(QMessageBox::Cancel);
+            viewer.handleRecyclePageActionTriggered();
+            QCOMPARE(cancel.answered, 1);
+        }
+        QVERIFY(viewer.trashedPaths.isEmpty());
+
+        qApp->setConfirmImageRemoval(false);
+        qApp->setConfirmArchiveRemoval(true);
+        {
+            MessageBoxResponder cancel(QMessageBox::Cancel);
+            viewer.handleRecyclePageActionTriggered();
+            QCOMPARE(cancel.answered, 0);
+        }
+        QCOMPARE(viewer.trashedPaths.size(), 1);
+        QCOMPARE(QFileInfo(viewer.trashedPaths.first()).fileName(), QStringLiteral("page-0.bmp"));
+        qApp->setConfirmImageRemoval(true);
+    }
+
+    /**
+     * Deleting an image cannot be undone, so the viewer asks even when the
+     * setting turned off the question for moving images to the Recycle Bin.
+     */
+    void imageDeletionAlwaysAsks()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 2; ++page) {
+            QImage image(16, 16, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 60, 255, 255));
+            QVERIFY(image.save(directory.filePath(QStringLiteral("page-%1.bmp").arg(page))));
+        }
+        const QString firstPage = directory.filePath(QStringLiteral("page-0.bmp"));
+        qApp->setConfirmImageRemoval(false);
+        StartupWindow viewer;
+        viewer.openPath(directory.path());
+        {
+            MessageBoxResponder cancel(QMessageBox::Cancel);
+            viewer.handleDeletePageActionTriggered();
+            QCOMPARE(cancel.answered, 1);
+        }
+        QVERIFY(QFile::exists(firstPage));
+        {
+            MessageBoxResponder ok(QMessageBox::Ok);
+            viewer.handleDeletePageActionTriggered();
+            QCOMPARE(ok.answered, 1);
+        }
+        QVERIFY(!QFile::exists(firstPage));
+        QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("page-1.bmp"));
+        qApp->setConfirmImageRemoval(true);
+    }
+
+    /**
+     * Delete takes the whole archive on display for good, without the Recycle
+     * Bin, so the viewer asks even when the setting turned off the question
+     * for moving archives to the bin, and then opens the next volume.
+     */
+    void archiveDeletionAlwaysAsks()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (const QString &name : {QStringLiteral("a.7z"), QStringLiteral("b.7z")}) {
+            QVERIFY(
+                QFile::copy(QString(FILELOADER_DATAPATH "7z/image.7z"), directory.filePath(name)));
+        }
+        const QString first = directory.filePath(QStringLiteral("a.7z"));
+        qApp->setConfirmArchiveRemoval(false);
+        StartupWindow viewer;
+        viewer.fakeTrash = true;
+        viewer.openPath(first);
+        {
+            MessageBoxResponder cancel(QMessageBox::Cancel);
+            viewer.handleDeletePageActionTriggered();
+            QCOMPARE(cancel.answered, 1);
+        }
+        QVERIFY(QFile::exists(first));
+        QCOMPARE(QFileInfo(viewer.viewerSession()->volumePath()).fileName(),
+                 QStringLiteral("a.7z"));
+        {
+            MessageBoxResponder ok(QMessageBox::Ok);
+            viewer.handleDeletePageActionTriggered();
+            QCOMPARE(ok.answered, 1);
+        }
+        QVERIFY(!QFile::exists(first));
+        QVERIFY(viewer.trashedPaths.isEmpty());
+        QCOMPARE(QFileInfo(viewer.viewerSession()->volumePath()).fileName(),
+                 QStringLiteral("b.7z"));
+        qApp->setConfirmArchiveRemoval(true);
+    }
+
+    /**
+     * An archive goes with every image in it, so it is asked about as its own
+     * setting says: turning the question off for images leaves it on here.
+     */
+    void archiveRemovalAsksAsTheArchiveSettingSays()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (const QString &name : {QStringLiteral("a.7z"), QStringLiteral("b.7z")}) {
+            QVERIFY(
+                QFile::copy(QString(FILELOADER_DATAPATH "7z/image.7z"), directory.filePath(name)));
+        }
+        const auto volumeName = [](StartupWindow &viewer) {
+            return QFileInfo(viewer.viewerSession()->volumePath()).fileName();
+        };
+        StartupWindow viewer;
+        viewer.fakeTrash = true;
+        viewer.openPath(directory.filePath(QStringLiteral("a.7z")));
+        QCOMPARE(volumeName(viewer), QStringLiteral("a.7z"));
+
+        qApp->setConfirmImageRemoval(false);
+        qApp->setConfirmArchiveRemoval(true);
+        {
+            MessageBoxResponder cancel(QMessageBox::Cancel);
+            viewer.handleRecyclePageActionTriggered();
+            QCOMPARE(cancel.answered, 1);
+        }
+        QVERIFY(viewer.trashedPaths.isEmpty());
+        QCOMPARE(volumeName(viewer), QStringLiteral("a.7z"));
+        {
+            MessageBoxResponder ok(QMessageBox::Ok);
+            viewer.handleRecyclePageActionTriggered();
+            QCOMPARE(ok.answered, 1);
+        }
+        QCOMPARE(viewer.trashedPaths.size(), 1);
+        QCOMPARE(QFileInfo(viewer.trashedPaths.first()).fileName(), QStringLiteral("a.7z"));
+        QCOMPARE(volumeName(viewer), QStringLiteral("b.7z"));
+
+        qApp->setConfirmImageRemoval(true);
+        qApp->setConfirmArchiveRemoval(false);
+        {
+            MessageBoxResponder cancel(QMessageBox::Cancel);
+            viewer.handleRecyclePageActionTriggered();
+            QCOMPARE(cancel.answered, 0);
+        }
+        QCOMPARE(viewer.trashedPaths.size(), 2);
+        QCOMPARE(QFileInfo(viewer.trashedPaths.last()).fileName(), QStringLiteral("b.7z"));
+        qApp->setConfirmArchiveRemoval(true);
     }
 
     void loadingFolderPageBookmarkFollowsThePanel()
@@ -1095,7 +1441,7 @@ private slots:
 
     void folderTextSurvivesModelDestructionAndSharesCompletion()
     {
-        DelayedFolderTextCache cache;
+        DelayedTextImageCache cache;
         const char32_t missing = 0x10ffff;
         const QString name = QStringLiteral("book") + QString::fromUcs4(&missing, 1) + ".zip";
         QList<FolderItem> items{FolderItem(name, FolderItem::Archive, QDateTime())};
@@ -1108,20 +1454,20 @@ private slots:
         second.setVolumes(&items);
         second.requestTextImages();
         QCOMPARE(cache.requests.size(), 1);
-        QVERIFY(second.data(second.index(0, 0), Qt::DisplayRole).toString() != name);
+        QVERIFY(!hasTextImages(second.index(0, 0)));
         first.reset();
         cache.finish(key);
-        QCOMPARE(second.data(second.index(0, 0), Qt::DisplayRole).toString(), name);
+        QVERIFY(hasTextImages(second.index(0, 0)));
         QVERIFY(!second.textImagesPending());
         FolderItemModel reopened(nullptr, &cache);
         reopened.setVolumes(&items);
-        QCOMPARE(reopened.data(reopened.index(0, 0), Qt::DisplayRole).toString(), name);
+        QVERIFY(hasTextImages(reopened.index(0, 0)));
         QCOMPARE(cache.requests.size(), 1);
     }
 
     void folderTextIgnoresOldFolderAndStyleCompletions()
     {
-        DelayedFolderTextCache cache;
+        DelayedTextImageCache cache;
         const char32_t missing = 0x10ffff;
         const QString suffix = QString::fromUcs4(&missing, 1);
         QList<FolderItem> first{FolderItem("a" + suffix, FolderItem::Archive, QDateTime())};
@@ -1142,18 +1488,18 @@ private slots:
         QVERIFY(nextKey != styledKey);
         cache.finish(oldKey);
         cache.finish(nextKey);
-        QVERIFY(model.data(model.index(0, 0), Qt::DisplayRole).toString() != next.first().name);
+        QVERIFY(!hasTextImages(model.index(0, 0)));
         cache.finish(styledKey);
-        QCOMPARE(model.data(model.index(0, 0), Qt::DisplayRole).toString(), next.first().name);
-        const auto result = model.data(model.index(0, 0), FolderItemModel::TextImagesRole)
-                                .value<FolderTextResult>();
+        QVERIFY(hasTextImages(model.index(0, 0)));
+        const auto result =
+            model.data(model.index(0, 0), FolderItemModel::TextImagesRole).value<TextImageResult>();
         QVERIFY(result);
-        QCOMPARE(result->images.size(), FolderTextImages::ImageCount);
+        QCOMPARE(result->images.size(), TextImages::ImageCount);
     }
 
     void folderTextFailureRetriesOnceAndDoesNotBlockOtherNames()
     {
-        DelayedFolderTextCache cache;
+        DelayedTextImageCache cache;
         const char32_t missing = 0x10ffff;
         const QString suffix = QString::fromUcs4(&missing, 1);
         QList<FolderItem> items{FolderItem("a" + suffix, FolderItem::Archive, QDateTime())};
@@ -1166,21 +1512,21 @@ private slots:
         cache.finish(cache.requests.first(), false);
         QVERIFY(!model.textImagesPending());
         model.requestTextImages();
-        QCOMPARE(cache.requests.size(), FolderTextCache::MaxAttempts);
+        QCOMPARE(cache.requests.size(), TextImageCache::MaxAttempts);
 
         // Out of attempts: the name keeps its placeholder instead of asking on
         // every paint.
         cache.finish(cache.requests.last(), false);
         model.requestTextImages();
-        QCOMPARE(cache.requests.size(), FolderTextCache::MaxAttempts);
+        QCOMPARE(cache.requests.size(), TextImageCache::MaxAttempts);
 
         // A different name is not held back by that.
         items[0].name = "b" + suffix;
         model.setVolumes(&items);
         model.requestTextImages();
-        QCOMPARE(cache.requests.size(), FolderTextCache::MaxAttempts + 1);
+        QCOMPARE(cache.requests.size(), TextImageCache::MaxAttempts + 1);
         cache.finish(cache.requests.last());
-        QCOMPARE(model.data(model.index(0, 0), Qt::DisplayRole).toString(), items.first().name);
+        QVERIFY(hasTextImages(model.index(0, 0)));
     }
 
     void folderTextPaintNeverShapesTheOriginalMissingGlyph()
@@ -1188,7 +1534,7 @@ private slots:
         const bool progress = qApp->ShowReadProgress();
         qApp->setShowReadProgress(false);
         const auto restore = qScopeGuard([progress] { qApp->setShowReadProgress(progress); });
-        DelayedFolderTextCache cache;
+        DelayedTextImageCache cache;
         const char32_t missing = 0x10ffff;
         const QString name = "book" + QString::fromUcs4(&missing, 1);
         QList<FolderItem> items{FolderItem(name, FolderItem::Archive, QDateTime())};
@@ -1210,7 +1556,7 @@ private slots:
         // Completion is deliberately held until after the GUI has painted.
         // Both the regular and current/bold paints must consume the images.
         cache.finish(cache.requests.first());
-        QCOMPARE(model.data(model.index(0, 0), Qt::DisplayRole).toString(), name);
+        QVERIFY(hasTextImages(model.index(0, 0)));
         for (int current : {-1, 0}) {
             model.setCurrentVolumeRow(current);
             style->paintedText.clear();
@@ -1229,24 +1575,24 @@ private slots:
         const QFont font = QApplication::font();
         // The helper returns colourless masks, so the key carries only what
         // changes the pixels it renders: the text, the font and the scale.
-        const auto base = FolderTextCache::key("name", font, 1);
-        QVERIFY(base != FolderTextCache::key("name", font, 2));
-        QVERIFY(base != FolderTextCache::key("other", font, 1));
+        const auto base = TextImageCache::key("name", font, 1);
+        QVERIFY(base != TextImageCache::key("name", font, 2));
+        QVERIFY(base != TextImageCache::key("other", font, 1));
         QFont bold = font;
         bold.setBold(true);
-        QVERIFY(base != FolderTextCache::key("name", bold, 1));
+        QVERIFY(base != TextImageCache::key("name", bold, 1));
     }
 
     void folderTextHelperReturnsImagesAtTheRequestedScale()
     {
-        FolderTextCache cache;
+        TextImageCache cache;
         QFont font = QApplication::font();
-        const QByteArray key = FolderTextCache::key(QString::fromUtf8("test摇.zip"), font, 2);
+        const QByteArray key = TextImageCache::key(QString::fromUtf8("test摇.zip"), font, 2);
         cache.request(key);
         QTRY_VERIFY_WITH_TIMEOUT(!cache.pending(key), 15000);
         const auto result = cache.lookup(key);
         QVERIFY(result);
-        QCOMPARE(result->images.size(), FolderTextImages::ImageCount);
+        QCOMPARE(result->images.size(), TextImages::ImageCount);
         for (const auto &image : result->images) {
             QVERIFY(!image.isNull());
             QCOMPARE(image.devicePixelRatio(), 2.0);
@@ -1255,7 +1601,7 @@ private slots:
 
     void folderTextRequestsOnlyTheRowsTheListShows()
     {
-        DelayedFolderTextCache cache;
+        DelayedTextImageCache cache;
         const char32_t missing = 0x10ffff;
         const QString suffix = QString::fromUcs4(&missing, 1);
         QList<FolderItem> items;
@@ -1277,16 +1623,16 @@ private slots:
         // The profile settles the whole folder, still in the batches the cache
         // accepts at once; the rest follows as results arrive.
         model.requestAllTextImages();
-        QCOMPARE(cache.requests.size(), FolderTextCache::MaxOutstanding);
+        QCOMPARE(cache.requests.size(), TextImageCache::MaxOutstanding);
         QVERIFY(model.textImagesPending());
     }
 
     void folderTextHelperLeavesWhenItIsIdle()
     {
-        FolderTextCache cache;
+        TextImageCache cache;
         cache.setIdleShutdownInterval(200);
         const QFont font = QApplication::font();
-        const QByteArray first = FolderTextCache::key(QString::fromUtf8("test\u6447.zip"), font, 1);
+        const QByteArray first = TextImageCache::key(QString::fromUtf8("test\u6447.zip"), font, 1);
         cache.request(first);
         QTRY_VERIFY_WITH_TIMEOUT(!cache.pending(first), 15000);
         QVERIFY(cache.helperRunning());
@@ -1296,7 +1642,7 @@ private slots:
 
         // ...and the next request starts it again.
         const QByteArray second =
-            FolderTextCache::key(QString::fromUtf8("test\u6447 2.zip"), font, 1);
+            TextImageCache::key(QString::fromUtf8("test\u6447 2.zip"), font, 1);
         cache.request(second);
         QTRY_VERIFY_WITH_TIMEOUT(!cache.pending(second), 15000);
         QVERIFY(cache.lookup(second));
@@ -1320,13 +1666,18 @@ private slots:
         QVERIFY(view);
         const QModelIndex row = view->model()->index(0, 0);
         QVERIFY(row.isValid());
-        // The list starts with a placeholder...
-        QVERIFY(!row.data().toString().contains(QChar(0x0378)));
-        QVERIFY(row.data().toString() != rareName);
+        // The list paints a placeholder at first...
+        const QString painted = row.data(FolderItemModel::SafeTextRole).toString();
+        QVERIFY(!painted.contains(QChar(0x0378)));
+        QVERIFY(painted != rareName);
+        QVERIFY(!hasTextImages(row));
+        // ...while screen readers and the type-ahead search get the name itself.
+        QCOMPARE(row.data().toString(), rareName);
 
         view->grab();
-        // ...and is completed once the fallback font has been loaded.
-        QTRY_VERIFY(view->model()->index(0, 0).data().toString().contains(QChar(0x0378)));
+        // The helper's image of the name completes the row.
+        QTRY_VERIFY(hasTextImages(view->model()->index(0, 0)));
+        QCOMPARE(view->model()->index(0, 0).data().toString(), rareName);
     }
 
     /**
@@ -1356,15 +1707,18 @@ private slots:
         QVERIFY(model);
         const QModelIndex row = model->index(0, 0);
         QVERIFY(row.isValid());
-        QVERIFY(!row.data().toString().contains(QString::fromUcs4(&unicorn, 1)));
+        QVERIFY(!hasTextImages(row));
 
         // The first frame of the list is a synchronous paint like this one.
         view->grab();
 
         QVERIFY2(!model->textImagesPending(),
                  "the list paint started the fallback font load it would have to wait for");
-        // The load runs after the paint and completes the row.
-        QTRY_VERIFY(row.data().toString().contains(QString::fromUcs4(&unicorn, 1)));
+        // The load runs after the paint and completes the row - when the row
+        // stands in for the glyph at all, which a UI font that has it does not.
+        if (row.data(FolderItemModel::SafeTextRole).toString() != row.data().toString()) {
+            QTRY_VERIFY(hasTextImages(row));
+        }
     }
 
     void folderListPlaceholdersNeverDescribeAnotherEntry()
@@ -1387,15 +1741,16 @@ private slots:
         QVERIFY(panel);
         QVERIFY(view);
 
-        // The display may hold a placeholder, but the path the panel acts on -
+        // The painted text may be a placeholder, but the path the panel acts on -
         // opening, the read-progress lookup, and the volume cache key - is always
         // the name on disk, and a row never shows another entry's text.
         const auto checkRows = [&] {
             QCOMPARE(view->model()->rowCount(), 2);
             for (int row = 0; row < view->model()->rowCount(); ++row) {
                 const QModelIndex index = view->model()->index(row, 0);
-                const QString display = index.data().toString();
+                const QString display = index.data(FolderItemModel::SafeTextRole).toString();
                 const QString real = QFileInfo(panel->itemPath(index)).fileName();
+                QCOMPARE(index.data().toString(), real);
                 if (real.contains(QChar(0xD83D))) {
                     // Either the name itself, or the same name with the glyph the
                     // font cannot draw replaced - never another entry's name. The
@@ -1419,30 +1774,32 @@ private slots:
         panel->resortVolumes();
         checkRows();
 
-        // The real names arrive once the fallback font has been loaded.
+        // The helper's image of the rare name arrives after the paint.
         view->grab();
-        const auto rareNameIsShown = [&] {
+        const auto rareRow = [&] {
             for (int row = 0; row < view->model()->rowCount(); ++row) {
-                if (view->model()->index(row, 0).data().toString().contains(QChar(0xD83D))) {
-                    return true;
+                const QModelIndex index = view->model()->index(row, 0);
+                if (index.data().toString().contains(QChar(0xD83D))) {
+                    return index;
                 }
             }
-            return false;
+            return QModelIndex();
         };
-        QTRY_VERIFY(rareNameIsShown());
-        for (int row = 0; row < view->model()->rowCount(); ++row) {
-            const QModelIndex index = view->model()->index(row, 0);
-            QCOMPARE(index.data().toString(), QFileInfo(panel->itemPath(index)).fileName());
+        QVERIFY(rareRow().isValid());
+        // A UI font that draws the glyph itself needs no placeholder and no image.
+        const bool standsIn =
+            rareRow().data(FolderItemModel::SafeTextRole).toString() != rareRow().data().toString();
+        if (standsIn) {
+            QTRY_VERIFY(hasTextImages(rareRow()));
         }
+        checkRows();
 
-        // Rebuilding the list once the font has been loaded keeps the real names:
-        // the load is remembered per process, so opening another entry of the same
-        // folder (which re-lists it) must not fall back to the placeholder.
+        // Rebuilding the list keeps the image: the cache holds it, so opening
+        // another entry of the same folder (which re-lists it) must not fall back
+        // to the placeholder.
         panel->setFolderPath(directory.path(), false);
-        for (int row = 0; row < view->model()->rowCount(); ++row) {
-            const QModelIndex index = view->model()->index(row, 0);
-            QCOMPARE(index.data().toString(), QFileInfo(panel->itemPath(index)).fileName());
-        }
+        QCOMPARE(hasTextImages(rareRow()), standsIn);
+        checkRows();
     }
 
     /**
@@ -1462,7 +1819,7 @@ private slots:
         QVERIFY(QDir().mkpath(directory.filePath(rareName)));
 
         FolderWindow panel(nullptr, nullptr);
-        auto *caption = panel.findChild<FolderPathLabel *>(QStringLiteral("pathLabel"));
+        auto *caption = panel.findChild<TextImageLabel *>(QStringLiteral("pathLabel"));
         QVERIFY(caption);
         panel.setFolderPath(directory.filePath(rareName), false);
         const QString path = panel.currentPath();
@@ -1471,24 +1828,221 @@ private slots:
         // The caption holds the path but draws the placeholder: the glyph the UI
         // font cannot draw never reaches GUI-side shaping, in the first frame or
         // in the layout that sizes it.
-        QCOMPARE(caption->path(), path);
+        QCOMPARE(caption->sourceText(), path);
         QVERIFY(caption->text() != path);
         QVERIFY(!caption->text().contains(QChar(missingGlyph)));
         QCOMPARE(caption->text().size(), path.size());
-        QVERIFY(!caption->paintsPathImage());
+        QVERIFY(!caption->paintsTextImage());
 
         // The helper answers afterwards, and the caption paints its image.
         panel.resize(400, 400);
         panel.show();
         QVERIFY(QTest::qWaitForWindowExposed(&panel));
-        QTRY_VERIFY_WITH_TIMEOUT(caption->paintsPathImage(), 15000);
+        QTRY_VERIFY_WITH_TIMEOUT(caption->paintsTextImage(), 15000);
         QVERIFY(!caption->text().contains(QChar(missingGlyph)));
 
         // A path the font draws whole keeps its text and asks for no image.
         panel.setFolderPath(directory.path(), false);
-        QCOMPARE(caption->path(), panel.currentPath());
+        QCOMPARE(caption->sourceText(), panel.currentPath());
         QCOMPARE(caption->text(), panel.currentPath());
-        QVERIFY(!caption->paintsPathImage());
+        QVERIFY(!caption->paintsTextImage());
+    }
+
+    /**
+     * A one-line label elides the way it is asked to - the status bar elides
+     * the page caption in the middle - and does so for the placeholder and for
+     * the helper's image alike, so the window never widens for a long path.
+     */
+    void textImageLabelElidesALineTheFontCannotDraw()
+    {
+        const char32_t missingGlyph = 0x0378;
+        const QString rare = QString::fromUcs4(&missingGlyph, 1);
+        const QString text = QStringLiteral("C:/books/") + QString(40, QLatin1Char('a')) + rare +
+                             QString(40, QLatin1Char('b')) + QStringLiteral("/page.png");
+        TextImageLabel label;
+        label.setElision(Qt::ElideMiddle, 160);
+        label.setSourceText(text);
+        QCOMPARE(label.sourceText(), text);
+        QVERIFY(!label.text().contains(rare));
+        QVERIFY(label.text().startsWith(QStringLiteral("C:/books/")));
+        QVERIFY(label.text().endsWith(QStringLiteral("/page.png")));
+        QVERIFY(label.fontMetrics().horizontalAdvance(label.text()) <= 160);
+        // Screen readers get the text, not the stand-in.
+        QCOMPARE(label.accessibleName(), text);
+
+        label.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&label));
+        QTRY_VERIFY_WITH_TIMEOUT(label.paintsTextImage(), 15000);
+        QVERIFY(label.sizeHint().width() <= 160 + 2 * label.margin() + label.frameWidth() * 2);
+
+        // Text set from outside is shown as it is, never covered by the image.
+        label.setText(QStringLiteral("Bookmark saved."));
+        QVERIFY(!label.paintsTextImage());
+        label.setSourceText(text);
+        QVERIFY(label.paintsTextImage());
+
+        // Text the font draws whole is only elided.
+        const QString plain = QStringLiteral("C:/books/") + QString(80, QLatin1Char('c'));
+        label.setSourceText(plain);
+        QCOMPARE(label.text(), label.fontMetrics().elidedText(plain, Qt::ElideMiddle, 160));
+        QVERIFY(!label.paintsTextImage());
+        QVERIFY(label.accessibleName().isEmpty());
+    }
+
+    /**
+     * The status bar shows the page's path once a volume opens. That path comes
+     * from the disk, so the caption stands in for a character the UI font
+     * cannot draw instead of shaping it on the GUI thread.
+     */
+    void statusBarCaptionStandsInForGlyphsTheFontCannotDraw()
+    {
+        QTemporaryDir root;
+        QVERIFY(root.isValid());
+        const char32_t missingGlyph = 0x0378;
+        const QString rare = QString::fromUcs4(&missingGlyph, 1);
+        const QString folder = root.filePath(QStringLiteral("pictures"));
+        QVERIFY(QDir().mkpath(folder));
+        QImage image(16, 16, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        QVERIFY(image.save(QDir(folder).filePath(QStringLiteral("page") + rare + ".bmp")));
+
+        const bool statusBar = qApp->ShowStatusBar();
+        const QString format = qApp->StatusTextFormat();
+        qApp->setShowStatusBar(true);
+        // The caption names the page's file.
+        qApp->setStatusTextFormat(QStringLiteral("%p"));
+        const auto restore = qScopeGuard([statusBar, format] {
+            qApp->setShowStatusBar(statusBar);
+            qApp->setStatusTextFormat(format);
+        });
+        StartupWindow viewer;
+        auto *caption = viewer.findChild<TextImageLabel *>(QStringLiteral("statusLabel"));
+        QVERIFY(caption);
+        viewer.resize(600, 400);
+        viewer.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&viewer));
+        viewer.openPath(folder);
+        QTRY_VERIFY(caption->sourceText().contains(rare));
+        QVERIFY(!caption->text().isEmpty());
+        QVERIFY(!caption->text().contains(rare));
+    }
+
+    /**
+     * A cell whose text the view's font cannot draw is painted with its
+     * placeholder, and the delegate asks the helper only once the paint has
+     * returned. The answer repaints the cell, which still never hands the text
+     * itself to the style; the model keeps it for screen readers.
+     */
+    void textImageItemDelegateAsksAfterThePaint()
+    {
+        const char32_t missingGlyph = 0x0378;
+        const QString rare = QString::fromUcs4(&missingGlyph, 1);
+        const QString name = QStringLiteral("Book ") + rare;
+        QStandardItemModel model;
+        model.appendRow(new QStandardItem(name));
+        model.appendRow(new QStandardItem(QStringLiteral("Plain")));
+        DelayedTextImageCache cache;
+        QListView view;
+        auto *style = new RecordingFolderStyle;
+        style->setParent(&view);
+        view.setStyle(style);
+        view.setModel(&model);
+        view.setItemDelegate(new TextImageItemDelegate(&view, &cache));
+        view.resize(300, 150);
+
+        view.grab();
+        QVERIFY(style->paintedText.contains(QStringLiteral("Plain")));
+        for (const QString &text : std::as_const(style->paintedText)) {
+            QVERIFY(!text.contains(rare));
+        }
+        QVERIFY(cache.requests.isEmpty());
+        QTRY_COMPARE(cache.requests.size(), 1);
+
+        cache.finish(cache.requests.first());
+        style->paintedText.clear();
+        view.grab();
+        for (const QString &text : std::as_const(style->paintedText)) {
+            QVERIFY(!text.contains(rare));
+        }
+        QCOMPARE(model.index(0, 0).data().toString(), name);
+        // An answered cell asks for nothing more.
+        QCoreApplication::processEvents();
+        QCOMPARE(cache.requests.size(), 1);
+
+        // A wrapping view asks for the lines that fit its cells instead.
+        view.setViewMode(QListView::IconMode);
+        view.setWordWrap(true);
+        view.setGridSize(QSize(80, 80));
+        view.grab();
+        QTRY_COMPARE(cache.requests.size(), 2);
+        QVERIFY(cache.requests.at(1) != cache.requests.at(0));
+    }
+
+    void textImageButtonPaintsACaptionTheFontCannotDraw()
+    {
+        const char32_t missingGlyph = 0x0378;
+        const QString rare = QString::fromUcs4(&missingGlyph, 1);
+        const QString caption = QStringLiteral("Tag ") + rare;
+        TextImageButton button;
+        button.setSourceText(caption);
+        QCOMPARE(button.sourceText(), caption);
+        QVERIFY(!button.text().contains(rare));
+        QCOMPARE(button.accessibleName(), caption);
+        button.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&button));
+        QTRY_VERIFY_WITH_TIMEOUT(button.paintsTextImage(), 15000);
+        QVERIFY(!button.text().contains(rare));
+
+        button.setSourceText(QStringLiteral("Plain"));
+        QCOMPARE(button.text(), QStringLiteral("Plain"));
+        QVERIFY(!button.paintsTextImage());
+    }
+
+    /**
+     * The fullscreen signage names the page's file. A name the scene's font
+     * cannot draw is shown with a placeholder, and the helper's image of it
+     * takes the placeholder's place.
+     */
+    void signageStandsInForGlyphsTheFontCannotDraw()
+    {
+        const char32_t missingGlyph = 0x0378;
+        const QString rare = QString::fromUcs4(&missingGlyph, 1);
+        QGraphicsScene scene;
+        QImage image(40, 30, QImage::Format_RGB32);
+        image.fill(Qt::blue);
+        ImageContent content(image, QStringLiteral("page.png"), image.size(), {}, 0);
+        RenderedPage page(nullptr, &scene, content);
+        page.setSignageText(QStringLiteral("page") + rare + QStringLiteral(".png [1/3]"));
+        page.resetSignage(QRect(0, 0, 400, 300), RenderedPage::PageRight);
+
+        const auto signageTexts = [&scene] {
+            QStringList texts;
+            for (QGraphicsItem *item : scene.items()) {
+                if (auto *text = qgraphicsitem_cast<QGraphicsTextItem *>(item)) {
+                    texts << text->toPlainText();
+                }
+            }
+            return texts;
+        };
+        const auto signageImages = [&scene] {
+            int count = 0;
+            for (QGraphicsItem *item : scene.items()) {
+                count += item->zValue() == 1 && qgraphicsitem_cast<QGraphicsPixmapItem *>(item);
+            }
+            return count;
+        };
+        QCOMPARE(signageTexts().size(), 1);
+        QVERIFY(!signageTexts().first().contains(rare));
+        QVERIFY(signageTexts().first().endsWith(QStringLiteral(".png [1/3]")));
+
+        QTRY_VERIFY_WITH_TIMEOUT(signageImages() == 1, 15000);
+        QVERIFY(signageTexts().isEmpty());
+
+        // Signage the font draws whole stays text.
+        RenderedPage plain(nullptr, &scene, content);
+        plain.setSignageText(QStringLiteral("page.png [2/3]"));
+        plain.resetSignage(QRect(0, 0, 400, 300), RenderedPage::PageLeft);
+        QCOMPARE(signageTexts(), QStringList{QStringLiteral("page.png [2/3]")});
     }
 
     void folderViewConsumesWheelEventsAtScrollBoundary()
@@ -2729,6 +3283,128 @@ void WindowStartupTest::catalogViewConsumesWheelEventsAtScrollBoundary()
     QVERIFY(event.isAccepted());
 }
 
+/**
+ * Volume titles come from folder and archive names. A title the UI font
+ * cannot draw opens the catalog with its placeholder, so the style never lays
+ * out or paints the title itself.
+ */
+void WindowStartupTest::catalogListPaintsNoGlyphTheFontCannotDraw()
+{
+    const char32_t missingGlyph = 0x0378;
+    const QString rare = QString::fromUcs4(&missingGlyph, 1);
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString root = directory.filePath(QStringLiteral("Shelf"));
+    QVERIFY(writeCatalogShelf(root, {QStringLiteral("Alpha") + rare, QStringLiteral("Beta")}));
+    CatalogDatabase database(nullptr, directory.filePath(QStringLiteral("catalog.db")));
+    QVERIFY(database.createCatalog(QStringLiteral("Shelf"), root).created);
+    for (const auto mode : {qvEnums::CatalogViewMode::Icon, qvEnums::CatalogViewMode::List}) {
+        qApp->setCatalogViewModeSetting(mode);
+        StartupWindow viewer;
+        viewer.setCatalogDatabase(&database);
+        viewer.createCatalogWindow(true);
+        auto *list = viewer.catalogWindow()->findChild<QListView *>(QStringLiteral("volumeList"));
+        QVERIFY(list);
+        auto *style = new RecordingFolderStyle;
+        style->setParent(list);
+        list->setStyle(style);
+        list->resize(400, 300);
+        list->grab();
+        QVERIFY(!style->paintedText.isEmpty());
+        for (const QString &text : std::as_const(style->paintedText)) {
+            QVERIFY2(!text.contains(rare), qPrintable(text));
+        }
+        auto *delegate = qobject_cast<TextImageItemDelegate *>(list->itemDelegate());
+        QVERIFY(delegate);
+        QTRY_VERIFY_WITH_TIMEOUT(!delegate->textImagesPending(), 15000);
+        style->paintedText.clear();
+        list->grab();
+        for (const QString &text : std::as_const(style->paintedText)) {
+            QVERIFY2(!text.contains(rare), qPrintable(text));
+        }
+    }
+}
+
+/**
+ * A tag button shows a placeholder for a tag the UI font cannot draw, but
+ * pressing it searches for the tag itself.
+ */
+void WindowStartupTest::catalogTagButtonsSearchTheTagTheyStandFor()
+{
+    const char32_t missingGlyph = 0x0378;
+    const QString rareTag = QStringLiteral("Space") + QString::fromUcs4(&missingGlyph, 1);
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString root = directory.filePath(QStringLiteral("Shelf"));
+    QVERIFY(writeCatalogShelf(root, {QStringLiteral("Alpha"), QStringLiteral("Beta")}));
+    CatalogDatabase database(nullptr, directory.filePath(QStringLiteral("catalog.db")));
+    QVERIFY(database.createCatalog(QStringLiteral("Shelf"), root).created);
+    for (const auto &volume : database.volumes()) {
+        QVERIFY(database.setVolumeDetails(
+            volume.id,
+            volume.name,
+            {volume.realname == QStringLiteral("Alpha") ? rareTag : QStringLiteral("Other")}));
+    }
+    qApp->setCatalogViewModeSetting(qvEnums::CatalogViewMode::Icon);
+    qApp->setShowTagBar(true);
+    qApp->setSearchTitleWithOptions(true);
+    StartupWindow viewer;
+    viewer.setCatalogDatabase(&database);
+    viewer.show();
+    viewer.createCatalogWindow(true);
+    QApplication::processEvents();
+    auto *catalog = viewer.catalogWindow();
+    auto *list = catalog->findChild<QListView *>(QStringLiteral("volumeList"));
+    auto *frame = catalog->findChild<QWidget *>(QStringLiteral("tagFrame"));
+    QVERIFY(list && frame);
+    TextImageButton *tag = nullptr;
+    for (auto *button : frame->findChildren<TextImageButton *>()) {
+        QVERIFY(!button->text().contains(QChar(missingGlyph)));
+        if (button->sourceText() == rareTag) {
+            tag = button;
+        }
+    }
+    QVERIFY(tag);
+    QCOMPARE(list->model()->rowCount(), 2);
+    tag->click();
+    QCOMPARE(list->model()->rowCount(), 1);
+    QCOMPARE(list->model()->index(0, 0).data().toString(), QStringLiteral("Alpha"));
+}
+
+void WindowStartupTest::catalogManagerPaintsNoGlyphTheFontCannotDraw()
+{
+    const char32_t missingGlyph = 0x0378;
+    const QString rare = QString::fromUcs4(&missingGlyph, 1);
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString root = directory.filePath(QStringLiteral("Shelf") + rare);
+    QVERIFY(writeCatalogShelf(root, {QStringLiteral("Alpha") + rare}));
+    CatalogDatabase database(nullptr, directory.filePath(QStringLiteral("catalog.db")));
+    QVERIFY(database.createCatalog(QStringLiteral("Shelf") + rare, root).created);
+    for (const auto &volume : database.volumes()) {
+        QVERIFY(database.setVolumeDetails(volume.id, volume.name, {QStringLiteral("Tag") + rare}));
+    }
+    ManageDatabaseDialog dialog;
+    // The catalogs on the left, and the books of the selected one on the right.
+    auto *tree = dialog.findChild<QTreeWidget *>(QStringLiteral("treeWidget"));
+    auto *books = dialog.findChild<QTreeWidget *>(QStringLiteral("booksTree"));
+    QVERIFY(tree && books);
+    auto *style = new RecordingFolderStyle;
+    style->setParent(&dialog);
+    tree->setStyle(style);
+    books->setStyle(style);
+    dialog.setCatalogDatabase(&database);
+    dialog.resize(600, 300);
+    dialog.grab();
+    QVERIFY(books->topLevelItemCount() > 0);
+    QVERIFY(!style->paintedText.isEmpty());
+    for (const QString &text : std::as_const(style->paintedText)) {
+        QVERIFY2(!text.contains(rare), qPrintable(text));
+    }
+    // The tree keeps the names and paths themselves for its tooltips.
+    QVERIFY(tree->topLevelItem(0)->text(0).contains(rare));
+}
+
 void WindowStartupTest::catalogTagBarFollowsRemovedTags()
 {
     QTemporaryDir directory;
@@ -2782,8 +3458,8 @@ void WindowStartupTest::catalogTagBarFollowsRemovedTags()
 
 int main(int argc, char **argv)
 {
-    if (isFolderTextHelper(argc, argv)) {
-        return runFolderTextHelper(argc, argv);
+    if (isTextImageHelper(argc, argv)) {
+        return runTextImageHelper(argc, argv);
     }
 
     QStandardPaths::setTestModeEnabled(true);

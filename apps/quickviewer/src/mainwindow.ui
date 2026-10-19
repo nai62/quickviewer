@@ -172,7 +172,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QLabel" name="statusLabel">
+     <widget class="TextImageLabel" name="statusLabel">
       <property name="minimumSize">
        <size>
         <width>100</width>
@@ -449,7 +449,8 @@
     <addaction name="actionSaveReadProgress"/>
     <addaction name="separator"/>
     <addaction name="actionShowSubfolders"/>
-    <addaction name="actionConfirmDeletePage"/>
+    <addaction name="actionConfirmImageRemoval"/>
+    <addaction name="actionConfirmArchiveRemoval"/>
     <addaction name="actionSaveFolderViewWidth"/>
    </widget>
    <widget class="QMenu" name="menu_Image">
@@ -1066,12 +1067,20 @@
     <string extracomment="Menu that displays a dialog for changing keyboard shortcuts">&amp;Keyboard Shortcuts...</string>
    </property>
   </action>
-  <action name="actionConfirmDeletePage">
+  <action name="actionConfirmImageRemoval">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
     <string extracomment="A function to display a confirmation screen when moving the currently displayed image to Recycle Bin">Confirm moving image to &amp;Recycle Bin</string>
+   </property>
+  </action>
+  <action name="actionConfirmArchiveRemoval">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string extracomment="A function to display a confirmation screen when moving the currently displayed archive, with every image in it, to Recycle Bin">Confirm moving &amp;archive to Recycle Bin</string>
    </property>
   </action>
   <action name="actionContextMenu">
@@ -1376,6 +1385,11 @@
    <class>PageSlider</class>
    <extends>QSlider</extends>
    <header>pageslider.h</header>
+  </customwidget>
+  <customwidget>
+   <class>TextImageLabel</class>
+   <extends>QLabel</extends>
+   <header>textimagelabel.h</header>
   </customwidget>
  </customwidgets>
  <resources>
@@ -2455,10 +2469,26 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionConfirmDeletePage</sender>
+   <sender>actionConfirmImageRemoval</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>handleConfirmDeletePageActionTriggered(bool)</slot>
+   <slot>handleConfirmImageRemovalActionTriggered(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>350</x>
+     <y>294</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionConfirmArchiveRemoval</sender>
+   <signal>triggered(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>handleConfirmArchiveRemovalActionTriggered(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -3019,7 +3049,8 @@
   <slot>handleOpenExifActionTriggered()</slot>
   <slot>handleBeginAsFullscreenActionTriggered(bool)</slot>
   <slot>handleShowFullscreenSignageActionTriggered(bool)</slot>
-  <slot>handleConfirmDeletePageActionTriggered(bool)</slot>
+  <slot>handleConfirmImageRemovalActionTriggered(bool)</slot>
+  <slot>handleConfirmArchiveRemovalActionTriggered(bool)</slot>
   <slot>handleRegisterFileAssociationsAsAdministratorActionTriggered()</slot>
   <slot>handleContextMenuActionTriggered()</slot>
   <slot>handleOpenMouseConfigActionTriggered()</slot>

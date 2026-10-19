@@ -1,4 +1,4 @@
-#include "foldertextcache.h"
+#include "textimagecache.h"
 #include "startupprofiler.h"
 #include <cstdio>
 #ifdef Q_OS_WIN
@@ -27,20 +27,72 @@ QByteArray packet(const QByteArray &payload)
     return result;
 }
 
-FolderTextResult render(const QByteArray &key)
+constexpr int WrapFlags = Qt::TextWordWrap | Qt::TextWrapAnywhere;
+
+/**
+ * The lines an item view shows of \a text in the box \a layout gives it: the
+ * lines that fit, and the last of them elided when more of the text follows,
+ * the way a view lays out a wrapped item.
+ */
+QString boxLines(const QString &text,
+                 const QFont &font,
+                 QPaintDevice *device,
+                 const TextImageLayout &layout)
+{
+    const QFontMetrics metrics(font, device);
+    QTextLayout textLayout(text, font, device);
+    QTextOption option;
+    option.setWrapMode((layout.flags & Qt::TextWrapAnywhere)
+                           ? QTextOption::WrapAtWordBoundaryOrAnywhere
+                           : QTextOption::WordWrap);
+    textLayout.setTextOption(option);
+    textLayout.beginLayout();
+    QStringList lines;
+    int height = 0;
+    for (QTextLine line = textLayout.createLine(); line.isValid(); line = textLayout.createLine()) {
+        line.setLineWidth(layout.width);
+        QString lineText = text.mid(line.textStart(), line.textLength());
+        const bool more = line.textStart() + line.textLength() < text.size();
+        if (more && height + 2 * metrics.lineSpacing() > layout.height) {
+            // The last line that fits stands for the rest of the text.
+            if (layout.elideMode != Qt::ElideNone) {
+                lineText =
+                    metrics.elidedText(text.mid(line.textStart()), layout.elideMode, layout.width);
+            }
+            lines.append(lineText);
+            break;
+        }
+        while (!lineText.isEmpty() && lineText.back().isSpace()) {
+            lineText.chop(1);
+        }
+        lines.append(lineText);
+        height += metrics.lineSpacing();
+    }
+    textLayout.endLayout();
+    return lines.join(QLatin1Char('\n'));
+}
+
+TextImageResult render(const QByteArray &key)
 {
     QString text;
     QFont font;
     qreal ratio = 1;
-    int wrapWidth = 0;
+    TextImageLayout layout;
+    int elideMode = Qt::ElideRight;
     QDataStream input(key);
-    input >> text >> font >> ratio >> wrapWidth;
+    input >> text >> font >> ratio >> layout.width >> layout.height >> layout.flags >> elideMode;
+    layout.elideMode = Qt::TextElideMode(elideMode);
     if (input.status() != QDataStream::Ok || !qIsFinite(ratio) || ratio < 0.5 || ratio > 8 ||
-        text.size() > 32768 || wrapWidth < 0 || wrapWidth > MaxWrapWidth) {
+        text.size() > 32768 || layout.width < 0 || layout.width > MaxWrapWidth ||
+        layout.height < 0 || layout.height > MaxWrapHeight || elideMode < Qt::ElideLeft ||
+        elideMode > Qt::ElideNone) {
         return {};
     }
-    auto result = QSharedPointer<FolderTextImages>::create();
-    for (int bold = 0; bold < FolderTextImages::ImageCount; ++bold) {
+    const bool wrapped = layout.width > 0 && (layout.flags & WrapFlags);
+    const bool boxed = wrapped && layout.height > 0;
+    const int alignment = layout.flags & ~WrapFlags;
+    auto result = QSharedPointer<TextImages>::create();
+    for (int bold = 0; bold < TextImages::ImageCount; ++bold) {
         if (bold) {
             font.setBold(true);
         }
@@ -49,19 +101,27 @@ FolderTextResult render(const QByteArray &key)
         QImage device(1, 1, QImage::Format_ARGB32_Premultiplied);
         device.setDevicePixelRatio(ratio);
         QFontMetrics metrics(font, &device);
-        // A caption wraps the path the way the label does, so the image covers
-        // the lines the label draws; a name gets one line, elided to the width
-        // a list row can hold.
-        const bool wrapped = wrapWidth > 0;
-        const QString visible =
-            wrapped ? QString() : metrics.elidedText(text, Qt::ElideRight, 4096);
-        const QRect lines = wrapped ? metrics.boundingRect(QRect(0, 0, wrapWidth, MaxWrapHeight),
-                                                           Qt::TextWordWrap,
-                                                           text)
-                                    : QRect();
-        const int width =
-            qBound(1, (wrapped ? lines.width() : metrics.horizontalAdvance(visible)) + 4, 8192);
-        const int height = qBound(1, (wrapped ? lines.height() : metrics.height()) + 4, 16384);
+        // A label wraps the text the way the label does, so the image covers
+        // the lines the label draws; an item view keeps what fits in its box;
+        // anything else gets one line, elided to the width it is given or to
+        // what a list row can hold.
+        QString visible;
+        QSize content;
+        QRect lines;
+        if (boxed) {
+            visible = boxLines(text, font, &device, layout);
+            content = QSize(layout.width, layout.height);
+        } else if (wrapped) {
+            lines = metrics.boundingRect(
+                QRect(0, 0, layout.width, MaxWrapHeight), alignment | Qt::TextWordWrap, text);
+            content = lines.size();
+        } else {
+            visible = layout.width > 0 ? metrics.elidedText(text, layout.elideMode, layout.width)
+                                       : metrics.elidedText(text, Qt::ElideRight, 4096);
+            content = QSize(metrics.horizontalAdvance(visible), metrics.height());
+        }
+        const int width = qBound(1, content.width() + 4, 8192);
+        const int height = qBound(1, content.height() + 4, 16384);
         const QSize imageSize(qCeil(width * ratio), qCeil(height * ratio));
         if (wrapped && qsizetype(imageSize.width()) * imageSize.height() > MaxImagePixels) {
             return {};
@@ -73,8 +133,16 @@ FolderTextResult render(const QByteArray &key)
         painter.setFont(font);
         // Coverage only: the GUI tints the mask with the colour it draws in.
         painter.setPen(Qt::white);
-        if (wrapped) {
-            painter.drawText(QRect(2, 2, wrapWidth, lines.height()), Qt::TextWordWrap, text);
+        const QRect area(QPoint(2, 2), content);
+        if (boxed) {
+            painter.setClipRect(area);
+            painter.drawText(area, alignment, visible);
+        } else if (wrapped) {
+            // Wrapped at the width the label has, and moved so that the lines
+            // start at the image's margin whichever side they align to.
+            painter.drawText(QRect(2 - lines.x(), 2, layout.width, lines.height()),
+                             alignment | Qt::TextWordWrap,
+                             text);
         } else {
             painter.drawText(QPoint(2, 2 + metrics.ascent()), visible);
         }
@@ -103,7 +171,7 @@ QImage tintedTextMask(const QImage &mask, const QColor &color)
     return image;
 }
 
-FolderTextCache::FolderTextCache(QObject *parent)
+TextImageCache::TextImageCache(QObject *parent)
     : QObject(parent),
       m_results(32 * 1024) // KiB; models retain their visible results
 {
@@ -123,20 +191,20 @@ FolderTextCache::FolderTextCache(QObject *parent)
         m_process.kill();
         failRequests();
     });
-    connect(&m_idle, &QTimer::timeout, this, &FolderTextCache::stopIdleHelper);
-    connect(&m_process, &QProcess::readyReadStandardOutput, this, &FolderTextCache::readResponse);
+    connect(&m_idle, &QTimer::timeout, this, &TextImageCache::stopIdleHelper);
+    connect(&m_process, &QProcess::readyReadStandardOutput, this, &TextImageCache::readResponse);
     connect(&m_process, &QProcess::errorOccurred, this, [this] { failRequests(); });
     connect(&m_process, &QProcess::finished, this, [this] { failRequests(); });
     // Drain stderr, but never confuse diagnostics with the binary response.
     connect(&m_process, &QProcess::readyReadStandardError, this, [this] {
         const QByteArray diagnostic = m_process.readAllStandardError().trimmed();
         if (!diagnostic.isEmpty()) {
-            qWarning().noquote() << "Folder text helper:" << diagnostic;
+            qWarning().noquote() << "Text image helper:" << diagnostic;
         }
     });
 }
 
-FolderTextCache::~FolderTextCache()
+TextImageCache::~TextImageCache()
 {
     m_process.disconnect(this);
     if (m_process.state() != QProcess::NotRunning) {
@@ -145,16 +213,19 @@ FolderTextCache::~FolderTextCache()
     }
 }
 
-FolderTextCache *FolderTextCache::instance()
+TextImageCache *TextImageCache::instance()
 {
-    static QPointer<FolderTextCache> cache;
+    static QPointer<TextImageCache> cache;
     if (!cache) {
-        cache = new FolderTextCache(QCoreApplication::instance());
+        cache = new TextImageCache(QCoreApplication::instance());
     }
     return cache;
 }
 
-QByteArray FolderTextCache::key(const QString &text, const QFont &font, qreal ratio, int wrapWidth)
+QByteArray TextImageCache::key(const QString &text,
+                               const QFont &font,
+                               qreal ratio,
+                               const TextImageLayout &layout)
 {
     // Resolve point sizes on the GUI screen before handing them to the helper.
     QFont resolved = font;
@@ -163,38 +234,39 @@ QByteArray FolderTextCache::key(const QString &text, const QFont &font, qreal ra
     }
     QByteArray result;
     QDataStream stream(&result, QIODevice::WriteOnly);
-    stream << text << resolved << ratio << wrapWidth;
+    stream << text << resolved << ratio << layout.width << layout.height << layout.flags
+           << int(layout.elideMode);
     return result;
 }
 
-FolderTextResult FolderTextCache::lookup(const QByteArray &key) const
+TextImageResult TextImageCache::lookup(const QByteArray &key) const
 {
     const auto *result = m_results.object(key);
-    return result ? *result : FolderTextResult();
+    return result ? *result : TextImageResult();
 }
 
-bool FolderTextCache::pending(const QByteArray &key) const
+bool TextImageCache::pending(const QByteArray &key) const
 {
     return m_pending.contains(key);
 }
 
-bool FolderTextCache::helperRunning() const
+bool TextImageCache::helperRunning() const
 {
     return m_process.state() != QProcess::NotRunning;
 }
 
-void FolderTextCache::setIdleShutdownInterval(int milliseconds)
+void TextImageCache::setIdleShutdownInterval(int milliseconds)
 {
     m_idle.setInterval(milliseconds);
 }
 
-void FolderTextCache::request(const QByteArray &key)
+void TextImageCache::request(const QByteArray &key)
 {
     if (key.isEmpty() || lookup(key) || m_pending.contains(key)) {
         return;
     }
     if (m_failedAttempts.value(key) >= MaxAttempts) {
-        // Out of attempts: the caller keeps the placeholder for this name.
+        // Out of attempts: the caller keeps the placeholder for this text.
         return;
     }
     if (m_pending.size() >= MaxOutstanding) {
@@ -206,28 +278,28 @@ void FolderTextCache::request(const QByteArray &key)
     submit(key);
 }
 
-void FolderTextCache::submit(const QByteArray &key)
+void TextImageCache::submit(const QByteArray &key)
 {
     m_idle.stop();
     if (m_process.state() == QProcess::NotRunning) {
         m_response.clear();
         m_process.start(QCoreApplication::applicationFilePath(),
-                        {QStringLiteral("--folder-text-helper")});
+                        {QStringLiteral("--text-image-helper")});
     }
     m_queue.enqueue(key);
     m_process.write(packet(key));
     if (!m_deadline.isActive()) {
         m_deadline.start();
     }
-    StartupProfiler::mark("folder-text.request");
+    StartupProfiler::mark("text-image.request");
 }
 
-void FolderTextCache::complete(const QByteArray &key, const FolderTextResult &result)
+void TextImageCache::complete(const QByteArray &key, const TextImageResult &result)
 {
     if (!m_pending.remove(key)) {
         return;
     }
-    const bool valid = result && result->images.size() == FolderTextImages::ImageCount &&
+    const bool valid = result && result->images.size() == TextImages::ImageCount &&
                        std::all_of(result->images.cbegin(),
                                    result->images.cend(),
                                    [](const QImage &image) { return !image.isNull(); });
@@ -237,15 +309,15 @@ void FolderTextCache::complete(const QByteArray &key, const FolderTextResult &re
         for (const auto &image : result->images) {
             bytes += image.sizeInBytes();
         }
-        m_results.insert(key, new FolderTextResult(result), qMax(1, int(bytes / 1024)));
+        m_results.insert(key, new TextImageResult(result), qMax(1, int(bytes / 1024)));
     } else {
         m_failedAttempts[key] += 1;
     }
-    StartupProfiler::mark(valid ? "folder-text.complete" : "folder-text.failed");
-    emit finished(key, valid ? result : FolderTextResult());
+    StartupProfiler::mark(valid ? "text-image.complete" : "text-image.failed");
+    emit finished(key, valid ? result : TextImageResult());
 }
 
-void FolderTextCache::readResponse()
+void TextImageCache::readResponse()
 {
     m_response += m_process.readAllStandardOutput();
     while (m_response.size() >= 4 && !m_queue.isEmpty()) {
@@ -261,7 +333,7 @@ void FolderTextCache::readResponse()
             return;
         }
         QDataStream input(m_response.mid(4, size));
-        auto result = QSharedPointer<FolderTextImages>::create();
+        auto result = QSharedPointer<TextImages>::create();
         input >> result->images;
         m_response.remove(0, 4 + size);
         const QByteArray key = m_queue.dequeue();
@@ -275,7 +347,7 @@ void FolderTextCache::readResponse()
         for (auto &image : result->images) {
             image.setDevicePixelRatio(ratio);
         }
-        complete(key, input.status() == QDataStream::Ok ? result : FolderTextResult());
+        complete(key, input.status() == QDataStream::Ok ? result : TextImageResult());
         if (m_queue.isEmpty()) {
             m_deadline.stop();
             // Nothing is in flight: the helper may leave once it is not needed.
@@ -286,7 +358,7 @@ void FolderTextCache::readResponse()
     }
 }
 
-void FolderTextCache::failRequests()
+void TextImageCache::failRequests()
 {
     m_deadline.stop();
     m_idle.stop();
@@ -298,22 +370,22 @@ void FolderTextCache::failRequests()
     }
 }
 
-void FolderTextCache::stopIdleHelper()
+void TextImageCache::stopIdleHelper()
 {
     if (m_process.state() == QProcess::NotRunning) {
         return;
     }
     // The helper leaves when its input ends; the next request starts it again.
-    StartupProfiler::mark("folder-text.idle-stop");
+    StartupProfiler::mark("text-image.idle-stop");
     m_process.closeWriteChannel();
 }
 
-bool isFolderTextHelper(int argc, char **argv)
+bool isTextImageHelper(int argc, char **argv)
 {
-    return argc == 2 && QByteArray(argv[1]) == "--folder-text-helper";
+    return argc == 2 && QByteArray(argv[1]) == "--text-image-helper";
 }
 
-int runFolderTextHelper(int argc, char **argv)
+int runTextImageHelper(int argc, char **argv)
 {
 #ifdef Q_OS_WIN
     _setmode(_fileno(stdin), _O_BINARY);

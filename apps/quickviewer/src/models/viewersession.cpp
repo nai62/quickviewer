@@ -681,6 +681,89 @@ void ViewerSession::reloadVolumeAfterImageRemoval()
     }
 }
 
+ArchiveRemovalPlan ViewerSession::archiveRemovalPlan() const
+{
+    Volume *volume = activeVolume();
+    if (!volume || !volume->isArchive()) {
+        return {};
+    }
+    // An archive inside another one has no file of its own to move.
+    const QFileInfo archive(volume->volumePath());
+    if (!archive.isFile()) {
+        return {};
+    }
+    ArchiveRemovalPlan plan;
+    plan.archivePath = QDir::cleanPath(QDir::fromNativeSeparators(archive.absoluteFilePath()));
+    plan.pageName = currentPageName();
+    // The listing is read again: the one kept for volume navigation may be
+    // older than the folder.
+    const QDir directory = archive.absoluteDir();
+    const QStringList names = siblingVolumeNames(directory);
+    const int index = names.indexOf(archive.fileName());
+    if (index < 0) {
+        return plan;
+    }
+    for (int next = index + 1; next < names.size(); ++next) {
+        plan.nextVolumePaths << QDir::cleanPath(directory.filePath(names.at(next)));
+    }
+    for (int previous = index - 1; previous >= 0; --previous) {
+        plan.nextVolumePaths << QDir::cleanPath(directory.filePath(names.at(previous)));
+    }
+    return plan;
+}
+
+bool ViewerSession::releaseArchive(const ArchiveRemovalPlan &plan, int timeoutMilliseconds)
+{
+    if (!plan.isValid()) {
+        return false;
+    }
+    QPointer<Volume> volume;
+    QWeakPointer<ImageLoadContext> loadContext;
+    if (Volume *active = activeVolume(); active && QDir::cleanPath(QDir::fromNativeSeparators(
+                                                       active->volumePath())) == plan.archivePath) {
+        volume = active;
+        loadContext = active->loadContext();
+        m_savedPagePositions.remove(active);
+    }
+    ++m_initialDisplayGeneration;
+    m_pendingContainingImagePath.clear();
+    m_pendingContainingVolumePath.clear();
+    m_pendingContainingPageName.clear();
+    m_initialImageLoadDispatcher.invalidate();
+    m_volumeLoadDispatcher.invalidate();
+    m_state = EmptyViewerState{};
+    clearVisiblePages();
+    m_volumeCache.invalidatePath(plan.archivePath);
+    m_volumeNames.clear();
+
+    // The volume goes on the thread that owns it, and the page loads still
+    // running hold the loader until they finish; both need the event loop.
+    const auto released = [&] { return volume.isNull() && loadContext.isNull(); };
+    QDeadlineTimer deadline(timeoutMilliseconds);
+    while (!released() && !deadline.hasExpired()) {
+        QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 10);
+        QThread::msleep(5);
+    }
+    return released();
+}
+
+bool ViewerSession::openVolumeAfterArchiveRemoval(const ArchiveRemovalPlan &plan)
+{
+    m_volumeNames.clear();
+    for (const QString &path : plan.nextVolumePaths) {
+        if (openContainer(path, true)) {
+            return true;
+        }
+    }
+    // Nothing is left to show: the viewer is empty, as before any volume.
+    m_state = EmptyViewerState{};
+    clearVisiblePages();
+    m_loadStatus = ViewerLoadStatus{};
+    emit loadStatusChanged();
+    emit volumeChanged("");
+    return false;
+}
+
 void ViewerSession::invalidateVolumeCache(const QString &containerPath)
 {
     m_volumeCache.invalidate(volumeCacheKey(QDir::fromNativeSeparators(containerPath)));
