@@ -776,6 +776,39 @@ private slots:
     }
 
     /**
+     * Deleting an image cannot be undone, so the viewer asks even when the
+     * setting turned off the question for moving images to the Recycle Bin.
+     */
+    void imageDeletionAlwaysAsks()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 2; ++page) {
+            QImage image(16, 16, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 60, 255, 255));
+            QVERIFY(image.save(directory.filePath(QStringLiteral("page-%1.bmp").arg(page))));
+        }
+        const QString firstPage = directory.filePath(QStringLiteral("page-0.bmp"));
+        qApp->setConfirmImageRemoval(false);
+        StartupWindow viewer;
+        viewer.openPath(directory.path());
+        {
+            MessageBoxResponder cancel(QMessageBox::Cancel);
+            viewer.handleDeletePageActionTriggered();
+            QCOMPARE(cancel.answered, 1);
+        }
+        QVERIFY(QFile::exists(firstPage));
+        {
+            MessageBoxResponder ok(QMessageBox::Ok);
+            viewer.handleDeletePageActionTriggered();
+            QCOMPARE(ok.answered, 1);
+        }
+        QVERIFY(!QFile::exists(firstPage));
+        QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("page-1.bmp"));
+        qApp->setConfirmImageRemoval(true);
+    }
+
+    /**
      * An archive goes with every image in it, so it is asked about as its own
      * setting says: turning the question off for images leaves it on here.
      */

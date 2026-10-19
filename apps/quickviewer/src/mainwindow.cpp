@@ -2452,7 +2452,9 @@ void MainWindow::handleDeletePageActionTriggered()
     if (!path.length()) {
         return;
     }
-    if (!confirmRemoval(qApp->ConfirmImageRemoval(),
+    // Deleting cannot be undone, so it is asked whatever the setting says: the
+    // setting is about moving the image to the Recycle Bin.
+    if (!confirmRemoval(true,
                         tr("Are you sure you want to delete this image?",
                            "Confirm deleting image file on Message Box body"),
                         path)) {
