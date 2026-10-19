@@ -1676,7 +1676,13 @@
         <location filename="../src/mainwindow.ui" line="1074"/>
         <source>Confirm moving image to &amp;Recycle Bin</source>
         <extracomment>A function to display a confirmation screen when moving the currently displayed image to Recycle Bin</extracomment>
-        <translation>ゴミ箱に移動する際に確認する(&amp;R)</translation>
+        <translation>画像をゴミ箱に移動する際に確認する(&amp;R)</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.ui" line="1083"/>
+        <source>Confirm moving &amp;archive to Recycle Bin</source>
+        <extracomment>A function to display a confirmation screen when moving the currently displayed archive, with every image in it, to Recycle Bin</extracomment>
+        <translation>アーカイブをゴミ箱に移動する際に確認する(&amp;A)</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="1084"/>

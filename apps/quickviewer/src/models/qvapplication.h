@@ -99,6 +99,7 @@ class QVApplication : public QApplication
     // Other
     Q_PROPERTY(QString UiLanguage READ UiLanguage WRITE setUiLanguage)
     Q_PROPERTY(bool ConfirmImageRemoval READ ConfirmImageRemoval WRITE setConfirmImageRemoval)
+    Q_PROPERTY(bool ConfirmArchiveRemoval READ ConfirmArchiveRemoval WRITE setConfirmArchiveRemoval)
 
     // Theme
     Q_PROPERTY(QString UiTheme READ UiTheme WRITE setUiTheme)
@@ -444,6 +445,9 @@ public:
     LanguageManager *languageSelector() { return &m_languageSelector; }
     bool ConfirmImageRemoval() { return m_confirmImageRemoval; }
     void setConfirmImageRemoval(bool confirm) { m_confirmImageRemoval = confirm; }
+    /** Whether the viewer asks before it moves the displayed archive, every image in it. */
+    bool ConfirmArchiveRemoval() { return m_confirmArchiveRemoval; }
+    void setConfirmArchiveRemoval(bool confirm) { m_confirmArchiveRemoval = confirm; }
 
     // Key Config
     KeyActionManager &keyActions() { return m_keyActions; }
@@ -594,6 +598,7 @@ private:
     QString m_uiLanguage;
     QTranslator *m_translator;
     bool m_confirmImageRemoval;
+    bool m_confirmArchiveRemoval;
 
     // Appearance
     QString m_uiTheme;

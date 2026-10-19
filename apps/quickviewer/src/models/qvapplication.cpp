@@ -667,6 +667,7 @@ void QVApplication::loadSettings()
     m_uiLanguage = m_settings->value("UiLanguage", "").toString();
     // The key keeps the name of the setting it was, so existing ini files hold.
     m_confirmImageRemoval = m_settings->value("ConfirmDeletePage", true).toBool();
+    m_confirmArchiveRemoval = m_settings->value("ConfirmArchiveRemoval", true).toBool();
     m_settings->endGroup();
 
     // The ini has been read; what follows is the theme, which is the other half
@@ -829,6 +830,7 @@ void QVApplication::saveSettings()
     m_settings->beginGroup("Others");
     m_settings->setValue("UiLanguage", m_uiLanguage);
     m_settings->setValue("ConfirmDeletePage", m_confirmImageRemoval);
+    m_settings->setValue("ConfirmArchiveRemoval", m_confirmArchiveRemoval);
     m_settings->endGroup();
 
     m_settings->beginGroup("Appearance");

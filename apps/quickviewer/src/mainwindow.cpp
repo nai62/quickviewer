@@ -189,6 +189,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->actionShowSubfolders->setChecked(qApp->ShowSubfolders());
     ui->actionConfirmImageRemoval->setChecked(qApp->ConfirmImageRemoval());
+    ui->actionConfirmArchiveRemoval->setChecked(qApp->ConfirmArchiveRemoval());
 
     ui->actionAutoLoaded->setChecked(qApp->AutoLoaded());
     ui->actionSavingHistory->setChecked(qApp->DontSavingHistory());
@@ -2329,9 +2330,14 @@ void MainWindow::handleConfirmImageRemovalActionTriggered(bool checked)
     qApp->setConfirmImageRemoval(checked);
 }
 
-bool MainWindow::confirmRemoval(const QString &question, const QString &path)
+void MainWindow::handleConfirmArchiveRemovalActionTriggered(bool checked)
 {
-    if (!qApp->ConfirmImageRemoval()) {
+    qApp->setConfirmArchiveRemoval(checked);
+}
+
+bool MainWindow::confirmRemoval(bool ask, const QString &question, const QString &path)
+{
+    if (!ask) {
         return true;
     }
     const VisiblePages pages = m_viewerSession.visiblePages();
@@ -2369,7 +2375,8 @@ void MainWindow::handleRecyclePageActionTriggered()
     if (!path.length()) {
         return;
     }
-    if (!confirmRemoval(tr("Are you sure you want to move the image to Recycle Bin?",
+    if (!confirmRemoval(qApp->ConfirmImageRemoval(),
+                        tr("Are you sure you want to move the image to Recycle Bin?",
                            "Confirm putting displayed file in Recycle Box Message Box body"),
                         path)) {
         return;
@@ -2392,7 +2399,10 @@ void MainWindow::recycleActiveArchive()
         // An archive inside another one is not a file the bin can take.
         return;
     }
-    if (!confirmRemoval(tr("Are you sure you want to move this whole archive to Recycle Bin?",
+    // An archive goes with every image in it, so it has a setting of its own:
+    // turning off the question for images does not turn it off here.
+    if (!confirmRemoval(qApp->ConfirmArchiveRemoval(),
+                        tr("Are you sure you want to move this whole archive to Recycle Bin?",
                            "Confirm putting the displayed archive, with every page in it, in "
                            "Recycle Box Message Box body"),
                         plan.archivePath)) {
@@ -2429,7 +2439,8 @@ void MainWindow::handleDeletePageActionTriggered()
     if (!path.length()) {
         return;
     }
-    if (!confirmRemoval(tr("Are you sure you want to delete this image?",
+    if (!confirmRemoval(qApp->ConfirmImageRemoval(),
+                        tr("Are you sure you want to delete this image?",
                            "Confirm deleting image file on Message Box body"),
                         path)) {
         return;

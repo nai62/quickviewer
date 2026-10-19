@@ -194,6 +194,7 @@ public slots:
     void handleMailAttachmentActionTriggered();
     void handleRenameImageFileActionTriggered();
     void handleConfirmImageRemovalActionTriggered(bool checked);
+    void handleConfirmArchiveRemovalActionTriggered(bool checked);
 
     // Shaders
     void handleShaderNearestNeighborActionTriggered();
@@ -235,10 +236,10 @@ private:
 
     void setStatusMessage(StatusMessage message);
     /**
-     * Asks whether \a path may go, as ConfirmImageRemoval asks to, with the
-     * displayed page as the dialog's picture. True when it may.
+     * Asks whether \a path may go when \a ask, with the displayed page as the
+     * dialog's picture. True when it may.
      */
-    bool confirmRemoval(const QString &question, const QString &path);
+    bool confirmRemoval(bool ask, const QString &question, const QString &path);
     void recycleActiveArchive();
     void syncPageBar();
     void applyImageSortBy(qvEnums::ImageSortBy sortBy);
