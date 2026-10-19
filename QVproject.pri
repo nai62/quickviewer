@@ -1,7 +1,9 @@
-# QuickViewer builds only with Qt 6 or later.
+# QuickViewer builds only with Qt 6.6 or later, the first release with
+# QEvent::DevicePixelRatioChange.
 QV_QT_UNSUPPORTED =
 lessThan(QT_MAJOR_VERSION, 6): QV_QT_UNSUPPORTED = 1
-!isEmpty(QV_QT_UNSUPPORTED): error("QuickViewer requires Qt 6 or later, but Qt $$QT_VERSION was found.")
+equals(QT_MAJOR_VERSION, 6):lessThan(QT_MINOR_VERSION, 6): QV_QT_UNSUPPORTED = 1
+!isEmpty(QV_QT_UNSUPPORTED): error("QuickViewer requires Qt 6.6 or later, but Qt $$QT_VERSION was found.")
 
 ## Qt 6 is built with C++17, and so is everything that links against it.
 CONFIG += c++17
