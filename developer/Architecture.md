@@ -43,8 +43,9 @@ navigation; image-oriented names refer to loading or decoded data.
 
 An **image file** is the file on disk that a folder page is read from. Names
 that act on files, such as `isImageFile` or `ConfirmImageRemoval`, mean the
-file. Archive pages have no image file of their own, so deleting and renaming
-apply to folder pages only, and recycling on an archive moves the whole archive.
+file. Archive pages have no image file of their own, so renaming applies to
+folder pages only, and moving to the Recycle Bin or deleting takes the whole
+archive; see [Removing files](#removing-files).
 
 `ImageContent` carries decoded image data, metadata, and reusable processing
 results. `RenderedPage` owns the presentation state needed to display one
@@ -73,7 +74,9 @@ to `ViewerSession`.
 
 `PrefetchMode` describes the expected navigation direction and speed.
 `PrefetchPlanner` converts that intent into page indexes, while `Volume` performs
-the corresponding image loads and cache updates.
+the corresponding image loads and cache updates. The loads a volume queued go
+with it: a destroyed volume cancels those that have not started, so it does not
+leave its loader - for an archive, the open file - held by pages nobody shows.
 
 ### Read progress
 
@@ -162,3 +165,27 @@ window closes it from its own `closeEvent`: a panel left behind would keep the
 application running with nothing to attach it to. Going either way, closing a
 panel leaves the startup-view setting alone while the window itself is closing,
 so the panel is back the next time the application starts.
+
+### Removing files
+
+Del moves what is on display to the Recycle Bin and Shift+Del deletes it. In a
+folder volume that is the image file of the first visible page; with an archive
+on display it is the whole archive, after which the viewer opens the volume
+after it, or the one before it after the last. An archive inside another one
+is not a file of its own and is left alone.
+
+- Moving to the bin asks first as a setting says, one for images
+  (`ConfirmImageRemoval`) and one for archives (`ConfirmArchiveRemoval`): an
+  archive goes with every image in it, so turning off the question for images
+  does not turn it off for archives. Deleting cannot be undone and always
+  asks. `ConfirmImageRemoval` keeps the ini key of the setting it was,
+  `ConfirmDeletePage`: as with `progress.ini`, C++ names do not define the
+  settings file.
+- No path silently deletes a file for good. On Windows the shell's file
+  operation warns when a file cannot go to the bin, as on a network share, and
+  declining reports a failure. Elsewhere `QFile::moveToTrash` uses the
+  desktop's trash and leaves the file where it was when it cannot.
+- Windows cannot move or delete a file that is open, so the viewer lets go of
+  the archive first: the volume, its cached copies and the page loads it
+  started. When the archive still cannot be removed, it is opened again on the
+  page that was shown and the failure is reported.
