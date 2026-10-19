@@ -231,16 +231,6 @@
                 </property>
                </widget>
               </item>
-              <item row="10" column="1">
-               <widget class="QCheckBox" name="checkBoxUseDirect2D">
-                <property name="toolTip">
-                 <string>Direct2D may improve rendering on high-resolution displays. Leave this off unless needed.</string>
-                </property>
-                <property name="text">
-                 <string extracomment="Normally it is drawing with Windows GDI, but switching to drawing by Direct2D. QPA is loaded at startup.">Use Direct2D rendering (restart required)</string>
-                </property>
-               </widget>
-              </item>
               <item row="11" column="0">
                <widget class="QCheckBox" name="checkBoxTopWindowWhenDropped">
                 <property name="text">

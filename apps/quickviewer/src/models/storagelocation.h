@@ -29,17 +29,6 @@ public:
     static QString settingsSubPath();
     static QString readProgressSubPath();
 
-#ifdef Q_OS_WIN
-    /**
-     * The directories resolve() takes, asked from Windows itself, for the
-     * startup code that runs before QApplication exists.
-     * nativeUserDataDirectory() is QStandardPaths::AppDataLocation of an
-     * application without an organization name.
-     */
-    static QString nativeApplicationDirectory();
-    static QString nativeUserDataDirectory(const QString &applicationName);
-#endif
-
     bool isPortable() const { return m_portable; }
     QString directory() const { return m_directory; }
 

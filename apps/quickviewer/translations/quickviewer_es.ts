@@ -2308,17 +2308,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="237"/>
-        <source>Direct2D may improve rendering on high-resolution displays. Leave this off unless needed.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/optionsdialog.ui" line="240"/>
-        <source>Use Direct2D rendering (restart required)</source>
-        <extracomment>Normally it is drawing with Windows GDI, but switching to drawing by Direct2D. QPA is loaded at startup.</extracomment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../src/optionsdialog.ui" line="203"/>
         <source>Speeds up JPEG decoding at the cost of some image quality.</source>
         <translation type="unfinished"></translation>

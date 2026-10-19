@@ -3,14 +3,6 @@
 #include <QDir>
 #include <QFileInfo>
 
-#ifdef Q_OS_WIN
-#    include <string>
-
-#    include <shlobj.h>
-// After shlobj.h, which brings in the base definitions knownfolders.h needs.
-#    include <knownfolders.h>
-#endif
-
 StorageLocation::StorageLocation(bool portable, const QString &directory)
     : m_portable(portable),
       m_directory(directory)
@@ -48,40 +40,6 @@ QString StorageLocation::readProgressSubPath()
     return QStringLiteral(".quickviewer/progress.ini");
 #endif
 }
-
-#ifdef Q_OS_WIN
-QString StorageLocation::nativeApplicationDirectory()
-{
-    std::wstring buffer(MAX_PATH, L'\0');
-    for (;;) {
-        const DWORD length =
-            ::GetModuleFileNameW(nullptr, buffer.data(), static_cast<DWORD>(buffer.size()));
-        if (length == 0) {
-            return QString();
-        }
-        if (length < buffer.size()) {
-            buffer.resize(length);
-            break;
-        }
-        // A path that fills the buffer may have been cut short.
-        buffer.resize(buffer.size() * 2);
-    }
-    return QFileInfo(QString::fromStdWString(buffer)).absolutePath();
-}
-
-QString StorageLocation::nativeUserDataDirectory(const QString &applicationName)
-{
-    PWSTR path = nullptr;
-    QString directory;
-    if (SUCCEEDED(
-            ::SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DONT_VERIFY, nullptr, &path))) {
-        directory = QDir::fromNativeSeparators(QString::fromWCharArray(path)) + QLatin1Char('/') +
-                    applicationName;
-    }
-    ::CoTaskMemFree(path);
-    return directory;
-}
-#endif
 
 QString StorageLocation::filePath(const QString &subPath) const
 {

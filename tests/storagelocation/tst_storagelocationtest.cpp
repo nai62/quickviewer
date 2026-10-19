@@ -33,8 +33,6 @@ private Q_SLOTS:
 #ifdef Q_OS_WIN
     void upstreamLayoutIsRead_data();
     void upstreamLayoutIsRead();
-    void nativeApplicationDirectoryIsApplicationDirPath();
-    void nativeUserDataDirectoryIsAppDataLocation();
 #endif
 };
 
@@ -140,24 +138,6 @@ void StorageLocationTest::upstreamLayoutIsRead()
              normalized(progress));
     QCOMPARE(normalized(location.filePath(location.defaultCatalogDatabaseSubPath())),
              normalized(database));
-}
-
-void StorageLocationTest::nativeApplicationDirectoryIsApplicationDirPath()
-{
-    QCOMPARE(normalized(StorageLocation::nativeApplicationDirectory()),
-             normalized(QCoreApplication::applicationDirPath()));
-}
-
-void StorageLocationTest::nativeUserDataDirectoryIsAppDataLocation()
-{
-    // QVApplication finds the directory through QStandardPaths, and the
-    // startup code before it through Windows; both must name the same one, or
-    // an installed copy reads its startup settings from another file.
-    const QString expected = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    QVERIFY(!expected.isEmpty());
-    QCOMPARE(
-        normalized(StorageLocation::nativeUserDataDirectory(QCoreApplication::applicationName())),
-        normalized(expected));
 }
 #endif
 

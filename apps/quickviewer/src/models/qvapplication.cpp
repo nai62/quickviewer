@@ -37,9 +37,6 @@ QVApplication::QVApplication(int &argc, char **argv)
     setApplicationName(APP_NAME);
 
 #if defined(Q_OS_WIN)
-    // main() reads the Direct2D setting from the same directory before this
-    // object exists, through StorageLocation::nativeUserDataDirectory(), which
-    // matches AppDataLocation only while no organization name is set.
     m_storageLocation = StorageLocation::resolve(
         applicationDirPath(), QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
 #endif
@@ -452,7 +449,6 @@ void QVApplication::loadSettings()
     m_showFullscreenSignage = m_settings->value("ShowFullscreenSignage", false).toBool();
     m_dontShrinkForLargeImage = m_settings->value("DontShrinkForLargeImage", false).toBool();
     //    m_showFullscreenTitleBar = m_settings->value("ShowFullscreenTitleBar", true).toBool();
-    m_useDirect2D = m_settings->value("UseDirect2D", false).toBool();
     m_useFastDCTForJPEG = m_settings->value("UseFastDCTForJPEG", true).toBool();
     m_svgLoaderBackend =
         SvgLoader::backendFromStorageValue(m_settings->value("HowToLoadSVG", "resvg").toString());
@@ -654,7 +650,6 @@ void QVApplication::saveSettings()
     m_settings->setValue("ShowFullscreenSignage", m_showFullscreenSignage);
     m_settings->setValue("DontShrinkForLargeImage", m_dontShrinkForLargeImage);
     //    m_settings->setValue("ShowFullscreenTitleBar", m_showFullscreenTitleBar);
-    m_settings->setValue("UseDirect2D", m_useDirect2D);
     m_settings->setValue("UseFastDCTForJPEG", m_useFastDCTForJPEG);
     m_settings->setValue("HowToLoadSVG", SvgLoader::storageValue(m_svgLoaderBackend));
     m_settings->setValue("SvgRasterMaximumWidth", m_svgRasterMaximumWidth);

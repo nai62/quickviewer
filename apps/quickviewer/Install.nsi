@@ -113,7 +113,6 @@ Section
   File "${SrcDir}\networkinformation\qnetworklistmanager.dll"
 
   SetOutPath "$INSTDIR\platforms"
-  File "${SrcDir}\platforms\qdirect2d.dll"
   File "${SrcDir}\platforms\qwindows.dll"
 
   SetOutPath "$INSTDIR\sqldrivers"

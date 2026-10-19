@@ -2308,17 +2308,6 @@
         <translation>最大化尺寸来容纳图像(像素)</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="237"/>
-        <source>Direct2D may improve rendering on high-resolution displays. Leave this off unless needed.</source>
-        <translation>在高分辨率环境下，除了它是Direct2D，否则可能不会恰当运行。通常关闭</translation>
-    </message>
-    <message>
-        <location filename="../src/optionsdialog.ui" line="240"/>
-        <source>Use Direct2D rendering (restart required)</source>
-        <extracomment>Normally it is drawing with Windows GDI, but switching to drawing by Direct2D. QPA is loaded at startup.</extracomment>
-        <translation>使用Direct2D渲染(需重启)</translation>
-    </message>
-    <message>
         <location filename="../src/optionsdialog.ui" line="203"/>
         <source>Speeds up JPEG decoding at the cost of some image quality.</source>
         <translation>在交互和高质量显示时加快JPEG的加载速度。</translation>
