@@ -633,6 +633,20 @@ private slots:
     }
 #endif
 
+    /** The menu shows whether the viewer asks before an image is removed. */
+    void imageRemovalConfirmationMenuShowsTheSetting()
+    {
+        for (const bool confirm : {true, false}) {
+            qApp->setConfirmImageRemoval(confirm);
+            StartupWindow viewer;
+            QAction *action =
+                viewer.findChild<QAction *>(QStringLiteral("actionConfirmImageRemoval"));
+            QVERIFY(action);
+            QCOMPARE(action->isChecked(), confirm);
+        }
+        qApp->setConfirmImageRemoval(true);
+    }
+
     void loadingFolderPageBookmarkFollowsThePanel()
     {
         QTemporaryDir directory;

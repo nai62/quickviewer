@@ -188,6 +188,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionSeparatePagesWhenWideImage->setChecked(qApp->SeparatePagesWhenWideImage());
 
     ui->actionShowSubfolders->setChecked(qApp->ShowSubfolders());
+    ui->actionConfirmImageRemoval->setChecked(qApp->ConfirmImageRemoval());
 
     ui->actionAutoLoaded->setChecked(qApp->AutoLoaded());
     ui->actionSavingHistory->setChecked(qApp->DontSavingHistory());
