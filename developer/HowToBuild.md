@@ -219,6 +219,8 @@ The Windows scripts stage the runtime data listed in the next section.
 - **database**: SQLite database containing catalogs and thumbnails
 - **translations**: multi-language `.qm` files
 - **QuickViewer.exe**: main application
+- **portable.ini**: marker that keeps the data files below beside the
+  executable; see section 8
 - **quickviewer.ini**: main configuration including keyboard/mouse settings
 - **progress.ini**: records the last displayed image in a volume
 
@@ -256,22 +258,30 @@ enabled at startup.
 
 ## 8. Portable or system-standard installation
 
-`QV_PORTABLE` in `QVproject.pri` selects portable operation versus a
-system-style installation.
+On Windows one build serves both the portable archive and the installed copy;
+the directory a running copy keeps its settings, progress and catalog files in
+is chosen when it starts:
 
-When `QV_PORTABLE` is defined, QuickViewer is intended to remain portable and
-keep data files with the application; Linux AppImage builds use this mode.
+- With a `portable.ini` beside `QuickViewer.exe`, the files are kept beside the
+  executable: `quickviewer.ini`, `progress.ini` and
+  `database\thumbnail.sqlite3.db`. The contents of `portable.ini` are not read.
+- Without it, they are kept in `%APPDATA%\QuickViewer`: `quickviewer.ini`,
+  `progress.ini` and `thumbnail.sqlite3.db`.
 
-When it is not defined, QuickViewer follows platform installation conventions,
-such as `C:\Program Files` on Windows and `/usr/local/bin` on Linux.
+These are the places the last upstream release used for its portable and
+installed packages, so the files of either are read as they are. The build
+copies `portable.ini` into `bin`, which keeps a development build portable, and
+the release staging tree carries it for the portable archive. The NSIS
+installer lists its files one by one and leaves it out. A portable copy updated
+by replacing `QuickViewer.exe` alone has no marker and starts with the
+settings of `%APPDATA%\QuickViewer` until `portable.ini` is put back; its own
+files are left as they were.
 
-On Windows the define also decides where a running copy keeps its settings,
-progress and catalog files: a build with `QV_PORTABLE` writes them beside the
-executable and a build without it writes them into the user's data directory.
-The installation the NSIS installer lays down is therefore staged from a build
-made without `QV_PORTABLE`, and the portable archive from one made with it.
+Linux and macOS always keep the files in `$HOME/.quickviewer`. A Linux release
+build is packaged as an AppImage; run qmake with `CONFIG+=qv_system_install` to
+install it under `/usr/local` instead.
 
-File associations follow the same split. The application registers the
+File associations are registered in two ways. The application registers the
 selected formats for the current user under `HKEY_CURRENT_USER` and then opens
 the Windows Default Apps page, because Windows does not let a program pick the
 default application itself. The installer registers every format under

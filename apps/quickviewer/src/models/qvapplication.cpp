@@ -14,26 +14,6 @@
 #    include <knownfolders.h>
 #endif
 
-namespace {
-
-#if defined(Q_OS_MAC) || defined(Q_OS_LINUX)
-// Directory the non-Windows builds keep their data files in.
-constexpr QLatin1String DataDirectory(".quickviewer");
-#endif
-
-#if defined(Q_OS_WIN)
-// Where a Windows build keeps its data is a property of the package it was
-// built for: the portable package stores the files beside the executable, and
-// the build the installer lays down uses the user's data directory.
-#    ifdef QV_PORTABLE
-constexpr bool PortableBuild = true;
-#    else
-constexpr bool PortableBuild = false;
-#    endif
-#endif
-
-} // namespace
-
 QVApplication::QVApplication(int &argc, char **argv)
     : QApplication(argc, argv),
       m_mainThread(QThread::currentThread()),
@@ -49,10 +29,6 @@ QVApplication::QVApplication(int &argc, char **argv)
       m_readProgressStore(nullptr),
       m_languageSelector("quickviewer_", getTranslationPath()),
       m_qtbaseLanguageSelector("qt_", getTranslationPath())
-#if defined(Q_OS_WIN)
-      ,
-      m_portable(PortableBuild)
-#endif
 {
     // Qt's own application setup is finished by now; everything after this
     // marker is QuickViewer's settings, theme, and translation work.
@@ -61,39 +37,15 @@ QVApplication::QVApplication(int &argc, char **argv)
     setApplicationName(APP_NAME);
 
 #if defined(Q_OS_WIN)
-    if (!m_portable)
+    // main() reads the Direct2D setting from the same directory before this
+    // object exists, through StorageLocation::nativeUserDataDirectory(), which
+    // matches AppDataLocation only while no organization name is set.
+    m_storageLocation = StorageLocation::resolve(
+        applicationDirPath(), QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
 #endif
-    {
-        // In a non-portable environment, QuickViewer creates a directory for the application
-        // in a fixed PATH inside the user directory, and stores data files in it.
-#if defined(Q_OS_MAC) || defined(Q_OS_LINUX)
-        QString datapath = QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation))
-                               .filePath(DataDirectory);
-#elif defined(Q_OS_WIN)
-        QString datapath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
-//        qDebug() << datapath;
-#endif
-        QDir dir(datapath);
-        QFile filedatabase(dir.filePath(QStringLiteral("thumbnail.sqlite3.db")));
-        if (!filedatabase.exists()) {
-            if (!dir.exists()) {
-                dir.mkpath(".");
-            }
-            // write out thumbnail database from the resource into Application data directory
-            QFile resdatabase(QStringLiteral(":/databases/thumbnail_database"));
-            qDebug() << resdatabase.exists();
-            if (resdatabase.open(QIODevice::ReadOnly)) {
-                auto dat = resdatabase.readAll();
-                if (filedatabase.open(QIODevice::WriteOnly)) {
-                    filedatabase.write(dat);
-                    filedatabase.close();
-                }
-            }
-        }
-    }
-    //#endif
-    m_settings = new QSettings(
-        getFilePathOfApplicationSetting(settingsSubPath()), QSettings::IniFormat, this);
+    m_settings = new QSettings(getFilePathOfApplicationSetting(StorageLocation::settingsSubPath()),
+                               QSettings::IniFormat,
+                               this);
     StartupProfiler::mark("application.settings-opened");
 
     m_languageSelector.initialize();
@@ -127,12 +79,7 @@ QString QVApplication::getApplicationFilePath(QString subFilePath)
 QString QVApplication::getFilePathOfApplicationSetting(QString subFilePath)
 {
 #ifdef Q_OS_WIN
-    if (m_portable) {
-        return getApplicationFilePath(subFilePath);
-    } else {
-        return QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation))
-            .filePath(subFilePath);
-    }
+    return m_storageLocation.filePath(subFilePath);
 #else
     return getUserHomeFilePath(subFilePath);
 #endif
@@ -142,24 +89,6 @@ QString QVApplication::getUserHomeFilePath(QString subFilePath)
 {
     return QDir::toNativeSeparators(
         QString("%1/%2").arg(QString(qgetenv("HOME"))).arg(subFilePath));
-}
-
-QString QVApplication::settingsSubPath()
-{
-#ifdef Q_OS_WIN
-    return QStringLiteral("quickviewer.ini");
-#else
-    return QStringLiteral(".quickviewer/quickviewer.ini");
-#endif
-}
-
-QString QVApplication::readProgressSubPath()
-{
-#ifdef Q_OS_WIN
-    return QStringLiteral("progress.ini");
-#else
-    return QStringLiteral(".quickviewer/progress.ini");
-#endif
 }
 
 QString QVApplication::defaultTitleTextFormat()
@@ -619,13 +548,9 @@ void QVApplication::loadSettings()
                 viewModestring.toLatin1().data());
     }
 #ifdef Q_OS_WIN
-    if (m_portable) {
-        m_catalogDatabasePath =
-            m_settings->value("CatalogDatabasePath", "database/thumbnail.sqlite3.db").toString();
-    } else {
-        m_catalogDatabasePath =
-            m_settings->value("CatalogDatabasePath", "thumbnail.sqlite3.db").toString();
-    }
+    m_catalogDatabasePath =
+        m_settings->value("CatalogDatabasePath", m_storageLocation.defaultCatalogDatabaseSubPath())
+            .toString();
 #else
     m_catalogDatabasePath =
         m_settings->value("CatalogDatabasePath", ".quickviewer/thumbnail.sqlite3.db").toString();

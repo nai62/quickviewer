@@ -8,6 +8,7 @@
 #include "catalogdatabase.h"
 #include "qnamedpipe.h"
 #include "startupprofiler.h"
+#include "storagelocation.h"
 #include "volume.h"
 
 #if defined(Q_OS_WIN)
@@ -122,13 +123,11 @@ int main(int argc, char *argv[])
         // Activate the direct2d QPA plugin when 'UseDirect2D' of quickviewer.ini is true.
         // Since initialization of QPA is processed in the constructor of QGuiApplication,
         // it must be set to the QT_QPA_PLATFORM environment variable before that.
-#    ifdef QV_PORTABLE
-        QString inipath = QDir::toNativeSeparators(QFileInfo(argv[0]).path());
-        inipath += QStringLiteral("\\") + QVApplication::settingsSubPath();
-#    else
-        QString inipath = QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation))
-                              .filePath(QVApplication::settingsSubPath());
-#    endif
+        const QString inipath =
+            StorageLocation::resolve(
+                StorageLocation::nativeApplicationDirectory(),
+                StorageLocation::nativeUserDataDirectory(QStringLiteral(APP_NAME)))
+                .filePath(StorageLocation::settingsSubPath());
         std::wstring winipath = inipath.toStdWString();
         WCHAR value[128];
         qDebug() << ::GetPrivateProfileString(

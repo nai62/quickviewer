@@ -11,14 +11,11 @@ CONFIG += c++17
 ## Comment out if you don't need to change brightness/contrast/gamma support
 DEFINES += QV_WITH_LUMINOR
 
-## Define when asking for portable operation.
-## When off, the installation will be done by OS standard method
-## Installation destination when not portable:
-##   Windows: "C:\Program Files" or "C:\Users\[user]\Appdata\Roaming"
-##   Linux:   "/usr/local"
-DEFINES += QV_PORTABLE
-
-!contains(DEFINES, QV_PORTABLE) {
+## A Linux release build is packaged as an AppImage. Run qmake with
+## CONFIG+=qv_system_install to install it into /usr/local instead.
+## On Windows a portable.ini beside the executable selects portable operation
+## at run time, so the build does not choose.
+qv_system_install {
     QV_BIN_PATH = /usr/local/bin
     QV_LIB_PATH = /usr/local/lib
     QV_SHARED_PATH = /usr/local/shared

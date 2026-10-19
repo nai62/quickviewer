@@ -1703,7 +1703,7 @@ private slots:
         qApp->readProgressStore()->save();
 
         QSettings settings(
-            qApp->getFilePathOfApplicationSetting(QVApplication::readProgressSubPath()),
+            qApp->getFilePathOfApplicationSetting(StorageLocation::readProgressSubPath()),
             QSettings::IniFormat);
         bool found = false;
         for (const QString &group : settings.childGroups()) {
