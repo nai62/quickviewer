@@ -610,7 +610,7 @@ private slots:
             image.fill(QColor::fromHsv(page * 60, 255, 255));
             QVERIFY(image.save(QDir(folder).filePath(QStringLiteral("page-%1.bmp").arg(page))));
         }
-        qApp->setConfirmDeletePage(false);
+        qApp->setConfirmImageRemoval(false);
 
         StartupWindow viewer;
         viewer.openPath(folder);

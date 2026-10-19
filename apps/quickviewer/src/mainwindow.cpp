@@ -2323,14 +2323,14 @@ void MainWindow::handleRenameImageFileActionTriggered()
     }
 }
 
-void MainWindow::handleConfirmDeletePageActionTriggered(bool checked)
+void MainWindow::handleConfirmImageRemovalActionTriggered(bool checked)
 {
-    qApp->setConfirmDeletePage(checked);
+    qApp->setConfirmImageRemoval(checked);
 }
 
 bool MainWindow::confirmRemoval(const QString &question, const QString &path)
 {
-    if (!qApp->ConfirmDeletePage()) {
+    if (!qApp->ConfirmImageRemoval()) {
         return true;
     }
     const VisiblePages pages = m_viewerSession.visiblePages();
