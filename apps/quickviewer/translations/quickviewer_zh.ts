@@ -125,58 +125,53 @@
         <translation>从标题中移除(选项)</translation>
     </message>
     <message>
-        <source>Enter a search term and press Enter to search by title.</source>
-        <comment>Gray text that prompts a keyword search of Volume</comment>
-        <translation type="vanished">搜素框，将关键字输入此栏.</translation>
-    </message>
-    <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="76"/>
-        <location filename="../src/catalog/catalogwindow.cpp" line="111"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="78"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="117"/>
         <source>Search titles</source>
         <comment>Gray text that prompts a keyword search of Volume</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="77"/>
-        <location filename="../src/catalog/catalogwindow.cpp" line="116"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="79"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="122"/>
         <source>Type part of a title and press Enter to search.</source>
         <comment>Tooltip of the field that searches the titles of the catalog</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="82"/>
-        <location filename="../src/catalog/catalogwindow.cpp" line="134"/>
-        <location filename="../src/catalog/catalogwindow.cpp" line="281"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="84"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="140"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="287"/>
         <source>Drop an image folder here to create a catalog.</source>
         <comment>Status bar text briefly explaining how to use CatalogWindow</comment>
         <translation>拖放图像文件,创建目录。</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="292"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="298"/>
         <source>%1 volumes</source>
         <comment>Text of the status bar showing how many volumes are listed</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="296"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="302"/>
         <source>%1 of %2 volumes</source>
         <comment>Text of the status bar showing [the number of hits]/[total number] of Volume</comment>
         <translation>(%1/%2)画册 正在显示。</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="304"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="310"/>
         <source>(%1 without a cover are not shown)</source>
         <comment>Status bar note about volumes the catalog holds but does not list</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="504"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="510"/>
         <source>Edit tags...</source>
         <comment>Context menu entry of a book in the catalog list</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="534"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="540"/>
         <source>Catalog database</source>
         <translation type="unfinished"></translation>
     </message>
@@ -219,112 +214,112 @@
         <translation>参数信息</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="237"/>
+        <location filename="../src/exifdialog.cpp" line="238"/>
         <source>Image description</source>
         <translation>图像说明</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="215"/>
+        <location filename="../src/exifdialog.cpp" line="216"/>
         <source>Make</source>
         <translation>相机厂商</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="216"/>
+        <location filename="../src/exifdialog.cpp" line="217"/>
         <source>Model</source>
         <translation>设备型号</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="226"/>
+        <location filename="../src/exifdialog.cpp" line="227"/>
         <source>F-number</source>
         <translation>光圈值</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="234"/>
+        <location filename="../src/exifdialog.cpp" line="235"/>
         <source>Flash</source>
         <translation>闪光灯</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="213"/>
+        <location filename="../src/exifdialog.cpp" line="214"/>
         <source>Image width</source>
         <translation>图像宽度</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="214"/>
+        <location filename="../src/exifdialog.cpp" line="215"/>
         <source>Image height</source>
         <translation>图像高度</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="219"/>
+        <location filename="../src/exifdialog.cpp" line="220"/>
         <source>Bits per sample</source>
         <translation>位深度</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="220"/>
+        <location filename="../src/exifdialog.cpp" line="221"/>
         <source>Software</source>
         <translation>软件版本</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="221"/>
+        <location filename="../src/exifdialog.cpp" line="222"/>
         <source>DateTime</source>
         <translation>修改时间</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="222"/>
+        <location filename="../src/exifdialog.cpp" line="223"/>
         <source>Date/time original</source>
         <translation>拍摄时间</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="223"/>
+        <location filename="../src/exifdialog.cpp" line="224"/>
         <source>Date/time digitized</source>
         <translation>数字化时间</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="224"/>
+        <location filename="../src/exifdialog.cpp" line="225"/>
         <source>Subsecond time original</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="225"/>
+        <location filename="../src/exifdialog.cpp" line="226"/>
         <source>Exposure time</source>
         <translation>曝光时间</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="227"/>
+        <location filename="../src/exifdialog.cpp" line="228"/>
         <source>ISO speed</source>
         <translation>ISO感光度</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="228"/>
+        <location filename="../src/exifdialog.cpp" line="229"/>
         <source>Shutter speed</source>
         <translation>快门速度</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="229"/>
+        <location filename="../src/exifdialog.cpp" line="230"/>
         <source>Exposure bias</source>
         <translation>曝光补偿</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="230"/>
+        <location filename="../src/exifdialog.cpp" line="231"/>
         <source>Subject distance</source>
         <translation>主体距离</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="231"/>
+        <location filename="../src/exifdialog.cpp" line="232"/>
         <source>Focal length</source>
         <translation>焦距</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="232"/>
+        <location filename="../src/exifdialog.cpp" line="233"/>
         <source>35 mm equivalent focal length</source>
         <translation>35mm焦距</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="236"/>
+        <location filename="../src/exifdialog.cpp" line="237"/>
         <source>Metering mode</source>
         <translation>测量模式</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="238"/>
+        <location filename="../src/exifdialog.cpp" line="239"/>
         <source>Copyright</source>
         <translation>版权</translation>
     </message>
@@ -509,18 +504,18 @@
         <translation>按顺时针方向旋转270°</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="206"/>
+        <location filename="../src/exifdialog.cpp" line="207"/>
         <source>Exif is not included.</source>
         <comment>Text to display if EXIF is not included in JPEG</comment>
         <translation>无Exif信息。</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="210"/>
+        <location filename="../src/exifdialog.cpp" line="211"/>
         <source>Filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="217"/>
+        <location filename="../src/exifdialog.cpp" line="218"/>
         <source>Orientation of camera</source>
         <translation>镜头方向</translation>
     </message>
@@ -531,11 +526,7 @@
         <translation>复制到剪贴板</translation>
     </message>
     <message>
-        <source>File name</source>
-        <translation type="vanished">文件名</translation>
-    </message>
-    <message>
-        <location filename="../src/exifdialog.cpp" line="211"/>
+        <location filename="../src/exifdialog.cpp" line="212"/>
         <source>Pixels</source>
         <translation>像素</translation>
     </message>
@@ -683,10 +674,6 @@
         <translation>GIF图片(*.gif)</translation>
     </message>
     <message>
-        <source>JPEG Image (*.jpg, *.jpeg)</source>
-        <translation type="vanished">JPEG图片(*.jpg, *.jpeg)</translation>
-    </message>
-    <message>
         <location filename="../../../components/file-association/fileassocdialog.cpp" line="33"/>
         <source>JPEG Image</source>
         <comment>description of File format on Explorer(.jpeg)</comment>
@@ -747,78 +734,55 @@
     </message>
 </context>
 <context>
-    <name>FolderItemModel</name>
-    <message>
-        <source>Name</source>
-        <comment>Title of the column in the folder list when displaying as an independent Window in Folder Window</comment>
-        <translation type="vanished">名称</translation>
-    </message>
-    <message>
-        <source>Modified</source>
-        <comment>Title of the column in the folder list when displaying as an independent Window in Folder Window</comment>
-        <translation type="vanished">更新时间</translation>
-    </message>
-</context>
-<context>
     <name>FolderWindow</name>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="106"/>
-        <location filename="../src/folderview/folderwindow.ui" line="211"/>
+        <location filename="../src/folderview/folderwindow.ui" line="103"/>
+        <location filename="../src/folderview/folderwindow.ui" line="208"/>
         <source>Home</source>
         <extracomment>Button for returning to QuickViewer&apos;s home folder</extracomment>
         <translation>移动到主文件夹</translation>
     </message>
     <message>
-        <source>Previous</source>
-        <extracomment>Button for returning to the previous folder from the currently displayed folder</extracomment>
-        <translation type="vanished">前一个</translation>
-    </message>
-    <message>
-        <source>Next</source>
-        <extracomment>Button for returning to the folder after the current displayed folder</extracomment>
-        <translation type="vanished">下一个</translation>
-    </message>
-    <message>
-        <location filename="../src/folderview/folderwindow.ui" line="155"/>
-        <location filename="../src/folderview/folderwindow.ui" line="229"/>
-        <location filename="../src/folderview/folderwindow.ui" line="271"/>
+        <location filename="../src/folderview/folderwindow.ui" line="152"/>
+        <location filename="../src/folderview/folderwindow.ui" line="226"/>
+        <location filename="../src/folderview/folderwindow.ui" line="268"/>
         <source>Reload</source>
         <translation>刷新</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="158"/>
+        <location filename="../src/folderview/folderwindow.ui" line="155"/>
         <source>Refresh</source>
         <extracomment>Button for updating the currently displayed folder information</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="234"/>
+        <location filename="../src/folderview/folderwindow.ui" line="231"/>
         <source>Name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="256"/>
+        <location filename="../src/folderview/folderwindow.ui" line="253"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="261"/>
+        <location filename="../src/folderview/folderwindow.ui" line="258"/>
         <source>Open in &amp;Explorer</source>
         <extracomment>Menu that displays Explorer with the currently displayed image file selected</extracomment>
         <translation type="unfinished">在文件管理器中查看(&amp;E)</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="266"/>
+        <location filename="../src/folderview/folderwindow.ui" line="263"/>
         <source>Copy path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="220"/>
+        <location filename="../src/folderview/folderwindow.ui" line="217"/>
         <source>Parent</source>
         <translation>上一级文件夹</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="246"/>
+        <location filename="../src/folderview/folderwindow.ui" line="243"/>
         <source>Other</source>
         <translation>其他</translation>
     </message>
@@ -828,18 +792,13 @@
         <translation>文件夹列表</translation>
     </message>
     <message>
-        <source>Current folder</source>
-        <extracomment>Label indicating that the current folder PATH is being displayed</extracomment>
-        <translation type="vanished">当前文件夹</translation>
-    </message>
-    <message>
-        <location filename="../src/folderview/folderwindow.ui" line="103"/>
+        <location filename="../src/folderview/folderwindow.ui" line="100"/>
         <source>Go to home folder</source>
         <translation>前往主文件夹</translation>
     </message>
     <message>
+        <location filename="../src/folderview/folderwindow.ui" line="126"/>
         <location filename="../src/folderview/folderwindow.ui" line="129"/>
-        <location filename="../src/folderview/folderwindow.ui" line="132"/>
         <source>Parent folder</source>
         <extracomment>Button for moving from the currently displayed folder to the next higher folder</extracomment>
         <translation>顶层文件夹</translation>
@@ -857,24 +816,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Modified</source>
-        <translation type="vanished">更新时间</translation>
-    </message>
-    <message>
-        <source>Change sort order</source>
-        <extracomment>Tooltip for pulldown to change folder sorting method</extracomment>
-        <translation type="vanished">切换排序方法</translation>
-    </message>
-    <message>
-        <source>Sort by name</source>
-        <translation type="vanished">按名称排序</translation>
-    </message>
-    <message>
-        <source>Sort by modified time</source>
-        <translation type="vanished">按更新时间排序</translation>
-    </message>
-    <message>
-        <location filename="../src/folderview/folderwindow.ui" line="251"/>
+        <location filename="../src/folderview/folderwindow.ui" line="248"/>
         <source>Set as home folder</source>
         <translation>设置为主文件夹</translation>
     </message>
@@ -953,21 +895,6 @@
         <source>Current page number in the volume, e.g. &apos;33/100&apos; or &apos;33-34/100&apos;</source>
         <comment>Format tag of text displayed in title bar and status bar</comment>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Image file size as correct number of bytes, e.g. &apos;1,154,340 Bytes&apos;</source>
-        <comment>Format tag of text displayed in title bar and status bar</comment>
-        <translation type="vanished">图片占用精确空间，例如：&apos;1,154,340 Bytes&apos;</translation>
-    </message>
-    <message>
-        <source>Image bitmap size with useful, e.g. &apos;1.59 MB&apos;</source>
-        <comment>Format tag of text displayed in title bar and status bar</comment>
-        <translation type="vanished">图片有效空间，例如：&apos;1.59MB&apos;</translation>
-    </message>
-    <message>
-        <source>Current page number of the volume e.g. &apos;33/100&apos; or &apos;33-34/100&apos;</source>
-        <comment>Format tag of text displayed in title bar and status bar</comment>
-        <translation type="vanished">当前位置，例如“33/100”或“33-34/100”</translation>
     </message>
     <message>
         <location filename="../src/models/imagestring.cpp" line="89"/>
@@ -1281,7 +1208,7 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="168"/>
-        <location filename="../src/mainwindow.cpp" line="1785"/>
+        <location filename="../src/mainwindow.cpp" line="1789"/>
         <source>&amp;Fullscreen</source>
         <translation>全屏(&amp;F)</translation>
     </message>
@@ -1419,7 +1346,7 @@
         <translation>清空书签</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2510"/>
+        <location filename="../src/mainwindow.cpp" line="2537"/>
         <source>Bookmark saved.</source>
         <translation>书签已保存。</translation>
     </message>
@@ -1428,16 +1355,6 @@
         <location filename="../src/mainwindow.ui" line="1079"/>
         <source>ContextMenu</source>
         <translation>右键菜单</translation>
-    </message>
-    <message>
-        <source>Bi&amp;cubic interpolation (slow)</source>
-        <extracomment>Menu for resizing image by bicubic interpolation by GPU</extracomment>
-        <translation type="vanished">三次内插法处理(&amp;c 慢)</translation>
-    </message>
-    <message>
-        <source>&amp;Lanczos interpolation (very slow)</source>
-        <extracomment>Menu for resizing image by Lanczos interpolation by GPU</extracomment>
-        <translation type="vanished">兰克泽斯插法处理(&amp;L 非常慢)</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="426"/>
@@ -1514,11 +1431,6 @@
         <location filename="../src/mainwindow.ui" line="443"/>
         <source>F&amp;older</source>
         <translation>文件夹(&amp;o)</translation>
-    </message>
-    <message>
-        <source>Don&apos;t enlarge small images on Fitting</source>
-        <extracomment>Ability to display an image smaller than the window as it is when fit is displayed</extracomment>
-        <translation type="vanished">适合模式不扩大低分辨率图片</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="1057"/>
@@ -1646,22 +1558,7 @@
         <translation>重命名</translation>
     </message>
     <message>
-        <source>No folder or archive is loaded.</source>
-        <comment>The text of the status bar to be displayed when there is no image to be displayed immediately after the application is activated</comment>
-        <translation type="vanished">没能加载文件夹或压缩包。</translation>
-    </message>
-    <message>
-        <source>Image file not found. Can&apos;t be opened</source>
-        <comment>Text to display in the status bar when failed to open the specified Volume</comment>
-        <translation type="vanished">找不到图像文件，无法打开</translation>
-    </message>
-    <message>
-        <source>Image file was not found. Can&apos;t be opened.</source>
-        <comment>Text to display in the status bar when failed to open the specified Volume</comment>
-        <translation type="vanished">找不到图像文件，无法打开。</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp" line="2100"/>
+        <location filename="../src/mainwindow.cpp" line="2104"/>
         <source>Select an image or archive</source>
         <comment>Title of the dialog displayed when opening a file with OpenFileFolder</comment>
         <translation>选择图片</translation>
@@ -1758,11 +1655,6 @@
         <translation>显示文件夹(&amp;F)</translation>
     </message>
     <message>
-        <source>CPU Bicubic after GPU Bilinear (standard)</source>
-        <extracomment>Preview by bilinear with GPU, then replace with bicubic resized image by CPU</extracomment>
-        <translation type="vanished">用GPU双线性插值后，用CPU双三次插值(标准）</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.ui" line="1023"/>
         <source>&amp;Settings</source>
         <extracomment>Menu for displaying a dialog for changing the adjunct setting of the application</extracomment>
@@ -1787,11 +1679,6 @@
         <translation>确认移动图片到回收站(&amp;R)</translation>
     </message>
     <message>
-        <source>File Associations... (administrator)</source>
-        <extracomment>Ability to associate QuickViewer and image files on Explorer (Host Global)</extracomment>
-        <translation type="vanished">关联文件(管理员)</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.ui" line="1084"/>
         <source>&amp;Mouse Settings...</source>
         <translation>鼠标设置(&amp;M)</translation>
@@ -1802,41 +1689,54 @@
         <translation>删除图片</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2347"/>
+        <location filename="../src/mainwindow.cpp" line="2371"/>
         <source>Are you sure you want to move the image to Recycle Bin?</source>
         <comment>Confirm putting displayed file in Recycle Box Message Box body</comment>
         <translation>确认移动图片到回收站？</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2341"/>
-        <location filename="../src/mainwindow.cpp" line="2385"/>
+        <location filename="../src/mainwindow.cpp" line="2344"/>
+        <location filename="../src/mainwindow.cpp" line="2405"/>
         <source>Confirmation</source>
         <comment>Confirm deleting image file on MessageBox title</comment>
         <translation>确认</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1736"/>
+        <location filename="../src/mainwindow.cpp" line="1740"/>
         <source>Loading...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1739"/>
+        <location filename="../src/mainwindow.cpp" line="1743"/>
         <source>No images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1741"/>
+        <location filename="../src/mainwindow.cpp" line="1745"/>
         <source>Unavailable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2094"/>
+        <location filename="../src/mainwindow.cpp" line="2098"/>
         <source>All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.heic *.heif);;Archives( *.zip *.7z *.rar)</source>
         <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2390"/>
+        <location filename="../src/mainwindow.cpp" line="2394"/>
+        <source>Are you sure you want to move this whole archive to Recycle Bin?</source>
+        <comment>Confirm putting the displayed archive, with every page in it, in Recycle Box Message Box body</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp" line="2406"/>
+        <source>The archive could not be moved to Recycle Bin:
+%1</source>
+        <comment>Message shown when the displayed archive could not be put in Recycle Box</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp" line="2431"/>
         <source>Are you sure you want to delete this image?</source>
         <comment>Confirm deleting image file on Message Box body</comment>
         <translation>确认删除该图片？</translation>
@@ -1983,11 +1883,6 @@
         <translation>全屏时隐藏鼠标光标</translation>
     </message>
     <message>
-        <source>All Files( *.* );;Images ( *.jpg *.jpeg *.png *.tif *.tiff *.ico);;Archives( *.zip *.7z *.rar)</source>
-        <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
-        <translation type="vanished">全文件( *.* );;图像 (*.jpg *.jpeg *.png *.tif *.tiff *.ico);;档案( *.zip *.7z *.rar)</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.ui" line="274"/>
         <location filename="../src/mainwindow.ui" line="1275"/>
         <source>&amp;Sort by</source>
@@ -2027,14 +1922,6 @@
         <location filename="../src/mainwindow.ui" line="318"/>
         <source>&amp;Tools</source>
         <translation>工具(&amp;T)</translation>
-    </message>
-</context>
-<context>
-    <name>MainWindowForWindows</name>
-    <message>
-        <source>Sh&amp;ow/hide menu bar</source>
-        <comment>An additional menu displayed when right-clicking the title bar, which is used when undoing the main menu when it is hidden</comment>
-        <translation type="vanished">显示/隐藏主菜单(&amp;o)</translation>
     </message>
 </context>
 <context>
@@ -2113,16 +2000,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&amp;Add</source>
-        <extracomment>Button to add a new catalog</extracomment>
-        <translation type="vanished">添加(&amp;A)</translation>
-    </message>
-    <message>
-        <source>Update catalog</source>
-        <extracomment>Button for updating the contents of registered catalog</extracomment>
-        <translation type="vanished">更新数据库</translation>
-    </message>
-    <message>
         <location filename="../src/catalog/cataloglist.ui" line="284"/>
         <source>&amp;Delete</source>
         <extracomment>Button to delete information of registered catalog</extracomment>
@@ -2135,200 +2012,156 @@
         <translation>编辑(&amp;E)</translation>
     </message>
     <message>
-        <source>Delete all</source>
-        <translation type="vanished">删除全部</translation>
-    </message>
-    <message>
-        <source>Update all</source>
-        <extracomment>登録済みのカタログの内容を更新するボタン</extracomment>
-        <translation type="vanished">更新全部</translation>
-    </message>
-    <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="27"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="33"/>
         <source>Name</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>名称</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="32"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="38"/>
         <source>Path</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>路径</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="51"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="57"/>
         <source>Close</source>
         <comment>Button that closes the catalog manager</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="199"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="205"/>
         <source>Remove missing entries (%1)</source>
         <comment>Button that removes the catalog entries whose folder is no longer there</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/catalog/cataloglist.ui" line="294"/>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="211"/>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="223"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="217"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="229"/>
         <source>Remove missing entries</source>
         <extracomment>Button that removes the catalog entries whose folder is no longer there</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="212"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="218"/>
         <source>%1 registered folder(s) are no longer there. Remove them from the list? The image files are not deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="223"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="229"/>
         <source>Removed %1 entry(ies).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="231"/>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="515"/>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="692"/>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="727"/>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="747"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="237"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="521"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="698"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="733"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="753"/>
         <source>Catalog database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="233"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="239"/>
         <source>Move or rename that file, then open the catalog again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="270"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="276"/>
         <source>Start creating (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="271"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="277"/>
         <source>Start creating</source>
         <comment>Button that builds the folders which were added to the list above</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="265"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="271"/>
         <source>Stop creating</source>
         <comment>Button that cancels the catalogs being built</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="326"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="332"/>
         <source>Not created yet</source>
         <comment>Representation of time indicating that the catalog is not currently created and will be generated from now</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="614"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="620"/>
         <source>Catalog creation incomplete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="615"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="621"/>
         <source>Catalog(s) left unstored: %1</source>
         <comment>Body of message box when some catalogs could not be stored</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="259"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="265"/>
         <source>Stopping...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="197"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="203"/>
         <source>Remove missing entries</source>
         <comment>Button that removes the catalog entries whose folder is no longer there</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="654"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="660"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="655"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="661"/>
         <source>%1 added folder(s) are not created yet. Close and discard them?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="721"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="727"/>
         <source>Delete catalog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="722"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="728"/>
         <source>Delete &quot;%1&quot; from the list of catalogs? The image files are not deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="742"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="748"/>
         <source>Delete all catalogs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="743"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="749"/>
         <source>Delete every catalog from the list? The image files are not deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Start</source>
-        <comment>Button to start catalog creation for specified folder</comment>
-        <translation type="vanished">开始处理</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <comment>Button to cancel the catalog being generated</comment>
-        <translation type="vanished">取消处理</translation>
-    </message>
-    <message>
-        <source>Completed</source>
-        <comment>Title of message box when catalog generation finished successfully</comment>
-        <translation type="vanished">成功！</translation>
-    </message>
-    <message>
-        <source>Cancelled!</source>
-        <comment>Title of message box when catalog generation was canceled</comment>
-        <translation type="vanished">取消！</translation>
-    </message>
-    <message>
-        <source>Selected Catalog</source>
-        <extracomment>Name of the frame in which buttons for operating one catalog are arranged</extracomment>
-        <translation type="vanished">已选目录</translation>
-    </message>
-    <message>
-        <source>All Catalogs</source>
-        <extracomment>Name of the frame in which buttons for operating all catalogs are arranged</extracomment>
-        <translation type="vanished">全部目录</translation>
-    </message>
-    <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="30"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="36"/>
         <source>Created</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>创建时间</translation>
     </message>
     <message>
-        <source>Pending</source>
-        <comment>Representation of time indicating that the catalog is not currently created and will be generated from now</comment>
-        <translation type="vanished">即将开始</translation>
-    </message>
-    <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="583"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="589"/>
         <source>Edit Catalog</source>
         <comment>Button for editing contents of already created catalog</comment>
         <translation>编辑目录</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="609"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="615"/>
         <source>Catalog creation completed.</source>
         <comment>Body of message box when catalog generation finished successfully</comment>
         <translation>创建目录完成</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="605"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="611"/>
         <source>Catalog creation was cancelled.</source>
         <comment>Body of message box when catalog generation is canceled</comment>
         <translation>取消了创建目录</translation>
@@ -2365,11 +2198,6 @@
         <source>Select a mouse button and modifiers, then click &apos;Add shortcut&apos;.</source>
         <comment>Placeholder text urging the mouse input setting procedure</comment>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Select the combination of the checks below, press the &apos;Add Sequence&apos; button</source>
-        <comment>Placeholder text urging the mouse input setting procedure</comment>
-        <translation type="vanished">选择以下复选框的组合，点击“添加序列”按钮</translation>
     </message>
     <message>
         <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="27"/>
@@ -2689,22 +2517,6 @@
     </message>
 </context>
 <context>
-    <name>PageContent</name>
-    <message>
-        <source>NOT IMAGE FILE</source>
-        <comment>Error messages to be displayed on screen when image loading fails</comment>
-        <translation type="vanished">不是图像文件</translation>
-    </message>
-</context>
-<context>
-    <name>QLanguageSelector</name>
-    <message>
-        <source>Always use text translation</source>
-        <comment>Menu text that uses textual translation rather than regular qm format</comment>
-        <translation type="vanished">始终使用文本翻译</translation>
-    </message>
-</context>
-<context>
     <name>QVApplication</name>
     <message>
         <location filename="../src/models/qvapplication.cpp" line="269"/>
@@ -2802,7 +2614,7 @@
 <context>
     <name>RenderedPage</name>
     <message>
-        <location filename="../src/models/renderedpage.cpp" line="76"/>
+        <location filename="../src/models/renderedpage.cpp" line="71"/>
         <source>NOT IMAGE FILE</source>
         <comment>Error messages to be displayed on screen when image loading fails</comment>
         <translation type="unfinished">不是图像文件</translation>

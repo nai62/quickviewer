@@ -125,58 +125,53 @@
         <translation>Supprimer (Options) du titre du livre</translation>
     </message>
     <message>
-        <source>Enter a search term and press Enter to search by title.</source>
-        <comment>Gray text that prompts a keyword search of Volume</comment>
-        <translation type="vanished">Entrez le terme à rechercher et appuyez sur la touche Entrée pour effectuer une recherche par titre.</translation>
-    </message>
-    <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="76"/>
-        <location filename="../src/catalog/catalogwindow.cpp" line="111"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="78"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="117"/>
         <source>Search titles</source>
         <comment>Gray text that prompts a keyword search of Volume</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="77"/>
-        <location filename="../src/catalog/catalogwindow.cpp" line="116"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="79"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="122"/>
         <source>Type part of a title and press Enter to search.</source>
         <comment>Tooltip of the field that searches the titles of the catalog</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="82"/>
-        <location filename="../src/catalog/catalogwindow.cpp" line="134"/>
-        <location filename="../src/catalog/catalogwindow.cpp" line="281"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="84"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="140"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="287"/>
         <source>Drop an image folder here to create a catalog.</source>
         <comment>Status bar text briefly explaining how to use CatalogWindow</comment>
         <translation>Déposez le dossier d&apos;images ici et créez un catalogue.</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="292"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="298"/>
         <source>%1 volumes</source>
         <comment>Text of the status bar showing how many volumes are listed</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="296"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="302"/>
         <source>%1 of %2 volumes</source>
         <comment>Text of the status bar showing [the number of hits]/[total number] of Volume</comment>
         <translation>(%1/%2) affichage volume.</translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="304"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="310"/>
         <source>(%1 without a cover are not shown)</source>
         <comment>Status bar note about volumes the catalog holds but does not list</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="504"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="510"/>
         <source>Edit tags...</source>
         <comment>Context menu entry of a book in the catalog list</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/catalogwindow.cpp" line="534"/>
+        <location filename="../src/catalog/catalogwindow.cpp" line="540"/>
         <source>Catalog database</source>
         <translation type="unfinished"></translation>
     </message>
@@ -219,277 +214,122 @@
         <translation>Informations Exif</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="237"/>
+        <location filename="../src/exifdialog.cpp" line="238"/>
         <source>Image description</source>
         <translation>Description d&apos;Image</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="215"/>
+        <location filename="../src/exifdialog.cpp" line="216"/>
         <source>Make</source>
         <translation>Faire</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="216"/>
+        <location filename="../src/exifdialog.cpp" line="217"/>
         <source>Model</source>
         <translation>Modèle</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="226"/>
+        <location filename="../src/exifdialog.cpp" line="227"/>
         <source>F-number</source>
         <translation>FNombre</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="234"/>
+        <location filename="../src/exifdialog.cpp" line="235"/>
         <source>Flash</source>
         <translation>Flash</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="213"/>
+        <location filename="../src/exifdialog.cpp" line="214"/>
         <source>Image width</source>
         <translation>Largeur image</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="210"/>
+        <location filename="../src/exifdialog.cpp" line="211"/>
         <source>Filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="214"/>
+        <location filename="../src/exifdialog.cpp" line="215"/>
         <source>Image height</source>
         <translation>Hauteur image</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="219"/>
+        <location filename="../src/exifdialog.cpp" line="220"/>
         <source>Bits per sample</source>
         <translation>BitsParEchantillon</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="220"/>
+        <location filename="../src/exifdialog.cpp" line="221"/>
         <source>Software</source>
         <translation>Logiciel</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="221"/>
+        <location filename="../src/exifdialog.cpp" line="222"/>
         <source>DateTime</source>
         <translation>DateHeure</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="222"/>
+        <location filename="../src/exifdialog.cpp" line="223"/>
         <source>Date/time original</source>
         <translation>DateHeureOriginal</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="223"/>
+        <location filename="../src/exifdialog.cpp" line="224"/>
         <source>Date/time digitized</source>
         <translation>DateHeureNumérisé</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="224"/>
+        <location filename="../src/exifdialog.cpp" line="225"/>
         <source>Subsecond time original</source>
         <translation>SubSecTimeOriginal</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="238"/>
+        <location filename="../src/exifdialog.cpp" line="239"/>
         <source>Copyright</source>
         <translation>Copyright</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="225"/>
+        <location filename="../src/exifdialog.cpp" line="226"/>
         <source>Exposure time</source>
         <translation>Temps Exposition</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="227"/>
+        <location filename="../src/exifdialog.cpp" line="228"/>
         <source>ISO speed</source>
         <translation>RatioVitesse ISOS</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="228"/>
+        <location filename="../src/exifdialog.cpp" line="229"/>
         <source>Shutter speed</source>
         <translation>ValeurVitesseObturation</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="229"/>
+        <location filename="../src/exifdialog.cpp" line="230"/>
         <source>Exposure bias</source>
         <translation>Valeur biais exposition</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="230"/>
+        <location filename="../src/exifdialog.cpp" line="231"/>
         <source>Subject distance</source>
         <translation>DistanceduSujet</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="231"/>
+        <location filename="../src/exifdialog.cpp" line="232"/>
         <source>Focal length</source>
         <translation>Distance focale</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="232"/>
+        <location filename="../src/exifdialog.cpp" line="233"/>
         <source>35 mm equivalent focal length</source>
         <translation>Longueur focale en 35mm</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="236"/>
+        <location filename="../src/exifdialog.cpp" line="237"/>
         <source>Metering mode</source>
         <translation>ModeMesure</translation>
     </message>
     <message>
-        <source>Flash did not fire</source>
-        <extracomment>JPEG EXIF Flash setting value (0x0)</extracomment>
-        <translation type="vanished">Flash non exécuté</translation>
-    </message>
-    <message>
-        <source>Flash fired</source>
-        <extracomment>JPEG EXIF Flash setting value (0x1)</extracomment>
-        <translation type="vanished">Flash exécuté</translation>
-    </message>
-    <message>
-        <source>Strobe return light not detected</source>
-        <extracomment>JPEG EXIF Flash setting value (0x5)</extracomment>
-        <translation type="vanished">Lumière de retour du stroboscope non détectée</translation>
-    </message>
-    <message>
-        <source>Strobe return light detected</source>
-        <extracomment>JPEG EXIF Flash setting value (0x7)</extracomment>
-        <translation type="vanished">Lumière de retour du stroboscope detectée</translation>
-    </message>
-    <message>
-        <source>Flash fired, compulsory flash mode</source>
-        <extracomment>JPEG EXIF Flash setting value (0x9)</extracomment>
-        <translation type="vanished">Flash déclenché, mode flash obligatoire</translation>
-    </message>
-    <message>
-        <source>Flash fired, compulsory flash mode, return light not detected</source>
-        <extracomment>JPEG EXIF Flash setting value (0xD)</extracomment>
-        <translation type="vanished">Flash déclenché, mode flash obligatoire, lumière de retour non détectée</translation>
-    </message>
-    <message>
-        <source>Flash fired, compulsory flash mode, return light detected</source>
-        <extracomment>JPEG EXIF Flash setting value (0xF)</extracomment>
-        <translation type="vanished">Flash déclenché, mode flash obligatoire, lumière de retour détectée</translation>
-    </message>
-    <message>
-        <source>Flash did not fire, compulsory flash mode</source>
-        <extracomment>JPEG EXIF Flash setting value (0x10)</extracomment>
-        <translation type="vanished">Flash non déclenché, mode de flash obligatoire</translation>
-    </message>
-    <message>
-        <source>Flash did not fire, auto mode</source>
-        <extracomment>JPEG EXIF Flash setting value (0x18)</extracomment>
-        <translation type="vanished">Flash non déclenché, mode automatique</translation>
-    </message>
-    <message>
-        <source>Flash fired, auto mode</source>
-        <extracomment>JPEG EXIF Flash setting value (0x19)</extracomment>
-        <translation type="vanished">Flash déclenché, mode automatique</translation>
-    </message>
-    <message>
-        <source>Flash fired, auto mode, return light not detected</source>
-        <extracomment>JPEG EXIF Flash setting value (0x1D)</extracomment>
-        <translation type="vanished">Flash déclenché, mode automatique, lumière de retour non détectée</translation>
-    </message>
-    <message>
-        <source>Flash fired, auto mode, return light detected</source>
-        <extracomment>JPEG EXIF Flash setting value (0x1F)</extracomment>
-        <translation type="vanished">Flash déclenché, mode automatique, lumière de retour détectée</translation>
-    </message>
-    <message>
-        <source>No flash function</source>
-        <extracomment>JPEG EXIF Flash setting value (0x20)</extracomment>
-        <translation type="vanished">Pas de fonction flash</translation>
-    </message>
-    <message>
-        <source>Flash fired, red-eye reduction mode</source>
-        <extracomment>JPEG EXIF Flash setting value (0x41)</extracomment>
-        <translation type="vanished">Flash déclenché, mode réduction yeux rouges</translation>
-    </message>
-    <message>
-        <source>Flash fired, red-eye reduction mode, return light not detected</source>
-        <extracomment>JPEG EXIF Flash setting value (0x45)</extracomment>
-        <translation type="vanished">Flash déclenché, mode de réduction des yeux rouges, retour de lumière non détecté</translation>
-    </message>
-    <message>
-        <source>Flash fired, red-eye reduction mode, return light detected</source>
-        <extracomment>JPEG EXIF Flash setting value (0x47)</extracomment>
-        <translation type="vanished">Flash déclenché, mode réduction des yeux rouges, retour de lumière détecté</translation>
-    </message>
-    <message>
-        <source>Flash fired, compulsory flash mode, red-eye reduction mode</source>
-        <extracomment>JPEG EXIF Flash setting value (0x49)</extracomment>
-        <translation type="vanished">Flash déclenché, mode flash obligatoire, mode atténuation des yeux rouges</translation>
-    </message>
-    <message>
-        <source>Flash fired, compulsory flash mode, red-eye reduction mode, return light not detected</source>
-        <extracomment>JPEG EXIF Flash setting value (0x4D)</extracomment>
-        <translation type="vanished">Flash déclenché, mode flash obligatoire, mode atténuation des yeux rouges, retour de lumière non détecté</translation>
-    </message>
-    <message>
-        <source>Flash fired, compulsory flash mode, red-eye reduction mode, return light detected</source>
-        <extracomment>JPEG EXIF Flash setting value (0x4F)</extracomment>
-        <translation type="vanished">Flash déclenché, mode flash obligatoire, mode atténuation des yeux rouges, retour de lumière détecté</translation>
-    </message>
-    <message>
-        <source>Flash fired, auto mode, red-eye reduction mode</source>
-        <extracomment>JPEG EXIF Flash setting value (0x59)</extracomment>
-        <translation type="vanished">Flash déclenché, mode automatique, mode de réduction des yeux rouges</translation>
-    </message>
-    <message>
-        <source>Flash fired, auto mode, return light not detected, red-eye reduction mode</source>
-        <extracomment>JPEG EXIF Flash setting value (0x5D)</extracomment>
-        <translation type="vanished">Flash déclenché, mode automatique, lumière de retour non détectée, mode de réduction des yeux rouges</translation>
-    </message>
-    <message>
-        <source>Flash fired, auto mode, return light detected, red-eye reduction mode</source>
-        <extracomment>JPEG EXIF Flash setting value (0x5F)</extracomment>
-        <translation type="vanished">Flash déclenché, mode automatique, lumière de retour détectée, mode de réduction des yeux rouges</translation>
-    </message>
-    <message>
-        <source>Horizontal (normal)</source>
-        <extracomment>JPEG EXIF Orientation of the main body of the camera(0 or 1)</extracomment>
-        <translation type="vanished">Horizontal (normal)</translation>
-    </message>
-    <message>
-        <source>Mirror horizontal</source>
-        <extracomment>JPEG EXIF Orientation of the main body of the camera(2)</extracomment>
-        <translation type="vanished">Miroir horizontal</translation>
-    </message>
-    <message>
-        <source>Rotate 180</source>
-        <extracomment>JPEG EXIF Orientation of the main body of the camera(3)</extracomment>
-        <translation type="vanished">Pivote de 180</translation>
-    </message>
-    <message>
-        <source>Mirror vertical</source>
-        <extracomment>JPEG EXIF Orientation of the main body of the camera(4)</extracomment>
-        <translation type="vanished">Miroir vertical</translation>
-    </message>
-    <message>
-        <source>Mirror horizontal and rotate 270 CW</source>
-        <extracomment>JPEG EXIF Orientation of the main body of the camera(5)</extracomment>
-        <translation type="vanished">Miroir horizontal et pivoter 270 CW</translation>
-    </message>
-    <message>
-        <source>Rotate 90 CW</source>
-        <extracomment>JPEG EXIF Orientation of the main body of the camera(6)</extracomment>
-        <translation type="vanished">Rotation 90 CW</translation>
-    </message>
-    <message>
-        <source>Mirror horizontal and rotate 90 CW</source>
-        <extracomment>JPEG EXIF Orientation of the main body of the camera(7)</extracomment>
-        <translation type="vanished">Miroir horizontal et rotation 90 CW</translation>
-    </message>
-    <message>
-        <source>Rotate 270 CW</source>
-        <extracomment>JPEG EXIF Orientation of the main body of the camera(8)</extracomment>
-        <translation type="vanished">Rotation 270 CW</translation>
-    </message>
-    <message>
-        <source>Exif is not included.</source>
-        <extracomment>Text to display if EXIF is not included in JPEG</extracomment>
-        <translation type="vanished">Exif n&apos;est pas inclus.</translation>
-    </message>
-    <message>
-        <location filename="../src/exifdialog.cpp" line="217"/>
+        <location filename="../src/exifdialog.cpp" line="218"/>
         <source>Orientation of camera</source>
         <translation>Orientation de l&apos;appareil</translation>
     </message>
@@ -500,11 +340,7 @@
         <translation>Copier dans le presse-papier</translation>
     </message>
     <message>
-        <source>File name</source>
-        <translation type="vanished">Nom-fichier</translation>
-    </message>
-    <message>
-        <location filename="../src/exifdialog.cpp" line="211"/>
+        <location filename="../src/exifdialog.cpp" line="212"/>
         <source>Pixels</source>
         <translation>Pixels</translation>
     </message>
@@ -689,7 +525,7 @@
         <translation>Rotation 270 CW</translation>
     </message>
     <message>
-        <location filename="../src/exifdialog.cpp" line="206"/>
+        <location filename="../src/exifdialog.cpp" line="207"/>
         <source>Exif is not included.</source>
         <comment>Text to display if EXIF is not included in JPEG</comment>
         <translation>Exif n&apos;est pas inclus.</translation>
@@ -758,36 +594,6 @@
         <translation>Format de surface DirectDraw (*.dds)</translation>
     </message>
     <message>
-        <source>Truevision Graphics Adapter Format Image</source>
-        <extracomment>description of File format on Explorer(.tga)</extracomment>
-        <translation type="vanished">Image du format de l&apos;adaptateur graphique Truevision</translation>
-    </message>
-    <message>
-        <source>Canon RAW format</source>
-        <extracomment>description of File format on Explorer(.cr2)</extracomment>
-        <translation type="vanished">Format brut Canon</translation>
-    </message>
-    <message>
-        <source>Adobe Digital Negative Format</source>
-        <extracomment>description of File format on Explorer(.dng)</extracomment>
-        <translation type="vanished">Format négatif numérique Adobe</translation>
-    </message>
-    <message>
-        <source>Nikon RAW format</source>
-        <extracomment>description of File format on Explorer(.nef)</extracomment>
-        <translation type="vanished">Format brut Nicon</translation>
-    </message>
-    <message>
-        <source>Sony RAW format</source>
-        <extracomment>description of File format on Explorer(.arw)</extracomment>
-        <translation type="vanished">Format Sony Raw</translation>
-    </message>
-    <message>
-        <source>&amp;View with QuickViewer</source>
-        <extracomment>Menu displayed when right clicking on file in Explorer</extracomment>
-        <translation type="vanished">&amp;Voir avec QuickViewer</translation>
-    </message>
-    <message>
         <location filename="../../../components/file-association/fileassocdialog.ui" line="14"/>
         <source>Associate files with QuickViewer</source>
         <translation>Associer fichiers à QuickViewer</translation>
@@ -823,55 +629,6 @@
         <location filename="../../../components/file-association/fileassocdialog.ui" line="34"/>
         <source>GIF Image (*.gif)</source>
         <translation>Image GIF (*.gif)</translation>
-    </message>
-    <message>
-        <source>JPEG Image (*.jpg, *.jpeg)</source>
-        <translation type="vanished">Image JPEG (*.jpg, *.jpeg)</translation>
-    </message>
-    <message>
-        <source>JPEG Image</source>
-        <extracomment>description of File format on Explorer(.jpeg)</extracomment>
-        <translation type="vanished">Image JPEG</translation>
-    </message>
-    <message>
-        <source>PNG File</source>
-        <extracomment>description of File format on Explorer(.png)</extracomment>
-        <translation type="vanished">Fichier PNG</translation>
-    </message>
-    <message>
-        <source>Animated PNG File</source>
-        <extracomment>description of File format on Explorer(.apng)</extracomment>
-        <translation type="vanished">Fichier PNG animé</translation>
-    </message>
-    <message>
-        <source>Bitmap File</source>
-        <extracomment>description of File format on Explorer(.bmp)</extracomment>
-        <translation type="vanished">Fichier Bitmap</translation>
-    </message>
-    <message>
-        <source>DirectDraw Surface Image</source>
-        <extracomment>description of File format on Explorer(.dds)</extracomment>
-        <translation type="vanished">Surface d&apos;image DirectDraw</translation>
-    </message>
-    <message>
-        <source>GIF Image</source>
-        <extracomment>description of File format on Explorer(.gif)</extracomment>
-        <translation type="vanished">Image GIF</translation>
-    </message>
-    <message>
-        <source>Windows Icon File</source>
-        <extracomment>description of File format on Explorer(.ico)</extracomment>
-        <translation type="vanished">Fichier d&apos;icône Windows</translation>
-    </message>
-    <message>
-        <source>TIFF image</source>
-        <extracomment>description of File format on Explorer(.tiff)</extracomment>
-        <translation type="vanished">Image Tiff</translation>
-    </message>
-    <message>
-        <source>WebP Image</source>
-        <extracomment>description of File format on Explorer(.webp)</extracomment>
-        <translation type="vanished">Image WebP</translation>
     </message>
     <message>
         <location filename="../../../components/file-association/fileassocdialog.ui" line="188"/>
@@ -977,83 +734,55 @@
     </message>
 </context>
 <context>
-    <name>FolderItemModel</name>
-    <message>
-        <source>Name</source>
-        <extracomment>Title of the column in the folder list when displaying as an independent Window in Folder Window</extracomment>
-        <translation type="vanished">Nom</translation>
-    </message>
-    <message>
-        <source>Modified</source>
-        <extracomment>Title of the column in the folder list when displaying as an independent Window in Folder Window</extracomment>
-        <translation type="vanished">mettre à jour</translation>
-    </message>
-    <message>
-        <source>Name</source>
-        <comment>Title of the column in the folder list when displaying as an independent Window in Folder Window</comment>
-        <translation type="vanished">Nom</translation>
-    </message>
-</context>
-<context>
     <name>FolderWindow</name>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="106"/>
-        <location filename="../src/folderview/folderwindow.ui" line="211"/>
+        <location filename="../src/folderview/folderwindow.ui" line="103"/>
+        <location filename="../src/folderview/folderwindow.ui" line="208"/>
         <source>Home</source>
         <extracomment>Button for returning to QuickViewer&apos;s home folder</extracomment>
         <translation>Aller vers home</translation>
     </message>
     <message>
-        <source>Previous</source>
-        <extracomment>Button for returning to the previous folder from the currently displayed folder</extracomment>
-        <translation type="vanished">Précédent</translation>
-    </message>
-    <message>
-        <source>Next</source>
-        <extracomment>Button for returning to the folder after the current displayed folder</extracomment>
-        <translation type="vanished">suivant</translation>
-    </message>
-    <message>
-        <location filename="../src/folderview/folderwindow.ui" line="155"/>
-        <location filename="../src/folderview/folderwindow.ui" line="229"/>
-        <location filename="../src/folderview/folderwindow.ui" line="271"/>
+        <location filename="../src/folderview/folderwindow.ui" line="152"/>
+        <location filename="../src/folderview/folderwindow.ui" line="226"/>
+        <location filename="../src/folderview/folderwindow.ui" line="268"/>
         <source>Reload</source>
         <translation>Recharger</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="158"/>
+        <location filename="../src/folderview/folderwindow.ui" line="155"/>
         <source>Refresh</source>
         <extracomment>Button for updating the currently displayed folder information</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="234"/>
+        <location filename="../src/folderview/folderwindow.ui" line="231"/>
         <source>Name</source>
         <translation>Nom</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="256"/>
+        <location filename="../src/folderview/folderwindow.ui" line="253"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="261"/>
+        <location filename="../src/folderview/folderwindow.ui" line="258"/>
         <source>Open in &amp;Explorer</source>
         <extracomment>Menu that displays Explorer with the currently displayed image file selected</extracomment>
         <translation type="unfinished">Ouvrir dans &amp;Explorer</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="266"/>
+        <location filename="../src/folderview/folderwindow.ui" line="263"/>
         <source>Copy path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="220"/>
+        <location filename="../src/folderview/folderwindow.ui" line="217"/>
         <source>Parent</source>
         <translation>VersParent</translation>
     </message>
     <message>
-        <location filename="../src/folderview/folderwindow.ui" line="246"/>
+        <location filename="../src/folderview/folderwindow.ui" line="243"/>
         <source>Other</source>
         <translation>Autres</translation>
     </message>
@@ -1063,18 +792,13 @@
         <translation>Liste dossiers</translation>
     </message>
     <message>
-        <source>Current folder</source>
-        <extracomment>Label indicating that the current folder PATH is being displayed</extracomment>
-        <translation type="vanished">Dossier courant</translation>
-    </message>
-    <message>
-        <location filename="../src/folderview/folderwindow.ui" line="103"/>
+        <location filename="../src/folderview/folderwindow.ui" line="100"/>
         <source>Go to home folder</source>
         <translation>Déplacer vers dossiers personnel</translation>
     </message>
     <message>
+        <location filename="../src/folderview/folderwindow.ui" line="126"/>
         <location filename="../src/folderview/folderwindow.ui" line="129"/>
-        <location filename="../src/folderview/folderwindow.ui" line="132"/>
         <source>Parent folder</source>
         <extracomment>Button for moving from the currently displayed folder to the next higher folder</extracomment>
         <translation>DossierSupérieur</translation>
@@ -1092,31 +816,9 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Modified</source>
-        <translation type="vanished">Mise à jour</translation>
-    </message>
-    <message>
-        <source>Change sort order</source>
-        <extracomment>Tooltip for pulldown to change folder sorting method</extracomment>
-        <translation type="vanished">Changer la méthode de tri</translation>
-    </message>
-    <message>
-        <source>Sort by name</source>
-        <translation type="vanished">Trier par nom</translation>
-    </message>
-    <message>
-        <source>Sort by modified time</source>
-        <translation type="vanished">Trié par UpDate</translation>
-    </message>
-    <message>
-        <location filename="../src/folderview/folderwindow.ui" line="251"/>
+        <location filename="../src/folderview/folderwindow.ui" line="248"/>
         <source>Set as home folder</source>
         <translation>Définissez ce dossier comme dossier d&apos;accueil</translation>
-    </message>
-    <message>
-        <source>No folders or archives found.</source>
-        <extracomment>Display when there is no display item in Folder Window</extracomment>
-        <translation type="vanished">Aucun dossier ou archive trouvé</translation>
     </message>
     <message>
         <location filename="../src/folderview/folderwindow.cpp" line="125"/>
@@ -1128,61 +830,6 @@
 </context>
 <context>
     <name>ImageString</name>
-    <message>
-        <source>Volume name (only folder/archive name), e.g. &apos;Sample Book&apos;)</source>
-        <extracomment>Format tag of text displayed in title bar and status bar</extracomment>
-        <translation type="vanished">Nom du volume (uniquement le nom du dossier/d’archive), i.e. &apos;Sample Book&apos;)</translation>
-    </message>
-    <message>
-        <source>Volume full path, e.g. &apos;C:/Users/qv/Desktop/Sample Book&apos;</source>
-        <extracomment>Format tag of text displayed in title bar and status bar</extracomment>
-        <translation type="vanished">Chemin complet du volume, par ex. &apos;C:/Users/qv/Desktop/Sample Book&apos;</translation>
-    </message>
-    <message>
-        <source>Image file name (only file name), e.g. &apos;page01.jpg&apos;</source>
-        <extracomment>Format tag of text displayed in title bar and status bar</extracomment>
-        <translation type="vanished">Nom du fichier image (uniquement le nom du fichier), i.e. &apos;page01.jpg&apos;</translation>
-    </message>
-    <message>
-        <source>Image file path in volume, e.g. &apos;subpath/page01.jpg&apos;</source>
-        <extracomment>Format tag of text displayed in title bar and status bar</extracomment>
-        <translation type="vanished">Chemin du fichier image en volume, i.e. &apos;subpath/page01.jpg&apos;</translation>
-    </message>
-    <message>
-        <source>Image size, e.g. &apos;1920x1080&apos;</source>
-        <extracomment>Format tag of text displayed in title bar and status bar</extracomment>
-        <translation type="vanished">Taille de l&apos;image, par exemple &apos;1920x1080&apos;</translation>
-    </message>
-    <message>
-        <source>Display magnification of image, e.g. &apos;25%&apos;</source>
-        <extracomment>Format tag of text displayed in title bar and status bar</extracomment>
-        <translation type="vanished">Agrandissement de l&apos;affichage de l&apos;image, i.e. &apos;25% &apos;</translation>
-    </message>
-    <message>
-        <source>Image file size in a readable format, e.g. &apos;63.23 KB&apos;</source>
-        <extracomment>Format tag of text displayed in title bar and status bar</extracomment>
-        <translation type="vanished">Taille du fichier image utile, par ex. &apos;63 .23 KB &apos;</translation>
-    </message>
-    <message>
-        <source>Image file size as correct number of bytes, e.g. &apos;1,154,340 Bytes&apos;</source>
-        <extracomment>Format tag of text displayed in title bar and status bar</extracomment>
-        <translation type="vanished">Taille du fichier image en nombre correct d&apos;octets, par exemple. &quot;1 154 340 octets&quot;</translation>
-    </message>
-    <message>
-        <source>Image bitmap size with useful, e.g. &apos;1.59 MB&apos;</source>
-        <extracomment>Format tag of text displayed in title bar and status bar</extracomment>
-        <translation type="vanished">Taille de l&apos;image bitmap avec utile, i.e. &apos;1,59 MB&apos;</translation>
-    </message>
-    <message>
-        <source>Current page number of the volume e.g. &apos;33/100&apos; or &apos;33-34/100&apos;</source>
-        <extracomment>Format tag of text displayed in title bar and status bar</extracomment>
-        <translation type="vanished">Numéro de la page en cours du volume, i.e. &apos;33/100 &apos;ou &apos;33 -34/100&apos;</translation>
-    </message>
-    <message>
-        <source>Separator before the second image in 2-page spread view</source>
-        <extracomment>Format tag of text displayed in title bar and status bar</extracomment>
-        <translation type="vanished">Deuxième séparateur de format d&apos;image quand l&apos;affichage sur 2 pages est valide)</translation>
-    </message>
     <message>
         <location filename="../src/models/imagestring.cpp" line="164"/>
         <location filename="../src/models/imagestring.cpp" line="180"/>
@@ -1271,21 +918,6 @@
         <source>Current page number in the volume, e.g. &apos;33/100&apos; or &apos;33-34/100&apos;</source>
         <comment>Format tag of text displayed in title bar and status bar</comment>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Image file size as correct number of bytes, e.g. &apos;1,154,340 Bytes&apos;</source>
-        <comment>Format tag of text displayed in title bar and status bar</comment>
-        <translation type="vanished">Taille du fichier image en nombre correct d&apos;octets, par exemple. &quot;1 154 340 octets&quot;</translation>
-    </message>
-    <message>
-        <source>Image bitmap size with useful, e.g. &apos;1.59 MB&apos;</source>
-        <comment>Format tag of text displayed in title bar and status bar</comment>
-        <translation type="vanished">Taille de l&apos;image bitmap avec utile, i.e. &apos;1,59 MB&apos;</translation>
-    </message>
-    <message>
-        <source>Current page number of the volume e.g. &apos;33/100&apos; or &apos;33-34/100&apos;</source>
-        <comment>Format tag of text displayed in title bar and status bar</comment>
-        <translation type="vanished">Numéro de la page en cours du volume, i.e. &apos;33/100 &apos;ou &apos;33 -34/100&apos;</translation>
     </message>
     <message>
         <location filename="../src/models/imagestring.cpp" line="89"/>
@@ -1432,26 +1064,6 @@
         <translation>Réinitialiser</translation>
     </message>
     <message>
-        <source>Invalid key sequence.</source>
-        <extracomment>Message when rejecting input contents of inappropriate shortcut key</extracomment>
-        <translation type="vanished">Séquence de clés invalide.</translation>
-    </message>
-    <message>
-        <source>Key sequence has potential conflicts.</source>
-        <extracomment>Text to be displayed when the entered shortcut key conflicts with another shortcut key</extracomment>
-        <translation type="vanished">La séquence de touches a des conflits potentiels.</translation>
-    </message>
-    <message>
-        <source>Description</source>
-        <extracomment>Title of the column that displays the meaning of the action to be registered with the shortcut key</extracomment>
-        <translation type="vanished">Description</translation>
-    </message>
-    <message>
-        <source>Current shortcut</source>
-        <extracomment>Title of the column of the content of the shortcut key registered for Action</extracomment>
-        <translation type="vanished">CurrentShortcut</translation>
-    </message>
-    <message>
         <location filename="../src/qactionmanager/keyconfigdialog.ui" line="146"/>
         <source>Add shortcut</source>
         <translation>Ajouter une séquence</translation>
@@ -1522,11 +1134,6 @@
         <source>Meta</source>
         <extracomment>maybe &apos;Command&apos; in OSX</extracomment>
         <translation>Meta</translation>
-    </message>
-    <message>
-        <source>Group</source>
-        <extracomment>Group of the Action to be registered with the shortcut key</extracomment>
-        <translation type="vanished">Groupe</translation>
     </message>
     <message>
         <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="202"/>
@@ -1601,7 +1208,7 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="168"/>
-        <location filename="../src/mainwindow.cpp" line="1785"/>
+        <location filename="../src/mainwindow.cpp" line="1789"/>
         <source>&amp;Fullscreen</source>
         <translation>&amp;Plein écran</translation>
     </message>
@@ -1739,7 +1346,7 @@
         <translation>EffacerSignets</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2510"/>
+        <location filename="../src/mainwindow.cpp" line="2537"/>
         <source>Bookmark saved.</source>
         <translation>Signet enregistré..</translation>
     </message>
@@ -1748,16 +1355,6 @@
         <location filename="../src/mainwindow.ui" line="1079"/>
         <source>ContextMenu</source>
         <translation>Menu contextuel</translation>
-    </message>
-    <message>
-        <source>Bi&amp;cubic interpolation (slow)</source>
-        <extracomment>Menu for resizing image by bicubic interpolation by GPU</extracomment>
-        <translation type="vanished">Interpolation bi&amp;cubique (lente)</translation>
-    </message>
-    <message>
-        <source>&amp;Lanczos interpolation (very slow)</source>
-        <extracomment>Menu for resizing image by Lanczos interpolation by GPU</extracomment>
-        <translation type="vanished">&amp;Lanczos interpolation (très lente)</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="426"/>
@@ -1834,11 +1431,6 @@
         <location filename="../src/mainwindow.ui" line="443"/>
         <source>F&amp;older</source>
         <translation>D&amp;ossier</translation>
-    </message>
-    <message>
-        <source>Don&apos;t enlarge small images on Fitting</source>
-        <extracomment>Ability to display an image smaller than the window as it is when fit is displayed</extracomment>
-        <translation type="vanished">Ne pas agrandir les petites images sur le montage</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="1057"/>
@@ -1966,26 +1558,6 @@
         <translation>Renommer</translation>
     </message>
     <message>
-        <source>No folder or archive is loaded.</source>
-        <extracomment>The text of the status bar to be displayed when there is no image to be displayed immediately after the application is activated</extracomment>
-        <translation type="vanished">Aucun dossier ou archive n&apos;est chargé.</translation>
-    </message>
-    <message>
-        <source>Image file not found. Can&apos;t be opened</source>
-        <extracomment>Text to display in the status bar when failed to open the specified Volume</extracomment>
-        <translation type="vanished">Fichier image non trouvé. Ne peut être ouvert</translation>
-    </message>
-    <message>
-        <source>Image file was not found. Can&apos;t be opened.</source>
-        <extracomment>Text to display in the status bar when failed to open the specified Volume</extracomment>
-        <translation type="vanished">Le fichier image n&apos;a pas été trouvé. Ne peut être ouvert.</translation>
-    </message>
-    <message>
-        <source>Select an image or archive</source>
-        <extracomment>Title of the dialog displayed when opening a file with OpenFileFolder</extracomment>
-        <translation type="vanished">Veuillez sélectionner l&apos;image ou l&apos;archive</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.ui" line="575"/>
         <source>Full screen</source>
         <extracomment>Button to switch the window display to full screen</extracomment>
@@ -2077,11 +1649,6 @@
         <translation>Afficher &amp;Dossier</translation>
     </message>
     <message>
-        <source>CPU Bicubic after GPU Bilinear (standard)</source>
-        <extracomment>Preview by bilinear with GPU, then replace with bicubic resized image by CPU</extracomment>
-        <translation type="vanished">CPU Bicubic après GPU Bilinear (standard)</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.ui" line="1023"/>
         <source>&amp;Settings</source>
         <extracomment>Menu for displaying a dialog for changing the adjunct setting of the application</extracomment>
@@ -2106,11 +1673,6 @@
         <translation>Confirmer déplacer image dans &amp;Corbeille</translation>
     </message>
     <message>
-        <source>File Associations... (administrator)</source>
-        <extracomment>Ability to associate QuickViewer and image files on Explorer (Host Global)</extracomment>
-        <translation type="vanished">Associations d&apos;images (nécessite Admin)</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.ui" line="1084"/>
         <source>&amp;Mouse Settings...</source>
         <translation>&amp;Configuration de la Souris</translation>
@@ -2119,21 +1681,6 @@
         <location filename="../src/mainwindow.ui" line="1089"/>
         <source>Delete the image</source>
         <translation>Supprimer l&apos;image</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to move the image to Recycle Bin?</source>
-        <extracomment>Confirm putting displayed file in Recycle Box Message Box body</extracomment>
-        <translation type="vanished">Êtes-vous sûr de vouloir déplacer l&apos;image dans la corbeille?</translation>
-    </message>
-    <message>
-        <source>Confirmation</source>
-        <extracomment>Confirm deleting image file on MessageBox title</extracomment>
-        <translation type="vanished">Confirmation</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete this image?</source>
-        <extracomment>Confirm deleting image file on Message Box body</extracomment>
-        <translation type="vanished">Êtes-vous sûr de vouloir supprimer cette image?</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="1094"/>
@@ -2277,11 +1824,6 @@
         <translation>Masquer le curseur de la souris en plein écran</translation>
     </message>
     <message>
-        <source>All Files( *.* )</source>
-        <extracomment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</extracomment>
-        <translation type="vanished">Tous les fichiers (*.*)</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.ui" line="274"/>
         <location filename="../src/mainwindow.ui" line="1275"/>
         <source>&amp;Sort by</source>
@@ -2318,62 +1860,60 @@
         <translation>Heure modifiée (décroissante)</translation>
     </message>
     <message>
-        <source>No folder or archive is loaded.</source>
-        <comment>The text of the status bar to be displayed when there is no image to be displayed immediately after the application is activated</comment>
-        <translation type="vanished">Aucun dossier ou archive n&apos;est chargé.</translation>
-    </message>
-    <message>
-        <source>Image file not found. Can&apos;t be opened</source>
-        <comment>Text to display in the status bar when failed to open the specified Volume</comment>
-        <translation type="vanished">Fichier image non trouvé. Ne peut être ouvert</translation>
-    </message>
-    <message>
-        <source>Image file was not found. Can&apos;t be opened.</source>
-        <comment>Text to display in the status bar when failed to open the specified Volume</comment>
-        <translation type="vanished">Le fichier image n&apos;a pas été trouvé. Ne peut être ouvert.</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp" line="1736"/>
+        <location filename="../src/mainwindow.cpp" line="1740"/>
         <source>Loading...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1739"/>
+        <location filename="../src/mainwindow.cpp" line="1743"/>
         <source>No images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1741"/>
+        <location filename="../src/mainwindow.cpp" line="1745"/>
         <source>Unavailable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2094"/>
+        <location filename="../src/mainwindow.cpp" line="2098"/>
         <source>All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.heic *.heif);;Archives( *.zip *.7z *.rar)</source>
         <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2100"/>
+        <location filename="../src/mainwindow.cpp" line="2104"/>
         <source>Select an image or archive</source>
         <comment>Title of the dialog displayed when opening a file with OpenFileFolder</comment>
         <translation>Veuillez sélectionner l&apos;image ou l&apos;archive</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2341"/>
-        <location filename="../src/mainwindow.cpp" line="2385"/>
+        <location filename="../src/mainwindow.cpp" line="2344"/>
+        <location filename="../src/mainwindow.cpp" line="2405"/>
         <source>Confirmation</source>
         <comment>Confirm deleting image file on MessageBox title</comment>
         <translation>Confirmation</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2347"/>
+        <location filename="../src/mainwindow.cpp" line="2371"/>
         <source>Are you sure you want to move the image to Recycle Bin?</source>
         <comment>Confirm putting displayed file in Recycle Box Message Box body</comment>
         <translation>Êtes-vous sûr de vouloir déplacer l&apos;image dans la corbeille?</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2390"/>
+        <location filename="../src/mainwindow.cpp" line="2394"/>
+        <source>Are you sure you want to move this whole archive to Recycle Bin?</source>
+        <comment>Confirm putting the displayed archive, with every page in it, in Recycle Box Message Box body</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp" line="2406"/>
+        <source>The archive could not be moved to Recycle Bin:
+%1</source>
+        <comment>Message shown when the displayed archive could not be put in Recycle Box</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp" line="2431"/>
         <source>Are you sure you want to delete this image?</source>
         <comment>Confirm deleting image file on Message Box body</comment>
         <translation>Êtes-vous sûr de vouloir supprimer cette image?</translation>
@@ -2382,14 +1922,6 @@
         <location filename="../src/mainwindow.ui" line="318"/>
         <source>&amp;Tools</source>
         <translation>Outils(&amp;T)</translation>
-    </message>
-</context>
-<context>
-    <name>MainWindowForWindows</name>
-    <message>
-        <source>Sh&amp;ow/hide menu bar</source>
-        <extracomment>An additional menu displayed when right-clicking the title bar, which is used when undoing the main menu when it is hidden</extracomment>
-        <translation type="vanished">Aff&amp;icher/masquer la barre de menus principale</translation>
     </message>
 </context>
 <context>
@@ -2468,16 +2000,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&amp;Add</source>
-        <extracomment>Button to add a new catalog</extracomment>
-        <translation type="vanished">&amp;Ajouter nouveau</translation>
-    </message>
-    <message>
-        <source>Update catalog</source>
-        <extracomment>Button for updating the contents of registered catalog</extracomment>
-        <translation type="vanished">Mettre à jour Base de données</translation>
-    </message>
-    <message>
         <location filename="../src/catalog/cataloglist.ui" line="284"/>
         <source>&amp;Delete</source>
         <extracomment>Button to delete information of registered catalog</extracomment>
@@ -2490,255 +2012,156 @@
         <translation>&amp;Editer</translation>
     </message>
     <message>
-        <source>Delete all</source>
-        <translation type="vanished">SupprimeTout</translation>
-    </message>
-    <message>
-        <source>Update all</source>
-        <extracomment>登録済みのカタログの内容を更新するボタン</extracomment>
-        <translation type="vanished">Tout mettre à jour</translation>
-    </message>
-    <message>
-        <source>Name</source>
-        <extracomment>Title of the column in the list part of the folder registered as Catalog</extracomment>
-        <translation type="vanished">Nom</translation>
-    </message>
-    <message>
-        <source>Path</source>
-        <extracomment>Title of the column in the list part of the folder registered as Catalog</extracomment>
-        <translation type="vanished">Chemin</translation>
-    </message>
-    <message>
-        <source>Start</source>
-        <extracomment>Button to start catalog creation for specified folder</extracomment>
-        <translation type="vanished">Démarrer travail</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <extracomment>Button to cancel the catalog being generated</extracomment>
-        <translation type="vanished">Supprimer Travail</translation>
-    </message>
-    <message>
-        <source>Completed</source>
-        <extracomment>Title of message box when catalog generation finished successfully</extracomment>
-        <translation type="vanished">Réussi!</translation>
-    </message>
-    <message>
-        <source>Cancelled!</source>
-        <extracomment>Title of message box when catalog generation was canceled</extracomment>
-        <translation type="vanished">Supprimé!</translation>
-    </message>
-    <message>
-        <source>Selected Catalog</source>
-        <extracomment>Name of the frame in which buttons for operating one catalog are arranged</extracomment>
-        <translation type="vanished">Catalogue Sélectionné</translation>
-    </message>
-    <message>
-        <source>All Catalogs</source>
-        <extracomment>Name of the frame in which buttons for operating all catalogs are arranged</extracomment>
-        <translation type="vanished">Tous Catalogues</translation>
-    </message>
-    <message>
-        <source>Created</source>
-        <extracomment>Title of the column in the list part of the folder registered as Catalog</extracomment>
-        <translation type="vanished">Heure de création</translation>
-    </message>
-    <message>
-        <source>Pending</source>
-        <extracomment>Representation of time indicating that the catalog is not currently created and will be generated from now</extracomment>
-        <translation type="vanished">S&apos;approcher</translation>
-    </message>
-    <message>
-        <source>Edit Catalog</source>
-        <extracomment>Button for editing contents of already created catalog</extracomment>
-        <translation type="vanished">Edition de ctalogue</translation>
-    </message>
-    <message>
-        <source>Catalog creation completed.</source>
-        <extracomment>Body of message box when catalog generation finished successfully</extracomment>
-        <translation type="vanished">Création de Catalogue faite</translation>
-    </message>
-    <message>
-        <source>Catalog creation was cancelled.</source>
-        <extracomment>Body of message box when catalog generation is canceled</extracomment>
-        <translation type="vanished">Suppression de Création de Catalogue</translation>
-    </message>
-    <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="27"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="33"/>
         <source>Name</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>Nom</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="30"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="36"/>
         <source>Created</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>Heure de création</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="32"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="38"/>
         <source>Path</source>
         <comment>Title of the column in the list part of the folder registered as Catalog</comment>
         <translation>Chemin</translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="51"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="57"/>
         <source>Close</source>
         <comment>Button that closes the catalog manager</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="199"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="205"/>
         <source>Remove missing entries (%1)</source>
         <comment>Button that removes the catalog entries whose folder is no longer there</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/catalog/cataloglist.ui" line="294"/>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="211"/>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="223"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="217"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="229"/>
         <source>Remove missing entries</source>
         <extracomment>Button that removes the catalog entries whose folder is no longer there</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="212"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="218"/>
         <source>%1 registered folder(s) are no longer there. Remove them from the list? The image files are not deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="223"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="229"/>
         <source>Removed %1 entry(ies).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="231"/>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="515"/>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="692"/>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="727"/>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="747"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="237"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="521"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="698"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="733"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="753"/>
         <source>Catalog database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="233"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="239"/>
         <source>Move or rename that file, then open the catalog again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="270"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="276"/>
         <source>Start creating (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="271"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="277"/>
         <source>Start creating</source>
         <comment>Button that builds the folders which were added to the list above</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="265"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="271"/>
         <source>Stop creating</source>
         <comment>Button that cancels the catalogs being built</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="326"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="332"/>
         <source>Not created yet</source>
         <comment>Representation of time indicating that the catalog is not currently created and will be generated from now</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="614"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="620"/>
         <source>Catalog creation incomplete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="615"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="621"/>
         <source>Catalog(s) left unstored: %1</source>
         <comment>Body of message box when some catalogs could not be stored</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="259"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="265"/>
         <source>Stopping...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="197"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="203"/>
         <source>Remove missing entries</source>
         <comment>Button that removes the catalog entries whose folder is no longer there</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="654"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="660"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="655"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="661"/>
         <source>%1 added folder(s) are not created yet. Close and discard them?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="721"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="727"/>
         <source>Delete catalog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="722"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="728"/>
         <source>Delete &quot;%1&quot; from the list of catalogs? The image files are not deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="742"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="748"/>
         <source>Delete all catalogs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="743"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="749"/>
         <source>Delete every catalog from the list? The image files are not deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Start</source>
-        <comment>Button to start catalog creation for specified folder</comment>
-        <translation type="vanished">Démarrer travail</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <comment>Button to cancel the catalog being generated</comment>
-        <translation type="vanished">Supprimer Travail</translation>
-    </message>
-    <message>
-        <source>Pending</source>
-        <comment>Representation of time indicating that the catalog is not currently created and will be generated from now</comment>
-        <translation type="vanished">S&apos;approcher</translation>
-    </message>
-    <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="583"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="589"/>
         <source>Edit Catalog</source>
         <comment>Button for editing contents of already created catalog</comment>
         <translation>Edition de ctalogue</translation>
     </message>
     <message>
-        <source>Completed</source>
-        <comment>Title of message box when catalog generation finished successfully</comment>
-        <translation type="vanished">Réussi!</translation>
-    </message>
-    <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="609"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="615"/>
         <source>Catalog creation completed.</source>
         <comment>Body of message box when catalog generation finished successfully</comment>
         <translation>Création de Catalogue faite</translation>
     </message>
     <message>
-        <source>Cancelled!</source>
-        <comment>Title of message box when catalog generation was canceled</comment>
-        <translation type="vanished">Supprimé!</translation>
-    </message>
-    <message>
-        <location filename="../src/catalog/managedatabasedialog.cpp" line="605"/>
+        <location filename="../src/catalog/managedatabasedialog.cpp" line="611"/>
         <source>Catalog creation was cancelled.</source>
         <comment>Body of message box when catalog generation is canceled</comment>
         <translation>Suppression de Création de Catalogue</translation>
@@ -2746,51 +2169,6 @@
 </context>
 <context>
     <name>MouseConfigDialog</name>
-    <message>
-        <source>Mouse shortcut:</source>
-        <extracomment>Title of LineEdit label to which mouse sequence is input</extracomment>
-        <translation type="vanished">Séquence de souris:</translation>
-    </message>
-    <message>
-        <source>Select the combination of the checks below, press the &apos;Add Sequence&apos; button</source>
-        <extracomment>Placeholder text urging the mouse input setting procedure</extracomment>
-        <translation type="vanished">Sélectionnez la combinaison des vérifications ci-dessous, appuyez sur le bouton &apos;Ajouter une séquence&apos;</translation>
-    </message>
-    <message>
-        <source>Description</source>
-        <extracomment>Title of the column that displays the meaning of the action to be registered with the mouse sequence</extracomment>
-        <translation type="vanished">Description</translation>
-    </message>
-    <message>
-        <source>Current mouse shortcut</source>
-        <extracomment>Title of the column of the content of the mouse sequence registered for Action</extracomment>
-        <translation type="vanished">Séquence courante de souris</translation>
-    </message>
-    <message>
-        <source>Mouse sequence has potential conflicts.</source>
-        <extracomment>Text to be displayed when the entered mouse sequence conflicts with another mouse sequence</extracomment>
-        <translation type="vanished">La séquence de souris a des conflits potentiels.</translation>
-    </message>
-    <message>
-        <source>Mouse Settings</source>
-        <extracomment>Title of the dialog to customize the mouse sequences</extracomment>
-        <translation type="vanished">Configurer la souris</translation>
-    </message>
-    <message>
-        <source>Command</source>
-        <extracomment>caption of Command key</extracomment>
-        <translation type="vanished">Commande</translation>
-    </message>
-    <message>
-        <source>Option</source>
-        <extracomment>caption of Option key</extracomment>
-        <translation type="vanished">Option</translation>
-    </message>
-    <message>
-        <source>Group</source>
-        <extracomment>Group of the Action to be registered with the shortcut key</extracomment>
-        <translation type="vanished">Group</translation>
-    </message>
     <message>
         <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="15"/>
         <source>Mouse Settings</source>
@@ -2802,11 +2180,6 @@
         <source>Mouse shortcut:</source>
         <comment>Title of LineEdit label to which mouse sequence is input</comment>
         <translation>Séquence de souris:</translation>
-    </message>
-    <message>
-        <source>Select the combination of the checks below, press the &apos;Add Sequence&apos; button</source>
-        <comment>Placeholder text urging the mouse input setting procedure</comment>
-        <translation type="vanished">Sélectionnez la combinaison des vérifications ci-dessous, appuyez sur le bouton &apos;Ajouter une séquence&apos;</translation>
     </message>
     <message>
         <location filename="../src/qactionmanager/mouseconfigdialog.cpp" line="19"/>
@@ -3055,16 +2428,6 @@
         <translation>Extraire les archives solides dans un répertoire temporaire</translation>
     </message>
     <message>
-        <source>Activate window when opened from a file association</source>
-        <extracomment>Check box to activate the window when activated by image association</extracomment>
-        <translation type="vanished">Activer la fenêtre lorsqu&apos;elle est lancée avec une association d&apos;images</translation>
-    </message>
-    <message>
-        <source>Activate window when an image is dropped onto it</source>
-        <extracomment>Check box to activate the window when an image dropped on</extracomment>
-        <translation type="vanished">Activer la fenêtre lorsqu&apos;une image est déposée</translation>
-    </message>
-    <message>
         <location filename="../src/optionsdialog.ui" line="467"/>
         <source>Interface</source>
         <translation>Barres d&apos;outils</translation>
@@ -3154,88 +2517,7 @@
     </message>
 </context>
 <context>
-    <name>PageContent</name>
-    <message>
-        <source>NOT IMAGE FILE</source>
-        <extracomment>Error messages to be displayed on screen when image loading fails</extracomment>
-        <translation type="vanished">PAS DE FICHIER IMAGE</translation>
-    </message>
-    <message>
-        <source>NOT IMAGE FILE</source>
-        <comment>Error messages to be displayed on screen when image loading fails</comment>
-        <translation type="vanished">PAS DE FICHIER IMAGE</translation>
-    </message>
-</context>
-<context>
-    <name>QLanguageSelector</name>
-    <message>
-        <source>Always use text translation</source>
-        <extracomment>Menu text that uses textual translation rather than regular qm format</extracomment>
-        <translation type="vanished">Toujours utiliser la traduction de texte</translation>
-    </message>
-    <message>
-        <source>Always use text translation</source>
-        <comment>Menu text that uses textual translation rather than regular qm format</comment>
-        <translation type="vanished">Toujours utiliser la traduction de texte</translation>
-    </message>
-</context>
-<context>
     <name>QVApplication</name>
-    <message>
-        <source>File</source>
-        <extracomment>File Action Group</extracomment>
-        <translation type="vanished">Fichier</translation>
-    </message>
-    <message>
-        <source>Bookmark</source>
-        <extracomment>Bookmark Action Group</extracomment>
-        <translation type="vanished">Signet</translation>
-    </message>
-    <message>
-        <source>Folder</source>
-        <extracomment>Folder Action Group</extracomment>
-        <translation type="vanished">Dossier</translation>
-    </message>
-    <message>
-        <source>Catalog</source>
-        <extracomment>Catalog Action Group</extracomment>
-        <translation type="vanished">Catalogue</translation>
-    </message>
-    <message>
-        <source>View</source>
-        <extracomment>View Action Group</extracomment>
-        <translation type="vanished">Vue</translation>
-    </message>
-    <message>
-        <source>ContextMenu</source>
-        <extracomment>ContextMenu Action Group</extracomment>
-        <translation type="vanished">Menu contextuel</translation>
-    </message>
-    <message>
-        <source>Shader</source>
-        <extracomment>Shader Action Group</extracomment>
-        <translation type="vanished">Shader</translation>
-    </message>
-    <message>
-        <source>Help</source>
-        <extracomment>Help Action Group</extracomment>
-        <translation type="vanished">Help</translation>
-    </message>
-    <message>
-        <source>Image</source>
-        <extracomment>Image Action Group</extracomment>
-        <translation type="vanished">Image</translation>
-    </message>
-    <message>
-        <source>Navigation</source>
-        <extracomment>Navigation Action Group</extracomment>
-        <translation type="vanished">Navigation</translation>
-    </message>
-    <message>
-        <source>Dual View</source>
-        <extracomment>Dual View Action Group</extracomment>
-        <translation type="vanished">Dual View</translation>
-    </message>
     <message>
         <location filename="../src/models/qvapplication.cpp" line="269"/>
         <source>File</source>
@@ -3317,16 +2599,6 @@
         <translation>Editer nom fichier</translation>
     </message>
     <message>
-        <source>Filename is required.</source>
-        <extracomment>An error message to be displayed when the file name is set to the empty character in the file name change dialog</extracomment>
-        <translation type="vanished">Le nom du fichier est requis.</translation>
-    </message>
-    <message>
-        <source>Rename failed. A file with the same name may already exist.</source>
-        <extracomment>Error message to display when file name change fails</extracomment>
-        <translation type="vanished">Le renommage a échoué. Le même nom de fichier existe peut-être déjà?</translation>
-    </message>
-    <message>
         <location filename="../src/renamedialog.cpp" line="27"/>
         <source>Filename is required.</source>
         <comment>An error message to be displayed when the file name is set to the empty character in the file name change dialog</comment>
@@ -3342,7 +2614,7 @@
 <context>
     <name>RenderedPage</name>
     <message>
-        <location filename="../src/models/renderedpage.cpp" line="76"/>
+        <location filename="../src/models/renderedpage.cpp" line="71"/>
         <source>NOT IMAGE FILE</source>
         <comment>Error messages to be displayed on screen when image loading fails</comment>
         <translation type="unfinished">PAS DE FICHIER IMAGE</translation>
@@ -3386,21 +2658,6 @@
 </context>
 <context>
     <name>ShortcutButton</name>
-    <message>
-        <source>Stop Recording</source>
-        <extracomment>bouton pour annuler la saisie par touche de raccourci</extracomment>
-        <translation type="vanished">Arrêter l&apos;enregistrement</translation>
-    </message>
-    <message>
-        <source>Record</source>
-        <extracomment>Button for starting entering the shortcut key</extracomment>
-        <translation type="vanished">Enregistrer</translation>
-    </message>
-    <message>
-        <source>Click and enter a new shortcut key.</source>
-        <extracomment>Gray text to be displayed on LineEdit to input the shortcut key</extracomment>
-        <translation type="vanished">Cliquez et entrez un nouveau raccourci clavier</translation>
-    </message>
     <message>
         <location filename="../src/qactionmanager/keyconfigdialog.cpp" line="74"/>
         <source>Click and enter a new shortcut key.</source>
