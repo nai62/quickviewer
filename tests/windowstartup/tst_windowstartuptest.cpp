@@ -645,6 +645,10 @@ private slots:
         });
         qputenv("HOME", QFile::encodeName(directory.path()));
         qputenv("XDG_DATA_HOME", QFile::encodeName(directory.filePath(QStringLiteral("share"))));
+        // Qt makes the trash inside the data directory but not the directory
+        // itself, which a desktop session always has.
+        QVERIFY(
+            QDir().mkpath(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)));
         const QString folder = directory.filePath(QStringLiteral("book"));
         QVERIFY(QDir().mkpath(folder));
         for (int page = 0; page < 2; ++page) {
