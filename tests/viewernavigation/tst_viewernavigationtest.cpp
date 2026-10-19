@@ -287,6 +287,35 @@ public:
 };
 
 /**
+ * An archive whose every read waits at \a gate, so the test decides when a
+ * page is read, and counts the reads in \a reads.
+ */
+class GatedArchiveFileLoader final : public MemoryFileLoader
+{
+public:
+    GatedArchiveFileLoader(int imageCount,
+                           QSharedPointer<QSemaphore> gate,
+                           QSharedPointer<QAtomicInt> reads)
+        : MemoryFileLoader(imageCount),
+          m_gate(std::move(gate)),
+          m_reads(std::move(reads))
+    {
+    }
+
+    bool isArchive() const override { return true; }
+    QByteArray getFile(QString name) override
+    {
+        m_reads->fetchAndAddOrdered(1);
+        m_gate->acquire();
+        return MemoryFileLoader::getFile(name);
+    }
+
+private:
+    QSharedPointer<QSemaphore> m_gate;
+    QSharedPointer<QAtomicInt> m_reads;
+};
+
+/**
  * Copies of a multi-page archive, as volumes of one folder, with a folder
  * volume listed before them.
  */
@@ -1931,6 +1960,36 @@ private slots:
         QVERIFY(session.openEntry({plan.archivePath, plan.pageName}));
         QCOMPARE(session.currentPageName(), plan.pageName);
         QCOMPARE(session.currentPageIndex(), session.pageCount() - 1);
+    }
+
+    /**
+     * The loads a volume queued go with it: each would read a page nobody
+     * shows, and keep the archive open until it had, so the archive could not
+     * be moved away.
+     */
+    void destroyedVolumeDropsTheLoadsItQueued()
+    {
+        const int previousCacheSize = qApp->MaxImagesCache();
+        const auto restoreCacheSize =
+            qScopeGuard([previousCacheSize] { qApp->setMaxImagesCache(previousCacheSize); });
+        constexpr int PlannedLoads = 12;
+        qApp->setMaxImagesCache(PlannedLoads);
+        auto gate = QSharedPointer<QSemaphore>::create();
+        auto reads = QSharedPointer<QAtomicInt>::create(0);
+        auto *volume =
+            new Volume(nullptr, std::make_unique<GatedArchiveFileLoader>(24, gate, reads));
+        volume->loadPageList();
+        // An archive is read by at most four loads at a time, so most of the
+        // planned loads wait for a thread.
+        volume->updatePrefetchCache(0, PrefetchMode::NormalForward, QSize(100, 100));
+        const QWeakPointer<ImageLoadContext> context = volume->loadContext();
+
+        delete volume;
+        gate->release(PlannedLoads);
+
+        QTRY_VERIFY(context.isNull());
+        QVERIFY2(reads->loadAcquire() < PlannedLoads,
+                 qPrintable(QString::number(reads->loadAcquire())));
     }
 
     void removingLastDisplayedPageOpensPreviousOne()

@@ -1,6 +1,7 @@
 #include <QtGui>
 #include <atomic>
 #include <cstring>
+#include <limits>
 #include <memory>
 #include <random>
 
@@ -58,6 +59,11 @@ Volume::Volume(QObject *parent, std::unique_ptr<IFileLoader> loader)
 
 Volume::~Volume()
 {
+    // Loads still waiting for a thread are for pages nobody shows any more,
+    // and each would hold the loader - for an archive, the open file - until
+    // it had run.
+    imagePrefetchExecutor().cancelPendingOlderThan(m_prefetchOwnerId,
+                                                   std::numeric_limits<quint64>::max());
     m_imageLoadCache.clear();
     m_previewLoadCache.clear();
 }
