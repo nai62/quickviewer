@@ -130,8 +130,10 @@ FolderItemModel keeps disk names separate from safe display text and rasterized
 text. Characters missing from either weight of the view's primary font initially
 use a replacement; file operations always use the disk name. TextImageCache is
 owned by the application, so destroying or replacing a panel cannot abandon a
-shared request. Results are keyed by the name, resolved font and device pixel
-ratio, and hold one white coverage mask per weight: the delegate tints a mask
+shared request. Results are keyed by the name, resolved font, device pixel
+ratio and layout - the width, height, wrapping and elision the helper lays the
+text out with; a row asks for the default single line and clips it to its cell -
+and hold one white coverage mask per weight: the delegate tints a mask
 with the palette colour its row needs, so a result serves every state. The list
 reports the rows it shows, and only those ask for text, so a folder with
 thousands of names renders what is on screen; requests outstanding at once are
