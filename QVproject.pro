@@ -14,6 +14,7 @@ CONFIG(debug, debug|release) {
     SUBDIRS += \
         qvtest \
         prefetchplannertest \
+        storagelocationtest \
         latestresultdispatchertest \
         asynccachetest \
         svgloadertest \
@@ -32,6 +33,7 @@ spng.file = qmake/third_party/spng/spng.pro
 QuickViewer.file = apps/quickviewer/QuickViewer.pro
 qvtest.file = tests/fileloader/qvtest.pro
 prefetchplannertest.file = tests/prefetchplanner/prefetchplanner.pro
+storagelocationtest.file = tests/storagelocation/storagelocation.pro
 latestresultdispatchertest.file = tests/latestresultdispatcher/latestresultdispatcher.pro
 asynccachetest.file = tests/asynccache/asynccache.pro
 svgloadertest.file = tests/svgloader/svgloader.pro
