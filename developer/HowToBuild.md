@@ -1,7 +1,8 @@
 # How to build
 
 This document describes how to build QuickViewer from source. The supported
-Windows workflow is documented first, followed by other build targets.
+Windows workflow is documented first, followed by a Linux development build
+and other build targets.
 
 If you encounter a build problem, please open an issue in the repository you
 are working from.
@@ -22,9 +23,10 @@ assume that installation.
 
 ### Set up Rust
 
-QuickViewer builds the pinned `resvg` C API from source. Install a Rust MSVC
-toolchain with Cargo before running qmake; see [Testing.md](Testing.md) for the
-required version. On Windows, the build also checks
+QuickViewer builds the pinned `resvg` C API from source. Install a Rust
+toolchain with Cargo before running qmake - the MSVC toolchain on Windows and
+the default GNU toolchain on Linux; see [Testing.md](Testing.md) for the
+required version. The build runs `cargo` from `PATH`; on Windows it also checks
 `%USERPROFILE%\.cargo\bin\cargo.exe`.
 
 https://rustup.rs/
@@ -111,7 +113,63 @@ are missing.
 environment, environment variables, the complete command set, test selection,
 the Debug/Release verification policy, and WSL invocation.
 
-## 3. Other build targets
+## 3. Linux development build
+
+The Ubuntu CI (`.github/workflows/linux-build-and-test.yml`) builds Debug and
+Release this way on Ubuntu 24.04 with Qt 6.11.2, and runs the Debug tests as
+described in [Testing.md](Testing.md#linux).
+
+Install the system packages. libheif and its decoder plug-in back the HEIF
+image plug-in, TurboJPEG is loaded at run time by the JPEG decoder, and xvfb
+gives the tests a display:
+
+```bash
+sudo apt-get install -y build-essential libgl1-mesa-dev libheif-dev \
+  libheif-plugin-libde265 libturbojpeg xvfb
+```
+
+Install Qt 6.11.2 for `linux_gcc_64` with the Qt Image Formats and Qt SVG
+modules, for example with the Qt online installer or aqtinstall, and put its
+`bin` directory on `PATH`. Qt's own builds bring ICU with them; add the
+directory that holds `libicui18n.so.73` to `LD_LIBRARY_PATH` when the
+executables do not find it:
+
+```bash
+export PATH="$HOME/Qt/6.11.2/gcc_64/bin:$PATH"
+icu=$(find "$HOME/Qt/6.11.2/gcc_64" -name 'libicui18n.so.73' -print -quit)
+export LD_LIBRARY_PATH="$(dirname "$icu"):$LD_LIBRARY_PATH"
+```
+
+Install Rust 1.87.0 or newer with rustup. Then configure one shadow build tree
+per configuration from the repository root and build it:
+
+```bash
+mkdir build-debug
+cd build-debug
+qmake -r ../QVproject.pro CONFIG+=debug CONFIG-=release \
+  CONFIG-=debug_and_release CONFIG-=debug_and_release_target
+make -j"$(nproc)"
+```
+
+For Release, use `build-release` with `CONFIG+=release CONFIG-=debug`. The
+build compiles `7z.so` from the 7-Zip submodule (see "7-Zip archive engine"
+above), so the submodules must be checked out. The executables and test
+programs load the project's shared libraries from the build tree, so add its
+`lib` directory to `LD_LIBRARY_PATH` before running them:
+
+```bash
+export LD_LIBRARY_PATH="$PWD/lib:$LD_LIBRARY_PATH"
+bin/QuickViewer
+```
+
+The HEIF image plug-in is built separately, as the CI does: check out
+[qt-heic-image-plugin](https://github.com/novomesk/qt-heic-image-plugin), build
+`src/heif.cpp` as the `kimg_heif6` Qt plug-in linked with `-lheif` and the
+same Debug or Release configuration, and copy `libkimg_heif6.so` into the build
+tree's `lib/imageformats`. The workflow's "Build HEIF image plug-in" step holds
+the project file it uses.
+
+## 4. Other build targets
 
 Linux distribution builds require
 [linuxdeployqt](https://github.com/probonopd/linuxdeployqt) and
@@ -137,7 +195,7 @@ cd build
 
 This generates a Makefile for the selected compiler and qmake configuration.
 
-## 4. Directory structure at build time
+## 5. Directory structure at build time
 
 A shadow build contains:
 
@@ -154,7 +212,7 @@ mix.
 
 The Windows scripts stage the runtime data listed in the next section.
 
-## 5. Directory structure at runtime
+## 6. Directory structure at runtime
 
 ### Windows
 
@@ -181,7 +239,7 @@ The Windows scripts stage the runtime data listed in the next section.
 > A historical successfully built example (not an `.AppImage`) is available
 > [here](https://github.com/kanryu/quickviewer/issues/158#issuecomment-814652108).
 
-## 6. Selection of rendering method
+## 7. Selection of rendering method
 
 QuickViewer draws its pages with the standard rendering method of the platform
 (Windows GDI on Windows), or with Direct2D when that QPA plug-in is selected at
@@ -196,7 +254,7 @@ transferring the image into a GPU texture.
 Direct2D is implemented as a QPA plug-in and is selected when that plug-in is
 enabled at startup.
 
-## 7. Portable or system-standard installation
+## 8. Portable or system-standard installation
 
 `QV_PORTABLE` in `QVproject.pri` selects portable operation versus a
 system-style installation.

@@ -1,7 +1,7 @@
 # QuickViewer verification runbook
 
 This runbook covers the supported Windows build, test, and verification
-workflow for QuickViewer.
+workflow for QuickViewer, and running the tests on Linux as the Ubuntu CI does.
 
 ## Prerequisites
 
@@ -240,6 +240,41 @@ safe; invoking `scripts\verify-windows.cmd ... --qmake` directly through
 `\\wsl.localhost\...` records UNC source paths instead, and the next build then
 fails with `Error: dependent '\\wsl.localhost\...' does not exist`. Use the
 `pushd` form or a mapped drive path (for example `Z:\...`).
+
+## Linux
+
+The Ubuntu CI (`.github/workflows/linux-build-and-test.yml`) builds Debug and
+Release with Qt 6.11.2 on Ubuntu 24.04 and runs the Debug tests under xvfb. To
+run them locally, build a Debug tree as described in
+[HowToBuild.md](HowToBuild.md#3-linux-development-build), including the HEIF
+image plug-in in `lib/imageformats`, which `tst_fileloadertest` needs. The test
+executables are written to the build tree's `lib` directory, beside the
+project's shared libraries and `7z.so`.
+
+Run the tests from the repository root with the en_US.UTF-8 locale the CI
+uses, writing each report outside the repository and keeping each exit code:
+
+```bash
+export LC_ALL=en_US.UTF-8
+export LD_LIBRARY_PATH="$PWD/build-debug/lib:$LD_LIBRARY_PATH"
+log_dir=$(mktemp -d)
+for test in prefetchplannertest asynccachetest latestresultdispatchertest \
+    fileloadertest svgloadertest viewernavigationtest windowstartuptest \
+    catalogdatabasetest languageswitch; do
+  xvfb-run -a "build-debug/lib/tst_$test" -v1 -o "$log_dir/tst_$test.txt,txt"
+  echo "tst_$test exit $?"
+done
+grep -h 'Totals:\|^FAIL!' "$log_dir"/*.txt
+```
+
+A missing executable shows up as a nonzero exit code, not as a skipped test.
+To run one test or one function, call that executable directly, for example
+`xvfb-run -a build-debug/lib/tst_windowstartuptest recycledImageGoesToTheTrash`.
+If the build needed Qt's ICU directory on `LD_LIBRARY_PATH`, keep it there for
+the tests as well.
+
+Windows-only behaviour - the Recycle Bin, Explorer launch, Direct2D and the
+interactive checks below - still has to be checked on Windows.
 
 ## Performance benchmarks
 
