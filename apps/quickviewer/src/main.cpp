@@ -8,6 +8,7 @@
 #include "catalogdatabase.h"
 #include "qnamedpipe.h"
 #include "startupprofiler.h"
+#include "startupsettings.h"
 #include "storagelocation.h"
 #include "volume.h"
 
@@ -15,10 +16,6 @@
 #    include "mainwindowforwindows.h"
 #else
 #    include "mainwindow.h"
-#endif
-
-#ifdef Q_OS_WIN
-#    include <Windows.h>
 #endif
 
 namespace {
@@ -128,11 +125,7 @@ int main(int argc, char *argv[])
                 StorageLocation::nativeApplicationDirectory(),
                 StorageLocation::nativeUserDataDirectory(QStringLiteral(APP_NAME)))
                 .filePath(StorageLocation::settingsSubPath());
-        std::wstring winipath = inipath.toStdWString();
-        WCHAR value[128];
-        qDebug() << ::GetPrivateProfileString(
-            L"View", L"UseDirect2D", L"false", value, sizeof(value) - 1, winipath.c_str());
-        if (::lstrcmp(value, L"true") == 0) {
+        if (StartupSettings::useDirect2D(inipath)) {
             qputenv("QT_QPA_PLATFORM", "direct2d");
         }
     }

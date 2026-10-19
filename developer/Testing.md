@@ -139,6 +139,7 @@ Supported names are:
 | --- | --- |
 | `prefetchplanner` | `tst_prefetchplannertest.exe` |
 | `storagelocation` | `tst_storagelocationtest.exe` |
+| `startupsettings` | `tst_startupsettingstest.exe` |
 | `asynccache` | `tst_asynccachetest.exe` |
 | `latestresultdispatcher` | `tst_latestresultdispatchertest.exe` |
 | `fileloader` | `tst_fileloadertest.exe` |

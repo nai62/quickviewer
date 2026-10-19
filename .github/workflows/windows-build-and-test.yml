@@ -271,6 +271,7 @@ jobs:
           $tests = @(
             "tst_prefetchplannertest.exe",
             "tst_storagelocationtest.exe",
+            "tst_startupsettingstest.exe",
             "tst_asynccachetest.exe",
             "tst_latestresultdispatchertest.exe",
             "tst_fileloadertest.exe",

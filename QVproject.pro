@@ -22,6 +22,10 @@ CONFIG(debug, debug|release) {
         windowstartuptest \
         catalogdatabasetest \
         languageswitchtest
+
+    # The settings main() reads before QApplication exists, through the
+    # Windows profile API.
+    win32: SUBDIRS += startupsettingstest
 }
 
 ResizeHalf.file = qmake/third_party/resizehalf/ResizeHalf.pro
@@ -34,6 +38,7 @@ QuickViewer.file = apps/quickviewer/QuickViewer.pro
 qvtest.file = tests/fileloader/qvtest.pro
 prefetchplannertest.file = tests/prefetchplanner/prefetchplanner.pro
 storagelocationtest.file = tests/storagelocation/storagelocation.pro
+startupsettingstest.file = tests/startupsettings/startupsettings.pro
 latestresultdispatchertest.file = tests/latestresultdispatcher/latestresultdispatcher.pro
 asynccachetest.file = tests/asynccache/asynccache.pro
 svgloadertest.file = tests/svgloader/svgloader.pro

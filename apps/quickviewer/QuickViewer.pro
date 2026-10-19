@@ -178,6 +178,7 @@ SOURCES += \
     src/main.cpp \
     src/mainwindow.cpp \
     src/models/readprogressstore.cpp \
+    src/models/startupsettings.cpp \
     src/models/storagelocation.cpp \
     src/models/filemanager.cpp \
     src/models/boundedexecutor.cpp \
@@ -252,6 +253,7 @@ HEADERS  += \
     src/imageview.h \
     src/mainwindow.h \
     src/models/readprogressstore.h \
+    src/models/startupsettings.h \
     src/models/storagelocation.h \
     src/models/filemanager.h \
     src/models/boundedexecutor.h \
