@@ -9,6 +9,9 @@ permissions:
 env:
   QT_VERSION: "6.11.2"
   QT_ARCH: "win64_msvc2022_64"
+  # jom from the Qt project's download site; the hash is that of this release.
+  JOM_URL: "https://download.qt.io/official_releases/jom/jom_1_1_7.zip"
+  JOM_SHA256: "4c8af345586a9a08fbfd2f613fcac748226d91a75627aa3581b297dd513046fe"
 
 jobs:
   release-build:
@@ -47,9 +50,33 @@ jobs:
           rustup default 1.87.0
           rustc --version
 
+      # A failed download stops the job here instead of at the first build step.
       - name: Install jom
         shell: pwsh
-        run: choco install jom -y --no-progress
+        run: |
+          $zip = Join-Path $env:RUNNER_TEMP "jom.zip"
+          $dir = Join-Path $env:RUNNER_TEMP "jom"
+          for ($attempt = 1; ; $attempt++) {
+            try {
+              Invoke-WebRequest -Uri $env:JOM_URL -OutFile $zip
+              break
+            } catch {
+              if ($attempt -ge 3) {
+                throw
+              }
+              Write-Host "jom download attempt $attempt failed: $_"
+              Start-Sleep -Seconds 15
+            }
+          }
+          $hash = (Get-FileHash -Algorithm SHA256 $zip).Hash
+          if ($hash -ne $env:JOM_SHA256) {
+            throw "jom.zip has SHA-256 $hash instead of $env:JOM_SHA256"
+          }
+          Expand-Archive -Path $zip -DestinationPath $dir -Force
+          if (-not (Test-Path (Join-Path $dir "jom.exe"))) {
+            throw "jom.zip does not contain jom.exe"
+          }
+          Add-Content -Path $env:GITHUB_PATH -Value $dir
 
       - name: Configure release build
         shell: cmd
@@ -181,9 +208,33 @@ jobs:
           rustup default 1.87.0
           rustc --version
 
+      # A failed download stops the job here instead of at the first build step.
       - name: Install jom
         shell: pwsh
-        run: choco install jom -y --no-progress
+        run: |
+          $zip = Join-Path $env:RUNNER_TEMP "jom.zip"
+          $dir = Join-Path $env:RUNNER_TEMP "jom"
+          for ($attempt = 1; ; $attempt++) {
+            try {
+              Invoke-WebRequest -Uri $env:JOM_URL -OutFile $zip
+              break
+            } catch {
+              if ($attempt -ge 3) {
+                throw
+              }
+              Write-Host "jom download attempt $attempt failed: $_"
+              Start-Sleep -Seconds 15
+            }
+          }
+          $hash = (Get-FileHash -Algorithm SHA256 $zip).Hash
+          if ($hash -ne $env:JOM_SHA256) {
+            throw "jom.zip has SHA-256 $hash instead of $env:JOM_SHA256"
+          }
+          Expand-Archive -Path $zip -DestinationPath $dir -Force
+          if (-not (Test-Path (Join-Path $dir "jom.exe"))) {
+            throw "jom.zip does not contain jom.exe"
+          }
+          Add-Content -Path $env:GITHUB_PATH -Value $dir
 
       - name: Install HEIF build dependencies
         shell: pwsh
