@@ -175,7 +175,7 @@ with the tag editor.
 | Target | Covers |
 | --- | --- |
 | `tests/catalogdatabase` | the catalog database: opening and creating the file, refusing an unreadable one, preserving existing temporary files, building a catalogue from folders and archives, covers, the volume name rules, editing titles and tags, worker connections, cancellation, folder cycles, transaction failures, tag-cache rollback, removing a catalogue, removing entries whose folders are gone, and what the catalogue manager lists and shows for a selection, context menu targeting, closing with pending requests, and build-button state transitions |
-| `tests/windowstartup` | catalog model index validity, stored-tag filtering, empty-list status, search, cover caching and placement, wheel handling and panel lifetime |
+| `tests/windowstartup` | catalog model index validity, stored-tag filtering, empty-list status, search, cover caching and placement, wheel handling and panel lifetime, and the text images that stand in for names the UI font cannot draw in the volume list, the tag buttons and the catalogue manager |
 
 Run the catalog tests on Windows with
 `scripts\verify-windows.cmd debug --test catalogdatabase`, and the whole suite
@@ -195,7 +195,6 @@ with `scripts\verify-windows.cmd debug --tests-only`; see
   creating catalogues rewrites the whole volume order, so a very large
   catalogue answers slowly. The manager reads the cover of the book it shows
   rather than every cover of the catalogue it lists.
-
 
 ## Review items requiring product decisions
 
