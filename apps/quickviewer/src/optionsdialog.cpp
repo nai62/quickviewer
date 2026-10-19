@@ -67,9 +67,6 @@ OptionsDialog::OptionsDialog(QWidget *parent)
     }
     m_imageString.initialize(stSamplePageContent,
                              [] { return RenderedPageMetrics(QVector<qreal>{0.5, 0.5}); });
-#ifndef Q_OS_WIN
-    ui->checkBoxUseDirect2D->setVisible(false);
-#endif
     m_slideShowWait = qApp->SlideShowWait();
     m_maxVolumesCache = qApp->MaxVolumesCache();
     m_backgroundColor = qApp->BackgroundColor();
@@ -86,7 +83,6 @@ OptionsDialog::OptionsDialog(QWidget *parent)
     ui->checkBoxUseFastDctForJPEG->setChecked(qApp->UseFastDCTForJPEG());
     ui->checkBoxExtractSolidToTemporary->setChecked(qApp->ExtractSolidArchiveToTemporaryDir());
     ui->checkBoxProhibitMultipleRunning->setChecked(qApp->ProhibitMultipleRunning());
-    ui->checkBoxUseDirect2D->setChecked(qApp->UseDirect2D());
     ui->checkBoxSlideshowRandomly->setChecked(qApp->SlideShowRandomly());
 
     ui->checkBoxHideMenuBarParmanently->setChecked(qApp->HideMenuBarParmanently());
@@ -160,7 +156,6 @@ void OptionsDialog::reflectResults()
     qApp->setUseFastDCTForJPEG(ui->checkBoxUseFastDctForJPEG->isChecked());
     qApp->setExtractSolidArchiveToTemporaryDir(ui->checkBoxExtractSolidToTemporary->isChecked());
     qApp->setProhibitMultipleRunning(ui->checkBoxProhibitMultipleRunning->isChecked());
-    qApp->setUseDirect2D(ui->checkBoxUseDirect2D->isChecked());
     qApp->setSlideShowRandomly(ui->checkBoxSlideshowRandomly->isChecked());
 
     qApp->setHideMenuBarParmanently(ui->checkBoxHideMenuBarParmanently->isChecked());

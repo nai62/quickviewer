@@ -244,17 +244,13 @@ The Windows scripts stage the runtime data listed in the next section.
 ## 7. Selection of rendering method
 
 QuickViewer draws its pages with the standard rendering method of the platform
-(Windows GDI on Windows), or with Direct2D when that QPA plug-in is selected at
-startup.
+(Windows GDI on Windows).
 
 Resizing a page is a separate choice, made in the Rendering menu: either the
 view scales the page while it draws it (Bilinear, Nearest Neighbor) or the page
 is resized once by the CPU through zimg (Bicubic, Spline16, Spline36, Lanczos3,
 Lanczos4). GDI can be competitive for 2D bilinear drawing because it avoids
 transferring the image into a GPU texture.
-
-Direct2D is implemented as a QPA plug-in and is selected when that plug-in is
-enabled at startup.
 
 ## 8. Portable or system-standard installation
 

@@ -2251,12 +2251,6 @@
         <translation>Να επιτρέπεται μόνο μια παρουσία (απαιτείται επανεκκίνηση)</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="240"/>
-        <source>Use Direct2D rendering (restart required)</source>
-        <extracomment>Normally it is drawing with Windows GDI, but switching to drawing by Direct2D. QPA is loaded at startup.</extracomment>
-        <translation>Απόδοση με Direct2D (απαιτείται επανεκκίνηση)</translation>
-    </message>
-    <message>
         <location filename="../src/optionsdialog.ui" line="137"/>
         <source>Slideshow delay (ms)</source>
         <extracomment>Wait time when images are automatically switched in slide show</extracomment>
@@ -2266,12 +2260,6 @@
         <location filename="../src/optionsdialog.ui" line="14"/>
         <source>Options</source>
         <translation>Επιλογές</translation>
-    </message>
-    <message>
-        <location filename="../src/optionsdialog.ui" line="237"/>
-        <source>Direct2D may improve rendering on high-resolution displays. Leave this off unless needed.</source>
-        <translation>Σε περιβάλλον υψηλής ευκρίνειας, ενδέχεται να μη λειτουργεί σωστά αν δεν είναι Direct2D. 
- Κανονικά πρέπει να είναι κλειστό</translation>
     </message>
     <message>
         <location filename="../src/optionsdialog.ui" line="82"/>

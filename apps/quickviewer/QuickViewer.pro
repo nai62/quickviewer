@@ -461,10 +461,6 @@ win32 : !CONFIG(debug, debug|release) {
     #install_nsis.files = $${MY_DEFAULT_INSTALL}/../QuickViewer-Installer-$${VERSION}.exe
 
     INSTALLS += install_nsis
-
-    install_direct2d.path = $${MY_DEFAULT_INSTALL}/platforms
-    install_direct2d.files = $$[QT_INSTALL_PLUGINS]/platforms/qdirect2d.dll
-    INSTALLS += install_direct2d
 }
 
 # linuxdeployqt is required.

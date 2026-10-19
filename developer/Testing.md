@@ -274,7 +274,7 @@ To run one test or one function, call that executable directly, for example
 If the build needed Qt's ICU directory on `LD_LIBRARY_PATH`, keep it there for
 the tests as well.
 
-Windows-only behaviour - the Recycle Bin, Explorer launch, Direct2D and the
+Windows-only behaviour - the Recycle Bin, Explorer launch and the
 interactive checks below - still has to be checked on Windows.
 
 ## Performance benchmarks

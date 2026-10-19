@@ -192,8 +192,6 @@ public:
     {
         m_dontShrinkForLargeImage = dontShrinkForLargeImage;
     }
-    bool UseDirect2D() { return m_useDirect2D; }
-    void setUseDirect2D(bool useDirect2D) { m_useDirect2D = useDirect2D; }
     bool ShowPanelSeparateWindow() { return m_showPanelSeparateWindow; }
     void setShowPanelSeparateWindow(bool showPanelSeparateWindow)
     {
@@ -508,7 +506,6 @@ private:
     bool m_showFullscreenSignage;
     bool m_dontShrinkForLargeImage;
     //    bool m_showFullscreenTitleBar;
-    bool m_useDirect2D;
     bool m_useFastDCTForJPEG;
     qvEnums::SvgLoaderBackend m_svgLoaderBackend;
     int m_svgRasterMaximumWidth;

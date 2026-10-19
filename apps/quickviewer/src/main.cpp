@@ -8,17 +8,12 @@
 #include "catalogdatabase.h"
 #include "qnamedpipe.h"
 #include "startupprofiler.h"
-#include "storagelocation.h"
 #include "volume.h"
 
 #if defined(Q_OS_WIN)
 #    include "mainwindowforwindows.h"
 #else
 #    include "mainwindow.h"
-#endif
-
-#ifdef Q_OS_WIN
-#    include <Windows.h>
 #endif
 
 namespace {
@@ -118,25 +113,7 @@ int main(int argc, char *argv[])
     }
 
     StartupProfiler::start();
-#ifdef Q_OS_WIN
-    {
-        // Activate the direct2d QPA plugin when 'UseDirect2D' of quickviewer.ini is true.
-        // Since initialization of QPA is processed in the constructor of QGuiApplication,
-        // it must be set to the QT_QPA_PLATFORM environment variable before that.
-        const QString inipath =
-            StorageLocation::resolve(
-                StorageLocation::nativeApplicationDirectory(),
-                StorageLocation::nativeUserDataDirectory(QStringLiteral(APP_NAME)))
-                .filePath(StorageLocation::settingsSubPath());
-        std::wstring winipath = inipath.toStdWString();
-        WCHAR value[128];
-        qDebug() << ::GetPrivateProfileString(
-            L"View", L"UseDirect2D", L"false", value, sizeof(value) - 1, winipath.c_str());
-        if (::lstrcmp(value, L"true") == 0) {
-            qputenv("QT_QPA_PLATFORM", "direct2d");
-        }
-    }
-#elif defined(Q_OS_MAC)
+#if defined(Q_OS_MAC)
     {
         // hide icons on application menu.
         QApplication::instance()->setAttribute(Qt::AA_DontShowIconsInMenus, true);
