@@ -26,6 +26,22 @@ public:
     virtual QString currentPagePath() const = 0;
 };
 
+/**
+ * Moving the open archive away: the archive, and the volumes the viewer can go
+ * to once it is gone.
+ */
+struct ArchiveRemovalPlan
+{
+    /** The archive as a file on disk; empty when the open volume is no such file. */
+    QString archivePath;
+    /** The page shown now, to come back to if the archive cannot be moved. */
+    QString pageName;
+    /** The volumes after the archive, then the ones before it, nearest first. */
+    QStringList nextVolumePaths;
+
+    bool isValid() const { return !archivePath.isEmpty(); }
+};
+
 class ViewerSession : public QObject, public PageInfoProvider
 {
     Q_OBJECT
@@ -49,6 +65,24 @@ public:
     bool nextVolume();
     bool prevVolume();
     void reloadVolumeAfterImageRemoval();
+    /**
+     * What moving the open archive away involves. Only an archive that is a
+     * file of its own qualifies: a folder, or an archive inside another one,
+     * gives an invalid plan.
+     */
+    ArchiveRemovalPlan archiveRemovalPlan() const;
+    /**
+     * Lets go of the open archive of \a plan: the volume, its prefetched and
+     * cached copies, and the pages it shows. Windows cannot move a file that is
+     * open, so this waits up to \a timeoutMilliseconds for the page loads still
+     * running to close it, and tells whether they did.
+     */
+    bool releaseArchive(const ArchiveRemovalPlan &plan, int timeoutMilliseconds = 5000);
+    /**
+     * Opens the first volume of \a plan that opens, once the archive is gone.
+     * Returns false, with the viewer left empty, when none does.
+     */
+    bool openVolumeAfterArchiveRemoval(const ArchiveRemovalPlan &plan);
     /**
      * Drops the cached listing of a container whose contents changed on disk.
      */

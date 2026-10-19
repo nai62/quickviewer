@@ -41,6 +41,12 @@ public:
         return m_loadContext ? m_loadContext->loader() : nullptr;
     }
 
+    /**
+     * The loader's shared state. Page loads still running hold it, and with it
+     * the open archive, after the volume itself has gone.
+     */
+    QWeakPointer<ImageLoadContext> loadContext() const { return m_loadContext; }
+
     static void shutdownImageLoading() { BoundedExecutor::shutdownAll(); }
     static ImageContent futureLoadImageFromFileVolume(QSharedPointer<ImageLoadContext> context,
                                                       QString path,

@@ -59,6 +59,8 @@ public:
     void insertReady(const VolumeCacheKey &key, VolumeHandle volume);
     bool markUsed(const VolumeCacheKey &key);
     void invalidate(const VolumeCacheKey &key);
+    /** Drops every entry of \a normalizedVolumePath, whatever its other options. */
+    void invalidatePath(const QString &normalizedVolumePath);
     void clear();
 
     bool contains(const VolumeCacheKey &key) const;
