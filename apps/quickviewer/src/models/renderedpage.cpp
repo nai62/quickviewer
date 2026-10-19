@@ -1,6 +1,5 @@
 #include "renderedpage.h"
 #include "fallbacktext.h"
-#include "qvapplication.h"
 #include "textimagecache.h"
 #include "qzimg.h"
 #include "shadereffect.h"
@@ -63,7 +62,7 @@ RenderedPage::RenderedPage(QObject *parent,
       m_drawScale(1.0),
       m_displayScale(1.0),
       m_separationState(
-          m_content.isLandscape() && qApp->SeparatePagesWhenWideImage() ? FirstHalf : NotSeparated),
+          m_content.isLandscape() && renderSettings.separateWideImages ? FirstHalf : NotSeparated),
       m_initialized(false),
       m_renderSettings(std::move(renderSettings))
 {
@@ -191,7 +190,7 @@ QRect RenderedPage::setPageLayoutFitting(QRect viewport,
     if (loupe > 1.0) {
         return setPageLayoutManual(viewport, alignment, scale * loupe, rotationOffset, true);
     }
-    if (scale > 1.0 && qApp->DontEnlargeSmallImagesOnFitting()) {
+    if (scale > 1.0 && m_renderSettings.dontEnlargeSmallImages) {
         return setPageLayoutManual(viewport, alignment, 1.0, rotationOffset);
     }
 
@@ -232,8 +231,8 @@ QRect RenderedPage::setPageLayoutFitting(QRect viewport,
 
     // The item turns about its origin, so it sits where the turned image starts.
     QPoint imagePos = drawRect.topLeft() + rotationOffsetPosition;
-    if (separatePage && ((m_separationState == FirstHalf && qApp->RightSideBook()) ||
-                         (m_separationState == SecondHalf && !qApp->RightSideBook()))) {
+    if (separatePage && ((m_separationState == FirstHalf && m_renderSettings.rightSideBook) ||
+                         (m_separationState == SecondHalf && !m_renderSettings.rightSideBook))) {
         // Display only the right side of the image
         imagePos.rx() -= targetSize.width();
     }
@@ -268,8 +267,8 @@ QRect RenderedPage::setPageLayoutManual(
 
     // The item turns about its origin, so it sits where the turned image starts.
     QPoint imagePos = drawRect.topLeft() + rotationOffsetPosition;
-    if (separatePage && ((m_separationState == FirstHalf && qApp->RightSideBook()) ||
-                         (m_separationState == SecondHalf && !qApp->RightSideBook()))) {
+    if (separatePage && ((m_separationState == FirstHalf && m_renderSettings.rightSideBook) ||
+                         (m_separationState == SecondHalf && !m_renderSettings.rightSideBook))) {
         // Display only the right side of the image
         imagePos.rx() -= targetSize.width();
     }
@@ -294,7 +293,7 @@ void RenderedPage::applyResize(
     const QSize resizeTargetSize =
         qFuzzyIsNull(transform.m11()) ? targetSize.transposed() : targetSize;
     const qvEnums::ShaderEffect effect =
-        m_content.movie.isNull() ? qApp->Effect() : qvEnums::ShaderEffect::Bilinear;
+        m_content.movie.isNull() ? m_renderSettings.effect : qvEnums::ShaderEffect::Bilinear;
     QImage &sourceImage = imageWithRetouch();
     const qreal retouchedScale =
         sourceImage.size() == m_content.loadedImageSize
@@ -306,16 +305,16 @@ void RenderedPage::applyResize(
             m_content.resizedImage = QImage();
             initializePage(true);
         } else {
-            if (m_content.appliedResizeMode != qApp->Effect()) {
+            if (m_content.appliedResizeMode != m_renderSettings.effect) {
                 m_content.resizedImage = QImage();
             }
             if (m_content.resizedImage.isNull() ||
                 m_content.resizedImage.size() != resizeTargetSize) {
-                m_content.appliedResizeMode = qApp->Effect();
+                m_content.appliedResizeMode = m_renderSettings.effect;
                 m_content.resizedImage = QZimg::scaled(sourceImage,
                                                        resizeTargetSize,
                                                        Qt::IgnoreAspectRatio,
-                                                       cpuFilterMode(qApp->Effect()));
+                                                       cpuFilterMode(m_renderSettings.effect));
                 m_scene->removeItem(m_graphicsItem);
                 delete m_graphicsItem;
                 m_graphicsItem = m_scene->addPixmap(QPixmap::fromImage(m_content.resizedImage));
@@ -361,10 +360,10 @@ void RenderedPage::initializePage(bool resetResizedImage)
         delete m_graphicsItem;
     }
     if (m_scene) {
-        m_graphicsItem = m_scene->addPixmap(
-            QPixmap::fromImage(scalesInView(qApp->Effect()) || m_content.resizedImage.isNull()
-                                   ? imageWithRetouch()
-                                   : m_content.resizedImage));
+        m_graphicsItem = m_scene->addPixmap(QPixmap::fromImage(
+            scalesInView(m_renderSettings.effect) || m_content.resizedImage.isNull()
+                ? imageWithRetouch()
+                : m_content.resizedImage));
         m_graphicsItem->setTransform(m_orientation);
     }
 

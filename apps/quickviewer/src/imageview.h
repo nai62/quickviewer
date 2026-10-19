@@ -21,11 +21,6 @@ class ImageView : public QGraphicsView
 {
     Q_OBJECT
 public:
-    enum class AddRenderedPageResult {
-        Rejected,
-        AddedPortrait,
-        AddedLandscape,
-    };
     typedef QPair<uint, uint> ZoomFraction;
     explicit ImageView(QWidget *parent = Q_NULLPTR);
     void setViewerSession(ViewerSession *session);
@@ -48,7 +43,8 @@ public:
     void resetGestureTransform();
     RetouchParameters retouchParameters() const { return m_retouchParams; }
     void setCursor(const QCursor &cursor);
-    AddRenderedPageResult addRenderedPage(ImageContent content, bool append);
+    /** Adds a page to the spread; false when the spread is full or there is no session. */
+    bool addRenderedPage(ImageContent content, bool append);
     void clearRenderedPages();
 
 signals:

@@ -9,10 +9,22 @@
 #include "imagecontent.h"
 #include "textimagecache.h"
 
+/**
+ * The settings a page is drawn with, taken when it is laid out, so the page
+ * itself does not read the application's settings.
+ */
 struct PageRenderSettings
 {
     qreal pixelRatio = 1.0;
     RetouchParameters retouchParameters;
+    /** How the image is resized: on the CPU, or scaled by the view. */
+    qvEnums::ShaderEffect effect = qvEnums::ShaderEffect::Bilinear;
+    /** A fitted page smaller than the viewport keeps its own size. */
+    bool dontEnlargeSmallImages = false;
+    /** The book reads right to left, so a split page shows its right half first. */
+    bool rightSideBook = false;
+    /** A wide page starts split in two halves. */
+    bool separateWideImages = false;
 };
 
 /**
