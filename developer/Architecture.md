@@ -41,6 +41,11 @@ A **page** is a position in a volume's ordered file list. An **image** is the
 decoded content loaded for that page. Page-oriented names refer to ordering or
 navigation; image-oriented names refer to loading or decoded data.
 
+An **image file** is the file on disk that a folder page is read from. Names
+that act on files, such as `isImageFile` or `ConfirmImageRemoval`, mean the
+file. Archive pages have no image file of their own, so deleting and renaming
+apply to folder pages only, and recycling on an archive moves the whole archive.
+
 `ImageContent` carries decoded image data, metadata, and reusable processing
 results. `RenderedPage` owns the presentation state needed to display one
 `ImageContent` in the graphics scene.
