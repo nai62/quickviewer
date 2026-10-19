@@ -24,7 +24,11 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
     void initializeStartup();
-    virtual bool moveToTrash(QString) { return false; }
+    /**
+     * Moves \a path to the desktop's trash, from where it can be put back.
+     * False when the file stays where it was.
+     */
+    virtual bool moveToTrash(QString path) { return QFile::moveToTrash(path); }
     virtual bool setStayOnTop(bool) { return false; }
     virtual void setWindowTop(bool) {}
     virtual void setMailAttachment(QString) {}

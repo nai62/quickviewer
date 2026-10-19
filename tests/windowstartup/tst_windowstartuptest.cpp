@@ -580,6 +580,59 @@ private slots:
             QDir::cleanPath(QDir::fromNativeSeparators(root.filePath(QStringLiteral("inner")))));
     }
 
+#if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
+    /**
+     * Without the Windows Recycle Bin, a recycled image goes to the desktop's
+     * trash, from where a file manager can put it back.
+     */
+    void recycledImageGoesToTheTrash()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        // A trash of the test's own, on the filesystem the image is on. Test
+        // mode keeps the data location under the home directory.
+        const QByteArray home = qgetenv("HOME");
+        const QByteArray dataHome = qgetenv("XDG_DATA_HOME");
+        const auto restoreEnvironment = qScopeGuard([&] {
+            qputenv("HOME", home);
+            if (dataHome.isEmpty()) {
+                qunsetenv("XDG_DATA_HOME");
+            } else {
+                qputenv("XDG_DATA_HOME", dataHome);
+            }
+        });
+        qputenv("HOME", QFile::encodeName(directory.path()));
+        qputenv("XDG_DATA_HOME", QFile::encodeName(directory.filePath(QStringLiteral("share"))));
+        const QString folder = directory.filePath(QStringLiteral("book"));
+        QVERIFY(QDir().mkpath(folder));
+        for (int page = 0; page < 2; ++page) {
+            QImage image(16, 16, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 60, 255, 255));
+            QVERIFY(image.save(QDir(folder).filePath(QStringLiteral("page-%1.bmp").arg(page))));
+        }
+        qApp->setConfirmDeletePage(false);
+
+        StartupWindow viewer;
+        viewer.openPath(folder);
+        QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("page-0.bmp"));
+        viewer.handleRecyclePageActionTriggered();
+
+        QVERIFY(!QFile::exists(QDir(folder).filePath(QStringLiteral("page-0.bmp"))));
+        QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("page-1.bmp"));
+        QStringList trashed;
+        QDirIterator files(directory.path(),
+                           {QStringLiteral("page-0.bmp")},
+                           QDir::Files | QDir::Hidden,
+                           QDirIterator::Subdirectories);
+        while (files.hasNext()) {
+            trashed << QDir::fromNativeSeparators(files.next());
+        }
+        QCOMPARE(trashed.size(), 1);
+        QVERIFY2(trashed.first().contains(QStringLiteral("/Trash/files/")),
+                 qPrintable(trashed.first()));
+    }
+#endif
+
     void loadingFolderPageBookmarkFollowsThePanel()
     {
         QTemporaryDir directory;
