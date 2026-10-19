@@ -710,10 +710,10 @@ private slots:
     }
 
     /**
-     * The menu names what Recycle moves away: the image, or the whole archive
-     * on display, also once the menus are translated again.
+     * The menu names what Recycle and Delete take: the image, or the whole
+     * archive on display, also once the menus are translated again.
      */
-    void recycleMenuNamesWhatItMoves()
+    void removalMenusNameWhatTheyTake()
     {
         QTemporaryDir directory;
         QVERIFY(directory.isValid());
@@ -725,19 +725,32 @@ private slots:
         const QString archive = directory.filePath(QStringLiteral("book.7z"));
         QVERIFY(QFile::copy(QString(FILELOADER_DATAPATH "7z/image.7z"), archive));
         StartupWindow viewer;
-        QAction *recycle = viewer.findChild<QAction *>(QStringLiteral("actionRecyclePage"));
-        QVERIFY(recycle);
+        QList<QAction *> actions;
+        for (const char *name : {"actionRecyclePage", "actionDeletePage"}) {
+            QAction *action = viewer.findChild<QAction *>(QLatin1String(name));
+            QVERIFY(action);
+            actions << action;
+        }
+        const auto texts = [&actions] {
+            QStringList result;
+            for (const QAction *action : actions) {
+                result << action->text();
+            }
+            return result;
+        };
 
         viewer.openPath(folder);
-        const QString imageText = recycle->text();
+        const QStringList imageTexts = texts();
         viewer.openPath(archive);
-        const QString archiveText = recycle->text();
-        QVERIFY(archiveText != imageText);
+        const QStringList archiveTexts = texts();
+        for (int i = 0; i < actions.size(); ++i) {
+            QVERIFY2(archiveTexts.at(i) != imageTexts.at(i), qPrintable(imageTexts.at(i)));
+        }
 
         viewer.handleLanguageSelectorLanguageChanged(qApp->UiLanguage());
-        QCOMPARE(recycle->text(), archiveText);
+        QCOMPARE(texts(), archiveTexts);
         viewer.openPath(folder);
-        QCOMPARE(recycle->text(), imageText);
+        QCOMPARE(texts(), imageTexts);
     }
 
     /** An image is asked about as the setting for images says, whatever the archive's. */
@@ -806,6 +819,44 @@ private slots:
         QVERIFY(!QFile::exists(firstPage));
         QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("page-1.bmp"));
         qApp->setConfirmImageRemoval(true);
+    }
+
+    /**
+     * Delete takes the whole archive on display for good, without the Recycle
+     * Bin, so the viewer asks even when the setting turned off the question
+     * for moving archives to the bin, and then opens the next volume.
+     */
+    void archiveDeletionAlwaysAsks()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (const QString &name : {QStringLiteral("a.7z"), QStringLiteral("b.7z")}) {
+            QVERIFY(
+                QFile::copy(QString(FILELOADER_DATAPATH "7z/image.7z"), directory.filePath(name)));
+        }
+        const QString first = directory.filePath(QStringLiteral("a.7z"));
+        qApp->setConfirmArchiveRemoval(false);
+        StartupWindow viewer;
+        viewer.fakeTrash = true;
+        viewer.openPath(first);
+        {
+            MessageBoxResponder cancel(QMessageBox::Cancel);
+            viewer.handleDeletePageActionTriggered();
+            QCOMPARE(cancel.answered, 1);
+        }
+        QVERIFY(QFile::exists(first));
+        QCOMPARE(QFileInfo(viewer.viewerSession()->volumePath()).fileName(),
+                 QStringLiteral("a.7z"));
+        {
+            MessageBoxResponder ok(QMessageBox::Ok);
+            viewer.handleDeletePageActionTriggered();
+            QCOMPARE(ok.answered, 1);
+        }
+        QVERIFY(!QFile::exists(first));
+        QVERIFY(viewer.trashedPaths.isEmpty());
+        QCOMPARE(QFileInfo(viewer.viewerSession()->volumePath()).fileName(),
+                 QStringLiteral("b.7z"));
+        qApp->setConfirmArchiveRemoval(true);
     }
 
     /**

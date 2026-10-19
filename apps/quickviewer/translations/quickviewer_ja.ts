@@ -1701,6 +1701,12 @@
         <translation>現在のページの画像ファイルを削除する</translation>
     </message>
     <message>
+        <location filename="../src/mainwindow.cpp" line="2462"/>
+        <source>Delete the archive</source>
+        <comment>Menu that deletes the displayed archive, with every image in it, for good</comment>
+        <translation>現在のアーカイブを丸ごと削除する</translation>
+    </message>
+    <message>
         <location filename="../src/mainwindow.cpp" line="2371"/>
         <source>Are you sure you want to move the image to Recycle Bin?</source>
         <comment>Confirm putting displayed file in Recycle Box Message Box body</comment>
@@ -1741,11 +1747,25 @@
         <translation>本当にこのアーカイブを丸ごとゴミ箱に入れますか？</translation>
     </message>
     <message>
+        <location filename="../src/mainwindow.cpp" line="2411"/>
+        <source>Are you sure you want to delete this whole archive?</source>
+        <comment>Confirm deleting the displayed archive, with every page in it, on Message Box body</comment>
+        <translation>本当にこのアーカイブを丸ごと削除しますか？</translation>
+    </message>
+    <message>
         <location filename="../src/mainwindow.cpp" line="2406"/>
         <source>The archive could not be moved to Recycle Bin:
 %1</source>
         <comment>Message shown when the displayed archive could not be put in Recycle Box</comment>
         <translation>アーカイブをゴミ箱に入れられませんでした:
+%1</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp" line="2433"/>
+        <source>The archive could not be deleted:
+%1</source>
+        <comment>Message shown when the displayed archive could not be deleted</comment>
+        <translation>アーカイブを削除できませんでした:
 %1</translation>
     </message>
     <message>
