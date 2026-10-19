@@ -1684,6 +1684,7 @@ void MainWindow::handleViewerSessionPageChanged()
 
 void MainWindow::handleViewerSessionVolumeChanged(QString path)
 {
+    updateRecycleActionText();
     if (!m_viewerSession.initialImagePaintPending()) {
         updateFolderViewCurrentItem();
     }
@@ -1788,6 +1789,7 @@ void MainWindow::handleLanguageSelectorLanguageChanged(QString language)
 {
     qApp->setUiLanguage(language);
     ui->retranslateUi(this);
+    updateRecycleActionText();
     m_fullscreenButton->setToolTip(tr("&Fullscreen"));
     ui->statusBar->clearMessage();
 
@@ -2428,6 +2430,17 @@ void MainWindow::recycleActiveArchive()
     if (!m_viewerSession.openVolumeAfterArchiveRemoval(plan)) {
         setStatusMessage(StatusMessage::NoVolume);
     }
+}
+
+void MainWindow::updateRecycleActionText()
+{
+    // With an archive on display, Recycle takes every image in it, so the
+    // menu and the shortcut's entry say so instead of naming one image.
+    ui->actionRecyclePage->setText(
+        m_viewerSession.isArchive()
+            ? tr("Move archive to &Recycle Bin",
+                 "Menu that puts the displayed archive, with every image in it, in Recycle Bin")
+            : tr("Move image to &Recycle Bin"));
 }
 
 void MainWindow::handleDeletePageActionTriggered()

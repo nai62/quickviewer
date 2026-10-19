@@ -241,6 +241,8 @@ private:
      */
     bool confirmRemoval(bool ask, const QString &question, const QString &path);
     void recycleActiveArchive();
+    /** Names what Recycle moves away: the displayed image, or the whole archive. */
+    void updateRecycleActionText();
     void syncPageBar();
     void applyImageSortBy(qvEnums::ImageSortBy sortBy);
     void openResolvedTarget(const OpenTarget &target, bool allowSecondPage);

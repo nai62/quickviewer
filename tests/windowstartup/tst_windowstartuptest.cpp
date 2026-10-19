@@ -709,6 +709,37 @@ private slots:
         qApp->setConfirmArchiveRemoval(true);
     }
 
+    /**
+     * The menu names what Recycle moves away: the image, or the whole archive
+     * on display, also once the menus are translated again.
+     */
+    void recycleMenuNamesWhatItMoves()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const QString folder = directory.filePath(QStringLiteral("folder"));
+        QVERIFY(QDir().mkpath(folder));
+        QImage image(16, 16, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        QVERIFY(image.save(QDir(folder).filePath(QStringLiteral("page.bmp"))));
+        const QString archive = directory.filePath(QStringLiteral("book.7z"));
+        QVERIFY(QFile::copy(QString(FILELOADER_DATAPATH "7z/image.7z"), archive));
+        StartupWindow viewer;
+        QAction *recycle = viewer.findChild<QAction *>(QStringLiteral("actionRecyclePage"));
+        QVERIFY(recycle);
+
+        viewer.openPath(folder);
+        const QString imageText = recycle->text();
+        viewer.openPath(archive);
+        const QString archiveText = recycle->text();
+        QVERIFY(archiveText != imageText);
+
+        viewer.handleLanguageSelectorLanguageChanged(qApp->UiLanguage());
+        QCOMPARE(recycle->text(), archiveText);
+        viewer.openPath(folder);
+        QCOMPARE(recycle->text(), imageText);
+    }
+
     /** An image is asked about as the setting for images says, whatever the archive's. */
     void imageRemovalAsksAsTheImageSettingSays()
     {

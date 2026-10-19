@@ -1626,6 +1626,12 @@
         <translation>現在のページの画像をゴミ箱に入れる(&amp;R)</translation>
     </message>
     <message>
+        <location filename="../src/mainwindow.cpp" line="2441"/>
+        <source>Move archive to &amp;Recycle Bin</source>
+        <comment>Menu that puts the displayed archive, with every image in it, in Recycle Bin</comment>
+        <translation>現在のアーカイブを丸ごとゴミ箱に入れる(&amp;R)</translation>
+    </message>
+    <message>
         <location filename="../src/mainwindow.ui" line="829"/>
         <source>&amp;Slideshow</source>
         <extracomment>Button to start displaying slideshow</extracomment>
