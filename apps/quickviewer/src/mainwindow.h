@@ -24,7 +24,11 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
     void initializeStartup();
-    virtual bool moveToTrash(QString) { return false; }
+    /**
+     * Moves \a path to the desktop's trash, from where it can be put back.
+     * False when the file stays where it was.
+     */
+    virtual bool moveToTrash(QString path) { return QFile::moveToTrash(path); }
     virtual bool setStayOnTop(bool) { return false; }
     virtual void setWindowTop(bool) {}
     virtual void setMailAttachment(QString) {}
@@ -189,7 +193,8 @@ public slots:
     void handleExitApplicationOrFullscreenActionTriggered();
     void handleMailAttachmentActionTriggered();
     void handleRenameImageFileActionTriggered();
-    void handleConfirmDeletePageActionTriggered(bool checked);
+    void handleConfirmImageRemovalActionTriggered(bool checked);
+    void handleConfirmArchiveRemovalActionTriggered(bool checked);
 
     // Shaders
     void handleShaderNearestNeighborActionTriggered();
@@ -231,11 +236,17 @@ private:
 
     void setStatusMessage(StatusMessage message);
     /**
-     * Asks whether \a path may go, as ConfirmDeletePage asks to, with the
-     * displayed page as the dialog's picture. True when it may.
+     * Asks whether \a path may go when \a ask, with the displayed page as the
+     * dialog's picture. True when it may.
      */
-    bool confirmRemoval(const QString &question, const QString &path);
-    void recycleActiveArchive();
+    bool confirmRemoval(bool ask, const QString &question, const QString &path);
+    /**
+     * Moves the archive on display to the Recycle Bin, or deletes it for good
+     * when \a permanently, and opens the volume that takes its place.
+     */
+    void removeActiveArchive(bool permanently);
+    /** Names what Recycle and Delete take: the displayed image, or the whole archive. */
+    void updateRemovalActionTexts();
     void syncPageBar();
     void applyImageSortBy(qvEnums::ImageSortBy sortBy);
     void openResolvedTarget(const OpenTarget &target, bool allowSecondPage);

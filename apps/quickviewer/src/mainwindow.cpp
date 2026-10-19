@@ -188,6 +188,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionSeparatePagesWhenWideImage->setChecked(qApp->SeparatePagesWhenWideImage());
 
     ui->actionShowSubfolders->setChecked(qApp->ShowSubfolders());
+    ui->actionConfirmImageRemoval->setChecked(qApp->ConfirmImageRemoval());
+    ui->actionConfirmArchiveRemoval->setChecked(qApp->ConfirmArchiveRemoval());
 
     ui->actionAutoLoaded->setChecked(qApp->AutoLoaded());
     ui->actionSavingHistory->setChecked(qApp->DontSavingHistory());
@@ -1682,6 +1684,7 @@ void MainWindow::handleViewerSessionPageChanged()
 
 void MainWindow::handleViewerSessionVolumeChanged(QString path)
 {
+    updateRemovalActionTexts();
     if (!m_viewerSession.initialImagePaintPending()) {
         updateFolderViewCurrentItem();
     }
@@ -1786,6 +1789,7 @@ void MainWindow::handleLanguageSelectorLanguageChanged(QString language)
 {
     qApp->setUiLanguage(language);
     ui->retranslateUi(this);
+    updateRemovalActionTexts();
     m_fullscreenButton->setToolTip(tr("&Fullscreen"));
     ui->statusBar->clearMessage();
 
@@ -2323,14 +2327,19 @@ void MainWindow::handleRenameImageFileActionTriggered()
     }
 }
 
-void MainWindow::handleConfirmDeletePageActionTriggered(bool checked)
+void MainWindow::handleConfirmImageRemovalActionTriggered(bool checked)
 {
-    qApp->setConfirmDeletePage(checked);
+    qApp->setConfirmImageRemoval(checked);
 }
 
-bool MainWindow::confirmRemoval(const QString &question, const QString &path)
+void MainWindow::handleConfirmArchiveRemovalActionTriggered(bool checked)
 {
-    if (!qApp->ConfirmDeletePage()) {
+    qApp->setConfirmArchiveRemoval(checked);
+}
+
+bool MainWindow::confirmRemoval(bool ask, const QString &question, const QString &path)
+{
+    if (!ask) {
         return true;
     }
     const VisiblePages pages = m_viewerSession.visiblePages();
@@ -2358,7 +2367,7 @@ void MainWindow::handleRecyclePageActionTriggered()
         return;
     }
     if (m_viewerSession.isArchive()) {
-        recycleActiveArchive();
+        removeActiveArchive(false);
         return;
     }
     if (!m_viewerSession.isFolder()) {
@@ -2368,7 +2377,8 @@ void MainWindow::handleRecyclePageActionTriggered()
     if (!path.length()) {
         return;
     }
-    if (!confirmRemoval(tr("Are you sure you want to move the image to Recycle Bin?",
+    if (!confirmRemoval(qApp->ConfirmImageRemoval(),
+                        tr("Are you sure you want to move the image to Recycle Bin?",
                            "Confirm putting displayed file in Recycle Box Message Box body"),
                         path)) {
         return;
@@ -2379,33 +2389,53 @@ void MainWindow::handleRecyclePageActionTriggered()
 }
 
 /**
- * Moves the archive on display to the Recycle Bin and goes on to the next
- * volume. Windows cannot move a file that is open, so the viewer lets go of the
- * archive first; when it still cannot be moved, the archive is opened again on
- * the page that was shown and the failure is reported.
+ * Moves the archive on display to the Recycle Bin, or deletes it, and goes on
+ * to the next volume. Windows cannot move or delete a file that is open, so the
+ * viewer lets go of the archive first; when it still cannot be removed, the
+ * archive is opened again on the page that was shown and the failure is
+ * reported.
  */
-void MainWindow::recycleActiveArchive()
+void MainWindow::removeActiveArchive(bool permanently)
 {
     const ArchiveRemovalPlan plan = m_viewerSession.archiveRemovalPlan();
     if (!plan.isValid()) {
-        // An archive inside another one is not a file the bin can take.
+        // An archive inside another one is not a file of its own.
         return;
     }
-    if (!confirmRemoval(tr("Are you sure you want to move this whole archive to Recycle Bin?",
-                           "Confirm putting the displayed archive, with every page in it, in "
-                           "Recycle Box Message Box body"),
-                        plan.archivePath)) {
+    // An archive goes with every image in it, so moving it to the bin has a
+    // setting of its own: turning off the question for images does not turn
+    // it off here. Deleting it cannot be undone, so that is always asked.
+    const bool confirmed =
+        permanently
+            ? confirmRemoval(true,
+                             tr("Are you sure you want to delete this whole archive?",
+                                "Confirm deleting the displayed archive, with every page in it, "
+                                "on Message Box body"),
+                             plan.archivePath)
+            : confirmRemoval(qApp->ConfirmArchiveRemoval(),
+                             tr("Are you sure you want to move this whole archive to Recycle Bin?",
+                                "Confirm putting the displayed archive, with every page in it, in "
+                                "Recycle Box Message Box body"),
+                             plan.archivePath);
+    if (!confirmed) {
         return;
     }
     const bool released = m_viewerSession.releaseArchive(plan);
-    if (!released || !moveToTrash(plan.archivePath)) {
+    const bool removed =
+        released && (permanently ? QFile::remove(plan.archivePath) : moveToTrash(plan.archivePath));
+    if (!removed) {
         m_viewerSession.openEntry({plan.archivePath, plan.pageName});
+        const QString path = QDir::toNativeSeparators(plan.archivePath);
         QMessageBox::warning(
             this,
             tr("Confirmation", "Confirm deleting image file on MessageBox title"),
-            tr("The archive could not be moved to Recycle Bin:\n%1",
-               "Message shown when the displayed archive could not be put in Recycle Box")
-                .arg(QDir::toNativeSeparators(plan.archivePath)));
+            permanently
+                ? tr("The archive could not be deleted:\n%1",
+                     "Message shown when the displayed archive could not be deleted")
+                      .arg(path)
+                : tr("The archive could not be moved to Recycle Bin:\n%1",
+                     "Message shown when the displayed archive could not be put in Recycle Box")
+                      .arg(path));
         return;
     }
     if (m_folderWindow &&
@@ -2419,16 +2449,41 @@ void MainWindow::recycleActiveArchive()
     }
 }
 
+void MainWindow::updateRemovalActionTexts()
+{
+    // With an archive on display, Recycle and Delete take every image in it,
+    // so the menu and the shortcut's entry say so instead of naming one image.
+    const bool archive = m_viewerSession.isArchive();
+    ui->actionRecyclePage->setText(
+        archive ? tr("Move archive to &Recycle Bin",
+                     "Menu that puts the displayed archive, with every image in it, in Recycle Bin")
+                : tr("Move image to &Recycle Bin"));
+    ui->actionDeletePage->setText(
+        archive ? tr("Delete the archive",
+                     "Menu that deletes the displayed archive, with every image in it, for good")
+                : tr("Delete the image"));
+}
+
 void MainWindow::handleDeletePageActionTriggered()
 {
-    if (m_viewerSession.visiblePageCount() <= 0 || !m_viewerSession.isFolder()) {
+    if (m_viewerSession.visiblePageCount() <= 0) {
+        return;
+    }
+    if (m_viewerSession.isArchive()) {
+        removeActiveArchive(true);
+        return;
+    }
+    if (!m_viewerSession.isFolder()) {
         return;
     }
     QString path = m_viewerSession.currentPagePath();
     if (!path.length()) {
         return;
     }
-    if (!confirmRemoval(tr("Are you sure you want to delete this image?",
+    // Deleting cannot be undone, so it is asked whatever the setting says: the
+    // setting is about moving the image to the Recycle Bin.
+    if (!confirmRemoval(true,
+                        tr("Are you sure you want to delete this image?",
                            "Confirm deleting image file on Message Box body"),
                         path)) {
         return;

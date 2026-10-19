@@ -35,6 +35,18 @@ public:
     ViewerSession *viewerSession() { return &m_viewerSession; }
     ImageView *imageView() const { return findChild<ImageView *>(QStringLiteral("graphicsView")); }
 
+    /** When set, files are deleted instead of trashed, and listed in \a trashedPaths. */
+    bool fakeTrash = false;
+    QStringList trashedPaths;
+    bool moveToTrash(QString path) override
+    {
+        if (!fakeTrash) {
+            return ArchiveAwareMainWindow::moveToTrash(path);
+        }
+        trashedPaths << QDir::fromNativeSeparators(path);
+        return QFile::remove(path);
+    }
+
 protected:
     bool setStartupWindowCloaked(bool cloaked) override
     {
@@ -89,6 +101,36 @@ static bool hasTextImages(const QModelIndex &index)
 {
     return bool(index.data(FolderItemModel::TextImagesRole).value<TextImageResult>());
 }
+
+/**
+ * Answers every message box the viewer opens with \a button while it lives,
+ * and counts them.
+ */
+class MessageBoxResponder : public QObject
+{
+public:
+    explicit MessageBoxResponder(QMessageBox::StandardButton button)
+    {
+        connect(&m_timer, &QTimer::timeout, this, [this, button] {
+            auto *box = qobject_cast<QMessageBox *>(QApplication::activeModalWidget());
+            if (!box) {
+                return;
+            }
+            ++answered;
+            if (QAbstractButton *answer = box->button(button)) {
+                answer->click();
+            } else {
+                box->reject();
+            }
+        });
+        m_timer.start(10);
+    }
+
+    int answered = 0;
+
+private:
+    QTimer m_timer;
+};
 
 class RecordingFolderStyle : public QProxyStyle
 {
@@ -578,6 +620,297 @@ private slots:
         QCOMPARE(
             QDir::cleanPath(QDir::fromNativeSeparators(panel->currentPath())),
             QDir::cleanPath(QDir::fromNativeSeparators(root.filePath(QStringLiteral("inner")))));
+    }
+
+#if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
+    /**
+     * Without the Windows Recycle Bin, a recycled image goes to the desktop's
+     * trash, from where a file manager can put it back.
+     */
+    void recycledImageGoesToTheTrash()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        // A trash of the test's own, on the filesystem the image is on. Test
+        // mode keeps the data location under the home directory.
+        const QByteArray home = qgetenv("HOME");
+        const QByteArray dataHome = qgetenv("XDG_DATA_HOME");
+        const auto restoreEnvironment = qScopeGuard([&] {
+            qputenv("HOME", home);
+            if (dataHome.isEmpty()) {
+                qunsetenv("XDG_DATA_HOME");
+            } else {
+                qputenv("XDG_DATA_HOME", dataHome);
+            }
+        });
+        qputenv("HOME", QFile::encodeName(directory.path()));
+        qputenv("XDG_DATA_HOME", QFile::encodeName(directory.filePath(QStringLiteral("share"))));
+        // Qt makes the trash inside the data directory but not the directory
+        // itself, which a desktop session always has.
+        QVERIFY(
+            QDir().mkpath(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)));
+        const QString folder = directory.filePath(QStringLiteral("book"));
+        QVERIFY(QDir().mkpath(folder));
+        for (int page = 0; page < 2; ++page) {
+            QImage image(16, 16, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 60, 255, 255));
+            QVERIFY(image.save(QDir(folder).filePath(QStringLiteral("page-%1.bmp").arg(page))));
+        }
+        qApp->setConfirmImageRemoval(false);
+
+        StartupWindow viewer;
+        viewer.openPath(folder);
+        QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("page-0.bmp"));
+        viewer.handleRecyclePageActionTriggered();
+
+        QVERIFY(!QFile::exists(QDir(folder).filePath(QStringLiteral("page-0.bmp"))));
+        QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("page-1.bmp"));
+        QStringList trashed;
+        QDirIterator files(directory.path(),
+                           {QStringLiteral("page-0.bmp")},
+                           QDir::Files | QDir::Hidden,
+                           QDirIterator::Subdirectories);
+        while (files.hasNext()) {
+            trashed << QDir::fromNativeSeparators(files.next());
+        }
+        QCOMPARE(trashed.size(), 1);
+        QVERIFY2(trashed.first().contains(QStringLiteral("/Trash/files/")),
+                 qPrintable(trashed.first()));
+    }
+#endif
+
+    void removalConfirmationMenusShowTheSettings_data()
+    {
+        QTest::addColumn<QString>("actionName");
+        QTest::addColumn<bool>("archive");
+        QTest::newRow("image") << QStringLiteral("actionConfirmImageRemoval") << false;
+        QTest::newRow("archive") << QStringLiteral("actionConfirmArchiveRemoval") << true;
+    }
+
+    /**
+     * The menu shows whether the viewer asks before an image or an archive is
+     * removed, and changes that setting alone.
+     */
+    void removalConfirmationMenusShowTheSettings()
+    {
+        QFETCH(QString, actionName);
+        QFETCH(bool, archive);
+        for (const bool confirm : {true, false}) {
+            // The other setting starts the other way, so a menu item that
+            // changed it would show.
+            qApp->setConfirmImageRemoval(archive ? !confirm : confirm);
+            qApp->setConfirmArchiveRemoval(archive ? confirm : !confirm);
+            StartupWindow viewer;
+            QAction *action = viewer.findChild<QAction *>(actionName);
+            QVERIFY(action);
+            QCOMPARE(action->isChecked(), confirm);
+
+            action->trigger();
+            QCOMPARE(qApp->ConfirmImageRemoval(), !confirm);
+            QCOMPARE(qApp->ConfirmArchiveRemoval(), !confirm);
+        }
+        qApp->setConfirmImageRemoval(true);
+        qApp->setConfirmArchiveRemoval(true);
+    }
+
+    /**
+     * The menu names what Recycle and Delete take: the image, or the whole
+     * archive on display, also once the menus are translated again.
+     */
+    void removalMenusNameWhatTheyTake()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const QString folder = directory.filePath(QStringLiteral("folder"));
+        QVERIFY(QDir().mkpath(folder));
+        QImage image(16, 16, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        QVERIFY(image.save(QDir(folder).filePath(QStringLiteral("page.bmp"))));
+        const QString archive = directory.filePath(QStringLiteral("book.7z"));
+        QVERIFY(QFile::copy(QString(FILELOADER_DATAPATH "7z/image.7z"), archive));
+        StartupWindow viewer;
+        QList<QAction *> actions;
+        for (const char *name : {"actionRecyclePage", "actionDeletePage"}) {
+            QAction *action = viewer.findChild<QAction *>(QLatin1String(name));
+            QVERIFY(action);
+            actions << action;
+        }
+        const auto texts = [&actions] {
+            QStringList result;
+            for (const QAction *action : actions) {
+                result << action->text();
+            }
+            return result;
+        };
+
+        viewer.openPath(folder);
+        const QStringList imageTexts = texts();
+        viewer.openPath(archive);
+        const QStringList archiveTexts = texts();
+        for (int i = 0; i < actions.size(); ++i) {
+            QVERIFY2(archiveTexts.at(i) != imageTexts.at(i), qPrintable(imageTexts.at(i)));
+        }
+
+        viewer.handleLanguageSelectorLanguageChanged(qApp->UiLanguage());
+        QCOMPARE(texts(), archiveTexts);
+        viewer.openPath(folder);
+        QCOMPARE(texts(), imageTexts);
+    }
+
+    /** An image is asked about as the setting for images says, whatever the archive's. */
+    void imageRemovalAsksAsTheImageSettingSays()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 3; ++page) {
+            QImage image(16, 16, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 60, 255, 255));
+            QVERIFY(image.save(directory.filePath(QStringLiteral("page-%1.bmp").arg(page))));
+        }
+        StartupWindow viewer;
+        viewer.fakeTrash = true;
+        viewer.openPath(directory.path());
+
+        qApp->setConfirmImageRemoval(true);
+        qApp->setConfirmArchiveRemoval(false);
+        {
+            MessageBoxResponder cancel(QMessageBox::Cancel);
+            viewer.handleRecyclePageActionTriggered();
+            QCOMPARE(cancel.answered, 1);
+        }
+        QVERIFY(viewer.trashedPaths.isEmpty());
+
+        qApp->setConfirmImageRemoval(false);
+        qApp->setConfirmArchiveRemoval(true);
+        {
+            MessageBoxResponder cancel(QMessageBox::Cancel);
+            viewer.handleRecyclePageActionTriggered();
+            QCOMPARE(cancel.answered, 0);
+        }
+        QCOMPARE(viewer.trashedPaths.size(), 1);
+        QCOMPARE(QFileInfo(viewer.trashedPaths.first()).fileName(), QStringLiteral("page-0.bmp"));
+        qApp->setConfirmImageRemoval(true);
+    }
+
+    /**
+     * Deleting an image cannot be undone, so the viewer asks even when the
+     * setting turned off the question for moving images to the Recycle Bin.
+     */
+    void imageDeletionAlwaysAsks()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 2; ++page) {
+            QImage image(16, 16, QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 60, 255, 255));
+            QVERIFY(image.save(directory.filePath(QStringLiteral("page-%1.bmp").arg(page))));
+        }
+        const QString firstPage = directory.filePath(QStringLiteral("page-0.bmp"));
+        qApp->setConfirmImageRemoval(false);
+        StartupWindow viewer;
+        viewer.openPath(directory.path());
+        {
+            MessageBoxResponder cancel(QMessageBox::Cancel);
+            viewer.handleDeletePageActionTriggered();
+            QCOMPARE(cancel.answered, 1);
+        }
+        QVERIFY(QFile::exists(firstPage));
+        {
+            MessageBoxResponder ok(QMessageBox::Ok);
+            viewer.handleDeletePageActionTriggered();
+            QCOMPARE(ok.answered, 1);
+        }
+        QVERIFY(!QFile::exists(firstPage));
+        QCOMPARE(viewer.viewerSession()->currentPageName(), QStringLiteral("page-1.bmp"));
+        qApp->setConfirmImageRemoval(true);
+    }
+
+    /**
+     * Delete takes the whole archive on display for good, without the Recycle
+     * Bin, so the viewer asks even when the setting turned off the question
+     * for moving archives to the bin, and then opens the next volume.
+     */
+    void archiveDeletionAlwaysAsks()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (const QString &name : {QStringLiteral("a.7z"), QStringLiteral("b.7z")}) {
+            QVERIFY(
+                QFile::copy(QString(FILELOADER_DATAPATH "7z/image.7z"), directory.filePath(name)));
+        }
+        const QString first = directory.filePath(QStringLiteral("a.7z"));
+        qApp->setConfirmArchiveRemoval(false);
+        StartupWindow viewer;
+        viewer.fakeTrash = true;
+        viewer.openPath(first);
+        {
+            MessageBoxResponder cancel(QMessageBox::Cancel);
+            viewer.handleDeletePageActionTriggered();
+            QCOMPARE(cancel.answered, 1);
+        }
+        QVERIFY(QFile::exists(first));
+        QCOMPARE(QFileInfo(viewer.viewerSession()->volumePath()).fileName(),
+                 QStringLiteral("a.7z"));
+        {
+            MessageBoxResponder ok(QMessageBox::Ok);
+            viewer.handleDeletePageActionTriggered();
+            QCOMPARE(ok.answered, 1);
+        }
+        QVERIFY(!QFile::exists(first));
+        QVERIFY(viewer.trashedPaths.isEmpty());
+        QCOMPARE(QFileInfo(viewer.viewerSession()->volumePath()).fileName(),
+                 QStringLiteral("b.7z"));
+        qApp->setConfirmArchiveRemoval(true);
+    }
+
+    /**
+     * An archive goes with every image in it, so it is asked about as its own
+     * setting says: turning the question off for images leaves it on here.
+     */
+    void archiveRemovalAsksAsTheArchiveSettingSays()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (const QString &name : {QStringLiteral("a.7z"), QStringLiteral("b.7z")}) {
+            QVERIFY(
+                QFile::copy(QString(FILELOADER_DATAPATH "7z/image.7z"), directory.filePath(name)));
+        }
+        const auto volumeName = [](StartupWindow &viewer) {
+            return QFileInfo(viewer.viewerSession()->volumePath()).fileName();
+        };
+        StartupWindow viewer;
+        viewer.fakeTrash = true;
+        viewer.openPath(directory.filePath(QStringLiteral("a.7z")));
+        QCOMPARE(volumeName(viewer), QStringLiteral("a.7z"));
+
+        qApp->setConfirmImageRemoval(false);
+        qApp->setConfirmArchiveRemoval(true);
+        {
+            MessageBoxResponder cancel(QMessageBox::Cancel);
+            viewer.handleRecyclePageActionTriggered();
+            QCOMPARE(cancel.answered, 1);
+        }
+        QVERIFY(viewer.trashedPaths.isEmpty());
+        QCOMPARE(volumeName(viewer), QStringLiteral("a.7z"));
+        {
+            MessageBoxResponder ok(QMessageBox::Ok);
+            viewer.handleRecyclePageActionTriggered();
+            QCOMPARE(ok.answered, 1);
+        }
+        QCOMPARE(viewer.trashedPaths.size(), 1);
+        QCOMPARE(QFileInfo(viewer.trashedPaths.first()).fileName(), QStringLiteral("a.7z"));
+        QCOMPARE(volumeName(viewer), QStringLiteral("b.7z"));
+
+        qApp->setConfirmImageRemoval(true);
+        qApp->setConfirmArchiveRemoval(false);
+        {
+            MessageBoxResponder cancel(QMessageBox::Cancel);
+            viewer.handleRecyclePageActionTriggered();
+            QCOMPARE(cancel.answered, 0);
+        }
+        QCOMPARE(viewer.trashedPaths.size(), 2);
+        QCOMPARE(QFileInfo(viewer.trashedPaths.last()).fileName(), QStringLiteral("b.7z"));
+        qApp->setConfirmArchiveRemoval(true);
     }
 
     void loadingFolderPageBookmarkFollowsThePanel()

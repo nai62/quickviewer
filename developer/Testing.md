@@ -329,6 +329,26 @@ Every file of a folder must look the same when opened. The `README.txt` written
 next to the samples lists what each folder checks. Keep the samples outside the
 source tree; they are not committed.
 
+### Removing files
+
+`scripts\verify-windows.cmd debug --test windowstartup` covers the confirmation
+settings, the menu items and the move to the next volume, with the Recycle Bin
+replaced by deletion. `recycledImageGoesToTheTrash` moves a real file to the
+desktop's trash and runs only on Linux, so it is checked by the Ubuntu CI.
+
+The Windows Recycle Bin itself is checked interactively:
+
+- Del on an image and on an archive on a local drive puts it in the Recycle
+  Bin, from where it can be restored.
+- Del on an image and on an archive on a network share asks whether to delete
+  it for good. Declining leaves the image; the archive is opened again on its
+  page with a message.
+- Turning off one confirmation in the Folder menu stops only that question:
+  the image's, or the archive's. Shift+Del asks whatever they say.
+- The Recycle item under Image actions in the context menu, and the Recycle and
+  Delete entries of the keyboard shortcuts, name the archive while one is on
+  display, and the image otherwise.
+
 ## Traps when adding source files or tests
 
 ### A new or removed source needs `--qmake`

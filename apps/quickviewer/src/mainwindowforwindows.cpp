@@ -56,7 +56,12 @@ bool MainWindowForWindows::moveToTrash(QString path)
         return false;
     }
 
-    operation->SetOperationFlags(FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT);
+    // A drive without a Recycle Bin, such as a network share, or a file too big
+    // for the bin makes the shell delete the file for good, and
+    // FOF_NOCONFIRMATION would answer its question with Yes. FOF_WANTNUKEWARNING
+    // still asks; declining aborts the operation, which reports a failure.
+    operation->SetOperationFlags(FOF_ALLOWUNDO | FOFX_RECYCLEONDELETE | FOF_WANTNUKEWARNING |
+                                 FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT);
 
     const std::wstring nativePath = QDir::toNativeSeparators(path).toStdWString();
     IShellItem *item = nullptr;
