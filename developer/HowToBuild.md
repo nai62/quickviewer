@@ -80,15 +80,21 @@ For a Windows Release build, build that plug-in with Qt 6.11.2 under
 dependencies under `../../qt-heic-image-plugin/3rdparty/install`.
 
 The Debug test suite requires a plug-in linked against the Debug Qt libraries.
-After building the bundled libheif dependencies:
+After building the bundled libheif dependencies, run this from the repository
+root:
 
 ```bat
+set "QV_REPO=%CD%"
 mkdir ..\..\qt-heic-image-plugin\qtbuild_6.11.2-debug
 cd ..\..\qt-heic-image-plugin\qtbuild_6.11.2-debug
-C:\Qt\6.11.2\msvc2022_64\bin\qmake.exe ^
-  ..\..\others\quickviewer\scripts\qt-heic-image-plugin-debug.pro
+C:\Qt\6.11.2\msvc2022_64\bin\qmake.exe "%QV_REPO%\scripts\qt-heic-image-plugin-debug.pro"
 C:\Qt\Tools\QtCreator\bin\jom\jom.exe
 ```
+
+The project expects the plug-in source at `..\..\qt-heic-image-plugin`
+relative to the repository. For a checkout elsewhere, add
+`HEIF_SOURCE=<that directory>` to the qmake command, and set `QV_HEIF_SOURCE` to
+the same directory for the verification scripts.
 
 The Windows verification and deployment scripts stage the appropriate HEIF
 plug-in and libheif runtime DLLs.
