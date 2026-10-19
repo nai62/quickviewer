@@ -114,6 +114,7 @@ jobs:
           mkdir -p "$result_dir"
           tests=(
             prefetchplannertest
+            storagelocationtest
             asynccachetest
             latestresultdispatchertest
             fileloadertest

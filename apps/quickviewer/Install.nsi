@@ -4,8 +4,10 @@
 !define AppDir "QuickViewer"
 #!define APPVERSION "1.2.6"
 !define COMPANYNAME "QuickViewer contributors"
-# The staged tree of a build made without QV_PORTABLE: that build keeps its
-# settings in the user's data directory, which is what an installed copy does.
+# The staged tree of the release build. It also carries the portable.ini that
+# makes the portable archive keep its settings beside the executable; this
+# installer leaves that file out, so an installed copy keeps them in the
+# user's data directory.
 !define SrcDir "M:\Home\src\qt\QVproject\QuickViewer-${APPVERSION}\x64"
 
 # rtf or txt file - remember if it is txt, it must be in the DOS text format (\r\n)

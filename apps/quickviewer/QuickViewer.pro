@@ -7,8 +7,9 @@
 include(../../QVproject.pri)
 include(../../qmake/windows-target.pri)
 # A test project file points QV_APP_SOURCE at this directory before including
-# this file; only the application itself copies its icons into its build tree,
-# because the test projects build into the same directory in parallel.
+# this file; only the application itself copies its icons and the portable
+# marker into its build tree, because the test projects build into the same
+# directory in parallel.
 QV_ASSOC_ICONS_FOR_THIS_PROJECT = true
 !isEmpty(QV_APP_SOURCE): QV_ASSOC_ICONS_FOR_THIS_PROJECT = false
 isEmpty(QV_APP_SOURCE): QV_APP_SOURCE = $$PWD
@@ -116,15 +117,24 @@ win32 {
         }
         QMAKE_EXTRA_TARGETS += assoc_icons
         PRE_TARGETDEPS += $$assoc_icons.target
+
+        # Such a build also keeps its settings beside the executable, as the
+        # portable package does, rather than in the developer's own user data
+        # directory.
+        portable_marker.target = $${DESTDIR}/portable.ini
+        portable_marker.depends = $$PWD/portable.ini
+        portable_marker.commands = $$QMAKE_COPY /B $$shell_quote($$shell_path($$PWD/portable.ini)) $$shell_quote($$shell_path($${DESTDIR}/portable.ini)) $$escape_expand(\n\t)
+        QMAKE_EXTRA_TARGETS += portable_marker
+        PRE_TARGETDEPS += $$portable_marker.target
     }
 }
 linux {
     DEFINES += _UNIX
     GCC_MAJOR = 6
-    contains(DEFINES, QV_PORTABLE) {
-        QMAKE_LFLAGS += -Wl,-rpath,../lib
-    } else {
+    qv_system_install {
         QMAKE_LFLAGS += -Wl,-rpath,$${QV_LIB_PATH}
+    } else {
+        QMAKE_LFLAGS += -Wl,-rpath,../lib
     }
 }
 macos {
@@ -168,6 +178,7 @@ SOURCES += \
     src/main.cpp \
     src/mainwindow.cpp \
     src/models/readprogressstore.cpp \
+    src/models/storagelocation.cpp \
     src/models/filemanager.cpp \
     src/models/boundedexecutor.cpp \
     src/models/imagecontent.cpp \
@@ -241,6 +252,7 @@ HEADERS  += \
     src/imageview.h \
     src/mainwindow.h \
     src/models/readprogressstore.h \
+    src/models/storagelocation.h \
     src/models/filemanager.h \
     src/models/boundedexecutor.h \
     src/models/cursorscrollmapping.h \
@@ -326,10 +338,10 @@ RESOURCES += toolbar.qrc \
     win32 {
         RESOURCES += qtconf-win.qrc
     }
-    linux : contains(DEFINES, QV_PORTABLE) {
+    linux : !qv_system_install {
         RESOURCES += qtconf-linux-appimage.qrc
     }
-    linux : !contains(DEFINES, QV_PORTABLE) {
+    linux : qv_system_install {
 #        RESOURCES += qtconf-linux.qrc
     }
     macos {
@@ -357,13 +369,9 @@ win32 : !CONFIG(debug, debug|release) {
 
         install_target.files = $${DESTDIR}/QuickViewer.exe $${LIBDIR}/fileloader.dll $$PWD/../../third_party/7zip/windll/$${TARGET_ARCH}/7z.dll
 
-        INSTALLS += install_target install_deploy_files install_translations install_assoc_icons
+        INSTALLS += install_target install_deploy_files install_translations install_assoc_icons install_portable_marker
     } else {
-        contains(DEFINES, QV_PORTABLE) {
-            MY_DEFAULT_INSTALL = ../../../QuickViewer-portable-$${VERSION}-$${TARGET_ARCH}
-        } else {
-            MY_DEFAULT_INSTALL = ../../../QuickViewer-$${VERSION}/$${TARGET_ARCH}
-        }
+        MY_DEFAULT_INSTALL = ../../../QuickViewer-$${VERSION}/$${TARGET_ARCH}
 
         install_target.path = $${MY_DEFAULT_INSTALL}
         install_target.files = \
@@ -403,7 +411,7 @@ win32 : !CONFIG(debug, debug|release) {
             "$${install_msvcrt.PATH}/vccorlib140.dll" \
             "$${install_msvcrt.PATH}/vcruntime140.dll"
 
-        INSTALLS += install_target install_deploy_files install_translations install_translations2 install_qrawspeed install_qvavif install_qvheif install_qvheif_runtime install_msvcrt install_assoc_icons
+        INSTALLS += install_target install_deploy_files install_translations install_translations2 install_qrawspeed install_qvavif install_qvheif install_qvheif_runtime install_msvcrt install_assoc_icons install_portable_marker
     }
     install_deploy_files.path = $${MY_DEFAULT_INSTALL}
     install_deploy_files.files = \
@@ -433,6 +441,11 @@ win32 : !CONFIG(debug, debug|release) {
     install_assoc_icons.path = $${MY_DEFAULT_INSTALL}/iconengines
     install_assoc_icons.files = $$QV_ASSOC_ICONS
 
+    # The portable archive is this tree as it stands; the installer copies its
+    # files one by one and leaves the marker out.
+    install_portable_marker.path = $${MY_DEFAULT_INSTALL}
+    install_portable_marker.files = $${PWD}/portable.ini
+
     install_db.path = $${MY_DEFAULT_INSTALL}/database
     install_db.depends = install_install_assoc_icons
     install_db.files = \
@@ -455,7 +468,7 @@ win32 : !CONFIG(debug, debug|release) {
 }
 
 # linuxdeployqt is required.
-linux : !CONFIG(debug, debug|release) : contains(DEFINES, QV_PORTABLE) {
+linux : !CONFIG(debug, debug|release) : !qv_system_install {
 
     APPDIR = QuickViewer-$${VERSION}-$${TARGET_ARCH}.AppDir
     APPIMAGE = QuickViewer-$${VERSION}-$${TARGET_ARCH}.AppImage
@@ -511,7 +524,7 @@ linux : !CONFIG(debug, debug|release) : contains(DEFINES, QV_PORTABLE) {
 
     INSTALLS += install_target install_libs install_desktop install_deploy_files install_apprun install_translations install_assoc_icons install_appimage
 
-#    contains(DEFINES, QV_PORTABLE) {
+#    !qv_system_install {
 #        install_deploy_files.files += $${PWD}/AppRun
 #        install_deploy_files.files -= $${PWD}/../../LICENSE
 
@@ -527,8 +540,8 @@ linux : !CONFIG(debug, debug|release) : contains(DEFINES, QV_PORTABLE) {
     INSTALLS += install_db
 }
 
-# not portable, install into /usr/local/bin
-linux : !CONFIG(debug, debug|release) : !contains(DEFINES, QV_PORTABLE) {
+# CONFIG+=qv_system_install: install into /usr/local/bin
+linux : !CONFIG(debug, debug|release) : qv_system_install {
     APPDIR = QuickViewer-$${VERSION}-$${TARGET_ARCH}.AppDir
     APPIMAGE = QuickViewer-$${VERSION}-$${TARGET_ARCH}.AppImage
     MY_DEFAULT_INSTALL = ../../../$${APPDIR}

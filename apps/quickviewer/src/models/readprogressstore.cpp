@@ -15,7 +15,7 @@ ReadProgressStore::ReadProgressStore(QObject *parent)
 
 static QString getProgressIniPath()
 {
-    return qApp->getFilePathOfApplicationSetting(QVApplication::readProgressSubPath());
+    return qApp->getFilePathOfApplicationSetting(StorageLocation::readProgressSubPath());
 }
 
 void ReadProgressStore::save()

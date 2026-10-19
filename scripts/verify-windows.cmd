@@ -233,6 +233,7 @@ exit /b !QV_JOM_EXIT!
 :run_selected_test
 set "QV_TEST_EXE_NAME="
 if /I "%QV_TEST_NAME%"=="prefetchplanner" set "QV_TEST_EXE_NAME=tst_prefetchplannertest.exe"
+if /I "%QV_TEST_NAME%"=="storagelocation" set "QV_TEST_EXE_NAME=tst_storagelocationtest.exe"
 if /I "%QV_TEST_NAME%"=="asynccache" set "QV_TEST_EXE_NAME=tst_asynccachetest.exe"
 if /I "%QV_TEST_NAME%"=="latestresultdispatcher" set "QV_TEST_EXE_NAME=tst_latestresultdispatchertest.exe"
 if /I "%QV_TEST_NAME%"=="fileloader" set "QV_TEST_EXE_NAME=tst_fileloadertest.exe"
@@ -243,7 +244,7 @@ if /I "%QV_TEST_NAME%"=="catalogdatabase" set "QV_TEST_EXE_NAME=tst_catalogdatab
 if /I "%QV_TEST_NAME%"=="languageswitch" set "QV_TEST_EXE_NAME=tst_languageswitch.exe"
 if not defined QV_TEST_EXE_NAME (
     echo ERROR: Unknown test name: %QV_TEST_NAME%
-    echo Supported tests: prefetchplanner, asynccache, latestresultdispatcher, fileloader, svgloader, viewernavigation, windowstartup, catalogdatabase, languageswitch
+    echo Supported tests: prefetchplanner, storagelocation, asynccache, latestresultdispatcher, fileloader, svgloader, viewernavigation, windowstartup, catalogdatabase, languageswitch
     exit /b 2
 )
 set "PATH=%QV_QT_DIR%\bin;%QV_BUILD_DIR%\lib;%PATH%"
@@ -261,6 +262,7 @@ call :stage_heif_plugin debug
 if errorlevel 1 exit /b 2
 
 call :run_test tst_prefetchplannertest.exe
+call :run_test tst_storagelocationtest.exe
 call :run_test tst_asynccachetest.exe
 call :run_test tst_latestresultdispatchertest.exe
 call :run_test tst_fileloadertest.exe
@@ -371,7 +373,7 @@ echo   QV_JOM        jom.exe path. Default: C:\Qt\Tools\QtCreator\bin\jom\jom.ex
 echo   QV_JOBS       Optional positive integer passed as jom -j N. Unset = jom default.
 echo.
 echo Test names:
-echo   prefetchplanner  asynccache  latestresultdispatcher  fileloader
-echo   svgloader        viewernavigation  windowstartup  catalogdatabase
-echo   languageswitch
+echo   prefetchplanner  storagelocation   asynccache     latestresultdispatcher
+echo   fileloader       svgloader         viewernavigation  windowstartup
+echo   catalogdatabase  languageswitch
 exit /b 2

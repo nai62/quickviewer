@@ -10,6 +10,7 @@
 #include "languagemanager.h"
 #include "qmousesequence.h"
 #include "qactionmanager.h"
+#include "storagelocation.h"
 
 #if defined(qApp)
 #    undef qApp
@@ -118,12 +119,6 @@ public:
     QString getFilePathOfApplicationSetting(QString subFilePath);
     QString getUserHomeFilePath(QString subFilePath);
     QString getTranslationPath();
-    /**
-     * @brief Sub-paths of the application's own data files, relative to the
-     * directory getFilePathOfApplicationSetting() resolves.
-     */
-    static QString settingsSubPath();
-    static QString readProgressSubPath();
     /**
      * @brief Default text formats offered by the options dialog.
      */
@@ -610,8 +605,7 @@ private:
     LanguageManager m_qtbaseLanguageSelector;
 
 #if defined(Q_OS_WIN)
-    // System Dependable
-    bool m_portable;
+    StorageLocation m_storageLocation;
 #endif
 };
 

@@ -37,6 +37,7 @@ SOURCES += \
     tst_viewernavigationtest.cpp \
     ../../apps/quickviewer/src/imageview.cpp \
     ../../apps/quickviewer/src/models/readprogressstore.cpp \
+    ../../apps/quickviewer/src/models/storagelocation.cpp \
     ../../apps/quickviewer/src/models/filemanager.cpp \
     ../../apps/quickviewer/src/models/boundedexecutor.cpp \
     ../../apps/quickviewer/src/models/imagestring.cpp \
@@ -78,6 +79,7 @@ HEADERS += \
     ../../apps/quickviewer/src/qvenums.h \
     ../../apps/quickviewer/src/imageview.h \
     ../../apps/quickviewer/src/models/readprogressstore.h \
+    ../../apps/quickviewer/src/models/storagelocation.h \
     ../../apps/quickviewer/src/models/filemanager.h \
     ../../apps/quickviewer/src/models/boundedexecutor.h \
     ../../apps/quickviewer/src/models/imagestring.h \

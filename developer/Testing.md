@@ -138,6 +138,7 @@ Supported names are:
 | Test name | Executable |
 | --- | --- |
 | `prefetchplanner` | `tst_prefetchplannertest.exe` |
+| `storagelocation` | `tst_storagelocationtest.exe` |
 | `asynccache` | `tst_asynccachetest.exe` |
 | `latestresultdispatcher` | `tst_latestresultdispatchertest.exe` |
 | `fileloader` | `tst_fileloadertest.exe` |
@@ -258,9 +259,9 @@ uses, writing each report outside the repository and keeping each exit code:
 export LC_ALL=en_US.UTF-8
 export LD_LIBRARY_PATH="$PWD/build-debug/lib:$LD_LIBRARY_PATH"
 log_dir=$(mktemp -d)
-for test in prefetchplannertest asynccachetest latestresultdispatchertest \
-    fileloadertest svgloadertest viewernavigationtest windowstartuptest \
-    catalogdatabasetest languageswitch; do
+for test in prefetchplannertest storagelocationtest asynccachetest \
+    latestresultdispatchertest fileloadertest svgloadertest \
+    viewernavigationtest windowstartuptest catalogdatabasetest languageswitch; do
   xvfb-run -a "build-debug/lib/tst_$test" -v1 -o "$log_dir/tst_$test.txt,txt"
   echo "tst_$test exit $?"
 done
