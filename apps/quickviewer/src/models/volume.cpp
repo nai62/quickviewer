@@ -152,6 +152,12 @@ Volume::scheduleMetadataLoad(ImageContent content, const QString &path, quint64 
     return submission.accepted ? submission.future : QFuture<ImageContent>();
 }
 
+bool Volume::isImageLoadingIdle()
+{
+    return imagePrefetchExecutor().activeCount() == 0 &&
+           imagePrefetchExecutor().pendingCount() == 0;
+}
+
 void Volume::loadPageList()
 {
     StartupProfiler::mark("volume.page-list.begin");

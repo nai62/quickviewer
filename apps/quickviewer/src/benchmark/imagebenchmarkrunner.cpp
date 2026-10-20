@@ -33,6 +33,15 @@ enum class BenchmarkSuite {
     FirstImage,
     FirstPaint,
     EmptyWindow,
+    PageTurn,
+};
+
+/** How the page-turn suite moves through a volume. */
+enum class PageTurn {
+    /** Ten pages at a time, as the viewer's fast forward does. */
+    FastForward,
+    /** One page at a time. */
+    Forward,
 };
 
 enum class PageSelectionKind {
@@ -60,6 +69,10 @@ struct BenchmarkOptions
     qvEnums::ImageSortBy sort = qvEnums::ImageSortBy::SortByFileName;
     QString sortName = "name";
     QMap<QString, QStringList> decoderBackends;
+    PageTurn turn = PageTurn::FastForward;
+    int turnSteps = 10;
+    int settleMilliseconds = 2000;
+    QSize viewport = QSize(1920, 1080);
     bool showHelp = false;
 };
 
@@ -98,6 +111,12 @@ struct BenchmarkRecord
     QString sort;
 
     QMap<QString, qint64> profileMilestoneNanoseconds;
+
+    /** page-turn: "first" for the turn that switches the prefetch mode, else "next". */
+    QString turn;
+    int turnStep = -1;
+    /** page-turn: how long the prefetch before this turn took to go idle. */
+    qint64 prefetchSettleNanoseconds = -1;
 
     qint64 libraryInitNanoseconds = -1;
     qint64 archiveOpenNanoseconds = -1;
@@ -238,6 +257,8 @@ QString suiteName(BenchmarkSuite suite)
         return "first-paint";
     case BenchmarkSuite::EmptyWindow:
         return "empty-window";
+    case BenchmarkSuite::PageTurn:
+        return "page-turn";
     }
     return "unknown";
 }
@@ -266,6 +287,10 @@ bool parseSuite(const QString &text, BenchmarkSuite &suite)
     }
     if (text == "empty-window") {
         suite = BenchmarkSuite::EmptyWindow;
+        return true;
+    }
+    if (text == "page-turn") {
+        suite = BenchmarkSuite::PageTurn;
         return true;
     }
     return false;
@@ -609,7 +634,8 @@ bool writeCsv(const QString &path, const QVector<BenchmarkRecord> &records)
     }
     stream << ",library_init_us,archive_open_us,enumeration_us,filter_us,archive_sort_us,page_list_"
               "us,page_sort_us,page_select_us,"
-              "source_load_us,extract_us,decode_us,postprocess_us,decode_pipeline_us,total_us\n";
+              "source_load_us,extract_us,decode_us,postprocess_us,decode_pipeline_us,total_us,turn,"
+              "turn_step,settle_us\n";
     for (const BenchmarkRecord &record : records) {
         stream << csvValue(record.suite) << ',' << csvValue(record.input) << ',' << record.run
                << ',' << (record.success ? "1" : "0") << ',' << csvValue(record.error) << ','
@@ -645,7 +671,10 @@ bool writeCsv(const QString &path, const QVector<BenchmarkRecord> &records)
                << nanosecondsToMicrosecondsCsv(record.decodeNanoseconds) << ','
                << nanosecondsToMicrosecondsCsv(record.postprocessNanoseconds) << ','
                << nanosecondsToMicrosecondsCsv(record.decodePipelineNanoseconds) << ','
-               << nanosecondsToMicrosecondsCsv(record.totalNanoseconds) << '\n';
+               << nanosecondsToMicrosecondsCsv(record.totalNanoseconds) << ','
+               << csvValue(record.turn) << ','
+               << (record.turnStep >= 0 ? QString::number(record.turnStep) : QString()) << ','
+               << nanosecondsToMicrosecondsCsv(record.prefetchSettleNanoseconds) << '\n';
     }
     return true;
 }
@@ -691,6 +720,7 @@ bool writeSummary(const QString &path, const QVector<BenchmarkRecord> &records)
         QString suite;
         QString input;
         QString entry;
+        QString turn;
         QString requestedDecoder;
         QString actualDecoder;
         QVector<double> totalsMs;
@@ -699,16 +729,21 @@ bool writeSummary(const QString &path, const QVector<BenchmarkRecord> &records)
     };
     QMap<QString, SummaryGroup> groups;
     for (const BenchmarkRecord &record : records) {
-        const QString key = QString("%1\x1f%2\x1f%3\x1f%4\x1f%5")
+        // Each page turn lands on another page, so its rows are summarized by
+        // the kind of turn rather than by the page.
+        const QString entry = record.turn.isEmpty() ? record.entry : QString();
+        const QString key = QString("%1\x1f%2\x1f%3\x1f%4\x1f%5\x1f%6")
                                 .arg(record.suite,
                                      record.input,
-                                     record.entry,
+                                     entry,
+                                     record.turn,
                                      record.requestedDecoder,
                                      record.actualDecoder);
         SummaryGroup &group = groups[key];
         group.suite = record.suite;
         group.input = record.input;
-        group.entry = record.entry;
+        group.entry = entry;
+        group.turn = record.turn;
         group.requestedDecoder = record.requestedDecoder;
         group.actualDecoder = record.actualDecoder;
         if (!record.success) {
@@ -726,6 +761,9 @@ bool writeSummary(const QString &path, const QVector<BenchmarkRecord> &records)
         out << "  suite=" << group.suite << " input=" << group.input;
         if (!group.entry.isEmpty()) {
             out << " entry=" << group.entry;
+        }
+        if (!group.turn.isEmpty()) {
+            out << " turn=" << group.turn;
         }
         if (!group.requestedDecoder.isEmpty()) {
             out << " requested_decoder=" << group.requestedDecoder;
@@ -1277,6 +1315,128 @@ bool benchmarkFirstImageInput(const BenchmarkOptions &options,
     return true;
 }
 
+/**
+ * Waits up to \a limitMilliseconds for the prefetch to go idle and returns how
+ * long it took, or -1 when it was still busy at the limit.
+ */
+qint64 settlePrefetch(int limitMilliseconds)
+{
+    QElapsedTimer timer;
+    timer.start();
+    while (!Volume::isImageLoadingIdle()) {
+        if (timer.elapsed() >= limitMilliseconds) {
+            return -1;
+        }
+        QThread::msleep(2);
+    }
+    return timer.nsecsElapsed();
+}
+
+/**
+ * One reading of a volume: the start page opened as the viewer opens it, then
+ * turns of the kind --turn names. Each turn schedules the prefetch for the new
+ * page and waits for that page, as ViewerSession::selectPage() does, and the
+ * timer covers exactly that.
+ */
+QVector<BenchmarkRecord> measurePageTurns(const BenchmarkOptions &options,
+                                          const QString &input,
+                                          int run,
+                                          const ReadProgressStore::ReadProgressMap &progress)
+{
+    BenchmarkRecord base;
+    base.suite = suiteName(options.suite);
+    base.input = input;
+    base.run = run;
+    base.requestedPage = options.page.requested;
+    base.sort = options.sortName;
+    const auto failed = [&base](const QString &error) {
+        BenchmarkRecord record = base;
+        record.error = error;
+        return QVector<BenchmarkRecord>{record};
+    };
+    // The previous run's loads would otherwise compete with this one's.
+    settlePrefetch(options.settleMilliseconds);
+    if (!initializeArchiveLibraryIfApplicable(input, base.libraryInitNanoseconds)) {
+        return failed("Archive library initialization failed.");
+    }
+    std::unique_ptr<Volume> volume(VolumeLoader::createVolume(nullptr, input));
+    if (!volume) {
+        return failed("Unsupported or unreadable input.");
+    }
+    base.container = containerNameForInput(input, volume.get());
+    if (volume->isArchive()) {
+        base.archiveSize = QFileInfo(volume->volumePath()).size();
+    }
+    volume->loadPageList();
+    base.imageCount = volume->pageCount();
+    const PageResolution page = resolvePage(volume.get(), options.page, progress);
+    if (!page.success) {
+        return failed(page.error);
+    }
+    base.pageSource = page.source;
+
+    const bool fastForward = options.turn == PageTurn::FastForward;
+    // ViewerSession::fastForwardPage() moves ten pages.
+    const int stride = fastForward ? 10 : 1;
+    const PrefetchMode mode = fastForward ? PrefetchMode::FastForward : PrefetchMode::NormalForward;
+    int current = page.index;
+    volume->updatePrefetchCache(current, PrefetchMode::Normal, options.viewport);
+    const Volume::ImageLoadFuture startLoad = volume->imageLoadAt(current);
+    if (!startLoad.isValid() || !startLoad.result().isRenderable()) {
+        return failed("The start page did not load.");
+    }
+
+    QVector<BenchmarkRecord> records;
+    for (int step = 1; step <= options.turnSteps; ++step) {
+        const int target = current + stride;
+        if (target >= volume->pageCount()) {
+            break;
+        }
+        BenchmarkRecord record = base;
+        record.turn = step == 1 ? "first" : "next";
+        record.turnStep = step;
+        record.prefetchSettleNanoseconds = settlePrefetch(options.settleMilliseconds);
+        QElapsedTimer timer;
+        timer.start();
+        volume->updatePrefetchCache(target, mode, options.viewport);
+        const Volume::ImageLoadFuture load = volume->imageLoadAt(target);
+        const ImageContent content = load.isValid() ? load.result() : ImageContent();
+        record.totalNanoseconds = timer.nsecsElapsed();
+        record.resolvedPage = target;
+        record.entry = volume->pageNameAt(target);
+        record.format = imageFormatNameForPath(record.entry);
+        record.sourceSize = content.originalSize;
+        record.success = content.isRenderable();
+        if (!record.success) {
+            record.error = "The page did not load.";
+        }
+        records.append(record);
+        current = target;
+    }
+    if (records.isEmpty()) {
+        return failed(QString("The volume has no page %1 pages after the start page.").arg(stride));
+    }
+    return records;
+}
+
+bool benchmarkPageTurnInput(const BenchmarkOptions &options,
+                            const QString &input,
+                            const ReadProgressStore::ReadProgressMap &progress,
+                            QVector<BenchmarkRecord> &records)
+{
+    if (isDirectImageInput(input)) {
+        qCritical().noquote() << input << ": page-turn needs a folder or an archive.";
+        return false;
+    }
+    for (int warmup = 0; warmup < options.warmup; ++warmup) {
+        measurePageTurns(options, input, 0, progress);
+    }
+    for (int run = 1; run <= options.runs; ++run) {
+        records.append(measurePageTurns(options, input, run, progress));
+    }
+    return true;
+}
+
 PreparedFirstPaintInput prepareFirstPaintInput(const BenchmarkOptions &options,
                                                const QString &input,
                                                const ReadProgressStore::ReadProgressMap &progress)
@@ -1658,12 +1818,13 @@ bool parseOptions(const QStringList &arguments, BenchmarkOptions &options, QStri
         "  archive-open Archive opening/indexing without image extraction or decode.\n"
         "  first-image  Input opening through the selected decoded image; rendering excluded.\n"
         "  first-paint  Fresh process startup through the first painted image.\n"
-        "  empty-window Fresh process startup through the first paint of an empty window.");
+        "  empty-window Fresh process startup through the first paint of an empty window.\n"
+        "  page-turn    Turning pages through a volume, from each turn to its decoded page.");
     parser.addHelpOption();
     const QCommandLineOption benchmarkOption(
         "benchmark",
-        "Benchmark suite: decode, entry-load, archive-open, first-image, first-paint, or "
-        "empty-window.",
+        "Benchmark suite: decode, entry-load, archive-open, first-image, first-paint, "
+        "empty-window, or page-turn.",
         "suite");
     const QCommandLineOption runsOption("runs", "Number of measured runs (default: 5).", "N", "5");
     const QCommandLineOption warmupOption(
@@ -1685,7 +1846,28 @@ bool parseOptions(const QStringList &arguments, BenchmarkOptions &options, QStri
         "name");
     const QCommandLineOption decoderOption(
         "decoder", "Decoder selection; repeatable. FORMAT=BACKEND[,BACKEND...]", "spec");
+    const QCommandLineOption turnOption(
+        "turn",
+        "page-turn: fast-forward (ten pages) or forward (one page).",
+        "kind",
+        "fast-forward");
+    const QCommandLineOption stepsOption(
+        "steps", "page-turn: turns per run (default: 10).", "N", "10");
+    const QCommandLineOption settleOption(
+        "settle-ms",
+        "page-turn: longest wait for the prefetch to go idle before a turn (default: 2000).",
+        "ms",
+        "2000");
+    const QCommandLineOption viewportOption(
+        "viewport",
+        "page-turn: viewport the prefetch plans for (default: 1920x1080).",
+        "WxH",
+        "1920x1080");
     parser.addOption(benchmarkOption);
+    parser.addOption(turnOption);
+    parser.addOption(stepsOption);
+    parser.addOption(settleOption);
+    parser.addOption(viewportOption);
     parser.addOption(runsOption);
     parser.addOption(warmupOption);
     parser.addOption(outputOption);
@@ -1761,6 +1943,32 @@ bool parseOptions(const QStringList &arguments, BenchmarkOptions &options, QStri
         }
         options.decoderBackends.insert(format, backends);
     }
+    const QString turnValue = parser.value(turnOption).trimmed().toLower();
+    if (turnValue == "fast-forward") {
+        options.turn = PageTurn::FastForward;
+    } else if (turnValue == "forward") {
+        options.turn = PageTurn::Forward;
+    } else {
+        error = QString("Invalid --turn value '%1'. Use fast-forward or forward.").arg(turnValue);
+        return false;
+    }
+    if (!parsePositiveInteger(parser.value(stepsOption), options.turnSteps)) {
+        error = "--steps must be greater than zero.";
+        return false;
+    }
+    if (!parseNonNegativeInteger(parser.value(settleOption), options.settleMilliseconds)) {
+        error = "--settle-ms must be zero or greater.";
+        return false;
+    }
+    const QStringList viewportParts = parser.value(viewportOption).toLower().split('x');
+    int viewportWidth = 0;
+    int viewportHeight = 0;
+    if (viewportParts.size() != 2 || !parsePositiveInteger(viewportParts.at(0), viewportWidth) ||
+        !parsePositiveInteger(viewportParts.at(1), viewportHeight)) {
+        error = "--viewport must be WIDTHxHEIGHT, for example 1920x1080.";
+        return false;
+    }
+    options.viewport = QSize(viewportWidth, viewportHeight);
     options.inputs = parser.positionalArguments();
     if (options.suite == BenchmarkSuite::EmptyWindow) {
         if (!options.inputs.isEmpty()) {
@@ -1875,6 +2083,10 @@ int ImageBenchmarkRunner::run(const QStringList &arguments)
         case BenchmarkSuite::FirstPaint:
             inputsSucceeded =
                 benchmarkFirstPaintInput(options, input, progress, records) && inputsSucceeded;
+            break;
+        case BenchmarkSuite::PageTurn:
+            inputsSucceeded =
+                benchmarkPageTurnInput(options, input, progress, records) && inputsSucceeded;
             break;
         case BenchmarkSuite::EmptyWindow:
             break;

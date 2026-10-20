@@ -48,6 +48,12 @@ public:
     QWeakPointer<ImageLoadContext> loadContext() const { return m_loadContext; }
 
     static void shutdownImageLoading() { BoundedExecutor::shutdownAll(); }
+    /**
+     * True when no page load, resize or metadata read of any volume is running
+     * or waiting for a thread. The page-turn benchmark waits for this between
+     * turns, the way a reader looks at a page before turning it.
+     */
+    static bool isImageLoadingIdle();
     static ImageContent futureLoadImageFromFileVolume(QSharedPointer<ImageLoadContext> context,
                                                       QString path,
                                                       QSize pageSize,

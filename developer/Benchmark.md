@@ -39,6 +39,8 @@ Supported suites:
 - `first-paint`: fresh-process startup through the first actual image paint.
 - `empty-window`: fresh-process startup of a bare Qt window, for measuring the
   platform baseline of `first-paint`. It takes no input.
+- `page-turn`: turning pages through a folder or an archive, from each turn to
+  its decoded page, with the viewer's prefetch running between turns.
 
 The old `--benchmark-mode`, format-specific decoder flags, and
 `decoder-compare` mode are not part of this interface.
@@ -255,6 +257,42 @@ The child stops itself if the empty window never paints. That run is recorded as
 a failure naming the reason instead of holding the benchmark for its full
 timeout, and each failed run is reported on stderr while the suite runs.
 
+### `page-turn`
+
+```bat
+QuickViewer.exe --benchmark page-turn ^
+  --turn fast-forward ^
+  --steps 10 ^
+  --runs 5 ^
+  book.zip
+```
+
+Each run creates a fresh `Volume`, opens the selected page the way the viewer
+opens a volume, and then turns `--steps` times. A turn schedules the prefetch
+for the new page and waits for that page, as `ViewerSession::selectPage()`
+does; `total_us` covers exactly that. Before each turn the suite waits up to
+`--settle-ms` milliseconds (default 2000) for every page load to go idle, the
+way a reader looks at a page before turning it, and records the wait in
+`settle_us`, left blank when the limit was reached. The wait measures how much
+background work the prefetch did after the previous turn.
+
+Options:
+
+```text
+--turn <kind>      fast-forward (ten pages, the viewer's fast forward; the default)
+                   or forward (one page).
+--steps <N>        Turns per run. Default: 10. A run stops early at the last page.
+--settle-ms <N>    Longest wait for the prefetch before a turn. Default: 2000.
+--viewport <WxH>   Viewport the prefetch plans for. Default: 1920x1080.
+```
+
+The first turn switches the prefetch from the opening plan to the turn's own,
+so it is recorded with `turn=first` and summarized apart from the later
+`turn=next` turns. Rows carry the turn's position in `turn_step` and the page it
+landed on in `resolved_page` and `selected_entry`. The effect and the image cache
+size come from the viewer's settings, so keep them identical between compared
+runs.
+
 ## CSV output
 
 Each measured row records at least:
@@ -306,6 +344,9 @@ postprocess_us
 decode_pipeline_us
 total_us
 ```
+
+`page-turn` rows also contain `turn`, `turn_step`, and `settle_us`, described
+under the suite.
 
 A blank timing field means the stage is not applicable or is not separately
 observable in that suite.
