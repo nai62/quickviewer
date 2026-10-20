@@ -119,10 +119,13 @@ Volume::ImageLoadFuture Volume::scheduleResize(ImageContent content,
                                                int pageIndex,
                                                quint64 generation)
 {
-    auto submission = imagePrefetchExecutor().submit(
+    // The resize replaces a decoded page in the cache, so dropping it keeps
+    // that page instead of leaving a cancelled load in its place.
+    auto submission = imagePrefetchExecutor().submitReplacing(
         [content, pageSize]() mutable {
             return resizeImageForViewport(std::move(content), pageSize);
         },
+        content,
         prefetchPriorityForPage(pageIndex, m_lastPrefetchAnchor),
         m_prefetchOwnerId,
         generation);
@@ -137,10 +140,12 @@ Volume::ImageLoadFuture
 Volume::scheduleMetadataLoad(ImageContent content, const QString &path, quint64 generation)
 {
     const QSharedPointer<ImageLoadContext> context = m_loadContext;
-    auto submission = imagePrefetchExecutor().submit(
-        [context, content = std::move(content), path]() mutable {
+    // Like a resize, the metadata read replaces a decoded page in the cache.
+    auto submission = imagePrefetchExecutor().submitReplacing(
+        [context, content, path]() mutable {
             return enrichDetailedMetadata(context, std::move(content), path);
         },
+        content,
         BoundedExecutor::Priority::Critical,
         m_prefetchOwnerId,
         generation);

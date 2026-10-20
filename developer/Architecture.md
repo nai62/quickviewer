@@ -78,6 +78,12 @@ the corresponding image loads and cache updates. The loads a volume queued go
 with it: a destroyed volume cancels those that have not started, so it does not
 leave its loader - for an archive, the open file - held by pages nobody shows.
 
+Moving to another page drops the queued work for the old one. A load that had
+not started is cancelled, and its page counts as not loaded until a later plan
+schedules it again. Work that replaces a page already decoded - a resize for a
+new viewport, or the full EXIF read once the page is shown - keeps that page
+when it is dropped, so a page turn never throws away a decoded page.
+
 ### Read progress
 
 `ReadProgress` represents the saved reading position and completion state for a
