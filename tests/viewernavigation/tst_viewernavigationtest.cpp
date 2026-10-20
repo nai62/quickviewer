@@ -489,22 +489,25 @@ static QHash<QString, QString> layoutCharacterization()
 }
 
 /**
- * An archive whose every read waits at \a gate, so the test decides when a
- * page is read, and counts the reads in \a reads.
+ * An archive, or a folder when \a archive is false, whose every read waits at
+ * \a gate, so the test decides when a page is read, and counts the reads in
+ * \a reads.
  */
-class GatedArchiveFileLoader final : public MemoryFileLoader
+class GatedFileLoader final : public MemoryFileLoader
 {
 public:
-    GatedArchiveFileLoader(int imageCount,
-                           QSharedPointer<QSemaphore> gate,
-                           QSharedPointer<QAtomicInt> reads)
+    GatedFileLoader(int imageCount,
+                    QSharedPointer<QSemaphore> gate,
+                    QSharedPointer<QAtomicInt> reads,
+                    bool archive = true)
         : MemoryFileLoader(imageCount),
           m_gate(std::move(gate)),
-          m_reads(std::move(reads))
+          m_reads(std::move(reads)),
+          m_archive(archive)
     {
     }
 
-    bool isArchive() const override { return true; }
+    bool isArchive() const override { return m_archive; }
     QByteArray getFile(QString name) override
     {
         m_reads->fetchAndAddOrdered(1);
@@ -515,6 +518,7 @@ public:
 private:
     QSharedPointer<QSemaphore> m_gate;
     QSharedPointer<QAtomicInt> m_reads;
+    bool m_archive;
 };
 
 /**
@@ -2178,8 +2182,7 @@ private slots:
         qApp->setMaxImagesCache(PlannedLoads);
         auto gate = QSharedPointer<QSemaphore>::create();
         auto reads = QSharedPointer<QAtomicInt>::create(0);
-        auto *volume =
-            new Volume(nullptr, std::make_unique<GatedArchiveFileLoader>(24, gate, reads));
+        auto *volume = new Volume(nullptr, std::make_unique<GatedFileLoader>(24, gate, reads));
         volume->loadPageList();
         // An archive is read by at most four loads at a time, so most of the
         // planned loads wait for a thread.
@@ -2218,8 +2221,7 @@ private slots:
             // The cache has room for two pages, and the plan holds only the
             // anchor, so moving to page 1 does not evict page 0.
             qApp->setMaxImagesCache(2);
-            Volume volume(nullptr,
-                          std::make_unique<GatedArchiveFileLoader>(4, pageGate, pageReads));
+            Volume volume(nullptr, std::make_unique<GatedFileLoader>(4, pageGate, pageReads));
             volume.loadPageList();
             qApp->setMaxImagesCache(1);
             context = volume.loadContext();
@@ -2231,7 +2233,7 @@ private slots:
             // the resize below waits in the queue.
             qApp->setMaxImagesCache(12);
             Volume blocker(nullptr,
-                           std::make_unique<GatedArchiveFileLoader>(24, blockerGate, blockerReads));
+                           std::make_unique<GatedFileLoader>(24, blockerGate, blockerReads));
             blocker.loadPageList();
             const auto releaseBlocker = qScopeGuard([blockerGate] { blockerGate->release(100); });
             blockerContext = blocker.loadContext();
@@ -2252,6 +2254,79 @@ private slots:
             QVERIFY(!page.loadedImage.isNull());
             // Page 0 was not read again, and page 1 still waits for a thread.
             QCOMPARE(pageReads->loadAcquire(), 1);
+        }
+        QTRY_VERIFY(context.isNull());
+        QTRY_VERIFY(blockerContext.isNull());
+    }
+
+    /**
+     * A folder page prefetched beside the anchor skips its full EXIF, which is
+     * read once the page becomes the anchor. Like a resize, that read replaces
+     * the decoded page in the cache, so dropping it must leave the page there.
+     */
+    void droppedMetadataReadKeepsTheDecodedPage()
+    {
+        const int previousCacheSize = qApp->MaxImagesCache();
+        const qvEnums::ShaderEffect previousEffect = qApp->Effect();
+        const qvEnums::ImageSortBy previousSort = qApp->ImageSortBy();
+        const auto restoreSettings = qScopeGuard([previousCacheSize, previousEffect, previousSort] {
+            qApp->setMaxImagesCache(previousCacheSize);
+            qApp->setEffect(previousEffect);
+            qApp->setImageSortBy(previousSort);
+        });
+        // The view scales the page, so no resize is scheduled beside the read.
+        qApp->setEffect(qvEnums::ShaderEffect::Bilinear);
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
+        const QByteArray tagged = jpegWithOrientation(6, QSize(64, 32));
+        QVERIFY(!tagged.isEmpty());
+        auto pageGate = QSharedPointer<QSemaphore>::create(100);
+        auto pageReads = QSharedPointer<QAtomicInt>::create(0);
+        auto blockerGate = QSharedPointer<QSemaphore>::create();
+        auto blockerReads = QSharedPointer<QAtomicInt>::create(0);
+        QWeakPointer<ImageLoadContext> context;
+        QWeakPointer<ImageLoadContext> blockerContext;
+        {
+            qApp->setMaxImagesCache(2);
+            auto loader = std::make_unique<GatedFileLoader>(0, pageGate, pageReads, false);
+            loader->addFile("a.jpg", tagged);
+            loader->addFile("b.jpg", tagged);
+            Volume volume(nullptr, std::move(loader));
+            volume.loadPageList();
+            context = volume.loadContext();
+            volume.updatePrefetchCache(0, PrefetchMode::Normal, QSize(100, 100));
+            QTRY_VERIFY(volume.imageLoadAt(0).isFinished());
+            QTRY_VERIFY(volume.imageLoadAt(1).isFinished());
+            QVERIFY(!volume.imageLoadAt(1).result().hasDetailedMetadata);
+            QCOMPARE(pageReads->loadAcquire(), 2);
+
+            // Another folder whose reads never return holds every thread a
+            // folder gets, so the read below waits in the queue.
+            qApp->setMaxImagesCache(12);
+            Volume blocker(nullptr,
+                           std::make_unique<GatedFileLoader>(24, blockerGate, blockerReads, false));
+            blocker.loadPageList();
+            const auto releaseBlocker = qScopeGuard([blockerGate] { blockerGate->release(100); });
+            blockerContext = blocker.loadContext();
+            blocker.updatePrefetchCache(10, PrefetchMode::Normal, QSize(100, 100));
+            QTRY_VERIFY(blockerReads->loadAcquire() >= 1);
+
+            // Only the anchor is planned from here on.
+            qApp->setMaxImagesCache(1);
+            volume.updatePrefetchCache(1, PrefetchMode::Normal, QSize(100, 100));
+            QVERIFY(!volume.imageLoadAt(1).isFinished());
+            // Going back drops the read, which has not started.
+            volume.updatePrefetchCache(0, PrefetchMode::Normal, QSize(100, 100));
+
+            const Volume::ImageLoadFuture kept = volume.imageLoadAt(1);
+            QVERIFY(kept.isValid());
+            QVERIFY(kept.isFinished());
+            const ImageContent page = kept.result();
+            QCOMPARE(page.path, QStringLiteral("b.jpg"));
+            QVERIFY(!page.loadedImage.isNull());
+            QVERIFY(!page.hasDetailedMetadata);
+            QCOMPARE(int(page.exifInfo.Orientation), 6);
+            // The dropped read never ran, so page 1 was read once.
+            QCOMPARE(pageReads->loadAcquire(), 2);
         }
         QTRY_VERIFY(context.isNull());
         QTRY_VERIFY(blockerContext.isNull());
