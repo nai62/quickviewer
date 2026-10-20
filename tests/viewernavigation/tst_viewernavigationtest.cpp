@@ -2989,6 +2989,42 @@ private slots:
         qApp->setImageSortBy(previousSort);
     }
 
+    /**
+     * A page beyond the decoded window is read but not decoded. Once it comes
+     * close, its decode uses those bytes instead of reading the page again.
+     */
+    void farPrefetchReadsOnceAndDecodesWhenThePageComesClose()
+    {
+        const int previousCacheSize = qApp->MaxImagesCache();
+        const qvEnums::ImageSortBy previousSort = qApp->ImageSortBy();
+        const auto restoreSettings = qScopeGuard([previousCacheSize, previousSort] {
+            qApp->setMaxImagesCache(previousCacheSize);
+            qApp->setImageSortBy(previousSort);
+        });
+        qApp->setMaxImagesCache(12);
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
+        auto loader = std::make_unique<MemoryFileLoader>(24);
+        MemoryFileLoader *loaderPtr = loader.get();
+        Volume volume(nullptr, std::move(loader));
+        volume.loadPageList();
+
+        // Reading forward from page 0 plans pages 0 to 11; page 6 is beyond the
+        // three pages decoded around the anchor.
+        volume.updatePrefetchCache(0, PrefetchMode::NormalForward, QSize(100, 100));
+        QTRY_VERIFY(Volume::isImageLoadingIdle());
+        QCOMPARE(loaderPtr->requestedNames().count(QStringLiteral("page-6.bmp")), 1);
+        QVERIFY(!volume.imageLoadAt(6).isValid());
+
+        volume.updatePrefetchCache(4, PrefetchMode::NormalForward, QSize(100, 100));
+        const Volume::ImageLoadFuture load = volume.imageLoadAt(6);
+        QVERIFY(load.isValid());
+        const ImageContent page = load.result();
+        QCOMPARE(page.path, QStringLiteral("page-6.bmp"));
+        QCOMPARE(page.loadedImage.size(), QSize(22, 30));
+        QTRY_VERIFY(Volume::isImageLoadingIdle());
+        QCOMPARE(loaderPtr->requestedNames().count(QStringLiteral("page-6.bmp")), 1);
+    }
+
     void initialDisplayPrefetchWaitsForTheFirstPage()
     {
         qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);

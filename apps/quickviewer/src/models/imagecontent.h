@@ -42,7 +42,6 @@ struct ImageContent
     QString path;
     easyexif::EXIFInfo exifInfo;
     size_t fileSize = 0;
-    bool isPreview = false;
     bool hasDetailedMetadata = false;
     /**
      * True when the file carries EXIF the viewer could read: a JPEG whose full

@@ -165,13 +165,27 @@ private:
      * pages to prefetch. Returns nullptr when there is nothing to prefetch.
      */
     IFileLoader *loaderForPrefetch();
+    using SourceLoadFuture = QFuture<QByteArray>;
+
+    /**
+     * Loads and decodes the page at \a path. \a prefetchedSource, when not
+     * empty, is the page's file already read, which is decoded instead of
+     * reading the page again.
+     */
     ImageLoadFuture scheduleImageLoad(const QString &path,
                                       const QSize &pageSize,
                                       bool requiredForDisplay,
-                                      const QSize &decodeTargetSize = QSize(),
                                       bool loadDetailedMetadata = true,
                                       int pageIndex = -1,
-                                      quint64 generation = 0);
+                                      quint64 generation = 0,
+                                      QByteArray prefetchedSource = QByteArray());
+    /** Reads the page's file - for an archive, extracts it - without decoding it. */
+    SourceLoadFuture scheduleSourceLoad(const QString &path, int pageIndex, quint64 generation);
+    /**
+     * The page's file the prefetch already read, removed from the cache. Empty
+     * when the read has not finished: the decode then reads the page itself.
+     */
+    QByteArray takePrefetchedSource(int pageIndex);
     ImageLoadFuture
     scheduleResize(ImageContent content, const QSize &pageSize, int pageIndex, quint64 generation);
     ImageLoadFuture
@@ -184,7 +198,12 @@ private:
     QList<QString> m_pageNames;
     QList<QString> m_shuffledPageNames;
     mutable LruCache<int, ImageLoadFuture> m_imageLoadCache;
-    LruCache<int, ImageLoadFuture> m_previewLoadCache;
+    /**
+     * Files of the pages beyond the decoded window, read but not decoded:
+     * their bytes cost far less memory than their pixels, and decoding them
+     * once they come close skips the read or the archive extraction.
+     */
+    LruCache<int, SourceLoadFuture> m_sourceLoadCache;
 
     QSharedPointer<ImageLoadContext> m_loadContext;
     bool m_pageListLoaded;

@@ -46,7 +46,7 @@ static QFuture<ImageContent> readyImageFuture(ImageContent content)
 Volume::Volume(QObject *parent, std::unique_ptr<IFileLoader> loader)
     : QObject(parent),
       m_imageLoadCache(qApp->MaxImagesCache()),
-      m_previewLoadCache(qApp->MaxImagesCache()),
+      m_sourceLoadCache(qApp->MaxImagesCache()),
       m_loadContext(new ImageLoadContext(std::move(loader))),
       m_pageListLoaded(false),
       m_openedWithSpecifiedImageFile(false),
@@ -65,7 +65,7 @@ Volume::~Volume()
     imagePrefetchExecutor().cancelPendingOlderThan(m_prefetchOwnerId,
                                                    std::numeric_limits<quint64>::max());
     m_imageLoadCache.clear();
-    m_previewLoadCache.clear();
+    m_sourceLoadCache.clear();
 }
 
 static BoundedExecutor::Priority prefetchPriorityForPage(int pageIndex, int anchorPageIndex)
@@ -86,22 +86,24 @@ static BoundedExecutor::Priority prefetchPriorityForPage(int pageIndex, int anch
 Volume::ImageLoadFuture Volume::scheduleImageLoad(const QString &path,
                                                   const QSize &pageSize,
                                                   bool requiredForDisplay,
-                                                  const QSize &decodeTargetSize,
                                                   bool loadDetailedMetadata,
                                                   int pageIndex,
-                                                  quint64 generation)
+                                                  quint64 generation,
+                                                  QByteArray prefetchedSource)
 {
     const QSharedPointer<ImageLoadContext> context = m_loadContext;
-    auto submission = imagePrefetchExecutor().submit(
-        [context, path, pageSize, decodeTargetSize, loadDetailedMetadata] {
-            ImageContent content = futureLoadImageFromFileVolume(
-                context, path, pageSize, decodeTargetSize, loadDetailedMetadata);
-            content.isPreview = decodeTargetSize.isValid() && !decodeTargetSize.isEmpty();
-            return content;
-        },
-        prefetchPriorityForPage(pageIndex, m_lastPrefetchAnchor),
-        m_prefetchOwnerId,
-        generation);
+    const auto load = [context, path, pageSize, loadDetailedMetadata, prefetchedSource] {
+        if (prefetchedSource.isEmpty()) {
+            return futureLoadImageFromFileVolume(
+                context, path, pageSize, QSize(), loadDetailedMetadata);
+        }
+        return decodeImageBytes(path, prefetchedSource, pageSize, QSize(), loadDetailedMetadata);
+    };
+    auto submission =
+        imagePrefetchExecutor().submit(load,
+                                       prefetchPriorityForPage(pageIndex, m_lastPrefetchAnchor),
+                                       m_prefetchOwnerId,
+                                       generation);
     if (submission.accepted) {
         return submission.future;
     }
@@ -110,8 +112,30 @@ Volume::ImageLoadFuture Volume::scheduleImageLoad(const QString &path,
         return QFuture<ImageContent>();
     }
 
-    return readyImageFuture(futureLoadImageFromFileVolume(
-        context, path, pageSize, decodeTargetSize, loadDetailedMetadata));
+    return readyImageFuture(load());
+}
+
+Volume::SourceLoadFuture
+Volume::scheduleSourceLoad(const QString &path, int pageIndex, quint64 generation)
+{
+    const QSharedPointer<ImageLoadContext> context = m_loadContext;
+    auto submission =
+        imagePrefetchExecutor().submit([context, path] { return context->load(path); },
+                                       prefetchPriorityForPage(pageIndex, m_lastPrefetchAnchor),
+                                       m_prefetchOwnerId,
+                                       generation);
+    return submission.accepted ? submission.future : SourceLoadFuture();
+}
+
+QByteArray Volume::takePrefetchedSource(int pageIndex)
+{
+    const SourceLoadFuture *source = m_sourceLoadCache.find(pageIndex);
+    const QByteArray bytes =
+        source && source->isFinished() && !source->isCanceled() && source->resultCount() > 0
+            ? source->result()
+            : QByteArray();
+    m_sourceLoadCache.remove(pageIndex);
+    return bytes;
 }
 
 Volume::ImageLoadFuture Volume::scheduleResize(ImageContent content,
@@ -239,7 +263,7 @@ void Volume::applyPageSort(qvEnums::ImageSortBy sortBy)
         }
     }
     m_imageLoadCache.clear();
-    m_previewLoadCache.clear();
+    m_sourceLoadCache.clear();
 }
 
 void Volume::startSlideShow()
@@ -253,7 +277,7 @@ void Volume::startSlideShow()
     std::mt19937 g(rd());
     std::shuffle(m_shuffledPageNames.begin(), m_shuffledPageNames.end(), g);
     m_imageLoadCache.clear();
-    m_previewLoadCache.clear();
+    m_sourceLoadCache.clear();
 }
 
 void Volume::stopSlideShow()
@@ -263,7 +287,7 @@ void Volume::stopSlideShow()
     }
     m_shuffledPageNames.clear();
     m_imageLoadCache.clear();
-    m_previewLoadCache.clear();
+    m_sourceLoadCache.clear();
 }
 
 QString Volume::pageNameAt(int pageIndex) const
@@ -305,19 +329,6 @@ static int recommendedPrefetchConcurrency(const IFileLoader *loader)
     return qBound(2, (idealThreads + 1) / 2, 8);
 }
 
-static QSize previewDecodeSize(const QSize &viewportSize)
-{
-    const int maxTextureSize = qApp->MaxTextureSize();
-    if (!viewportSize.isValid() || viewportSize.isEmpty()) {
-        const int fallback = qMin(maxTextureSize, 2048);
-        return QSize(fallback, fallback);
-    }
-
-    const QSize oversampled(qMin(maxTextureSize, qMax(1, viewportSize.width() * 3 / 2)),
-                            qMin(maxTextureSize, qMax(1, viewportSize.height() * 3 / 2)));
-    return oversampled;
-}
-
 static bool shouldPrefetchFullResolution(int pageIndex, int anchorPageIndex)
 {
     return qAbs(pageIndex - anchorPageIndex) <= 3;
@@ -342,21 +353,33 @@ void Volume::updatePrefetchCache(int anchorPageIndex, PrefetchMode mode, QSize v
     const QList<int> indexes =
         PrefetchPlanner::indexes(mode, anchorPageIndex, m_pageNames.size(), qApp->MaxImagesCache());
     for (int cnt : indexes) {
-        const bool fullResolution = shouldPrefetchFullResolution(cnt, anchorPageIndex);
-        if (fullResolution) {
-            m_previewLoadCache.remove(cnt);
-        } else if (m_imageLoadCache.touch(cnt)) {
+        if (!shouldPrefetchFullResolution(cnt, anchorPageIndex)) {
+            // A page further away is read but not decoded. A page decoded
+            // already stays decoded.
+            if (m_imageLoadCache.touch(cnt)) {
+                continue;
+            }
+            const SourceLoadFuture *cachedSource = m_sourceLoadCache.find(cnt);
+            if (cachedSource && !cachedSource->isCanceled()) {
+                m_sourceLoadCache.touch(cnt);
+                continue;
+            }
+            const SourceLoadFuture source =
+                scheduleSourceLoad(pageNameAt(cnt), cnt, m_prefetchGeneration);
+            if (source.isValid()) {
+                m_sourceLoadCache.insert(cnt, source);
+            } else {
+                m_sourceLoadCache.remove(cnt);
+            }
             continue;
         }
-        LruCache<int, ImageLoadFuture> &cache =
-            fullResolution ? m_imageLoadCache : m_previewLoadCache;
+        LruCache<int, ImageLoadFuture> &cache = m_imageLoadCache;
         ImageLoadFuture *cachedImageLoad = cache.find(cnt);
         if (cachedImageLoad && cachedImageLoad->isCanceled()) {
             cache.remove(cnt);
             cachedImageLoad = nullptr;
         }
-        if (fullResolution && cnt == anchorPageIndex && cachedImageLoad &&
-            cachedImageLoad->isFinished()) {
+        if (cnt == anchorPageIndex && cachedImageLoad && cachedImageLoad->isFinished()) {
             ImageContent cachedImage = cachedImageLoad->result();
             if (!cachedImage.hasDetailedMetadata &&
                 IFileLoader::isExifJpegImageFile(cachedImage.path)) {
@@ -369,8 +392,7 @@ void Volume::updatePrefetchCache(int anchorPageIndex, PrefetchMode mode, QSize v
                 }
             }
         }
-        if (fullResolution && resizesOnCpu(qApp->Effect()) && cachedImageLoad &&
-            cachedImageLoad->isFinished()) {
+        if (resizesOnCpu(qApp->Effect()) && cachedImageLoad && cachedImageLoad->isFinished()) {
             ImageContent cachedImage = cachedImageLoad->result();
             if (cachedImage.loadedImageSize.isValid()) {
                 const QSize pageSize = viewportSize;
@@ -390,18 +412,15 @@ void Volume::updatePrefetchCache(int anchorPageIndex, PrefetchMode mode, QSize v
             }
         }
         if (!cache.touch(cnt)) {
-            const QSize pageSize =
-                fullResolution && resizesOnCpu(qApp->Effect()) ? viewportSize : QSize();
-            const QSize decodeTargetSize =
-                fullResolution ? QSize() : previewDecodeSize(viewportSize);
+            const QSize pageSize = resizesOnCpu(qApp->Effect()) ? viewportSize : QSize();
             const ImageLoadFuture future =
                 scheduleImageLoad(pageNameAt(cnt),
                                   pageSize,
                                   cnt == anchorPageIndex,
-                                  decodeTargetSize,
                                   cnt == anchorPageIndex || loader->isArchive(),
                                   cnt,
-                                  m_prefetchGeneration);
+                                  m_prefetchGeneration,
+                                  takePrefetchedSource(cnt));
             if (future.isValid()) {
                 cache.insert(cnt, future);
             }
@@ -429,10 +448,10 @@ void Volume::prefetchCoverImages(int anchorPageIndex)
             scheduleImageLoad(pageNameAt(pageIndex),
                               QSize(),
                               pageIndex == anchorPageIndex,
-                              QSize(),
                               pageIndex == anchorPageIndex || loader->isArchive(),
                               pageIndex,
-                              m_prefetchGeneration);
+                              m_prefetchGeneration,
+                              takePrefetchedSource(pageIndex));
         if (future.isValid()) {
             m_imageLoadCache.insert(pageIndex, future);
         }
