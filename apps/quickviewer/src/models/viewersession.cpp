@@ -3,6 +3,7 @@
 #include "fileloadersubdirectory.h"
 #include "pagedisplayformatter.h"
 #include "qvapplication.h"
+#include "shadereffect.h"
 #include "volumeloader.h"
 #include "startupprofiler.h"
 
@@ -340,7 +341,9 @@ bool ViewerSession::openFileInContainer(const QString &filePath, bool allowSecon
     m_pendingContainingImagePath.clear();
     m_pendingContainingVolumePath.clear();
     m_pendingContainingPageName.clear();
-    const QSize pageSize = viewportSize();
+    // Only a CPU resizer draws the page from a resized copy; the view scales
+    // the decoded image itself for the other effects.
+    const QSize pageSize = resizesOnCpu(qApp->Effect()) ? viewportSize() : QSize();
     const QFuture<ImageContent> initialImage = QtConcurrent::run(
         [normalizedPath, pageSize] { return Volume::loadImageFromFile(normalizedPath, pageSize); });
     m_initialImageLoadDispatcher.submit(
