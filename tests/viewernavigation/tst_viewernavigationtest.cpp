@@ -3025,6 +3025,38 @@ private slots:
         QCOMPARE(loaderPtr->requestedNames().count(QStringLiteral("page-6.bmp")), 1);
     }
 
+    /**
+     * Fast forward decodes the page the next fast turn lands on, so that turn
+     * finds it ready; pages further on are only read.
+     */
+    void fastForwardDecodesThePageTheNextTurnLandsOn()
+    {
+        const int previousCacheSize = qApp->MaxImagesCache();
+        const qvEnums::ImageSortBy previousSort = qApp->ImageSortBy();
+        const auto restoreSettings = qScopeGuard([previousCacheSize, previousSort] {
+            qApp->setMaxImagesCache(previousCacheSize);
+            qApp->setImageSortBy(previousSort);
+        });
+        qApp->setMaxImagesCache(22);
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
+        Volume volume(nullptr, std::make_unique<MemoryFileLoader>(40));
+        volume.loadPageList();
+
+        volume.updatePrefetchCache(10, PrefetchMode::FastForward, QSize(100, 100));
+        QTRY_VERIFY(Volume::isImageLoadingIdle());
+        const Volume::ImageLoadFuture landing = volume.imageLoadAt(20);
+        QVERIFY(landing.isValid());
+        QVERIFY(landing.isFinished());
+        QCOMPARE(landing.result().path, QStringLiteral("page-20.bmp"));
+        QVERIFY(volume.imageLoadAt(21).isValid());
+        // Twenty pages on is a turn after next: read, not decoded.
+        QVERIFY(!volume.imageLoadAt(30).isValid());
+
+        // The turn itself finds the page decoded.
+        volume.updatePrefetchCache(20, PrefetchMode::FastForward, QSize(100, 100));
+        QVERIFY(volume.imageLoadAt(20).isFinished());
+    }
+
     void initialDisplayPrefetchWaitsForTheFirstPage()
     {
         qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);

@@ -1,4 +1,5 @@
 #include <QtGui>
+#include <algorithm>
 #include <atomic>
 #include <cstring>
 #include <limits>
@@ -83,6 +84,17 @@ static BoundedExecutor::Priority prefetchPriorityForPage(int pageIndex, int anch
     return BoundedExecutor::Priority::Low;
 }
 
+/**
+ * A decode is for a page the reader is about to see - one around the anchor,
+ * or the page a fast turn lands on - so it goes before the reads of the pages
+ * further away.
+ */
+static BoundedExecutor::Priority decodePriorityForPage(int pageIndex, int anchorPageIndex)
+{
+    return std::max(BoundedExecutor::Priority::Normal,
+                    prefetchPriorityForPage(pageIndex, anchorPageIndex));
+}
+
 Volume::ImageLoadFuture Volume::scheduleImageLoad(const QString &path,
                                                   const QSize &pageSize,
                                                   bool requiredForDisplay,
@@ -101,7 +113,7 @@ Volume::ImageLoadFuture Volume::scheduleImageLoad(const QString &path,
     };
     auto submission =
         imagePrefetchExecutor().submit(load,
-                                       prefetchPriorityForPage(pageIndex, m_lastPrefetchAnchor),
+                                       decodePriorityForPage(pageIndex, m_lastPrefetchAnchor),
                                        m_prefetchOwnerId,
                                        generation);
     if (submission.accepted) {
@@ -150,7 +162,7 @@ Volume::ImageLoadFuture Volume::scheduleResize(ImageContent content,
             return resizeImageForViewport(std::move(content), pageSize);
         },
         content,
-        prefetchPriorityForPage(pageIndex, m_lastPrefetchAnchor),
+        decodePriorityForPage(pageIndex, m_lastPrefetchAnchor),
         m_prefetchOwnerId,
         generation);
     if (submission.accepted) {
@@ -329,11 +341,6 @@ static int recommendedPrefetchConcurrency(const IFileLoader *loader)
     return qBound(2, (idealThreads + 1) / 2, 8);
 }
 
-static bool shouldPrefetchFullResolution(int pageIndex, int anchorPageIndex)
-{
-    return qAbs(pageIndex - anchorPageIndex) <= 3;
-}
-
 void Volume::updatePrefetchCache(int anchorPageIndex, PrefetchMode mode, QSize viewportSize)
 {
     IFileLoader *loader = loaderForPrefetch();
@@ -350,12 +357,13 @@ void Volume::updatePrefetchCache(int anchorPageIndex, PrefetchMode mode, QSize v
         imagePrefetchExecutor().cancelPendingOlderThan(m_prefetchOwnerId, m_prefetchGeneration);
     }
 
-    const QList<int> indexes =
-        PrefetchPlanner::indexes(mode, anchorPageIndex, m_pageNames.size(), qApp->MaxImagesCache());
-    for (int cnt : indexes) {
-        if (!shouldPrefetchFullResolution(cnt, anchorPageIndex)) {
-            // A page further away is read but not decoded. A page decoded
-            // already stays decoded.
+    const QList<PrefetchTarget> targets =
+        PrefetchPlanner::targets(mode, anchorPageIndex, m_pageNames.size(), qApp->MaxImagesCache());
+    for (const PrefetchTarget &target : targets) {
+        const int cnt = target.index;
+        if (target.depth == PrefetchDepth::Read) {
+            // A page the plan does not decode is read, so its decode skips the
+            // read once it comes close. A page decoded already stays decoded.
             if (m_imageLoadCache.touch(cnt)) {
                 continue;
             }
