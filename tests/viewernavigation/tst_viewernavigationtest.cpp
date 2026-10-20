@@ -2194,6 +2194,69 @@ private slots:
                  qPrintable(QString::number(reads->loadAcquire())));
     }
 
+    /**
+     * Resizing a decoded page for a new viewport replaces it in the cache. A
+     * resize dropped before it ran must leave the decoded page there, not a
+     * cancelled load that has to read and decode the page again.
+     */
+    void droppedResizeKeepsTheDecodedPage()
+    {
+        const int previousCacheSize = qApp->MaxImagesCache();
+        const qvEnums::ShaderEffect previousEffect = qApp->Effect();
+        const auto restoreSettings = qScopeGuard([previousCacheSize, previousEffect] {
+            qApp->setMaxImagesCache(previousCacheSize);
+            qApp->setEffect(previousEffect);
+        });
+        qApp->setEffect(qvEnums::ShaderEffect::CpuBicubic);
+        auto pageGate = QSharedPointer<QSemaphore>::create(100);
+        auto pageReads = QSharedPointer<QAtomicInt>::create(0);
+        auto blockerGate = QSharedPointer<QSemaphore>::create();
+        auto blockerReads = QSharedPointer<QAtomicInt>::create(0);
+        QWeakPointer<ImageLoadContext> context;
+        QWeakPointer<ImageLoadContext> blockerContext;
+        {
+            // The cache has room for two pages, and the plan holds only the
+            // anchor, so moving to page 1 does not evict page 0.
+            qApp->setMaxImagesCache(2);
+            Volume volume(nullptr,
+                          std::make_unique<GatedArchiveFileLoader>(4, pageGate, pageReads));
+            volume.loadPageList();
+            qApp->setMaxImagesCache(1);
+            context = volume.loadContext();
+            volume.updatePrefetchCache(0, PrefetchMode::Normal, QSize(100, 100));
+            QTRY_VERIFY(volume.imageLoadAt(0).isFinished());
+            QCOMPARE(pageReads->loadAcquire(), 1);
+
+            // Another archive whose reads never return holds every thread, so
+            // the resize below waits in the queue.
+            qApp->setMaxImagesCache(12);
+            Volume blocker(nullptr,
+                           std::make_unique<GatedArchiveFileLoader>(24, blockerGate, blockerReads));
+            blocker.loadPageList();
+            const auto releaseBlocker = qScopeGuard([blockerGate] { blockerGate->release(100); });
+            blockerContext = blocker.loadContext();
+            blocker.updatePrefetchCache(10, PrefetchMode::Normal, QSize(100, 100));
+            QTRY_VERIFY(blockerReads->loadAcquire() >= 1);
+
+            qApp->setMaxImagesCache(1);
+            volume.updatePrefetchCache(0, PrefetchMode::Normal, QSize(200, 200));
+            QVERIFY(!volume.imageLoadAt(0).isFinished());
+            // The next page drops the resize, which has not started.
+            volume.updatePrefetchCache(1, PrefetchMode::Normal, QSize(200, 200));
+
+            const Volume::ImageLoadFuture kept = volume.imageLoadAt(0);
+            QVERIFY(kept.isValid());
+            QVERIFY(kept.isFinished());
+            const ImageContent page = kept.result();
+            QCOMPARE(page.path, QStringLiteral("page-0.bmp"));
+            QVERIFY(!page.loadedImage.isNull());
+            // Page 0 was not read again, and page 1 still waits for a thread.
+            QCOMPARE(pageReads->loadAcquire(), 1);
+        }
+        QTRY_VERIFY(context.isNull());
+        QTRY_VERIFY(blockerContext.isNull());
+    }
+
     void removingLastDisplayedPageOpensPreviousOne()
     {
         QTemporaryDir directory;

@@ -28,6 +28,7 @@ private Q_SLOTS:
     void touchingValueUpdatesRecencyWithoutInserting();
     void boundsActiveAndPendingJobs();
     void cancellingDropsOnlyTheOlderGenerationOfThatOwner();
+    void droppedReplacingJobKeepsTheResultItReplaces();
     void keepsTaskContextAliveUntilCompletion();
     void shutdownCancelsPendingJobsAndWaitsForActiveJobs();
 };
@@ -150,6 +151,44 @@ void AsyncCacheTest::cancellingDropsOnlyTheOlderGenerationOfThatOwner()
     gate.release();
     QTRY_COMPARE(executor.activeCount(), 0);
     QCOMPARE(executor.pendingCount(), 0);
+}
+
+void AsyncCacheTest::droppedReplacingJobKeepsTheResultItReplaces()
+{
+    BoundedExecutor executor(1, 1);
+    QSemaphore gate;
+    const auto running = executor.submit(
+        [&gate] {
+            gate.acquire();
+            return 0;
+        },
+        BoundedExecutor::Priority::Normal,
+        7,
+        1);
+    QVERIFY(running.accepted);
+    QTRY_COMPARE(executor.activeCount(), 1);
+
+    const auto cancelled =
+        executor.submitReplacing([] { return 2; }, 1, BoundedExecutor::Priority::Normal, 7, 1);
+    QVERIFY(cancelled.accepted);
+    // The queue is full, so this one is rejected outright.
+    const auto rejected =
+        executor.submitReplacing([] { return 4; }, 3, BoundedExecutor::Priority::Normal, 7, 1);
+    QVERIFY(!rejected.accepted);
+    executor.cancelPendingOlderThan(7, 2);
+
+    // A dropped replacement finishes with the result it would have replaced,
+    // not as a cancelled future that has none.
+    for (const auto &submission : {cancelled, rejected}) {
+        QVERIFY(submission.future.isFinished());
+        QVERIFY(!submission.future.isCanceled());
+        QCOMPARE(submission.future.resultCount(), 1);
+    }
+    QCOMPARE(cancelled.future.result(), 1);
+    QCOMPARE(rejected.future.result(), 3);
+
+    gate.release();
+    QTRY_COMPARE(executor.activeCount(), 0);
 }
 
 void AsyncCacheTest::keepsTaskContextAliveUntilCompletion()

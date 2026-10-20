@@ -41,6 +41,54 @@ public:
                          quint64 owner = 0,
                          quint64 generation = 0)
     {
+        return submitJob<T>(
+            std::forward<Function>(function),
+            [](QPromise<T> &promise) { promise.future().cancel(); },
+            priority,
+            owner,
+            generation);
+    }
+
+    /**
+     * Like submit(), for work that replaces a result the caller already has. A
+     * job dropped before it ran - cancelled, rejected or shut down - finishes
+     * its future with \a resultIfDropped instead of cancelling it, so dropping
+     * the replacement keeps the result it was going to replace.
+     */
+    template <typename Function, typename T = std::invoke_result_t<std::decay_t<Function>>>
+    Submission<T> submitReplacing(Function &&function,
+                                  T resultIfDropped,
+                                  Priority priority = Priority::Normal,
+                                  quint64 owner = 0,
+                                  quint64 generation = 0)
+    {
+        static_assert(!std::is_void_v<T>, "a replacing job needs a result to keep");
+        return submitJob<T>(
+            std::forward<Function>(function),
+            [result = std::move(resultIfDropped)](QPromise<T> &promise) {
+                promise.addResult(result);
+            },
+            priority,
+            owner,
+            generation);
+    }
+
+    void shutdown();
+    static void shutdownAll();
+
+    void cancelPendingOlderThan(quint64 owner, quint64 generation);
+    void setMaximumConcurrency(int maximumConcurrency);
+
+    int activeCount() const;
+    int pendingCount() const;
+    int maximumConcurrency() const { return m_maximumConcurrency; }
+    int maximumPendingJobs() const { return m_maximumPendingJobs; }
+
+private:
+    template <typename T, typename Function, typename Drop>
+    Submission<T>
+    submitJob(Function &&function, Drop drop, Priority priority, quint64 owner, quint64 generation)
+    {
         auto promise = QSharedPointer<QPromise<T>>::create();
         promise->start();
         Submission<T> submission;
@@ -62,8 +110,8 @@ public:
             }
             promise->finish();
         };
-        job.cancel = [promise] {
-            promise->future().cancel();
+        job.cancel = [promise, drop = std::move(drop)]() mutable {
+            drop(*promise);
             promise->finish();
         };
 
@@ -71,18 +119,6 @@ public:
         return submission;
     }
 
-    void shutdown();
-    static void shutdownAll();
-
-    void cancelPendingOlderThan(quint64 owner, quint64 generation);
-    void setMaximumConcurrency(int maximumConcurrency);
-
-    int activeCount() const;
-    int pendingCount() const;
-    int maximumConcurrency() const { return m_maximumConcurrency; }
-    int maximumPendingJobs() const { return m_maximumPendingJobs; }
-
-private:
     struct Job
     {
         std::function<void()> run;
