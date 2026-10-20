@@ -3,6 +3,7 @@
 #include <QImageReader>
 #include <QString>
 #include <QTemporaryDir>
+#include <QtConcurrent>
 #include <QtTest>
 
 #include "fileloader7zarchive.h"
@@ -36,6 +37,7 @@ private Q_SLOTS:
     void singleSubdirectoryIsUnwrapped();
     void directoryLinkCycleStopsUnwrapping();
     void emptyDirectoryContentsAreStable();
+    void directoryReadsFromSeveralThreads();
     void sevenZipImages();
     void sevenZipSolidModes_data();
     void sevenZipSolidModes();
@@ -467,6 +469,35 @@ void FileLoaderTest::emptyDirectoryContentsAreStable()
 
     QCOMPARE(loader.contents(), QStringList());
     QCOMPARE(loader.contents(), QStringList());
+}
+
+void FileLoaderTest::directoryReadsFromSeveralThreads()
+{
+    QTemporaryDir temporaryDir;
+    QVERIFY(temporaryDir.isValid());
+    // A wrapper folder, so the pages are read from the directory the listing
+    // unwrapped rather than the one it was given.
+    QDir root(temporaryDir.path());
+    QVERIFY(root.mkpath("wrapper/pages"));
+    QStringList names;
+    for (int page = 0; page < 32; ++page) {
+        const QString name = QString("%1.png").arg(page, 3, 10, QChar('0'));
+        QFile file(root.filePath("wrapper/pages/" + name));
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        QVERIFY(file.write(name.toUtf8()) > 0);
+        names.append(name);
+    }
+    FileLoaderDirectory loader(root.filePath("wrapper"));
+    QCOMPARE(loader.contents(), names);
+    QVERIFY(loader.supportsConcurrentReads());
+
+    // The viewer reads folder pages without serializing them, so every read
+    // from a pool of threads has to return its own file.
+    const QList<QByteArray> read = QtConcurrent::blockingMapped(
+        names, [&loader](const QString &name) { return loader.getFile(name); });
+    for (int page = 0; page < names.size(); ++page) {
+        QCOMPARE(read.at(page), names.at(page).toUtf8());
+    }
 }
 
 void FileLoaderTest::sevenZipImages()

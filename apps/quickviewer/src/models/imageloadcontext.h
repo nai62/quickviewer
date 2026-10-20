@@ -20,8 +20,16 @@ public:
 
     FileLoadResult loadResult(const QString &name)
     {
+        if (!m_loader) {
+            return {};
+        }
+        // A folder read waiting for the lock would wait for every other page
+        // being read, the one the viewer needs included.
+        if (m_loader->supportsConcurrentReads()) {
+            return m_loader->getFileResult(name);
+        }
         QMutexLocker locker(&m_mutex);
-        return m_loader ? m_loader->getFileResult(name) : FileLoadResult{};
+        return m_loader->getFileResult(name);
     }
 
     QByteArray load(const QString &name) { return loadResult(name).data; }

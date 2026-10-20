@@ -522,6 +522,43 @@ private:
 };
 
 /**
+ * Holds every read at \a gate and counts the reads in flight, so a test sees
+ * whether reads overlap. \a concurrent is what the loader claims about them.
+ */
+class ReadOverlapProbeLoader final : public MemoryFileLoader
+{
+public:
+    ReadOverlapProbeLoader(bool concurrent, QSemaphore *gate)
+        : MemoryFileLoader(0),
+          m_concurrent(concurrent),
+          m_gate(gate)
+    {
+    }
+
+    bool supportsConcurrentReads() const override { return m_concurrent; }
+    QByteArray getFile(QString) override
+    {
+        const int inFlight = m_inFlight.fetchAndAddOrdered(1) + 1;
+        int peak = m_peak.loadAcquire();
+        while (inFlight > peak && !m_peak.testAndSetOrdered(peak, inFlight)) {
+            peak = m_peak.loadAcquire();
+        }
+        m_gate->acquire();
+        m_inFlight.fetchAndSubOrdered(1);
+        return QByteArrayLiteral("page");
+    }
+
+    int inFlight() const { return m_inFlight.loadAcquire(); }
+    int peak() const { return m_peak.loadAcquire(); }
+
+private:
+    const bool m_concurrent;
+    QSemaphore *m_gate;
+    QAtomicInt m_inFlight{0};
+    QAtomicInt m_peak{0};
+};
+
+/**
  * Copies of a multi-page archive, as volumes of one folder, with a folder
  * volume listed before them.
  */
@@ -2330,6 +2367,49 @@ private slots:
         }
         QTRY_VERIFY(context.isNull());
         QTRY_VERIFY(blockerContext.isNull());
+    }
+
+    void loadContextOverlapsOnlyTheReadsTheLoaderAllows_data()
+    {
+        QTest::addColumn<bool>("concurrent");
+        QTest::newRow("folder") << true;
+        QTest::newRow("archive") << false;
+    }
+
+    /**
+     * A folder reads each page from a file of its own, so a slow read must not
+     * hold up the page the viewer waits for. An archive reads through one
+     * stream, so its reads stay one at a time.
+     */
+    void loadContextOverlapsOnlyTheReadsTheLoaderAllows()
+    {
+        QFETCH(bool, concurrent);
+        QSemaphore gate;
+        auto loader = std::make_unique<ReadOverlapProbeLoader>(concurrent, &gate);
+        ReadOverlapProbeLoader *probe = loader.get();
+        ImageLoadContext context(std::move(loader));
+        QFuture<QByteArray> first;
+        QFuture<QByteArray> second;
+        // The reads use the context, so they finish before it goes, even when a
+        // check below gives up early.
+        auto finishReads = qScopeGuard([&] {
+            gate.release(2);
+            first.waitForFinished();
+            second.waitForFinished();
+        });
+
+        first = QtConcurrent::run([&context] { return context.load("a"); });
+        second = QtConcurrent::run([&context] { return context.load("b"); });
+        if (concurrent) {
+            QTRY_COMPARE(probe->inFlight(), 2);
+        } else {
+            QTRY_COMPARE(probe->inFlight(), 1);
+        }
+        finishReads.dismiss();
+        gate.release(2);
+        QCOMPARE(first.result(), QByteArrayLiteral("page"));
+        QCOMPARE(second.result(), QByteArrayLiteral("page"));
+        QCOMPARE(probe->peak(), concurrent ? 2 : 1);
     }
 
     void removingLastDisplayedPageOpensPreviousOne()
