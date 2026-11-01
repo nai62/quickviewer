@@ -101,6 +101,47 @@ the same directory for the verification scripts.
 The Windows verification and deployment scripts stage the appropriate HEIF
 plug-in and libheif runtime DLLs.
 
+### Set up AVIF support
+
+AVIF uses [qt-avif-image-plugin](https://github.com/novomesk/qt-avif-image-plugin)
+at revision `8c10a0d7283b1b5f5b5dbf24db70f2666984048c`, linked to libavif
+with an AV1 decoder. The Windows CI uses `libavif[aom]:x64-windows` from
+vcpkg. Install that package before building the plug-in; a libavif build
+without a codec cannot decode images.
+
+Check out the plug-in at `../../qt-avif-image-plugin`. From the repository root,
+build the Debug plug-in with the same Qt kit as the application:
+
+```bat
+set "QV_REPO=%CD%"
+set "QV_AVIF_SOURCE=%CD%\..\..\qt-avif-image-plugin"
+set "QV_AVIF_DEPS=C:\dev\vcpkg\installed\x64-windows"
+mkdir "%QV_AVIF_SOURCE%\qtbuild_6.11.2-debug"
+cd /d "%QV_AVIF_SOURCE%\qtbuild_6.11.2-debug"
+C:\Qt\6.11.2\msvc2022_64\bin\qmake.exe "%QV_REPO%\scripts\qt-avif-image-plugin.pro" "AVIF_SOURCE=%QV_AVIF_SOURCE%" "AVIF_DEPS=%QV_AVIF_DEPS%" CONFIG+=debug CONFIG-=release
+C:\Qt\Tools\QtCreator\bin\jom\jom.exe
+```
+
+For Release, use `qtbuild_6.11.2` and `CONFIG+=release CONFIG-=debug`.
+Set `QV_AVIF_SOURCE` and `QV_AVIF_DEPS` in the shell running verification or
+deployment too. Their defaults are the source directory above and its
+`3rdparty/install` directory. The scripts copy `qavif6.dll` and the dependency
+DLLs to the build tree. The installer expects the aom-backed runtime
+(`avif.dll`, `aom.dll`, `libyuv.dll`).
+
+On Linux, install `libavif-dev` with its AV1 decoder dependencies, create a
+separate build directory in the plug-in checkout and run:
+
+```sh
+qmake /path/to/quickviewer/scripts/qt-avif-image-plugin.pro AVIF_SOURCE=.. CONFIG+=debug CONFIG-=release
+make -j2
+```
+
+Copy `libqavif6.so` into the QuickViewer build tree's `lib/imageformats` for
+tests and `bin/imageformats` for the application. Use matching Qt libraries
+and configurations for both. AVIF still images use the standard Qt decoding
+path; AVIF animation playback is not enabled by this integration.
+
 ## 2. Supported Windows development workflow
 
 Use `scripts\verify-windows.cmd` for building and testing. Builds stage the
@@ -125,7 +166,7 @@ gives the tests a display:
 
 ```bash
 sudo apt-get install -y build-essential libgl1-mesa-dev libheif-dev \
-  libheif-plugin-libde265 libturbojpeg xvfb
+  libheif-plugin-libde265 libavif-dev libturbojpeg xvfb
 ```
 
 Install Qt 6.11.2 for `linux_gcc_64` with the Qt Image Formats and Qt SVG

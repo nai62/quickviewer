@@ -388,9 +388,16 @@ win32 : !CONFIG(debug, debug|release) {
 
 #            ../../../../qrawspeed/imageformats-$${TARGET_ARCH}/qlodepng0.dll \
 
+        QV_AVIF_SOURCE = $$(QV_AVIF_SOURCE)
+        isEmpty(QV_AVIF_SOURCE): QV_AVIF_SOURCE = $$clean_path($$PWD/../../../../qt-avif-image-plugin)
+        QV_AVIF_DEPS = $$(QV_AVIF_DEPS)
+        isEmpty(QV_AVIF_DEPS): QV_AVIF_DEPS = $$QV_AVIF_SOURCE/3rdparty/install
+        install_qvavif_runtime.path = $${MY_DEFAULT_INSTALL}
+        install_qvavif_runtime.files = $$files($$QV_AVIF_DEPS/bin/*.dll)
+
         install_qvavif.path = $${MY_DEFAULT_INSTALL}/imageformats
         install_qvavif.files = \
-            ../../../../qt-avif-image-plugin/imageformats-$${TARGET_ARCH}/qavif6.dll \
+            $$QV_AVIF_SOURCE/qtbuild_6.11.2/qavif6.dll \
 
         install_qvheif.path = $${MY_DEFAULT_INSTALL}/imageformats
         install_qvheif.files = \
@@ -411,7 +418,7 @@ win32 : !CONFIG(debug, debug|release) {
             "$${install_msvcrt.PATH}/vccorlib140.dll" \
             "$${install_msvcrt.PATH}/vcruntime140.dll"
 
-        INSTALLS += install_target install_deploy_files install_translations install_translations2 install_qrawspeed install_qvavif install_qvheif install_qvheif_runtime install_msvcrt install_assoc_icons install_portable_marker
+        INSTALLS += install_target install_deploy_files install_translations install_translations2 install_qrawspeed install_qvavif install_qvavif_runtime install_qvheif install_qvheif_runtime install_msvcrt install_assoc_icons install_portable_marker
     }
     install_deploy_files.path = $${MY_DEFAULT_INSTALL}
     install_deploy_files.files = \

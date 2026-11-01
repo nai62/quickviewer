@@ -183,6 +183,13 @@ jobs:
           ref: 16e740ae05dd59f8f63330225c53ef657a854e1d
           path: qt-heic-image-plugin
 
+      - name: Check out AVIF image plug-in
+        uses: actions/checkout@v7
+        with:
+          repository: novomesk/qt-avif-image-plugin
+          ref: 8c10a0d7283b1b5f5b5dbf24db70f2666984048c
+          path: qt-avif-image-plugin
+
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
@@ -236,14 +243,14 @@ jobs:
           }
           Add-Content -Path $env:GITHUB_PATH -Value $dir
 
-      - name: Install HEIF build dependencies
+      - name: Install image plug-in build dependencies
         shell: pwsh
         run: |
           $vcpkg = Join-Path $env:VCPKG_INSTALLATION_ROOT "vcpkg.exe"
           if (-not (Test-Path $vcpkg)) {
             throw "vcpkg.exe was not found at $vcpkg"
           }
-          & $vcpkg install "libheif[core]:x64-windows"
+          & $vcpkg install "libheif[core]:x64-windows" "libavif[aom]:x64-windows"
           if ($LASTEXITCODE -ne 0) {
             throw "vcpkg failed with exit code $LASTEXITCODE"
           }
@@ -278,6 +285,22 @@ jobs:
             Pop-Location
           }
 
+      - name: Build AVIF image plug-in
+        shell: pwsh
+        run: |
+          $source = (Resolve-Path qt-avif-image-plugin).Path -replace '\\', '/'
+          $deps = (Join-Path $env:VCPKG_INSTALLATION_ROOT "installed/x64-windows") -replace '\\', '/'
+          New-Item -ItemType Directory qt-avif-image-plugin/build-debug | Out-Null
+          Push-Location qt-avif-image-plugin/build-debug
+          try {
+            qmake ../../scripts/qt-avif-image-plugin.pro "AVIF_SOURCE=$source" "AVIF_DEPS=$deps" CONFIG+=debug CONFIG-=release
+            if ($LASTEXITCODE -ne 0) { throw "AVIF qmake failed: $LASTEXITCODE" }
+            jom
+            if ($LASTEXITCODE -ne 0) { throw "AVIF build failed: $LASTEXITCODE" }
+          } finally {
+            Pop-Location
+          }
+
       - name: Configure debug build
         shell: cmd
         run: |
@@ -290,7 +313,7 @@ jobs:
         working-directory: build-debug
         run: jom /f Makefile
 
-      - name: Stage HEIF image plug-in
+      - name: Stage image plug-ins
         shell: pwsh
         run: |
           $libDir = (Resolve-Path ".\build-debug\lib").Path
@@ -304,6 +327,7 @@ jobs:
           }
 
           Copy-Item $plugin.FullName $pluginDir -Force
+          Copy-Item "qt-avif-image-plugin/build-debug/qavif6.dll" $pluginDir -Force
 
           $runtimeDir = Join-Path $env:VCPKG_INSTALLATION_ROOT "installed\x64-windows\bin"
           $runtimeDlls = Get-ChildItem $runtimeDir -Filter "*.dll"

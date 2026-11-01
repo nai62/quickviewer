@@ -147,12 +147,12 @@ call :stage_translations
 if errorlevel 1 exit /b 2
 
 if /I "%QV_ACTION%"=="build" (
-    call :stage_heif_plugin %QV_CONFIG%
+    call :stage_image_plugins %QV_CONFIG%
     if errorlevel 1 exit /b 2
     exit /b 0
 )
 if /I "%QV_CONFIG%"=="release" (
-    call :stage_heif_plugin release
+    call :stage_image_plugins release
     if errorlevel 1 exit /b 2
     exit /b 0
 )
@@ -168,7 +168,7 @@ call :run_build "%QV_BUILD_DIR%\apps\quickviewer"
 if errorlevel 1 exit /b 2
 call :stage_translations
 if errorlevel 1 exit /b 2
-call :stage_heif_plugin %QV_CONFIG%
+call :stage_image_plugins %QV_CONFIG%
 if errorlevel 1 exit /b 2
 exit /b 0
 
@@ -249,7 +249,7 @@ if not defined QV_TEST_EXE_NAME (
 )
 set "PATH=%QV_QT_DIR%\bin;%QV_BUILD_DIR%\lib;%PATH%"
 set "QV_TEST_FAILED=0"
-call :stage_heif_plugin debug
+call :stage_image_plugins debug
 if errorlevel 1 exit /b 2
 call :run_test "%QV_TEST_EXE_NAME%" "%QV_TEST_FUNCTION%"
 if not "!QV_TEST_FAILED!"=="0" exit /b 1
@@ -258,7 +258,7 @@ exit /b 0
 :run_tests
 set "PATH=%QV_QT_DIR%\bin;%QV_BUILD_DIR%\lib;%PATH%"
 set "QV_TEST_FAILED=0"
-call :stage_heif_plugin debug
+call :stage_image_plugins debug
 if errorlevel 1 exit /b 2
 
 call :run_test tst_prefetchplannertest.exe
@@ -302,7 +302,7 @@ if exist "!QV_TEST_RESULT!" type "!QV_TEST_RESULT!"
 if not "!QV_TEST_EXIT!"=="0" set "QV_TEST_FAILED=1"
 exit /b 0
 
-:stage_heif_plugin
+:stage_image_plugins
 if not defined QV_HEIF_SOURCE set "QV_HEIF_SOURCE=%QV_SOURCE_DIR%\..\..\qt-heic-image-plugin"
 if /I "%~1"=="debug" (
     set "QV_HEIF_PLUGIN=%QV_HEIF_SOURCE%\qtbuild_6.11.2-debug\kimg_heif6.dll"
@@ -318,6 +318,8 @@ for %%D in ("%QV_BUILD_DIR%\bin" "%QV_BUILD_DIR%\lib") do (
     copy /Y "%QV_HEIF_PLUGIN%" "%%~D\imageformats\" >nul
     if errorlevel 1 exit /b 2
     copy /Y "%QV_HEIF_SOURCE%\3rdparty\install\bin\*.dll" "%%~D\" >nul
+    if errorlevel 1 exit /b 2
+    call "%QV_SOURCE_DIR%\scripts\stage-avif-plugin.cmd" %~1 "%%~D"
     if errorlevel 1 exit /b 2
 )
 exit /b 0
