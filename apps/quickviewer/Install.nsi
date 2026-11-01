@@ -234,6 +234,9 @@ Section
   !insertmacro AssocProgId "QuickViewer.AssocFile.WebP" "WebP Image" "qv_webp.ico"
   !insertmacro AssocExtension ".webp" "QuickViewer.AssocFile.WebP"
 
+  !insertmacro AssocProgId "QuickViewer.AssocFile.Avif" "AVIF Image" ""
+  !insertmacro AssocExtension ".avif" "QuickViewer.AssocFile.Avif"
+
   !insertmacro AssocProgId "QuickViewer.AssocFile.Heif" "HEIF Image" ""
   !insertmacro AssocExtension ".heic" "QuickViewer.AssocFile.Heif"
   !insertmacro AssocExtension ".heif" "QuickViewer.AssocFile.Heif"
@@ -277,6 +280,7 @@ Section "Uninstall"
   !insertmacro DeleteAssocProgId "QuickViewer.AssocFile.Icon"
   !insertmacro DeleteAssocProgId "QuickViewer.AssocFile.Tiff"
   !insertmacro DeleteAssocProgId "QuickViewer.AssocFile.WebP"
+  !insertmacro DeleteAssocProgId "QuickViewer.AssocFile.Avif"
   !insertmacro DeleteAssocProgId "QuickViewer.AssocFile.Heif"
   !insertmacro DeleteAssocProgId "QuickViewer.AssocFile.RawCanon"
   !insertmacro DeleteAssocProgId "QuickViewer.AssocFile.RawDng"

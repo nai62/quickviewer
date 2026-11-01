@@ -2100,7 +2100,7 @@ void MainWindow::handleTurnPageOnRightActionTriggered()
 void MainWindow::handleOpenFolderActionTriggered()
 {
     QString filter = tr("All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico "
-                        "*.heic *.heif);;Archives( *.zip *.7z *.rar)",
+                        "*.avif *.heic *.heif);;Archives( *.zip *.7z *.rar)",
                         "Text that specifies the file extension to be displayed when opening a "
                         "file with OpenFileFolder");
     QString folder = QFileDialog::getOpenFileName(

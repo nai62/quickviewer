@@ -388,9 +388,11 @@ win32 : !CONFIG(debug, debug|release) {
 
 #            ../../../../qrawspeed/imageformats-$${TARGET_ARCH}/qlodepng0.dll \
 
+        QV_AVIF_SOURCE = $$(QV_AVIF_SOURCE)
+        isEmpty(QV_AVIF_SOURCE): QV_AVIF_SOURCE = $$clean_path($$PWD/../../../../qt-avif-image-plugin)
         install_qvavif.path = $${MY_DEFAULT_INSTALL}/imageformats
         install_qvavif.files = \
-            ../../../../qt-avif-image-plugin/imageformats-$${TARGET_ARCH}/qavif6.dll \
+            $$QV_AVIF_SOURCE/qtbuild_6.11.2/qavif6.dll \
 
         install_qvheif.path = $${MY_DEFAULT_INSTALL}/imageformats
         install_qvheif.files = \

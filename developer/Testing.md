@@ -18,6 +18,7 @@ newer than that floor. The script defaults are:
 | `QV_BUILD_DIR` | `C:\build\quickviewer-msvc2022_64-debug` or `C:\build\quickviewer-msvc2022_64-release` | any writable build-tree path |
 | `QV_JOM` | `C:\Qt\Tools\QtCreator\bin\jom\jom.exe` | full path to `jom.exe` |
 | `QV_JOBS` | unset | positive integer; passed as `jom -j N` |
+| `QV_AVIF_SOURCE` | `..\..\qt-avif-image-plugin` relative to the repository | AVIF plug-in source/build root |
 | `QV_HEIF_SOURCE` | `..\..\qt-heic-image-plugin` relative to the repository | qt-heic-image-plugin source/build root |
 
 `QV_JOBS` is optional. When it is unset, `jom` is invoked without `-j` and
@@ -63,13 +64,13 @@ required.
 
 | Command | Build scope | qmake behavior | Staging | Tests |
 | --- | --- | --- | --- | --- |
-| `verify-windows.cmd debug` | top-level incremental Debug build | only if Makefile is missing | translations + Debug HEIF support | normal Debug suite |
-| `verify-windows.cmd release` | top-level incremental Release build | only if Makefile is missing | translations + Release HEIF support | none |
+| `verify-windows.cmd debug` | top-level incremental Debug build | only if Makefile is missing | translations + Debug HEIF/AVIF support | normal Debug suite |
+| `verify-windows.cmd release` | top-level incremental Release build | only if Makefile is missing | translations + Release HEIF/AVIF support | none |
 | `... --qmake` | same build scope as the selected build mode | force `qmake -r` first | unchanged | unchanged |
 | `... --build-only` | normal top-level incremental build | normal/`--qmake` rules | normal usable-build staging | none |
-| `... --build-viewer-only` | only `apps\quickviewer` | normal/`--qmake` rules | translations + matching HEIF support | none |
-| `debug --tests-only` | no build | no qmake | Debug HEIF support | normal Debug suite |
-| `debug --test <name> [test-function]` | no build | no qmake | Debug HEIF support | one selected test |
+| `... --build-viewer-only` | only `apps\quickviewer` | normal/`--qmake` rules | translations + matching HEIF/AVIF support | none |
+| `debug --tests-only` | no build | no qmake | Debug HEIF/AVIF support | normal Debug suite |
+| `debug --test <name> [test-function]` | no build | no qmake | Debug HEIF/AVIF support | one selected test |
 
 `--qmake` is an independent modifier for build modes and can be combined with
 `--build-only` or `--build-viewer-only`. It is intentionally rejected with
@@ -200,7 +201,7 @@ with optimization but does not compile or run the Debug test suite.
 
 ## Deployment for Explorer launch
 
-A successful build stages project runtime data and HEIF support, but it does not
+A successful build stages project runtime data and HEIF/AVIF support, but it does not
 copy the Qt runtime next to the application. Deploy Qt explicitly when the
 executable must launch from Windows Explorer:
 
@@ -247,8 +248,8 @@ fails with `Error: dependent '\\wsl.localhost\...' does not exist`. Use the
 The Ubuntu CI (`.github/workflows/linux-build-and-test.yml`) builds Debug and
 Release with Qt 6.11.2 on Ubuntu 24.04 and runs the Debug tests under xvfb. To
 run them locally, build a Debug tree as described in
-[HowToBuild.md](HowToBuild.md#3-linux-development-build), including the HEIF
-image plug-in in `lib/imageformats`, which `tst_fileloadertest` needs. The test
+[HowToBuild.md](HowToBuild.md#3-linux-development-build), including the HEIF and AVIF
+image plug-ins in `lib/imageformats`, which `tst_fileloadertest` needs. The test
 executables are written to the build tree's `lib` directory, beside the
 project's shared libraries and `7z.so`.
 
@@ -462,3 +463,27 @@ processes, or move the data out of the class body.
 application reaches those two without an edit of their own.
 `tests/viewernavigation` lists application sources explicitly and needs its own
 entry.
+
+## AVIF verification
+
+After setting up the plug-in and dependencies in [HowToBuild.md](HowToBuild.md#set-up-avif-support),
+build the changed libraries, application and test targets, then run:
+
+```bat
+scripts\verify-windows.cmd debug --build-only
+scripts\verify-windows.cmd debug --test fileloader
+scripts\verify-windows.cmd debug --test viewernavigation
+```
+
+The tests require the AVIF plug-in and an AV1 decoder; missing support fails
+instead of skipping. On Windows, only `imageformats/qavif6.dll` is needed in
+addition to the existing application/Qt runtime. CI checks the plug-in's PE
+imports to reject separate AVIF codec DLLs; this catches a shared build even
+when a developer machine happens to have the required DLLs on PATH. Coverage includes lower/upper-case extensions, folder
+and ZIP enumeration, byte auto-detection, decoded pixels, transparency and broken input.
+Animated AVIF is checked as a decoded first frame without playback, including
+invalid sequence payloads. A fresh process without image plug-ins verifies
+that AVIF files are omitted from folder listings.
+On Windows, open an AVIF from Explorer and the image file picker, navigate
+between AVIF and JPEG/PNG pages in a folder and ZIP, and check the AVIF option
+in the file association dialog. Use a deployed Release build for Explorer.

@@ -34,10 +34,18 @@ jobs:
           ref: 16e740ae05dd59f8f63330225c53ef657a854e1d
           path: qt-heic-image-plugin
 
+      - name: Check out AVIF image plug-in
+        if: matrix.configuration == 'debug'
+        uses: actions/checkout@v7
+        with:
+          repository: novomesk/qt-avif-image-plugin
+          ref: 8c10a0d7283b1b5f5b5dbf24db70f2666984048c
+          path: qt-avif-image-plugin
+
       - name: Install Linux dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gdb libgl1-mesa-dev libheif-dev libheif-plugin-libde265 libturbojpeg locales xvfb
+          sudo apt-get install -y cmake gdb libgl1-mesa-dev libheif-dev libavif-dev libheif-plugin-libde265 libturbojpeg locales xvfb
           sudo locale-gen en_US.UTF-8
           echo "LC_ALL=en_US.UTF-8" >> "$GITHUB_ENV"
 
@@ -82,6 +90,14 @@ jobs:
           qmake qt-heic-image-plugin-ci.pro
           make -j2
 
+      - name: Build AVIF image plug-in
+        if: matrix.configuration == 'debug'
+        run: |
+          cmake -S scripts/avif-plugin -B qt-avif-image-plugin/build-debug \
+            -DAVIF_SOURCE="$PWD/qt-avif-image-plugin" -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_PREFIX_PATH="$QT_ROOT_DIR"
+          cmake --build qt-avif-image-plugin/build-debug -j2
+
       - name: Configure build
         run: |
           mkdir "build-${{ matrix.configuration }}"
@@ -98,13 +114,14 @@ jobs:
           xvfb-run -a build-release/bin/QuickViewer --benchmark first-paint --runs 1 --warmup 0 \
             --output "$RUNNER_TEMP/qv-first-paint.csv" docs/62086450_p3.jpg
 
-      - name: Stage HEIF image plug-in
+      - name: Stage image plug-ins
         if: matrix.configuration == 'debug'
         run: |
           mkdir -p build-debug/lib/imageformats
           plugin=$(find qt-heic-image-plugin -type f -name 'libkimg_heif6.so' -print -quit)
           test -n "$plugin"
           cp "$plugin" build-debug/lib/imageformats/
+          cp qt-avif-image-plugin/build-debug/libqavif6.so build-debug/lib/imageformats/
 
       - name: Run debug tests
         if: matrix.configuration == 'debug'

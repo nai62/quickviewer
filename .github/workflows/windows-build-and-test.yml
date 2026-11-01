@@ -183,6 +183,13 @@ jobs:
           ref: 16e740ae05dd59f8f63330225c53ef657a854e1d
           path: qt-heic-image-plugin
 
+      - name: Check out AVIF image plug-in
+        uses: actions/checkout@v7
+        with:
+          repository: novomesk/qt-avif-image-plugin
+          ref: 8c10a0d7283b1b5f5b5dbf24db70f2666984048c
+          path: qt-avif-image-plugin
+
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
@@ -236,14 +243,15 @@ jobs:
           }
           Add-Content -Path $env:GITHUB_PATH -Value $dir
 
-      - name: Install HEIF build dependencies
+      - name: Install image plug-in build dependencies
         shell: pwsh
         run: |
           $vcpkg = Join-Path $env:VCPKG_INSTALLATION_ROOT "vcpkg.exe"
           if (-not (Test-Path $vcpkg)) {
             throw "vcpkg.exe was not found at $vcpkg"
           }
-          & $vcpkg install "libheif[core]:x64-windows"
+          # Request the HEVC decoder explicitly; recent libheif ports make it optional.
+          & $vcpkg install "libheif[core,libde265]:x64-windows" "libavif[aom]:x64-windows-static-md" "--overlay-triplets=$env:GITHUB_WORKSPACE/scripts/vcpkg-triplets"
           if ($LASTEXITCODE -ne 0) {
             throw "vcpkg failed with exit code $LASTEXITCODE"
           }
@@ -278,6 +286,25 @@ jobs:
             Pop-Location
           }
 
+      - name: Build AVIF image plug-in
+        shell: pwsh
+        run: |
+          $source = (Resolve-Path qt-avif-image-plugin).Path
+          $buildDir = "qt-avif-image-plugin/build-debug"
+          cmake -S scripts/avif-plugin -B $buildDir -G Ninja `
+            "-DAVIF_SOURCE=$source" -DCMAKE_BUILD_TYPE=Debug `
+            "-DCMAKE_PREFIX_PATH=$env:QT_ROOT_DIR" `
+            "-DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" `
+            -DVCPKG_TARGET_TRIPLET=x64-windows-static-md
+          if ($LASTEXITCODE -ne 0) { throw "AVIF configure failed: $LASTEXITCODE" }
+          cmake --build $buildDir
+          if ($LASTEXITCODE -ne 0) { throw "AVIF build failed: $LASTEXITCODE" }
+          $imports = & dumpbin /nologo /dependents "$buildDir/qavif6.dll"
+          if ($LASTEXITCODE -ne 0) { throw "AVIF import inspection failed: $LASTEXITCODE" }
+          if ($imports -match '(?i)(avif|aom|libyuv|jpeg62)\.dll') {
+            throw "AVIF plug-in still imports a separate codec DLL: $imports"
+          }
+
       - name: Configure debug build
         shell: cmd
         run: |
@@ -290,7 +317,7 @@ jobs:
         working-directory: build-debug
         run: jom /f Makefile
 
-      - name: Stage HEIF image plug-in
+      - name: Stage image plug-ins
         shell: pwsh
         run: |
           $libDir = (Resolve-Path ".\build-debug\lib").Path
@@ -304,6 +331,7 @@ jobs:
           }
 
           Copy-Item $plugin.FullName $pluginDir -Force
+          Copy-Item "qt-avif-image-plugin/build-debug/qavif6.dll" $pluginDir -Force
 
           $runtimeDir = Join-Path $env:VCPKG_INSTALLATION_ROOT "installed\x64-windows\bin"
           $runtimeDlls = Get-ChildItem $runtimeDir -Filter "*.dll"

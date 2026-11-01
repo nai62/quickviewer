@@ -68,6 +68,10 @@ if errorlevel 1 exit /b 2
 copy /Y "%QV_HEIF_SOURCE%\3rdparty\install\bin\*.dll" "%QV_BUILD_DIR%\bin\" >nul
 if errorlevel 1 exit /b 2
 
+echo === Staging AVIF support ===
+call "%QV_SOURCE_DIR%\scripts\stage-avif-plugin.cmd" %QV_CONFIG% "%QV_BUILD_DIR%\bin"
+if errorlevel 1 exit /b 2
+
 echo === Deployment complete ===
 echo %QV_EXE%
 exit /b 0
