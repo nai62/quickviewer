@@ -1476,6 +1476,46 @@ private slots:
                  qvEnums::ShaderEffect::Bilinear);
     }
 
+    void standalonePreviewResizesOnlyForCpuResizers_data()
+    {
+        QTest::addColumn<int>("effect");
+        QTest::addColumn<bool>("resized");
+        QTest::newRow("bilinear") << int(qvEnums::ShaderEffect::Bilinear) << false;
+        QTest::newRow("nearest") << int(qvEnums::ShaderEffect::NearestNeighbor) << false;
+        QTest::newRow("cpu bicubic") << int(qvEnums::ShaderEffect::CpuBicubic) << true;
+    }
+
+    /**
+     * The view scales the decoded image for the effects that do not resize on
+     * the CPU, so a resized copy of a directly opened image would only delay
+     * its first paint.
+     */
+    void standalonePreviewResizesOnlyForCpuResizers()
+    {
+        QFETCH(int, effect);
+        QFETCH(bool, resized);
+        const qvEnums::ShaderEffect previousEffect = qApp->Effect();
+        const auto restoreEffect =
+            qScopeGuard([previousEffect] { qApp->setEffect(previousEffect); });
+        qApp->setEffect(qvEnums::ShaderEffect(effect));
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const QString imagePath = directory.filePath("preview.bmp");
+        QImage image(640, 480, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        QVERIFY(image.save(imagePath));
+
+        ViewerSession session(nullptr);
+        session.setViewportSize(QSize(320, 240));
+        QVERIFY(session.openFileInContainer(imagePath));
+        QTRY_COMPARE(session.stateKind(), ViewerStateKind::StandalonePreview);
+
+        const VisiblePages pages = session.visiblePages();
+        QCOMPARE(pages.count(), 1);
+        QVERIFY(!pages.at(0)->loadedImage.isNull());
+        QCOMPARE(!pages.at(0)->resizedImage.isNull(), resized);
+    }
+
     void directImageTransitionsThroughStandalonePreview()
     {
         QTemporaryDir directory;
