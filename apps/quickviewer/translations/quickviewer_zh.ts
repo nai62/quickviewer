@@ -539,12 +539,12 @@
         <translation>Truevision 显卡图像格式(*.tga)</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.ui" line="118"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="125"/>
         <source>Nikon RAW format (*.nef)</source>
         <translation>Nicon Raw格式(*.nef)</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.ui" line="111"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="118"/>
         <source>Canon RAW format (*.crw, *.cr2)</source>
         <translation>Canon Raw 格式(*.crw, *.cr2)</translation>
     </message>
@@ -559,17 +559,22 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.ui" line="125"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="104"/>
+        <source>AVIF Image (*.avif)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="132"/>
         <source>Sony RAW format (*.arw)</source>
         <translation>Sony Raw 格式(*.arw)</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.ui" line="132"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="139"/>
         <source>Used by Ricoh, Casio, Pentax, Nokia, Leica, and others</source>
         <translation>Ricoh, Casio, Pentax, Nokia, Leica等..</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.ui" line="135"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="142"/>
         <source>Adobe Digital Negative Format (*.dng)</source>
         <translation>Adobe 数字负片(*.dng)</translation>
     </message>
@@ -600,38 +605,44 @@
         <translation>Truevision 显卡图像格式</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="99"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="98"/>
+        <source>AVIF Image</source>
+        <comment>description of File format on Explorer(.avif)</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="103"/>
         <source>HEIF Image</source>
         <comment>description of File format on Explorer(.heic, .heif)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="106"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="110"/>
         <source>Canon RAW format</source>
         <comment>description of File format on Explorer(.cr2)</comment>
         <translation>Canon Raw 格式</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="113"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="117"/>
         <source>Adobe Digital Negative Format</source>
         <comment>description of File format on Explorer(.dng)</comment>
         <translation>Adobe 数字负片格式</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="120"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="124"/>
         <source>Nikon RAW format</source>
         <comment>description of File format on Explorer(.nef)</comment>
         <translation>Nicon Raw格式</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="127"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="131"/>
         <source>Sony RAW format</source>
         <comment>description of File format on Explorer(.arw)</comment>
         <translation>Sony Raw 格式</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="240"/>
-        <location filename="../../../components/file-association/fileassocdialog.cpp" line="292"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="244"/>
+        <location filename="../../../components/file-association/fileassocdialog.cpp" line="296"/>
         <source>&amp;View with QuickViewer</source>
         <comment>Menu displayed when right clicking on file in Explorer</comment>
         <translation>使用QuickViewer浏览(&amp;V)</translation>
@@ -642,13 +653,13 @@
         <translation>使用QuickViewer关联文件</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.ui" line="207"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="214"/>
         <source>Select all</source>
         <extracomment>Button to turn all check boxes on</extracomment>
         <translation>全选</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.ui" line="200"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="207"/>
         <source>Clear all</source>
         <extracomment>Button to turn off all check box</extracomment>
         <translation>全不选</translation>
@@ -728,7 +739,7 @@
         <translation>WebP格式</translation>
     </message>
     <message>
-        <location filename="../../../components/file-association/fileassocdialog.ui" line="188"/>
+        <location filename="../../../components/file-association/fileassocdialog.ui" line="195"/>
         <source>Click OK to update the Windows registry, or Cancel to leave it unchanged.</source>
         <translation>按确定键提交设置，按返回键取消操作。</translation>
     </message>
@@ -929,90 +940,90 @@
 <context>
     <name>ImageView</name>
     <message>
-        <location filename="../src/imageview.cpp" line="81"/>
+        <location filename="../src/imageview.cpp" line="90"/>
         <source>No Image Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="81"/>
+        <location filename="../src/imageview.cpp" line="90"/>
         <source>Open an image, folder, or archive to begin.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="93"/>
+        <location filename="../src/imageview.cpp" line="102"/>
         <source>No Viewable Images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="95"/>
+        <location filename="../src/imageview.cpp" line="104"/>
         <source>No supported images were found in this folder.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="96"/>
+        <location filename="../src/imageview.cpp" line="105"/>
         <source>No supported images were found in this archive.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="99"/>
+        <location filename="../src/imageview.cpp" line="108"/>
         <source>Cannot Find Item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="100"/>
+        <location filename="../src/imageview.cpp" line="109"/>
         <source>The selected file or folder does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="103"/>
+        <location filename="../src/imageview.cpp" line="112"/>
         <source>Permission Denied</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="104"/>
+        <location filename="../src/imageview.cpp" line="113"/>
         <source>The selected item cannot be read because access was denied.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="107"/>
+        <location filename="../src/imageview.cpp" line="116"/>
         <source>Cannot Display Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="108"/>
+        <location filename="../src/imageview.cpp" line="117"/>
         <source>The image could not be decoded.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="111"/>
-        <location filename="../src/imageview.cpp" line="115"/>
-        <location filename="../src/imageview.cpp" line="119"/>
-        <location filename="../src/imageview.cpp" line="123"/>
+        <location filename="../src/imageview.cpp" line="120"/>
+        <location filename="../src/imageview.cpp" line="124"/>
+        <location filename="../src/imageview.cpp" line="128"/>
+        <location filename="../src/imageview.cpp" line="132"/>
         <source>Cannot Open Archive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="112"/>
+        <location filename="../src/imageview.cpp" line="121"/>
         <source>This archive is password-protected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="116"/>
+        <location filename="../src/imageview.cpp" line="125"/>
         <source>This archive format is not supported.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="120"/>
+        <location filename="../src/imageview.cpp" line="129"/>
         <source>This archive is damaged or invalid.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="124"/>
+        <location filename="../src/imageview.cpp" line="133"/>
         <source>Cannot Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/imageview.cpp" line="125"/>
+        <location filename="../src/imageview.cpp" line="134"/>
         <source>The selected item could not be read.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1195,20 +1206,20 @@
         <translation>帮助(&amp;H)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="497"/>
+        <location filename="../src/mainwindow.ui" line="498"/>
         <source>E&amp;xit</source>
         <extracomment>End application</extracomment>
         <translation>关闭(&amp;x)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="551"/>
+        <location filename="../src/mainwindow.ui" line="552"/>
         <source>&amp;Fit mode</source>
         <extracomment>Automatically resize the image according to the size of the window</extracomment>
         <translation>适合尺寸(&amp;F)</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="168"/>
-        <location filename="../src/mainwindow.cpp" line="1789"/>
+        <location filename="../src/mainwindow.cpp" line="1871"/>
         <source>&amp;Fullscreen</source>
         <translation>全屏(&amp;F)</translation>
     </message>
@@ -1218,7 +1229,7 @@
         <translation>QuickViewer</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="605"/>
+        <location filename="../src/mainwindow.ui" line="606"/>
         <source>&amp;Open...</source>
         <extracomment>Open an image or archive for viewing</extracomment>
         <translation>打开(&amp;O)...</translation>
@@ -1229,43 +1240,43 @@
         <translation>最近访问(&amp;H)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="592"/>
+        <location filename="../src/mainwindow.ui" line="593"/>
         <source>&amp;Reopen last viewed item</source>
         <extracomment>Opening the image automatically when opening the application the last time it was started</extracomment>
         <translation>启动时恢复之前状态(&amp;A)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="622"/>
+        <location filename="../src/mainwindow.ui" line="623"/>
         <source>&amp;Last page</source>
         <extracomment>Switch to the last image of Volume currently displayed button</extracomment>
         <translation>最后页(&amp;L)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="631"/>
+        <location filename="../src/mainwindow.ui" line="632"/>
         <source>&amp;First page</source>
         <extracomment>Switch to the first image of the currently displayed Volume button</extracomment>
         <translation>第一页(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="667"/>
+        <location filename="../src/mainwindow.ui" line="668"/>
         <source>EXIF &amp;information</source>
         <extracomment>Button to display JPEG EXIF information (if any)</extracomment>
         <translation>参数信息(&amp;I)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1066"/>
+        <location filename="../src/mainwindow.ui" line="1067"/>
         <source>&amp;Keyboard Shortcuts...</source>
         <extracomment>Menu that displays a dialog for changing keyboard shortcuts</extracomment>
         <translation>快捷键设置(&amp;K)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="584"/>
+        <location filename="../src/mainwindow.ui" line="585"/>
         <source>&amp;About QuickViewer</source>
         <extracomment>A menu for displaying a message box for displaying application information</extracomment>
         <translation>关于QuickViewer(&amp;A)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="681"/>
+        <location filename="../src/mainwindow.ui" line="682"/>
         <source>N&amp;ext volume</source>
         <extracomment>Switch to the next Volume in the same folder as the currently displayed Volume button</extracomment>
         <translation>下个画册(&amp;e)</translation>
@@ -1276,25 +1287,25 @@
         <translation>导航(&amp;N)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="705"/>
+        <location filename="../src/mainwindow.ui" line="706"/>
         <source>Exit application or full screen</source>
         <extracomment>Function that cancels it while full screen is displayed and terminates the application otherwise</extracomment>
         <translation>退出</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="734"/>
+        <location filename="../src/mainwindow.ui" line="735"/>
         <source>&amp;Clear history</source>
         <extracomment>Menu for clearing the history of opening images</extracomment>
         <translation>清空历史(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="746"/>
+        <location filename="../src/mainwindow.ui" line="747"/>
         <source>Stay on &amp;top</source>
         <extracomment>When on it keeps the window always on top</extracomment>
         <translation>置顶(&amp;T)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="957"/>
+        <location filename="../src/mainwindow.ui" line="958"/>
         <source>Sh&amp;ow/hide menu bar</source>
         <translation>显示/隐藏主菜单栏(&amp;o)</translation>
     </message>
@@ -1305,54 +1316,54 @@
         <translation>渲染(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="777"/>
+        <location filename="../src/mainwindow.ui" line="778"/>
         <source>&amp;Maximize or Normal</source>
         <extracomment>Function to switch windows to maximize or normal display</extracomment>
         <translation>最大化或恢复窗口(&amp;M)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="794"/>
+        <location filename="../src/mainwindow.ui" line="795"/>
         <source>Skip forward 10 pages</source>
         <extracomment>Switch to 10 images in Volume button</extracomment>
         <translation>快进</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="803"/>
+        <location filename="../src/mainwindow.ui" line="804"/>
         <source>Skip back 10 pages</source>
         <extracomment>Switch to the previous 10 images in Volume button</extracomment>
         <translation>快退</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="817"/>
+        <location filename="../src/mainwindow.ui" line="818"/>
         <source>&amp;Rotate</source>
         <extracomment>Button to rotate the currently displayed image 90 degrees clockwise</extracomment>
         <translation>旋转(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="856"/>
+        <location filename="../src/mainwindow.ui" line="857"/>
         <source>Load bookmark</source>
         <extracomment>Button to restore saved image page from registered bookmark</extracomment>
         <translation>读取书签</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="847"/>
+        <location filename="../src/mainwindow.ui" line="848"/>
         <source>Manage bookmarks</source>
         <translation>管理书签</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="861"/>
+        <location filename="../src/mainwindow.ui" line="862"/>
         <source>Clear bookmarks</source>
         <extracomment>Button to delete all saved bookmarks</extracomment>
         <translation>清空书签</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2537"/>
+        <location filename="../src/mainwindow.cpp" line="2670"/>
         <source>Bookmark saved.</source>
         <translation>书签已保存。</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="376"/>
-        <location filename="../src/mainwindow.ui" line="1079"/>
+        <location filename="../src/mainwindow.ui" line="1088"/>
         <source>ContextMenu</source>
         <translation>右键菜单</translation>
     </message>
@@ -1362,67 +1373,67 @@
         <translation>目录(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="524"/>
+        <location filename="../src/mainwindow.ui" line="525"/>
         <source>Zoom &amp;in</source>
         <extracomment>Button for enlarging the currently displayed image</extracomment>
         <translation>放大(&amp;I)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="527"/>
+        <location filename="../src/mainwindow.ui" line="528"/>
         <source>Zoom in</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="536"/>
+        <location filename="../src/mainwindow.ui" line="537"/>
         <source>Zoom &amp;out</source>
         <extracomment>Reduce the image currently displayed button</extracomment>
         <translation>缩小(&amp;O)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="539"/>
+        <location filename="../src/mainwindow.ui" line="540"/>
         <source>Zoom out</source>
         <translation>缩小</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="897"/>
+        <location filename="../src/mainwindow.ui" line="898"/>
         <source>Remove parenthesized text from book title</source>
         <extracomment>Ability to remove and display (parenthesized) text from Volume title in the catalog</extracomment>
         <translation>从标题中移除(选项)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="905"/>
+        <location filename="../src/mainwindow.ui" line="906"/>
         <source>Ignore parenthesized text when searching titles</source>
         <extracomment>Ability to search with the title removed (parenthesized) removed from the title of Volume in the catalog</extracomment>
         <translation>检索时，从标题中移除(选项)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="917"/>
-        <location filename="../src/mainwindow.ui" line="920"/>
+        <location filename="../src/mainwindow.ui" line="918"/>
+        <location filename="../src/mainwindow.ui" line="921"/>
         <source>Icons and titles</source>
         <extracomment>For Volume in the catalog, a mode to list up icons and titles vertically</extracomment>
         <translation>目录图标</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="941"/>
-        <location filename="../src/mainwindow.ui" line="944"/>
+        <location filename="../src/mainwindow.ui" line="942"/>
+        <location filename="../src/mainwindow.ui" line="945"/>
         <source>List</source>
         <extracomment>Mode to list volumes in the catalog with icons and titles arranged side by side</extracomment>
         <translation>目录列表</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="952"/>
+        <location filename="../src/mainwindow.ui" line="953"/>
         <source>Show tag bar</source>
         <extracomment>Squeeze the Volume of the catalog Function to erase the bar displaying the tag button</extracomment>
         <translation>显示TagBar</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="808"/>
+        <location filename="../src/mainwindow.ui" line="809"/>
         <source>Copy file to clipboard</source>
         <extracomment>Menu to copy currently displayed image file on Explorer</extracomment>
         <translation>复制文件导剪切板</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="764"/>
+        <location filename="../src/mainwindow.ui" line="765"/>
         <source>&amp;Bilinear interpolation (fast)</source>
         <extracomment>Menu to resize the image by bilinear interpolation by GPU</extracomment>
         <translation>双线性插法(&amp;B 快速)</translation>
@@ -1433,371 +1444,404 @@
         <translation>文件夹(&amp;o)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1057"/>
+        <location filename="../src/mainwindow.ui" line="1058"/>
         <source>Show image information in full screen</source>
         <extracomment>Signage that displays the file name of the image at full screen display</extracomment>
         <translation>全屏显示文字</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="506"/>
+        <location filename="../src/mainwindow.ui" line="507"/>
         <source>&amp;Next</source>
         <extracomment>Switch to the next image button</extracomment>
         <translation>下个图像(&amp;N)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="515"/>
+        <location filename="../src/mainwindow.ui" line="516"/>
         <source>&amp;Previous</source>
         <extracomment>Switch to previous image button</extracomment>
         <translation>上个图像(&amp;P)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="563"/>
+        <location filename="../src/mainwindow.ui" line="564"/>
         <source>2-page &amp;spread</source>
         <extracomment>Arranging two images side by side like when opening a book</extracomment>
         <translation>双页显示(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="600"/>
+        <location filename="../src/mainwindow.ui" line="601"/>
         <source>&amp;Right-bound</source>
         <extracomment>Books written in vertical writing such as Japanese and Chinese read from right, so read from right page to left page</extracomment>
         <translation>右侧显示(&amp;r)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="655"/>
+        <location filename="../src/mainwindow.ui" line="656"/>
         <source>Open in &amp;Explorer</source>
         <extracomment>Menu that displays Explorer with the currently displayed image file selected</extracomment>
         <translation>在文件管理器中查看(&amp;E)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="700"/>
+        <location filename="../src/mainwindow.ui" line="701"/>
         <source>Previous p&amp;age</source>
         <extracomment>Because there are times when the page is missing due to bookbinding convenience, digital books will fit the left and right pages with this operation</extracomment>
         <translation>上一页(&amp;n)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="721"/>
+        <location filename="../src/mainwindow.ui" line="722"/>
         <source>Display &amp;first page alone</source>
         <extracomment>In the case of a digital book, since the first image is a cover page, only one image is displayed</extracomment>
         <translation>封面只显示一张(双页显示)(&amp;f)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="772"/>
+        <location filename="../src/mainwindow.ui" line="773"/>
         <source>&amp;Nearest Neighbor interpolation (fast but coarse)</source>
         <extracomment>Menu to resize image by Nearest Neighbor interpolation by GPU</extracomment>
         <translation>最近插法处理(&amp;N 快、粗糙))</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="785"/>
+        <location filename="../src/mainwindow.ui" line="786"/>
         <source>&amp;Restore window display at next startup</source>
         <extracomment>When restarting the next time, restore the position size of the window at the time of the last termination</extracomment>
         <translation>恢复上次状态(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="838"/>
+        <location filename="../src/mainwindow.ui" line="839"/>
         <source>Add bookmark</source>
         <extracomment>Button to add the currently displayed volume and page to bookmark</extracomment>
         <translation>加入书签</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="886"/>
+        <location filename="../src/mainwindow.ui" line="887"/>
         <source>Manage &amp;catalogs...</source>
         <extracomment>Menu entry that opens the dialog which adds, edits and removes the folders registered as catalogs</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="889"/>
+        <location filename="../src/mainwindow.ui" line="890"/>
         <source>Add, edit and remove the folders registered as catalogs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="932"/>
+        <location filename="../src/mainwindow.ui" line="933"/>
         <source>Icons only</source>
         <extracomment>Mode to list Volume in the catalog with only the icons side by side</extracomment>
         <translation>仅图标</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="962"/>
+        <location filename="../src/mainwindow.ui" line="963"/>
         <source>Send image by email...</source>
         <extracomment>Menu to attach the currently displayed image to the mail software and start up</extracomment>
         <translation>用email作为附件发送</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="970"/>
+        <location filename="../src/mainwindow.ui" line="971"/>
         <source>Larger &amp;grid for long titles</source>
         <extracomment>Functions to be used when the Volume title in the catalog is long</extracomment>
         <translation>扩大网格适应长标题(网格显示)(&amp;G)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="990"/>
+        <location filename="../src/mainwindow.ui" line="991"/>
         <source>Bicubic interpolation by CPU (quality)</source>
         <extracomment>Menu that performs bicubic interpolation with CPU when resizing image</extracomment>
         <translation>用CPU双三次插值(高质量)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1002"/>
+        <location filename="../src/mainwindow.ui" line="1003"/>
         <source>Include images in subfolders</source>
         <extracomment>When enumerating images, subfolders are also included in the range</extracomment>
         <translation>打开子文件夹图像</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1010"/>
+        <location filename="../src/mainwindow.ui" line="1011"/>
         <source>Open at last-read page</source>
         <extracomment>A setting menu that allows you to advance the page to the point you read when you reopen Volume that you read a part way up again</extracomment>
         <translation>之前浏览的页面</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1018"/>
+        <location filename="../src/mainwindow.ui" line="1019"/>
         <source>Show reading progress</source>
         <extracomment>Ability to display read information read in the middle in FolderWindow</extracomment>
         <translation>显示已读位置</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1028"/>
+        <location filename="../src/mainwindow.ui" line="1029"/>
         <source>Rename</source>
         <extracomment>A menu for changing the file name of the currently displayed image</extracomment>
         <translation>重命名</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2104"/>
+        <location filename="../src/mainwindow.cpp" line="2186"/>
         <source>Select an image or archive</source>
         <comment>Title of the dialog displayed when opening a file with OpenFileFolder</comment>
         <translation>选择图片</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="575"/>
+        <location filename="../src/mainwindow.ui" line="576"/>
         <source>Full screen</source>
         <extracomment>Button to switch the window display to full screen</extracomment>
         <translation>全屏</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="613"/>
+        <location filename="../src/mainwindow.ui" line="614"/>
         <source>&amp;Keep wide images together in 2-page view</source>
         <extracomment>Automatically switch because it may spread 2 pages are combined into one image in the digital book</extracomment>
         <translation>宽屏图像只显示一张(&amp;A)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="642"/>
+        <location filename="../src/mainwindow.ui" line="643"/>
         <source>Show status &amp;bar</source>
         <translation>显示状态栏(&amp;B)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="650"/>
+        <location filename="../src/mainwindow.ui" line="651"/>
         <source>Show &amp;page bar</source>
         <translation>显示页面栏(&amp;P)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="672"/>
+        <location filename="../src/mainwindow.ui" line="673"/>
         <source>Check for &amp;updates...</source>
         <extracomment>A menu to start up the browser to check whether the currently used QuickViewer is the latest version on the project web page</extracomment>
         <translation>确认最新版本(&amp;v)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="690"/>
+        <location filename="../src/mainwindow.ui" line="691"/>
         <source>P&amp;revious volume</source>
         <extracomment>Switch to the previous Volume in the same folder as Volume currently being displayed Button</extracomment>
         <translation>上个画册(&amp;r)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="695"/>
+        <location filename="../src/mainwindow.ui" line="696"/>
         <source>Next &amp;page</source>
         <extracomment>Because there are times when the page is missing due to bookbinding convenience, digital books will fit the left and right pages with this operation</extracomment>
         <translation>下一页(&amp;o)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="713"/>
+        <location filename="../src/mainwindow.ui" line="714"/>
         <source>Show &amp;toolbar</source>
         <translation>显示工具栏(&amp;T)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="729"/>
+        <location filename="../src/mainwindow.ui" line="730"/>
         <source>Show &amp;menu bar</source>
         <translation>显示菜单栏(&amp;M)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="751"/>
+        <location filename="../src/mainwindow.ui" line="752"/>
         <source>&amp;Copy image to clipboard</source>
         <extracomment>A menu for copying the bitmap of the currently displayed image to the clipboard</extracomment>
         <translation>将图像拷在剪贴板上(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="756"/>
+        <location filename="../src/mainwindow.ui" line="757"/>
+        <location filename="../src/mainwindow.cpp" line="2538"/>
         <source>Move image to &amp;Recycle Bin</source>
         <extracomment>Menu that puts the currently displayed image in Recycle Bin</extracomment>
         <translation>将图片移到回收站(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="829"/>
+        <location filename="../src/mainwindow.ui" line="830"/>
         <source>&amp;Slideshow</source>
         <extracomment>Button to start displaying slideshow</extracomment>
         <translation>幻灯片(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="866"/>
+        <location filename="../src/mainwindow.ui" line="867"/>
         <source>Project &amp;website</source>
         <extracomment>Button to display the web page of the project in the browser</extracomment>
         <translation>浏览项目主页(&amp;P)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="878"/>
+        <location filename="../src/mainwindow.ui" line="879"/>
         <source>Show &amp;Catalog</source>
         <extracomment>Button to display Catalog Window. Switch between internal display, independent display, and erase</extracomment>
         <translation>显示目录(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="881"/>
+        <location filename="../src/mainwindow.ui" line="882"/>
         <source>Show Catalog</source>
         <translation>显示目录</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="982"/>
+        <location filename="../src/mainwindow.ui" line="983"/>
         <source>Show &amp;Folder</source>
         <extracomment>Button to display FolderWindow. Switch between internal display, independent display, and erase</extracomment>
         <translation>显示文件夹(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1023"/>
+        <location filename="../src/mainwindow.ui" line="1024"/>
         <source>&amp;Settings</source>
         <extracomment>Menu for displaying a dialog for changing the adjunct setting of the application</extracomment>
         <translation>设置(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1036"/>
+        <location filename="../src/mainwindow.ui" line="1037"/>
         <source>Don&apos;t upscale small images</source>
         <extracomment>Ability to display an image smaller than the window as it is when fit is displayed</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1049"/>
+        <location filename="../src/mainwindow.ui" line="1050"/>
         <source>Full screen on startup</source>
         <extracomment>Ability to always launch applications in full screen</extracomment>
         <translation>启动时全屏</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1074"/>
+        <location filename="../src/mainwindow.ui" line="1075"/>
         <source>Confirm moving image to &amp;Recycle Bin</source>
         <extracomment>A function to display a confirmation screen when moving the currently displayed image to Recycle Bin</extracomment>
         <translation>确认移动图片到回收站(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1084"/>
+        <location filename="../src/mainwindow.ui" line="1083"/>
+        <source>Confirm moving &amp;archive to Recycle Bin</source>
+        <extracomment>A function to display a confirmation screen when moving the currently displayed archive, with every image in it, to Recycle Bin</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.ui" line="1093"/>
         <source>&amp;Mouse Settings...</source>
         <translation>鼠标设置(&amp;M)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1089"/>
+        <location filename="../src/mainwindow.ui" line="1098"/>
+        <location filename="../src/mainwindow.cpp" line="2542"/>
         <source>Delete the image</source>
         <translation>删除图片</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2371"/>
+        <location filename="../src/mainwindow.cpp" line="2459"/>
         <source>Are you sure you want to move the image to Recycle Bin?</source>
         <comment>Confirm putting displayed file in Recycle Box Message Box body</comment>
         <translation>确认移动图片到回收站？</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2344"/>
-        <location filename="../src/mainwindow.cpp" line="2405"/>
+        <location filename="../src/mainwindow.cpp" line="2431"/>
+        <location filename="../src/mainwindow.cpp" line="2509"/>
         <source>Confirmation</source>
         <comment>Confirm deleting image file on MessageBox title</comment>
         <translation>确认</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1740"/>
+        <location filename="../src/mainwindow.cpp" line="1821"/>
         <source>Loading...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1743"/>
+        <location filename="../src/mainwindow.cpp" line="1824"/>
         <source>No images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="1745"/>
+        <location filename="../src/mainwindow.cpp" line="1826"/>
         <source>Unavailable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2098"/>
+        <location filename="../src/mainwindow.cpp" line="2180"/>
         <source>All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.avif *.heic *.heif);;Archives( *.zip *.7z *.rar)</source>
         <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2394"/>
+        <location filename="../src/mainwindow.cpp" line="2489"/>
+        <source>Are you sure you want to delete this whole archive?</source>
+        <comment>Confirm deleting the displayed archive, with every page in it, on Message Box body</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp" line="2494"/>
         <source>Are you sure you want to move this whole archive to Recycle Bin?</source>
         <comment>Confirm putting the displayed archive, with every page in it, in Recycle Box Message Box body</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2406"/>
+        <location filename="../src/mainwindow.cpp" line="2511"/>
+        <source>The archive could not be deleted:
+%1</source>
+        <comment>Message shown when the displayed archive could not be deleted</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp" line="2514"/>
         <source>The archive could not be moved to Recycle Bin:
 %1</source>
         <comment>Message shown when the displayed archive could not be put in Recycle Box</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="2431"/>
+        <location filename="../src/mainwindow.cpp" line="2536"/>
+        <source>Move archive to &amp;Recycle Bin</source>
+        <comment>Menu that puts the displayed archive, with every image in it, in Recycle Bin</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp" line="2540"/>
+        <source>Delete the archive</source>
+        <comment>Menu that deletes the displayed archive, with every image in it, for good</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp" line="2564"/>
         <source>Are you sure you want to delete this image?</source>
         <comment>Confirm deleting image file on Message Box body</comment>
         <translation>确认删除该图片？</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1094"/>
+        <location filename="../src/mainwindow.ui" line="1103"/>
         <source>File Associations... (current user)</source>
         <extracomment>Ability to associate QuickViewer and image files on Explorer (Host Global)</extracomment>
         <translation>关联文件(用户)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1102"/>
+        <location filename="../src/mainwindow.ui" line="1111"/>
         <source>Don&apos;t update history</source>
         <extracomment>Flag for prohibiting update of history</extracomment>
         <translation>禁用更新历史</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1114"/>
+        <location filename="../src/mainwindow.ui" line="1123"/>
         <source>Open panels in separate windows</source>
         <extracomment>Flag separating the catalog and folder windows into independent windows</extracomment>
         <translation>侧边栏独立窗口</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="457"/>
+        <location filename="../src/mainwindow.ui" line="458"/>
         <source>&amp;Image</source>
         <translation>图像(&amp;I)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1122"/>
+        <location filename="../src/mainwindow.ui" line="1131"/>
         <source>Large menu and toolbar</source>
         <translation>大号图标</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1127"/>
+        <location filename="../src/mainwindow.ui" line="1136"/>
         <source>Turn left page</source>
         <translation>向左翻页</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1132"/>
+        <location filename="../src/mainwindow.ui" line="1141"/>
         <source>Turn right page</source>
         <translation>向右翻页</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1140"/>
+        <location filename="../src/mainwindow.ui" line="1149"/>
         <source>Split wide images into two pages</source>
         <extracomment>Flag to display images on the left and right sides with a portrait display</extracomment>
         <translation>将宽屏图像分为两页</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1152"/>
+        <location filename="../src/mainwindow.ui" line="1161"/>
         <source>Loupe</source>
         <translation>放大镜</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1160"/>
+        <location filename="../src/mainwindow.ui" line="1169"/>
         <source>Pan with mouse movement when zoomed</source>
         <extracomment>Flag to scroll the image with moving the mouse pointer instead of displaying the scroll bar</extracomment>
         <translation>鼠标滚轮缩放</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1172"/>
+        <location filename="../src/mainwindow.ui" line="1181"/>
         <source>Fit to width</source>
         <translation>自适应宽度</translation>
     </message>
@@ -1808,113 +1852,113 @@
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="404"/>
-        <location filename="../src/mainwindow.ui" line="461"/>
+        <location filename="../src/mainwindow.ui" line="462"/>
         <source>Fit mode</source>
         <translation>适配模式</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1184"/>
+        <location filename="../src/mainwindow.ui" line="1193"/>
         <source>Fit to window</source>
         <translation>自适应窗口</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1196"/>
+        <location filename="../src/mainwindow.ui" line="1205"/>
         <source>Image adjustments...</source>
         <extracomment>a menu test which show window changes brightness of the image</extracomment>
         <translation>调整亮度、对比度或伽马值</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1204"/>
+        <location filename="../src/mainwindow.ui" line="1213"/>
         <source>Spline16 interpolation by CPU</source>
         <extracomment>Menu that performs Spline16 interpolation with CPU when resizing image</extracomment>
         <translation>CPU 实现的 Spline16 插值</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1212"/>
+        <location filename="../src/mainwindow.ui" line="1221"/>
         <source>Spline36 interpolation by CPU</source>
         <extracomment>Menu that performs Spline36 interpolation with CPU when resizing image</extracomment>
         <translation>CPU 实现的 Spline36 插值</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1220"/>
+        <location filename="../src/mainwindow.ui" line="1229"/>
         <source>Lanczos3 interpolation by CPU</source>
         <extracomment>Menu that performs Lanczos3 interpolation with CPU when resizing image</extracomment>
         <translation>CPU实现Lanczos 3插值法</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1228"/>
+        <location filename="../src/mainwindow.ui" line="1237"/>
         <source>Lanczos4 interpolation by CPU</source>
         <extracomment>Menu that performs Lanczos4 interpolation with CPU when resizing image</extracomment>
         <translation>CPU实现Lanczos 4插值法</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1233"/>
+        <location filename="../src/mainwindow.ui" line="1242"/>
         <source>Next page or volume</source>
         <extracomment>Switch to next image, or to next volume if the page is first button</extracomment>
         <translation>下一页/卷</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1238"/>
+        <location filename="../src/mainwindow.ui" line="1247"/>
         <source>Previous page or volume</source>
         <extracomment>Switch to previous image, or to previous volume if the page is last button</extracomment>
         <translation>上一页/卷</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1246"/>
+        <location filename="../src/mainwindow.ui" line="1255"/>
         <source>Remember catalog pane width</source>
         <extracomment>Flag to restore the width of Catalog view</extracomment>
         <translation>保存目录视图宽度</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1254"/>
+        <location filename="../src/mainwindow.ui" line="1263"/>
         <source>Remember folder pane width</source>
         <extracomment>Flag to restore the width of Folder view</extracomment>
         <translation>保存文件夹显示宽度</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1262"/>
+        <location filename="../src/mainwindow.ui" line="1271"/>
         <source>Save reading progress</source>
         <extracomment>Flag to save progress.ini</extracomment>
         <translation>保存阅读进度</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1270"/>
+        <location filename="../src/mainwindow.ui" line="1279"/>
         <source>Hide mouse cursor in full screen</source>
         <translation>全屏时隐藏鼠标光标</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.ui" line="274"/>
-        <location filename="../src/mainwindow.ui" line="1275"/>
+        <location filename="../src/mainwindow.ui" line="1284"/>
         <source>&amp;Sort by</source>
         <translation>排序方式(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1283"/>
+        <location filename="../src/mainwindow.ui" line="1292"/>
         <source>File name</source>
         <translation>文件名</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1291"/>
+        <location filename="../src/mainwindow.ui" line="1300"/>
         <source>File name (descending)</source>
         <translation>文件名（降序）</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1299"/>
+        <location filename="../src/mainwindow.ui" line="1308"/>
         <source>File size</source>
         <translation>文件大小</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1307"/>
+        <location filename="../src/mainwindow.ui" line="1316"/>
         <source>File size (descending)</source>
         <translation>文件大小（降序）</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1315"/>
+        <location filename="../src/mainwindow.ui" line="1324"/>
         <source>Modified time</source>
         <translation>修改时间</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.ui" line="1323"/>
+        <location filename="../src/mainwindow.ui" line="1332"/>
         <source>Modified time (descending)</source>
         <translation>修改时间（降序）</translation>
     </message>
@@ -2418,7 +2462,7 @@
         <translation>当打开关联图片时激活窗口</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="247"/>
+        <location filename="../src/optionsdialog.ui" line="237"/>
         <source>Activate window when an image is dropped onto it</source>
         <comment>Check box to activate the window when an image dropped on</comment>
         <translation>当图片拖入时激活窗口</translation>
@@ -2489,7 +2533,7 @@
         <translation>显示指导教程</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.ui" line="254"/>
+        <location filename="../src/optionsdialog.ui" line="244"/>
         <source>Randomize slideshow order</source>
         <extracomment>The text of the check box. Slideshow usually moves to the next page in the current sorting order, but displays it in random order</extracomment>
         <translation>随机显示幻灯片</translation>
@@ -2505,12 +2549,12 @@
         <translation>Dark</translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.cpp" line="140"/>
+        <location filename="../src/optionsdialog.cpp" line="137"/>
         <source>resvg (Recommended)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/optionsdialog.cpp" line="142"/>
+        <location filename="../src/optionsdialog.cpp" line="139"/>
         <source>Qt SVG (Compatibility mode)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2518,67 +2562,67 @@
 <context>
     <name>QVApplication</name>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="269"/>
+        <location filename="../src/models/qvapplication.cpp" line="195"/>
         <source>File</source>
         <comment>File Action Group</comment>
         <translation>文件</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="276"/>
+        <location filename="../src/models/qvapplication.cpp" line="202"/>
         <source>Bookmark</source>
         <comment>Bookmark Action Group</comment>
         <translation>书签</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="300"/>
+        <location filename="../src/models/qvapplication.cpp" line="226"/>
         <source>Folder</source>
         <comment>Folder Action Group</comment>
         <translation>文件夹</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="305"/>
+        <location filename="../src/models/qvapplication.cpp" line="231"/>
         <source>Catalog</source>
         <comment>Catalog Action Group</comment>
         <translation>目录</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="340"/>
+        <location filename="../src/models/qvapplication.cpp" line="266"/>
         <source>View</source>
         <comment>View Action Group</comment>
         <translation>视图</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="371"/>
+        <location filename="../src/models/qvapplication.cpp" line="297"/>
         <source>ContextMenu</source>
         <comment>ContextMenu Action Group</comment>
         <translation>右键菜单</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="383"/>
+        <location filename="../src/models/qvapplication.cpp" line="309"/>
         <source>Shader</source>
         <comment>Shader Action Group</comment>
         <translation>着色器</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="394"/>
+        <location filename="../src/models/qvapplication.cpp" line="320"/>
         <source>Help</source>
         <comment>Help Action Group</comment>
         <translation>帮助</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="315"/>
+        <location filename="../src/models/qvapplication.cpp" line="241"/>
         <source>Image</source>
         <comment>Image Action Group</comment>
         <translation>图像</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="282"/>
+        <location filename="../src/models/qvapplication.cpp" line="208"/>
         <source>Navigation</source>
         <comment>Navigation Action Group</comment>
         <translation>导航</translation>
     </message>
     <message>
-        <location filename="../src/models/qvapplication.cpp" line="329"/>
+        <location filename="../src/models/qvapplication.cpp" line="255"/>
         <source>Dual View</source>
         <comment>Dual View Action Group</comment>
         <translation>双页查看</translation>
@@ -2613,7 +2657,7 @@
 <context>
     <name>RenderedPage</name>
     <message>
-        <location filename="../src/models/renderedpage.cpp" line="71"/>
+        <location filename="../src/models/renderedpage.cpp" line="70"/>
         <source>NOT IMAGE FILE</source>
         <comment>Error messages to be displayed on screen when image loading fails</comment>
         <translation type="unfinished">不是图像文件</translation>
