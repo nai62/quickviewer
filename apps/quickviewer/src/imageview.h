@@ -25,6 +25,8 @@ public:
     explicit ImageView(QWidget *parent = Q_NULLPTR);
     void setViewerSession(ViewerSession *session);
     Qt::AnchorPoint hoverState() const { return m_hoverState; }
+    /** Returns a side page-turn anchor, or AnchorHorizontalCenter outside those areas. */
+    Qt::AnchorPoint pageTurnAnchorAt(const QPoint &position) const;
     void setResizeEventsSkipped(bool skipped) { m_skipResizeEvent = skipped; }
     bool isSlideShow() const { return m_slideshowTimer != nullptr; }
     void toggleSlideShow();
@@ -32,6 +34,7 @@ public:
     void setFullscreenState(bool fullscreen) { m_isFullScreen = fullscreen; }
     void resetBackgroundColor();
     bool isScrollMode() const { return m_scrollMode; }
+    bool usesDragScrolling() const;
     int renderedPageCount() const;
     VisiblePages renderedPageContents() const;
     RenderedPageMetrics renderedPageMetrics() const;

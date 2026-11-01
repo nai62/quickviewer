@@ -308,6 +308,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionShowRetouchWindow->setVisible(false);
 #endif
     ui->graphicsView->installEventFilter(this);
+    ui->graphicsView->viewport()->installEventFilter(this);
     ui->mainToolBar->installEventFilter(this);
     ui->pageFrame->installEventFilter(this);
 
@@ -676,8 +677,83 @@ void MainWindow::closeSeparatePanels()
     }
 }
 
+bool MainWindow::startWindowMove()
+{
+    QWindow *handle = windowHandle();
+    return handle && handle->startSystemMove();
+}
+
+bool MainWindow::canMoveWindowFromImage() const
+{
+    return qApp->MoveWindowByDraggingImage() && !isFullScreen() &&
+           !ui->graphicsView->isFullscreen() && !ui->graphicsView->usesDragScrolling() &&
+           !qApp->LoupeTool();
+}
+
+bool MainWindow::filterImageWindowMoveEvent(QEvent *event)
+{
+    switch (event->type()) {
+    case QEvent::MouseButtonPress: {
+        m_windowMovePressPosition.reset();
+        auto *mouse = static_cast<QMouseEvent *>(event);
+        QMouseValue value(QKeySequence(mouse->modifiers()), mouse->buttons(), 0);
+        if (mouse->button() == Qt::LeftButton && mouse->buttons() == Qt::LeftButton &&
+            mouse->modifiers() == Qt::NoModifier &&
+            mouse->source() == Qt::MouseEventNotSynthesized && canMoveWindowFromImage() &&
+            ui->graphicsView->pageTurnAnchorAt(mouse->position().toPoint()) ==
+                Qt::AnchorHorizontalCenter &&
+            !qApp->mouseActions().getActionByValue(value)) {
+            m_windowMovePressPosition = mouse->globalPosition().toPoint();
+            mouse->accept();
+            return true;
+        }
+        break;
+    }
+    case QEvent::MouseMove:
+        if (m_windowMovePressPosition) {
+            auto *mouse = static_cast<QMouseEvent *>(event);
+            if (mouse->buttons() != Qt::LeftButton || mouse->modifiers() != Qt::NoModifier ||
+                mouse->source() != Qt::MouseEventNotSynthesized || !canMoveWindowFromImage()) {
+                m_windowMovePressPosition.reset();
+                break;
+            }
+            if ((mouse->globalPosition().toPoint() - *m_windowMovePressPosition)
+                    .manhattanLength() >= QApplication::startDragDistance()) {
+                // Native moves can release the mouse grab and consume the release event.
+                // Clear first, and do not retry this gesture if the platform rejects it.
+                m_windowMovePressPosition.reset();
+                startWindowMove();
+            }
+            mouse->accept();
+            return true;
+        }
+        break;
+    case QEvent::MouseButtonRelease:
+        if (m_windowMovePressPosition) {
+            m_windowMovePressPosition.reset();
+            event->accept();
+            return true;
+        }
+        break;
+    case QEvent::MouseButtonDblClick:
+    case QEvent::UngrabMouse:
+    case QEvent::Hide:
+    case QEvent::WindowDeactivate:
+    case QEvent::TouchBegin:
+    case QEvent::Wheel:
+        m_windowMovePressPosition.reset();
+        break;
+    default:
+        break;
+    }
+    return false;
+}
+
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
+    if (obj == ui->graphicsView->viewport()) {
+        return filterImageWindowMoveEvent(event);
+    }
     QKeyEvent *keyEvent = nullptr;//event data, if this is a keystroke event
     QMouseEvent *mouseEvent = nullptr;//event data, if this is a keystroke event
     //QDragEnterEvent  *dragEnterEvent = nullptr;//event data, if this is a keystroke event
@@ -715,11 +791,13 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             mouseEvent = dynamic_cast<QMouseEvent *>(event);
             // tap left/right of window
             if (mouseEvent->button() == Qt::LeftButton) {
-                if (ui->graphicsView->hoverState() == Qt::AnchorLeft) {
+                const Qt::AnchorPoint anchor =
+                    ui->graphicsView->pageTurnAnchorAt(mouseEvent->position().toPoint());
+                if (anchor == Qt::AnchorLeft) {
                     ui->actionTurnPageOnLeft->trigger();
                     return true;
                 }
-                if (ui->graphicsView->hoverState() == Qt::AnchorRight) {
+                if (anchor == Qt::AnchorRight) {
                     ui->actionTurnPageOnRight->trigger();
                     return true;
                 }
@@ -738,8 +816,8 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             if (mv.Key == "+::RightButton") {
                 break;
             }
-            // If isScrollMode () is enabled, priority is given to screen drag scroll
-            if (mv.Key == "+::LeftButton" && ui->graphicsView->isScrollMode()) {
+            // Reserve plain left drags for image scrolling only when it is in use.
+            if (mv.Key == "+::LeftButton" && ui->graphicsView->usesDragScrolling()) {
                 break;
             }
             QAction *action = qApp->mouseActions().getActionByValue(mv);

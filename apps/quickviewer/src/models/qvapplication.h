@@ -44,6 +44,8 @@ class QVApplication : public QApplication
     Q_PROPERTY(QColor BackgroundColor READ BackgroundColor WRITE setBackgroundColor)
     Q_PROPERTY(QColor BackgroundColor2 READ BackgroundColor2 WRITE setBackgroundColor2)
     Q_PROPERTY(bool UseCheckeredPattern READ UseCheckeredPattern WRITE setUseCheckeredPattern)
+    Q_PROPERTY(bool MoveWindowByDraggingImage READ MoveWindowByDraggingImage WRITE
+                   setMoveWindowByDraggingImage)
     Q_PROPERTY(bool DontEnlargeSmallImagesOnFitting READ DontEnlargeSmallImagesOnFitting WRITE
                    setDontEnlargeSmallImagesOnFitting)
     Q_PROPERTY(bool ShowFullscreenSignage READ ShowFullscreenSignage WRITE setShowFullscreenSignage)
@@ -261,6 +263,8 @@ public:
     }
     bool LoupeTool() { return m_loupeTool; }
     void setLoupeTool(bool loupeTool) { m_loupeTool = loupeTool; }
+    bool MoveWindowByDraggingImage() const { return m_moveWindowByDraggingImage; }
+    void setMoveWindowByDraggingImage(bool enabled) { m_moveWindowByDraggingImage = enabled; }
     bool ScrollWithCursorWhenZooming() { return m_scrollWithCursorWhenZooming; }
     void setScrollWithCursorWhenZooming(bool scrollWithCursorWhenZooming)
     {
@@ -527,6 +531,7 @@ private:
     bool m_topWindowWhenDropped;
     bool m_separatePagesWhenWideImage;
     bool m_loupeTool;
+    bool m_moveWindowByDraggingImage = false;
     QString m_titleTextFormat;
     QString m_statusTextFormat;
     bool m_scrollWithCursorWhenZooming;
