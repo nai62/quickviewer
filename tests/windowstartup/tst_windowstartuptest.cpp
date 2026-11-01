@@ -10,6 +10,7 @@
 #include "catalogwindow.h"
 #include "folderwindow.h"
 #include "mainwindow.h"
+#include "optionsdialog.h"
 #include "models/filemanager.h"
 #include "models/qvapplication.h"
 #include "catalogdatabase.h"
@@ -73,6 +74,98 @@ private:
             panelEntryAtReveal = QFileInfo(panel->itemPath(view->model()->index(0, 0))).fileName();
         }
     }
+};
+
+// Exercise real viewport event routing without entering an OS move loop.
+class ImageWindowMoveWindow : public StartupWindow
+{
+public:
+    ImageWindowMoveWindow()
+        : m_savedMouseActions(qApp->mouseActions())
+    {
+        qApp->mouseActions().clear();
+        qApp->setMoveWindowByDraggingImage(true);
+        qApp->setLoupeTool(false);
+        qApp->setLargeToolbarIcons(false);
+        qApp->setFitting(true);
+        qApp->setImageFitMode(qvEnums::FitMode::FitToRect);
+        qApp->setDualView(false);
+        qApp->setSeparatePagesWhenWideImage(false);
+        qApp->setScrollWithCursorWhenZooming(false);
+        setWindowState(Qt::WindowNoState);
+        imageView()->setFullscreenState(false);
+        // Keep these input tests independent of native window exposure and layout timing.
+        imageView()->resize(640, 480);
+        imageView()->viewport()->resize(640, 480);
+    }
+
+    ~ImageWindowMoveWindow() override
+    {
+        qApp->mouseActions() = m_savedMouseActions;
+        qApp->setMoveWindowByDraggingImage(m_savedWindowMove);
+        qApp->setLoupeTool(m_savedLoupeTool);
+        qApp->setLargeToolbarIcons(m_savedLargeToolbarIcons);
+        qApp->setFitting(m_savedFitting);
+        qApp->setImageFitMode(m_savedFitMode);
+        qApp->setDualView(m_savedDualView);
+        qApp->setSeparatePagesWhenWideImage(m_savedSeparatePages);
+        qApp->setScrollWithCursorWhenZooming(m_savedCursorScrolling);
+    }
+
+    int moveRequests = 0;
+    bool moveSupported = true;
+
+    void sendMouse(QEvent::Type type,
+                   const QPoint &position,
+                   Qt::MouseButton button,
+                   Qt::MouseButtons buttons,
+                   Qt::KeyboardModifiers modifiers = Qt::NoModifier,
+                   Qt::MouseEventSource source = Qt::MouseEventNotSynthesized)
+    {
+        QWidget *viewport = imageView()->viewport();
+        QMouseEvent event(type,
+                          position,
+                          position,
+                          viewport->mapToGlobal(position),
+                          button,
+                          buttons,
+                          modifiers,
+                          source);
+        QApplication::sendEvent(viewport, &event);
+    }
+
+    void press(const QPoint &position)
+    {
+        sendMouse(QEvent::MouseButtonPress, position, Qt::LeftButton, Qt::LeftButton);
+    }
+
+    void move(const QPoint &position)
+    {
+        sendMouse(QEvent::MouseMove, position, Qt::NoButton, Qt::LeftButton);
+    }
+
+    void release(const QPoint &position)
+    {
+        sendMouse(QEvent::MouseButtonRelease, position, Qt::LeftButton, Qt::NoButton);
+    }
+
+protected:
+    bool startWindowMove() override
+    {
+        ++moveRequests;
+        return moveSupported;
+    }
+
+private:
+    QVApplication::MouseActionManager m_savedMouseActions;
+    bool m_savedWindowMove = qApp->MoveWindowByDraggingImage();
+    bool m_savedLoupeTool = qApp->LoupeTool();
+    bool m_savedLargeToolbarIcons = qApp->LargeToolbarIcons();
+    bool m_savedFitting = qApp->Fitting();
+    qvEnums::FitMode m_savedFitMode = qApp->ImageFitMode();
+    bool m_savedDualView = qApp->DualView();
+    bool m_savedSeparatePages = qApp->SeparatePagesWhenWideImage();
+    bool m_savedCursorScrolling = qApp->ScrollWithCursorWhenZooming();
 };
 
 // No OS font cache or scheduling assumptions: the test decides exactly when a
@@ -209,6 +302,498 @@ private slots:
         delete viewer.data();
 
         QVERIFY(viewer.isNull());
+    }
+
+    void imageWindowMoveOptionControlsDragging_data()
+    {
+        QTest::addColumn<bool>("hasImage");
+        QTest::newRow("empty") << false;
+        QTest::newRow("image") << true;
+    }
+
+    void imageWindowMoveOptionControlsDragging()
+    {
+        QFETCH(bool, hasImage);
+        ImageWindowMoveWindow viewer;
+        qApp->setMoveWindowByDraggingImage(false);
+        if (hasImage) {
+            QImage image(1280, 240, QImage::Format_RGB32);
+            image.fill(Qt::white);
+            QVERIFY(viewer.viewerSession()->appendVisiblePage(
+                ImageContent(image, "option.png", image.size(), {}, 0)));
+            viewer.imageView()->refreshRenderedPages();
+        }
+        const QPoint start = viewer.imageView()->viewport()->rect().center();
+        const QPoint end = start + QPoint(QApplication::startDragDistance() + 1, 0);
+        const auto drag = [&] {
+            viewer.press(start);
+            viewer.move(end);
+            viewer.release(end);
+        };
+        drag();
+        QCOMPARE(viewer.moveRequests, 0);
+
+        {
+            OptionsDialog dialog(&viewer);
+            auto *checkBox =
+                dialog.findChild<QCheckBox *>(QStringLiteral("checkBoxMoveWindowByDraggingImage"));
+            QVERIFY(checkBox);
+            QVERIFY(!checkBox->isChecked());
+            checkBox->setChecked(true);
+            // Changes are applied by the caller only after accepting the dialog.
+            QVERIFY(!qApp->MoveWindowByDraggingImage());
+            dialog.accept();
+            dialog.reflectResults();
+        }
+        drag();
+        QCOMPARE(viewer.moveRequests, 1);
+
+        {
+            OptionsDialog dialog(&viewer);
+            auto *checkBox =
+                dialog.findChild<QCheckBox *>(QStringLiteral("checkBoxMoveWindowByDraggingImage"));
+            QVERIFY(checkBox);
+            QVERIFY(checkBox->isChecked());
+            checkBox->setChecked(false);
+            dialog.reject();
+        }
+        drag();
+        QCOMPARE(viewer.moveRequests, 2);
+
+        {
+            OptionsDialog dialog(&viewer);
+            auto *checkBox =
+                dialog.findChild<QCheckBox *>(QStringLiteral("checkBoxMoveWindowByDraggingImage"));
+            QVERIFY(checkBox);
+            QVERIFY(checkBox->isChecked());
+            checkBox->setChecked(false);
+            dialog.accept();
+            dialog.reflectResults();
+        }
+        drag();
+        QCOMPARE(viewer.moveRequests, 2);
+    }
+
+    void imageWindowMoveCancelsWhenDisabled()
+    {
+        ImageWindowMoveWindow viewer;
+        const QPoint start = viewer.imageView()->viewport()->rect().center();
+        const QPoint end = start + QPoint(QApplication::startDragDistance() + 1, 0);
+        viewer.press(start);
+        qApp->setMoveWindowByDraggingImage(false);
+        viewer.move(end);
+        qApp->setMoveWindowByDraggingImage(true);
+        viewer.move(end);
+        QCOMPARE(viewer.moveRequests, 0);
+        viewer.press(start);
+        viewer.move(end);
+        QCOMPARE(viewer.moveRequests, 1);
+    }
+
+    void imageDragStartsWindowMove_data()
+    {
+        QTest::addColumn<bool>("supported");
+        QTest::addColumn<bool>("maximized");
+        QTest::addColumn<bool>("hasImage");
+        QTest::newRow("empty") << true << false << false;
+        QTest::newRow("fitted-image") << true << false << true;
+        QTest::newRow("maximized") << true << true << true;
+        QTest::newRow("unsupported") << false << false << true;
+    }
+
+    void imageDragStartsWindowMove()
+    {
+        QFETCH(bool, supported);
+        QFETCH(bool, maximized);
+        QFETCH(bool, hasImage);
+        ImageWindowMoveWindow viewer;
+        viewer.moveSupported = supported;
+        if (maximized) {
+            viewer.setWindowState(Qt::WindowMaximized);
+        }
+        if (hasImage) {
+            QImage image(1280, 960, QImage::Format_RGB32);
+            image.fill(Qt::white);
+            QVERIFY(viewer.viewerSession()->appendVisiblePage(
+                ImageContent(image, "fitted.png", image.size(), {}, 0)));
+            viewer.imageView()->refreshRenderedPages();
+            QVERIFY(!viewer.imageView()->isScrollMode());
+        }
+        const QPoint start = viewer.imageView()->viewport()->rect().center();
+        const int distance = QApplication::startDragDistance();
+
+        viewer.press(start);
+        QCOMPARE(viewer.moveRequests, 0);
+        if (distance > 0) {
+            viewer.move(start + QPoint(distance - 1, 0));
+            QCOMPARE(viewer.moveRequests, 0);
+        }
+        viewer.move(start + QPoint(distance, 0));
+        QCOMPARE(viewer.moveRequests, 1);
+        viewer.move(start + QPoint(distance + 1, 0));
+        QCOMPARE(viewer.moveRequests, 1);
+
+        // Native moves may consume the release, and unsupported ones must not
+        // be retried on every move. Both must leave the next press usable.
+        viewer.press(start);
+        viewer.move(start + QPoint(distance, 0));
+        QCOMPARE(viewer.moveRequests, 2);
+        viewer.release(start + QPoint(distance, 0));
+    }
+
+    void imageClickDoesNotMoveWindow()
+    {
+        ImageWindowMoveWindow viewer;
+        const QPoint start = viewer.imageView()->viewport()->rect().center();
+        const int distance = QApplication::startDragDistance();
+        viewer.press(start);
+        if (distance > 0) {
+            viewer.move(start + QPoint(distance - 1, 0));
+        }
+        viewer.release(start);
+        // A later movement without another press must not revive the click.
+        viewer.move(start + QPoint(distance + 1, 0));
+        QCOMPARE(viewer.moveRequests, 0);
+        viewer.press(start);
+        viewer.move(start + QPoint(distance + 1, 0));
+        QCOMPARE(viewer.moveRequests, 1);
+    }
+
+    void imageDragMovesAfterOpeningImage_data()
+    {
+        QTest::addColumn<QString>("mode");
+        QTest::addColumn<bool>("onImage");
+        QTest::newRow("fitted-image") << QStringLiteral("fitted") << true;
+        QTest::newRow("fitted-margin") << QStringLiteral("fitted") << false;
+        QTest::newRow("cursor-scrolling-image") << QStringLiteral("cursor-scrolling") << true;
+        QTest::newRow("cursor-scrolling-margin") << QStringLiteral("cursor-scrolling") << false;
+        QTest::newRow("transformed-image") << QStringLiteral("transformed") << true;
+        QTest::newRow("transformed-margin") << QStringLiteral("transformed") << false;
+    }
+
+    void imageDragMovesAfterOpeningImage()
+    {
+        QFETCH(QString, mode);
+        QFETCH(bool, onImage);
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QImage image(1280, 240, QImage::Format_RGB32);
+        image.fill(Qt::white);
+        const QString path = directory.filePath(QStringLiteral("wide.bmp"));
+        QVERIFY(image.save(path));
+
+        ImageWindowMoveWindow viewer;
+        ImageView *view = viewer.imageView();
+        const QPoint emptyStart = view->viewport()->rect().center();
+        const QPoint delta(QApplication::startDragDistance() + 1, 0);
+        viewer.press(emptyStart);
+        viewer.move(emptyStart + delta);
+        viewer.release(emptyStart + delta);
+        QCOMPARE(viewer.moveRequests, 1);
+
+        qApp->setFitting(mode == QStringLiteral("fitted"));
+        qApp->setScrollWithCursorWhenZooming(mode == QStringLiteral("cursor-scrolling"));
+        viewer.viewerSession()->setViewportSize(view->viewport()->size());
+        viewer.openPath(path);
+        QTRY_COMPARE(view->renderedPageCount(), 1);
+        if (mode == QStringLiteral("transformed")) {
+            // Model high-DPI compensation deterministically: the layout can
+            // exceed the viewport while the transformed image fits inside it.
+            view->setTransform(QTransform::fromScale(0.25, 0.25));
+        }
+        view->refreshRenderedPages();
+        if (mode != QStringLiteral("fitted")) {
+            QVERIFY(view->isScrollMode());
+        }
+        if (mode == QStringLiteral("transformed")) {
+            QCOMPARE(view->dragMode(), QGraphicsView::ScrollHandDrag);
+        }
+        QVERIFY(!view->usesDragScrolling());
+
+        QGraphicsPixmapItem *page = nullptr;
+        for (QGraphicsItem *item : view->scene()->items()) {
+            if (auto *pixmap = qgraphicsitem_cast<QGraphicsPixmapItem *>(item)) {
+                if (pixmap->isVisible()) {
+                    page = pixmap;
+                    break;
+                }
+            }
+        }
+        QVERIFY(page);
+        const QRect viewportRect = view->viewport()->rect();
+        const QRect imageRect = view->mapFromScene(page->sceneBoundingRect()).boundingRect();
+        const QRect visibleImage = imageRect.intersected(viewportRect);
+        QVERIFY(!visibleImage.isEmpty());
+        QVERIFY(visibleImage.top() > viewportRect.top());
+        const QPoint start = onImage ? visibleImage.center()
+                                     : QPoint(visibleImage.center().x(),
+                                              (viewportRect.top() + visibleImage.top()) / 2);
+        QVERIFY(viewportRect.contains(start));
+        QCOMPARE(imageRect.contains(start), onImage);
+        QCOMPARE(view->pageTurnAnchorAt(start), Qt::AnchorHorizontalCenter);
+
+        viewer.press(start);
+        viewer.move(start + delta);
+        viewer.release(start + delta);
+        QCOMPARE(viewer.moveRequests, 2);
+        QCOMPARE(view->renderedPageCount(), 1);
+    }
+
+    void imageDragLeavesPageTurnAreas_data()
+    {
+        QTest::addColumn<bool>("right");
+        QTest::addColumn<bool>("largeIcons");
+        QTest::newRow("left") << false << false;
+        QTest::newRow("right") << true << false;
+        QTest::newRow("left-large-icons") << false << true;
+        QTest::newRow("right-large-icons") << true << true;
+    }
+
+    void imageDragLeavesPageTurnAreas()
+    {
+        QFETCH(bool, right);
+        QFETCH(bool, largeIcons);
+        ImageWindowMoveWindow viewer;
+        qApp->setLargeToolbarIcons(largeIcons);
+        ImageView *view = viewer.imageView();
+        QAction *action =
+            viewer.findChild<QAction *>(right ? QStringLiteral("actionTurnPageOnRight")
+                                              : QStringLiteral("actionTurnPageOnLeft"));
+        QVERIFY(action);
+        QSignalSpy triggered(action, &QAction::triggered);
+        const QPoint center = view->viewport()->rect().center();
+        const QPoint edge(right ? view->viewport()->width() - 1 : 1, center.y());
+
+        // A click uses its own position even if the last hover was in the center.
+        viewer.sendMouse(QEvent::MouseMove, center, Qt::NoButton, Qt::NoButton);
+        viewer.press(edge);
+        viewer.move(center);
+        viewer.release(center);
+        QCOMPARE(triggered.size(), 1);
+        QCOMPARE(viewer.moveRequests, 0);
+    }
+
+    void imageDragPreservesAssignedClick_data()
+    {
+        QTest::addColumn<bool>("cursorScrolling");
+        QTest::addColumn<int>("eventModifiers");
+        QTest::addColumn<bool>("controlHeld");
+        QTest::newRow("empty") << false << int(Qt::NoModifier) << false;
+        QTest::newRow("cursor-scrolling") << true << int(Qt::NoModifier) << false;
+        QTest::newRow("empty-control-held") << false << int(Qt::NoModifier) << true;
+        QTest::newRow("cursor-scrolling-control-held") << true << int(Qt::NoModifier) << true;
+        QTest::newRow("empty-control-click") << false << int(Qt::ControlModifier) << false;
+        QTest::newRow("cursor-scrolling-control-click")
+            << true << int(Qt::ControlModifier) << false;
+    }
+
+    void imageDragPreservesAssignedClick()
+    {
+        QFETCH(bool, cursorScrolling);
+        QFETCH(int, eventModifiers);
+        QFETCH(bool, controlHeld);
+        ImageWindowMoveWindow viewer;
+        if (cursorScrolling) {
+            qApp->setFitting(false);
+            qApp->setScrollWithCursorWhenZooming(true);
+            QImage image(1280, 960, QImage::Format_RGB32);
+            image.fill(Qt::white);
+            QVERIFY(viewer.viewerSession()->appendVisiblePage(
+                ImageContent(image, "assigned.png", image.size(), {}, 0)));
+            viewer.imageView()->refreshRenderedPages();
+            QVERIFY(viewer.imageView()->isScrollMode());
+            QVERIFY(!viewer.imageView()->usesDragScrolling());
+        }
+        QAction *action = viewer.findChild<QAction *>(QStringLiteral("actionNextPage"));
+        QVERIFY(action);
+        QVERIFY(action->isEnabled());
+        const auto modifiers = Qt::KeyboardModifiers(eventModifiers);
+        QMouseValue value(QKeySequence(modifiers), Qt::LeftButton, 0);
+        qApp->mouseActions().updateKey("actionNextPage", QMouseSequence(value.toString()));
+        QCOMPARE(qApp->mouseActions().getActionByValue(value), action);
+        QSignalSpy triggered(action, &QAction::triggered);
+        // A queued mouse event retains its own modifiers even when the current
+        // keyboard state differs. Set that state without sending input to the OS.
+        QWidget keyboardTarget;
+        const auto releaseControl = qScopeGuard([&] {
+            if (controlHeld) {
+                QTest::keyRelease(&keyboardTarget, Qt::Key_A);
+                QTest::keyRelease(&keyboardTarget, Qt::Key_Control);
+            }
+        });
+        if (controlHeld) {
+            QTest::keyPress(&keyboardTarget, Qt::Key_A, Qt::ControlModifier);
+            QVERIFY(qApp->keyboardModifiers().testFlag(Qt::ControlModifier));
+        }
+        const QPoint start = viewer.imageView()->viewport()->rect().center();
+        viewer.sendMouse(
+            QEvent::MouseButtonPress, start, Qt::LeftButton, Qt::LeftButton, modifiers);
+        QCOMPARE(triggered.size(), 1);
+        viewer.sendMouse(QEvent::MouseMove,
+                         start + QPoint(QApplication::startDragDistance() + 1, 0),
+                         Qt::NoButton,
+                         Qt::LeftButton,
+                         modifiers);
+        viewer.sendMouse(
+            QEvent::MouseButtonRelease, start, Qt::LeftButton, Qt::NoButton, modifiers);
+        QCOMPARE(triggered.size(), 1);
+        QCOMPARE(viewer.moveRequests, 0);
+    }
+
+    void imageDragLeavesOtherInput_data()
+    {
+        QTest::addColumn<int>("button");
+        QTest::addColumn<int>("buttons");
+        QTest::addColumn<int>("modifiers");
+        QTest::addColumn<int>("source");
+        QTest::newRow("right") << int(Qt::RightButton) << int(Qt::RightButton)
+                               << int(Qt::NoModifier) << int(Qt::MouseEventNotSynthesized);
+        QTest::newRow("middle") << int(Qt::MiddleButton) << int(Qt::MiddleButton)
+                                << int(Qt::NoModifier) << int(Qt::MouseEventNotSynthesized);
+        QTest::newRow("chord") << int(Qt::LeftButton) << int(Qt::LeftButton | Qt::RightButton)
+                               << int(Qt::NoModifier) << int(Qt::MouseEventNotSynthesized);
+        QTest::newRow("control") << int(Qt::LeftButton) << int(Qt::LeftButton)
+                                 << int(Qt::ControlModifier) << int(Qt::MouseEventNotSynthesized);
+        QTest::newRow("touch-mouse") << int(Qt::LeftButton) << int(Qt::LeftButton)
+                                     << int(Qt::NoModifier) << int(Qt::MouseEventSynthesizedByQt);
+    }
+
+    void imageDragLeavesOtherInput()
+    {
+        QFETCH(int, button);
+        QFETCH(int, buttons);
+        QFETCH(int, modifiers);
+        QFETCH(int, source);
+        ImageWindowMoveWindow viewer;
+        const QPoint start = viewer.imageView()->viewport()->rect().center();
+        viewer.sendMouse(QEvent::MouseButtonPress,
+                         start,
+                         Qt::MouseButton(button),
+                         Qt::MouseButtons(buttons),
+                         Qt::KeyboardModifiers(modifiers),
+                         Qt::MouseEventSource(source));
+        viewer.sendMouse(QEvent::MouseMove,
+                         start + QPoint(QApplication::startDragDistance() + 1, 0),
+                         Qt::NoButton,
+                         Qt::MouseButtons(buttons),
+                         Qt::KeyboardModifiers(modifiers),
+                         Qt::MouseEventSource(source));
+        QCOMPARE(viewer.moveRequests, 0);
+    }
+
+    void imageDragPreservesImageScrolling_data()
+    {
+        QTest::addColumn<bool>("cursorScrolling");
+        QTest::newRow("hand-drag") << false;
+        QTest::newRow("cursor-scrolling") << true;
+    }
+
+    void imageDragPreservesImageScrolling()
+    {
+        QFETCH(bool, cursorScrolling);
+        ImageWindowMoveWindow viewer;
+        QImage image(1280, 960, QImage::Format_RGB32);
+        image.fill(Qt::white);
+        QVERIFY(viewer.viewerSession()->appendVisiblePage(
+            ImageContent(image, "scroll.png", image.size(), {}, 0)));
+        qApp->setFitting(false);
+        qApp->setScrollWithCursorWhenZooming(cursorScrolling);
+        ImageView *view = viewer.imageView();
+        view->refreshRenderedPages();
+        QVERIFY(view->isScrollMode());
+        QCOMPARE(view->dragMode(),
+                 cursorScrolling ? QGraphicsView::NoDrag : QGraphicsView::ScrollHandDrag);
+        QScrollBar *scroll = view->horizontalScrollBar();
+        scroll->setValue(scroll->maximum() / 2);
+        const int previous = scroll->value();
+        const QPoint start = view->viewport()->rect().center();
+        viewer.press(start);
+        viewer.move(start - QPoint(QApplication::startDragDistance() + 1, 0));
+        viewer.release(start);
+        if (!cursorScrolling) {
+            QVERIFY(scroll->value() > previous);
+        } else {
+            QCOMPARE(scroll->value(), previous);
+        }
+        QCOMPARE(viewer.moveRequests, cursorScrolling ? 1 : 0);
+    }
+
+    void imageDragPreservesLoupe()
+    {
+        ImageWindowMoveWindow viewer;
+        QImage image(1280, 960, QImage::Format_RGB32);
+        image.fill(Qt::white);
+        QVERIFY(viewer.viewerSession()->appendVisiblePage(
+            ImageContent(image, "loupe.png", image.size(), {}, 0)));
+        ImageView *view = viewer.imageView();
+        view->refreshRenderedPages();
+        const qreal previous = view->renderedPageMetrics().notationalScaleAt(0);
+        qApp->setLoupeTool(true);
+        const QPoint start = view->viewport()->rect().center();
+        viewer.press(start);
+        QVERIFY(view->renderedPageMetrics().notationalScaleAt(0) > previous);
+        viewer.move(start + QPoint(QApplication::startDragDistance() + 1, 0));
+        viewer.release(start);
+        QCOMPARE(view->renderedPageMetrics().notationalScaleAt(0), previous);
+        QCOMPARE(viewer.moveRequests, 0);
+    }
+
+    void imageDragDoesNotMoveFullscreenWindow()
+    {
+        ImageWindowMoveWindow viewer;
+        viewer.setWindowState(Qt::WindowFullScreen);
+        viewer.imageView()->setFullscreenState(true);
+        const QPoint start = viewer.imageView()->viewport()->rect().center();
+        const QPoint end = start + QPoint(QApplication::startDragDistance() + 1, 0);
+        viewer.press(start);
+        viewer.move(end);
+        viewer.release(end);
+        QCOMPARE(viewer.moveRequests, 0);
+        viewer.setWindowState(Qt::WindowNoState);
+        viewer.imageView()->setFullscreenState(false);
+        viewer.press(start);
+        viewer.move(end);
+        QCOMPARE(viewer.moveRequests, 1);
+    }
+
+    void imageWindowMoveCancelsInterruptedPress_data()
+    {
+        QTest::addColumn<int>("eventType");
+        QTest::newRow("lost-grab") << int(QEvent::UngrabMouse);
+        QTest::newRow("hidden") << int(QEvent::Hide);
+        QTest::newRow("deactivated") << int(QEvent::WindowDeactivate);
+    }
+
+    void imageWindowMoveCancelsInterruptedPress()
+    {
+        QFETCH(int, eventType);
+        ImageWindowMoveWindow viewer;
+        QWidget *viewport = viewer.imageView()->viewport();
+        const QPoint start = viewport->rect().center();
+        const QPoint end = start + QPoint(QApplication::startDragDistance() + 1, 0);
+        viewer.press(start);
+        QEvent interruption{QEvent::Type(eventType)};
+        viewer.eventFilter(viewport, &interruption);
+        viewer.move(end);
+        QCOMPARE(viewer.moveRequests, 0);
+        viewer.press(start);
+        viewer.move(end);
+        QCOMPARE(viewer.moveRequests, 1);
+    }
+
+    void imageWindowMoveCancelsChangedButtons()
+    {
+        ImageWindowMoveWindow viewer;
+        const QPoint start = viewer.imageView()->viewport()->rect().center();
+        const QPoint end = start + QPoint(QApplication::startDragDistance() + 1, 0);
+        viewer.press(start);
+        viewer.sendMouse(
+            QEvent::MouseButtonPress, start, Qt::RightButton, Qt::LeftButton | Qt::RightButton);
+        viewer.move(end);
+        QCOMPARE(viewer.moveRequests, 0);
+        viewer.press(start);
+        viewer.move(end);
+        QCOMPARE(viewer.moveRequests, 1);
     }
 
     void startupCloaking()

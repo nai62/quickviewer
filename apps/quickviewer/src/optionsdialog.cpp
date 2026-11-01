@@ -97,6 +97,7 @@ OptionsDialog::OptionsDialog(QWidget *parent)
 
     ui->checkBoxTopWindowWhenRunWithAssoc->setChecked(qApp->TopWindowWhenRunWithAssoc());
     ui->checkBoxTopWindowWhenDropped->setChecked(qApp->TopWindowWhenDropped());
+    ui->checkBoxMoveWindowByDraggingImage->setChecked(qApp->MoveWindowByDraggingImage());
 
     resetColorButton(ui->btnColorSelect, m_backgroundColor);
     resetColorButton(ui->btnColorSelect2, m_backgroundColor2);
@@ -170,6 +171,7 @@ void OptionsDialog::reflectResults()
 
     qApp->setTopWindowWhenRunWithAssoc(ui->checkBoxTopWindowWhenRunWithAssoc->isChecked());
     qApp->setTopWindowWhenDropped(ui->checkBoxTopWindowWhenDropped->isChecked());
+    qApp->setMoveWindowByDraggingImage(ui->checkBoxMoveWindowByDraggingImage->isChecked());
 
     if (ui->radioButtonWindowTitleNormalStyle->isChecked()) {
         qApp->setTitleTextFormat(QVApplication::defaultTitleTextFormat());

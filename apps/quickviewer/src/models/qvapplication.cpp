@@ -478,6 +478,7 @@ void QVApplication::loadSettings()
     m_topWindowWhenRunWithAssoc = m_settings->value("TopWindowWhenRunWithAssoc", true).toBool();
     m_topWindowWhenDropped = m_settings->value("TopWindowWhenDropped", true).toBool();
     m_loupeTool = m_settings->value("LoupeTool", false).toBool();
+    m_moveWindowByDraggingImage = m_settings->value("MoveWindowByDraggingImage", false).toBool();
     m_scrollWithCursorWhenZooming = m_settings->value("ScrollWithCursorWhenZooming", true).toBool();
     {
         QString showOptionstring =
@@ -672,6 +673,7 @@ void QVApplication::saveSettings()
     m_settings->setValue("TopWindowWhenRunWithAssoc", m_topWindowWhenRunWithAssoc);
     m_settings->setValue("TopWindowWhenDropped", m_topWindowWhenDropped);
     m_settings->setValue("LoupeTool", m_loupeTool);
+    m_settings->setValue("MoveWindowByDraggingImage", m_moveWindowByDraggingImage);
     m_settings->setValue("ScrollWithCursorWhenZooming", m_scrollWithCursorWhenZooming);
     {
         int enumIdx = qvEnums::staticMetaObject.indexOfEnumerator("OptionViewOnStartup");

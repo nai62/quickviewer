@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QtWidgets>
+#include <optional>
 #include "models/volume.h"
 #include "models/volumelocation.h"
 #include "imageview.h"
@@ -90,6 +91,7 @@ public:
 
 protected:
     virtual bool setStartupWindowCloaked(bool) { return false; }
+    virtual bool startWindowMove();
     void dragEnterEvent(QDragEnterEvent *e) override;
     void dropEvent(QDropEvent *e) override;
     //    void paintEvent( QPaintEvent *event ) override;
@@ -229,6 +231,10 @@ private slots:
     void handleViewerLoadStatusChanged();
 
 private:
+    bool filterImageWindowMoveEvent(QEvent *event);
+    bool canMoveWindowFromImage() const;
+    std::optional<QPoint> m_windowMovePressPosition;
+
     enum class StatusMessage {
         None,
         NoVolume,

@@ -53,6 +53,15 @@ ImageView::ImageView(QWidget *parent)
     setAttribute(Qt::WA_AcceptTouchEvents);
 }
 
+bool ImageView::usesDragScrolling() const
+{
+    // Layout bounds can exceed the viewport before the high-DPI transform is
+    // applied. Only reserve left drags when the displayed view can actually scroll.
+    return renderedPageCount() > 0 && dragMode() == QGraphicsView::ScrollHandDrag &&
+           (horizontalScrollBar()->maximum() > horizontalScrollBar()->minimum() ||
+            verticalScrollBar()->maximum() > verticalScrollBar()->minimum());
+}
+
 int ImageView::renderedPageCount() const
 {
     return m_renderedPages.count();
@@ -716,34 +725,34 @@ void ImageView::handleHideMouseCursorInFullscreenActionTriggered(bool checked)
 constexpr int HoverBorder = 20;
 //#define NOT_HOVER_AREA 100
 
+Qt::AnchorPoint ImageView::pageTurnAnchorAt(const QPoint &position) const
+{
+    const int border = qApp->LargeToolbarIcons() ? 3 * HoverBorder : HoverBorder;
+    if (position.x() < border && position.y() < height() - border) {
+        return Qt::AnchorLeft;
+    }
+    if (position.x() > width() - border) {
+        return Qt::AnchorRight;
+    }
+    return Qt::AnchorHorizontalCenter;
+}
+
 void ImageView::mouseMoveEvent(QMouseEvent *e)
 {
     QGraphicsView::mouseMoveEvent(e);
     int NOT_HOVER_AREA = width() / 3;
     int hover_border = qApp->LargeToolbarIcons() ? 3 * HoverBorder : HoverBorder;
-    if (e->pos().x() < hover_border && e->pos().y() < height() - hover_border) {
-        if (m_hoverState != Qt::AnchorLeft) {
-            emit anchorHovered(Qt::AnchorLeft);
+    const Qt::AnchorPoint pageAnchor = pageTurnAnchorAt(e->pos());
+    if (pageAnchor != Qt::AnchorHorizontalCenter) {
+        if (m_hoverState != pageAnchor) {
+            emit anchorHovered(pageAnchor);
         }
-        m_hoverState = Qt::AnchorLeft;
+        m_hoverState = pageAnchor;
         if (m_isFullScreen && qApp->HideMouseCursorInFullscreen()) {
             setCursor(Qt::BlankCursor);
         } else {
             setCursor(Qt::PointingHandCursor);
         }
-        return;
-    }
-    if (e->pos().x() > width() - hover_border) {
-        if (m_hoverState != Qt::AnchorRight) {
-            emit anchorHovered(Qt::AnchorRight);
-        }
-        m_hoverState = Qt::AnchorRight;
-        if (m_isFullScreen && qApp->HideMouseCursorInFullscreen()) {
-            setCursor(Qt::BlankCursor);
-        } else {
-            setCursor(Qt::PointingHandCursor);
-        }
-
         return;
     }
     if (m_isFullScreen && qApp->HideMouseCursorInFullscreen()) {

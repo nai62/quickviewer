@@ -245,6 +245,16 @@
                 </property>
                </widget>
               </item>
+              <item row="12" column="0" colspan="2">
+               <widget class="QCheckBox" name="checkBoxMoveWindowByDraggingImage">
+                <property name="toolTip">
+                 <string>Drag an image or the surrounding margin to move the window. Image drag-scrolling and loupe operations take priority. Unavailable in full screen.</string>
+                </property>
+                <property name="text">
+                 <string>Move window by dragging the image area</string>
+                </property>
+               </widget>
+              </item>
               <item row="13" column="0">
                <widget class="QLabel" name="labelSvgLoaderSelector">
                 <property name="text">
