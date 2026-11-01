@@ -5,6 +5,8 @@
 #include "textimagelabel.h"
 #include <QtTest>
 
+#include "../testtemporarydir.h"
+
 #include <algorithm>
 
 #include "catalogwindow.h"
@@ -475,7 +477,7 @@ private slots:
     {
         QFETCH(QString, mode);
         QFETCH(bool, onImage);
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QImage image(1280, 240, QImage::Format_RGB32);
         image.fill(Qt::white);
@@ -857,7 +859,7 @@ private slots:
      */
     void startupRevealsTheWindowWithItsFolderList()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         const QString archivePath = directory.filePath(QStringLiteral("book.zip"));
         QVERIFY(QFile::copy(QString(FILELOADER_DATAPATH "deflate-utf8.zip"), archivePath));
@@ -867,7 +869,7 @@ private slots:
         qApp->setShowOptionViewOnStartup(qvEnums::OptionViewOnStartup::FolderStartup);
         qApp->setShowPanelSeparateWindow(false);
 
-        QTemporaryDir databaseDirectory;
+        TestTemporaryDir databaseDirectory;
         QVERIFY(databaseDirectory.isValid());
         const auto cleanup = qScopeGuard([&] {
             QTRY_VERIFY_WITH_TIMEOUT(!QFile::exists(archivePath) || QFile::remove(archivePath),
@@ -899,7 +901,7 @@ private slots:
 
     void folderTextProfileFinishesWithoutAnInitialImage()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         const QByteArray oldProfile = qgetenv("QV_PROFILE_FIRST_IMAGE");
         const QByteArray oldFolderProfile = qgetenv("QV_PROFILE_FOLDER_TEXT");
@@ -1051,7 +1053,7 @@ private slots:
 
     void minimumWidthDoesNotDependOnFolderContents()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         const QString longName(180, QLatin1Char('x'));
         QVERIFY(QDir(directory.path()).mkdir(longName));
@@ -1066,7 +1068,7 @@ private slots:
 
     void selectingFolderOnlyEmitsOpenRequest()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QVERIFY(QDir(directory.path()).mkdir(QStringLiteral("child")));
 
@@ -1092,7 +1094,7 @@ private slots:
 
     void activeFolderVolumeIsExposedByModelRole()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QVERIFY(QDir(directory.path()).mkdir(QStringLiteral("child")));
 
@@ -1114,7 +1116,7 @@ private slots:
 
     void folderViewHighlightsCurrentImageFile()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         const QString imagePath = directory.filePath(QStringLiteral("current.png"));
         QImage image(2, 2, QImage::Format_RGB32);
@@ -1138,7 +1140,7 @@ private slots:
 
     void folderViewHighlightsTheUnwrappedSubdirectory()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QDir root(directory.path());
         QVERIFY(root.mkpath(QStringLiteral("inner")));
@@ -1166,7 +1168,7 @@ private slots:
 
     void folderViewOpensTheEntryItAlreadyMarks()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QDir root(directory.path());
         QVERIFY(root.mkpath(QStringLiteral("inner")));
@@ -1214,7 +1216,7 @@ private slots:
      */
     void recycledImageGoesToTheTrash()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         // A trash of the test's own, on the filesystem the image is on. Test
         // mode keeps the data location under the home directory.
@@ -1304,7 +1306,7 @@ private slots:
      */
     void removalMenusNameWhatTheyTake()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         const QString folder = directory.filePath(QStringLiteral("folder"));
         QVERIFY(QDir().mkpath(folder));
@@ -1345,7 +1347,7 @@ private slots:
     /** An image is asked about as the setting for images says, whatever the archive's. */
     void imageRemovalAsksAsTheImageSettingSays()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         for (int page = 0; page < 3; ++page) {
             QImage image(16, 16, QImage::Format_RGB32);
@@ -1383,7 +1385,7 @@ private slots:
      */
     void imageDeletionAlwaysAsks()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         for (int page = 0; page < 2; ++page) {
             QImage image(16, 16, QImage::Format_RGB32);
@@ -1417,7 +1419,7 @@ private slots:
      */
     void archiveDeletionAlwaysAsks()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         for (const QString &name : {QStringLiteral("a.7z"), QStringLiteral("b.7z")}) {
             QVERIFY(
@@ -1454,7 +1456,7 @@ private slots:
      */
     void archiveRemovalAsksAsTheArchiveSettingSays()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         for (const QString &name : {QStringLiteral("a.7z"), QStringLiteral("b.7z")}) {
             QVERIFY(
@@ -1500,7 +1502,7 @@ private slots:
 
     void loadingFolderPageBookmarkFollowsThePanel()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         for (int page = 0; page < 3; ++page) {
             QImage image(16, 16, QImage::Format_RGB32);
@@ -1517,7 +1519,7 @@ private slots:
 
         // The panel starts somewhere else, so loading the bookmark has to move
         // it to the page's folder and mark the page it names.
-        QTemporaryDir elsewhere;
+        TestTemporaryDir elsewhere;
         QVERIFY(elsewhere.isValid());
         viewer.createFolderWindow(true, elsewhere.path(), false);
         FolderWindow *panel = viewer.folderWindow();
@@ -1548,7 +1550,7 @@ private slots:
 
     void loadingArchivePageBookmarkFollowsThePanel()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         const QString archivePath = directory.filePath(QStringLiteral("book.7z"));
         QVERIFY(QFile::copy(QString(FILELOADER_DATAPATH "7z/image.7z"), archivePath));
@@ -1571,7 +1573,7 @@ private slots:
         viewer.handleSaveBookmarkActionTriggered();
         QCOMPARE(qApp->Bookmarks().size(), 1);
 
-        QTemporaryDir elsewhere;
+        TestTemporaryDir elsewhere;
         QVERIFY(elsewhere.isValid());
         viewer.createFolderWindow(true, elsewhere.path(), false);
         FolderWindow *panel = viewer.folderWindow();
@@ -1608,7 +1610,7 @@ private slots:
 
     void historyMenuKeepsThePathPastTheShortcutList()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QImage image(2, 2, QImage::Format_RGB32);
         image.fill(Qt::white);
@@ -1653,7 +1655,7 @@ private slots:
 
     void folderViewGivesTheSideButtonsToTheViewer()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         for (int page = 0; page < 3; ++page) {
             QImage image(16, 16, QImage::Format_RGB32);
@@ -1691,7 +1693,7 @@ private slots:
 
     void folderViewLeavesEnterToTheWindow()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QDir root(directory.path());
         QVERIFY(root.mkpath(QStringLiteral("inner")));
@@ -1754,7 +1756,7 @@ private slots:
         const auto restoreHome =
             qScopeGuard([previousHome] { qApp->setHomeFolderPath(previousHome); });
 
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QDir root(directory.path());
         QVERIFY(root.mkdir(QStringLiteral("child")));
@@ -1868,7 +1870,7 @@ private slots:
 
     void folderViewOpensAPathDroppedOnIt()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         const QString imagePath = directory.filePath(QStringLiteral("dropped.png"));
         QImage image(2, 2, QImage::Format_RGB32);
@@ -1899,7 +1901,7 @@ private slots:
 
     void folderListRowsAreNoTallerThanTheirNames()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QImage image(2, 2, QImage::Format_RGB32);
         image.fill(Qt::white);
@@ -1927,7 +1929,7 @@ private slots:
     void explorerArgumentOpensAFolderAndSelectsAnEntry()
     {
 #ifdef Q_OS_WIN
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QDir root(directory.path());
         QVERIFY(root.mkdir(QStringLiteral("child")));
@@ -1954,7 +1956,7 @@ private slots:
 
     void folderViewRepaintsTheRowTheStoreGainsProgressFor()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         const QString archivePath = directory.filePath(QStringLiteral("book.zip"));
         QVERIFY(QFile::copy(QString(FILELOADER_DATAPATH "deflate-utf8.zip"), archivePath));
@@ -2002,7 +2004,7 @@ private slots:
 
     void folderListPaintsProgressWithoutAPageCount()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         const QString archivePath = directory.filePath(QStringLiteral("book.zip"));
         QVERIFY(QFile::copy(QString(FILELOADER_DATAPATH "deflate-utf8.zip"), archivePath));
@@ -2235,7 +2237,7 @@ private slots:
 
     void folderListReplacesGlyphsTheFontCannotDraw()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         // U+0378 is unassigned, so no UI font can draw it on either platform.
         const char32_t missingGlyph = 0x0378;
@@ -2273,7 +2275,7 @@ private slots:
      */
     void folderListPaintsWithoutWaitingForTheFallbackFont()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         // A glyph of its own, so the load this test watches cannot have been
         // warmed by another test case.
@@ -2308,7 +2310,7 @@ private slots:
 
     void folderListPlaceholdersNeverDescribeAnotherEntry()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         const char32_t emoji = 0x1F600;
         const QString rareName =
@@ -2396,7 +2398,7 @@ private slots:
      */
     void folderPathLabelPaintsAPathTheFontCannotDraw()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         // U+0378 is unassigned, so no UI font can draw it on either platform.
         const char32_t missingGlyph = 0x0378;
@@ -2481,7 +2483,7 @@ private slots:
      */
     void statusBarCaptionStandsInForGlyphsTheFontCannotDraw()
     {
-        QTemporaryDir root;
+        TestTemporaryDir root;
         QVERIFY(root.isValid());
         const char32_t missingGlyph = 0x0378;
         const QString rare = QString::fromUcs4(&missingGlyph, 1);
@@ -2573,6 +2575,8 @@ private slots:
         QCOMPARE(button.sourceText(), caption);
         QVERIFY(!button.text().contains(rare));
         QCOMPARE(button.accessibleName(), caption);
+        // A standalone native window must leave room for the platform title bar.
+        button.resize(button.sizeHint().expandedTo(QSize(320, 80)));
         button.show();
         QVERIFY(QTest::qWaitForWindowExposed(&button));
         QTRY_VERIFY_WITH_TIMEOUT(button.paintsTextImage(), 15000);
@@ -2699,7 +2703,7 @@ private slots:
 
     void closingTheFolderPanelWithAnOpenImageKeepsTheViewerAlive()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QImage image(16, 24, QImage::Format_RGB32);
         image.fill(Qt::red);
@@ -2724,7 +2728,7 @@ private slots:
 
     void folderViewIsDestroyedBeforeItsDelegate()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QImage image(16, 16, QImage::Format_RGB32);
         image.fill(Qt::red);
@@ -2784,7 +2788,7 @@ private slots:
 
     void folderViewsSingleColumnHasNoTitle()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
 
         StartupWindow viewer;
@@ -2818,7 +2822,7 @@ private slots:
 
     void menuBarSortMovesTheFolderViewAndKeepsThePage()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QImage large(32, 48, QImage::Format_RGB32);
         large.fill(Qt::red);
@@ -2849,7 +2853,7 @@ private slots:
 
     void separateWindowFollowsTheMenuBarSort()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QImage large(32, 48, QImage::Format_RGB32);
         large.fill(Qt::red);
@@ -2876,7 +2880,7 @@ private slots:
 
     void showingSubfoldersScansImmediatelyAndKeepsThePage()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QVERIFY(QDir(directory.path()).mkdir(QStringLiteral("sub")));
         const QString rootPath = directory.filePath(QStringLiteral("page-0.bmp"));
@@ -2906,7 +2910,7 @@ private slots:
 
     void turningSubfoldersOffAppliesToTheNextOpen()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QVERIFY(QDir(directory.path()).mkdir(QStringLiteral("sub")));
         QImage image(16, 24, QImage::Format_RGB32);
@@ -2933,7 +2937,7 @@ private slots:
 
     void subfolderToggleKeepsTheRequestedPage()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QVERIFY(QDir(directory.path()).mkdir(QStringLiteral("sub")));
         QImage large(32, 48, QImage::Format_RGB32);
@@ -2980,7 +2984,7 @@ private slots:
 
     void subfolderToggleKeepsTheRememberedPage()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QVERIFY(QDir(directory.path()).mkdir(QStringLiteral("b")));
         QImage image(16, 24, QImage::Format_RGB32);
@@ -3031,7 +3035,7 @@ private slots:
 
     void folderViewHighlightsTheFolderOfASubfolderPage()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QVERIFY(QDir(directory.path()).mkdir(QStringLiteral("sub")));
         QImage image(16, 24, QImage::Format_RGB32);
@@ -3059,7 +3063,7 @@ private slots:
 
     void openingFileInShownFolderDoesNotRereadIt()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         const QString firstPath = directory.filePath(QStringLiteral("page-0.bmp"));
         QImage image(16, 24, QImage::Format_RGB32);
@@ -3087,7 +3091,7 @@ private slots:
 
     void reloadButtonRequestsAContainerReload()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
 
         FolderWindow folder(nullptr, nullptr);
@@ -3102,7 +3106,7 @@ private slots:
 
     void nameSortKeepsArchivesAndImagesInOneFileGroup()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QVERIFY(QDir(directory.path()).mkdir(QStringLiteral("middle-folder")));
 
@@ -3127,7 +3131,7 @@ private slots:
 
     void foldersStayFirstForEveryImageSort()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QVERIFY(QDir(directory.path()).mkdir(QStringLiteral("z-folder")));
 
@@ -3175,7 +3179,7 @@ private slots:
 
     void folderViewKeepsTheViewerPageOrder()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         for (const QString &name : {QStringLiteral("page2.bmp"), QStringLiteral("page10.bmp")}) {
             QImage image(16, 24, QImage::Format_RGB32);
@@ -3301,7 +3305,7 @@ private slots:
 
     void archiveDefersFolderViewUpdatesUntilFirstPaint()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         const QString archivePath = directory.filePath(QStringLiteral("book.zip"));
         QVERIFY(QFile::copy(QString(FILELOADER_DATAPATH "deflate-utf8.zip"), archivePath));
@@ -3341,7 +3345,7 @@ private slots:
 
     void emptyFolderShowsSpecificMessageAndKeepsPageBar()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         StartupWindow viewer;
 
@@ -3365,7 +3369,7 @@ private slots:
 
     void brokenImageShowsPathButKeepsVolumeNavigation()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         const QString imagePath = directory.filePath(QStringLiteral("broken.png"));
         QFile image(imagePath);
@@ -3391,7 +3395,7 @@ private slots:
 
     void corruptArchiveShowsPathAndDisablesPageBar()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         const QString archivePath = directory.filePath(QStringLiteral("broken.zip"));
         QFile archive(archivePath);
@@ -3415,7 +3419,7 @@ private slots:
 
     void backgroundPasswordFailureWaitsForForegroundAttempt()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
 
         const QString firstPath = directory.filePath("001.zip");
@@ -3463,9 +3467,9 @@ static bool writeCatalogShelf(const QString &root, const QStringList &folderName
 /** A panel taken out of the main window closes with it. */
 void WindowStartupTest::separatePanelClosesWithTheMainWindow()
 {
-    QTemporaryDir folderDirectory;
+    TestTemporaryDir folderDirectory;
     QVERIFY(folderDirectory.isValid());
-    QTemporaryDir databaseDirectory;
+    TestTemporaryDir databaseDirectory;
     QVERIFY(databaseDirectory.isValid());
     CatalogDatabase catalogDatabase(nullptr,
                                     databaseDirectory.filePath(QStringLiteral("catalog.db")));
@@ -3521,7 +3525,7 @@ static QRect coverInkBox(const QPixmap &cover)
 
 void WindowStartupTest::catalogCoverFillsAndCentresInTheIconBox()
 {
-    QTemporaryDir directory;
+    TestTemporaryDir directory;
     QVERIFY(directory.isValid());
     const QString root = directory.filePath(QStringLiteral("Shelf"));
     QVERIFY(writeCatalogShelf(root, {QStringLiteral("Book A")}));
@@ -3535,7 +3539,7 @@ void WindowStartupTest::catalogCoverFillsAndCentresInTheIconBox()
         QVERIFY(wide.save(QDir(folder).filePath(QStringLiteral("01.png"))));
     }
 
-    QTemporaryDir databaseDirectory;
+    TestTemporaryDir databaseDirectory;
     QVERIFY(databaseDirectory.isValid());
     CatalogDatabase catalogDatabase(nullptr,
                                     databaseDirectory.filePath(QStringLiteral("catalog.db")));
@@ -3579,7 +3583,7 @@ void WindowStartupTest::catalogCoverFillsAndCentresInTheIconBox()
 /** The list hands back the cover it read rather than reading the JPEG again. */
 void WindowStartupTest::catalogCoverIsReadOnce()
 {
-    QTemporaryDir directory;
+    TestTemporaryDir directory;
     QVERIFY(directory.isValid());
     const QString root = directory.filePath(QStringLiteral("Shelf"));
     QVERIFY(writeCatalogShelf(root, {QStringLiteral("Book A")}));
@@ -3593,7 +3597,7 @@ void WindowStartupTest::catalogCoverIsReadOnce()
         QVERIFY(wide.save(QDir(folder).filePath(QStringLiteral("01.png"))));
     }
 
-    QTemporaryDir databaseDirectory;
+    TestTemporaryDir databaseDirectory;
     QVERIFY(databaseDirectory.isValid());
     CatalogDatabase catalogDatabase(nullptr,
                                     databaseDirectory.filePath(QStringLiteral("catalog.db")));
@@ -3653,7 +3657,7 @@ void WindowStartupTest::catalogModelRejectsInvalidIndexes()
 
 void WindowStartupTest::catalogTagButtonsMatchStoredTags()
 {
-    QTemporaryDir directory;
+    TestTemporaryDir directory;
     QVERIFY(directory.isValid());
     const QString root = directory.filePath(QStringLiteral("Shelf"));
     QVERIFY(writeCatalogShelf(root, {QStringLiteral("Alpha"), QStringLiteral("Beta")}));
@@ -3725,12 +3729,12 @@ void WindowStartupTest::catalogTagButtonsMatchStoredTags()
 
 void WindowStartupTest::catalogSearchFieldNarrowsTheList()
 {
-    QTemporaryDir directory;
+    TestTemporaryDir directory;
     QVERIFY(directory.isValid());
     const QString root = directory.filePath(QStringLiteral("Shelf"));
     QVERIFY(writeCatalogShelf(root, {QStringLiteral("Alpha"), QStringLiteral("Beta")}));
 
-    QTemporaryDir databaseDirectory;
+    TestTemporaryDir databaseDirectory;
     QVERIFY(databaseDirectory.isValid());
     CatalogDatabase catalogDatabase(nullptr,
                                     databaseDirectory.filePath(QStringLiteral("catalog.db")));
@@ -3766,14 +3770,14 @@ void WindowStartupTest::catalogSearchFieldNarrowsTheList()
 /** A build that ends while the window is open shows up in its list. */
 void WindowStartupTest::catalogWindowShowsACatalogBuiltWhileItIsOpen()
 {
-    QTemporaryDir directory;
+    TestTemporaryDir directory;
     QVERIFY(directory.isValid());
     const QString root = directory.filePath(QStringLiteral("Shelf"));
     QVERIFY(writeCatalogShelf(root, {QStringLiteral("Alpha")}));
     const QString secondRoot = directory.filePath(QStringLiteral("Shelf Two"));
     QVERIFY(writeCatalogShelf(secondRoot, {QStringLiteral("Beta")}));
 
-    QTemporaryDir databaseDirectory;
+    TestTemporaryDir databaseDirectory;
     QVERIFY(databaseDirectory.isValid());
     CatalogDatabase catalogDatabase(nullptr,
                                     databaseDirectory.filePath(QStringLiteral("catalog.db")));
@@ -3801,13 +3805,13 @@ void WindowStartupTest::catalogWindowShowsACatalogBuiltWhileItIsOpen()
 
 void WindowStartupTest::catalogListStartsAtTheTopInListMode()
 {
-    QTemporaryDir directory;
+    TestTemporaryDir directory;
     QVERIFY(directory.isValid());
     const QString root = directory.filePath(QStringLiteral("Shelf"));
     QVERIFY(writeCatalogShelf(
         root, {QStringLiteral("Book A"), QStringLiteral("Book B"), QStringLiteral("Book C")}));
 
-    QTemporaryDir databaseDirectory;
+    TestTemporaryDir databaseDirectory;
     QVERIFY(databaseDirectory.isValid());
     CatalogDatabase catalogDatabase(nullptr,
                                     databaseDirectory.filePath(QStringLiteral("catalog.db")));
@@ -3834,7 +3838,7 @@ void WindowStartupTest::catalogListStartsAtTheTopInListMode()
 
 void WindowStartupTest::catalogViewConsumesWheelEventsAtScrollBoundary()
 {
-    QTemporaryDir databaseDirectory;
+    TestTemporaryDir databaseDirectory;
     QVERIFY(databaseDirectory.isValid());
     CatalogDatabase catalogDatabase(nullptr,
                                     databaseDirectory.filePath(QStringLiteral("catalog.db")));
@@ -3877,7 +3881,7 @@ void WindowStartupTest::catalogListPaintsNoGlyphTheFontCannotDraw()
 {
     const char32_t missingGlyph = 0x0378;
     const QString rare = QString::fromUcs4(&missingGlyph, 1);
-    QTemporaryDir directory;
+    TestTemporaryDir directory;
     QVERIFY(directory.isValid());
     const QString root = directory.filePath(QStringLiteral("Shelf"));
     QVERIFY(writeCatalogShelf(root, {QStringLiteral("Alpha") + rare, QStringLiteral("Beta")}));
@@ -3918,7 +3922,7 @@ void WindowStartupTest::catalogTagButtonsSearchTheTagTheyStandFor()
 {
     const char32_t missingGlyph = 0x0378;
     const QString rareTag = QStringLiteral("Space") + QString::fromUcs4(&missingGlyph, 1);
-    QTemporaryDir directory;
+    TestTemporaryDir directory;
     QVERIFY(directory.isValid());
     const QString root = directory.filePath(QStringLiteral("Shelf"));
     QVERIFY(writeCatalogShelf(root, {QStringLiteral("Alpha"), QStringLiteral("Beta")}));
@@ -3960,7 +3964,7 @@ void WindowStartupTest::catalogManagerPaintsNoGlyphTheFontCannotDraw()
 {
     const char32_t missingGlyph = 0x0378;
     const QString rare = QString::fromUcs4(&missingGlyph, 1);
-    QTemporaryDir directory;
+    TestTemporaryDir directory;
     QVERIFY(directory.isValid());
     const QString root = directory.filePath(QStringLiteral("Shelf") + rare);
     QVERIFY(writeCatalogShelf(root, {QStringLiteral("Alpha") + rare}));
@@ -3992,14 +3996,14 @@ void WindowStartupTest::catalogManagerPaintsNoGlyphTheFontCannotDraw()
 
 void WindowStartupTest::catalogTagBarFollowsRemovedTags()
 {
-    QTemporaryDir directory;
+    TestTemporaryDir directory;
     QVERIFY(directory.isValid());
     const QString root = directory.filePath(QStringLiteral("Shelf"));
     // Each name suggests one tag, so the bar has two buttons to show.
     QVERIFY(writeCatalogShelf(
         root, {QStringLiteral("Sample (First)"), QStringLiteral("Sample (Second)")}));
 
-    QTemporaryDir databaseDirectory;
+    TestTemporaryDir databaseDirectory;
     QVERIFY(databaseDirectory.isValid());
     CatalogDatabase catalogDatabase(nullptr,
                                     databaseDirectory.filePath(QStringLiteral("catalog.db")));

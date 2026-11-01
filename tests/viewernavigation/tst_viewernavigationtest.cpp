@@ -1,5 +1,7 @@
 #include <QtTest>
 
+#include "../testtemporarydir.h"
+
 #include <memory>
 #include <type_traits>
 #include <utility>
@@ -234,7 +236,7 @@ public:
         for (int imageIndex = 0; imageIndex < imageCount; ++imageIndex) {
             const QString name = QString("page-%1.bmp").arg(imageIndex);
             QImage image(16 + imageIndex, 24 + imageIndex, QImage::Format_RGB32);
-            image.fill(QColor::fromHsv(imageIndex * 60, 255, 255));
+            image.fill(QColor::fromHsv((imageIndex * 60) % 360, 255, 255));
             QByteArray bytes;
             QBuffer buffer(&bytes);
             buffer.open(QIODevice::WriteOnly);
@@ -1660,7 +1662,7 @@ private slots:
         const auto restoreEffect =
             qScopeGuard([previousEffect] { qApp->setEffect(previousEffect); });
         qApp->setEffect(qvEnums::ShaderEffect(effect));
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         const QString imagePath = directory.filePath("preview.bmp");
         QImage image(640, 480, QImage::Format_RGB32);
@@ -1680,7 +1682,7 @@ private slots:
 
     void directImageTransitionsThroughStandalonePreview()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         const QString imagePath = directory.filePath("preview.bmp");
         QImage image(640, 480, QImage::Format_RGB32);
@@ -1715,7 +1717,7 @@ private slots:
 
     void selectedPageIsRestoredAsReadProgress()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         for (int page = 0; page < 4; ++page) {
             QImage image(16, 16, QImage::Format_RGB32);
@@ -1746,7 +1748,7 @@ private slots:
 
     void folderVolumeReportsTheUnwrappedPagePath()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QDir root(directory.path());
         QVERIFY(root.mkpath(QStringLiteral("inner")));
@@ -1774,7 +1776,7 @@ private slots:
 
     void readProgressResumesTheStoredPageName()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         for (int page = 0; page < 3; ++page) {
             QImage image(16, 16, QImage::Format_RGB32);
@@ -1804,7 +1806,7 @@ private slots:
 
     void readProgressFallsBackToTheIndexWhenThePageIsGone()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         for (int page = 0; page < 3; ++page) {
             QImage image(16, 16, QImage::Format_RGB32);
@@ -1832,7 +1834,7 @@ private slots:
 
     void finishedVolumeStartsOverInsteadOfResumingItsLastPage()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         for (int page = 0; page < 3; ++page) {
             QImage image(16, 16, QImage::Format_RGB32);
@@ -1930,7 +1932,7 @@ private slots:
 
     void pageAndSpreadNavigationKeepTheirExistingStepSizes()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         for (int page = 0; page < 6; ++page) {
             QImage image(16, 24, QImage::Format_RGB32);
@@ -1975,7 +1977,7 @@ private slots:
 
     void sortingPagesKeepsTheDisplayedPage()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QImage large(32, 48, QImage::Format_RGB32);
         large.fill(Qt::red);
@@ -1999,7 +2001,7 @@ private slots:
 
     void openingAPageByNameFollowsTheVolumeSort()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QImage large(32, 48, QImage::Format_RGB32);
         large.fill(Qt::red);
@@ -2025,7 +2027,7 @@ private slots:
 
     void reloadingAContainerRereadsItsPages()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         for (int page = 0; page < 2; ++page) {
             QImage image(16, 24, QImage::Format_RGB32);
@@ -2053,7 +2055,7 @@ private slots:
 
     void openingFileAddedAfterTheListingScansAgain()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         const QString firstPath = directory.filePath(QStringLiteral("page-0.bmp"));
         QImage image(16, 24, QImage::Format_RGB32);
@@ -2079,7 +2081,7 @@ private slots:
 
     void volumeKeepsItsOwnSortForPageNames()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         for (int page = 0; page < 3; ++page) {
             QImage image(16, 24, QImage::Format_RGB32);
@@ -2105,7 +2107,7 @@ private slots:
 
     void cachedVolumesKeepIndependentPagePositions()
     {
-        QTemporaryDir rootDirectory;
+        TestTemporaryDir rootDirectory;
         QVERIFY(rootDirectory.isValid());
         const QString firstVolumePath = rootDirectory.filePath("first");
         const QString secondVolumePath = rootDirectory.filePath("second");
@@ -2220,7 +2222,7 @@ private slots:
 
     void invalidatingFolderCacheOpensRenamedFile()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         for (int page = 0; page < 3; ++page) {
             QImage image(16, 24, QImage::Format_RGB32);
@@ -2254,7 +2256,7 @@ private slots:
 
     void removingDisplayedPageOpensItsNeighbour()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         for (int page = 0; page < 3; ++page) {
             QImage image(16, 24, QImage::Format_RGB32);
@@ -2277,9 +2279,48 @@ private slots:
         QCOMPARE(session.currentPageName(), QString("page-2.bmp"));
     }
 
+    void temporaryDirectoryWaitsForOpenFiles()
+    {
+#ifndef Q_OS_WIN
+        QSKIP("An open file prevents removal on Windows");
+#else
+        QFile file;
+        QString path;
+        {
+            TestTemporaryDir directory;
+            QVERIFY(directory.isValid());
+            path = directory.path();
+            file.setFileName(directory.filePath("open.7z"));
+            QVERIFY(file.open(QIODevice::WriteOnly));
+            QVERIFY(!QDir(path).removeRecursively());
+            // Model an owner-thread callback releasing the last file handle.
+            QTimer::singleShot(0, &file, &QFile::close);
+        }
+        QVERIFY(!file.isOpen());
+        QVERIFY(!QFileInfo::exists(path));
+#endif
+    }
+
+    void temporaryDirectoryWaitsForArchiveLoads()
+    {
+        QString path;
+        {
+            TestTemporaryDir directory;
+            QVERIFY(directory.isValid());
+            path = directory.path();
+            QVERIFY(writeArchiveShelf(path, {"a.7z", "b.7z"}));
+            qApp->setOpenVolumeWithProgress(false);
+            qApp->setDualView(false);
+            ViewerSession session(nullptr);
+            QVERIFY(session.openContainer(directory.filePath("a.7z")));
+            QVERIFY(session.openContainer(directory.filePath("b.7z")));
+        }
+        QVERIFY(!QFileInfo::exists(path));
+    }
+
     void archiveRemovalGoesToTheNextVolumeThenThePreviousOnes()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QVERIFY(writeArchiveShelf(directory.path(), {"a.7z", "b.7z", "c.7z"}));
         const auto path = [&directory](const QString &name) {
@@ -2314,7 +2355,7 @@ private slots:
      */
     void releasedArchiveCanBeRemovedAndTheNextOneOpens()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QVERIFY(writeArchiveShelf(directory.path(), {"a.7z", "b.7z"}));
         qApp->setOpenVolumeWithProgress(false);
@@ -2355,7 +2396,7 @@ private slots:
      */
     void releasedArchiveReopensOnItsPage()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         QVERIFY(writeArchiveShelf(directory.path(), {"a.7z"}));
         qApp->setOpenVolumeWithProgress(false);
@@ -2579,7 +2620,7 @@ private slots:
 
     void removingLastDisplayedPageOpensPreviousOne()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         for (int page = 0; page < 3; ++page) {
             QImage image(16, 24, QImage::Format_RGB32);
@@ -2604,7 +2645,7 @@ private slots:
 
     void removingOnlyPageLeavesEmptyViewer()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         const QString imagePath = directory.filePath(QStringLiteral("only.bmp"));
         QImage image(16, 24, QImage::Format_RGB32);
@@ -3323,7 +3364,7 @@ private slots:
 
     void startupPrefetchKeepsImageTargetsOnTheStandalonePath()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         const QString imagePath = directory.filePath(QStringLiteral("preview.bmp"));
         QImage image(640, 480, QImage::Format_RGB32);
@@ -3343,7 +3384,7 @@ private slots:
 
     void startupPrefetchPublishesTheContainerForItsOpening()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
         for (int page = 0; page < 3; ++page) {
             QImage image(16, 24, QImage::Format_RGB32);
@@ -3726,7 +3767,7 @@ private slots:
 
     void emptyDirectoryNavigationIsSafe()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
 
         ViewerSession session(nullptr);
@@ -3752,7 +3793,7 @@ private slots:
 
     void emptyArchiveNavigationIsSafe()
     {
-        QTemporaryDir directory;
+        TestTemporaryDir directory;
         QVERIFY(directory.isValid());
 
         const QString archivePath = directory.filePath("empty.zip");
