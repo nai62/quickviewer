@@ -38,20 +38,35 @@ ResvgState &resvgState()
     return state;
 }
 
+// resvg 0.48.1's Rust C API includes SVGZ_UNSUPPORTED, but its bundled
+// resvg.h omits that entry and shifts every later error code down by one.
+// Match crates/c-api/lib.rs until the upstream C header is synchronized.
+enum class ResvgParseError {
+    NotUtf8 = 1,
+    SvgzUnsupported,
+    FileOpenFailed,
+    MalformedGzip,
+    ElementsLimitReached,
+    InvalidSize,
+    ParsingFailed,
+};
+
 QString resvgErrorString(int error)
 {
-    switch (error) {
-    case RESVG_ERROR_NOT_AN_UTF8_STR:
+    switch (static_cast<ResvgParseError>(error)) {
+    case ResvgParseError::NotUtf8:
         return QStringLiteral("The SVG content is not UTF-8");
-    case RESVG_ERROR_FILE_OPEN_FAILED:
+    case ResvgParseError::SvgzUnsupported:
+        return QStringLiteral("resvg was built without SVGZ support");
+    case ResvgParseError::FileOpenFailed:
         return QStringLiteral("Failed to open an SVG resource");
-    case RESVG_ERROR_MALFORMED_GZIP:
+    case ResvgParseError::MalformedGzip:
         return QStringLiteral("The SVGZ data is malformed");
-    case RESVG_ERROR_ELEMENTS_LIMIT_REACHED:
+    case ResvgParseError::ElementsLimitReached:
         return QStringLiteral("The SVG element limit was reached");
-    case RESVG_ERROR_INVALID_SIZE:
+    case ResvgParseError::InvalidSize:
         return QStringLiteral("The SVG has an invalid size");
-    case RESVG_ERROR_PARSING_FAILED:
+    case ResvgParseError::ParsingFailed:
         return QStringLiteral("Failed to parse the SVG data");
     default:
         return QStringLiteral("Unknown resvg error (%1)").arg(error);
