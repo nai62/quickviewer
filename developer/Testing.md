@@ -349,6 +349,51 @@ history entries unopenable. Copy the bytes with `[IO.File]::ReadAllBytes` and
 `WriteAllBytes`, and read and write text with `[IO.File]::ReadAllText` and
 `WriteAllText` plus `New-Object System.Text.UTF8Encoding($false)`.
 
+### Moving the window from the image area
+
+Build the application and updated test executable, then run the input regressions:
+
+```bat
+scripts\verify-windows.cmd debug --build-only
+scripts\verify-windows.cmd debug --test windowstartup
+scripts\verify-windows.cmd debug --test viewernavigation
+scripts\verify-windows.cmd debug --test languageswitch
+```
+
+`--build-viewer-only` does not rebuild the test executable. The `imageDrag*`,
+`imageClickDoesNotMoveWindow`, and `imageWindowMove*` tests exercise viewport
+event routing with the native move request replaced by a recording stub; they
+do not verify the OS window movement itself.
+
+On Windows, check these with an image open and with no image open:
+
+- In Options > General, check "Move window by dragging the image area" and
+  accept the dialog to enable the feature. It defaults to off, including when
+  upgrading an existing settings file. Check that cancelling a change leaves
+  the current behavior intact, and that the choice survives a restart. With
+  the option off, image-area drags must not move the window.
+- Drag the image area with the left button. The whole window should move only
+  after crossing the normal drag threshold; a click should leave it in place.
+  Open an image after checking the empty viewer, then drag both the image itself
+  and the surrounding margin. Repeat with a fitted image and cursor-based
+  scrolling, and at Windows scaling of 100%, 150%, and 200% where available.
+- Drag to screen edges to check snapping, drag a maximized window to check
+  restoration, and move between monitors with different DPI settings. Check
+  that another drag works after releasing the button or cancelling with Escape.
+- Check that side clicks still turn pages, enlarged images still drag-scroll
+  when cursor-based scrolling is disabled, the loupe still works, and fullscreen
+  does not move. With cursor-based scrolling enabled, cursor movement without
+  a held button should still pan the image, and a left drag should move the window.
+- Assign an action to the plain left button in Mouse Settings. That action
+  should keep priority over window movement. Restore the mapping afterward.
+- Check right-click menus, wheel navigation, button combinations, and touch
+  gestures for changes to their existing behavior.
+
+The same Qt system-move API is used on macOS and Linux. Check dragging and
+cancellation there too before considering those platforms verified, including
+both X11 and Wayland sessions on Linux. Native snapping and maximization
+behavior depends on the desktop environment.
+
 ### Image orientation
 
 A change to EXIF orientation handling, page rotation, page layout, or the
