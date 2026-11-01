@@ -576,13 +576,22 @@ private slots:
     void imageDragPreservesAssignedClick_data()
     {
         QTest::addColumn<bool>("cursorScrolling");
-        QTest::newRow("empty") << false;
-        QTest::newRow("cursor-scrolling") << true;
+        QTest::addColumn<int>("eventModifiers");
+        QTest::addColumn<bool>("controlHeld");
+        QTest::newRow("empty") << false << int(Qt::NoModifier) << false;
+        QTest::newRow("cursor-scrolling") << true << int(Qt::NoModifier) << false;
+        QTest::newRow("empty-control-held") << false << int(Qt::NoModifier) << true;
+        QTest::newRow("cursor-scrolling-control-held") << true << int(Qt::NoModifier) << true;
+        QTest::newRow("empty-control-click") << false << int(Qt::ControlModifier) << false;
+        QTest::newRow("cursor-scrolling-control-click")
+            << true << int(Qt::ControlModifier) << false;
     }
 
     void imageDragPreservesAssignedClick()
     {
         QFETCH(bool, cursorScrolling);
+        QFETCH(int, eventModifiers);
+        QFETCH(bool, controlHeld);
         ImageWindowMoveWindow viewer;
         if (cursorScrolling) {
             qApp->setFitting(false);
@@ -597,12 +606,36 @@ private slots:
         }
         QAction *action = viewer.findChild<QAction *>(QStringLiteral("actionNextPage"));
         QVERIFY(action);
-        qApp->mouseActions().updateKey("actionNextPage", QMouseSequence("+::LeftButton"));
+        QVERIFY(action->isEnabled());
+        const auto modifiers = Qt::KeyboardModifiers(eventModifiers);
+        QMouseValue value(QKeySequence(modifiers), Qt::LeftButton, 0);
+        qApp->mouseActions().updateKey("actionNextPage", QMouseSequence(value.toString()));
+        QCOMPARE(qApp->mouseActions().getActionByValue(value), action);
         QSignalSpy triggered(action, &QAction::triggered);
+        // A queued mouse event retains its own modifiers even when the current
+        // keyboard state differs. Set that state without sending input to the OS.
+        QWidget keyboardTarget;
+        const auto releaseControl = qScopeGuard([&] {
+            if (controlHeld) {
+                QTest::keyRelease(&keyboardTarget, Qt::Key_A);
+                QTest::keyRelease(&keyboardTarget, Qt::Key_Control);
+            }
+        });
+        if (controlHeld) {
+            QTest::keyPress(&keyboardTarget, Qt::Key_A, Qt::ControlModifier);
+            QVERIFY(qApp->keyboardModifiers().testFlag(Qt::ControlModifier));
+        }
         const QPoint start = viewer.imageView()->viewport()->rect().center();
-        viewer.press(start);
-        viewer.move(start + QPoint(QApplication::startDragDistance() + 1, 0));
-        viewer.release(start);
+        viewer.sendMouse(
+            QEvent::MouseButtonPress, start, Qt::LeftButton, Qt::LeftButton, modifiers);
+        QCOMPARE(triggered.size(), 1);
+        viewer.sendMouse(QEvent::MouseMove,
+                         start + QPoint(QApplication::startDragDistance() + 1, 0),
+                         Qt::NoButton,
+                         Qt::LeftButton,
+                         modifiers);
+        viewer.sendMouse(
+            QEvent::MouseButtonRelease, start, Qt::LeftButton, Qt::NoButton, modifiers);
         QCOMPARE(triggered.size(), 1);
         QCOMPARE(viewer.moveRequests, 0);
     }

@@ -811,7 +811,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                 (mouseEvent->buttons() & ~Qt::RightButton)) {
                 needContextMenu = false;
             }
-            QMouseValue mv(QKeySequence(qApp->keyboardModifiers()), mouseEvent->buttons(), 0);
+            QMouseValue mv(QKeySequence(mouseEvent->modifiers()), mouseEvent->buttons(), 0);
             // Processed in ContextMenu event
             if (mv.Key == "+::RightButton") {
                 break;
