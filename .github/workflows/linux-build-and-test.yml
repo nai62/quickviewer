@@ -45,7 +45,7 @@ jobs:
       - name: Install Linux dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gdb libgl1-mesa-dev libheif-dev libavif-dev libheif-plugin-libde265 libturbojpeg locales xvfb
+          sudo apt-get install -y cmake gdb libgl1-mesa-dev libheif-dev libavif-dev libheif-plugin-libde265 libturbojpeg locales xvfb
           sudo locale-gen en_US.UTF-8
           echo "LC_ALL=en_US.UTF-8" >> "$GITHUB_ENV"
 
@@ -93,10 +93,10 @@ jobs:
       - name: Build AVIF image plug-in
         if: matrix.configuration == 'debug'
         run: |
-          mkdir qt-avif-image-plugin/build-debug
-          cd qt-avif-image-plugin/build-debug
-          qmake ../../scripts/qt-avif-image-plugin.pro AVIF_SOURCE=.. CONFIG+=debug CONFIG-=release
-          make -j2
+          cmake -S scripts/avif-plugin -B qt-avif-image-plugin/build-debug \
+            -DAVIF_SOURCE="$PWD/qt-avif-image-plugin" -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_PREFIX_PATH="$QT_ROOT_DIR"
+          cmake --build qt-avif-image-plugin/build-debug -j2
 
       - name: Configure build
         run: |

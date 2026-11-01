@@ -19,7 +19,6 @@ newer than that floor. The script defaults are:
 | `QV_JOM` | `C:\Qt\Tools\QtCreator\bin\jom\jom.exe` | full path to `jom.exe` |
 | `QV_JOBS` | unset | positive integer; passed as `jom -j N` |
 | `QV_AVIF_SOURCE` | `..\..\qt-avif-image-plugin` relative to the repository | AVIF plug-in source/build root |
-| `QV_AVIF_DEPS` | `%QV_AVIF_SOURCE%\3rdparty\install` | libavif installation with `include`, `lib`, `bin` |
 | `QV_HEIF_SOURCE` | `..\..\qt-heic-image-plugin` relative to the repository | qt-heic-image-plugin source/build root |
 
 `QV_JOBS` is optional. When it is unset, `jom` is invoked without `-j` and
@@ -477,7 +476,10 @@ scripts\verify-windows.cmd debug --test viewernavigation
 ```
 
 The tests require the AVIF plug-in and an AV1 decoder; missing support fails
-instead of skipping. Coverage includes lower/upper-case extensions, folder
+instead of skipping. On Windows, only `imageformats/qavif6.dll` is needed in
+addition to the existing application/Qt runtime. CI checks the plug-in's PE
+imports to reject separate AVIF codec DLLs; this catches a shared build even
+when a developer machine happens to have the required DLLs on PATH. Coverage includes lower/upper-case extensions, folder
 and ZIP enumeration, byte auto-detection, decoded pixels, transparency and broken input.
 On Windows, open an AVIF from Explorer and the image file picker, navigate
 between AVIF and JPEG/PNG pages in a folder and ZIP, and check the AVIF option

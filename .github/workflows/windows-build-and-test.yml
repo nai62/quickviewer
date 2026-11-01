@@ -250,7 +250,7 @@ jobs:
           if (-not (Test-Path $vcpkg)) {
             throw "vcpkg.exe was not found at $vcpkg"
           }
-          & $vcpkg install "libheif[core]:x64-windows" "libavif[aom]:x64-windows"
+          & $vcpkg install "libheif[core]:x64-windows" "libavif[aom]:x64-windows-static-md" "--overlay-triplets=$env:GITHUB_WORKSPACE/scripts/vcpkg-triplets"
           if ($LASTEXITCODE -ne 0) {
             throw "vcpkg failed with exit code $LASTEXITCODE"
           }
@@ -288,17 +288,20 @@ jobs:
       - name: Build AVIF image plug-in
         shell: pwsh
         run: |
-          $source = (Resolve-Path qt-avif-image-plugin).Path -replace '\\', '/'
-          $deps = (Join-Path $env:VCPKG_INSTALLATION_ROOT "installed/x64-windows") -replace '\\', '/'
-          New-Item -ItemType Directory qt-avif-image-plugin/build-debug | Out-Null
-          Push-Location qt-avif-image-plugin/build-debug
-          try {
-            qmake ../../scripts/qt-avif-image-plugin.pro "AVIF_SOURCE=$source" "AVIF_DEPS=$deps" CONFIG+=debug CONFIG-=release
-            if ($LASTEXITCODE -ne 0) { throw "AVIF qmake failed: $LASTEXITCODE" }
-            jom
-            if ($LASTEXITCODE -ne 0) { throw "AVIF build failed: $LASTEXITCODE" }
-          } finally {
-            Pop-Location
+          $source = (Resolve-Path qt-avif-image-plugin).Path
+          $buildDir = "qt-avif-image-plugin/build-debug"
+          cmake -S scripts/avif-plugin -B $buildDir -G Ninja `
+            "-DAVIF_SOURCE=$source" -DCMAKE_BUILD_TYPE=Debug `
+            "-DCMAKE_PREFIX_PATH=$env:QT_ROOT_DIR" `
+            "-DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" `
+            -DVCPKG_TARGET_TRIPLET=x64-windows-static-md
+          if ($LASTEXITCODE -ne 0) { throw "AVIF configure failed: $LASTEXITCODE" }
+          cmake --build $buildDir
+          if ($LASTEXITCODE -ne 0) { throw "AVIF build failed: $LASTEXITCODE" }
+          $imports = & dumpbin /nologo /dependents "$buildDir/qavif6.dll"
+          if ($LASTEXITCODE -ne 0) { throw "AVIF import inspection failed: $LASTEXITCODE" }
+          if ($imports -match '(?i)(avif|aom|libyuv|jpeg62)\.dll') {
+            throw "AVIF plug-in still imports a separate codec DLL: $imports"
           }
 
       - name: Configure debug build

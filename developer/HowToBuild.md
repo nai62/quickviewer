@@ -104,37 +104,44 @@ plug-in and libheif runtime DLLs.
 ### Set up AVIF support
 
 AVIF uses [qt-avif-image-plugin](https://github.com/novomesk/qt-avif-image-plugin)
-at revision `8c10a0d7283b1b5f5b5dbf24db70f2666984048c`, linked to libavif
-with an AV1 decoder. The Windows CI uses `libavif[aom]:x64-windows` from
-vcpkg. Install that package before building the plug-in; a libavif build
-without a codec cannot decode images.
+at revision `8c10a0d7283b1b5f5b5dbf24db70f2666984048c` and libavif with an
+AV1 codec. On Windows, libavif and its codec/conversion libraries are linked
+statically into `qavif6.dll`. Only that plug-in is deployed; separate AVIF,
+AOM, libyuv and JPEG runtime DLLs are not required. The existing Qt and MSVC
+runtime DLLs are still needed.
 
-Check out the plug-in at `../../qt-avif-image-plugin`. From the repository root,
-build the Debug plug-in with the same Qt kit as the application:
+Check out the plug-in at `../../qt-avif-image-plugin`. Install the static
+libraries with the repository's vcpkg triplet, which keeps the CRT dynamic to
+match Qt. Run from an MSVC developer prompt at the repository root:
 
 ```bat
 set "QV_REPO=%CD%"
 set "QV_AVIF_SOURCE=%CD%\..\..\qt-avif-image-plugin"
-set "QV_AVIF_DEPS=C:\dev\vcpkg\installed\x64-windows"
-mkdir "%QV_AVIF_SOURCE%\qtbuild_6.11.2-debug"
-cd /d "%QV_AVIF_SOURCE%\qtbuild_6.11.2-debug"
-C:\Qt\6.11.2\msvc2022_64\bin\qmake.exe "%QV_REPO%\scripts\qt-avif-image-plugin.pro" "AVIF_SOURCE=%QV_AVIF_SOURCE%" "AVIF_DEPS=%QV_AVIF_DEPS%" CONFIG+=debug CONFIG-=release
-C:\Qt\Tools\QtCreator\bin\jom\jom.exe
+set "QV_VCPKG_ROOT=C:\dev\vcpkg"
+"%QV_VCPKG_ROOT%\vcpkg.exe" install libavif[aom]:x64-windows-static-md --overlay-triplets="%QV_REPO%\scripts\vcpkg-triplets"
+C:\Qt\Tools\CMake_64\bin\cmake.exe -S "%QV_REPO%\scripts\avif-plugin" -B "%QV_AVIF_SOURCE%\qtbuild_6.11.2-debug" -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=C:/Qt/6.11.2/msvc2022_64 -DCMAKE_TOOLCHAIN_FILE="%QV_VCPKG_ROOT%/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows-static-md -DAVIF_SOURCE="%QV_AVIF_SOURCE%"
+C:\Qt\Tools\CMake_64\bin\cmake.exe --build "%QV_AVIF_SOURCE%\qtbuild_6.11.2-debug"
 ```
 
-For Release, use `qtbuild_6.11.2` and `CONFIG+=release CONFIG-=debug`.
-Set `QV_AVIF_SOURCE` and `QV_AVIF_DEPS` in the shell running verification or
-deployment too. Their defaults are the source directory above and its
-`3rdparty/install` directory. The scripts copy `qavif6.dll` and the dependency
-DLLs to the build tree. The installer expects the aom-backed runtime
-(`avif.dll`, `aom.dll`, `libyuv.dll`).
+Put CMake and Ninja on PATH (Qt provides them under `Tools/CMake_64/bin`
+and `Tools/Ninja`). For Release, use `qtbuild_6.11.2` and
+`-DCMAKE_BUILD_TYPE=Release`. The imported libavif CMake target supplies its
+transitive static libraries; do not maintain a separate list of link libraries.
+Configuration fails if the Windows libavif package is shared.
 
-On Linux, install `libavif-dev` with its AV1 decoder dependencies, create a
-separate build directory in the plug-in checkout and run:
+Set `QV_AVIF_SOURCE` in the shell running verification or deployment if the
+plug-in checkout is elsewhere. Its default is the directory above. These
+scripts copy only the matching `qavif6.dll` into `imageformats`. The installer
+uses the same single plug-in. AVIF does not use `QV_AVIF_DEPS` anymore.
+
+On Linux, install `cmake` and `libavif-dev` with its AV1 decoder dependencies.
+The plug-in uses the system's libavif, as other system libraries do:
 
 ```sh
-qmake /path/to/quickviewer/scripts/qt-avif-image-plugin.pro AVIF_SOURCE=.. CONFIG+=debug CONFIG-=release
-make -j2
+cmake -S /path/to/quickviewer/scripts/avif-plugin -B /path/to/qt-avif-image-plugin/build-debug \
+  -DAVIF_SOURCE=/path/to/qt-avif-image-plugin -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_PREFIX_PATH=/path/to/Qt/6.11.2/gcc_64
+cmake --build /path/to/qt-avif-image-plugin/build-debug -j2
 ```
 
 Copy `libqavif6.so` into the QuickViewer build tree's `lib/imageformats` for

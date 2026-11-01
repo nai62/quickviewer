@@ -16,7 +16,7 @@ run `scripts\verify-windows.cmd debug --test <name>`, then commit.
 
 | Document | Contents |
 | --- | --- |
-| [HowToBuild.md](HowToBuild.md) | Toolchain setup, HEIC/HEIF support, other build targets |
+| [HowToBuild.md](HowToBuild.md) | Toolchain setup, HEIC/HEIF/AVIF support, other build targets |
 | [Testing.md](Testing.md) | Build and test commands, environment variables, verification policy, WSL, traps when adding sources or tests |
 | [CppLint.md](CppLint.md) | clang-format scope, commands, pre-commit hook |
 | [Architecture.md](Architecture.md) | Domain terminology and responsibility boundaries |
