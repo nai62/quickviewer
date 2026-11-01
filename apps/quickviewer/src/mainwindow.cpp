@@ -1936,9 +1936,9 @@ void MainWindow::resizeEvent(QResizeEvent *e)
 }
 
 static int touchCount = -1;
-static QTouchEvent::TouchPoint touchBegin;
-static QTouchEvent::TouchPoint touchEnd;
-//static QTouchEvent::TouchPoint touchPrev;
+static QEventPoint touchBegin;
+static QEventPoint touchEnd;
+//static QEventPoint touchPrev;
 static QPoint scrollBarBegin;
 static bool touchFirst = false;
 static bool rescaling = false;
@@ -1946,7 +1946,7 @@ static int twoFingersCount = 0;
 
 void MainWindow::touchEvent(QTouchEvent *e)
 {
-    qDebug() << "type:" << e->type() << "count:" << e->touchPoints().count();
+    qDebug() << "type:" << e->type() << "count:" << e->points().count();
     switch (e->type()) {
     case QEvent::TouchBegin:
         touchFirst = true;
@@ -1954,9 +1954,9 @@ void MainWindow::touchEvent(QTouchEvent *e)
         break;
     case QEvent::TouchUpdate:
         if (touchFirst) {
-            touchCount = qMax(touchCount, e->touchPoints().count());
-            touchBegin = e->touchPoints().first();
-            //            touchBegin = touchPrev = e->touchPoints().first();
+            touchCount = qMax(touchCount, static_cast<int>(e->points().count()));
+            touchBegin = e->points().first();
+            //            touchBegin = touchPrev = e->points().first();
             touchFirst = false;
             scrollBarBegin = QPoint(ui->graphicsView->horizontalScrollBar()->value(),
                                     ui->graphicsView->verticalScrollBar()->value());
@@ -1965,9 +1965,9 @@ void MainWindow::touchEvent(QTouchEvent *e)
             }
         } else {
             //            touchPrev = touchEnd;
-            touchEnd = e->touchPoints().first();
-            qreal beginx = 1.0 * touchBegin.pos().x() / ui->graphicsView->width();
-            qreal beginy = 1.0 * touchBegin.pos().y() / ui->graphicsView->height();
+            touchEnd = e->points().first();
+            qreal beginx = 1.0 * touchBegin.position().x() / ui->graphicsView->width();
+            qreal beginy = 1.0 * touchBegin.position().y() / ui->graphicsView->height();
             // finger operations are effective only in the center of the screen
             if (beginx < 0.25 || 0.75 < beginx || beginy < 0.25 || 0.75 < beginy) {
                 break;
@@ -1975,45 +1975,45 @@ void MainWindow::touchEvent(QTouchEvent *e)
             if (touchCount == 1) {
                 //                ui->graphicsView->updateViewportOffset(
                 //                    QPointF(
-                //                        touchEnd.pos().x()-touchPrev.pos().x(),
-                //                        touchEnd.pos().y()-touchPrev.pos().y()));
+                //                        touchEnd.position().x()-touchPrev.position().x(),
+                //                        touchEnd.position().y()-touchPrev.position().y()));
 
-                //                ui->graphicsView->horizontalScrollBar()->setValue(ui->graphicsView->horizontalScrollBar()->value()-touchEnd.pos().x()+touchPrev.pos().x());
-                //                ui->graphicsView->verticalScrollBar()->setValue(ui->graphicsView->verticalScrollBar()->value()-touchEnd.pos().y()+touchPrev.pos().y());
+                //                ui->graphicsView->horizontalScrollBar()->setValue(ui->graphicsView->horizontalScrollBar()->value()-touchEnd.position().x()+touchPrev.position().x());
+                //                ui->graphicsView->verticalScrollBar()->setValue(ui->graphicsView->verticalScrollBar()->value()-touchEnd.position().y()+touchPrev.position().y());
 
                 ui->graphicsView->horizontalScrollBar()->setValue(
-                    scrollBarBegin.x() - touchEnd.pos().x() + touchEnd.startPos().x());
+                    scrollBarBegin.x() - touchEnd.position().x() + touchEnd.pressPosition().x());
                 ui->graphicsView->verticalScrollBar()->setValue(
-                    scrollBarBegin.y() - touchEnd.pos().y() + touchEnd.startPos().y());
+                    scrollBarBegin.y() - touchEnd.position().y() + touchEnd.pressPosition().y());
 
                 break;
-            } else if (touchCount > 2 || e->touchPoints().count() < 2) {
+            } else if (touchCount > 2 || e->points().count() < 2) {
                 break;
             }
             // determine scale and rotate factor
-            const QTouchEvent::TouchPoint &touchPoint0 = e->touchPoints().first();
-            const QTouchEvent::TouchPoint &touchPoint1 = e->touchPoints().last();
+            const QEventPoint &touchPoint0 = e->points().first();
+            const QEventPoint &touchPoint1 = e->points().last();
             if (!rescaling) {
                 // Do not process when two fingers move in parallel
-                QPointF move = (touchPoint0.pos() - touchPoint0.startPos()) -
-                               (touchPoint1.pos() - touchPoint1.startPos());
+                QPointF move = (touchPoint0.position() - touchPoint0.pressPosition()) -
+                               (touchPoint1.position() - touchPoint1.pressPosition());
                 rescaling = move.x() * move.x() + move.y() * move.y() > 1000;
             }
             if (rescaling) {
                 qreal currentScale =
-                    QLineF(touchPoint0.pos(), touchPoint1.pos()).length() /
-                    QLineF(touchPoint0.startPos(), touchPoint1.startPos()).length();
-                QLineF line0(touchPoint0.startPos(), touchPoint1.startPos());
-                QLineF line1(touchPoint0.scenePos(), touchPoint1.scenePos());
+                    QLineF(touchPoint0.position(), touchPoint1.position()).length() /
+                    QLineF(touchPoint0.pressPosition(), touchPoint1.pressPosition()).length();
+                QLineF line0(touchPoint0.pressPosition(), touchPoint1.pressPosition());
+                QLineF line1(touchPoint0.scenePosition(), touchPoint1.scenePosition());
                 ui->graphicsView->updateGestureTransform(currentScale, line1.angleTo(line0));
             }
         }
         break;
     case QEvent::TouchEnd:
-        int ofsX = touchEnd.pos().x() - touchBegin.pos().x();
-        int ofsY = touchEnd.pos().y() - touchBegin.pos().y();
+        int ofsX = touchEnd.position().x() - touchBegin.position().x();
+        int ofsY = touchEnd.position().y() - touchBegin.position().y();
         // React only at the bottom 1/3 of the screen
-        qreal endy = 1.0 * touchEnd.pos().y() / ui->graphicsView->height();
+        qreal endy = 1.0 * touchEnd.position().y() / ui->graphicsView->height();
         if (touchCount == 1 && 0.75 < endy) {
             if (ofsX > 30) {
                 ui->actionTurnPageOnLeft->trigger();

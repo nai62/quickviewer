@@ -304,12 +304,12 @@ void OptionsDialog::handleStatusBarUserDefinedRadioButtonToggled(bool checked)
     ui->lineEditStatusBarUserStyle->setEnabled(checked);
 }
 
-void OptionsDialog::handleWindowTitleUserStyleLineEditTextEdited(QString text)
+void OptionsDialog::handleWindowTitleUserStyleLineEditTextEdited(QString)
 {
     resetWindowTitleSample();
 }
 
-void OptionsDialog::handleStatusBarUserStyleLineEditTextEdited(QString text)
+void OptionsDialog::handleStatusBarUserStyleLineEditTextEdited(QString)
 {
     resetStatusbarSample();
 }
