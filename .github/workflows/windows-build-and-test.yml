@@ -250,7 +250,8 @@ jobs:
           if (-not (Test-Path $vcpkg)) {
             throw "vcpkg.exe was not found at $vcpkg"
           }
-          & $vcpkg install "libheif[core]:x64-windows" "libavif[aom]:x64-windows-static-md" "--overlay-triplets=$env:GITHUB_WORKSPACE/scripts/vcpkg-triplets"
+          # Request the HEVC decoder explicitly; recent libheif ports make it optional.
+          & $vcpkg install "libheif[core,libde265]:x64-windows" "libavif[aom]:x64-windows-static-md" "--overlay-triplets=$env:GITHUB_WORKSPACE/scripts/vcpkg-triplets"
           if ($LASTEXITCODE -ne 0) {
             throw "vcpkg failed with exit code $LASTEXITCODE"
           }
