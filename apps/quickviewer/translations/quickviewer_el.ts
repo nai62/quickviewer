@@ -2228,6 +2228,16 @@
 <context>
     <name>OptionsDialog</name>
     <message>
+        <location filename="../src/optionsdialog.ui" line="251"/>
+        <source>Drag an image or the surrounding margin to move the window. Image drag-scrolling and loupe operations take priority. Unavailable in full screen.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/optionsdialog.ui" line="254"/>
+        <source>Move window by dragging the image area</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/optionsdialog.ui" line="401"/>
         <source>Use checkered pattern</source>
         <extracomment>Function to make the background of the application a pattern of chessboard</extracomment>

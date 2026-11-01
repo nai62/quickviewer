@@ -2456,6 +2456,16 @@
         <translation>画像をウィンドウにドロップしたときにアクティブにする</translation>
     </message>
     <message>
+        <location filename="../src/optionsdialog.ui" line="254"/>
+        <source>Move window by dragging the image area</source>
+        <translation>画像表示領域をドラッグしてウィンドウを移動する</translation>
+    </message>
+    <message>
+        <location filename="../src/optionsdialog.ui" line="251"/>
+        <source>Drag an image or the surrounding margin to move the window. Image drag-scrolling and loupe operations take priority. Unavailable in full screen.</source>
+        <translation>画像や周囲の余白をドラッグしてウィンドウを移動します。画像のドラッグスクロールとルーペ操作が優先されます。全画面表示では無効です。</translation>
+    </message>
+    <message>
         <location filename="../src/optionsdialog.ui" line="467"/>
         <source>Interface</source>
         <translation>ツールバー</translation>
