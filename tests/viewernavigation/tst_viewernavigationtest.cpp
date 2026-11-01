@@ -94,8 +94,7 @@ static QByteArray stillWebP()
     return QByteArray::fromBase64("UklGRhwAAABXRUJQVlA4TBAAAAAvCMAAAAcQ/e9//wMR0f8A");
 }
 
-// Inserts a chunk right after IHDR. The CRC is left at zero: the callers below
-// and the PNG backend only look at the chunk type.
+// Inserts a chunk right after IHDR with the CRC checked by Qt's PNG reader.
 static QByteArray
 withChunk(const QByteArray &png, const char *type, const QByteArray &payload = QByteArray())
 {
@@ -110,7 +109,18 @@ withChunk(const QByteArray &png, const char *type, const QByteArray &payload = Q
     chunk.append(static_cast<char>(length & 0xFF));
     chunk.append(type, 4);
     chunk.append(payload);
-    chunk.append(4, '\0');
+    quint32 crc = 0xFFFFFFFF;
+    for (qsizetype i = 4; i < chunk.size(); ++i) {
+        crc ^= static_cast<unsigned char>(chunk.at(i));
+        for (int bit = 0; bit < 8; ++bit) {
+            crc = (crc >> 1) ^ ((crc & 1) ? 0xEDB88320U : 0);
+        }
+    }
+    crc ^= 0xFFFFFFFF;
+    chunk.append(static_cast<char>((crc >> 24) & 0xFF));
+    chunk.append(static_cast<char>((crc >> 16) & 0xFF));
+    chunk.append(static_cast<char>((crc >> 8) & 0xFF));
+    chunk.append(static_cast<char>(crc & 0xFF));
     QByteArray result = png;
     result.insert(8 + 12 + 13, chunk);
     return result;
@@ -119,7 +129,7 @@ withChunk(const QByteArray &png, const char *type, const QByteArray &payload = Q
 // Inserts an acTL chunk right after IHDR, which is what marks a PNG as animated.
 static QByteArray withAnimationChunk(const QByteArray &png)
 {
-    return withChunk(png, "acTL");
+    return withChunk(png, "acTL", QByteArray::fromHex("0000000100000000"));
 }
 
 static void appendLittleEndian16(QByteArray &out, quint16 value)
