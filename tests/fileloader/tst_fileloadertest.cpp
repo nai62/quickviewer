@@ -31,6 +31,9 @@ private Q_SLOTS:
     void directoryLinks_data();
     void directoryLinks();
     void jpeIsJpegImage();
+    void avifFilesAreListedAndDecoded_data();
+    void avifFilesAreListedAndDecoded();
+    void avifArchiveImages();
     void heifExtensionsAreImages();
     void heifPluginDecodesImage();
     void recursiveDirectoryTraversal();
@@ -291,6 +294,54 @@ void FileLoaderTest::jpeIsJpegImage()
     QVERIFY(IFileLoader::isImageFile("IMAGE.JPE"));
     QVERIFY(IFileLoader::isExifJpegImageFile("image.jpe"));
     QVERIFY(IFileLoader::isExifJpegImageFile("IMAGE.JPE"));
+}
+
+void FileLoaderTest::avifFilesAreListedAndDecoded_data()
+{
+    QTest::addColumn<QString>("name");
+    QTest::newRow("lowercase") << QString("image.avif");
+    QTest::newRow("uppercase") << QString("IMAGE.AVIF");
+}
+
+void FileLoaderTest::avifFilesAreListedAndDecoded()
+{
+    QFETCH(QString, name);
+    QVERIFY(IFileLoader::isImageFile(name));
+    QVERIFY2(IFileLoader::supportsImageFormat("avif"),
+             "The AVIF image format plug-in is unavailable");
+
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    QVERIFY(QFile::copy(DATAPATH "avif/red.avif", directory.filePath(name)));
+    QVERIFY(writeEmptyFile(directory.filePath("notes.txt")));
+    FileLoaderDirectory loader(directory.path());
+    QCOMPARE(loader.contents(), QStringList({name}));
+    const FileLoadResult result = loader.getFileResult(name);
+    QVERIFY(result.success);
+    QBuffer buffer;
+    buffer.setData(result.data);
+    QVERIFY(buffer.open(QIODevice::ReadOnly));
+    QImageReader reader(&buffer, "avif");
+    const QImage image = reader.read();
+    QVERIFY2(!image.isNull(), qPrintable(reader.errorString()));
+    QCOMPARE(image.size(), QSize(12, 8));
+    const QColor pixel = image.pixelColor(6, 4);
+    QVERIFY(pixel.red() > 240 && pixel.green() < 16 && pixel.blue() < 16);
+    QCOMPARE(QImage::fromData(result.data).size(), image.size());
+}
+
+void FileLoaderTest::avifArchiveImages()
+{
+    FileLoader7zArchive archive(DATAPATH "avif/images.zip", "zip");
+    QVERIFY(archive.isValid());
+    QCOMPARE(archive.contents(), QStringList({"001.avif", "002.AVIF"}));
+    for (const QString &name : archive.contents()) {
+        const FileLoadResult result = archive.getFileResult(name);
+        QVERIFY(result.success);
+        const QImage image = QImage::fromData(result.data, "avif");
+        QVERIFY(!image.isNull());
+        QCOMPARE(image.size(), QSize(12, 8));
+    }
 }
 
 void FileLoaderTest::heifExtensionsAreImages()

@@ -25,7 +25,7 @@ QuickViewer
 - 本を読むのに便利な見開き表示
 - アーカイブファイルの直接読み込み(zip/7z/rar/cbz/cb7/cbr/cab/tar.gz/tar.bz2/tar.xz/他)
 - これらの画像形式に対応(bmp/png/jpeg/ico/dds/tga/tiff/gif)
-    - 現代的な画像形式に対応(JPEG 2000/JPEG XR/WebP)
+    - 現代的な画像形式に対応(AVIF/HEIC/HEIF/JPEG 2000/JPEG XR/WebP)
     - アニメーションPNG(APNG)/GIFに対応
     - JPEG EXIFに対応し、撮影したそのままの向きで画像を表示
     - CMYK形式のJPEGに対応し、sRGBに自動変換されて表示

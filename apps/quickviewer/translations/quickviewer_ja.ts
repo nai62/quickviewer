@@ -554,6 +554,15 @@
         <translation>JPEG画像 (*.jpg, *.jpeg, *.jpe)</translation>
     </message>
     <message>
+        <source>AVIF Image (*.avif)</source>
+        <translation>AVIF画像 (*.avif)</translation>
+    </message>
+    <message>
+        <source>AVIF Image</source>
+        <comment>description of File format on Explorer(.avif)</comment>
+        <translation>AVIF画像</translation>
+    </message>
+    <message>
         <location filename="../../../components/file-association/fileassocdialog.ui" line="97"/>
         <source>HEIF Image (*.heic, *.heif)</source>
         <translation>HEIF画像 (*.heic, *.heif)</translation>
@@ -1736,9 +1745,9 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="2098"/>
-        <source>All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.heic *.heif);;Archives( *.zip *.7z *.rar)</source>
+        <source>All Files( *.* );;Images ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.avif *.heic *.heif);;Archives( *.zip *.7z *.rar)</source>
         <comment>Text that specifies the file extension to be displayed when opening a file with OpenFileFolder</comment>
-        <translation>すべてのファイル( *.* );;画像 ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.heic *.heif);;アーカイブ( *.zip *.7z *.rar)</translation>
+        <translation>すべてのファイル( *.* );;画像 ( *.jpg *.jpeg *.jpe *.png *.tif *.tiff *.ico *.avif *.heic *.heif);;アーカイブ( *.zip *.7z *.rar)</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="2394"/>

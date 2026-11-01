@@ -93,6 +93,10 @@ FileAssocDialog::FileAssocDialog(QWidget *parent)
                                  "qv_webp.ico",
                                  {".webp"}};
 
+    m_assocOfActions["Avif"] = ui->checkBoxAvif;
+    m_assocs["Avif"] = AssocInfo{
+        "Avif", tr("AVIF Image", "description of File format on Explorer(.avif)"), "", {".avif"}};
+
     m_assocOfActions["Heif"] = ui->checkBoxHeif;
     m_assocs["Heif"] =
         AssocInfo{"Heif",

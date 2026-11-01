@@ -912,6 +912,62 @@ private slots:
         QCOMPARE(content.loadedImage.pixelColor(0, 0), QColor(Qt::magenta));
     }
 
+    void decodeImageBytesReadsAvif_data()
+    {
+        QTest::addColumn<QString>("path");
+        QTest::newRow("lowercase") << QString("still.avif");
+        QTest::newRow("uppercase") << QString("STILL.AVIF");
+        QTest::newRow("autodetect") << QString("still.bin");
+    }
+
+    void decodeImageBytesReadsAvif()
+    {
+        QFETCH(QString, path);
+        QFile file(FILELOADER_DATAPATH "avif/red.avif");
+        QVERIFY(file.open(QIODevice::ReadOnly));
+        ImageDecodeMetrics metrics;
+        const ImageContent content = Volume::decodeImageBytes(
+            path, file.readAll(), QSize(), QSize(), true, ImageDecodePolicy(), &metrics);
+        QVERIFY(content.isRenderable());
+        QCOMPARE(content.originalSize, QSize(12, 8));
+        QCOMPARE(content.loadedImage.size(), QSize(12, 8));
+        const QColor pixel = content.loadedImage.pixelColor(6, 4);
+        QVERIFY(pixel.red() > 240 && pixel.green() < 16 && pixel.blue() < 16);
+        QVERIFY(metrics.decoderBackend.startsWith(QStringLiteral("qimagereader:")));
+    }
+
+    void decodeImageBytesPreservesAvifTransparency()
+    {
+        QImage source(12, 8, QImage::Format_RGBA8888);
+        source.fill(QColor(255, 0, 0, 128));
+        source.setPixelColor(0, 0, QColor(0, 0, 0, 0));
+        QByteArray bytes;
+        QBuffer buffer(&bytes);
+        QVERIFY(buffer.open(QIODevice::WriteOnly));
+        QVERIFY2(source.save(&buffer, "avif", 100), "The AVIF encoder is unavailable");
+        const ImageContent content =
+            Volume::decodeImageBytes("alpha.avif", bytes, QSize(), QSize(), true);
+        QVERIFY(content.isRenderable());
+        QCOMPARE(content.loadedImage.size(), source.size());
+        QVERIFY(content.loadedImage.hasAlphaChannel());
+        QCOMPARE(content.loadedImage.pixelColor(0, 0).alpha(), 0);
+        const QColor pixel = content.loadedImage.pixelColor(6, 4);
+        QVERIFY(qAbs(pixel.alpha() - 128) <= 1);
+        QVERIFY(pixel.red() > 240 && pixel.green() < 16 && pixel.blue() < 16);
+    }
+
+    void decodeImageBytesRejectsBrokenAvif()
+    {
+        QFile file(FILELOADER_DATAPATH "avif/red.avif");
+        QVERIFY(file.open(QIODevice::ReadOnly));
+        const QByteArray bytes = file.readAll();
+        for (const QByteArray &broken : {QByteArray("not an avif"), bytes.left(bytes.size() / 2)}) {
+            const ImageContent content =
+                Volume::decodeImageBytes("broken.avif", broken, QSize(), QSize(), true);
+            QVERIFY(!content.isRenderable());
+        }
+    }
+
     void decodeImageBytesFallsBackToQtReaderWhenNativeDecoderIsDisabled()
     {
         if (!QImageReader::supportedImageFormats().contains("png")) {

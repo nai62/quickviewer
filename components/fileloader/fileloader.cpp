@@ -26,6 +26,7 @@ const QList<QByteArray> &supportedImageFormats()
             "jif",
             "jfif",
             "jfi",
+            "avif",
             "heic",
             "heif",
         };
