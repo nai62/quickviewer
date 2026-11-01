@@ -71,3 +71,29 @@ PrefetchPlanner::indexes(PrefetchMode mode, int currentIndex, int pageCount, int
     }
     return result;
 }
+
+PrefetchDepth PrefetchPlanner::depth(PrefetchMode mode, int offset)
+{
+    if (qAbs(offset) <= DecodedRadius) {
+        return PrefetchDepth::Decode;
+    }
+    // A fast turn moves ten pages, as ViewerSession's fast forward and
+    // backward do, and a spread there shows the page after it too.
+    if (mode == PrefetchMode::FastForward && (offset == 10 || offset == 11)) {
+        return PrefetchDepth::Decode;
+    }
+    if (mode == PrefetchMode::FastBackward && (offset == -10 || offset == -9)) {
+        return PrefetchDepth::Decode;
+    }
+    return PrefetchDepth::Read;
+}
+
+QList<PrefetchTarget>
+PrefetchPlanner::targets(PrefetchMode mode, int currentIndex, int pageCount, int cacheCapacity)
+{
+    QList<PrefetchTarget> result;
+    for (const int index : indexes(mode, currentIndex, pageCount, cacheCapacity)) {
+        result.append({index, depth(mode, index - currentIndex)});
+    }
+    return result;
+}

@@ -17,6 +17,8 @@ private Q_SLOTS:
     void respectsCacheCapacity();
     void excludesIndexesBeforeFirstPage();
     void excludesIndexesAfterLastPage();
+    void decodesTheWindowAndTheFastTurnLanding_data();
+    void decodesTheWindowAndTheFastTurnLanding();
 };
 
 void PrefetchPlannerTest::preservesInitialDisplayPlan()
@@ -99,6 +101,41 @@ void PrefetchPlannerTest::excludesIndexesBeforeFirstPage()
 void PrefetchPlannerTest::excludesIndexesAfterLastPage()
 {
     QCOMPARE(PrefetchPlanner::indexes(PrefetchMode::Normal, 3, 4, 22), QList<int>({3, 2, 1, 0}));
+}
+
+void PrefetchPlannerTest::decodesTheWindowAndTheFastTurnLanding_data()
+{
+    QTest::addColumn<int>("mode");
+    QTest::addColumn<QList<int>>("decodedOffsets");
+    QTest::newRow("normal") << int(PrefetchMode::Normal) << QList<int>({0, 1, 2, 3, -1, -2, -3});
+    QTest::newRow("forward") << int(PrefetchMode::NormalForward) << QList<int>({0, 1, 2, 3});
+    QTest::newRow("backward") << int(PrefetchMode::NormalBackward)
+                              << QList<int>({0, -1, -2, -3, 1});
+    // A fast turn lands ten pages on, and a spread there shows the next page.
+    QTest::newRow("fast forward") << int(PrefetchMode::FastForward) << QList<int>({0, 1, 10, 11});
+    QTest::newRow("fast backward")
+        << int(PrefetchMode::FastBackward) << QList<int>({0, 1, -10, -9});
+}
+
+void PrefetchPlannerTest::decodesTheWindowAndTheFastTurnLanding()
+{
+    QFETCH(int, mode);
+    QFETCH(QList<int>, decodedOffsets);
+    constexpr int Current = 50;
+    const QList<PrefetchTarget> targets =
+        PrefetchPlanner::targets(PrefetchMode(mode), Current, 100, 22);
+
+    QList<int> plannedIndexes;
+    QList<int> decoded;
+    for (const PrefetchTarget &target : targets) {
+        plannedIndexes.append(target.index);
+        if (target.depth == PrefetchDepth::Decode) {
+            decoded.append(target.index - Current);
+        }
+    }
+    // The depth only qualifies the plan; it neither adds nor drops a page.
+    QCOMPARE(plannedIndexes, PrefetchPlanner::indexes(PrefetchMode(mode), Current, 100, 22));
+    QCOMPARE(decoded, decodedOffsets);
 }
 
 QTEST_APPLESS_MAIN(PrefetchPlannerTest)
