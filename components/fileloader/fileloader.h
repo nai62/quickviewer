@@ -68,6 +68,12 @@ public:
         return {getFile(filename), ArchiveOpenError::None, true};
     }
     virtual ArchiveOpenError archiveOpenError() const { return ArchiveOpenError::None; }
+    /**
+     * True when getFile() and getFileResult() may run on several threads at
+     * once. An archive reads through one open stream and changes its state when
+     * a read fails, so a loader serializes its reads unless it says otherwise.
+     */
+    virtual bool supportsConcurrentReads() const { return false; }
     virtual quint64 getFileSize(QString filename) const;
     virtual QDateTime getFileModified(QString filename) const;
     virtual InflateCacheMode getCacheMode() const = 0;

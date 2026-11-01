@@ -32,6 +32,8 @@ public:
     QStringList contents() override;
     QStringList subArchives() const override { return m_subArchiveList; }
     QByteArray getFile(QString filename) override;
+    /** Each read opens its own file, so reads run side by side. */
+    bool supportsConcurrentReads() const override { return true; }
     InflateCacheMode getCacheMode() const override { return InflateNoCached; }
 
 private:
@@ -42,6 +44,11 @@ private:
 
     QString m_volumepath;
     QDir m_directory;
+    /**
+     * The directory the pages are read from, kept as a string: the reads run
+     * on several threads, and a QDir caches what it resolves.
+     */
+    QString m_readDirectory;
     QStringList m_imageFileList;
     QStringList m_subArchiveList;
     bool m_valid;

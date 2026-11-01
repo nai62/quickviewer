@@ -28,6 +28,7 @@ void FileLoaderDirectory::initialize()
         initializeCurrentDirectory();
     }
 
+    m_readDirectory = m_directory.path();
     m_valid = true;
 }
 
@@ -97,7 +98,7 @@ void FileLoaderDirectory::collectRecursiveFiles(const QString &path, const QStri
 
 QByteArray FileLoaderDirectory::getFile(QString name)
 {
-    QFile file(m_directory.absoluteFilePath(name));
+    QFile file(QDir(m_readDirectory).absoluteFilePath(name));
     if (!file.open(QIODevice::ReadOnly)) {
         return {};
     }
