@@ -34,6 +34,7 @@ private Q_SLOTS:
     void avifFilesAreListedAndDecoded_data();
     void avifFilesAreListedAndDecoded();
     void avifArchiveImages();
+    void avifFilesRequireAPlugin();
     void heifExtensionsAreImages();
     void heifPluginDecodesImage();
     void recursiveDirectoryTraversal();
@@ -342,6 +343,34 @@ void FileLoaderTest::avifArchiveImages()
         QVERIFY(!image.isNull());
         QCOMPARE(image.size(), QSize(12, 8));
     }
+}
+
+void FileLoaderTest::avifFilesRequireAPlugin()
+{
+    if (!qEnvironmentVariableIsSet("QV_TEST_NO_IMAGE_PLUGINS")) {
+        // Start before Qt's image plug-in discovery is cached by other tests.
+        QProcess child;
+        QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
+        environment.insert("QV_TEST_NO_IMAGE_PLUGINS", "1");
+        child.setProcessEnvironment(environment);
+        child.setProcessChannelMode(QProcess::MergedChannels);
+        child.start(QCoreApplication::applicationFilePath(), {"avifFilesRequireAPlugin"});
+        QVERIFY(child.waitForFinished(30000));
+        const QByteArray output = child.readAll();
+        QCOMPARE(child.exitStatus(), QProcess::NormalExit);
+        QVERIFY2(child.exitCode() == 0, output.constData());
+        return;
+    }
+
+    QCoreApplication::setLibraryPaths({});
+    QVERIFY(!QImageReader::supportedImageFormats().contains("avif"));
+    QVERIFY(!IFileLoader::isImageFile("image.avif"));
+    QVERIFY(!IFileLoader::isImageFile("IMAGE.AVIF"));
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    QVERIFY(QFile::copy(DATAPATH "avif/red.avif", directory.filePath("image.avif")));
+    FileLoaderDirectory loader(directory.path());
+    QVERIFY(loader.contents().isEmpty());
 }
 
 void FileLoaderTest::heifExtensionsAreImages()

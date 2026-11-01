@@ -945,16 +945,25 @@ static ImageContent loadWithSpecifiedFormat(QString path,
         }
 
         if (reader.supportsAnimation()) {
-            ImageDecodeDetail::DecodeMetricsScope<> decodeMetrics(metrics);
-            Movie movie = Movie(bytes, QString::fromUtf8(qtFormatName));
-            // Movie construction records the backend before lazy frame decoding.
-            decodeMetrics.recordBackend(
-                [&] { return QString("qmovie:%1").arg(QString::fromLatin1(reader.format())); });
-            decodeMetrics.finish();
-            ic.movie = movie;
-            ic.originalSize = ic.loadedImageSize = reader.size();
-            ic.hasDetailedMetadata = true;
-            return ic;
+            // A reader can detect AVIF under an unrelated requested format, in
+            // which case format() still returns the requested name. Probe a
+            // separate device to identify the actual format without disturbing
+            // this reader. AVIF sequences decode their first frame below.
+            QBuffer detectionBuffer(&bytes);
+            detectionBuffer.open(QIODevice::ReadOnly);
+            const QByteArray detectedFormat = QImageReader::imageFormat(&detectionBuffer);
+            if (detectedFormat != "avif" && detectedFormat != "avifs") {
+                ImageDecodeDetail::DecodeMetricsScope<> decodeMetrics(metrics);
+                Movie movie = Movie(bytes, QString::fromUtf8(qtFormatName));
+                // Movie construction records the backend before lazy frame decoding.
+                decodeMetrics.recordBackend(
+                    [&] { return QString("qmovie:%1").arg(QString::fromLatin1(reader.format())); });
+                decodeMetrics.finish();
+                ic.movie = movie;
+                ic.originalSize = ic.loadedImageSize = reader.size();
+                ic.hasDetailedMetadata = true;
+                return ic;
+            }
         }
         if (qtFormatName == QByteArrayLiteral("apng")) {
             // Readable, but this handler will not animate these bytes, so let

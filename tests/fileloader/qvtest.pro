@@ -36,6 +36,7 @@ INCLUDEPATH += ../../components/fileloader ../../components/rarextractor
 
 OTHER_FILES += \
     data/avif/red.avif \
+    data/avif/animated.avif \
     data/avif/images.zip \
     data/deflate-mbcs.zip \
     data/deflate-utf8.zip \

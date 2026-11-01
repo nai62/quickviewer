@@ -132,7 +132,7 @@ Configuration fails if the Windows libavif package is shared.
 Set `QV_AVIF_SOURCE` in the shell running verification or deployment if the
 plug-in checkout is elsewhere. Its default is the directory above. These
 scripts copy only the matching `qavif6.dll` into `imageformats`. The installer
-uses the same single plug-in. AVIF does not use `QV_AVIF_DEPS` anymore.
+uses the same single plug-in.
 
 On Linux, install `cmake` and `libavif-dev` with its AV1 decoder dependencies.
 The plug-in uses the system's libavif, as other system libraries do:
@@ -146,8 +146,16 @@ cmake --build /path/to/qt-avif-image-plugin/build-debug -j2
 
 Copy `libqavif6.so` into the QuickViewer build tree's `lib/imageformats` for
 tests and `bin/imageformats` for the application. Use matching Qt libraries
-and configurations for both. AVIF still images use the standard Qt decoding
-path; AVIF animation playback is not enabled by this integration.
+and configurations for both. AVIF uses the standard Qt decoding path.
+For animated AVIF, QuickViewer decodes and displays only the first frame;
+it does not start animation playback. This applies to byte auto-detection too,
+and a first frame that cannot be decoded is rejected.
+
+HDR and wide-gamut AVIF are subject to the viewer's existing color-management
+limitations: the pipeline converts images to packed 8-bit pixels without an
+explicit color-space conversion or HDR tone mapping. P3, PQ and HLG images may
+therefore display incorrect colors or brightness. Color-managed HDR/wide-gamut
+display is outside this AVIF integration.
 
 ## 2. Supported Windows development workflow
 

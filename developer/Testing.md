@@ -481,6 +481,9 @@ addition to the existing application/Qt runtime. CI checks the plug-in's PE
 imports to reject separate AVIF codec DLLs; this catches a shared build even
 when a developer machine happens to have the required DLLs on PATH. Coverage includes lower/upper-case extensions, folder
 and ZIP enumeration, byte auto-detection, decoded pixels, transparency and broken input.
+Animated AVIF is checked as a decoded first frame without playback, including
+invalid sequence payloads. A fresh process without image plug-ins verifies
+that AVIF files are omitted from folder listings.
 On Windows, open an AVIF from Explorer and the image file picker, navigate
 between AVIF and JPEG/PNG pages in a folder and ZIP, and check the AVIF option
 in the file association dialog. Use a deployed Release build for Explorer.

@@ -936,6 +936,75 @@ private slots:
         QVERIFY(metrics.decoderBackend.startsWith(QStringLiteral("qimagereader:")));
     }
 
+    void decodeImageBytesReadsOnlyTheFirstAvifFrame_data()
+    {
+        QTest::addColumn<QString>("path");
+        QTest::newRow("avif") << QString("animated.avif");
+        QTest::newRow("sequence-suffix") << QString("animated.avifs");
+        QTest::newRow("autodetect") << QString("animated.bin");
+    }
+
+    void decodeImageBytesReadsOnlyTheFirstAvifFrame()
+    {
+        QFETCH(QString, path);
+        QFile file(FILELOADER_DATAPATH "avif/animated.avif");
+        QVERIFY(file.open(QIODevice::ReadOnly));
+        const QByteArray bytes = file.readAll();
+        QBuffer buffer;
+        buffer.setData(bytes);
+        QVERIFY(buffer.open(QIODevice::ReadOnly));
+        QImageReader reader(&buffer, "avif");
+        QVERIFY(reader.supportsAnimation());
+        QCOMPARE(reader.imageCount(), 2);
+
+        ImageDecodeMetrics metrics;
+        const ImageContent content = Volume::decodeImageBytes(
+            path, bytes, QSize(), QSize(), true, ImageDecodePolicy(), &metrics);
+        QVERIFY(content.isRenderable());
+        QVERIFY(content.movie.isNull());
+        QCOMPARE(content.loadedImage.size(), QSize(12, 8));
+        const QColor pixel = content.loadedImage.pixelColor(6, 4);
+        QVERIFY(pixel.red() > 240 && pixel.green() < 16 && pixel.blue() < 16);
+        QVERIFY(metrics.decoderBackend.startsWith(QStringLiteral("qimagereader:")));
+    }
+
+    void decodeImageBytesRejectsBrokenAvifSequences_data()
+    {
+        QTest::addColumn<QString>("path");
+        QTest::addColumn<bool>("truncate");
+        QTest::newRow("missing-payload") << QString("broken.avif") << true;
+        QTest::newRow("invalid-frame") << QString("broken.avif") << false;
+        QTest::newRow("invalid-sequence-suffix") << QString("broken.avifs") << false;
+        QTest::newRow("invalid-autodetect") << QString("broken.bin") << false;
+    }
+
+    void decodeImageBytesRejectsBrokenAvifSequences()
+    {
+        QFETCH(QString, path);
+        QFETCH(bool, truncate);
+        QFile file(FILELOADER_DATAPATH "avif/animated.avif");
+        QVERIFY(file.open(QIODevice::ReadOnly));
+        QByteArray bytes = file.readAll();
+        const qsizetype payload = bytes.indexOf("mdat") + 4;
+        QVERIFY(payload > 4 && payload < bytes.size());
+        if (truncate) {
+            bytes.truncate(payload);
+        } else {
+            bytes.replace(
+                payload, bytes.size() - payload, QByteArray(bytes.size() - payload, '\0'));
+            QBuffer buffer;
+            buffer.setData(bytes);
+            QVERIFY(buffer.open(QIODevice::ReadOnly));
+            QImageReader reader(&buffer, "avif");
+            // Valid sequence headers must not be mistaken for decoded pixels.
+            QVERIFY(reader.supportsAnimation());
+        }
+
+        const ImageContent content = Volume::decodeImageBytes(path, bytes, QSize(), QSize(), true);
+        QVERIFY(content.movie.isNull());
+        QVERIFY(!content.isRenderable());
+    }
+
     void decodeImageBytesPreservesAvifTransparency()
     {
         QImage source(12, 8, QImage::Format_RGBA8888);
