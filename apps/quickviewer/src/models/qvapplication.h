@@ -449,6 +449,8 @@ public:
     // Key Config
     KeyActionManager &keyActions() { return m_keyActions; }
     MouseActionManager &mouseActions() { return m_mouseActions; }
+    /** Resolve a vertical wheel input without deciding which view operation takes priority. */
+    QAction *wheelAction(const QWheelEvent &event);
 
     // Appearance
     QString UiTheme() { return m_uiTheme; }

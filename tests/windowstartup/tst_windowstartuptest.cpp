@@ -282,6 +282,83 @@ private slots:
         qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
     }
 
+    void wheelActionUsesEventInput_data()
+    {
+        QTest::addColumn<QPoint>("angleDelta");
+        QTest::addColumn<int>("modifiers");
+        QTest::addColumn<int>("buttons");
+        QTest::addColumn<QString>("expectedAction");
+        QTest::newRow("next") << QPoint(0, -120) << int(Qt::NoModifier) << int(Qt::NoButton)
+                              << QStringLiteral("actionNextPage");
+        QTest::newRow("previous") << QPoint(0, 120) << int(Qt::NoModifier) << int(Qt::NoButton)
+                                  << QStringLiteral("actionPrevPage");
+        QTest::newRow("small-delta") << QPoint(0, -15) << int(Qt::NoModifier) << int(Qt::NoButton)
+                                     << QStringLiteral("actionNextPage");
+        QTest::newRow("large-delta") << QPoint(0, 240) << int(Qt::NoModifier) << int(Qt::NoButton)
+                                     << QStringLiteral("actionPrevPage");
+        QTest::newRow("control") << QPoint(0, 120) << int(Qt::ControlModifier) << int(Qt::NoButton)
+                                 << QStringLiteral("actionZoomIn");
+        QTest::newRow("right-button") << QPoint(0, -120) << int(Qt::NoModifier)
+                                      << int(Qt::RightButton) << QStringLiteral("actionZoomOut");
+        QTest::newRow("unassigned")
+            << QPoint(0, 120) << int(Qt::AltModifier) << int(Qt::NoButton) << QString();
+        QTest::newRow("horizontal-only")
+            << QPoint(120, 0) << int(Qt::NoModifier) << int(Qt::NoButton) << QString();
+        // A zero-delta phase event must not resolve to a button-only binding.
+        QTest::newRow("button-without-wheel")
+            << QPoint() << int(Qt::NoModifier) << int(Qt::BackButton) << QString();
+    }
+
+    void wheelActionUsesEventInput()
+    {
+        QFETCH(QPoint, angleDelta);
+        QFETCH(int, modifiers);
+        QFETCH(int, buttons);
+        QFETCH(QString, expectedAction);
+        StartupWindow viewer;
+        QVApplication::MouseActionManager saved(qApp->mouseActions());
+        const auto restore = qScopeGuard([&] { qApp->mouseActions() = saved; });
+        qApp->mouseActions().resetByDefault();
+        QWheelEvent event(QPointF(),
+                          QPointF(),
+                          QPoint(),
+                          angleDelta,
+                          Qt::MouseButtons(buttons),
+                          Qt::KeyboardModifiers(modifiers),
+                          Qt::NoScrollPhase,
+                          false);
+        QAction *action = qApp->wheelAction(event);
+        if (expectedAction.isEmpty()) {
+            QVERIFY(!action);
+        } else {
+            QVERIFY(action);
+            QCOMPARE(action, viewer.findChild<QAction *>(expectedAction));
+        }
+    }
+
+    void wheelActionFollowsReassignedInput()
+    {
+        StartupWindow viewer;
+        QVApplication::MouseActionManager saved(qApp->mouseActions());
+        const auto restore = qScopeGuard([&] { qApp->mouseActions() = saved; });
+        qApp->mouseActions().clear();
+        QWheelEvent event(QPointF(),
+                          QPointF(),
+                          QPoint(),
+                          QPoint(0, -120),
+                          Qt::MiddleButton,
+                          Qt::ShiftModifier,
+                          Qt::NoScrollPhase,
+                          false);
+        QVERIFY(!qApp->wheelAction(event));
+        QMouseValue value(QKeySequence(Qt::ShiftModifier), Qt::MiddleButton, -MouseDelta);
+        qApp->mouseActions().updateKey("actionFirstPage", QMouseSequence(value.toString()));
+        QCOMPARE(qApp->wheelAction(event),
+                 viewer.findChild<QAction *>(QStringLiteral("actionFirstPage")));
+        qApp->mouseActions().updateKey("actionFirstPage", QMouseSequence());
+        QVERIFY(!qApp->wheelAction(event));
+    }
+
     void startupCloaking_data()
     {
         QTest::addColumn<bool>("beginAsFullscreen");

@@ -792,14 +792,7 @@ void ImageView::mouseMoveEvent(QMouseEvent *e)
 void ImageView::wheelEvent(QWheelEvent *event)
 {
     int delta_y = event->angleDelta().y();
-    int delta = 0;
-    if (delta_y < 0) {
-        delta = -MouseDelta;
-    } else if (delta_y > 0) {
-        delta = MouseDelta;
-    }
-    QMouseValue mv(QKeySequence(qApp->keyboardModifiers()), event->buttons(), delta);
-    QAction *action = qApp->mouseActions().getActionByValue(mv);
+    QAction *action = qApp->wheelAction(*event);
     if (action != nullptr) {
         QString text = action->objectName();
         if (text == "actionZoomIn" || text == "actionZoomOut") {
@@ -814,8 +807,6 @@ void ImageView::wheelEvent(QWheelEvent *event)
         return;
     }
     if (qApp->ScrollWithCursorWhenZooming()) {
-        QMouseValue mv(QKeySequence(qApp->keyboardModifiers()), event->buttons(), delta);
-        QAction *action = qApp->mouseActions().getActionByValue(mv);
         if (action) {
             action->trigger();
             event->accept();
