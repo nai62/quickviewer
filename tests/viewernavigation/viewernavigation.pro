@@ -31,6 +31,7 @@ INCLUDEPATH += \
     ../../components/fileloader \
     ../../components/qzimg \
     ../../third_party/libspng/spng \
+    ../../third_party/zlib \
     ../../components/file-association
 
 SOURCES += \
@@ -124,6 +125,8 @@ HEADERS += \
     ../../components/i18n/languagemanager.h \
     ../../components/i18n/texttranslator.h
 
+RESOURCES += ../../apps/quickviewer/toolbar.qrc
+
 FORMS += \
     ../../apps/quickviewer/src/mainwindow.ui \
     ../../apps/quickviewer/src/qactionmanager/keyconfigdialog.ui
@@ -147,3 +150,5 @@ win32 {
     # The archive fixtures need the official 7z.dll next to the test binary.
     QMAKE_POST_LINK += $$QMAKE_COPY /B $$shell_quote($$shell_path($$PWD/../../third_party/7zip/windll/$${TARGET_ARCH}/7z.dll)) $$shell_path($${DESTDIR}) $$escape_expand(\n\t)
 }
+
+HEADERS += $$PWD/../testtemporarydir.h

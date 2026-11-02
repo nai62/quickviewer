@@ -43,6 +43,8 @@ QString resvgErrorString(int error)
     switch (error) {
     case RESVG_ERROR_NOT_AN_UTF8_STR:
         return QStringLiteral("The SVG content is not UTF-8");
+    case RESVG_ERROR_SVGZ_UNSUPPORTED:
+        return QStringLiteral("resvg was built without SVGZ support");
     case RESVG_ERROR_FILE_OPEN_FAILED:
         return QStringLiteral("Failed to open an SVG resource");
     case RESVG_ERROR_MALFORMED_GZIP:

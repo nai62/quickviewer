@@ -1,6 +1,6 @@
 UNRAR_SOURCE_ROOT = $$clean_path($$PWD/../../../third_party/unrar)
 
-HEADERS += $$UNRAR_SOURCE_ROOT/*.hpp
+HEADERS += $$files($$UNRAR_SOURCE_ROOT/*.hpp)
 
 SOURCES += \
     $$UNRAR_SOURCE_ROOT/rar.cpp \

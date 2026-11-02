@@ -28,10 +28,8 @@ TextTranslator::TextTranslator(QObject *parent, QString path, TextTranslator *re
     }
 }
 
-QString TextTranslator::translate(const char *context,
-                                  const char *sourceText,
-                                  const char *disambiguation,
-                                  int n) const
+QString
+TextTranslator::translate(const char *context, const char *sourceText, const char *, int) const
 {
     QString con(context);
     QString source(sourceText);

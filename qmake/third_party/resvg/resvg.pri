@@ -22,6 +22,12 @@ win32 {
 }
 
 resvg_c_api.target = $$RESVG_LIBRARY
+# Rebuild an existing archive when the pinned Rust sources or manifests change.
+resvg_c_api.depends = \
+    $$RESVG_SOURCE_ROOT/Cargo.toml \
+    $$RESVG_SOURCE_ROOT/Cargo.lock \
+    $$files($$RESVG_SOURCE_ROOT/crates/Cargo.toml, true) \
+    $$files($$RESVG_SOURCE_ROOT/crates/*.rs, true)
 resvg_c_api.commands = $$shell_quote($$shell_path($$RESVG_CARGO)) build --locked $$RESVG_CARGO_FLAGS --manifest-path $$shell_quote($$shell_path($$RESVG_MANIFEST)) --target-dir $$shell_quote($$shell_path($$RESVG_TARGET_DIR))
 QMAKE_EXTRA_TARGETS += resvg_c_api
 PRE_TARGETDEPS += $$RESVG_LIBRARY

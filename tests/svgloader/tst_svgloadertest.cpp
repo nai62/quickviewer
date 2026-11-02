@@ -12,6 +12,7 @@ private slots:
     void rasterSizeFitsWithinBothLimits();
     void rendersWithResvg();
     void rendersTransformedNestedSvg();
+    void parseFailureFallsBackToQtSvg_data();
     void parseFailureFallsBackToQtSvg();
 #ifdef Q_OS_WIN
     void rendersJapaneseTextWithResvg();
@@ -75,13 +76,28 @@ void SvgLoaderTest::rendersTransformedNestedSvg()
     QCOMPARE(qAlpha(result.image.pixel(17, 5)), 0);
 }
 
+void SvgLoaderTest::parseFailureFallsBackToQtSvg_data()
+{
+    QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<QString>("error");
+    QTest::newRow("invalid-xml") << QByteArray("not an svg")
+                                 << QStringLiteral("Failed to parse the SVG data");
+    QTest::newRow("invalid-size")
+        << QByteArray(R"(<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0"/>)")
+        << QStringLiteral("The SVG has an invalid size");
+    QTest::newRow("malformed-gzip")
+        << QByteArray::fromHex("1f8b0800") << QStringLiteral("The SVGZ data is malformed");
+}
+
 void SvgLoaderTest::parseFailureFallsBackToQtSvg()
 {
-    const SvgLoader::RenderResult result = SvgLoader::render(
-        QByteArray("not an svg"), QString(), QSize(1920, 1080), qvEnums::SvgLoaderBackend::Resvg);
+    QFETCH(QByteArray, data);
+    QFETCH(QString, error);
+    const SvgLoader::RenderResult result =
+        SvgLoader::render(data, QString(), QSize(1920, 1080), qvEnums::SvgLoaderBackend::Resvg);
 
     QCOMPARE(result.backend, qvEnums::SvgLoaderBackend::QtSvg);
-    QVERIFY(!result.resvgError.isEmpty());
+    QCOMPARE(result.resvgError, error);
     QVERIFY(result.image.isNull());
 }
 

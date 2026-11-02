@@ -58,7 +58,7 @@ static bool keySequenceIsValid(const QKeySequence &sequence)
         return true;
     }
     for (int i = 0; i < sequence.count(); ++i) {
-        if (sequence[i] == QKeySequence::UnknownKey) {
+        if (sequence[i].toCombined() == QKeySequence::UnknownKey) {
             return false;
         }
     }
