@@ -1,4 +1,6 @@
 #include <QtTest>
+#include <QtEndian>
+#include <zlib.h>
 
 #include "../testtemporarydir.h"
 
@@ -94,6 +96,18 @@ static QByteArray stillWebP()
     return QByteArray::fromBase64("UklGRhwAAABXRUJQVlA4TBAAAAAvCMAAAAcQ/e9//wMR0f8A");
 }
 
+static void appendPngChunkCrc(QByteArray &chunk)
+{
+    // PNG CRC-32 covers the chunk type and data, excluding the length field.
+    const quint32 crc =
+        static_cast<quint32>(crc32_z(0,
+                                     reinterpret_cast<const Bytef *>(chunk.constData() + 4),
+                                     static_cast<z_size_t>(chunk.size() - 4)));
+    char bytes[sizeof(crc)];
+    qToBigEndian(crc, bytes);
+    chunk.append(bytes, sizeof(bytes));
+}
+
 // Inserts a chunk right after IHDR with the CRC checked by Qt's PNG reader.
 static QByteArray
 withChunk(const QByteArray &png, const char *type, const QByteArray &payload = QByteArray())
@@ -109,18 +123,7 @@ withChunk(const QByteArray &png, const char *type, const QByteArray &payload = Q
     chunk.append(static_cast<char>(length & 0xFF));
     chunk.append(type, 4);
     chunk.append(payload);
-    quint32 crc = 0xFFFFFFFF;
-    for (qsizetype i = 4; i < chunk.size(); ++i) {
-        crc ^= static_cast<unsigned char>(chunk.at(i));
-        for (int bit = 0; bit < 8; ++bit) {
-            crc = (crc >> 1) ^ ((crc & 1) ? 0xEDB88320U : 0);
-        }
-    }
-    crc ^= 0xFFFFFFFF;
-    chunk.append(static_cast<char>((crc >> 24) & 0xFF));
-    chunk.append(static_cast<char>((crc >> 16) & 0xFF));
-    chunk.append(static_cast<char>((crc >> 8) & 0xFF));
-    chunk.append(static_cast<char>(crc & 0xFF));
+    appendPngChunkCrc(chunk);
     QByteArray result = png;
     result.insert(8 + 12 + 13, chunk);
     return result;

@@ -31,6 +31,7 @@ INCLUDEPATH += \
     ../../components/fileloader \
     ../../components/qzimg \
     ../../third_party/libspng/spng \
+    ../../third_party/zlib \
     ../../components/file-association
 
 SOURCES += \
