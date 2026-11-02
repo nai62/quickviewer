@@ -789,6 +789,15 @@ void ImageView::mouseMoveEvent(QMouseEvent *e)
     m_hoverState = Qt::AnchorHorizontalCenter;
 }
 
+bool ImageView::handleLoupeWheel(QWheelEvent *event)
+{
+    if (!m_loupeController.isActive() || !event->buttons().testFlag(Qt::LeftButton)) {
+        return false;
+    }
+    wheelEvent(event);
+    return true;
+}
+
 void ImageView::wheelEvent(QWheelEvent *event)
 {
     int delta_y = event->angleDelta().y();
@@ -804,17 +813,19 @@ void ImageView::wheelEvent(QWheelEvent *event)
     if (m_loupeController.isActive()) {
         m_loupeController.adjustScaleFromWheel(delta_y);
         refreshRenderedPages();
+        event->accept();
         return;
     }
-    if (qApp->ScrollWithCursorWhenZooming()) {
-        if (action) {
-            action->trigger();
-            event->accept();
-            return;
-        }
+    if (m_scrollMode && !qApp->ScrollWithCursorWhenZooming()) {
+        QGraphicsView::wheelEvent(event);
+        // An image edge must not turn this scroll gesture into a page turn.
+        event->accept();
         return;
     }
-    QGraphicsView::wheelEvent(event);
+    if (action) {
+        action->trigger();
+    }
+    event->accept();
 }
 
 void ImageView::mousePressEvent(QMouseEvent *event)

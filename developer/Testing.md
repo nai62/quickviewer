@@ -394,6 +394,45 @@ cancellation there too before considering those platforms verified, including
 both X11 and Wayland sessions on Linux. Native snapping and maximization
 behavior depends on the desktop environment.
 
+### Wheel input over the image and page bar
+
+Build the application and test executables, then run the input regressions:
+
+```bat
+scripts\verify-windows.cmd debug --build-only
+scripts\verify-windows.cmd debug --test windowstartup
+scripts\verify-windows.cmd debug --test viewernavigation
+```
+
+The `wheelAction*` and `pageWheel*` tests send wheel events through the actual
+widgets. They cover shared mouse bindings, folders and ZIP archives, event
+modifiers and buttons, explicit zoom bindings, image panning and its boundaries,
+held loupe gestures, unassigned inputs, disabled actions, page boundaries,
+dual-page spreads, and split wide images.
+
+On Windows, open a folder and an archive with several images and check:
+
+- With a fitted image, wheel down advances and wheel up goes back over both the
+  image and the page bar, including its surrounding frame and page labels.
+  Change the wheel bindings in Mouse Settings and check both locations again.
+- With an enlarged image and cursor-based scrolling disabled, the image wheel
+  pans without turning pages at its edges. The page bar still turns pages.
+  Enable cursor-based scrolling and check that wheel paging works in both places.
+- Enable the loupe tool. Holding the left button over the image makes the wheel
+  change the loupe magnification. Keep holding while moving over the page bar:
+  the gesture must keep adjusting the loupe. Release, then check that the page
+  bar turns pages again while the loupe tool remains enabled.
+- Check Ctrl+wheel and right-button+wheel zoom bindings over both locations,
+  including during a held loupe gesture with an explicitly assigned button
+  combination. Right-button+wheel must not open a context menu on release.
+- At the first and last page, wheel paging stops without reversing or running
+  twice. In dual-page and split-wide-image modes, wheel navigation over the bar
+  follows the same steps as navigation over the image. Clicking, dragging and
+  using arrow keys on the page slider must still select pages normally.
+- Try a high-resolution wheel or touchpad where available. Also repeat with the
+  page bar revealed in fullscreen; headless tests do not verify native input
+  capture, device timing or fullscreen hit testing.
+
 ### Image orientation
 
 A change to EXIF orientation handling, page rotation, page layout, or the

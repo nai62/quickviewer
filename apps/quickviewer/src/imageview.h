@@ -34,6 +34,8 @@ public:
     void setFullscreenState(bool fullscreen) { m_isFullScreen = fullscreen; }
     void resetBackgroundColor();
     bool isScrollMode() const { return m_scrollMode; }
+    /** Continue a held loupe gesture when wheel input arrives over the page bar. */
+    bool handleLoupeWheel(QWheelEvent *event);
     bool usesDragScrolling() const;
     int renderedPageCount() const;
     VisiblePages renderedPageContents() const;
