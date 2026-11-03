@@ -173,6 +173,17 @@ void QVApplication::registerDefaultKeyMap()
     m_keyActions.addDefaultKey("actionMaximizeOrNormal", QKeySequence("Return, Num+Enter"));
 }
 
+QAction *QVApplication::wheelAction(const QWheelEvent &event)
+{
+    const int delta = event.angleDelta().y();
+    if (delta == 0) {
+        return nullptr;
+    }
+    QMouseValue value(
+        QKeySequence(event.modifiers()), event.buttons(), delta > 0 ? MouseDelta : -MouseDelta);
+    return m_mouseActions.getActionByValue(value);
+}
+
 void QVApplication::registerDefaultMouseMap()
 {
     // Default mouse configs

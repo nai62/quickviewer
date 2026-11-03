@@ -170,6 +170,64 @@ private:
     bool m_savedCursorScrolling = qApp->ScrollWithCursorWhenZooming();
 };
 
+// Reuse the isolated image-input setup, with the normal wheel bindings restored.
+class WheelInputWindow : public ImageWindowMoveWindow
+{
+public:
+    WheelInputWindow()
+    {
+        qApp->mouseActions().resetByDefault();
+        qApp->setMoveWindowByDraggingImage(false);
+        qApp->setScrollWithCursorWhenZooming(true);
+    }
+
+    QWidget *wheelTarget(const QString &name)
+    {
+        return name == QStringLiteral("image") ? imageView()->viewport()
+                                               : findChild<QWidget *>(name);
+    }
+
+    bool sendWheel(QWidget *target,
+                   const QPoint &delta,
+                   Qt::KeyboardModifiers modifiers = Qt::NoModifier,
+                   Qt::MouseButtons buttons = Qt::NoButton)
+    {
+        const QPoint position = target->rect().center();
+        QWheelEvent event(position,
+                          target->mapToGlobal(position),
+                          QPoint(),
+                          delta,
+                          buttons,
+                          modifiers,
+                          Qt::NoScrollPhase,
+                          false);
+        event.ignore();
+        QApplication::sendEvent(target, &event);
+        return event.isAccepted();
+    }
+
+    void bindWheel(const QString &action,
+                   int delta,
+                   Qt::KeyboardModifiers modifiers = Qt::NoModifier,
+                   Qt::MouseButtons buttons = Qt::NoButton)
+    {
+        QMouseValue value(QKeySequence(modifiers), buttons, delta);
+        qApp->mouseActions().updateKey(action, QMouseSequence(value.toString()));
+    }
+
+    static bool writePages(const TestTemporaryDir &directory, const QSize &size = QSize(64, 96))
+    {
+        QImage image(size, QImage::Format_RGB32);
+        image.fill(Qt::white);
+        for (int index = 0; index < 4; ++index) {
+            if (!image.save(directory.filePath(QStringLiteral("page-%1.bmp").arg(index)))) {
+                return false;
+            }
+        }
+        return true;
+    }
+};
+
 // No OS font cache or scheduling assumptions: the test decides exactly when a
 // request completes, including after its originating model has been destroyed.
 class DelayedTextImageCache : public TextImageCache
@@ -280,6 +338,438 @@ private slots:
         // setting a test depends on has to be set here.
         qApp->setShowSubfolders(false);
         qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
+    }
+
+    void wheelActionUsesEventInput_data()
+    {
+        QTest::addColumn<QPoint>("angleDelta");
+        QTest::addColumn<int>("modifiers");
+        QTest::addColumn<int>("buttons");
+        QTest::addColumn<QString>("expectedAction");
+        QTest::newRow("next") << QPoint(0, -120) << int(Qt::NoModifier) << int(Qt::NoButton)
+                              << QStringLiteral("actionNextPage");
+        QTest::newRow("previous") << QPoint(0, 120) << int(Qt::NoModifier) << int(Qt::NoButton)
+                                  << QStringLiteral("actionPrevPage");
+        QTest::newRow("small-delta") << QPoint(0, -15) << int(Qt::NoModifier) << int(Qt::NoButton)
+                                     << QStringLiteral("actionNextPage");
+        QTest::newRow("large-delta") << QPoint(0, 240) << int(Qt::NoModifier) << int(Qt::NoButton)
+                                     << QStringLiteral("actionPrevPage");
+        QTest::newRow("control") << QPoint(0, 120) << int(Qt::ControlModifier) << int(Qt::NoButton)
+                                 << QStringLiteral("actionZoomIn");
+        QTest::newRow("right-button") << QPoint(0, -120) << int(Qt::NoModifier)
+                                      << int(Qt::RightButton) << QStringLiteral("actionZoomOut");
+        QTest::newRow("unassigned")
+            << QPoint(0, 120) << int(Qt::AltModifier) << int(Qt::NoButton) << QString();
+        QTest::newRow("horizontal-only")
+            << QPoint(120, 0) << int(Qt::NoModifier) << int(Qt::NoButton) << QString();
+        // A zero-delta phase event must not resolve to a button-only binding.
+        QTest::newRow("button-without-wheel")
+            << QPoint() << int(Qt::NoModifier) << int(Qt::BackButton) << QString();
+    }
+
+    void wheelActionUsesEventInput()
+    {
+        QFETCH(QPoint, angleDelta);
+        QFETCH(int, modifiers);
+        QFETCH(int, buttons);
+        QFETCH(QString, expectedAction);
+        StartupWindow viewer;
+        QVApplication::MouseActionManager saved(qApp->mouseActions());
+        const auto restore = qScopeGuard([&] { qApp->mouseActions() = saved; });
+        qApp->mouseActions().resetByDefault();
+        QWheelEvent event(QPointF(),
+                          QPointF(),
+                          QPoint(),
+                          angleDelta,
+                          Qt::MouseButtons(buttons),
+                          Qt::KeyboardModifiers(modifiers),
+                          Qt::NoScrollPhase,
+                          false);
+        QAction *action = qApp->wheelAction(event);
+        if (expectedAction.isEmpty()) {
+            QVERIFY(!action);
+        } else {
+            QVERIFY(action);
+            QCOMPARE(action, viewer.findChild<QAction *>(expectedAction));
+        }
+    }
+
+    void wheelActionFollowsReassignedInput()
+    {
+        StartupWindow viewer;
+        QVApplication::MouseActionManager saved(qApp->mouseActions());
+        const auto restore = qScopeGuard([&] { qApp->mouseActions() = saved; });
+        qApp->mouseActions().clear();
+        QWheelEvent event(QPointF(),
+                          QPointF(),
+                          QPoint(),
+                          QPoint(0, -120),
+                          Qt::MiddleButton,
+                          Qt::ShiftModifier,
+                          Qt::NoScrollPhase,
+                          false);
+        QVERIFY(!qApp->wheelAction(event));
+        QMouseValue value(QKeySequence(Qt::ShiftModifier), Qt::MiddleButton, -MouseDelta);
+        qApp->mouseActions().updateKey("actionFirstPage", QMouseSequence(value.toString()));
+        QCOMPARE(qApp->wheelAction(event),
+                 viewer.findChild<QAction *>(QStringLiteral("actionFirstPage")));
+        qApp->mouseActions().updateKey("actionFirstPage", QMouseSequence());
+        QVERIFY(!qApp->wheelAction(event));
+    }
+
+    void pageWheelFollowsConfiguredActions_data()
+    {
+        QTest::addColumn<QString>("targetName");
+        QTest::addColumn<bool>("archive");
+        QTest::addColumn<bool>("reversed");
+        QTest::addColumn<bool>("cursorScrolling");
+        for (const auto &target : {"image", "pageSlider", "pageFrame", "pageLabel"}) {
+            for (bool archive : {false, true}) {
+                for (bool reversed : {false, true}) {
+                    for (bool cursor : {false, true}) {
+                        const QByteArray row = QByteArray(target) + (archive ? "-zip" : "-folder") +
+                                               (reversed ? "-reassigned" : "-default") +
+                                               (cursor ? "-cursor" : "-wheel");
+                        QTest::newRow(row)
+                            << QString::fromLatin1(target) << archive << reversed << cursor;
+                    }
+                }
+            }
+        }
+    }
+
+    void pageWheelFollowsConfiguredActions()
+    {
+        QFETCH(QString, targetName);
+        QFETCH(bool, archive);
+        QFETCH(bool, reversed);
+        QFETCH(bool, cursorScrolling);
+        TestTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QVERIFY(WheelInputWindow::writePages(directory));
+        WheelInputWindow viewer;
+        qApp->setScrollWithCursorWhenZooming(cursorScrolling);
+        if (reversed) {
+            qApp->mouseActions().clear();
+            viewer.bindWheel("actionNextPage", MouseDelta);
+            viewer.bindWheel("actionPrevPage", -MouseDelta);
+        }
+        // Reuse the existing two-image ZIP fixture, including its mixed-case extension.
+        viewer.openPath(archive ? QString(FILELOADER_DATAPATH "avif/images.zip")
+                                : directory.path());
+        QTRY_COMPARE(viewer.imageView()->renderedPageCount(), 1);
+        QCOMPARE(viewer.viewerSession()->pageCount(), archive ? 2 : 4);
+        QWidget *target = viewer.wheelTarget(targetName);
+        QVERIFY(target);
+        QSignalSpy next(viewer.findChild<QAction *>("actionNextPage"), &QAction::triggered);
+        QSignalSpy previous(viewer.findChild<QAction *>("actionPrevPage"), &QAction::triggered);
+        const int delta = reversed ? MouseDelta : -MouseDelta;
+        QVERIFY(viewer.sendWheel(target, QPoint(0, delta)));
+        QCOMPARE(viewer.viewerSession()->currentPageIndex(), 1);
+        QCOMPARE(next.size(), 1);
+        QCOMPARE(previous.size(), 0);
+        QCOMPARE(viewer.findChild<QSlider *>("pageSlider")->value(), 2);
+        QVERIFY(viewer.sendWheel(target, QPoint(0, -delta)));
+        QCOMPARE(viewer.viewerSession()->currentPageIndex(), 0);
+        QCOMPARE(next.size(), 1);
+        QCOMPARE(previous.size(), 1);
+    }
+
+    void pageWheelKeepsImageOperationsLocal_data()
+    {
+        QTest::addColumn<QString>("targetName");
+        QTest::addColumn<QString>("mode");
+        for (const auto &target : {"image", "pageSlider", "pageFrame", "pageLabel"}) {
+            for (const auto &mode : {"wheel-pan", "cursor-pan", "loupe-enabled"}) {
+                QTest::newRow((QByteArray(target) + '-' + mode).constData())
+                    << QString::fromLatin1(target) << QString::fromLatin1(mode);
+            }
+        }
+    }
+
+    void pageWheelKeepsImageOperationsLocal()
+    {
+        QFETCH(QString, targetName);
+        QFETCH(QString, mode);
+        TestTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QVERIFY(WheelInputWindow::writePages(directory, QSize(1280, 960)));
+        WheelInputWindow viewer;
+        qApp->setFitting(mode == "loupe-enabled");
+        qApp->setLoupeTool(mode == "loupe-enabled");
+        qApp->setScrollWithCursorWhenZooming(mode == "cursor-pan");
+        viewer.openPath(directory.path());
+        ImageView *view = viewer.imageView();
+        QTRY_COMPARE(view->renderedPageCount(), 1);
+        view->refreshRenderedPages();
+        QWidget *target = viewer.wheelTarget(targetName);
+        QVERIFY(target);
+        QSignalSpy next(viewer.findChild<QAction *>("actionNextPage"), &QAction::triggered);
+        if (mode != "loupe-enabled") {
+            QVERIFY(view->isScrollMode());
+        }
+        QScrollBar *scroll = view->verticalScrollBar();
+        const bool imagePan = targetName == "image" && mode == "wheel-pan";
+        if (imagePan) {
+            QVERIFY(scroll->maximum() > scroll->minimum());
+            scroll->setValue(scroll->minimum());
+        }
+        QVERIFY(viewer.sendWheel(target, QPoint(0, -MouseDelta)));
+        if (imagePan) {
+            QVERIFY(scroll->value() > scroll->minimum());
+            QCOMPARE(viewer.viewerSession()->currentPageIndex(), 0);
+            QCOMPARE(next.size(), 0);
+            // Reaching an image edge must not reinterpret the same gesture as paging.
+            scroll->setValue(scroll->maximum());
+            QVERIFY(viewer.sendWheel(target, QPoint(0, -MouseDelta)));
+            QCOMPARE(viewer.viewerSession()->currentPageIndex(), 0);
+            QCOMPARE(next.size(), 0);
+        } else {
+            QCOMPARE(viewer.viewerSession()->currentPageIndex(), 1);
+            QCOMPARE(next.size(), 1);
+        }
+    }
+
+    void pageWheelKeepsHeldLoupeGesture_data()
+    {
+        QTest::addColumn<QString>("targetName");
+        for (const auto &target : {"image", "pageSlider", "pageFrame", "pageLabel"}) {
+            QTest::newRow(target) << QString::fromLatin1(target);
+        }
+    }
+
+    void pageWheelKeepsHeldLoupeGesture()
+    {
+        QFETCH(QString, targetName);
+        TestTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QVERIFY(WheelInputWindow::writePages(directory, QSize(1280, 960)));
+        WheelInputWindow viewer;
+        qApp->setLoupeTool(true);
+        viewer.openPath(directory.path());
+        ImageView *view = viewer.imageView();
+        QTRY_COMPARE(view->renderedPageCount(), 1);
+        view->refreshRenderedPages();
+        const qreal fitted = view->renderedPageMetrics().notationalScaleAt(0);
+        QWidget *target = viewer.wheelTarget(targetName);
+        QVERIFY(target);
+        viewer.bindWheel("actionNextPage", MouseDelta, Qt::NoModifier, Qt::LeftButton);
+        viewer.bindWheel("actionZoomIn", MouseDelta, Qt::ControlModifier, Qt::LeftButton);
+        QSignalSpy next(viewer.findChild<QAction *>("actionNextPage"), &QAction::triggered);
+        QSignalSpy zoom(viewer.findChild<QAction *>("actionZoomIn"), &QAction::triggered);
+        const QPoint start = view->viewport()->rect().center();
+        viewer.press(start);
+        const qreal magnified = view->renderedPageMetrics().notationalScaleAt(0);
+        QVERIFY(magnified > fitted);
+        QVERIFY(viewer.sendWheel(target, QPoint(0, MouseDelta), Qt::NoModifier, Qt::LeftButton));
+        QVERIFY(view->renderedPageMetrics().notationalScaleAt(0) > magnified);
+        QCOMPARE(next.size(), 0);
+        QCOMPARE(viewer.viewerSession()->currentPageIndex(), 0);
+        QVERIFY(viewer.sendWheel(target, QPoint(0, -MouseDelta), Qt::NoModifier, Qt::LeftButton));
+        QCOMPARE(view->renderedPageMetrics().notationalScaleAt(0), magnified);
+        // An explicit zoom binding still wins over the temporary loupe operation.
+        QVERIFY(
+            viewer.sendWheel(target, QPoint(0, MouseDelta), Qt::ControlModifier, Qt::LeftButton));
+        QCOMPARE(zoom.size(), 1);
+        QCOMPARE(next.size(), 0);
+        viewer.release(start);
+        // Once the held gesture ends, the page bar navigates even with the tool enabled.
+        if (targetName != "image") {
+            viewer.bindWheel("actionNextPage", -MouseDelta);
+            QVERIFY(viewer.sendWheel(target, QPoint(0, -MouseDelta)));
+            QCOMPARE(viewer.viewerSession()->currentPageIndex(), 1);
+        }
+    }
+
+    void pageWheelUsesEventModifiers_data()
+    {
+        QTest::addColumn<QString>("targetName");
+        QTest::addColumn<bool>("controlInEvent");
+        for (const auto &target : {"image", "pageSlider", "pageFrame", "pageLabel"}) {
+            for (bool control : {false, true}) {
+                QTest::newRow((QByteArray(target) + (control ? "-control-event" : "-control-held"))
+                                  .constData())
+                    << QString::fromLatin1(target) << control;
+            }
+        }
+    }
+
+    void pageWheelUsesEventModifiers()
+    {
+        QFETCH(QString, targetName);
+        QFETCH(bool, controlInEvent);
+        TestTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QVERIFY(WheelInputWindow::writePages(directory, QSize(1280, 960)));
+        WheelInputWindow viewer;
+        qApp->setFitting(false);
+        viewer.openPath(directory.path());
+        ImageView *view = viewer.imageView();
+        QTRY_COMPARE(view->renderedPageCount(), 1);
+        view->refreshRenderedPages();
+        QWidget *target = viewer.wheelTarget(targetName);
+        QVERIFY(target);
+        QSignalSpy previous(viewer.findChild<QAction *>("actionPrevPage"), &QAction::triggered);
+        QSignalSpy zoom(viewer.findChild<QAction *>("actionZoomIn"), &QAction::triggered);
+        const qreal scale = view->renderedPageMetrics().notationalScaleAt(0);
+        QWidget keyboardTarget;
+        const auto releaseControl = qScopeGuard([&] {
+            if (!controlInEvent) {
+                QTest::keyRelease(&keyboardTarget, Qt::Key_A);
+                QTest::keyRelease(&keyboardTarget, Qt::Key_Control);
+            }
+        });
+        if (!controlInEvent) {
+            QTest::keyPress(&keyboardTarget, Qt::Key_A, Qt::ControlModifier);
+            QVERIFY(qApp->keyboardModifiers().testFlag(Qt::ControlModifier));
+        }
+        QVERIFY(viewer.sendWheel(
+            target, QPoint(0, MouseDelta), controlInEvent ? Qt::ControlModifier : Qt::NoModifier));
+        QCOMPARE(zoom.size(), controlInEvent ? 1 : 0);
+        QCOMPARE(previous.size(), controlInEvent ? 0 : 1);
+        QCOMPARE(viewer.viewerSession()->currentPageIndex(), 0);
+        if (controlInEvent) {
+            QVERIFY(view->renderedPageMetrics().notationalScaleAt(0) > scale);
+        } else {
+            QCOMPARE(view->renderedPageMetrics().notationalScaleAt(0), scale);
+        }
+    }
+
+    void pageWheelConsumesUnhandledAndBoundaryInput_data()
+    {
+        QTest::addColumn<QString>("targetName");
+        QTest::addColumn<QString>("input");
+        for (const auto &target : {"image", "pageSlider", "pageFrame", "pageLabel"}) {
+            for (const auto &input :
+                 {"unassigned", "disabled", "zero", "horizontal", "first", "last"}) {
+                QTest::newRow((QByteArray(target) + '-' + input).constData())
+                    << QString::fromLatin1(target) << QString::fromLatin1(input);
+            }
+        }
+    }
+
+    void pageWheelConsumesUnhandledAndBoundaryInput()
+    {
+        QFETCH(QString, targetName);
+        QFETCH(QString, input);
+        TestTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QVERIFY(WheelInputWindow::writePages(directory));
+        WheelInputWindow viewer;
+        viewer.openPath(directory.path());
+        QTRY_COMPARE(viewer.imageView()->renderedPageCount(), 1);
+        const int page = input == "first" ? 0 : input == "last" ? 3 : 1;
+        QVERIFY(viewer.viewerSession()->selectPage(page));
+        QWidget *target = viewer.wheelTarget(targetName);
+        QVERIFY(target);
+        QAction *nextAction = viewer.findChild<QAction *>("actionNextPage");
+        if (input == "disabled") {
+            nextAction->setEnabled(false);
+        }
+        QSignalSpy next(nextAction, &QAction::triggered);
+        QSignalSpy previous(viewer.findChild<QAction *>("actionPrevPage"), &QAction::triggered);
+        QSignalSpy back(viewer.findChild<QAction *>("actionZoomOut"), &QAction::triggered);
+        QPoint delta(0, input == "first" ? MouseDelta : -MouseDelta);
+        if (input == "zero") {
+            delta = QPoint();
+            viewer.bindWheel("actionZoomOut", 0, Qt::NoModifier, Qt::BackButton);
+        } else if (input == "horizontal") {
+            delta = QPoint(MouseDelta, 0);
+        }
+        QVERIFY(viewer.sendWheel(target,
+                                 delta,
+                                 input == "unassigned" ? Qt::AltModifier : Qt::NoModifier,
+                                 input == "zero" ? Qt::BackButton : Qt::NoButton));
+        QCOMPARE(viewer.viewerSession()->currentPageIndex(), page);
+        QCOMPARE(viewer.findChild<QSlider *>("pageSlider")->value(), page + 1);
+        QCOMPARE(next.size(), input == "last" ? 1 : 0);
+        QCOMPARE(previous.size(), input == "first" ? 1 : 0);
+        QCOMPARE(back.size(), 0);
+    }
+
+    void pageWheelUsesSpreadNavigation_data()
+    {
+        QTest::addColumn<QString>("targetName");
+        QTest::addColumn<bool>("separated");
+        for (const auto &target : {"image", "pageSlider", "pageFrame", "pageLabel"}) {
+            QTest::newRow((QByteArray(target) + "-spread").constData())
+                << QString::fromLatin1(target) << false;
+            QTest::newRow((QByteArray(target) + "-split-wide").constData())
+                << QString::fromLatin1(target) << true;
+        }
+    }
+
+    void pageWheelUsesSpreadNavigation()
+    {
+        QFETCH(QString, targetName);
+        QFETCH(bool, separated);
+        TestTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QVERIFY(
+            WheelInputWindow::writePages(directory, separated ? QSize(1280, 480) : QSize(64, 96)));
+        WheelInputWindow viewer;
+        const bool savedFirst = qApp->FirstImageAsOnePageInDualView();
+        const auto restore =
+            qScopeGuard([&] { qApp->setFirstImageAsOnePageInDualView(savedFirst); });
+        qApp->setFirstImageAsOnePageInDualView(false);
+        qApp->setDualView(!separated);
+        qApp->setSeparatePagesWhenWideImage(separated);
+        if (separated) {
+            // Wide-image splitting applies in a portrait viewport.
+            viewer.imageView()->resize(480, 640);
+            viewer.imageView()->viewport()->resize(480, 640);
+        }
+        viewer.viewerSession()->setViewportSize(viewer.imageView()->viewport()->size());
+        viewer.openPath(directory.path());
+        QTRY_COMPARE(viewer.imageView()->renderedPageCount(), separated ? 1 : 2);
+        QWidget *target = viewer.wheelTarget(targetName);
+        QVERIFY(target);
+        QSignalSpy next(viewer.findChild<QAction *>("actionNextPage"), &QAction::triggered);
+        QVERIFY(viewer.sendWheel(target, QPoint(0, -MouseDelta)));
+        QCOMPARE(viewer.viewerSession()->currentPageIndex(), separated ? 0 : 2);
+        QCOMPARE(next.size(), 1);
+        if (separated) {
+            QVERIFY(viewer.sendWheel(target, QPoint(0, -MouseDelta)));
+            QCOMPARE(viewer.viewerSession()->currentPageIndex(), 1);
+            QCOMPARE(next.size(), 2);
+        }
+        QVERIFY(viewer.sendWheel(target, QPoint(0, MouseDelta)));
+        QCOMPARE(viewer.viewerSession()->currentPageIndex(), 0);
+    }
+
+    void pageSliderKeepsKeyboardAndPointerNavigation()
+    {
+        TestTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QVERIFY(WheelInputWindow::writePages(directory));
+        WheelInputWindow viewer;
+        viewer.openPath(directory.path());
+        QTRY_COMPARE(viewer.imageView()->renderedPageCount(), 1);
+        auto *slider = viewer.findChild<QSlider *>("pageSlider");
+        QVERIFY(slider);
+        slider->resize(400, slider->height());
+        QSignalSpy next(viewer.findChild<QAction *>("actionNextPage"), &QAction::triggered);
+        QSignalSpy previous(viewer.findChild<QAction *>("actionPrevPage"), &QAction::triggered);
+        QTest::keyClick(slider, Qt::Key_Right);
+        QCOMPARE(viewer.viewerSession()->currentPageIndex(), 1);
+        QCOMPARE(slider->value(), 2);
+        QTest::keyClick(slider, Qt::Key_Left);
+        QCOMPARE(viewer.viewerSession()->currentPageIndex(), 0);
+        QTest::mouseClick(slider,
+                          Qt::LeftButton,
+                          Qt::NoModifier,
+                          QPoint(slider->width() - 1, slider->height() / 2));
+        QCOMPARE(viewer.viewerSession()->currentPageIndex(), 3);
+        // Drag the handle from the maximum back to the minimum.
+        const QPoint end(slider->width() - 1, slider->height() / 2);
+        const QPoint start(0, slider->height() / 2);
+        QTest::mousePress(slider, Qt::LeftButton, Qt::NoModifier, end);
+        QTest::mouseMove(slider, start);
+        QTest::mouseRelease(slider, Qt::LeftButton, Qt::NoModifier, start);
+        QCOMPARE(viewer.viewerSession()->currentPageIndex(), 0);
+        QCOMPARE(slider->value(), 1);
+        QCOMPARE(next.size(), 0);
+        QCOMPARE(previous.size(), 0);
     }
 
     void startupCloaking_data()

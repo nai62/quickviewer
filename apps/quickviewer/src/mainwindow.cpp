@@ -309,6 +309,8 @@ MainWindow::MainWindow(QWidget *parent)
 #endif
     ui->graphicsView->installEventFilter(this);
     ui->graphicsView->viewport()->installEventFilter(this);
+    ui->pageSlider->installEventFilter(this);
+    ui->pageLabel->installEventFilter(this);
     ui->mainToolBar->installEventFilter(this);
     ui->pageFrame->installEventFilter(this);
 
@@ -568,15 +570,7 @@ static bool needContextMenu = false;
 
 void MainWindow::wheelEvent(QWheelEvent *e)
 {
-    int delta_y = e->angleDelta().y();
-    int delta = 0;
-    if (delta_y < 0) {
-        delta = -MouseDelta;
-    } else if (delta_y > 0) {
-        delta = MouseDelta;
-    }
-    QMouseValue mv(QKeySequence(qApp->keyboardModifiers()), e->buttons(), delta);
-    QAction *action = qApp->mouseActions().getActionByValue(mv);
+    QAction *action = qApp->wheelAction(*e);
     if (e->buttons() & Qt::RightButton) {
         needContextMenu = false;
     }
@@ -751,6 +745,32 @@ bool MainWindow::filterImageWindowMoveEvent(QEvent *event)
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
+    if (event->type() == QEvent::Wheel) {
+        auto *wheel = static_cast<QWheelEvent *>(event);
+        const bool pageBar = obj == ui->pageSlider || obj == ui->pageLabel || obj == ui->pageFrame;
+        if ((pageBar || obj == ui->graphicsView->viewport()) &&
+            wheel->buttons().testFlag(Qt::RightButton)) {
+            needContextMenu = false;
+        }
+        if (pageBar) {
+            // The page bar navigates independently of image panning, but a held
+            // loupe gesture stays with the image until the button is released.
+            if (!ui->graphicsView->handleLoupeWheel(wheel)) {
+                if (QAction *action = qApp->wheelAction(*wheel)) {
+                    action->trigger();
+                }
+            }
+            // Consume unassigned inputs and page boundaries as well: neither
+            // QSlider's wheel direction nor parent handlers should take over.
+            wheel->accept();
+            return true;
+        }
+    }
+    if (obj == ui->pageSlider || obj == ui->pageLabel) {
+        // Only intercept wheel input on these controls; in particular, leave
+        // QSlider's shortcut override, keys, clicks and drags to the widget.
+        return false;
+    }
     if (obj == ui->graphicsView->viewport()) {
         return filterImageWindowMoveEvent(event);
     }

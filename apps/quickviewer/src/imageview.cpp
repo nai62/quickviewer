@@ -789,17 +789,19 @@ void ImageView::mouseMoveEvent(QMouseEvent *e)
     m_hoverState = Qt::AnchorHorizontalCenter;
 }
 
+bool ImageView::handleLoupeWheel(QWheelEvent *event)
+{
+    if (!m_loupeController.isActive() || !event->buttons().testFlag(Qt::LeftButton)) {
+        return false;
+    }
+    wheelEvent(event);
+    return true;
+}
+
 void ImageView::wheelEvent(QWheelEvent *event)
 {
     int delta_y = event->angleDelta().y();
-    int delta = 0;
-    if (delta_y < 0) {
-        delta = -MouseDelta;
-    } else if (delta_y > 0) {
-        delta = MouseDelta;
-    }
-    QMouseValue mv(QKeySequence(qApp->keyboardModifiers()), event->buttons(), delta);
-    QAction *action = qApp->mouseActions().getActionByValue(mv);
+    QAction *action = qApp->wheelAction(*event);
     if (action != nullptr) {
         QString text = action->objectName();
         if (text == "actionZoomIn" || text == "actionZoomOut") {
@@ -811,19 +813,19 @@ void ImageView::wheelEvent(QWheelEvent *event)
     if (m_loupeController.isActive()) {
         m_loupeController.adjustScaleFromWheel(delta_y);
         refreshRenderedPages();
+        event->accept();
         return;
     }
-    if (qApp->ScrollWithCursorWhenZooming()) {
-        QMouseValue mv(QKeySequence(qApp->keyboardModifiers()), event->buttons(), delta);
-        QAction *action = qApp->mouseActions().getActionByValue(mv);
-        if (action) {
-            action->trigger();
-            event->accept();
-            return;
-        }
+    if (m_scrollMode && !qApp->ScrollWithCursorWhenZooming()) {
+        QGraphicsView::wheelEvent(event);
+        // An image edge must not turn this scroll gesture into a page turn.
+        event->accept();
         return;
     }
-    QGraphicsView::wheelEvent(event);
+    if (action) {
+        action->trigger();
+    }
+    event->accept();
 }
 
 void ImageView::mousePressEvent(QMouseEvent *event)
