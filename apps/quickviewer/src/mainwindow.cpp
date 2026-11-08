@@ -472,7 +472,7 @@ void MainWindow::loadStartupVolume()
     }
     // auto restore
     if (qApp->AutoLoaded() && !qApp->LastViewPath().isEmpty()) {
-        openStoredPath(qApp->LastViewPath(), true);
+        openStoredPath(qApp->LastViewPath());
         makeBookmarkMenu();
     }
 }
@@ -880,29 +880,29 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     return QObject::eventFilter(obj, event);
 }
 
-void MainWindow::openPath(QString path, bool allowSecondPage)
+void MainWindow::openPath(QString path)
 {
-    openResolvedTarget(OpenTarget::forPath(path), allowSecondPage);
+    openResolvedTarget(OpenTarget::forPath(path));
 }
 
 void MainWindow::openTarget(const OpenTarget &target)
 {
-    openResolvedTarget(target, false);
+    openResolvedTarget(target);
 }
 
-void MainWindow::openStoredPath(const QString &storedPath, bool allowSecondPage)
+void MainWindow::openStoredPath(const QString &storedPath)
 {
     const VolumeLocation location = loadStoredVolumeLocation(storedPath);
     if (location.isContainer()) {
         // Without a stored entry the path may name a folder, an archive or an
         // image file, so it is classified like any other user supplied path.
-        openPath(storedPath, allowSecondPage);
+        openPath(storedPath);
         return;
     }
-    openResolvedTarget(OpenTarget::entry(location), allowSecondPage);
+    openResolvedTarget(OpenTarget::entry(location));
 }
 
-void MainWindow::openResolvedTarget(const OpenTarget &target, bool allowSecondPage)
+void MainWindow::openResolvedTarget(const OpenTarget &target)
 {
     const VolumeLocation &location = target.location;
     const bool isFileTarget = target.intent == OpenIntent::FileInContainer;
@@ -917,7 +917,7 @@ void MainWindow::openResolvedTarget(const OpenTarget &target, bool allowSecondPa
         m_folderWindow->handleViewerSessionVolumeChanged(m_folderViewRequestedPath);
     }
     if (isFileTarget) {
-        m_viewerSession.openFileInContainer(filePath, allowSecondPage);
+        m_viewerSession.openFileInContainer(filePath);
         // The folder view follows the viewer, but a folder it already shows
         // must not be read again: its list stays as it is until the user
         // reloads it.

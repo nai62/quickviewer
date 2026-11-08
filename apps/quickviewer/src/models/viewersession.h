@@ -58,10 +58,10 @@ public:
      */
     bool openEntry(const VolumeLocation &location, bool coverOnly = false);
     /**
-     * Opens a plain image file and, once it has been painted, the volume that
-     * contains it.
+     * Opens a plain image file. Dual view prepares the complete spread before
+     * painting; single view opens its containing volume after the preview paints.
      */
-    bool openFileInContainer(const QString &filePath, bool allowSecondPage = false);
+    bool openFileInContainer(const QString &filePath);
     bool nextVolume();
     bool prevVolume();
     void reloadVolumeAfterImageRemoval();
@@ -259,6 +259,9 @@ public slots:
 
 private:
     bool openLocation(const VolumeLocation &location, bool coverOnly);
+    void startInitialSpreadVolumeLoad(const QString &imagePath);
+    void
+    prepareInitialSpreadPages(VolumeHandle volume, int pageIndex, QVector<ImageContent> pages = {});
     void startContainingVolumeLoad(const QString &normalizedImagePath,
                                    const QString &basePath,
                                    const QString &subfileName);
@@ -289,7 +292,6 @@ private:
     QHash<Volume *, SavedPagePosition> m_savedPagePositions;
     PrefetchMode m_prefetchMode;
 
-    bool m_allowSecondVisiblePage;
     QVector<ImageContent> m_visiblePages;
     VolumeCache m_volumeCache;
     QStringList m_volumeNames;

@@ -433,6 +433,31 @@ On Windows, open a folder and an archive with several images and check:
   page bar revealed in fullscreen; headless tests do not verify native input
   capture, device timing or fullscreen hit testing.
 
+### Opening an image in dual view
+
+Build the application and test executables, then run:
+
+```bat
+scripts\verify-windows.cmd debug --build-only
+scripts\verify-windows.cmd debug --test viewernavigation
+scripts\verify-windows.cmd debug --test windowstartup
+```
+
+The direct-image regressions check that the first published pages already form
+the final spread, with cold and cached folders, single-page exceptions, sorting,
+subfolders, EXIF orientation, CPU resizing, a one-image cache, stale listings,
+failed reads and superseded requests. Startup and widget tests cover associated
+files, folder-item targets and revealing the window with both pages ready.
+
+On Windows, enable dual view and open an image by double-clicking it in Explorer
+and in QuickViewer's folder panel. Check a fresh process and a folder already
+opened in the viewer: the first image display must have its final page count,
+placement and scale. Repeat in fullscreen and with a docked folder panel, with
+the first-page and wide-image exceptions, and at the last page. Check a large
+or slow folder and opening another image or closing the viewer while it loads.
+With dual view off, a directly opened image must still appear before the folder
+scan completes. Compare an archive as well, including ordinary page turns.
+
 ### Image orientation
 
 A change to EXIF orientation handling, page rotation, page layout, or the
