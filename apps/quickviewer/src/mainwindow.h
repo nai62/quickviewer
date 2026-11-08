@@ -39,10 +39,8 @@ public:
      * Opens a path supplied by the user or the operating system: the command
      * line, drag & drop, the history menu, bookmarks and file dialogs. The
      * intent is derived from the path itself.
-     *
-     * @param allowSecondPage whether an adjacent page may be shown in dual view
      */
-    void openPath(QString path, bool allowSecondPage = false);
+    void openPath(QString path);
     /**
      * Opens the location described by target and keeps the folder view in sync.
      */
@@ -255,8 +253,8 @@ private:
     void updateRemovalActionTexts();
     void syncPageBar();
     void applyImageSortBy(qvEnums::ImageSortBy sortBy);
-    void openResolvedTarget(const OpenTarget &target, bool allowSecondPage);
-    void openStoredPath(const QString &storedPath, bool allowSecondPage = false);
+    void openResolvedTarget(const OpenTarget &target);
+    void openStoredPath(const QString &storedPath);
     void saveVisibleFolderViewWidth();
     void prefetchStartupTarget();
     void loadStartupVolume();

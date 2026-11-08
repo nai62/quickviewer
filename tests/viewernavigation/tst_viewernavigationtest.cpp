@@ -1728,6 +1728,293 @@ private slots:
         QVERIFY(view.renderedPageMetrics().notationalScaleAt(0) < 1.0);
     }
 
+    void directImagePublishesTheFinalSpread_data()
+    {
+        QTest::addColumn<bool>("cached");
+        QTest::addColumn<int>("selectedPage");
+        QTest::addColumn<bool>("firstSingle");
+        QTest::addColumn<bool>("wideSingle");
+        QTest::addColumn<int>("landscapePage");
+        QTest::addColumn<bool>("descending");
+        QTest::addColumn<int>("expectedCount");
+        QTest::addColumn<bool>("cpuResize");
+        QTest::addColumn<int>("cacheSize");
+        for (bool cached : {false, true}) {
+            const QByteArray prefix = cached ? "cached-" : "cold-";
+            QTest::newRow(prefix + "pair")
+                << cached << 1 << false << true << -1 << false << 2 << false << 8;
+            QTest::newRow(prefix + "first-single")
+                << cached << 0 << true << true << -1 << false << 1 << false << 8;
+            QTest::newRow(prefix + "first-pair")
+                << cached << 0 << false << true << -1 << false << 2 << false << 8;
+            QTest::newRow(prefix + "first-wide")
+                << cached << 1 << false << true << 1 << false << 1 << false << 8;
+            QTest::newRow(prefix + "second-wide")
+                << cached << 1 << false << true << 2 << false << 1 << false << 8;
+            QTest::newRow(prefix + "wide-pair")
+                << cached << 1 << false << false << 2 << false << 2 << false << 8;
+            QTest::newRow(prefix + "last")
+                << cached << 3 << false << true << -1 << false << 1 << false << 8;
+            QTest::newRow(prefix + "descending")
+                << cached << 2 << false << true << -1 << true << 2 << false << 8;
+            QTest::newRow(prefix + "cpu-resize")
+                << cached << 1 << false << true << -1 << false << 2 << true << 8;
+            QTest::newRow(prefix + "one-image-cache")
+                << cached << 1 << false << true << -1 << false << 2 << false << 1;
+        }
+    }
+
+    void directImagePublishesTheFinalSpread()
+    {
+        QFETCH(bool, cached);
+        QFETCH(int, selectedPage);
+        QFETCH(bool, firstSingle);
+        QFETCH(bool, wideSingle);
+        QFETCH(int, landscapePage);
+        QFETCH(bool, descending);
+        QFETCH(int, expectedCount);
+        QFETCH(bool, cpuResize);
+        QFETCH(int, cacheSize);
+        const auto savedEffect = qApp->Effect();
+        const int savedCache = qApp->MaxImagesCache();
+        const bool savedFirst = qApp->FirstImageAsOnePageInDualView();
+        const bool savedWide = qApp->WideImageAsOnePageInDualView();
+        const auto savedSort = qApp->ImageSortBy();
+        const auto restore = qScopeGuard([&] {
+            qApp->setEffect(savedEffect);
+            qApp->setMaxImagesCache(savedCache);
+            qApp->setFirstImageAsOnePageInDualView(savedFirst);
+            qApp->setWideImageAsOnePageInDualView(savedWide);
+            qApp->setImageSortBy(savedSort);
+        });
+        qApp->setDualView(true);
+        qApp->setFirstImageAsOnePageInDualView(firstSingle);
+        qApp->setWideImageAsOnePageInDualView(wideSingle);
+        qApp->setMaxImagesCache(cacheSize);
+        qApp->setImageSortBy(descending ? qvEnums::ImageSortBy::SortByFileNameDescending
+                                        : qvEnums::ImageSortBy::SortByFileName);
+        qApp->setEffect(cpuResize ? qvEnums::ShaderEffect::CpuBicubic
+                                  : qvEnums::ShaderEffect::Bilinear);
+        TestTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        for (int page = 0; page < 4; ++page) {
+            QImage image(page == landscapePage ? QSize(96, 64) : QSize(64, 96),
+                         QImage::Format_RGB32);
+            image.fill(QColor::fromHsv(page * 60, 255, 255));
+            QVERIFY(image.save(directory.filePath(QString("page-%1.bmp").arg(page))));
+        }
+        ViewerSession session(nullptr);
+        session.setViewportSize(QSize(32, 48));
+        if (cached) {
+            QVERIFY(session.openContainer(directory.path()));
+        }
+        QList<QStringList> publications;
+        connect(&session, &ViewerSession::visiblePagesChanged, &session, [&](VisiblePages pages) {
+            if (pages.isEmpty()) {
+                return;
+            }
+            QStringList names;
+            for (int index = 0; index < pages.count(); ++index) {
+                QVERIFY(pages.at(index)->isRenderable());
+                names << pages.at(index)->path;
+            }
+            publications << names;
+        });
+        QSignalSpy paintReady(&session, &ViewerSession::readyForPaint);
+        QSignalSpy finished(&session, &ViewerSession::initialImageDisplayFinished);
+        QVERIFY(session.openFileInContainer(
+            directory.filePath(QString("page-%1.bmp").arg(selectedPage))));
+        // Even cached images are delivered asynchronously. An empty paint must
+        // not release the startup window or start the normal prefetch.
+        QCOMPARE(session.stateKind(), ViewerStateKind::Loading);
+        QVERIFY(session.visiblePages().isEmpty());
+        session.notifyInitialImagePainted();
+        QCOMPARE(finished.count(), 0);
+        QTRY_COMPARE(paintReady.count(), 1);
+        QCOMPARE(session.stateKind(), ViewerStateKind::VolumeReady);
+        QCOMPARE(session.visiblePageCount(), expectedCount);
+        QCOMPARE(publications.size(), 1);
+        QStringList expected{QString("page-%1.bmp").arg(selectedPage)};
+        if (expectedCount == 2) {
+            expected << QString("page-%1.bmp").arg(selectedPage + (descending ? -1 : 1));
+        }
+        QCOMPARE(publications.first(), expected);
+        QVERIFY(session.initialImagePaintPending());
+        QCOMPARE(finished.count(), 0);
+        const VisiblePages pages = session.visiblePages();
+        for (int index = 0; index < pages.count(); ++index) {
+            QCOMPARE(!pages.at(index)->resizedImage.isNull(), cpuResize);
+        }
+        session.notifyInitialImagePainted();
+        QTRY_COMPARE(finished.count(), 1);
+        QVERIFY(!session.initialImagePaintPending());
+        QCOMPARE(publications.size(), 1);
+        QCOMPARE(session.visiblePageCount(), expectedCount);
+    }
+
+    void directSpreadUsesSortedSubfolderPagesAndOrientation()
+    {
+        TestTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QVERIFY(QDir(directory.path()).mkdir("sub"));
+        const auto restore = qScopeGuard([savedFirst = qApp->FirstImageAsOnePageInDualView(),
+                                          savedWide = qApp->WideImageAsOnePageInDualView(),
+                                          savedSort = qApp->ImageSortBy()] {
+            qApp->setFirstImageAsOnePageInDualView(savedFirst);
+            qApp->setWideImageAsOnePageInDualView(savedWide);
+            qApp->setImageSortBy(savedSort);
+        });
+        qApp->setDualView(true);
+        qApp->setShowSubfolders(true);
+        qApp->setFirstImageAsOnePageInDualView(false);
+        qApp->setWideImageAsOnePageInDualView(true);
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
+        QImage portrait(32, 64, QImage::Format_RGB32);
+        portrait.fill(Qt::green);
+        QVERIFY(portrait.save(directory.filePath("page-2.bmp")));
+        QVERIFY(portrait.save(directory.filePath("sub/page-10.bmp")));
+        const QString selected = directory.filePath("page-10.jpg");
+        QFile jpeg(selected);
+        QVERIFY(jpeg.open(QIODevice::WriteOnly));
+        const QByteArray bytes = jpegWithOrientation(6, QSize(64, 32));
+        QCOMPARE(jpeg.write(bytes), bytes.size());
+        jpeg.close();
+        ViewerSession session(nullptr);
+        QSignalSpy ready(&session, &ViewerSession::readyForPaint);
+        QVERIFY(session.openFileInContainer(selected));
+        QTRY_COMPARE(ready.count(), 1);
+        QCOMPARE(session.currentPageIndex(), 1);
+        QCOMPARE(session.visiblePageCount(), 2);
+        const VisiblePages pages = session.visiblePages();
+        QVERIFY(!pages.at(0)->isLandscape());
+        QCOMPARE(QDir::fromNativeSeparators(pages.at(1)->path), QString("sub/page-10.bmp"));
+    }
+
+    void directSpreadReportsImageFailures_data()
+    {
+        QTest::addColumn<QString>("brokenPage");
+        QTest::newRow("missing") << QString("missing.bmp");
+        QTest::newRow("first") << QString("page-0.bmp");
+        QTest::newRow("second") << QString("page-1.bmp");
+    }
+
+    void directSpreadReportsImageFailures()
+    {
+        QFETCH(QString, brokenPage);
+        const bool savedFirst = qApp->FirstImageAsOnePageInDualView();
+        const auto savedSort = qApp->ImageSortBy();
+        const auto restore = qScopeGuard([&] {
+            qApp->setFirstImageAsOnePageInDualView(savedFirst);
+            qApp->setImageSortBy(savedSort);
+        });
+        TestTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QImage image(32, 64, QImage::Format_RGB32);
+        image.fill(Qt::white);
+        for (int page = 0; page < 2; ++page) {
+            QVERIFY(image.save(directory.filePath(QString("page-%1.bmp").arg(page))));
+        }
+        const bool missing = brokenPage == "missing.bmp";
+        if (!missing) {
+            QFile broken(directory.filePath(brokenPage));
+            QVERIFY(broken.open(QIODevice::WriteOnly | QIODevice::Truncate));
+            QCOMPARE(broken.write("broken"), qint64(6));
+        }
+        qApp->setDualView(true);
+        qApp->setFirstImageAsOnePageInDualView(false);
+        qApp->setImageSortBy(qvEnums::ImageSortBy::SortByFileName);
+        ViewerSession session(nullptr);
+        QVERIFY(
+            session.openFileInContainer(directory.filePath(missing ? brokenPage : "page-0.bmp")));
+        QTRY_COMPARE(session.loadStatus().failureReason,
+                     missing ? LoadFailureReason::NotFound : LoadFailureReason::DecodeFailed);
+        QCOMPARE(session.stateKind(),
+                 missing ? ViewerStateKind::Failed : ViewerStateKind::VolumeReady);
+        QCOMPARE(QDir::fromNativeSeparators(session.loadStatus().failurePath),
+                 directory.filePath(brokenPage));
+        if (!missing) {
+            QVERIFY(session.selectPage(1));
+        }
+    }
+
+    void directSpreadRescansAStaleListing()
+    {
+        const bool savedFirst = qApp->FirstImageAsOnePageInDualView();
+        const bool savedWide = qApp->WideImageAsOnePageInDualView();
+        const auto restore = qScopeGuard([&] {
+            qApp->setFirstImageAsOnePageInDualView(savedFirst);
+            qApp->setWideImageAsOnePageInDualView(savedWide);
+        });
+        qApp->setWideImageAsOnePageInDualView(true);
+        TestTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QImage image(64, 96, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        QVERIFY(image.save(directory.filePath("page-0.bmp")));
+        qApp->setDualView(true);
+        qApp->setFirstImageAsOnePageInDualView(false);
+        ViewerSession session(nullptr);
+        QVERIFY(session.openContainer(directory.path()));
+        const QString selected = directory.filePath("page-1.bmp");
+        QVERIFY(image.save(selected));
+        QVERIFY(image.save(directory.filePath("page-2.bmp")));
+        QSignalSpy ready(&session, &ViewerSession::readyForPaint);
+        QVERIFY(session.openFileInContainer(selected));
+        QTRY_COMPARE(ready.count(), 1);
+        QCOMPARE(session.pageCount(), 3);
+        QCOMPARE(session.currentPageName(), QString("page-1.bmp"));
+        QCOMPARE(session.visiblePageCount(), 2);
+    }
+
+    void directSpreadIgnoresSupersededLoads_data()
+    {
+        QTest::addColumn<bool>("reset");
+        QTest::newRow("new-open") << false;
+        QTest::newRow("reset") << true;
+    }
+
+    void directSpreadIgnoresSupersededLoads()
+    {
+        QFETCH(bool, reset);
+        const bool savedFirst = qApp->FirstImageAsOnePageInDualView();
+        const bool savedWide = qApp->WideImageAsOnePageInDualView();
+        const auto restore = qScopeGuard([&] {
+            qApp->setFirstImageAsOnePageInDualView(savedFirst);
+            qApp->setWideImageAsOnePageInDualView(savedWide);
+        });
+        qApp->setWideImageAsOnePageInDualView(true);
+        TestTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QImage image(64, 96, QImage::Format_RGB32);
+        image.fill(Qt::red);
+        for (int page = 0; page < 4; ++page) {
+            QVERIFY(image.save(directory.filePath(QString("page-%1.bmp").arg(page))));
+        }
+        qApp->setDualView(true);
+        qApp->setFirstImageAsOnePageInDualView(false);
+        ViewerSession session(nullptr);
+        QSignalSpy ready(&session, &ViewerSession::readyForPaint);
+        QVERIFY(session.openFileInContainer(directory.filePath("page-0.bmp")));
+        if (reset) {
+            session.reset();
+        } else {
+            QVERIFY(session.openFileInContainer(directory.filePath("page-2.bmp")));
+        }
+        // Finish folder jobs and deliver their watchers without relying on a
+        // race between disk speed and the next request.
+        QThreadPool::globalInstance()->waitForDone();
+        QCoreApplication::processEvents();
+        if (reset) {
+            QCOMPARE(session.stateKind(), ViewerStateKind::Empty);
+            QCOMPARE(ready.count(), 0);
+            QVERIFY(session.visiblePages().isEmpty());
+        } else {
+            QTRY_COMPARE(ready.count(), 1);
+            QCOMPARE(session.currentPageName(), QString("page-2.bmp"));
+            QCOMPARE(session.visiblePageCount(), 2);
+        }
+    }
+
     void selectedPageIsRestoredAsReadProgress()
     {
         TestTemporaryDir directory;

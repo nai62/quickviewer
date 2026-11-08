@@ -28,6 +28,7 @@ public:
     /** Rows in the folder list, and its first entry, when the cloak was released. */
     int panelRowsAtReveal = -1;
     QString panelEntryAtReveal;
+    int renderedPagesAtReveal = -1;
 
     FolderWindow *folderWindow() const { return m_folderWindow; }
     CatalogWindow *catalogWindow() const { return m_catalogWindow; }
@@ -55,6 +56,7 @@ protected:
     {
         cloakRequests.append(cloaked);
         if (!cloaked) {
+            renderedPagesAtReveal = imageView()->renderedPageCount();
             recordPanelAtReveal();
         }
         return true;
@@ -1387,6 +1389,103 @@ private slots:
 
         QCOMPARE(viewer.panelRowsAtReveal, 1);
         QCOMPARE(viewer.panelEntryAtReveal, QStringLiteral("book.zip"));
+    }
+
+    void directImageOpenUsesTheFinalSpread_data()
+    {
+        QTest::addColumn<bool>("cached");
+        QTest::addColumn<bool>("associated");
+        for (bool cached : {false, true}) {
+            for (bool associated : {false, true}) {
+                QTest::newRow(QByteArray(cached ? "cached-" : "cold-") +
+                              (associated ? "association" : "folder-item"))
+                    << cached << associated;
+            }
+        }
+    }
+
+    void directImageOpenUsesTheFinalSpread()
+    {
+        QFETCH(bool, cached);
+        QFETCH(bool, associated);
+        TestTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QVERIFY(WheelInputWindow::writePages(directory));
+        const bool savedDual = qApp->DualView();
+        const bool savedFirst = qApp->FirstImageAsOnePageInDualView();
+        const bool savedWide = qApp->WideImageAsOnePageInDualView();
+        const auto restore = qScopeGuard([&] {
+            qApp->setDualView(savedDual);
+            qApp->setFirstImageAsOnePageInDualView(savedFirst);
+            qApp->setWideImageAsOnePageInDualView(savedWide);
+        });
+        qApp->setDualView(true);
+        qApp->setFirstImageAsOnePageInDualView(false);
+        qApp->setWideImageAsOnePageInDualView(true);
+        StartupWindow viewer;
+        if (cached) {
+            viewer.openPath(directory.path());
+        }
+        QList<int> publications;
+        connect(viewer.viewerSession(),
+                &ViewerSession::visiblePagesChanged,
+                &viewer,
+                [&](VisiblePages pages) {
+                    if (!pages.isEmpty()) {
+                        publications << pages.count();
+                    }
+                });
+        const QString selected = directory.filePath("page-1.bmp");
+        if (associated) {
+            viewer.loadVolumeWithAssoc(selected);
+        } else {
+            viewer.openTarget(OpenTarget::fileInContainer(selected));
+        }
+        QTRY_COMPARE(viewer.imageView()->renderedPageCount(), 2);
+        QCOMPARE(publications, QList<int>{2});
+        QCOMPARE(viewer.viewerSession()->currentPageName(), QString("page-1.bmp"));
+    }
+
+    void directSpreadStartupRevealsTheWindow_data()
+    {
+        QTest::addColumn<bool>("missing");
+        QTest::newRow("spread") << false;
+        QTest::newRow("missing-image") << true;
+    }
+
+    void directSpreadStartupRevealsTheWindow()
+    {
+        QFETCH(bool, missing);
+        TestTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QVERIFY(WheelInputWindow::writePages(directory));
+        const bool savedDual = qApp->DualView();
+        const bool savedFirst = qApp->FirstImageAsOnePageInDualView();
+        const auto restore = qScopeGuard([&] {
+            qApp->setDualView(savedDual);
+            qApp->setFirstImageAsOnePageInDualView(savedFirst);
+        });
+        qApp->setDualView(true);
+        qApp->setFirstImageAsOnePageInDualView(false);
+        qApp->setBeginAsFullscreen(false);
+        qApp->setRestoreWindowState(false);
+        qApp->setAutoLoaded(true);
+        // A plain image path exercises the same loader as a command-line image.
+        qApp->setLastViewPath(directory.filePath(missing ? "missing.bmp" : "page-1.bmp"));
+        StartupWindow viewer;
+        viewer.initializeStartup();
+        const auto finishPaint = [&viewer] {
+            if (viewer.imageView()->renderedPageCount() == 2) {
+                viewer.viewerSession()->notifyInitialImagePainted();
+            }
+            return viewer.cloakRequests;
+        };
+        QTRY_COMPARE(finishPaint(), (QList<bool>{true, false}));
+        QCOMPARE(viewer.renderedPagesAtReveal, missing ? 0 : 2);
+        if (missing) {
+            QCOMPARE(viewer.viewerSession()->loadStatus().failureReason,
+                     LoadFailureReason::NotFound);
+        }
     }
 
     void folderTextProfileFinishesWithoutAnInitialImage()

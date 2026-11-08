@@ -57,7 +57,6 @@ static LoadFailureReason failureReasonForArchiveError(ArchiveOpenError error)
 ViewerSession::ViewerSession(QObject *parent)
     : QObject(parent),
       m_prefetchMode(PrefetchMode::Normal),
-      m_allowSecondVisiblePage(true),
       m_volumeCache(qApp->MaxVolumesCache(), this),
       m_state(EmptyViewerState{}),
       m_viewportSize(),
@@ -314,17 +313,15 @@ bool ViewerSession::openLocation(const VolumeLocation &location, bool coverOnly)
     return true;
 }
 
-bool ViewerSession::openFileInContainer(const QString &filePath, bool allowSecondPage)
+bool ViewerSession::openFileInContainer(const QString &filePath)
 {
     const QString normalizedPath = QDir::fromNativeSeparators(filePath);
     beginLoad(normalizedPath, LoadTargetKind::ImageFile);
     const QFileInfo imageInfo(normalizedPath);
     const QString basePath = imageInfo.absolutePath();
     const QString subfileName = imageInfo.fileName();
-    if (m_volumeCache.contains(volumeCacheKey(basePath)) || (allowSecondPage && qApp->DualView())) {
-        m_allowSecondVisiblePage = allowSecondPage;
+    if (!qApp->DualView() && m_volumeCache.contains(volumeCacheKey(basePath))) {
         const bool opened = openEntry(VolumeLocation{basePath, subfileName});
-        m_allowSecondVisiblePage = true;
         if (opened || !QFileInfo(normalizedPath).exists()) {
             return opened;
         }
@@ -334,6 +331,9 @@ bool ViewerSession::openFileInContainer(const QString &filePath, bool allowSecon
         return openEntry(VolumeLocation{basePath, subfileName});
     }
 
+    if (qApp->DualView()) {
+        rememberActivePagePosition();
+    }
     m_initialImageLoadDispatcher.invalidate();
     m_volumeLoadDispatcher.invalidate();
     const quint64 displayGeneration = ++m_initialDisplayGeneration;
@@ -341,6 +341,11 @@ bool ViewerSession::openFileInContainer(const QString &filePath, bool allowSecon
     m_pendingContainingImagePath.clear();
     m_pendingContainingVolumePath.clear();
     m_pendingContainingPageName.clear();
+    if (qApp->DualView()) {
+        clearVisiblePages();
+        startInitialSpreadVolumeLoad(normalizedPath);
+        return true;
+    }
     // Only a CPU resizer draws the page from a resized copy; the view scales
     // the decoded image itself for the other effects.
     const QSize pageSize = resizesOnCpu(qApp->Effect()) ? viewportSize() : QSize();
@@ -375,6 +380,135 @@ bool ViewerSession::openFileInContainer(const QString &filePath, bool allowSecon
         },
         [](ImageContent) {});
     return true;
+}
+
+void ViewerSession::startInitialSpreadVolumeLoad(const QString &imagePath)
+{
+    const QFileInfo imageInfo(imagePath);
+    const QString basePath = imageInfo.absolutePath();
+    const QString pageName = imageInfo.fileName();
+    const VolumeCacheKey cacheKey = volumeCacheKey(basePath);
+    const bool usedCachedListing = m_volumeCache.contains(cacheKey);
+    QThread *guiThread = thread();
+    const VolumeLoadFuture load = m_volumeCache.request(cacheKey, [basePath, guiThread] {
+        return QtConcurrent::run([basePath, guiThread] {
+            VolumeLoader loader(basePath);
+            const VolumeBuildResult result = loader.buildResult();
+            if (result.volume) {
+                result.volume->moveToThread(guiThread);
+            }
+            return CachedVolumeLoadResult{makeVolumeHandle(result.volume), result.error};
+        });
+    });
+    m_volumeLoadDispatcher.submit(
+        load,
+        [this, imagePath, pageName, cacheKey, usedCachedListing](CachedVolumeLoadResult result) {
+            const VolumeHandle volume = result.volume;
+            const int pageIndex = volume ? volume->pageIndexForName(pageName) : -1;
+            if (pageIndex < 0) {
+                m_volumeCache.invalidate(cacheKey);
+                if (usedCachedListing && QFileInfo(imagePath).exists()) {
+                    startInitialSpreadVolumeLoad(imagePath);
+                    return;
+                }
+                m_state = FailedViewerState{};
+                const quint64 generation = m_initialDisplayGeneration;
+                setLoadFailure(imagePath,
+                               LoadTargetKind::ImageFile,
+                               QFileInfo(imagePath).exists() ? LoadFailureReason::DecodeFailed
+                                                             : LoadFailureReason::NotFound,
+                               true);
+                if (generation != m_initialDisplayGeneration) {
+                    return;
+                }
+                emit volumeChanged("");
+                if (generation == m_initialDisplayGeneration) {
+                    emit initialImageDisplayFinished();
+                }
+                return;
+            }
+            m_volumeCache.markUsed(cacheKey);
+            prepareInitialSpreadPages(volume, pageIndex);
+        },
+        [](CachedVolumeLoadResult) {});
+}
+
+void ViewerSession::prepareInitialSpreadPages(VolumeHandle volume,
+                                              int pageIndex,
+                                              QVector<ImageContent> pages)
+{
+    const VisiblePageCompositionRequest request{pageIndex,
+                                                volume->pageCount(),
+                                                !pages.isEmpty() && pages[0].isLandscape(),
+                                                pages.size() == 2 && pages[1].isLandscape(),
+                                                {qApp->DualView(),
+                                                 qApp->FirstImageAsOnePageInDualView(),
+                                                 qApp->WideImageAsOnePageInDualView(),
+                                                 true}};
+    if (pages.isEmpty() ||
+        (pages.size() == 1 && VisiblePageComposer::shouldLoadSecondPageCandidate(request))) {
+        const int nextPageIndex = pageIndex + int(pages.size());
+        volume->updatePrefetchCache(nextPageIndex, PrefetchMode::InitialDisplay, m_viewportSize);
+        const Volume::ImageLoadFuture load = volume->imageLoadAt(nextPageIndex);
+        if (load.isValid()) {
+            m_initialImageLoadDispatcher.submit(
+                load,
+                [this, volume, pageIndex, pages = std::move(pages)](ImageContent content) mutable {
+                    if (pages.isEmpty()) {
+                        StartupProfiler::mark("session.first-image-ready");
+                    }
+                    content.initializeAnimation();
+                    pages.push_back(std::move(content));
+                    prepareInitialSpreadPages(volume, pageIndex, std::move(pages));
+                },
+                [](ImageContent) {});
+            return;
+        }
+        // A missing load is reported just like a failed decode, while keeping
+        // the listing available for navigation to the other pages.
+        pages.push_back({});
+        prepareInitialSpreadPages(volume, pageIndex, std::move(pages));
+        return;
+    }
+
+    QString failedImagePath;
+    for (int index = 0; index < pages.size(); ++index) {
+        if (!pages[index].isRenderable()) {
+            failedImagePath = volumeLocationDisplayText(
+                {volume->volumePath(), volume->pageNameAt(pageIndex + index)});
+            break;
+        }
+    }
+    pages.resize(VisiblePageComposer::compose(request).pageIndexes.size());
+    m_pageNavigator.reset();
+    m_pageNavigator.selectPage(pageIndex, volume->pageCount());
+    m_prefetchMode = PrefetchMode::Normal;
+    m_volumeNames.clear();
+    setVolumeReady(volume);
+    deferFolderWorkUntilNextPaint();
+    const quint64 generation = m_initialDisplayGeneration;
+    replaceVisiblePages(std::move(pages));
+    if (generation != m_initialDisplayGeneration) {
+        return;
+    }
+    if (failedImagePath.isEmpty()) {
+        setLoadReady(volume->volumePath(), LoadTargetKind::Folder);
+    } else {
+        setLoadFailure(
+            failedImagePath, LoadTargetKind::ImageFile, LoadFailureReason::DecodeFailed, false);
+    }
+    if (generation != m_initialDisplayGeneration) {
+        return;
+    }
+    updateReadProgress();
+    emit pageChanged();
+    if (generation != m_initialDisplayGeneration) {
+        return;
+    }
+    emit volumeChanged(volume->volumePath());
+    if (generation == m_initialDisplayGeneration) {
+        emit readyForPaint();
+    }
 }
 
 void ViewerSession::deferFolderWorkUntilNextPaint()
@@ -1047,7 +1181,7 @@ bool ViewerSession::reloadVisiblePages()
                                                      {qApp->DualView(),
                                                       qApp->FirstImageAsOnePageInDualView(),
                                                       qApp->WideImageAsOnePageInDualView(),
-                                                      m_allowSecondVisiblePage}};
+                                                      true}};
     ImageContent secondContent;
     if (VisiblePageComposer::shouldLoadSecondPageCandidate(compositionRequest)) {
         if (initialDisplayPending) {
